@@ -1644,6 +1644,96 @@
     ]
 }
 
+// Cyclone Sire
+{
+    "name": "Cyclone Sire",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Flying\nWhen this creature dies, you may put three +1/+1 counters on target land you control. If you do, that land becomes a 0/0 Elemental creature with haste that's still a land.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cyclone Sire:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 3,
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "BecomeCreature",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "power": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "toughness": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "keywords": [
+                                    "HASTE"
+                                ],
+                                "creatureTypes": [
+                                    "Elemental"
+                                ],
+                                "duration": "Permanent"
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "land ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature dies, you may put three +1/+1 counters on target land you control. If you do, that land becomes a 0/0 Elemental creature with haste that's still a land."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bff62270-57ed-4706-bedf-11f60ae2da43.jpg?1783937919",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "If you target a land that's already a creature with Cyclone Sire's triggered ability, that land creature's base power and toughness will become 0/0, overwriting its previous base power and toughness. Other effects that modify its power and/or toughness (including the new and any previously-existing +1/+1 counters) will continue to apply."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Dazzling Reflection
 {
     "name": "Dazzling Reflection",
@@ -2113,6 +2203,86 @@
         "artist": "Deruchenko Alexander",
         "flavorText": "\"Drana commands me. I command my nulls. And so her bidding is done.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/1/8/189abe2f-5899-438b-9f54-3c98e50f037a.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Dread Defiler
+{
+    "name": "Dread Defiler",
+    "manaCost": "{6}{B}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "Devoid (This card has no color.)\n{3}{C}, Exile a creature card from your graveyard: Target opponent loses life equal to the exiled card's power. ({C} represents colorless mana.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 8
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Dread Defiler:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{C}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomExileFrom",
+                                "zone": "Graveyard",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "ExiledAsCost",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "flavorText": "It left behind an echoing emptiness more horrible than the grave.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e2b26769-4705-4b09-94b4-1063e67041d1.jpg?1783937915",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "A creature token is not a creature card. Although a token does go to the graveyard briefly if it dies, it ceases to exist before you have the opportunity to do anything."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Use the card’s power as it last existed in your graveyard to determine how much life is lost."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -3094,6 +3264,78 @@
     ]
 }
 
+// Flaying Tendrils
+{
+    "name": "Flaying Tendrils",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Devoid (This card has no color.)\nAll creatures get -2/-2 until end of turn. If a creature would die this turn, exile it instead.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GrantReplacementEffect",
+                    "replacement": {
+                        "type": "RedirectZoneChange",
+                        "newDestination": "Exile",
+                        "appliesTo": {
+                            "type": "ZoneChangeEvent",
+                            "filter": "creature",
+                            "from": "Battlefield",
+                            "to": "Graveyard"
+                        }
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -2
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "flavorText": "Only one Eldrazi stood against them, yet the defenders were outnumbered.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/7/77899cb2-4d87-4c2d-99ae-1ae75bc5dc86.jpg?1783937915",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "Only creatures that are on the battlefield as Flaying Tendrils resolves will get -2/-2. However, any creature that would die that turn will be exiled, even if it wasn’t on the battlefield or wasn’t a creature as Flaying Tendrils resolved."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Creatures that Flaying Tendrils would cause to die will be exiled instead. The game doesn’t check to see which creatures die until after Flaying Tendrils has finished resolving."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // General Tazri
 {
     "name": "General Tazri",
@@ -3218,6 +3460,86 @@
         "BLACK",
         "RED",
         "GREEN"
+    ]
+}
+
+// Gift of Tusks
+{
+    "name": "Gift of Tusks",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Until end of turn, target creature loses all abilities and becomes a green Elephant with base power and toughness 3/3.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RemoveAllAbilities",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "BecomeCreature",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "creatureTypes": [
+                        "Elephant"
+                    ],
+                    "colors": [
+                        "GREEN"
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "rarity": "UNCOMMON",
+        "artist": "Kev Walker",
+        "flavorText": "It's an experience you'll never forget.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/3821122c-c495-42b0-b8f6-3f469967f16d.jpg?1783937918",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "The creature will lose all other colors and creature types, but it will retain any other card types (such as artifact) or supertypes (such as legendary) it may have."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Gift of Tusks overwrites all previous effects that set the creature's base power and toughness to specific values. Any power- or toughness-setting effects that start to apply after Gift of Tusks resolves will overwrite this effect."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "If the affected creature gains an ability after Gift of Tusks resolves, it will keep that ability."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Effects that modify a creature's power and/or toughness, such as the effect of Titanic Growth, will apply to the creature no matter when they started to take effect. The same is true for any counters that change its power and/or toughness and effects that switch its power and toughness."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3687,6 +4009,123 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Hedron Alignment
+{
+    "name": "Hedron Alignment",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Hexproof\nAt the beginning of your upkeep, you may reveal your hand. If you do, you win the game if you own a card named Hedron Alignment in exile, in your hand, in your graveyard, and on the battlefield.\n{1}{U}: Scry 1.",
+    "keywords": [
+        "HEXPROOF"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hedron Alignment:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Reveal your hand?"
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "RevealHand",
+                                "target": "Controller"
+                            },
+                            {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "All",
+                                        "conditions": [
+                                            {
+                                                "type": "Exists",
+                                                "player": "You",
+                                                "zone": "Exile",
+                                                "filter": {
+                                                    "cardPredicates": [
+                                                        {
+                                                            "type": "NameEquals",
+                                                            "name": "Hedron Alignment"
+                                                        }
+                                                    ],
+                                                    "statePredicates": [
+                                                        "IsFaceUp"
+                                                    ]
+                                                }
+                                            },
+                                            {
+                                                "type": "Exists",
+                                                "player": "You",
+                                                "zone": "Hand",
+                                                "filter": "name:Hedron Alignment"
+                                            },
+                                            {
+                                                "type": "Exists",
+                                                "player": "You",
+                                                "zone": "Graveyard",
+                                                "filter": "name:Hedron Alignment"
+                                            },
+                                            {
+                                                "type": "Exists",
+                                                "player": "Each",
+                                                "zone": "Battlefield",
+                                                "filter": "name:Hedron Alignment own:you"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "then": "WinGame"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, you may reveal your hand. If you do, you win the game if you own a card named Hedron Alignment in exile, in your hand, in your graveyard, and on the battlefield."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Hedron Alignment:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "rarity": "RARE",
+        "artist": "Craig J Spearing",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b3ec511-1b78-46e9-8ec2-fc09abd1b434.jpg?1783937918",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "The Hedron Alignment in exile must be face up. If it’s face down, it won’t count, even if you are allowed to look at it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -5975,6 +6414,175 @@
     ]
 }
 
+// Oath of Jace
+{
+    "name": "Oath of Jace",
+    "manaCost": "{2}{U}",
+    "typeLine": "Legendary Enchantment",
+    "oracleText": "When Oath of Jace enters, draw three cards, then discard two cards.\nAt the beginning of your upkeep, scry X, where X is the number of planeswalkers you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Oath of Jace:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 2 cards to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Oath of Jace:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": "planeswalker"
+                                },
+                                "isScry": true
+                            },
+                            "storeAs": "scried"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "scried",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "toBottom",
+                            "storeRemainder": "toTop",
+                            "prompt": "Scry: choose cards to put on the bottom of your library",
+                            "selectedLabel": "Put on bottom",
+                            "remainderLabel": "Put on top"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "toBottom",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "toTop",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            },
+                            "order": "ControllerChooses"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "planeswalker"
+                                    },
+                                    "operator": "GT",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
+                                }
+                            },
+                            "then": "EmitScriedEvent"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "rarity": "RARE",
+        "artist": "Wesley Burt",
+        "flavorText": "\"For the sake of the Multiverse, I will keep watch.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e8e7b007-a14b-40b2-9de7-38545c50a073.jpg?1783937918",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "If you control no planeswalkers as the last ability resolves, you won’t scry at all. Abilities that trigger whenever you scry won’t trigger."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Each of the Oaths is legendary: if you control more than one of any particular Oath, you choose one to remain on the battlefield and the others are put into your graveyard."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "The “legend rule” checks the full names of legendary permanents. You can control Oath of Gideon and Oath of Chandra at the same time, for example."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "Even if you control a particular Oath, you can cast another of that Oath to take advantage of its enters-the-battlefield ability. It will enter the battlefield, causing its first ability to trigger. You will then choose one to keep, as detailed above, and then its enters-the-battlefield ability will resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Oath of Nissa
 {
     "name": "Oath of Nissa",
@@ -6891,6 +7499,77 @@
     ]
 }
 
+// Remorseless Punishment
+{
+    "name": "Remorseless Punishment",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent loses 5 life unless that player discards two cards or sacrifices a creature or planeswalker of their choice. Repeat this process once.",
+    "script": {
+        "spellEffect": {
+            "type": "RepeatDynamicTimes",
+            "amount": {
+                "type": "Fixed",
+                "amount": 2
+            },
+            "body": {
+                "type": "PayOrSuffer",
+                "cost": {
+                    "type": "Choice",
+                    "options": [
+                        {
+                            "type": "PayAtom",
+                            "atom": {
+                                "type": "AtomDiscard",
+                                "count": 2
+                            }
+                        },
+                        {
+                            "type": "PayAtom",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature|planeswalker"
+                            }
+                        }
+                    ]
+                },
+                "suffer": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "player": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "consequenceDescription": "lose 5 life"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "rarity": "RARE",
+        "artist": "Ryan Barger",
+        "flavorText": "\"I have suffered a thousand lifetimes of agony on this wretched world. I've far less time to share with you, but I assure you, no less pain.\"\n—Ob Nixilis",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1dde9379-b335-400f-9748-a7ca3e293ee0.jpg?1783937911"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Roiling Waters
 {
     "name": "Roiling Waters",
@@ -7663,6 +8342,60 @@
     ]
 }
 
+// Sky Scourer
+{
+    "name": "Sky Scourer",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nFlying\nWhenever you cast a colorless spell, this creature gets +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEVOID",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sky Scourer:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsColorless"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever you cast a colorless spell, this creature gets +1/+0 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "artist": "Winona Nelson",
+        "flavorText": "\"The Eldrazi are nothing if not thorough.\"\n—Jace Beleren",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb00fa72-bcda-4081-9048-e13752da8d46.jpg?1783937913"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Slaughter Drone
 {
     "name": "Slaughter Drone",
@@ -7703,6 +8436,57 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Slip Through Space
+{
+    "name": "Slip Through Space",
+    "manaCost": "{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Devoid (This card has no color.)\nTarget creature can't be blocked this turn.\nDraw a card.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "CANT_BE_BLOCKED",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "artist": "Raymond Swanland",
+        "flavorText": "The Eldrazi twisted in a direction that had no name, and a frontal assault became a panicked rout.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2dee6dca-9c7e-4347-bea7-7fecc69e5827.jpg?1783937920"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -8964,6 +9748,58 @@
     ]
 }
 
+// Umara Entangler
+{
+    "name": "Umara Entangler",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Merfolk Rogue Ally",
+    "oracleText": "Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "PROWESS"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Umara Entangler:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "artist": "James Ryman",
+        "flavorText": "\"Sea Gate is gone, the Halimar basin empty. But rebuild the seawall and give these waters time, and they will fill the basin anew.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0d4ddc45-cd67-4b2c-84d0-4604783fd8e7.jpg?1783937916"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Unity of Purpose
 {
     "name": "Unity of Purpose",
@@ -9302,6 +10138,43 @@
     ]
 }
 
+// Void Shatter
+{
+    "name": "Void Shatter",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Devoid (This card has no color.)\nCounter target spell. If that spell is countered this way, exile it instead of putting it into its owner's graveyard.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "counterDestination": "CounterDestination.Exile"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Felix",
+        "flavorText": "Eldrazi break concentration like glass.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4bf13c5e-3968-48ad-ba08-99ba58873223.jpg?1783937920"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Walker of the Wastes
 {
     "name": "Walker of the Wastes",
@@ -9603,6 +10476,237 @@
         "imageUri": "https://cards.scryfall.io/normal/front/c/7/c7f517b9-ac10-4710-8ef1-ced1253d5ecf.jpg?1783937928"
     },
     "colorIdentityOverride": []
+}
+
+// Warping Wail
+{
+    "name": "Warping Wail",
+    "manaCost": "{1}{C}",
+    "typeLine": "Instant",
+    "oracleText": "({C} represents colorless mana.)\nChoose one —\n• Exile target creature with power or toughness 1 or less.\n• Counter target sorcery spell.\n• Create a 1/1 colorless Eldrazi Scion creature token. It has \"Sacrifice this token: Add {C}.\"",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Exile"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "PowerOrToughnessAtMost",
+                                            "max": 1
+                                        }
+                                    ]
+                                }
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Exile target creature with power or toughness 1 or less"
+                },
+                {
+                    "effect": "Counter",
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "sorcery",
+                                "zone": "Stack"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Counter target sorcery spell"
+                },
+                {
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [],
+                        "creatureTypes": [
+                            "Eldrazi",
+                            "Scion"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a03edf14-3495-4f61-ad73-f16e9456472c.jpg?1783937863",
+                        "activatedAbilities": [
+                            {
+                                "id": "Warping Wail:1",
+                                "cost": "CostSacrificeSelf",
+                                "effect": {
+                                    "type": "AddColorlessMana",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "timing": "ManaAbility",
+                                "isManaAbility": true,
+                                "descriptionOverride": "Sacrifice this token: Add {C}."
+                            }
+                        ]
+                    },
+                    "description": "Create a 1/1 colorless Eldrazi Scion token"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Felix",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2ef4db8-b51c-4f52-84f1-6fee31c4a14c.jpg?1783937928"
+    },
+    "colorIdentityOverride": []
+}
+
+// Weapons Trainer
+{
+    "name": "Weapons Trainer",
+    "manaCost": "{R}{W}",
+    "typeLine": "Creature — Human Soldier Ally",
+    "oracleText": "Other creatures you control get +1/+0 as long as you control an Equipment.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 0,
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "artifact Equipment"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Opalinski",
+        "flavorText": "\"When I'm done training you, anything will be a deadly weapon.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7d47bcb1-b028-4be8-9710-7c390cb984ce.jpg?1783937895",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "Weapons Trainer's ability gives just +1/+0, no matter how many Equipment you control beyond the first."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "Weapons Trainer's ability applies even if the Equipment you control isn't attached to any creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
+// Witness the End
+{
+    "name": "Witness the End",
+    "manaCost": "{3}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Devoid (This card has no color.)\nTarget opponent exiles two cards from their hand and loses 2 life.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "hand"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "hand",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "chooser": "TargetPlayer",
+                    "storeSelected": "exiled",
+                    "prompt": "Choose 2 cards to exile"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "exiled",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"Ulamog stood before us at Sea Gate, ready to succumb . . . and then Kozilek arose. Whatever hope I had for our world died.\"\n—Vandri, Kalastria emissary",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0c06d8ec-55ab-4be9-a470-77c79d643d1f.jpg?1783937913"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // World Breaker

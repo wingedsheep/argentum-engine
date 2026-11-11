@@ -1,0 +1,1 @@
+- #4632 Gift of Tusks-style "loses all abilities and becomes a 3/3" tricks are held for a window where the new base still matters (a fight the creature can still be in, an ability of theirs still usable, or a kill), instead of being cast blind

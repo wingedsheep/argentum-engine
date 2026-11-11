@@ -48,6 +48,7 @@ import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MustBeBlockedEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveAllAbilitiesEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.GrantStaticAbilityEffect
@@ -394,6 +395,7 @@ internal object ExpiringGrantWindow {
                         }
                         ?: shrinkLoss[payoff.target] ?: payoff.toughnessLoss
                     killedBy(state, projected, id, toughnessLoss) ||
+                        (payoff.neutralizes && projected.getController(id) != playerId && hasAbilities(state, id, intents)) ||
                         if (fightMustBeOn) {
                             inFightNow(state, id)
                         } else if (projected.getController(id) == playerId) {
@@ -1018,6 +1020,17 @@ internal object ExpiringGrantWindow {
         return silenced.any { opposingCanStillFight(state, projected, playerId, it) }
     }
 
+    /**
+     * Whether [creature]'s card carries an ability beyond its keywords — activated, triggered or
+     * static — that losing all abilities could still stop this turn. Unknown counts as yes.
+     */
+    private fun hasAbilities(state: GameState, creature: EntityId, intents: IntentCatalog): Boolean {
+        val name = state.getEntity(creature)?.get<CardComponent>()?.name ?: return true
+        val script = intents.definition(name)?.script ?: return true
+        return script.activatedAbilities.isNotEmpty() || script.triggeredAbilities.isNotEmpty() ||
+            script.staticAbilities.isNotEmpty()
+    }
+
     /** Whether paying for [ability] taps its own source — `{T}` in the cost, or "Tap it." on resolution. */
     private fun tapsItsSource(ability: ActivatedAbility): Boolean {
         fun costTaps(cost: AbilityCost): Boolean = when (cost) {
@@ -1277,6 +1290,8 @@ internal object ExpiringGrantWindow {
         val matching: GameObjectFilter? = null,
         /** For a [PayoffKind.STRIP] over a group: the group it strips — `IterationEntity` is its members. */
         val group: GroupFilter? = null,
+        /** For a [PayoffKind.SET_BASE]: its creature also loses all abilities until end of turn. */
+        val neutralizes: Boolean = false,
     )
 
     /**
@@ -1311,7 +1326,13 @@ internal object ExpiringGrantWindow {
         var borrowRiders = 0
         // What the end-of-turn delayed triggers riding on the payoffs watch — see the loop.
         val watchRiders = mutableListOf<EffectTarget>()
-        for (leaf in EffectWalker.leaves(effect)) {
+        val leaves = EffectWalker.leaves(effect)
+        // The creatures it strips of every ability for the turn — see the BecomeCreatureEffect case.
+        val neutralized = if (!readShrinks) emptySet() else leaves.mapNotNullTo(mutableSetOf()) { leaf ->
+            (leaf as? RemoveAllAbilitiesEffect)
+                ?.takeIf { it.duration == Duration.EndOfTurn && it.target != EffectTarget.Self }?.target
+        }
+        for (leaf in leaves) {
             when {
                 readBorrows && leaf is GainControlEffect && leaf.duration == Duration.EndOfTurn ->
                     payoffs += Payoff(PayoffKind.BORROW, leaf.target)
@@ -1342,6 +1363,18 @@ internal object ExpiringGrantWindow {
                 }
                 leaf is SetLandTypeEffect && leaf.duration == Duration.EndOfTurn ->
                     payoffs += Payoff(PayoffKind.LAND, leaf.target)
+                // "Until end of turn, target creature loses all abilities and becomes a green Elephant
+                // with base power and toughness 3/3" (Gift of Tusks; Turn to Frog's 1/1 Frog): on a
+                // creature that already is one, the body is a [PayoffKind.SET_BASE] — a big creature
+                // of theirs made a vanilla 3/3, a small one of ours grown to it — and the strip rides
+                // on it, watching the same creature. Spent in a fight it can still be in, or on an
+                // ability of theirs that could still be used this turn ([Payoff.neutralizes]).
+                leaf is BecomeCreatureEffect && leaf.duration == Duration.EndOfTurn && leaf.target in neutralized -> {
+                    val toughness = leaf.toughness as? DynamicAmount.Fixed ?: return null
+                    if (leaf.dynamicPower != null || leaf.dynamicToughness != null) return null
+                    payoffs += Payoff(PayoffKind.SET_BASE, leaf.target, setToughness = toughness.amount, neutralizes = true)
+                }
+                leaf is RemoveAllAbilitiesEffect && leaf.target in neutralized -> watchRiders += leaf.target
                 // "Until end of turn, this land becomes a 2/1": a body that fights this turn or not at all.
                 leaf is BecomeCreatureEffect && leaf.duration == Duration.EndOfTurn ->
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target, animates = true)
