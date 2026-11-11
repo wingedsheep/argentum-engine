@@ -19,9 +19,9 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * your hand.
  *
  * The dies trigger targets as it goes on the stack, while Greenwarden is already in the graveyard, so
- * it may target itself; exiling it then leaves the target gone and nothing returns. The exile reads
- * `fromZone = GRAVEYARD`: "it" is the card that died, so if it has already left the graveyard it is a
- * new object (CR 400.7), the exile does nothing and "if you do" fails.
+ * it may target itself. Both moves read `fromZone = GRAVEYARD`: "it" is the card that died, so if it
+ * has already left the graveyard it is a new object (CR 400.7), the exile does nothing and "if you do"
+ * fails; and a self-target exiled by the "if you do" is no longer in the graveyard, so nothing returns.
  */
 val GreenwardenOfMurasa = card("Greenwarden of Murasa") {
     manaCost = "{4}{G}{G}"
@@ -44,7 +44,7 @@ val GreenwardenOfMurasa = card("Greenwarden of Murasa") {
         effect = Effects.May(
             Effects.IfYouDo(
                 action = Effects.Move(EffectTarget.Self, Zone.EXILE, fromZone = Zone.GRAVEYARD),
-                then = Effects.Move(card, Zone.HAND),
+                then = Effects.Move(card, Zone.HAND, fromZone = Zone.GRAVEYARD),
             ),
         )
     }

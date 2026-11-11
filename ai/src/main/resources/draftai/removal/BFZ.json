@@ -159,6 +159,10 @@
     "enchantment-removal",
     "planeswalker-removal"
   ],
+  "Unnatural Aggression": [
+    "removal",
+    "creature-removal"
+  ],
   "Wasteland Strangler": [
     "removal",
     "creature-removal"

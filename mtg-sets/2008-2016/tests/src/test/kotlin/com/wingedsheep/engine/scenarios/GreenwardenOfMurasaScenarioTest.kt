@@ -59,6 +59,31 @@ class GreenwardenOfMurasaScenarioTest : ScenarioTestBase() {
             game.isInHand(1, "Grizzly Bears") shouldBe true
         }
 
+        test("dying: targeting itself exiles it and returns nothing") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardOnBattlefield(1, "Greenwarden of Murasa")
+                .withCardInHand(1, "Go for the Throat")
+                .withLandsOnBattlefield(1, "Swamp", 2)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val warden = game.findPermanent("Greenwarden of Murasa")!!
+
+            game.castSpell(1, "Go for the Throat", warden).error shouldBe null
+            game.resolveStack()
+            val self = game.findCardsInGraveyard(1, "Greenwarden of Murasa").first()
+            game.selectTargets(listOf(self)).error shouldBe null
+            game.resolveStack()
+            game.answerYesNo(true)
+            game.resolveStack()
+
+            withClue("the exiled Greenwarden is a new object, not the targeted graveyard card") {
+                game.isInExile(1, "Greenwarden of Murasa") shouldBe true
+                game.isInHand(1, "Greenwarden of Murasa") shouldBe false
+            }
+        }
+
         test("dying: declining to exile it returns nothing") {
             val game = scenario()
                 .withPlayers("Player", "Opponent")

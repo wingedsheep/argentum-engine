@@ -2005,7 +2005,8 @@
                                 "type": "BoundVariable",
                                 "name": "t1"
                             },
-                            "destination": "Hand"
+                            "destination": "Hand",
+                            "fromZone": "Graveyard"
                         }
                     }
                 },
