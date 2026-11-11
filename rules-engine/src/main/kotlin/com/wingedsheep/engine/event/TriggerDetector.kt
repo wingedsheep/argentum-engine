@@ -2413,7 +2413,7 @@ class TriggerDetector(
 
         // Handle all ATTACHED-bound triggers on auras/equipment (e.g., Frozen Solid, One with Nature,
         // Guilty Conscience, Extra Arms, Heart-Piercer Bow, Fatal Mutation, Uncontrolled Infestation)
-        attachmentDetector.detectAttachmentTriggers(state, event, triggers, index)
+        attachmentDetector.detectAttachmentTriggers(state, event, triggers, index, battlefieldDepartures)
 
         // Handle "when you gain control of this from another player" triggers (e.g., Risky Move)
         // and "whenever an opponent gains control of a permanent from you" triggers (e.g., Zidane).

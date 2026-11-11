@@ -10181,6 +10181,58 @@
     ]
 }
 
+// Visions of Brutality
+{
+    "name": "Visions of Brutality",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Devoid (This card has no color.)\nEnchant creature\nEnchanted creature can't block.\nWhenever enchanted creature deals damage, its controller loses that much life.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Visions of Brutality:1",
+                "trigger": "DealsDamageEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    },
+                    "target": "ControllerOfDamageSource"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "UNCOMMON",
+        "artist": "Jama Jurabaev",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ec9ed374-54ad-4b81-b071-0b4668feb282.jpg?1783937914"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Void Grafter
 {
     "name": "Void Grafter",
