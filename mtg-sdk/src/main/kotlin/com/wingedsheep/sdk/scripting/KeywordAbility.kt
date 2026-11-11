@@ -1538,6 +1538,65 @@ sealed interface KeywordAbility {
     }
 
     // =========================================================================
+    // Awaken
+    // =========================================================================
+
+    /**
+     * Awaken [count]—[cost] (CR 702.113, Battle for Zendikar). Two abilities on an instant or
+     * sorcery (CR 702.113a): "You may pay [cost] rather than pay this spell's mana cost as you cast
+     * this spell" and the spell ability "If this spell's awaken cost was paid, put [count] +1/+1
+     * counters on target land you control. That land becomes a 0/0 Elemental creature with haste.
+     * It's still a land."
+     *
+     * An alternative cost like [Cleave] and [Overload], but one that *adds* text rather than
+     * changing it, so the card author writes only the printed spell: the engine appends
+     * [landTarget] after the spell's own target requirements — chosen only when the awaken cost is
+     * paid (CR 702.113b) — and runs [spellAbility] after the spell's own effect. Neither is
+     * serialized; both derive from [count]. The awaken cost never changes mana value (CR 118.9c),
+     * and a copy of an awakened spell is awakened too (CR 707.10).
+     */
+    @SerialName("Awaken")
+    @Serializable
+    data class Awaken(val count: Int, val cost: ManaCost) : KeywordAbility {
+        override val keyword: Keyword = Keyword.AWAKEN
+        override val description: String = "Awaken $count\u2014$cost"
+
+        /** The awaken spell ability's own target: "target land you control" (CR 702.113a). */
+        val landTarget: com.wingedsheep.sdk.scripting.targets.TargetRequirement
+            get() = com.wingedsheep.sdk.scripting.targets.TargetObject(
+                filter = com.wingedsheep.sdk.scripting.filters.unified.TargetFilter(GameObjectFilter.Land.youControl()),
+                id = LAND_TARGET_ID,
+            )
+
+        /**
+         * "Put [count] +1/+1 counters on target land you control. That land becomes a 0/0
+         * Elemental creature with haste. It's still a land." — permanently (the effect has no
+         * duration). Reads [landTarget] by its id, so it composes after any spell effect.
+         */
+        val spellAbility: com.wingedsheep.sdk.scripting.effects.Effect
+            get() {
+                val land = com.wingedsheep.sdk.scripting.targets.EffectTarget.BoundVariable(LAND_TARGET_ID)
+                return com.wingedsheep.sdk.scripting.effects.CompositeEffect(listOf(
+                    com.wingedsheep.sdk.dsl.Effects.AddCounters(com.wingedsheep.sdk.core.CounterType.PLUS_ONE_PLUS_ONE, count, land),
+                    com.wingedsheep.sdk.dsl.Effects.BecomeCreature(
+                        target = land,
+                        power = 0,
+                        toughness = 0,
+                        keywords = setOf(Keyword.HASTE),
+                        creatureTypes = setOf("Elemental"),
+                        duration = Duration.Permanent,
+                    ),
+                ), descriptionOverride = "Put $count +1/+1 counter${if (count == 1) "" else "s"} on target land you " +
+                    "control. That land becomes a 0/0 Elemental creature with haste. It's still a land.")
+            }
+
+        companion object {
+            /** The [landTarget]'s requirement id — distinct from the `t<n>` ids spell targets get. */
+            const val LAND_TARGET_ID: String = "awaken"
+        }
+    }
+
+    // =========================================================================
     // Devour
     // =========================================================================
 
@@ -1995,6 +2054,13 @@ sealed interface KeywordAbility {
          * the card's `spell { }` block via `overloadEffect`.
          */
         fun overload(cost: String): KeywordAbility = Overload(ManaCost.parse(cost))
+
+        /**
+         * Create Awaken N—[cost] (CR 702.113). E.g. `awaken(3, "{5}{B}{B}")` for
+         * "Awaken 3—{5}{B}{B}". The card's `spell { }` block holds only the printed spell; the
+         * engine adds the land target and the awaken effect when the awaken cost is paid.
+         */
+        fun awaken(count: Int, cost: String): KeywordAbility = Awaken(count, ManaCost.parse(cost))
 
         /**
          * Create Conspire keyword ability.

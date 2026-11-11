@@ -735,6 +735,8 @@ class CastSpellHandler(
         }
         val requirements = buildList {
             addAll(baseTargetReqs)
+            // Awaken (CR 702.113b): the awaken land target, after the spell's own — mirrors validate().
+            awakenOf(action, cardDef)?.let { add(it.landTarget) }
             (transformedFace ?: cardDef).script.auraTarget?.let { add(it) }
             // Splice (CR 702.47d): the spliced text's own requirements, appended in splice order.
             // They must be here and not only in validate(): this list becomes the spell's

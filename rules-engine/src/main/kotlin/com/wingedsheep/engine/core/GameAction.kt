@@ -383,6 +383,13 @@ enum class AlternativeCostType {
      */
     OVERLOAD,
     /**
+     * Awaken ([com.wingedsheep.sdk.scripting.KeywordAbility.Awaken], CR 702.113) — hand. Pays the
+     * awaken mana instead of the mana cost; the paid branch appends the awaken spell ability — its
+     * "target land you control" after the spell's own targets and its counters-and-animate effect
+     * after the spell's own effect ([com.wingedsheep.engine.handlers.actions.spell.awakenOf]).
+     */
+    AWAKEN,
+    /**
      * Miracle ([com.wingedsheep.sdk.scripting.KeywordAbility.Miracle], printed or granted) — hand,
      * cast only by the miracle trigger as it resolves ([com.wingedsheep.sdk.scripting.Miracle],
      * CR 702.94a). Never enumerated, and refused when a player submits it.

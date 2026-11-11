@@ -218,6 +218,11 @@ object SynergyAxes {
             if (card.typeLine.isCreature) add(SynergyAxis.CREATURES_ENTER)
             if (card.typeLine.isInstant || card.typeLine.isSorcery) add(SynergyAxis.SPELLS)
             if (Keyword.LIFELINK in card.keywords) add(SynergyAxis.LIFEGAIN)
+            // Awaken (CR 702.113): the awakened land gets N +1/+1 counters. The ability is derived
+            // from the keyword, not written into the spell's script, so the effect walk misses it.
+            if (card.keywordAbilities.any { it is com.wingedsheep.sdk.scripting.KeywordAbility.Awaken }) {
+                add(SynergyAxis.PLUS_COUNTERS)
+            }
         }
         return SynergyProfile(
             feeds = feeds,

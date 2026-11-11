@@ -46,6 +46,17 @@ internal fun isOverloadCast(action: CastSpell, cardDef: com.wingedsheep.sdk.mode
         cardDef.keywordAbilities.any { it is KeywordAbility.Overload }
 
 /**
+ * The card's awaken ability when this cast is paying its awaken cost (CR 702.113a), else null. Like
+ * cleave, an alternative cost chosen by [AlternativeCostType.AWAKEN]; unlike cleave it adds text, so
+ * the cast's target requirements gain [KeywordAbility.Awaken.landTarget] after the spell's own
+ * (CR 702.113b — the land is targeted only when the awaken cost is paid).
+ */
+internal fun awakenOf(action: CastSpell, cardDef: com.wingedsheep.sdk.model.CardDefinition): KeywordAbility.Awaken? =
+    if (action.useAlternativeCost && action.altAllows(AlternativeCostType.AWAKEN)) {
+        cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Awaken>().firstOrNull()
+    } else null
+
+/**
  * Every optional-additional-cost keyword the spell has under the slot this cast declared, in printed
  * order — the costs [CastSpell.declaredCostIndices] indexes into. [optionalCosts] is the spell's
  * whole effective list, printed plus granted

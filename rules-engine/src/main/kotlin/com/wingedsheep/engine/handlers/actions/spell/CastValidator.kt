@@ -928,6 +928,9 @@ internal class CastValidator(
         val castText = TextChanges.forSpell(state, action.cardId)
         val targetRequirements = buildList {
             addAll(baseTargetReqs)
+            // Awaken (CR 702.113b): the awaken ability's "target land you control" is chosen only
+            // when its cost is paid, after the spell's own targets.
+            awakenOf(action, cardDef)?.let { add(it.landTarget) }
             // The cast-time choice: Dream Leash narrows it to a tapped permanent. The stack captures
             // the plain enchant restriction instead (see execute()), so 608.2b doesn't re-check it.
             (transformedFace ?: cardDef).script.castAuraTarget?.let { add(it) }
