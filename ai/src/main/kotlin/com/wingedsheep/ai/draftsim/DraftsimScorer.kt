@@ -42,6 +42,8 @@ class DraftsimScorer(private val tables: DraftsimSetTables) {
         const val BOMB = 3.9        // bomb / splashable-bomb rating cutoff
         const val DENIAL_FLOOR = 3.0 // rating a passed card must beat before denying it is worth anything (ours)
         const val DEFAULT_POD = 8   // pod size assumed when the caller doesn't know it (ours)
+        const val COLORLESS_SOURCE_PICK = 3.0 // Wastes the pool's {C} spells still need: a playable's pick (ours)
+        const val SPARE_COLORLESS_PICK = 0.5  // Wastes nothing in the pool needs yet (ours)
 
         // rarity quality bonus (jm) cX
         val RARITY_QUALITY = mapOf("mythic" to 0.15, "rare" to 0.1, "uncommon" to 0.0, "common" to 0.0)
@@ -98,6 +100,7 @@ class DraftsimScorer(private val tables: DraftsimSetTables) {
      * sets ship archetype columns, so most sets score here. Higher = better pick.
      */
     fun scoreFallback(card: ScorerCard, pool: List<ScorerCard>): DraftsimCardScore {
+        colorlessBasicScore(card, pool)?.let { return it }
         val acc = Acc()
         val rawRating = ratingFallback(card)
         acc.total += rawRating
@@ -420,6 +423,7 @@ class DraftsimScorer(private val tables: DraftsimSetTables) {
         val g = rating(card.name)
 
         // ----- §6.1 early exits & base -----
+        colorlessBasicScore(card, pool)?.let { return it }
         if (isBasic(card)) {
             return DraftsimCardScore(-1.0, 0.0, listOf("Basic land: always available, never draft"), listOf(-1.0))
         }
@@ -505,6 +509,26 @@ class DraftsimScorer(private val tables: DraftsimSetTables) {
             DraftsimDeckContext(u[0].name, secondary?.name)
         else deckArchetypeColors(nonland)
         return finalize(acc, v, ctx, floorAtZero = true)
+    }
+
+    /**
+     * Wastes' pick (ours, not the bundle's). A Limited deck plays only the Wastes it opens or drafts,
+     * so unlike the basics the land station hands out it is a real pick — and the only way a pool's
+     * `{C}` spells get cast ([DraftsimMana.colorlessPips]). Worth [COLORLESS_SOURCE_PICK] while the
+     * pool holds fewer colorless lands than the deck builder plays for its `{C}` spells
+     * ([DraftsimMana.colorlessSourcesWanted]); [SPARE_COLORLESS_PICK]
+     * once it has them, or while nothing needs one. Null for every other card.
+     */
+    private fun colorlessBasicScore(card: ScorerCard, pool: List<ScorerCard>): DraftsimCardScore? {
+        if (!isBasic(card) || !card.makesColorless) return null
+        val wanted = DraftsimMana.colorlessSourcesWanted(pool.filter { !isLand(it) })
+        val held = pool.count { isLand(it) && it.makesColorless }
+        val (total, reason) = when {
+            held < wanted -> COLORLESS_SOURCE_PICK to "Colorless source for your {C} spells ($held of $wanted)"
+            wanted == 0 -> SPARE_COLORLESS_PICK to "Colorless source; no {C} spell needs it yet"
+            else -> SPARE_COLORLESS_PICK to "Colorless source; you have the $wanted your {C} spells need"
+        }
+        return DraftsimCardScore(total, total, listOf(reason), listOf(total))
     }
 
     /** `xs(booster, picks, …)` — score every booster card with [score] (6-arg jm: no forced arch). */

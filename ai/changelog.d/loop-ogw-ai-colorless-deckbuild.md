@@ -1,0 +1,1 @@
+- #4637 The AI now builds Limited decks that cast {C} spells off the Wastes and colorless lands it drafted — playing its hungriest {C} card's pips plus three of them, leaving Thought-Knot Seer out of a deck with no colorless source — and drafts Wastes while its {C} spells still need them instead of passing it as a free basic

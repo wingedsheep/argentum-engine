@@ -1,5 +1,7 @@
 package com.wingedsheep.ai.draftsim
 
+import com.wingedsheep.ai.engine.PipDemand
+
 /**
  * Pure mana-cost-string primitives ported from the Draftsim bundle (`index-CgvY9PKD.pretty.js`).
  *
@@ -13,6 +15,30 @@ internal object DraftsimMana {
 
     /** Canonical color order `eW`. */
     val COLORS = listOf("W", "U", "B", "R", "G")
+
+    /**
+     * The key a `{C}` pip's requirement goes under beside the WUBRG letters ([faceRequirements],
+     * [DraftsimCastability.Sources]). Colorless is a type of mana, not a colour (CR 106.1b), and
+     * a `{C}` pip is paid only with it (CR 107.4c): no basic a deck adds makes it, only the
+     * colorless sources it drafted. Never one of the build's colours, so no basic is ever made for it.
+     */
+    const val COLORLESS = "C"
+
+    /**
+     * The `{C}` pips of a cost — on its least demanding face, so a split card one half of which asks
+     * none is cast off that half.
+     */
+    fun colorlessPips(cost: String): Int =
+        faces(cost).minOf { face -> SYMBOL.findAll(face).count { it.groupValues[1].equals(COLORLESS, ignoreCase = true) } }
+
+    /**
+     * The colorless sources a deck holding [cards] wants ([PipDemand.colorlessSourcesWanted]), from
+     * the most `{C}` pips any of them asks at once — to cast, or to activate (Eldrazi Displacer's `{2}{C}`).
+     */
+    fun colorlessSourcesWanted(cards: Collection<ScorerCard>): Int =
+        PipDemand.colorlessSourcesWanted(
+            cards.maxOfOrNull { card -> (listOf(card.manaCost) + card.activationCosts).maxOf(::colorlessPips) } ?: 0,
+        )
 
     private val SYMBOL = Regex("\\{([^}]+)}")
 
@@ -76,11 +102,13 @@ internal object DraftsimMana {
     /**
      * Whether a deck making [allowed] can pay the colored pips of an activated ability's [cost]: a
      * plain pip needs its colour, a hybrid either half; a Phyrexian pip (2 life) and a `{2/C}` pip
-     * (two generic) always can. Mirrors [com.wingedsheep.ai.engine.ActivationMana.payable].
+     * (two generic) always can; a `{C}` pip only when [allowed] holds [COLORLESS]. Mirrors
+     * [com.wingedsheep.ai.engine.ActivationMana.payable].
      */
     fun activationPayable(cost: String, allowed: Collection<String>): Boolean =
         SYMBOL.findAll(cost).all { m ->
             val sym = m.groupValues[1].uppercase()
+            if (sym == COLORLESS) return@all COLORLESS in allowed
             val colors = COLORS.filter { sym.contains(it) }
             colors.isEmpty() || sym.contains('P') || sym.any { it.isDigit() } || colors.any { it in allowed }
         }
@@ -141,13 +169,15 @@ internal object DraftsimMana {
     /**
      * Each face's coloured requirement, for the castability weight ([DraftsimCastability]): what
      * [castRequirement] reads, per face, less the symbols that never strand a spell — a Phyrexian pip
-     * (payable with life) and a `{2/G}` (payable with generic mana).
+     * (payable with life) and a `{2/G}` (payable with generic mana) — plus its `{C}` pips under
+     * [COLORLESS], which only a colorless source pays.
      */
     fun faceRequirements(cost: String): List<CastRequirement> = faces(cost).map { face ->
         val plain = HashMap<String, Int>()
         val groups = mutableListOf<List<String>>()
         for (m in SYMBOL.findAll(face)) {
             val raw = m.groupValues[1].uppercase()
+            if (raw == COLORLESS) { plain[COLORLESS] = (plain[COLORLESS] ?: 0) + 1; continue }
             val s = symbols("{$raw}").single()
             if (s.phyrexian || s.colors.isEmpty() || raw.any { it.isDigit() }) continue
             if (s.hybrid) groups += s.colors else for (c in s.colors) plain[c] = (plain[c] ?: 0) + 1

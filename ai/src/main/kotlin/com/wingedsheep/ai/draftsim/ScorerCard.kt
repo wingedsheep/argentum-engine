@@ -56,6 +56,12 @@ interface ScorerCard {
     /** A land that fixes by fetching a basic ([ManaFixing.fetchesBasic]): it finds only the basics the deck runs. */
     val fetchesBasic: Boolean get() = false
 
+    /**
+     * The card makes colorless mana a `{C}` pip can take ([ManaFixing.makesColorless]): Wastes, a
+     * colorless utility land, a mana rock. The draft path reads it off the Oracle text.
+     */
+    val makesColorless: Boolean get() = false
+
     /** The card scales with how many colours its deck plays — Vivid, domain, converge ([ManaFixing.rewardsColors]). */
     val rewardsColors: Boolean get() = false
 }
@@ -81,6 +87,7 @@ private class CardDefinitionScorerCard(private val def: CardDefinition) : Scorer
     override val fixing: List<String> by lazy { ManaFixing.colors(def).map { it.symbol.toString() } }
     override val rewardsColors: Boolean by lazy { ManaFixing.rewardsColors(def) }
     override val fetchesBasic: Boolean by lazy { ManaFixing.fetchesBasic(def) }
+    override val makesColorless: Boolean by lazy { ManaFixing.makesColorless(def) }
 }
 
 private class CardSummaryScorerCard(private val summary: CardSummary) : ScorerCard {
@@ -91,4 +98,8 @@ private class CardSummaryScorerCard(private val summary: CardSummary) : ScorerCa
     override val rarity: String? = summary.rarity?.lowercase()
     override val colors: List<String> = emptyList()
     override val colorIdentity: List<String> = emptyList()
+    override val makesColorless: Boolean = summary.oracleText?.contains(COLORLESS_MANA_ABILITY) == true
 }
+
+/** "{T}: Add {C}." and its kin ("Add {C}{C}") — the summary's only trace of a colorless mana ability. */
+private val COLORLESS_MANA_ABILITY = Regex("""\bAdd \{C}""")

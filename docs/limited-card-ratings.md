@@ -237,6 +237,17 @@ The Draftsim deckbuild builds several candidate decks per pool and offers the be
   cast and kept and Treasure fixes once; a free one (mana value 0, like Lotus Petal) counts a whole
   land. In the castability sources it counts only for spells cast after it: a two-mana Prism fixes
   a three-drop, not a two-drop.
+- **Colorless mana.** A `{C}` pip (Thought-Knot Seer's `{3}{C}`) is paid only with colorless mana,
+  and no basic a Limited deck adds makes any: Wastes is played only as opened or drafted. So a
+  `{C}` spell is castable only off a pool holding three colorless lands (Wastes, or any land that
+  taps for unrestricted `{C}`, `ManaFixing.makesColorless`) — and so is a card whose activated
+  ability asks `{C}` (Eldrazi Displacer's `{2}{C}` blink). A deck playing one runs its hungriest
+  `{C}` card's pips plus three of them, the sources a splash gets, and a deck with no `{C}` spell
+  runs none. In the castability sources `{C}` is a colour of its own, so the Seer off four Wastes
+  keeps about three quarters of its value. The heuristic fallback builder follows the same rules.
+  In the draft, Wastes is a real pick (3.0) while the pool's `{C}` spells want more colorless lands
+  than it holds, and a spare one (0.5) otherwise — never the "basic land, never draft" the land
+  station's basics get.
 - **Splashes** need two lands' worth of fixing for the colour in the pool, and the splashed build must gain a tenth of
   a point of castable power over the same pair unsplashed. Smaller modelled gains lost in play.
   A pair too thin to fill 23 spells splashes for depth instead of padding with lands — single-pip

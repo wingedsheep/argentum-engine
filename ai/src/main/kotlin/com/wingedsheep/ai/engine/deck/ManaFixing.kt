@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
@@ -61,6 +62,24 @@ object ManaFixing {
             if (ability.isManaAbility) collectColors(ability.effect, produced)
         }
         return if (produced.size >= 2) produced else emptySet()
+    }
+
+    /**
+     * Whether [card] can pay a `{C}` pip: a land (Wastes included) or other permanent with a mana
+     * ability that adds colorless mana for any spend. Colorless mana is not generic — a `{C}` pip
+     * takes mana *from a colorless source* (CR 106.1b, 107.4c) — so a Thought-Knot Seer is a dead
+     * card in a deck with nothing like it. Restricted colorless ("spend this only to cast …") isn't
+     * counted.
+     */
+    fun makesColorless(card: CardDefinition): Boolean =
+        scripts(card).any { script ->
+            script.activatedAbilities.any { it.isManaAbility && addsColorless(it.effect) }
+        }
+
+    private fun addsColorless(effect: Effect): Boolean = when (effect) {
+        is AddColorlessManaEffect -> effect.restriction == null
+        is CompositeEffect -> effect.effects.any(::addsColorless)
+        else -> false
     }
 
     /**

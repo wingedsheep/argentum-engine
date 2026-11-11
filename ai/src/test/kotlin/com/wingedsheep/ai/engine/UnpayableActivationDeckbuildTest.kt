@@ -45,13 +45,15 @@ class UnpayableActivationDeckbuildTest : FunSpec({
         fitsDeckColors(TheWanderingMinstrel, setOf(Color.GREEN, Color.BLUE)) shouldBe false
     }
 
-    test("Phyrexian and {2/C} activation pips never shut a card out; plain and hybrid pips need a colour") {
+    test("Phyrexian and {2/C} activation pips never shut a card out; plain and hybrid pips need a colour, {C} a colorless source") {
         val gu = setOf(Color.GREEN, Color.BLUE)
         ActivationMana.payable(ManaCost.parse("{1}{R/P}"), gu) shouldBe true
         ActivationMana.payable(ManaCost.parse("{2/W}"), gu) shouldBe true
         ActivationMana.payable(ManaCost.parse("{G/W}"), gu) shouldBe true
         ActivationMana.payable(ManaCost.parse("{R/W}"), gu) shouldBe false
-        ActivationMana.payable(ManaCost.parse("{3}{C}"), gu) shouldBe true
+        // A {C} pip needs a colorless source (Wastes), which a basic-land mana base doesn't have.
+        ActivationMana.payable(ManaCost.parse("{3}{C}"), gu) shouldBe false
+        ActivationMana.payable(ManaCost.parse("{3}{C}"), gu, colorless = true) shouldBe true
     }
 
     test("the heuristic builder leaves the Minstrel out of a G/U deck with no fixing") {

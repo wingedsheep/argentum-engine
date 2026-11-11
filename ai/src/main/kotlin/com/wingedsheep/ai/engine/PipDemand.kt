@@ -40,6 +40,22 @@ internal object PipDemand {
         return intensity * early
     }
 
+    /**
+     * The fewest colorless lands (Wastes, a colorless utility land) a pool needs before its `{C}`
+     * spells are worth a slot. A `{C}` pip is paid only with colorless mana (CR 107.4c), and no
+     * basic a Limited deck adds makes any — Wastes is played only as opened or drafted.
+     */
+    const val MIN_COLORLESS_SOURCES = 3
+
+    /** Colorless sources a deck plays beyond its hungriest `{C}` card's pips: the three a splash colour gets. */
+    const val COLORLESS_EXTRA_SOURCES = 3
+
+    /**
+     * The colorless sources a deck wants when its hungriest card holds [pips] `{C}` pips: those pips
+     * plus [COLORLESS_EXTRA_SOURCES], as a splash colour gets; 0 when no card has one.
+     */
+    fun colorlessSourcesWanted(pips: Int): Int = if (pips > 0) pips + COLORLESS_EXTRA_SOURCES else 0
+
     /** Sources of one color a deck of [landCount] lands wants for a card with [pips] pips of it. */
     fun sourcesNeeded(pips: Double, landCount: Int): Int {
         val base = when {
