@@ -39,7 +39,7 @@ class AttachmentTriggerDetector(
         triggers: MutableList<PendingTrigger>,
         index: TriggerIndex,
         /** Permanents this batch took off the battlefield, by entity — see [lastKnownAttachments]. */
-        battlefieldDepartures: Map<com.wingedsheep.sdk.model.EntityId, ZoneChangeEvent> = emptyMap(),
+        battlefieldDepartures: Map<com.wingedsheep.sdk.model.EntityId, ZoneChangeEvent>,
     ) {
         val relevantIds = getRelevantEntityIds(event)
         if (relevantIds.isEmpty()) return
@@ -106,8 +106,9 @@ class AttachmentTriggerDetector(
      * Spirit Link) would miss the very damage that killed its host. For a damage event only, an
      * attachment that has since left the battlefield in this batch is rebuilt from its own
      * departure snapshot in [battlefieldDepartures] — the abilities and controller it had on the
-     * battlefield as the damage was dealt (CR 603.2, 608.2h). A zone-change event never takes this
-     * route: an Aura that left with its host is handled from its own [ZoneChangeEvent] by
+     * battlefield as the damage was dealt (CR 603.2, 603.10; its controller controls the trigger,
+     * CR 603.3a). A zone-change event never takes this route: an Aura that left with its host is
+     * handled from its own [ZoneChangeEvent] by
      * [DeathAndLeaveTriggerDetector.detectDeadAuraAttachmentTriggers].
      *
      * [live] entries are excluded so an attachment the index still knows about is never counted

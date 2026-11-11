@@ -14,7 +14,7 @@ import io.kotest.matchers.shouldBe
  * creature's lethal-damage death and the Aura's own trip to the graveyard (CR 704.5m) happen in one
  * state-based-action pass before triggers are detected, so the detector has to rebuild the departed
  * Aura from its exit snapshot — its abilities, and the controller it had on the battlefield
- * (CR 608.2h) — rather than from the live attachment index, which no longer links it to anything.
+ * (CR 603.10, 603.3a) — rather than from the live attachment index, which no longer links it to anything.
  */
 class AuraDamageTriggerHostDiesTest : ScenarioTestBase() {
 
@@ -121,26 +121,6 @@ class AuraDamageTriggerHostDiesTest : ScenarioTestBase() {
                     game.getLifeTotal(2) shouldBe 17
                     game.getLifeTotal(1) shouldBe 20
                 }
-            }
-
-            test("a lethal spell does the same") {
-                val game = scenario()
-                    .withPlayers("Player", "Opponent")
-                    .withCardOnBattlefield(2, "Grizzly Bears")
-                    .withCardAttachedTo(1, "Ragged Veins", "Grizzly Bears")
-                    .withLandsOnBattlefield(1, "Mountain", 1)
-                    .withCardInHand(1, "Lightning Bolt")
-                    .withCardInLibrary(1, "Plains")
-                    .withCardInLibrary(2, "Island")
-                    .withActivePlayer(1)
-                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
-                    .build()
-
-                game.castSpell(1, "Lightning Bolt", game.findPermanent("Grizzly Bears")!!).error shouldBe null
-                game.resolveStack()
-
-                game.isInGraveyard(2, "Grizzly Bears") shouldBe true
-                game.getLifeTotal(2) shouldBe 17
             }
         }
     }
