@@ -355,6 +355,20 @@ object Costs {
         AbilityCost.Atom(CostAtom.ExileFrom(Zone.GRAVEYARD, filter, count, excludeSelf = true))
 
     /**
+     * "Put a card an opponent owns from exile into that player's graveyard" — the BFZ *processor*
+     * activation cost (Cryptic Cruiser, Oracle of Dust, Void Attendant). Every player's exile is in
+     * the pool and [filter] (an opponent's card, by default) narrows it; each chosen card goes to
+     * its owner's graveyard. A [CostAtom.ExileFrom] with `destination = GRAVEYARD`.
+     */
+    fun PutFromExileIntoGraveyard(
+        count: Int = 1,
+        filter: GameObjectFilter = GameObjectFilter.Any.ownedByOpponent(),
+    ): AbilityCost =
+        AbilityCost.Atom(
+            CostAtom.ExileFrom(Zone.EXILE, filter, count, anyPlayersZone = true, destination = Zone.GRAVEYARD)
+        )
+
+    /**
      * Exile [count] cards matching [filter] from a *single* graveyard — any player's, but all
      * from the same one (Night Soil). The pool is every graveyard; the constraint is that the
      * chosen cards share an owner.
@@ -863,6 +877,18 @@ object Costs {
             filter: GameObjectFilter = GameObjectFilter.Any,
             fromZone: CostZone = CostZone.GRAVEYARD
         ): AdditionalCost = AdditionalCost.Atom(CostAtom.ExileFrom(fromZone.toZone(), filter, count))
+
+        /**
+         * "As an additional cost to cast this spell, put a card an opponent owns from exile into
+         * that player's graveyard" — the processor spell cost (Processor Assault). The
+         * additional-cost twin of [Costs.PutFromExileIntoGraveyard].
+         */
+        fun PutFromExileIntoGraveyard(
+            count: Int = 1,
+            filter: GameObjectFilter = GameObjectFilter.Any.ownedByOpponent(),
+        ): AdditionalCost = AdditionalCost.Atom(
+            CostAtom.ExileFrom(Zone.EXILE, filter, count, anyPlayersZone = true, destination = Zone.GRAVEYARD)
+        )
 
         /**
          * "Exile [count] **other** cards matching [filter] from your graveyard" — the non-mana half

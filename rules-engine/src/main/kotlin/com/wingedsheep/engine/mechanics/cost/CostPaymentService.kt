@@ -863,7 +863,9 @@ class CostPaymentService(private val services: EngineServices) {
                     is CostAtom.Discard -> domain(state, payerId, c, sourceId, predicateEvaluator = predicateEvaluator).size >= atom.count
                     // CR 118.3 — an empty hand discards nothing, and a cost of nothing is payable.
                     is CostAtom.DiscardHand -> true
-                    is CostAtom.ExileFrom -> {
+                    // A processor-style move (destination = GRAVEYARD) is wired for activation and
+                    // spell additional costs only; this "unless you pay" rail reports it unpayable.
+                    is CostAtom.ExileFrom -> atom.exiles && run {
                         val candidates = domain(state, payerId, c, sourceId, predicateEvaluator = predicateEvaluator)
                         if (atom.distinctNames) distinctNameCount(state, candidates) >= atom.count
                         else candidates.size >= atom.count

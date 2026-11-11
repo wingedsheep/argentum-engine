@@ -1,0 +1,1 @@
+- #PR The AI reads Battle for Zendikar's processors: a new "cards opponents own in exile" synergy axis that ingest creatures and exile removal feed and processor costs cash in, so it values a processor by the fuel beside it and pays the cost with an opponent's exiled card.

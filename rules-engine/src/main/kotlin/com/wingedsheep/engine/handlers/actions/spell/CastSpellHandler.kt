@@ -1232,7 +1232,7 @@ class CastSpellHandler(
                 is CostAtom.ExileFrom -> Triple(
                     AdditionalCostSelectionKind.EXILE,
                     atom.count,
-                    costEnumerationUtils.findExileTargets(state, action.playerId, atom.filter, atom.zone)
+                    costEnumerationUtils.findExileTargets(state, action.playerId, atom)
                         .filter { it != action.cardId }
                 )
                 is CostAtom.TapPermanents -> Triple(
