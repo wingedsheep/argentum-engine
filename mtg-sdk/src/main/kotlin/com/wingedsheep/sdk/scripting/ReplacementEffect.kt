@@ -3784,7 +3784,7 @@ enum class ReplacementRiderTiming {
     /**
      * The rider is part of the replacement: it happens immediately, with no stack and no priority
      * between the move and the rider (CR 614.1). Ugin's Nexus, Darigaaz Reincarnated, The Darkness
-     * Crystal. Only a small executor whitelist can run here.
+     * Crystal, Kalitas, Traitor of Ghet. Any effect can be the rider.
      */
     WITH_REPLACEMENT,
 

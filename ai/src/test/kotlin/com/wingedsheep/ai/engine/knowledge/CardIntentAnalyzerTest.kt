@@ -41,6 +41,18 @@ class CardIntentAnalyzerTest : ScenarioTestBase() {
     )
 
     init {
+        test("a death shield's rider over opponents' creatures reads as what it does each time") {
+            withClue("Kalitas: instead exile that card and create a 2/2 Zombie") {
+                intentOf("Kalitas, Traitor of Ghet").tags shouldContain IntentTag.TOKEN_MAKER
+            }
+            withClue("The Darkness Crystal: instead exile it and you gain 2 life") {
+                intentOf("The Darkness Crystal").tags shouldContain IntentTag.LIFEGAIN
+            }
+            withClue("a self-only rider (Ugin's Nexus) is the card's own leave-play consolation, not a payoff") {
+                intentOf("Ugin's Nexus").tags shouldNotContain IntentTag.EXTRA_TURN
+            }
+        }
+
         test("an emblem with \"you can't lose the game and your opponents can't win\" reads as protection") {
             val emblem = cardRegistry.requireCard("Gideon of the Trials").script.activatedAbilities[2]
             CardIntentAnalyzer.analyzeEffect(emblem.effect).tags shouldContain IntentTag.PROTECTION

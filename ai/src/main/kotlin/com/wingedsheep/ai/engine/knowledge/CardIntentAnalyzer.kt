@@ -25,6 +25,7 @@ import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.ReduceActivatedAbilityCost
 import com.wingedsheep.sdk.scripting.RedirectZoneChange
 import com.wingedsheep.sdk.scripting.RedirectZoneChangeWith
+import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.GrantOpponentsCantWinGame
@@ -330,12 +331,14 @@ object CardIntentAnalyzer {
         val slots = scripts.associateWith { EffectWalker.slots(it) }
         val roots = scripts.flatMap { script ->
             slots.getValue(script).map { it.effect } +
-                script.stateTriggeredAbilities.map { it.effect }
+                script.stateTriggeredAbilities.map { it.effect } +
+                script.replacementEffects.mapNotNull(::repeatingRiderOf)
         }
         val turnAheadRoots = scripts.flatMap { script -> slots.getValue(script).filter { it.turnAhead }.map { it.effect } }
         val leaves = scripts.flatMap { script ->
             slots.getValue(script).flatMap { readingLeaves(it.effect, it.targets) } +
-                script.stateTriggeredAbilities.flatMap { readingLeaves(it.effect) }
+                script.stateTriggeredAbilities.flatMap { readingLeaves(it.effect) } +
+                script.replacementEffects.mapNotNull(::repeatingRiderOf).flatMap { readingLeaves(it) }
         }
 
         val tags = mutableSetOf<IntentTag>()
@@ -538,6 +541,17 @@ object CardIntentAnalyzer {
             scripts.flatMap { it.staticAbilities }.flatMapTo(HashSet()) { tagsOf(it) }
         return tags - onlyLater
     }
+
+    /**
+     * The rider of a zone-change replacement that watches other objects — "if a nontoken creature
+     * an opponent controls would die, instead exile that card and create a 2/2 black Zombie"
+     * (Kalitas, Traitor of Ghet), "… and you gain 2 life" (The Darkness Crystal). It happens each
+     * time a matching object moves, so it is read like a triggered ability's effect: the Zombie is
+     * token making, the life is life gain. A self-only replacement's rider (Ugin's Nexus, Darigaaz)
+     * is the card's own leave-play consolation and stays out.
+     */
+    private fun repeatingRiderOf(replacement: ReplacementEffect): Effect? =
+        (replacement as? RedirectZoneChangeWith)?.takeUnless { it.selfOnly }?.additionalEffect
 
     /**
      * A trigger bound to the permanent itself whose event is the permanent fighting or leaving —

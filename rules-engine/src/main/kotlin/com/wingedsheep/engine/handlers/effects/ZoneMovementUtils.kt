@@ -1191,7 +1191,10 @@ object ZoneMovementUtils {
      * (Darigaaz Reincarnated's `Self`, Dauthi Voidwalker's `TriggeringEntity`), a fixed
      * GainLifeEffect (The Darkness Crystal), the card-scoped hand restrictions
      * CantPlayCardsFromHandEffect / RevealCardInHandEffect on the redirected card
-     * (Firestorm Phoenix), and a CompositeEffect of those.
+     * (Firestorm Phoenix), and a CompositeEffect of those. Any other rider — "and you create a 2/2
+     * black Zombie creature token" (Kalitas, Traitor of Ghet) — is queued as a
+     * [PendingReplacementRider], which runs it with a full effect context before anything else
+     * happens ([queueReplacementRider]).
      * [ReplacementRiderTiming.WHEN_YOU_DO] riders ("…exile it instead. When you do, create a 2/2
      * green Wolf creature token") run nothing here: they emit a [ReflexiveAbilityTriggeredEvent]
      * the settle boundary puts on the stack (CR 603.12).
@@ -1279,7 +1282,7 @@ object ZoneMovementUtils {
                 com.wingedsheep.sdk.scripting.targets.EffectTarget.Self ->
                     entityId.takeIf { sourceId == null || sourceId == entityId }
                 else -> null
-            } ?: return state to emptyList()
+            } ?: return queueReplacementRider(state, effect, controllerId, entityId, sourceId) to emptyList()
             val counterType = effect.counterType
             val current = state.getEntity(counteredId)?.get<CountersComponent>() ?: CountersComponent()
             val newState = state.updateEntity(counteredId) { container ->
@@ -1292,11 +1295,39 @@ object ZoneMovementUtils {
             // fixed amount is meaningful here — there is no full effect context at replacement time.
             val cid = controllerId ?: return state to emptyList()
             val amount = (effect.amount as? com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed)?.amount
-                ?: return state to emptyList()
+                ?: return queueReplacementRider(state, effect, controllerId, entityId, sourceId) to emptyList()
             val (newState, event) = DamageUtils.gainLife(state, cid, amount, predicateEvaluator = zones.predicateEvaluator)
             return newState to listOfNotNull(event)
         }
-        return state to emptyList()
+        return queueReplacementRider(state, effect, controllerId, entityId, sourceId) to emptyList()
+    }
+
+    /**
+     * Any other WITH_REPLACEMENT rider ("exile that card instead and you create a 2/2 black Zombie
+     * creature token" — Kalitas, Traitor of Ghet) needs a full effect executor, which a zone move
+     * doesn't have. It is queued as a [PendingReplacementRider] — still part of the replacement, so
+     * it uses no stack and runs before anything else happens: at the end of the moving
+     * instruction, inside the same state-based-action pass, or at the settle boundary. The rider's
+     * source is the replacement's host, "you" its controller, and the redirected card is its
+     * triggering entity ("that card").
+     */
+    private fun queueReplacementRider(
+        state: GameState,
+        effect: com.wingedsheep.sdk.scripting.effects.Effect,
+        controllerId: EntityId?,
+        entityId: EntityId?,
+        sourceId: EntityId?
+    ): GameState {
+        val cid = controllerId ?: return state
+        val hostId = sourceId ?: entityId ?: return state
+        return state.copy(
+            pendingReplacementRiders = state.pendingReplacementRiders + PendingReplacementRider(
+                effect = effect,
+                hostId = hostId,
+                controllerId = cid,
+                subjectId = entityId ?: hostId
+            )
+        )
     }
 
     /**

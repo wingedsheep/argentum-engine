@@ -1,0 +1,1 @@
+- #TBD The AI reads a zone-change replacement's rider over other objects (Kalitas's Zombie on each opposing death, The Darkness Crystal's life) as what the card does: token making, life gain.
