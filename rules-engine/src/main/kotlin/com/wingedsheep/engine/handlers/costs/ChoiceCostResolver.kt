@@ -69,7 +69,7 @@ object ChoiceCostResolver {
                 )
             }
             is CostAtom.ExileFrom -> {
-                val targets = costUtils.findExileTargets(state, playerId, atom.filter, atom.zone).filter { it != cardId }
+                val targets = costUtils.findExileTargets(state, playerId, atom).filter { it != cardId }
                 if (targets.size < atom.count) return null
                 AdditionalCostData(
                     description = atom.description.replaceFirstChar { it.uppercase() },

@@ -407,8 +407,15 @@ internal class ActivationChoicePauses(
                 exileCandidatesByOwner.flatten()
             }
         if (exileCandidates.size <= exileCost.count) return null
-        val zoneLabel = if (exileCost.zone == Zone.HAND) "your hand" else "graveyard"
-        val prompt = "Select ${exileCost.count} card${if (exileCost.count > 1) "s" else ""} to exile from $zoneLabel for ${sourceName}"
+        val plural = if (exileCost.count > 1) "s" else ""
+        val prompt = if (exileCost.exiles) {
+            val zoneLabel = if (exileCost.zone == Zone.HAND) "your hand" else "graveyard"
+            "Select ${exileCost.count} card$plural to exile from $zoneLabel for ${sourceName}"
+        } else {
+            "Select ${exileCost.count} card$plural to put from ${exileCost.zone.name.lowercase()} into " +
+                "${if (exileCost.count > 1) "their owners'" else "its owner's"} " +
+                "${exileCost.destination.name.lowercase()} for ${sourceName}"
+        }
         val continuation = ActivateAbilityExileFromGraveyardContinuation(
             action = action,
             exileCandidates = exileCandidates,

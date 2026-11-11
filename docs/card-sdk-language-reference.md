@@ -705,6 +705,20 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   ability activated *from* the graveyard, so the activating card can't pay its own cost (Gallia,
   Tragic Host). Affordability, the activation-time pick and payment share one candidate rule
   (`CostHandler.exileCandidatesByOwner`).
+- `Costs.PutFromExileIntoGraveyard(count = 1, filter = Any.ownedByOpponent())` /
+  `Costs.additional.PutFromExileIntoGraveyard(count = 1, filter = Any.ownedByOpponent())` — the BFZ
+  **processor** cost, "put a card an opponent owns from exile into that player's graveyard", as an
+  activation cost (Cryptic Cruiser: `Costs.Composite(Costs.Mana("{2}{U}"), Costs.PutFromExileIntoGraveyard())`)
+  and as a spell's additional cost (Processor Assault: `additionalCost(Costs.additional.PutFromExileIntoGraveyard())`).
+  A `CostAtom.ExileFrom(zone = EXILE, anyPlayersZone = true, destination = GRAVEYARD)`: the
+  `destination` axis (default `EXILE`; `EXILE` or `GRAVEYARD` only) is where the chosen cards go.
+  Each card goes to its **owner's** graveyard through the ordinary zone transition, so a graveyard
+  replacement (Leyline of the Void, Rest in Peace) leaves it in exile and the cost is still paid; cards
+  from several opponents each go home. Nothing is "exiled as a cost", so `CardSource.ExiledAsCost`
+  doesn't name the card. With the default filter the payer's own exiled cards are never offered; with more candidates than
+  `count` the activation pauses for a `SelectCardsDecision`, and the cast picker opens on the Exile
+  pile. Wired for activation and spell additional costs only — the `PayOrSuffer` / "unless you pay"
+  rails report a non-exile destination unpayable.
 - `Costs.ExileXFromGraveyard(filter)` — **variable-count** "exile X cards from your graveyard".
   X *is* the size of the graveyard selection, so activating raises a single `SelectCardsDecision`
   over the matching graveyard cards and the count the player picks becomes the ability's X — read it

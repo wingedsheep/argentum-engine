@@ -231,6 +231,22 @@ class CostEnumerationUtils(
     // --- Exile targets ---
 
     /**
+     * The cards [atom] may be paid with, every one of its pool flags applied — the one call every
+     * consumer of a whole [CostAtom.ExileFrom] should make, so none of them silently narrows a
+     * widened pool (a processor cost's "a card an opponent owns from exile" lives in the
+     * opponents' exile, never the payer's).
+     */
+    fun findExileTargets(
+        state: GameState,
+        playerId: EntityId,
+        atom: CostAtom.ExileFrom,
+        excludeSelfId: EntityId? = null,
+    ): List<EntityId> = findExileTargets(
+        state, playerId, atom.filter, atom.zone, atom.anyPlayersZone, atom.singleZone, atom.count,
+        excludeSelfId = excludeSelfId,
+    )
+
+    /**
      * The cards an exile cost may be paid with.
      *
      * [anyPlayersZone] widens the pool from the payer's copy of [zone] to every player's — Night

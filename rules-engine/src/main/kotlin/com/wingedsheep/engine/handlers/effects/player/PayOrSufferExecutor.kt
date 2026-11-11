@@ -1053,7 +1053,8 @@ class PayOrSufferExecutor(
         is PayCost.Atom -> when (val atom = cost.atom) {
             is CostAtom.Discard -> state.getHand(playerId).size < atom.count
             is CostAtom.ExileFrom ->
-                if (atom.zone.isHidden) state.getZone(ZoneKey(playerId, atom.zone)).size < atom.count
+                if (!atom.exiles) true
+                else if (atom.zone.isHidden) state.getZone(ZoneKey(playerId, atom.zone)).size < atom.count
                 else !canPayCost(state, playerId, cost, context)
             else -> !canPayCost(state, playerId, cost, context)
         }
@@ -1113,7 +1114,9 @@ class PayOrSufferExecutor(
                     price < CostAtomAmounts.UNPRICEABLE && life > price
                 }
                 is CostAtom.Mana -> ManaSolver(cardRegistry, predicateEvaluator).canPay(state, playerId, atom.cost)
-                is CostAtom.ExileFrom -> findValidCardsInZone(state, playerId, atom.filter, atom.zone, context).size >= atom.count
+                // A processor-style move (destination = GRAVEYARD) isn't wired on this rail.
+                is CostAtom.ExileFrom -> atom.exiles &&
+                    findValidCardsInZone(state, playerId, atom.filter, atom.zone, context).size >= atom.count
                 is CostAtom.TapPermanents -> SharedCreatureTypeTapCost.eligible(
                     state, atom,
                     findValidUntappedPermanentsOnBattlefield(

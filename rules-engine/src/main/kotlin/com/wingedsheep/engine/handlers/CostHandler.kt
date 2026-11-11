@@ -1777,11 +1777,13 @@ class CostHandler(private val zones: ZoneTransitionService) {
 
         for (cardId in toExile) {
             val owner = ownerOf.getValue(cardId)
-            if (fromZone == Zone.BATTLEFIELD) {
+            if (fromZone == Zone.BATTLEFIELD || !atom.exiles) {
                 // A permanent leaving the battlefield is a full zone transition (CR 400.7): its
                 // counters and Auras fall off, a copy reverts, and the departure carries the
                 // last-known snapshot the resolving ability reads "the exiled creature" from.
-                val transition = zones.moveToZone(newState, cardId, Zone.EXILE)
+                // A processor cost's card goes to its owner's graveyard the same way, so a
+                // graveyard replacement (Rest in Peace) still applies to it.
+                val transition = zones.moveToZone(newState, cardId, atom.destination)
                 newState = transition.state
                 events.addAll(transition.events)
                 continue

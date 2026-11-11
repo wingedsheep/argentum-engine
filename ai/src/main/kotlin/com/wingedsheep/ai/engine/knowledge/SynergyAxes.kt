@@ -85,6 +85,15 @@ enum class SynergyAxis {
 
     /** Cards in your graveyard. Rewarded per [GraveyardSynergy]; fed by self-mill and surveil. */
     GRAVEYARD,
+
+    /**
+     * Cards your opponents own in exile (Battle for Zendikar's ingest/processor pair). Fed by ingest
+     * (each hit exiles the top card of the damaged player's library) and by exile removal aimed at
+     * their permanents; cashed in by the *processor* cost — "put a card an opponent owns from exile
+     * into that player's graveyard" (Cryptic Cruiser, Processor Assault) — which can't be paid with
+     * nothing in their exile.
+     */
+    OPPONENT_EXILE,
 }
 
 /**
@@ -193,6 +202,12 @@ object SynergyAxes {
             }
             if (Keyword.PROWESS in card.keywords) add(SynergyAxis.SPELLS)
             if (GraveyardSynergy.isPayoff(card)) add(SynergyAxis.GRAVEYARD)
+            // The processor cost spends an opponent's exiled card: with none there, the ability
+            // can't be activated and the spell can't be cast.
+            if (scripts.any { script ->
+                    script.activatedAbilities.any { processes(it.cost) } || script.additionalCosts.any(::processes)
+                }
+            ) add(SynergyAxis.OPPONENT_EXILE)
             // Carrying counters from one permanent to another — The Ozolith banking a leaving
             // creature's counters and moving them on, Essence Channeler's "put its counters on target
             // creature you control", Aetherborn Marauder gathering them from your other permanents —
@@ -219,6 +234,11 @@ object SynergyAxes {
             if (card.typeLine.isCreature) add(SynergyAxis.CREATURES_ENTER)
             if (card.typeLine.isInstant || card.typeLine.isSorcery) add(SynergyAxis.SPELLS)
             if (Keyword.LIFELINK in card.keywords) add(SynergyAxis.LIFEGAIN)
+            // Ingest exiles the damaged player's top card on every hit; exile removal leaves the
+            // opponent's permanent in exile. Both stock what a processor spends.
+            if (Keyword.INGEST in card.keywords ||
+                IntentTag.EXILE_REMOVAL in CardIntentAnalyzer.analyze(card).tags
+            ) add(SynergyAxis.OPPONENT_EXILE)
             // Awaken (CR 702.113): the awakened land gets N +1/+1 counters. The ability is derived
             // from the keyword, not written into the spell's script, so the effect walk misses it.
             if (card.keywordAbilities.any { it is KeywordAbility.Awaken }) {
@@ -552,6 +572,22 @@ object SynergyAxes {
         is AdditionalCost.Atom -> cost.atom is CostAtom.Discard
         is AdditionalCost.VariableCards -> cost.action == com.wingedsheep.sdk.scripting.CardCostAction.DISCARD
         is AdditionalCost.Composite -> cost.steps.any(::discards)
+        else -> false
+    }
+
+    /** A processor cost: a card leaves an opponent's exile for their graveyard ([CostAtom.ExileFrom.exiles] false). */
+    private fun processes(atom: CostAtom): Boolean =
+        atom is CostAtom.ExileFrom && atom.zone == Zone.EXILE && !atom.exiles
+
+    private fun processes(cost: AbilityCost): Boolean = when (cost) {
+        is AbilityCost.Atom -> processes(cost.atom)
+        is AbilityCost.Composite -> cost.costs.any(::processes)
+        else -> false
+    }
+
+    private fun processes(cost: AdditionalCost): Boolean = when (cost) {
+        is AdditionalCost.Atom -> processes(cost.atom)
+        is AdditionalCost.Composite -> cost.steps.any(::processes)
         else -> false
     }
 

@@ -1348,6 +1348,94 @@
     ]
 }
 
+// Cryptic Cruiser
+{
+    "name": "Cryptic Cruiser",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Eldrazi Processor",
+    "oracleText": "Devoid (This card has no color.)\n{2}{U}, Put a card an opponent owns from exile into that player's graveyard: Tap target creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Cryptic Cruiser:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{U}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomExileFrom",
+                                "zone": "Exile",
+                                "filter": "own:opponent",
+                                "anyPlayersZone": true,
+                                "destination": "Graveyard"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"The seas are no less imperiled than the dry lands. This fight is mine as much as it is yours.\"\n—Kiora, to Gideon Jura",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff2061f7-5e51-4862-9650-0005002d04b6.jpg?1783938214",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "If a spell or ability requires that you put more than one exiled card into the graveyard, you may choose cards owned by different opponents. Each card chosen will be put into its owner's graveyard."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If a replacement effect will cause cards that would be put into a graveyard from anywhere to be exiled instead (such as the one created by Anafenza, the Foremost), you can still put an exiled card into its opponent's graveyard. The card becomes a new object and remains in exile. In this situation, you can't use a single exiled card if required to put more than one exiled card into the graveyard. Conversely, you could use the same card in this situation if two separate spells or abilities each required you to put a single exiled card into its owner's graveyard."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "You can't look at face-down cards in exile unless an effect allows you to."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Face-down cards in exile are grouped using two criteria: what caused them to be exiled face down and when they were exiled face down. If you want to put a face-down card in exile into its owner's graveyard, you must first choose one of these groups and then choose a card from within that group at random. For example, say an artifact causes your opponent to exile their hand of three cards face down. Then on a later turn, that artifact causes your opponent to exile another two cards face down. If you use Wasteland Strangler to put one of those cards into their graveyard, you would pick the first or second pile and put a card chosen at random from that pile into the graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Dampening Pulse
 {
     "name": "Dampening Pulse",
@@ -3601,6 +3689,79 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLUE"
+    ]
+}
+
+// Processor Assault
+{
+    "name": "Processor Assault",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Devoid (This card has no color.)\nAs an additional cost to cast this spell, put a card an opponent owns from exile into that player's graveyard.\nProcessor Assault deals 5 damage to target creature.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 5
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomExileFrom",
+                    "zone": "Exile",
+                    "filter": "own:opponent",
+                    "anyPlayersZone": true,
+                    "destination": "Graveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "UNCOMMON",
+        "artist": "Jama Jurabaev",
+        "flavorText": "Ulamog's processors trail behind him, converting ruined matter into furious energy.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5a689975-d27b-4b8f-8d46-6e97c754ae81.jpg?1783938197",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "You must put exactly one card an opponent owns from exile into that player's graveyard to cast Processor Assault. You can't cast it without doing so, and you can't put multiple exiled cards into their owners' graveyards this way."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Players can respond to Processor Assault only after it's been cast and all of its costs have been paid. No one can try to remove the card from exile to stop you from casting the spell."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If a spell or ability requires that you put more than one exiled card into the graveyard, you may choose cards owned by different opponents. Each card chosen will be put into its owner's graveyard."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If a replacement effect will cause cards that would be put into a graveyard from anywhere to be exiled instead (such as the one created by Anafenza, the Foremost), you can still put an exiled card into its opponent's graveyard. The card becomes a new object and remains in exile. In this situation, you can't use a single exiled card if required to put more than one exiled card into the graveyard. Conversely, you could use the same card in this situation if two separate spells or abilities each required you to put a single exiled card into its owner's graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

@@ -46,7 +46,9 @@ internal fun AbilityCost.firstExileForTotalAtomOrNull(): CostAtom.ExileFromGrave
  * effect reading it back saw nothing.
  */
 internal fun AbilityCost.hasExileAtom(): Boolean = when (this) {
-    is AbilityCost.Atom -> atom is CostAtom.ExileFrom || atom is CostAtom.ExileFromGraveyardForTotal
+    // A processor-style ExileFrom (destination = GRAVEYARD) exiles nothing, so it names no
+    // "exiled as a cost" card.
+    is AbilityCost.Atom -> (atom as? CostAtom.ExileFrom)?.exiles == true || atom is CostAtom.ExileFromGraveyardForTotal
     is AbilityCost.Composite -> costs.any { it.hasExileAtom() }
     else -> false
 }
@@ -213,9 +215,10 @@ internal fun AbilityCost.extractChosenCardExileCost(): CostAtom.ExileFrom? = whe
 
 /**
  * The card zones whose `CostAtom.ExileFrom` is a real choice the activation pauses to ask about —
- * the graveyard (Rust Harvester) and the hand (Q, Stacking the Deck's "Exile a card from your hand").
+ * the graveyard (Rust Harvester), the hand (Q, Stacking the Deck's "Exile a card from your hand")
+ * and exile (a processor's "put a card an opponent owns from exile into that player's graveyard").
  */
-private val CHOSEN_CARD_EXILE_ZONES = setOf(Zone.GRAVEYARD, Zone.HAND)
+private val CHOSEN_CARD_EXILE_ZONES = setOf(Zone.GRAVEYARD, Zone.HAND, Zone.EXILE)
 
 /**
  * Pull the [AbilityCost.ExileXFromGraveyard] sub-cost out of an ability cost, or null if none.

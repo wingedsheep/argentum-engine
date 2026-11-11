@@ -368,7 +368,20 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
         override fun applyTextReplacement(replacer: TextReplacer): CostAtom = this
     }
 
-    /** Exile [count] cards matching [filter] from [zone]. */
+    /**
+     * Exile [count] cards matching [filter] from [zone] — or, with [destination] set to
+     * [Zone.GRAVEYARD], put them into their owners' graveyards instead.
+     *
+     * The second shape is the BFZ *processor* cost, "put a card an opponent owns from exile into
+     * that player's graveyard" (Cryptic Cruiser's activated cost, Processor Assault's additional
+     * cost): `zone = EXILE`, `destination = GRAVEYARD`, `anyPlayersZone = true` and an
+     * `ownedByOpponent()` filter. It is the same payable thing as every other ExileFrom — choose
+     * [count] matching cards from a zone, move each out of its owner's copy of that zone — with only
+     * where the cards land differing, so it is an axis here rather than a sibling atom that would
+     * re-wire the selection, affordability and pause plumbing a second time. The neighbours that
+     * don't take it: [PutFromHandOnTopOfLibrary] is a fixed hand→library move with no pool
+     * widening, and [Sacrifice] moves permanents, not cards.
+     */
     @SerialName("AtomExileFrom")
     @Serializable
     data class ExileFrom(
@@ -401,9 +414,34 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
          * a selection that repeats a name is rejected.
          */
         val distinctNames: Boolean = false,
+        /**
+         * Where the chosen cards go: [Zone.EXILE] (the exile cost this type is named for) or
+         * [Zone.GRAVEYARD] — each card into its **owner's** graveyard, through the ordinary zone
+         * transition, so a graveyard replacement still applies (a Rest in Peace effect leaves the
+         * card in exile as a new object; the processor rulings say the cost is still paid). A card
+         * moved this way was not "exiled as a cost", so `CardSource.ExiledAsCost` doesn't name it.
+         * Wired for activated-ability costs and spell additional costs; the resolution-time
+         * "unless you pay" rails report a non-exile destination unpayable.
+         */
+        val destination: Zone = Zone.EXILE,
     ) : CostAtom {
+        init {
+            require(destination == Zone.EXILE || destination == Zone.GRAVEYARD) {
+                "ExileFrom destination must be EXILE or GRAVEYARD, was $destination"
+            }
+            require(destination != zone) { "ExileFrom can't move cards from $zone into $zone" }
+            // The one non-exile shape that is wired: the processor cost, exile → graveyard.
+            require(destination == Zone.EXILE || zone == Zone.EXILE) {
+                "ExileFrom into $destination is wired only from EXILE, was from $zone"
+            }
+        }
+
+        /** True when the cards really are exiled (the default), false for a processor-style move. */
+        val exiles: Boolean get() = destination == Zone.EXILE
+
         override val selectionCount: Int get() = count
         override val description: String get() {
+            if (!exiles) return movedDescription()
             // A colour-only filter describes itself as "green"; off the battlefield it's a card.
             val noun = filter.description.let {
                 if (zone != Zone.BATTLEFIELD && !CARD_NOUN.containsMatchIn(it)) "$it card" else it
@@ -419,6 +457,22 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
                 anyPlayersZone -> "exile $what from a ${zone.name.lowercase()}"
                 else -> "exile $what from your ${zone.name.lowercase()}"
             }
+        }
+
+        // "put a card an opponent owns from exile into that player's graveyard" (Cryptic Cruiser);
+        // several cards may come from different opponents, so a plural names each owner.
+        private fun movedDescription(): String {
+            val filterText = filter.description
+            val noun = if (CARD_NOUN.containsMatchIn(filterText)) filterText else "card $filterText".trim()
+            val what = quantify(count, noun)
+            val from = if (anyPlayersZone || zone == Zone.EXILE) zone.name.lowercase() else "your ${zone.name.lowercase()}"
+            val into = when {
+                filter.description.contains("an opponent owns") && count == 1 -> "that player's"
+                count == 1 -> "its owner's"
+                else -> "their owners'"
+            }
+            val zoneWord = destination.name.lowercase() + if (count > 1) "s" else ""
+            return "put $what from $from into $into $zoneWord"
         }
 
         override fun applyTextReplacement(replacer: TextReplacer): CostAtom {

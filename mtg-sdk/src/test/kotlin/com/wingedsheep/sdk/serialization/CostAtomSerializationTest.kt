@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.costs.CardMeasure
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -37,6 +38,11 @@ class CostAtomSerializationTest : FunSpec({
         CostAtom.Sacrifice(GameObjectFilter.Creature, count = 2),
         CostAtom.Discard(count = 1, filter = GameObjectFilter.Any, random = true),
         CostAtom.ExileFrom(Zone.GRAVEYARD, GameObjectFilter.Creature, count = 3),
+        // The processor cost: every player's exile, into the owner's graveyard.
+        CostAtom.ExileFrom(
+            Zone.EXILE, GameObjectFilter.Any.ownedByOpponent(), count = 1,
+            anyPlayersZone = true, destination = Zone.GRAVEYARD,
+        ),
         CostAtom.Mill(count = 1),
         CostAtom.ExileTopOfLibrary(count = 10),
         CostAtom.VariablePermanents(GameObjectFilter.Artifact, minCount = 1, excludeSelf = true),
@@ -116,5 +122,26 @@ class CostAtomSerializationTest : FunSpec({
         // Top-of-library costs take no selection: the cards are the top, not a player's pick.
         CostAtom.Mill(count = 1).selectionCount shouldBe 0
         CostAtom.ExileTopOfLibrary(count = 10).selectionCount shouldBe 0
+    }
+
+    test("the processor cost reads as printed and defaults leave the exile cost unchanged") {
+        val processor = CostAtom.ExileFrom(
+            Zone.EXILE, GameObjectFilter.Any.ownedByOpponent(), anyPlayersZone = true, destination = Zone.GRAVEYARD,
+        )
+        processor.exiles shouldBe false
+        processor.description shouldBe "put a card an opponent owns from exile into that player's graveyard"
+        processor.copy(count = 2).description shouldBe
+            "put two cards an opponent owns from exile into their owners' graveyards"
+        processor.selectionCount shouldBe 1
+
+        val exile = CostAtom.ExileFrom(Zone.GRAVEYARD, GameObjectFilter.Creature)
+        exile.exiles shouldBe true
+        // destination is a defaulted field: an exile cost's JSON carries no new key.
+        json.encodeToString(CostAtom.serializer(), exile).contains("destination") shouldBe false
+    }
+
+    test("a destination other than exile or graveyard, or equal to the source zone, is rejected") {
+        shouldThrow<IllegalArgumentException> { CostAtom.ExileFrom(Zone.GRAVEYARD, destination = Zone.HAND) }
+        shouldThrow<IllegalArgumentException> { CostAtom.ExileFrom(Zone.GRAVEYARD, destination = Zone.GRAVEYARD) }
     }
 })

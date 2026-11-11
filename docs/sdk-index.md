@@ -493,7 +493,7 @@ Families:
 - `CostAtom.CollectEvidence(amount: DynamicAmount, linkToSource: Boolean)` — Collect evidence amount — exile any number of cards from your graveyard with total mana value amount or greater (CR 701.59a, Murders at Karlov Manor).
 - `CostAtom.Discard(count: Int, filter: GameObjectFilter, random: Boolean)` — Discard count cards matching filter.
 - `CostAtom.DiscardHand` — Discard your entire hand — "unless its controller discards their hand" (Perplex).
-- `CostAtom.ExileFrom(zone: Zone, filter: GameObjectFilter, count: Int, anyPlayersZone: Boolean, singleZone: Boolean, excludeSelf: Boolean, distinctNames: Boolean)` — Exile count cards matching filter from zone.
+- `CostAtom.ExileFrom(zone: Zone, filter: GameObjectFilter, count: Int, anyPlayersZone: Boolean, singleZone: Boolean, excludeSelf: Boolean, distinctNames: Boolean, destination: Zone)` — Exile count cards matching filter from zone — or, with destination set to Zone.GRAVEYARD, put them into their owners' graveyards instead.
 - `CostAtom.ExileFromGraveyardForTotal(filter: GameObjectFilter, measure: CardMeasure, minTotal: Int, excludeSelf: Boolean)` — Exile **any number** of cards matching filter from your graveyard whose combined measure is minTotal or more — the unnamed, filtered generalization of the shape CollectEvidence names: a variable-si…
 - `CostAtom.ExileTopOfLibrary(count: Int)` — Exile the top count cards of your library — Arc-Slogger's "{R}, Exile the top ten cards of your library".
 - `CostAtom.Mana(cost: ManaCost)` — Pay a mana cost.

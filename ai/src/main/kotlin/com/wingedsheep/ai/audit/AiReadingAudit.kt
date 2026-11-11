@@ -1173,7 +1173,8 @@ object AiReadingAudit {
     private fun exilesAsCost(cost: AdditionalCost): Boolean = when (cost) {
         is AdditionalCost.Composite -> cost.steps.any(::exilesAsCost)
         is AdditionalCost.ExileFromStorage -> cost.linkToSource
-        is AdditionalCost.Atom -> cost.atom is CostAtom.ExileFrom
+        // A processor-style ExileFrom (destination = GRAVEYARD) exiles nothing a trigger could return.
+        is AdditionalCost.Atom -> (cost.atom as? CostAtom.ExileFrom)?.exiles == true
         else -> false
     }
 

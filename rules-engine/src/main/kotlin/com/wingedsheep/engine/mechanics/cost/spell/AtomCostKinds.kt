@@ -319,17 +319,19 @@ internal object ExileFromCostKind : SpellCostKind<CostAtom.ExileFrom> {
     }
 
     override fun candidates(env: SpellCostEnumeration, cost: CostAtom.ExileFrom) =
-        env.costUtils.findExileTargets(env.state, env.playerId, cost.filter, cost.zone)
-            .filter { it != env.castCardId }
+        env.costUtils.findExileTargets(env.state, env.playerId, cost, excludeSelfId = env.castCardId)
 
     override fun selectionCount(cost: CostAtom.ExileFrom) = cost.selectionCount
 
     // Exile costs identify their source zone so the client opens the matching picker instead of
     // assuming every exile payment comes from the graveyard.
     override fun present(env: SpellCostEnumeration, cost: CostAtom.ExileFrom, candidates: List<EntityId>): Pair<String, AdditionalCostData>? {
-        val (label, costType) = when (cost.zone) {
-            Zone.GRAVEYARD -> "Exile from graveyard" to "ExileFromGraveyard"
-            Zone.HAND -> "Exile from hand" to "ExileFromHand"
+        val (label, costType) = when {
+            // The processor cost: a pick among exiled cards. The client routes a candidate by the
+            // zone it is actually in, so the graveyard-cost picker opens on the Exile pile.
+            !cost.exiles && cost.zone == Zone.EXILE -> "Put from exile into graveyard" to "ExileFromGraveyard"
+            cost.zone == Zone.GRAVEYARD -> "Exile from graveyard" to "ExileFromGraveyard"
+            cost.zone == Zone.HAND -> "Exile from hand" to "ExileFromHand"
             else -> return null
         }
         return label to AdditionalCostData(
@@ -348,18 +350,25 @@ internal object ExileFromCostKind : SpellCostKind<CostAtom.ExileFrom> {
         val state = check.state
         val exiled = check.payment?.exiledCards ?: emptyList()
         val zoneDesc = cost.zone.name.lowercase()
-        if (exiled.distinct().size != exiled.size) return "Cannot exile the same card more than once"
+        if (exiled.distinct().size != exiled.size) return "Cannot choose the same card more than once"
         if (exiled.size != cost.count) {
-            return "You must exile ${cost.count} ${cost.filter.description}(s) from your $zoneDesc"
+            return "You must choose ${cost.count} ${cost.filter.description}(s) to ${cost.description}"
         }
-        val zoneCards = state.getZone(ZoneKey(check.playerId, cost.zone))
+        // The pool follows the atom's own flags — a processor cost's cards sit in the opponents'
+        // exile, never the payer's — and a GameAction is client-supplied, so membership is checked.
+        val owners = if (cost.anyPlayersZone) state.turnOrder else listOf(check.playerId)
+        val zonesByOwner = owners.map { state.getZone(ZoneKey(it, cost.zone)) }
+        val zoneCards = zonesByOwner.flatten().toSet()
+        if (cost.singleZone && zonesByOwner.none { cards -> exiled.all { it in cards } }) {
+            return "All ${cost.count} cards must come from a single $zoneDesc"
+        }
         val context = PredicateContext(controllerId = check.playerId)
         for (cardId in exiled) {
             if (cardId == check.action.cardId) {
                 return "A spell can't exile itself to pay its own cost"
             }
             if (cardId !in zoneCards) {
-                return "Card to exile is not in your $zoneDesc"
+                return if (cost.anyPlayersZone) "Chosen card is not in a legal $zoneDesc" else "Card to exile is not in your $zoneDesc"
             }
             if (!check.predicateEvaluator.matches(state, state.projectedState, cardId, cost.filter, context)) {
                 val cardName = state.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
@@ -371,6 +380,17 @@ internal object ExileFromCostKind : SpellCostKind<CostAtom.ExileFrom> {
 
     override fun pay(ledger: SpellCostLedger, cost: CostAtom.ExileFrom): String? {
         val exiledCards = ledger.payment.exiledCards
+        if (!cost.exiles) {
+            // The processor cost: each card goes to its owner's graveyard through the ordinary
+            // zone transition (a graveyard replacement still applies). Nothing was exiled, so
+            // nothing is recorded as exiled-as-cost.
+            for (cardId in exiledCards) {
+                val transition = ledger.zones.moveToZone(ledger.state, cardId, cost.destination)
+                ledger.state = transition.state
+                ledger.events.addAll(transition.events)
+            }
+            return null
+        }
         ledger.exiledAsCostCards.addAll(exiledCards)
         // Rule 113.7a — freeze what a permanent last was while it is still on the battlefield; a
         // token won't be readable at all by resolution.
