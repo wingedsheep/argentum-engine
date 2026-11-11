@@ -3302,13 +3302,13 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Devoid Aggro',
         colors: ['B', 'R'],
         keyCard: 'Flayer Drone',
-        description: 'Curve out with devoid creatures and Eldrazi Scions so every colorless body that enters drains the opponent. An aggressive deck that turns a wide colorless board into reach.',
+        description: 'Curve out with devoid creatures so every colorless body that enters drains the opponent through payoffs like Flayer Drone. An aggressive deck that turns a wide colorless board into reach.',
       },
       {
         name: 'Ramp and Stomp',
         colors: ['R', 'G'],
         keyCard: 'Relentless Hunter',
-        description: 'Hit land drops for landfall, ramp with Eldrazi Scions and sink spare mana into pump and big creatures. A stompy midrange deck that overpowers the ground.',
+        description: "Ramp into big creatures and sink spare mana into pump abilities like Relentless Hunter's. A stompy midrange deck that overpowers the ground.",
       },
       {
         name: 'Support Counters',

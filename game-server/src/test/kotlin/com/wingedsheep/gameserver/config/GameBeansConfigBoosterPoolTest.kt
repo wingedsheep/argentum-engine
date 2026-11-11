@@ -399,9 +399,11 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
             wastes += pack.count { it.name == "Wastes" }
             otherCommonCount += pack.count { it.name in otherCommons }
         }
-        (mythics.toDouble() / packs) shouldBe (0.125 plusOrMinus 0.02)
-        // Two printings on the 70-card common sheet: Wastes opens in about 26% of packs, ~1.9x any other common.
-        (wastes.toDouble() / packs) shouldBe (0.26 plusOrMinus 0.03)
+        // 42 rares printed twice and 12 mythics once.
+        (mythics.toDouble() / packs) shouldBe ((12.0 / 96) plusOrMinus 0.02)
+        // Two printings on the 70-card common sheet, never both in one pack (the picker draws distinct names):
+        // Wastes opens in 1 - C(68,10)/C(70,10) ≈ 26.7% of packs, ~1.9x any other common.
+        (wastes.toDouble() / packs) shouldBe ((1 - 60.0 * 59 / (70 * 69)) plusOrMinus 0.03)
         val perOtherCommon = otherCommonCount.toDouble() / otherCommons.size
         (wastes / perOtherCommon) shouldBe (1.9 plusOrMinus 0.3)
 
