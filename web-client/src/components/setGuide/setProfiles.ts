@@ -512,6 +512,26 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Skulk', inPlay: 'A skulking creature can\'t be blocked by bigger creatures, so small sneaky attackers chip in all game.' },
     ],
   },
+  OGW: {
+    tagline: 'The Gatewatch makes its stand on Zendikar: surge two-spell turns, support your team with counters and pay colorless costs with Wastes.',
+    setting: 'Zendikar as its heroes swear the Oath of the Gatewatch and fight back against Kozilek and his devoid Eldrazi.',
+    gameplay: 'Games are midrange and creature-driven, split between Zendikar\'s Allies and the colorless Eldrazi. Many Eldrazi have devoid and costs that need colorless mana, so Wastes and other colorless lands are worth drafting, and they open in packs like any common. Surge rewards casting a second spell in the same turn, support spreads +1/+1 counters across your team, and cohort Allies tap in pairs for extra effects.',
+    tips: [
+      'Draft Wastes and colorless lands early if you want the {C} Eldrazi: you can only play the Wastes you open or draft.',
+      'Plan surge turns around a cheap first spell so the second one comes in at its discount.',
+      'Keep at least two untapped Allies around for cohort, and spread support counters to set up good attacks.',
+    ],
+    tryIf: 'colorless Eldrazi, two-spell turns and building around an unusual mana base',
+    power: 3, speed: 3, complexity: 3,
+    themes: ['counters', 'tribal', 'spells'],
+    mechanics: [
+      { name: 'Colorless mana', inPlay: 'Costs with {C} need mana from a colorless source like Wastes, so the Eldrazi pull your mana base in a new direction.' },
+      { name: 'Devoid', inPlay: 'Devoid cards have no colour even with coloured mana costs, so colourless-matters payoffs and colour-based removal treat them differently.' },
+      { name: 'Surge', inPlay: 'A spell gets cheaper if you or a teammate cast another spell this turn, rewarding cheap cantrips before your big play.' },
+      { name: 'Support', inPlay: 'Put a +1/+1 counter on each of up to N other target creatures, so small teams grow into a real threat.' },
+      { name: 'Cohort', inPlay: 'Tap this and another untapped Ally for an effect, so Allies want to arrive in pairs.' },
+    ],
+  },
   EMN: {
     tagline: 'Emrakul arrives on Innistrad: sacrifice creatures to emerge Eldrazi early, fill your graveyard for delirium and meld pairs into giants.',
     setting: 'Innistrad as Emrakul descends on it, twisting humans, werewolves and spirits into Eldrazi horrors.',

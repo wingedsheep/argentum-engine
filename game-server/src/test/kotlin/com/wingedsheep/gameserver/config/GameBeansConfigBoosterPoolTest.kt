@@ -366,6 +366,56 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         boosterGenerator.getBasicLands("OGW").values.all { it.setCode == "BFZ" } shouldBe true
     }
 
+    test("Oath of the Gatewatch draft pack is 10 commons, 3 uncommons and one rare or mythic, Wastes at common") {
+        // Draft Booster (taw/magic-search-engine data/boosters/ogw/draft.yaml): 10 commons — the two full-art
+        // Wastes on the common sheet — 3 uncommons, a rare or mythic, and a full-art BFZ basic (supplied at deck
+        // building). The foil/Expedition replacing a common in 9 packs of 40 is cosmetic and not modelled.
+        val ogw = boosterGenerator.availableSets["OGW"].shouldNotBeNull()
+        ogw.fullyImplemented shouldBe true
+        ogw.boosterStrategy shouldBe StandardBooster(commons = 10)
+        val eligible = ogw.cards.filter { it.metadata.inBooster && !it.typeLine.isFreelyAddedBasicLand }
+        // Scryfall `set:ogw is:booster -t:basic` (68 / 60 / 42 / 12) plus the two full-art Wastes at common.
+        eligible.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 70, Rarity.UNCOMMON to 60, Rarity.RARE to 42, Rarity.MYTHIC to 12,
+        )
+        val eligibleNames = eligible.mapTo(hashSetOf()) { it.name }
+        val otherCommons = eligible.filter { it.metadata.rarity == Rarity.COMMON && it.name != "Wastes" }
+            .mapTo(hashSetOf()) { it.name }
+        var mythics = 0
+        var wastes = 0
+        var otherCommonCount = 0
+        val packs = 4000
+        repeat(packs) {
+            val pack = boosterGenerator.generateBooster("OGW")
+            withClue("pack ${pack.map { it.name }}") {
+                pack.size shouldBe 14
+                pack.map { it.name }.toSet().size shouldBe 14
+                pack.all { it.name in eligibleNames } shouldBe true
+                pack.count { it.metadata.rarity == Rarity.COMMON } shouldBe 10
+                pack.count { it.metadata.rarity == Rarity.UNCOMMON } shouldBe 3
+                pack.none { it.typeLine.isFreelyAddedBasicLand } shouldBe true
+            }
+            mythics += pack.count { it.metadata.rarity == Rarity.MYTHIC }
+            wastes += pack.count { it.name == "Wastes" }
+            otherCommonCount += pack.count { it.name in otherCommons }
+        }
+        (mythics.toDouble() / packs) shouldBe (0.125 plusOrMinus 0.02)
+        // Two printings on the 70-card common sheet: Wastes opens in about 26% of packs, ~1.9x any other common.
+        (wastes.toDouble() / packs) shouldBe (0.26 plusOrMinus 0.03)
+        val perOtherCommon = otherCommonCount.toDouble() / otherCommons.size
+        (wastes / perOtherCommon) shouldBe (1.9 plusOrMinus 0.3)
+
+        // A host ban on Wastes leaves its slot to an ordinary common.
+        repeat(200) {
+            val pack = boosterGenerator.generateBooster("OGW", bannedCardNames = setOf("Wastes"))
+            withClue("pack ${pack.map { it.name }}") {
+                pack.size shouldBe 14
+                pack.none { it.name == "Wastes" } shouldBe true
+                pack.count { it.metadata.rarity == Rarity.COMMON } shouldBe 10
+            }
+        }
+    }
+
     test("Final Fantasy's Wastes opens only in the land slot and is never a land-station basic") {
         val fin = boosterGenerator.availableSets["FIN"].shouldNotBeNull()
         val strategy = fin.boosterStrategy.shouldBeInstanceOf<LandSlotBooster>()
@@ -1260,7 +1310,7 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         // foil/List/Special Guest/bonus-sheet cards).
         val expected = mapOf(
             "ARN" to 8, "ATQ" to 8, "DRK" to 8, "FEM" to 8, "LEG" to 15, "PTK" to 8,
-            "POR" to 13, "P02" to 13, "S99" to 13, "VOW" to 14, "SOI" to 14, "EMN" to 14, "KHM" to 15, "IKO" to 15, "M20" to 15, "RNA" to 15, "GRN" to 15, "LCI" to 15, "MOM" to 14,
+            "POR" to 13, "P02" to 13, "S99" to 13, "VOW" to 14, "SOI" to 14, "EMN" to 14, "OGW" to 14, "KHM" to 15, "IKO" to 15, "M20" to 15, "RNA" to 15, "GRN" to 15, "LCI" to 15, "MOM" to 14,
             "MKM" to 13, "OTJ" to 13, "MH3" to 13, "BLB" to 13, "DSK" to 14, "FDN" to 14, "INR" to 13,
             "DFT" to 14, "TDM" to 14, "FIN" to 14, "EOE" to 13, "SPM" to 14, "TLA" to 14, "ECL" to 13,
             "TMT" to 14, "SOS" to 13, "MSH" to 14, "HOB" to 14, "ZNR" to 14, "STX" to 15,

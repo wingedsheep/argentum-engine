@@ -30,6 +30,15 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-ogw',
+    date: '2026-11-11',
+    kind: 'set',
+    setCode: 'OGW',
+    title: 'Oath of the Gatewatch is complete',
+    body: "The Gatewatch takes its oath on Zendikar against Kozilek's devoid Eldrazi. Draft Wastes to power colorless {C} costs, surge out two spells in one turn, spread support counters and tap Allies for cohort, across ten two-colour decks from surge spells and fliers tempo to colorless control and Eldrazi ramp.",
+    tryIf: 'colorless Eldrazi, two-spell turns and building around an unusual mana base',
+  },
+  {
     id: 'set-soi',
     date: '2026-11-10',
     kind: 'set',
