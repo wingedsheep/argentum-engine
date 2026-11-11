@@ -9373,6 +9373,11 @@ in the repo today):
   `Triggers.attached.dealsDamage()` (any damage),
   `Triggers.attached.dealsDamage(AnyPlayer, damageType = Combat)`,
   `Triggers.attached.isDealtDamage()` (Frozen Solid).
+  The damage that kills the host still triggers its attachments (CR 603.2): an Aura that went to
+  the graveyard with it in the same state-based-action pass triggers from its departure snapshot,
+  under the controller it had on the battlefield. "Its controller" of a dead host is
+  `EffectTarget.ControllerOfDamageSource` (deals damage, Visions of Brutality) or
+  `PlayerRef(Player.TriggeringPlayer)` (is dealt damage, Ragged Veins) — both last-known.
 
 ### Cards & draws
 

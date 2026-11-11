@@ -81,6 +81,7 @@ import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.events.Recipient
 import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.CounterTargetSource
@@ -2193,6 +2194,7 @@ object TargetPolarityAnalyzer {
         // so the host's controller gains a creature. The base P/T alone stays unread above — on a
         // creature it can shrink as well as grow — and the type alone could leave a 0/0.
         if (animatesHost(card.script.staticAbilities)) readings += TargetPolarity.BENEFICIAL
+        for (ability in card.script.triggeredAbilities) readings += hostDamageTriggerReadings(ability)
         val abilityEffects = card.script.triggeredAbilities.map { it.effect } +
             card.script.activatedAbilities.map { it.effect }
         for (effect in abilityEffects) {
@@ -2452,6 +2454,37 @@ object TargetPolarityAnalyzer {
             when (leaf) {
                 is DealDamageEffect -> TargetPolarity.HARMFUL.takeIf { hostController(leaf.target) }
                 is LoseLifeEffect -> TargetPolarity.HARMFUL.takeIf { hostController(leaf.target) }
+                else -> null
+            }
+        }
+    }
+
+    /**
+     * What an attachment's "whenever enchanted creature deals / is dealt damage" trigger does to
+     * the host's side. Its controller there is named off the damage event rather than as
+     * "enchanted creature": [EffectTarget.ControllerOfDamageSource] when the host deals the damage
+     * (Visions of Brutality's "its controller loses that much life"), the damaged permanent's
+     * controller — [Player.TriggeringPlayer] or [EffectTarget.ControllerOfTriggeringEntity] — when
+     * it is dealt it (Ragged Veins). Draining or burning that player is a curse on the host. A
+     * gain for the attachment's own controller off its host's damage (Spirit Link's "you gain that
+     * much life") pays off only while the host keeps dealing damage, so it belongs on one of ours.
+     */
+    private fun hostDamageTriggerReadings(ability: TriggeredAbility): List<TargetPolarity> {
+        if (ability.binding != TriggerBinding.ATTACHED) return emptyList()
+        val dealsDamage = ability.trigger is EventPattern.DealsDamageEvent
+        if (!dealsDamage && ability.trigger !is EventPattern.DamageReceivedEvent) return emptyList()
+        fun hostController(target: EffectTarget) = if (dealsDamage) {
+            target == EffectTarget.ControllerOfDamageSource
+        } else {
+            target == EffectTarget.PlayerRef(Player.TriggeringPlayer) || target == EffectTarget.ControllerOfTriggeringEntity
+        }
+        return EffectWalker.payoffLeaves(ability.effect).mapNotNull { leaf ->
+            when (leaf) {
+                is LoseLifeEffect -> TargetPolarity.HARMFUL.takeIf { hostController(leaf.target) }
+                is DealDamageEffect -> TargetPolarity.HARMFUL.takeIf { hostController(leaf.target) }
+                is GainLifeEffect -> TargetPolarity.BENEFICIAL.takeIf {
+                    dealsDamage && leaf.target == EffectTarget.Controller
+                }
                 else -> null
             }
         }

@@ -37,7 +37,9 @@ class AttachmentTriggerDetector(
         state: GameState,
         event: EngineGameEvent,
         triggers: MutableList<PendingTrigger>,
-        index: TriggerIndex
+        index: TriggerIndex,
+        /** Permanents this batch took off the battlefield, by entity — see [lastKnownAttachments]. */
+        battlefieldDepartures: Map<com.wingedsheep.sdk.model.EntityId, ZoneChangeEvent>,
     ) {
         val relevantIds = getRelevantEntityIds(event)
         if (relevantIds.isEmpty()) return
@@ -48,7 +50,7 @@ class AttachmentTriggerDetector(
             val live = index.aurasByTarget[entityId].orEmpty()
             // When the attached permanent left the battlefield, the live links may already be torn
             // down — see [lastKnownAttachments].
-            val entries = live + lastKnownAttachments(state, event, entityId, index, live)
+            val entries = live + lastKnownAttachments(state, event, entityId, index, live, battlefieldDepartures)
             for (entry in entries) {
                 for (ability in entry.abilities) {
                     if (ability.binding != TriggerBinding.ATTACHED) continue
@@ -89,9 +91,8 @@ class AttachmentTriggerDetector(
      * creature dies" would fire on removal but silently no-op on combat damage — the far more
      * common way a creature actually dies.
      *
-     * Only Equipment is reconstructed: an Aura goes to the graveyard along with its host and is
-     * handled from its own [ZoneChangeEvent] by
-     * [DeathAndLeaveTriggerDetector.detectDeadAuraAttachmentTriggers].
+     * Only Equipment is reconstructed from the battlefield: an Aura goes to the graveyard along
+     * with its host.
      *
      * The same SBA pass strands a damage trigger: an equipped creature that dies to the very combat
      * damage it dealt (or was dealt) is unattached before detection, yet the ability triggered when
@@ -99,6 +100,16 @@ class AttachmentTriggerDetector(
      * and its recipient had at that instant — [DamageDealtEvent.sourceAttachmentIds] for [hostId]
      * as the source, the recipient's [DamageDealtEvent.targetLastKnown] for [hostId] as the
      * recipient.
+     *
+     * An Aura is stranded the same way, one step further: `UNATTACHED_AURAS` puts it into the
+     * graveyard in that pass, so "whenever enchanted creature deals damage" (Visions of Brutality,
+     * Spirit Link) would miss the very damage that killed its host. For a damage event only, an
+     * attachment that has since left the battlefield in this batch is rebuilt from its own
+     * departure snapshot in [battlefieldDepartures] — the abilities and controller it had on the
+     * battlefield as the damage was dealt (CR 603.2, 603.10; its controller controls the trigger,
+     * CR 603.3a). A zone-change event never takes this route: an Aura that left with its host is
+     * handled from its own [ZoneChangeEvent] by
+     * [DeathAndLeaveTriggerDetector.detectDeadAuraAttachmentTriggers].
      *
      * [live] entries are excluded so an attachment the index still knows about is never counted
      * twice.
@@ -109,6 +120,7 @@ class AttachmentTriggerDetector(
         hostId: com.wingedsheep.sdk.model.EntityId,
         index: TriggerIndex,
         live: List<TriggerIndex.IndexedEntity>,
+        battlefieldDepartures: Map<com.wingedsheep.sdk.model.EntityId, ZoneChangeEvent>,
     ): List<TriggerIndex.IndexedEntity> {
         val attachmentIds = when (event) {
             is ZoneChangeEvent -> event.lastKnown?.attachmentIds.orEmpty()
@@ -125,8 +137,11 @@ class AttachmentTriggerDetector(
         val battlefield = state.getBattlefield()
         return attachmentIds.mapNotNull { attachmentId ->
             if (attachmentId in alreadyLive) return@mapNotNull null
-            // The Equipment must still be on the battlefield for its ability to function.
-            if (attachmentId !in battlefield) return@mapNotNull null
+            if (attachmentId !in battlefield) {
+                return@mapNotNull if (event is DamageDealtEvent) {
+                    departedAttachment(state, attachmentId, index, battlefieldDepartures[attachmentId])
+                } else null
+            }
             val container = state.getEntity(attachmentId) ?: return@mapNotNull null
             val cardComponent = container
                 .get<com.wingedsheep.engine.state.components.identity.CardComponent>()
@@ -146,6 +161,32 @@ class AttachmentTriggerDetector(
                 abilities = abilities,
             )
         }
+    }
+
+    /**
+     * An attachment that was on the battlefield when its host dealt or was dealt damage but left in
+     * the same batch, triggering as the permanent it last was there: its controller then controls
+     * the ability (CR 603.3a), and a face-down or ability-stripped attachment had none to trigger
+     * ([TriggerAbilityResolver.getDepartedTriggeredAbilities] reads both off the snapshot).
+     */
+    private fun departedAttachment(
+        state: GameState,
+        attachmentId: com.wingedsheep.sdk.model.EntityId,
+        index: TriggerIndex,
+        departure: ZoneChangeEvent?,
+    ): TriggerIndex.IndexedEntity? {
+        val lastKnown = departure?.lastKnown ?: return null
+        val cardComponent = state.getEntity(attachmentId)
+            ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>() ?: return null
+        val definitionId = lastKnown.cardDefinitionId ?: cardComponent.cardDefinitionId
+        val abilities = abilityResolver.getDepartedTriggeredAbilities(departure, definitionId, state, index.statics)
+        if (abilities.isEmpty()) return null
+        return TriggerIndex.IndexedEntity(
+            entityId = attachmentId,
+            cardComponent = cardComponent,
+            controllerId = lastKnown.controllerId ?: departure.ownerId,
+            abilities = abilities,
+        )
     }
 
     /**
