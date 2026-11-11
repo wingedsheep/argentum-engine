@@ -1,0 +1,22 @@
+.choice {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.prompt {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: #aab2c3;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+}
+
+.row > * { flex: 1 1 0; min-width: 0; }
+
+/* Draw first is the other answer to the same question, not a lesser action: match the primary's height. */
+.draw { min-height: 50px; font-size: 16px; }
