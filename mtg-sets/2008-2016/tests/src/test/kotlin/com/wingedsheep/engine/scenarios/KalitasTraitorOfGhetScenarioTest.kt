@@ -111,6 +111,78 @@ class KalitasTraitorOfGhetScenarioTest : ScenarioTestBase() {
                 game.findAllPermanents("Zombie Token") shouldHaveSize 0
             }
 
+            test("an opponent's token dies normally, with no Zombie (ruling)") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Kalitas, Traitor of Ghet")
+                    .withCardOnBattlefield(2, "Grizzly Bears", isToken = true)
+                    .withLandsOnBattlefield(1, "Mountain", 1)
+                    .withCardInHand(1, "Lightning Bolt")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                val token = game.findPermanent("Grizzly Bears")!!
+
+                game.castSpell(1, "Lightning Bolt", targetId = token).error shouldBe null
+                game.resolveStack()
+
+                game.findPermanent("Grizzly Bears") shouldBe null
+                game.state.getExile(game.player2Id) shouldNotContain token
+                game.findAllPermanents("Zombie Token") shouldHaveSize 0
+            }
+
+            test("control decides, not ownership: an opponent's creature you stole dies normally") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Kalitas, Traitor of Ghet")
+                    .withCardOnBattlefield(2, "Grizzly Bears")
+                    .withLandsOnBattlefield(1, "Mountain", 4)
+                    .withCardInHand(1, "Act of Treason")
+                    .withCardInHand(1, "Lightning Bolt")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                val bears = game.findPermanent("Grizzly Bears")!!
+
+                game.castSpell(1, "Act of Treason", targetId = bears).error shouldBe null
+                game.resolveStack()
+                game.state.projectedState.getController(bears) shouldBe game.player1Id
+
+                game.castSpell(1, "Lightning Bolt", targetId = bears).error shouldBe null
+                game.resolveStack()
+
+                withClue("It dies under your control, so it isn't 'a creature an opponent controls'") {
+                    game.state.getGraveyard(game.player2Id) shouldContain bears
+                    game.findAllPermanents("Zombie Token") shouldHaveSize 0
+                }
+            }
+
+            test("control decides, not ownership: your creature an opponent stole is exiled and makes a Zombie") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Kalitas, Traitor of Ghet")
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withLandsOnBattlefield(2, "Mountain", 4)
+                    .withCardInHand(2, "Act of Treason")
+                    .withCardInHand(2, "Lightning Bolt")
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                val bears = game.findPermanent("Grizzly Bears")!!
+
+                game.castSpell(2, "Act of Treason", targetId = bears).error shouldBe null
+                game.resolveStack()
+                game.state.projectedState.getController(bears) shouldBe game.player2Id
+
+                game.castSpell(2, "Lightning Bolt", targetId = bears).error shouldBe null
+                game.resolveStack()
+
+                game.state.getExile(game.player1Id) shouldContain bears
+                val zombies = game.findAllPermanents("Zombie Token")
+                zombies shouldHaveSize 1
+                game.state.projectedState.getController(zombies.single()) shouldBe game.player1Id
+            }
+
             test("{2}{B}, sacrifice another Vampire or Zombie: two +1/+1 counters on Kalitas") {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")
