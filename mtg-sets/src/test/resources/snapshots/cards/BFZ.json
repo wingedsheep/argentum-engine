@@ -1,3 +1,63 @@
+// Akoum Firebird
+{
+    "name": "Akoum Firebird",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Phoenix",
+    "oracleText": "Flying, haste\nThis creature attacks each combat if able.\nLandfall — Whenever a land you control enters, you may pay {4}{R}{R}. If you do, return this card from your graveyard to the battlefield.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Akoum Firebird:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{4}{R}{R}"
+                        }
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Battlefield",
+                        "fromZone": "Graveyard"
+                    }
+                },
+                "activeZones": [
+                    "Graveyard"
+                ]
+            }
+        ],
+        "staticAbilities": [
+            "MustAttack"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/304a2e4c-da2c-43fb-b44d-9db55ff94f04.jpg?1783938196"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Ally Encampment
 {
     "name": "Ally Encampment",
@@ -1215,6 +1275,36 @@
     ]
 }
 
+// Dampening Pulse
+{
+    "name": "Dampening Pulse",
+    "manaCost": "{3}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Creatures your opponents control get -1/-0.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": -1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "rarity": "UNCOMMON",
+        "artist": "Johann Bodin",
+        "flavorText": "\"Quiet now, you dreadful vermin.\"\n—Noyan Dar, Tazeem roilmage",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4a4393f6-54d7-4963-a3c0-b3a083c2440c.jpg?1783938210"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Demon's Grasp
 {
     "name": "Demon's Grasp",
@@ -1846,6 +1936,98 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Greenwarden of Murasa
+{
+    "name": "Greenwarden of Murasa",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "When this creature enters, you may return target card from your graveyard to your hand.\nWhen this creature dies, you may exile it. If you do, return target card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Greenwarden of Murasa:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Greenwarden of Murasa:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "MoveToZone",
+                                "target": "Self",
+                                "destination": "Exile",
+                                "fromZone": "Graveyard"
+                            }
+                        },
+                        "then": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "destination": "Hand"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t1"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "174",
+        "rarity": "MYTHIC",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5b03132c-0bb7-48f9-babd-6e106d8f202c.jpg?1783938188"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -2881,6 +3063,65 @@
     ]
 }
 
+// Natural Connection
+{
+    "name": "Natural Connection",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Search your library for a basic land card, put it onto the battlefield tapped, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "basicland"
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for a basic land card to put onto the battlefield tapped",
+                    "selectedLabel": "Put onto the battlefield tapped"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "artist": "Wesley Burt",
+        "flavorText": "\"Zendikar will not surrender, and neither can we.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e11cd83-5930-4cff-8f9b-55337ed263b7.jpg?1783938187"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Nirkana Assassin
 {
     "name": "Nirkana Assassin",
@@ -3253,6 +3494,43 @@
     ]
 }
 
+// Reclaiming Vines
+{
+    "name": "Reclaiming Vines",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target artifact, enchantment, or land.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|enchantment|land"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "185",
+        "artist": "Bastien L. Deharme",
+        "flavorText": "\"This world tires of its long occupation.\"\n—Nissa Revane",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/18be4c1a-58d7-409e-b7e0-aadb5ccf814d.jpg?1783938185"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Resolute Blademaster
 {
     "name": "Resolute Blademaster",
@@ -3385,6 +3663,81 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Retreat to Emeria
+{
+    "name": "Retreat to Emeria",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Landfall — Whenever a land you control enters, choose one —\n• Create a 1/1 white Kor Ally creature token.\n• Creatures you control get +1/+1 until end of turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Retreat to Emeria:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "CreateToken",
+                                "power": 1,
+                                "toughness": 1,
+                                "colors": [
+                                    "WHITE"
+                                ],
+                                "creatureTypes": [
+                                    "Kor",
+                                    "Ally"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/b/e/be224180-a482-4b94-8a9d-3a92ee0eb34b.jpg?1783938120"
+                            },
+                            "description": "Create a 1/1 white Kor Ally creature token"
+                        },
+                        {
+                            "effect": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "ModifyStats",
+                                    "powerModifier": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "toughnessModifier": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "target": "IterationEntity"
+                                }
+                            },
+                            "description": "Creatures you control get +1/+1 until end of turn"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b65101f-808a-40b8-8864-ee84c00d2496.jpg?1783938216"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -3567,6 +3920,48 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Rot Shambler
+{
+    "name": "Rot Shambler",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Fungus",
+    "oracleText": "Whenever another creature you control dies, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rot Shambler:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "\"If I die, feed me to a shambler. At least that way I'll be doing some good.\"\n—Ryza, Oran-Rief scout",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1a403b28-f91a-4637-af72-d6fc86c3bb9a.jpg?1783938185"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -3903,6 +4298,173 @@
     ]
 }
 
+// Shrine of the Forsaken Gods
+{
+    "name": "Shrine of the Forsaken Gods",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{T}: Add {C}{C}. Spend this mana only to cast colorless spells. Activate only if you control seven or more lands.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Shrine of the Forsaken Gods:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Shrine of the Forsaken Gods:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "restriction": "ColorlessSpellsOrAbilitiesOnly"
+                },
+                "timing": "ManaAbility",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "land"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 7
+                            }
+                        }
+                    }
+                ],
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "245",
+        "rarity": "RARE",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "The gods known to the merfolk as Ula, Emeria, and Cosi were nothing more than false memories of a monstrous trinity: the Eldrazi titans Ulamog, Emrakul, and Kozilek.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9da2af9a-28c4-4edd-95c4-cc09c2de4adc.jpg?1783938172"
+    },
+    "colorIdentityOverride": []
+}
+
+// Silent Skimmer
+{
+    "name": "Silent Skimmer",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nFlying\nWhenever this creature attacks, defending player loses 2 life.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEVOID",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Silent Skimmer:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "DefendingPlayer"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "artist": "Alejandro Mirabal",
+        "flavorText": "\"I watched it pass at a distance. When I looked back to my companions, Najet was dead.\"\n—Akiri, kor line-slinger",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/b/9b715fc0-9c36-4619-8d65-6d1064ed8a32.jpg?1783938204"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Skyline Cascade
+{
+    "name": "Skyline Cascade",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped.\nWhen this land enters, target creature an opponent controls doesn't untap during its controller's next untap step.\n{T}: Add {U}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skyline Cascade:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "DOESNT_UNTAP",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "UntilAfterAffectedControllersNextUntap"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Skyline Cascade:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "246",
+        "artist": "Philip Straub",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/29b0027d-c232-4cdd-89c4-75947687aa71.jpg?1783938172"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Smoldering Marsh
 {
     "name": "Smoldering Marsh",
@@ -3939,6 +4501,63 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Smothering Abomination
+{
+    "name": "Smothering Abomination",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "Devoid (This card has no color.)\nFlying\nAt the beginning of your upkeep, sacrifice a creature.\nWhenever you sacrifice a creature, draw a card.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEVOID",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Smothering Abomination:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Sacrifice",
+                    "filter": "creature"
+                }
+            },
+            {
+                "id": "Smothering Abomination:2",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "creature",
+                    "perPermanent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "RARE",
+        "artist": "Aleksi Briclot",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cd81d0de-01a3-4f28-8a2b-c2e6f36a03c4.jpg?1783938204"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -4000,6 +4619,48 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Spell Shrivel
+{
+    "name": "Spell Shrivel",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Devoid (This card has no color.)\nCounter target spell unless its controller pays {4}. If that spell is countered this way, exile it instead of putting it into its owner's graveyard.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "counterDestination": "CounterDestination.Exile",
+            "condition": {
+                "type": "CounterCondition.UnlessPaysDynamic",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 4
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "artist": "Jack Wang",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/efa110cb-f091-48f0-bc62-80f5f18568e8.jpg?1783938211"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
