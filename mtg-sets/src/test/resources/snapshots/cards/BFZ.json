@@ -345,6 +345,149 @@
     ]
 }
 
+// Blight Herder
+{
+    "name": "Blight Herder",
+    "manaCost": "{5}",
+    "typeLine": "Creature — Eldrazi Processor",
+    "oracleText": "When you cast this spell, you may put two cards your opponents own from exile into their owners' graveyards. If you do, create three 1/1 colorless Eldrazi Scion creature tokens. They have \"Sacrifice this token: Add {C}.\"",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Blight Herder:2",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Put two cards your opponents own from exile into their owners' graveyards?"
+                    },
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Exile",
+                                            "player": "EachOpponent"
+                                        },
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered0",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 2
+                                            }
+                                        },
+                                        "storeSelected": "processed",
+                                        "prompt": "Choose two cards your opponents own from exile to put into their owners' graveyards",
+                                        "selectedLabel": "Put into graveyard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "processed",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        }
+                                    }
+                                ]
+                            },
+                            "successCriterion": {
+                                "type": "SuccessCriterion.CollectionNonEmpty",
+                                "name": "processed",
+                                "min": 2
+                            }
+                        },
+                        "then": {
+                            "type": "CreateToken",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [],
+                            "creatureTypes": [
+                                "Eldrazi",
+                                "Scion"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/b/9/b999a0fe-d2d0-4367-9abb-6ce5f3764f19.jpg?1783938121",
+                            "activatedAbilities": [
+                                {
+                                    "id": "Blight Herder:1",
+                                    "cost": "CostSacrificeSelf",
+                                    "effect": {
+                                        "type": "AddColorlessMana",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "timing": "ManaAbility",
+                                    "isManaAbility": true,
+                                    "descriptionOverride": "Sacrifice this token: Add {C}."
+                                }
+                            ]
+                        }
+                    }
+                },
+                "descriptionOverride": "When you cast this spell, you may put two cards your opponents own from exile into their owners' graveyards. If you do, create three 1/1 colorless Eldrazi Scion creature tokens. They have \"Sacrifice this token: Add {C}.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "RARE",
+        "artist": "Todd Lockwood",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/478c3a74-ff78-4041-8137-93356d370ece.jpg?1783938225",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "If a spell or ability requires that you put more than one exiled card into the graveyard, you may choose cards owned by different opponents. Each card chosen will be put into its owner's graveyard."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If a replacement effect will cause cards that would be put into a graveyard from anywhere to be exiled instead (such as the one created by Anafenza, the Foremost), you can still put an exiled card into its opponent's graveyard. The card becomes a new object and remains in exile. In this situation, you can't use a single exiled card if required to put more than one exiled card into the graveyard. Conversely, you could use the same card in this situation if two separate spells or abilities each required you to put a single exiled card into its owner's graveyard."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "You can't look at face-down cards in exile unless an effect allows you to."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Face-down cards in exile are grouped using two criteria: what caused them to be exiled face down and when they were exiled face down. If you want to put a face-down card in exile into its owner's graveyard, you must first choose one of these groups and then choose a card from within that group at random. For example, say an artifact causes your opponent to exile their hand of three cards face down. Then on a later turn, that artifact causes your opponent to exile another two cards face down. If you use Wasteland Strangler to put one of those cards into their graveyard, you would pick the first or second pile and put a card chosen at random from that pile into the graveyard."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Eldrazi Scions are similar to Eldrazi Spawn, seen in the Zendikar block. Note that Eldrazi Scions are 1/1, not 0/1."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Eldrazi and Scion are each separate creature types. Anything that affects Eldrazi will affect these tokens, for example."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Sacrificing an Eldrazi Scion creature token to add {C} is a mana ability. It doesn't use the stack and can't be responded to."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Blighted Cataract
 {
     "name": "Blighted Cataract",
@@ -1526,6 +1669,41 @@
     ]
 }
 
+// Culling Drone
+{
+    "name": "Culling Drone",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nIngest (Whenever this creature deals combat damage to a player, that player exiles the top card of their library.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEVOID",
+        "INGEST"
+    ],
+    "metadata": {
+        "collectorNumber": "91",
+        "artist": "Alejandro Mirabal",
+        "flavorText": "Silence rules Bala Ged, broken only by the skittering of Eldrazi.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1a623415-46c0-45aa-ab75-1e2d9708013a.jpg?1783938206",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "The card exiled by the ingest ability is exiled face up."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If the player has no cards in their library when the ingest ability resolves, nothing happens. That player won't lose the game (until they have to draw a card from an empty library)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Dampening Pulse
 {
     "name": "Dampening Pulse",
@@ -2059,6 +2237,101 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Fathom Feeder
+{
+    "name": "Fathom Feeder",
+    "manaCost": "{U}{B}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nDeathtouch\nIngest (Whenever this creature deals combat damage to a player, that player exiles the top card of their library.)\n{3}{U}{B}: Draw a card. Each opponent exiles the top card of their library.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEVOID",
+        "DEATHTOUCH",
+        "INGEST"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Fathom Feeder:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{U}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachOpponent"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "TopOfLibrary",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeAs": "exiled_top"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "exiled_top",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Exile"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{3}{U}{B}: Draw a card. Each opponent exiles the top card of their library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "rarity": "RARE",
+        "artist": "Clint Cearley",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b080ed31-db68-4e3c-8bf6-48b53d3ba622.jpg?1783938182",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "The card exiled by the ingest ability is exiled face up."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If the player has no cards in their library when the ingest ability resolves, nothing happens. That player won't lose the game (until they have to draw a card from an empty library)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
@@ -3455,6 +3728,146 @@
     ]
 }
 
+// Mind Raker
+{
+    "name": "Mind Raker",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Eldrazi Processor",
+    "oracleText": "Devoid (This card has no color.)\nWhen this creature enters, you may put a card an opponent owns from exile into that player's graveyard. If you do, each opponent discards a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mind Raker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Exile",
+                                        "player": "EachOpponent"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "processed",
+                                    "prompt": "You may put a card an opponent owns from exile into its owner's graveyard",
+                                    "selectedLabel": "Put into graveyard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "processed",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    }
+                                }
+                            ]
+                        },
+                        "successCriterion": {
+                            "type": "SuccessCriterion.CollectionNonEmpty",
+                            "name": "processed"
+                        }
+                    },
+                    "then": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Players",
+                            "players": "EachOpponent"
+                        },
+                        "body": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "descriptionOverride": "When this creature enters, you may put a card an opponent owns from exile into that player's graveyard. If you do, each opponent discards a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "artist": "Lius Lasahido",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a4d07fea-e16a-45e3-a172-9d726cd42769.jpg?1783938205",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "If a spell or ability requires that you put more than one exiled card into the graveyard, you may choose cards owned by different opponents. Each card chosen will be put into its owner's graveyard."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If a replacement effect will cause cards that would be put into a graveyard from anywhere to be exiled instead (such as the one created by Anafenza, the Foremost), you can still put an exiled card into its opponent's graveyard. The card becomes a new object and remains in exile. In this situation, you can't use a single exiled card if required to put more than one exiled card into the graveyard. Conversely, you could use the same card in this situation if two separate spells or abilities each required you to put a single exiled card into its owner's graveyard."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "You can't look at face-down cards in exile unless an effect allows you to."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Face-down cards in exile are grouped using two criteria: what caused them to be exiled face down and when they were exiled face down. If you want to put a face-down card in exile into its owner's graveyard, you must first choose one of these groups and then choose a card from within that group at random. For example, say an artifact causes your opponent to exile their hand of three cards face down. Then on a later turn, that artifact causes your opponent to exile another two cards face down. If you use Wasteland Strangler to put one of those cards into their graveyard, you would pick the first or second pile and put a card chosen at random from that pile into the graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Mire's Malice
 {
     "name": "Mire's Malice",
@@ -3680,6 +4093,129 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Murk Strider
+{
+    "name": "Murk Strider",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Eldrazi Processor",
+    "oracleText": "Devoid (This card has no color.)\nWhen this creature enters, you may put a card an opponent owns from exile into that player's graveyard. If you do, return target creature to its owner's hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Murk Strider:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Exile",
+                                        "player": "EachOpponent"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "processed",
+                                    "prompt": "You may put a card an opponent owns from exile into its owner's graveyard",
+                                    "selectedLabel": "Put into graveyard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "processed",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    }
+                                }
+                            ]
+                        },
+                        "successCriterion": {
+                            "type": "SuccessCriterion.CollectionNonEmpty",
+                            "name": "processed"
+                        }
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, you may put a card an opponent owns from exile into that player's graveyard. If you do, return target creature to its owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "artist": "Chase Stone",
+        "flavorText": "If you can see it, it's too late.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/130849ba-3893-490d-bfb0-51c76e53cf62.jpg?1783938212",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "If the target creature becomes illegal before the triggered ability resolves, it won't resolve and none of its effects will happen. You won't \"process\" a card in exile."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Players can respond to the triggered ability, but once it starts resolving and you decide whether to put a card from exile into the player's graveyard, it's too late for anyone to respond."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If a spell or ability requires that you put more than one exiled card into the graveyard, you may choose cards owned by different opponents. Each card chosen will be put into its owner's graveyard."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If a replacement effect will cause cards that would be put into a graveyard from anywhere to be exiled instead (such as the one created by Anafenza, the Foremost), you can still put an exiled card into its opponent's graveyard. The card becomes a new object and remains in exile. In this situation, you can't use a single exiled card if required to put more than one exiled card into the graveyard. Conversely, you could use the same card in this situation if two separate spells or abilities each required you to put a single exiled card into its owner's graveyard."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "You can't look at face-down cards in exile unless an effect allows you to."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Face-down cards in exile are grouped using two criteria: what caused them to be exiled face down and when they were exiled face down. If you want to put a face-down card in exile into its owner's graveyard, you must first choose one of these groups and then choose a card from within that group at random. For example, say an artifact causes your opponent to exile their hand of three cards face down. Then on a later turn, that artifact causes your opponent to exile another two cards face down. If you use Wasteland Strangler to put one of those cards into their graveyard, you would pick the first or second pile and put a card chosen at random from that pile into the graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3993,6 +4529,124 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Oracle of Dust
+{
+    "name": "Oracle of Dust",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Eldrazi Processor",
+    "oracleText": "Devoid (This card has no color.)\n{2}, Put a card an opponent owns from exile into that player's graveyard: Draw a card, then discard a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Oracle of Dust:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomExileFrom",
+                                "zone": "Exile",
+                                "filter": "own:opponent",
+                                "anyPlayersZone": true,
+                                "destination": "Graveyard"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "artist": "Jason Rainville",
+        "flavorText": "Whatever it is searching for, it will stop at nothing to find it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2c121d73-0c87-4a3f-b013-4f9314e22606.jpg?1783938211",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "If a spell or ability requires that you put more than one exiled card into the graveyard, you may choose cards owned by different opponents. Each card chosen will be put into its owner's graveyard."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If a replacement effect will cause cards that would be put into a graveyard from anywhere to be exiled instead (such as the one created by Anafenza, the Foremost), you can still put an exiled card into its opponent's graveyard. The card becomes a new object and remains in exile. In this situation, you can't use a single exiled card if required to put more than one exiled card into the graveyard. Conversely, you could use the same card in this situation if two separate spells or abilities each required you to put a single exiled card into its owner's graveyard."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "You can't look at face-down cards in exile unless an effect allows you to."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Face-down cards in exile are grouped using two criteria: what caused them to be exiled face down and when they were exiled face down. If you want to put a face-down card in exile into its owner's graveyard, you must first choose one of these groups and then choose a card from within that group at random. For example, say an artifact causes your opponent to exile their hand of three cards face down. Then on a later turn, that artifact causes your opponent to exile another two cards face down. If you use Wasteland Strangler to put one of those cards into their graveyard, you would pick the first or second pile and put a card chosen at random from that pile into the graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4914,6 +5568,159 @@
     ]
 }
 
+// Ruin Processor
+{
+    "name": "Ruin Processor",
+    "manaCost": "{7}",
+    "typeLine": "Creature — Eldrazi Processor",
+    "oracleText": "When you cast this spell, you may put a card an opponent owns from exile into that player's graveyard. If you do, you gain 5 life.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 8
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ruin Processor:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Exile",
+                                        "player": "EachOpponent"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "processed",
+                                    "prompt": "You may put a card an opponent owns from exile into its owner's graveyard",
+                                    "selectedLabel": "Put into graveyard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "processed",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    }
+                                }
+                            ]
+                        },
+                        "successCriterion": {
+                            "type": "SuccessCriterion.CollectionNonEmpty",
+                            "name": "processed"
+                        }
+                    },
+                    "then": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 5
+                        }
+                    }
+                },
+                "descriptionOverride": "When you cast this spell, you may put a card an opponent owns from exile into that player's graveyard. If you do, you gain 5 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "artist": "Slawomir Maniak",
+        "flavorText": "The Eldrazi continue to sweep through the wastes, compounding destruction that already seemed absolute.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d997088b-f8f9-4e4c-ba64-aa7f43cc7505.jpg?1783938223",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "If a spell or ability requires that you put more than one exiled card into the graveyard, you may choose cards owned by different opponents. Each card chosen will be put into its owner's graveyard."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If a replacement effect will cause cards that would be put into a graveyard from anywhere to be exiled instead (such as the one created by Anafenza, the Foremost), you can still put an exiled card into its opponent's graveyard. The card becomes a new object and remains in exile. In this situation, you can't use a single exiled card if required to put more than one exiled card into the graveyard. Conversely, you could use the same card in this situation if two separate spells or abilities each required you to put a single exiled card into its owner's graveyard."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "You can't look at face-down cards in exile unless an effect allows you to."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Face-down cards in exile are grouped using two criteria: what caused them to be exiled face down and when they were exiled face down. If you want to put a face-down card in exile into its owner's graveyard, you must first choose one of these groups and then choose a card from within that group at random. For example, say an artifact causes your opponent to exile their hand of three cards face down. Then on a later turn, that artifact causes your opponent to exile another two cards face down. If you use Wasteland Strangler to put one of those cards into their graveyard, you would pick the first or second pile and put a card chosen at random from that pile into the graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Ruination Guide
+{
+    "name": "Ruination Guide",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nIngest (Whenever this creature deals combat damage to a player, that player exiles the top card of their library.)\nOther colorless creatures you control get +1/+0.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEVOID",
+        "INGEST"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsColorless"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0bdbe64-d985-4bc5-bb1d-4cbf12ef60b2.jpg?1783938211",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "The card exiled by the ingest ability is exiled face up."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If the player has no cards in their library when the ingest ability resolves, nothing happens. That player won't lose the game (until they have to draw a card from an empty library)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ruinous Path
 {
     "name": "Ruinous Path",
@@ -5018,6 +5825,103 @@
             {
                 "date": "2015-08-25",
                 "text": "Rush of Ice tracks the creature, but not its controller. If the creature changes controllers before its first controller's next untap step has come around, then it won't untap during its new controller's next untap step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Salvage Drone
+{
+    "name": "Salvage Drone",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nIngest (Whenever this creature deals combat damage to a player, that player exiles the top card of their library.)\nWhen this creature dies, you may draw a card. If you do, discard a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEVOID",
+        "INGEST"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Salvage Drone:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b8ce2a9-9d8e-442b-bc12-74545ceb65bd.jpg?1783938211",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "The card exiled by the ingest ability is exiled face up."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If the player has no cards in their library when the ingest ability resolves, nothing happens. That player won't lose the game (until they have to draw a card from an empty library)."
             }
         ]
     },
@@ -5563,6 +6467,67 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Sludge Crawler
+{
+    "name": "Sludge Crawler",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nIngest (Whenever this creature deals combat damage to a player, that player exiles the top card of their library.)\n{2}: This creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEVOID",
+        "INGEST"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sludge Crawler:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "{2}: This creature gets +1/+1 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "98",
+        "artist": "Johann Bodin",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/9782b463-0677-40f4-ab2c-4c3ff19f1168.jpg?1783938204",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "The card exiled by the ingest ability is exiled face up."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If the player has no cards in their library when the ingest ability resolves, nothing happens. That player won't lose the game (until they have to draw a card from an empty library)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -6361,6 +7326,122 @@
     }
 }
 
+// Ulamog's Reclaimer
+{
+    "name": "Ulamog's Reclaimer",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Eldrazi Processor",
+    "oracleText": "Devoid (This card has no color.)\nWhen this creature enters, you may put a card an opponent owns from exile into that player's graveyard. If you do, return target instant or sorcery card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ulamog's Reclaimer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Exile",
+                                        "player": "EachOpponent"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "processed",
+                                    "prompt": "You may put a card an opponent owns from exile into its owner's graveyard",
+                                    "selectedLabel": "Put into graveyard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "processed",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    }
+                                }
+                            ]
+                        },
+                        "successCriterion": {
+                            "type": "SuccessCriterion.CollectionNonEmpty",
+                            "name": "processed"
+                        }
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "instant|sorcery own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, you may put a card an opponent owns from exile into that player's graveyard. If you do, return target instant or sorcery card from your graveyard to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/29a237a6-0e72-47ce-b28d-a0260963f406.jpg?1783938210",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "If a spell or ability requires that you put more than one exiled card into the graveyard, you may choose cards owned by different opponents. Each card chosen will be put into its owner's graveyard."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If a replacement effect will cause cards that would be put into a graveyard from anywhere to be exiled instead (such as the one created by Anafenza, the Foremost), you can still put an exiled card into its opponent's graveyard. The card becomes a new object and remains in exile. In this situation, you can't use a single exiled card if required to put more than one exiled card into the graveyard. Conversely, you could use the same card in this situation if two separate spells or abilities each required you to put a single exiled card into its owner's graveyard."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "You can't look at face-down cards in exile unless an effect allows you to."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Face-down cards in exile are grouped using two criteria: what caused them to be exiled face down and when they were exiled face down. If you want to put a face-down card in exile into its owner's graveyard, you must first choose one of these groups and then choose a card from within that group at random. For example, say an artifact causes your opponent to exile their hand of three cards face down. Then on a later turn, that artifact causes your opponent to exile another two cards face down. If you use Wasteland Strangler to put one of those cards into their graveyard, you would pick the first or second pile and put a card chosen at random from that pile into the graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ulamog, the Ceaseless Hunger
 {
     "name": "Ulamog, the Ceaseless Hunger",
@@ -6776,6 +7857,173 @@
     ]
 }
 
+// Vile Aggregate
+{
+    "name": "Vile Aggregate",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nVile Aggregate's power is equal to the number of colorless creatures you control.\nTrample\nIngest (Whenever this creature deals combat damage to a player, that player exiles the top card of their library.)",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        "IsColorless"
+                    ]
+                }
+            }
+        },
+        "toughness": 5
+    },
+    "keywords": [
+        "DEVOID",
+        "TRAMPLE",
+        "INGEST"
+    ],
+    "metadata": {
+        "collectorNumber": "137",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1ec66525-a7e9-450f-83df-03d9957837d5.jpg?1783938195",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "The ability that defines Vile Aggregate's power works in all zones, not just the battlefield. If Vile Aggregate is on the battlefield, it will count itself."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "The card exiled by the ingest ability is exiled face up."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If the player has no cards in their library when the ingest ability resolves, nothing happens. That player won't lose the game (until they have to draw a card from an empty library)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Void Attendant
+{
+    "name": "Void Attendant",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Eldrazi Processor",
+    "oracleText": "Devoid (This card has no color.)\n{1}{G}, Put a card an opponent owns from exile into that player's graveyard: Create a 1/1 colorless Eldrazi Scion creature token. It has \"Sacrifice this token: Add {C}.\"",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Void Attendant:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{G}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomExileFrom",
+                                "zone": "Exile",
+                                "filter": "own:opponent",
+                                "anyPlayersZone": true,
+                                "destination": "Graveyard"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Eldrazi",
+                        "Scion"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/9/b999a0fe-d2d0-4367-9abb-6ce5f3764f19.jpg?1783938121",
+                    "activatedAbilities": [
+                        {
+                            "id": "Void Attendant:1",
+                            "cost": "CostSacrificeSelf",
+                            "effect": {
+                                "type": "AddColorlessMana",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "timing": "ManaAbility",
+                            "isManaAbility": true,
+                            "descriptionOverride": "Sacrifice this token: Add {C}."
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "169",
+        "rarity": "UNCOMMON",
+        "artist": "Viktor Titov",
+        "flavorText": "The Eldrazi don't merely extinguish life—they supplant it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/f/1f66eb97-b151-48b1-aff0-f1280af66291.jpg?1783938189",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Once you announce that you're activating this ability, players can't respond until after you have paid its costs and completed activating it. Specifically, no one can try to remove the card from exile to stop you from activating the ability."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If a spell or ability requires that you put more than one exiled card into the graveyard, you may choose cards owned by different opponents. Each card chosen will be put into its owner's graveyard."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If a replacement effect will cause cards that would be put into a graveyard from anywhere to be exiled instead (such as the one created by Anafenza, the Foremost), you can still put an exiled card into its opponent's graveyard. The card becomes a new object and remains in exile. In this situation, you can't use a single exiled card if required to put more than one exiled card into the graveyard. Conversely, you could use the same card in this situation if two separate spells or abilities each required you to put a single exiled card into its owner's graveyard."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "You can't look at face-down cards in exile unless an effect allows you to."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Face-down cards in exile are grouped using two criteria: what caused them to be exiled face down and when they were exiled face down. If you want to put a face-down card in exile into its owner's graveyard, you must first choose one of these groups and then choose a card from within that group at random. For example, say an artifact causes your opponent to exile their hand of three cards face down. Then on a later turn, that artifact causes your opponent to exile another two cards face down. If you use Wasteland Strangler to put one of those cards into their graveyard, you would pick the first or second pile and put a card chosen at random from that pile into the graveyard."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Eldrazi Scions are similar to Eldrazi Spawn, seen in the Zendikar block. Note that Eldrazi Scions are 1/1, not 0/1."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Eldrazi and Scion are each separate creature types. Anything that affects Eldrazi will affect these tokens, for example."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Sacrificing an Eldrazi Scion creature token to add {C} is a mana ability. It doesn't use the stack and can't be responded to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Volcanic Upheaval
 {
     "name": "Volcanic Upheaval",
@@ -6862,6 +8110,128 @@
         "artist": "Karl Kopinski",
         "flavorText": "\"These days, there's no shortage of food for the nulls of Guul Draz.\"\n—Drana, Kalastria bloodchief",
         "imageUri": "https://cards.scryfall.io/normal/front/7/4/74364056-f4ee-46d3-834d-a5157ec312b9.jpg?1783938198"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Wasteland Strangler
+{
+    "name": "Wasteland Strangler",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Eldrazi Processor",
+    "oracleText": "Devoid (This card has no color.)\nWhen this creature enters, you may put a card an opponent owns from exile into that player's graveyard. If you do, target creature gets -3/-3 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wasteland Strangler:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Exile",
+                                        "player": "EachOpponent"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "processed",
+                                    "prompt": "You may put a card an opponent owns from exile into its owner's graveyard",
+                                    "selectedLabel": "Put into graveyard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "processed",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    }
+                                }
+                            ]
+                        },
+                        "successCriterion": {
+                            "type": "SuccessCriterion.CollectionNonEmpty",
+                            "name": "processed"
+                        }
+                    },
+                    "then": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -3
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -3
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, you may put a card an opponent owns from exile into that player's graveyard. If you do, target creature gets -3/-3 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "rarity": "RARE",
+        "artist": "Jack Wang",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/e/5e215ab0-efd6-4ea2-8bd2-0a93865e1e3c.jpg?1783938203",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "If a spell or ability requires that you put more than one exiled card into the graveyard, you may choose cards owned by different opponents. Each card chosen will be put into its owner's graveyard."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If a replacement effect will cause cards that would be put into a graveyard from anywhere to be exiled instead (such as the one created by Anafenza, the Foremost), you can still put an exiled card into its opponent's graveyard. The card becomes a new object and remains in exile. In this situation, you can't use a single exiled card if required to put more than one exiled card into the graveyard. Conversely, you could use the same card in this situation if two separate spells or abilities each required you to put a single exiled card into its owner's graveyard."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "You can't look at face-down cards in exile unless an effect allows you to."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Face-down cards in exile are grouped using two criteria: what caused them to be exiled face down and when they were exiled face down. If you want to put a face-down card in exile into its owner's graveyard, you must first choose one of these groups and then choose a card from within that group at random. For example, say an artifact causes your opponent to exile their hand of three cards face down. Then on a later turn, that artifact causes your opponent to exile another two cards face down. If you use Wasteland Strangler to put one of those cards into their graveyard, you would pick the first or second pile and put a card chosen at random from that pile into the graveyard."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK"

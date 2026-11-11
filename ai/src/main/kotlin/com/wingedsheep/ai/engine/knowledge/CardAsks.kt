@@ -9,6 +9,8 @@ import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
+import com.wingedsheep.sdk.scripting.conditions.Condition
+import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.conditions.PermanentTypeEnteredBattlefieldThisTurn
 import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.CostModification
@@ -104,6 +106,10 @@ internal object CardAsks {
             add(filter, DeckSynergy.FEEDERS_WANTED, spells = false, broadFeedsAnyDeck = false)
         for (script in scripts(card)) {
             for (ability in script.triggeredAbilities) {
+                // "When this creature enters, if you control another colorless creature, …"
+                // (Dominator Drone): the intervening "if" is met only by the deck's own permanents
+                // of that kind — on a trigger about the card itself too.
+                controlCheck(ability.interveningIf)?.let(::addPayers)
                 if (ability.binding == TriggerBinding.SELF) continue
                 triggerFilters(ability.trigger).forEach { (filter, spells) -> add(filter, DeckSynergy.FEEDERS_WANTED, spells) }
             }
@@ -152,7 +158,9 @@ internal object CardAsks {
         card.keywordAbilities.filterIsInstance<KeywordAbility.Affinity>().forEach { addPayers(ofType(it.forType)?.youControl()) }
         // "Equal to the number of artifacts you control" (Tezzeret, Master of Metal): a count of
         // your own permanents of a kind is cashed in by the deck's cards of that kind.
-        ownPermanentCounts(scripts(card)).forEach(::addPayers)
+        // So is a power or toughness defined by one — Vile Aggregate's "power is equal to the number
+        // of colorless creatures you control" — which lives on the stats, not the script.
+        ownPermanentCounts(scripts(card) + listOfNotNull(card.creatureStats)).forEach(::addPayers)
         // A card that also cashes in something every deck has — Shalai's "other creatures you
         // control have hexproof" beside its planeswalkers — is never short of fuel.
         if (fedByAnyDeck) return emptyList()
@@ -196,14 +204,20 @@ internal object CardAsks {
         else -> null
     }
 
+    /** "If you control a [filter]" ([Exists] on your battlefield, not negated), as "<filter> you control". */
+    private fun controlCheck(condition: Condition?): GameObjectFilter? =
+        (condition as? Exists)
+            ?.takeIf { it.player == Player.You && it.zone == Zone.BATTLEFIELD && !it.negate }
+            ?.filter?.takeIf { it.controllerPredicate == null }?.youControl()
+
     /**
-     * The kinds of permanent [scripts] count among yours — a [DynamicAmount.AggregateBattlefield]
+     * The kinds of permanent [roots] (a card's scripts and stats) count among yours — a [DynamicAmount.AggregateBattlefield]
      * count or a battlefield [DynamicAmount.Count] over [Player.You], or a
      * [PermanentTypeEnteredBattlefieldThisTurn] check on your own — each as "<filter> you
      * control". Walked reflectively, like [GraveyardSynergy], so an amount is found wherever an
      * effect, cost, condition or static holds it.
      */
-    private fun ownPermanentCounts(scripts: List<CardScript>): List<GameObjectFilter> {
+    private fun ownPermanentCounts(roots: List<Any>): List<GameObjectFilter> {
         val found = LinkedHashSet<GameObjectFilter>()
         val seen = IdentityHashMap<Any, Unit>()
         fun visit(node: Any?) {
@@ -233,7 +247,7 @@ internal object CardAsks {
                 }
             }
         }
-        scripts.forEach(::visit)
+        roots.forEach(::visit)
         return found.toList()
     }
 

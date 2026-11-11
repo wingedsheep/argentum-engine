@@ -9,10 +9,10 @@ import com.wingedsheep.sdk.model.Printing
  * Duel Decks: Zendikar vs. Eldrazi (2015)
  *
  * Scaffolded so that the cards this product printed *first* can hold their canonical
- * definitions. Retreat to Kazandu is one: the duel deck shipped five weeks before Battle for
- * Zendikar, so DDP — not BFZ — is its earliest real printing.
+ * definitions. Retreat to Kazandu, Sheer Drop and Dominator Drone are such cards: the duel deck
+ * shipped five weeks before Battle for Zendikar, so DDP — not BFZ — is their earliest real printing.
  *
- * The other 69 cards are reprints and are not authored here yet, hence [incomplete].
+ * The rest of the deck is reprints, not all authored here yet, hence [incomplete].
  *
  * [sealedSupported] stays false: a duel deck is two fixed 60-card decks, not a draftable product.
  *
