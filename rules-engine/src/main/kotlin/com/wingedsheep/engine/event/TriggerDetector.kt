@@ -1869,20 +1869,32 @@ class TriggerDetector(
                                 )
                             }
                         } else {
-                            for ((blockerId, attackerIds) in event.blockers) {
-                                if (!attackerIds.contains(combatCreatureId)) continue
-                                if (!predicateEvaluator.matches(
+                            // CR 509.3f: the blocker's characteristics are read as it becomes a
+                            // blocking creature, i.e. now.
+                            val matchingBlockers = event.blockers.entries
+                                .filter { (blockerId, attackerIds) ->
+                                    attackerIds.contains(combatCreatureId) && predicateEvaluator.matches(
                                         state, projected, blockerId, blockerFilter,
                                         PredicateContext(controllerId = controllerId, sourceId = entityId)
                                     )
-                                ) continue
+                                }
+                                .map { it.key }
+                            // "by one or more [filter] creatures" (CR 509.3e): one trigger for the
+                            // whole event, capturing every matching blocker.
+                            val firingBlockers = if (trigger.oncePerCombat) matchingBlockers.take(1) else matchingBlockers
+                            val capturedBlockers = matchingBlockers.takeIf { trigger.oncePerCombat }
+                            for (blockerId in firingBlockers) {
                                 triggers.add(
                                     PendingTrigger(
                                         ability = ability,
                                         sourceId = entityId,
                                         sourceName = cardComponent.name,
                                         controllerId = controllerId,
-                                        triggerContext = TriggerContext(triggeringEntityId = blockerId)
+                                        triggerContext = TriggerContext(
+                                            triggeringEntityId = blockerId,
+                                            capturedEntityIds = capturedBlockers,
+                                            capturedObjects = capturedBlockers?.mapNotNull { state.objectRef(it) }
+                                        )
                                     )
                                 )
                             }

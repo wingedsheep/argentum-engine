@@ -1196,7 +1196,7 @@ Families:
 - `EventPattern.BecameRenownedEvent(filter: GameObjectFilter)` — When a permanent becomes renowned (CR 702.112b) — a renown trigger resolved on it.
 - `EventPattern.BecameSaddledEvent(filter: GameObjectFilter, firstTimeEachTurn: Boolean)` — When a permanent becomes saddled (CR 702.171b) — a Saddle ability resolved on it.
 - `EventPattern.BecomesAttachedEvent(attachmentFilter: GameObjectFilter, attachmentController: Player, attachedToFilter: GameObjectFilter)` — When an Aura, Equipment, or Fortification becomes attached to a permanent or player (CR 603.2f — "becomes" triggers fire only at the moment of attaching, not on a state that already exists, and not…
-- `EventPattern.BecomesBlockedEvent(filter: GameObjectFilter?)` — When a creature becomes blocked.
+- `EventPattern.BecomesBlockedEvent(filter: GameObjectFilter?, oncePerCombat: Boolean)` — When a creature becomes blocked.
 - `EventPattern.BecomesPlottedEvent` — When this card becomes plotted (Outlaws of Thunder Junction).
 - `EventPattern.BecomesTargetEvent(targetFilter: GameObjectFilter, byYou: Boolean, byOpponent: Boolean, firstTimeEachTurn: Boolean, includeSpellTargets: Boolean, spellsOnly: Boolean, playerTargets: Player?, abilitiesOnly: Boolean, sourceFilter: GameObjectFilter?, backupAbilitiesOnly: Boolean, targetsOnlyIt: Boolean, batch: Boolean, includeObjectTargets: Boolean)` — When a permanent (or, opt-in, a spell on the stack or a player) becomes the target of a spell or ability.
 - `EventPattern.BecomesUnattachedEvent(attachmentFilter: GameObjectFilter, attachmentController: Player, unattachedFromFilter: GameObjectFilter)` — When an Aura, Equipment, or Fortification becomes **unattached** from a permanent — the mirror of BecomesAttachedEvent.

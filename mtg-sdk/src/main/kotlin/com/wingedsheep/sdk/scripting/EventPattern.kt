@@ -1500,15 +1500,32 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     /**
      * When a creature becomes blocked.
      * Binding SELF / ATTACHED = this / equipped or enchanted creature becomes blocked.
-     * With those bindings, a filter matches blockers and fires once per matching blocker.
+     * With those bindings, a filter matches blockers and fires once per matching blocker
+     * ("becomes blocked by a [filter] creature", CR 509.3d).
      * ANY = "whenever a creature you control becomes blocked" (filter=null),
      * ANY + filter = "whenever a [filter] becomes blocked" (any controller).
      */
     @SerialName("BecomesBlockedEvent")
     @Serializable
     data class BecomesBlockedEvent(
-        val filter: GameObjectFilter? = null
+        val filter: GameObjectFilter? = null,
+        /**
+         * SELF / ATTACHED with a blocker [filter] only: fire **once** per blocking event however
+         * many matching creatures block — the "becomes blocked by **one or more** [filter]
+         * creatures" wording (Hedron Blade; CR 509.3e's "at least a certain number" case) — instead
+         * of once per matching blocker. `TriggerContext.triggeringEntityId` is the first matching
+         * blocker and every matching blocker is captured (`CollectionSlot.TriggerCaptured`), the
+         * same shape as [BlocksOrBecomesBlockedByEvent.oncePerCombat]. An effect that later adds a
+         * matching blocker can trigger it again.
+         */
+        val oncePerCombat: Boolean = false
     ) : EventPattern {
+        init {
+            require(!oncePerCombat || filter != null) {
+                "BecomesBlockedEvent.oncePerCombat needs a blocker filter — unfiltered becomes-blocked already fires once"
+            }
+        }
+
         override val description: String = buildString {
             if (filter != null) {
                 append("a ${filter.description} becomes blocked")

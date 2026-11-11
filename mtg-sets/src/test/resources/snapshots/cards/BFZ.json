@@ -2418,6 +2418,81 @@
     "colorIdentityOverride": []
 }
 
+// Hedron Blade
+{
+    "name": "Hedron Blade",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+1.\nWhenever equipped creature becomes blocked by one or more colorless creatures, it gains deathtouch until end of turn. (Any amount of damage it deals to a creature is enough to destroy it.)\nEquip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hedron Blade:1",
+                "trigger": {
+                    "type": "BecomesBlockedEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsColorless"
+                        ]
+                    },
+                    "oncePerCombat": true
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "DEATHTOUCH",
+                    "target": "EquippedCreature"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Hedron Blade:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "224",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/87242e1d-babe-4b0d-aa1f-ab62e0bc4ab7.jpg?1783938177"
+    },
+    "colorIdentityOverride": []
+}
+
 // Hero of Goma Fada
 {
     "name": "Hero of Goma Fada",
