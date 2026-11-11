@@ -1,6 +1,7 @@
 package com.wingedsheep.ai.engine
 
 import com.wingedsheep.engine.limited.BoosterGenerator
+import com.wingedsheep.engine.limited.SideboardDerivation
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Rarity
@@ -156,7 +157,7 @@ class SealedDeckGeneratorTest : FunSpec({
         }
     }
 
-    test("a generated deck's sideboard is the rest of its pool (CR 100.4b)") {
+    test("a generated deck's sideboard is the rest of its pool (CR 100.4b) plus the basic land supply") {
         val boosters = BoosterGenerator(mapOf("FULL" to config("FULL", viablePool("FULL"), sealedSupported = true)))
         val gen = SealedDeckGenerator(boosters)
 
@@ -164,10 +165,11 @@ class SealedDeckGeneratorTest : FunSpec({
 
         // 8 boosters of a set with no basics: every opened card is in the deck or the sideboard.
         val opened = 8 * boosters.generateBooster("FULL").size
-        val sideboardCards = generated.sideboard.values.sum()
+        val (poolCards, basics) = generated.sideboard.entries.partition { it.key.startsWith("FULL") }
         val deckNonBasics = generated.deckList.filterKeys { it.startsWith("FULL") }.values.sum()
-        sideboardCards shouldBe opened - deckNonBasics
-        generated.sideboard.keys.forEach { it.startsWith("FULL") shouldBe true }
+        poolCards.sumOf { it.value } shouldBe opened - deckNonBasics
+        // Beside the pool, ten of each basic land — free in Limited, so a wish can fetch one.
+        basics.associate { it.key.substringBefore('#') to it.value } shouldBe SideboardDerivation.basicLandSupply
     }
 
     test("a generated deck plays every card with the printing it was opened as") {

@@ -624,7 +624,11 @@ class LobbyHandler(
             val deck = EasterEggDeckInjector.maybeInjectEasterEggs(
                 playerState.session.playerName, deckWithLandArt, gameProperties.easterEggs.enabled
             )
-            gameSession.addPlayer(playerState.session, deck, sideboard = playerState.submittedSideboard)
+            gameSession.addPlayer(
+                playerState.session, deck,
+                // The sideboard's basic-land supply wears the same set art as the deck's basics.
+                sideboard = BoosterGenerator.withBasicLandArt(playerState.submittedSideboard, sealedSession.basicLands),
+            )
             // The legacy two-player sealed flow has no companion field; companions ride the lobby path.
 
             // Store player info for persistence
