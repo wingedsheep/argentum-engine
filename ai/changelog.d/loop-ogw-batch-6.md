@@ -1,0 +1,1 @@
+- #TBD The AI reads a "whenever you tap a land for mana, add another" static (Zendikar Resurgent, Mirari's Wake) as ramp, and drafts planeswalkers beside an Oath of Chandra / Oath of Liliana that pays off a planeswalker entering.

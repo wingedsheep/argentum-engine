@@ -114,4 +114,16 @@ class CardAsksTest : FunSpec({
         // The spells Statuary grants improvise to are every deck's: that grant asks for nothing.
         answers("Inspiring Statuary", "Lightning Bolt") shouldBe false
     }
+
+    test("an end-step check for a planeswalker entering under your control asks for planeswalkers") {
+        // Oath of Chandra / Oath of Liliana: "if a planeswalker entered the battlefield under your
+        // control this turn" pays off only beside the deck's own planeswalkers.
+        for (asker in listOf("Oath of Chandra", "Oath of Liliana")) {
+            withClue("$asker asks ${read(asker).asks}") {
+                answers(asker, "Chandra, Flamecaller") shouldBe true
+                answers(asker, "Grizzly Bears") shouldBe false
+                answers(asker, "Lightning Bolt") shouldBe false
+            }
+        }
+    }
 })

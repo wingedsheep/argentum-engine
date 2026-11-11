@@ -82,6 +82,13 @@ class CardIntentAnalyzerTest : ScenarioTestBase() {
             intentOf("Jace, Arcane Strategist").tags shouldContain IntentTag.EVASION_GRANT
         }
 
+        test("an extra-mana-when-you-tap-a-land static is ramp") {
+            // Zendikar Resurgent / Mirari's Wake: "whenever you tap a land for mana, add one mana of
+            // any type that land produced" doubles every land you tap.
+            intentOf("Zendikar Resurgent").tags shouldContain IntentTag.RAMP
+            intentOf("Mirari's Wake").tags shouldContain IntentTag.RAMP
+        }
+
         test("a mana rock is ramp, and is worth about a land plus the card it can still cash in") {
             val intent = intentOf("Mind Stone")
             intent.tags shouldContain IntentTag.RAMP

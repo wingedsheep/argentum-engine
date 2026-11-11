@@ -51,6 +51,7 @@ import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.sdk.scripting.GrantDynamicStats
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.AdditionalCost
+import com.wingedsheep.sdk.scripting.AdditionalManaOnSourceTap
 import com.wingedsheep.sdk.scripting.GrantMayCastFromLinkedExile
 import com.wingedsheep.sdk.scripting.MayPlayCardsFromExile
 import com.wingedsheep.sdk.scripting.costs.PermanentCostAction
@@ -3360,6 +3361,12 @@ object CardIntentAnalyzer {
         }
 
         is GrantKeyword -> keywordTags(static.keyword)
+        // "Whenever you tap a land for mana, add one mana of any type that land produced" (Zendikar
+        // Resurgent, Mirari's Wake, Mana Flare): every tap of a matching source makes extra mana — a
+        // mana engine, [IntentTag.RAMP]. One that pumps only an opponent's lands is theirs.
+        is AdditionalManaOnSourceTap ->
+            if (static.sourceFilter.controllerPredicate == ControllerPredicate.ControlledByOpponent) emptySet()
+            else setOf(IntentTag.RAMP)
         // "Enchanted creature has 'Whenever this creature deals combat damage to a player, you may
         // draw a card'" (Sixth Sense): a trigger handed to the host for good that serves whoever
         // controls it is that creature's own ability from then on — read as if printed, as the
