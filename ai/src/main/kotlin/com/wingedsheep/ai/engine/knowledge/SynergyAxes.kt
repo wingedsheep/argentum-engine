@@ -54,6 +54,8 @@ import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.TurnTracker
+import com.wingedsheep.sdk.scripting.ReplacementEffect
+import com.wingedsheep.sdk.scripting.EntersWithExileCounters
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -583,8 +585,8 @@ object SynergyAxes {
         atom is CostAtom.ExileFrom && atom.zone == Zone.EXILE && !atom.exiles
 
     /** An as-enters move out of exile that isn't a linked exile — the processor shape. */
-    private fun processes(effect: com.wingedsheep.sdk.scripting.ReplacementEffect): Boolean =
-        effect is com.wingedsheep.sdk.scripting.EntersWithExileCounters &&
+    private fun processes(effect: ReplacementEffect): Boolean =
+        effect is EntersWithExileCounters &&
             effect.sourceZone == Zone.EXILE && effect.destination != Zone.EXILE
 
     private fun processes(cost: AbilityCost): Boolean = when (cost) {

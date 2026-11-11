@@ -1452,7 +1452,7 @@ class ModalAndCloneContinuationResumer(
         checkForMore: CheckForMore
     ): ExecutionResult {
         val exactCount = continuation.exactCount
-        val selected: List<com.wingedsheep.sdk.model.EntityId> = when (response) {
+        val selected: List<EntityId> = when (response) {
             // The all-or-none form asks yes/no first; "yes" then needs exactly that many cards.
             is YesNoResponse -> when {
                 exactCount == null -> return ExecutionResult.error(state, "Expected card selection response for exile counters")
@@ -1492,7 +1492,7 @@ class ModalAndCloneContinuationResumer(
 
         var newState = state
         val events = mutableListOf<GameEvent>()
-        val moved = mutableListOf<com.wingedsheep.sdk.model.EntityId>()
+        val moved = mutableListOf<EntityId>()
         for (cardId in selected) {
             val transition = services.zones.moveToZone(newState, cardId, continuation.destination)
             newState = transition.state

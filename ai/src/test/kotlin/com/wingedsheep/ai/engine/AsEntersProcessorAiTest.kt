@@ -22,7 +22,9 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * The as-enters processor — `EntersWithExileCounters` moving opponents' exiled cards to their
- * graveyards (Ulamog's Despoiler) — as the AI reads and answers it.
+ * graveyards (Ulamog's Despoiler). The synergy reading is this feature's AI change; the decision
+ * test pins that the generic yes/no and card-pick responders already answer the new two-step prompt
+ * (simulating the yes through the pick) rather than declining it.
  */
 class AsEntersProcessorAiTest : FunSpec({
 

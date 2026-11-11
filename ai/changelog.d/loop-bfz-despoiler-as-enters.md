@@ -1,1 +1,1 @@
-- #PR The AI counts opponents' exiled cards as fuel for an as-enters processor (Ulamog's Despoiler) and processes two so it enters with its counters
+- #PR The AI reads an as-enters processor (Ulamog's Despoiler) as a payoff for opponents' exiled cards when it drafts and builds around them

@@ -44,7 +44,8 @@ class UlamogsDespoilerScenarioTest : FunSpec({
         val despoiler = putCardInHand(player, "Ulamog's Despoiler")
         giveColorlessMana(player, 6)
         castSpell(player, despoiler).error shouldBe null
-        bothPass()
+        // Every player passes in turn until it resolves (two in a duel, three in multiplayer).
+        while (pendingDecision == null && despoiler in state.stack) passPriority(state.priorityPlayerId!!)
         return despoiler
     }
 
@@ -148,5 +149,24 @@ class UlamogsDespoilerScenarioTest : FunSpec({
 
         d.plusCounters(despoiler) shouldBe 4
         d.getGraveyard(bob).size shouldBe 0
+    }
+
+    test("in multiplayer the two cards may come from different opponents, each to its own owner's graveyard") {
+        val d = GameTestDriver().apply {
+            registerCards(TestCards.all)
+            registerCard(UlamogsDespoiler)
+        }
+        val (alice, bob, carol) = d.initMultiplayer(List(3) { Deck.of("Wastes" to 40) })
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        d.activePlayer shouldBe alice
+        val bobs = d.putCardInExile(bob, "Grizzly Bears")
+        val carols = d.putCardInExile(carol, "Hill Giant")
+
+        val despoiler = d.castDespoiler(alice)
+        d.submitYesNo(alice, true).error shouldBe null
+
+        d.plusCounters(despoiler) shouldBe 4
+        d.getGraveyard(bob) shouldContain bobs
+        d.getGraveyard(carol) shouldContain carols
     }
 })

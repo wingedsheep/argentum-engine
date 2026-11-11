@@ -446,16 +446,14 @@ internal class PermanentSpellResolver(
             .filterIsInstance<com.wingedsheep.sdk.scripting.EntersWithExileCounters>()
             .firstOrNull()
         if (exileCountersEffect != null) {
-            val effect = exileCountersEffect
             val predicateContext = PredicateContext(controllerId = controllerId, sourceId = spellId)
-            val owners = if (effect.anyPlayersZone) state.turnOrder else listOf(controllerId)
-            val candidates = owners.flatMap { state.getZone(ZoneKey(it, effect.sourceZone)) }.filter { cardId ->
-                cardId != spellId &&
-                    predicateEvaluator.matches(state, state.projectedState, cardId, effect.filter, predicateContext)
+            val owners = if (exileCountersEffect.anyPlayersZone) state.turnOrder else listOf(controllerId)
+            val candidates = owners.flatMap { state.getZone(ZoneKey(it, exileCountersEffect.sourceZone)) }.filter { cardId ->
+                predicateEvaluator.matches(state, state.projectedState, cardId, exileCountersEffect.filter, predicateContext)
             }
             val evaluatedMax = amountEvaluator.evaluate(
                 state,
-                effect.maxCards,
+                exileCountersEffect.maxCards,
                 EffectContext(
                     sourceId = spellId,
                     controllerId = controllerId,
@@ -463,20 +461,19 @@ internal class PermanentSpellResolver(
                 )
             ).coerceAtLeast(0)
             val maxCards = evaluatedMax.coerceAtMost(candidates.size)
-            val zoneName = effect.sourceZone.name.lowercase()
-            val fromText = if (effect.anyPlayersZone) zoneName else "your $zoneName"
-            // "creature cards", but "cards an opponent owns" — an owner clause follows the noun.
-            val filterText = effect.filter.description
-            val cards = when {
-                filterText.isBlank() || filterText.equals("any", ignoreCase = true) -> "cards"
-                filterText.endsWith(" owns") || filterText.endsWith(" controls") -> "cards $filterText"
-                else -> "$filterText cards"
-            }
-            val count = if (effect.allOrNone) "$maxCards" else "up to $maxCards"
-            val selectPrompt = if (effect.destination == Zone.EXILE) {
+            val zoneName = exileCountersEffect.sourceZone.name.lowercase()
+            val fromText = if (exileCountersEffect.anyPlayersZone) zoneName else "your $zoneName"
+            // "creature cards", but "creature cards an opponent owns" — an owner clause follows the noun.
+            val filterText = " " + exileCountersEffect.filter.description
+            val ownerClause = OWNER_CLAUSES.firstOrNull { filterText.contains(it) }
+            val kind = (if (ownerClause == null) filterText else filterText.substringBefore(ownerClause))
+                .trim().removeSuffix("card").trim().takeUnless { it.isBlank() || it.equals("any", ignoreCase = true) }
+            val cards = listOfNotNull(kind, "cards", ownerClause?.trim()).joinToString(" ")
+            val count = if (exileCountersEffect.allOrNone) "$maxCards" else "up to $maxCards"
+            val selectPrompt = if (exileCountersEffect.destination == Zone.EXILE) {
                 "Exile $count $cards from $fromText"
             } else {
-                "Put $count $cards from $fromText into their owners' ${effect.destination.name.lowercase()}s"
+                "Put $count $cards from $fromText into their owners' ${exileCountersEffect.destination.name.lowercase()}s"
             }
             val context = DecisionContext(
                 sourceId = spellId,
@@ -487,14 +484,14 @@ internal class PermanentSpellResolver(
                 spellId = spellId,
                 controllerId = controllerId,
                 ownerId = ownerId,
-                counterType = effect.counterType,
-                countersPerCard = effect.countersPerCard,
-                destination = effect.destination
+                counterType = exileCountersEffect.counterType,
+                countersPerCard = exileCountersEffect.countersPerCard,
+                destination = exileCountersEffect.destination
             )
-            if (effect.allOrNone) {
+            if (exileCountersEffect.allOrNone) {
                 // "You may move exactly N. If you do, …" — not offered when fewer than N can move.
                 if (evaluatedMax <= 0 || candidates.size < evaluatedMax) return null
-                val totalCounters = evaluatedMax * effect.countersPerCard
+                val totalCounters = evaluatedMax * exileCountersEffect.countersPerCard
                 return state.suspendForDecision(
                     question = { decisionId ->
                         YesNoDecision(
@@ -502,7 +499,7 @@ internal class PermanentSpellResolver(
                             playerId = controllerId,
                             prompt = "${selectPrompt.replaceFirstChar { it.uppercase() }}?",
                             context = context,
-                            yesText = "Yes ($totalCounters ${effect.counterType.printed} counter${if (totalCounters == 1) "" else "s"})",
+                            yesText = "Yes ($totalCounters ${exileCountersEffect.counterType.printed} counter${if (totalCounters == 1) "" else "s"})",
                             noText = "No"
                         )
                     },
@@ -531,6 +528,11 @@ internal class PermanentSpellResolver(
             }
         }
         return null
+    }
+
+    private companion object {
+        /** Owner/controller clauses a filter description appends after its noun. */
+        val OWNER_CLAUSES = listOf(" an opponent owns", " you own", " an opponent controls", " you control")
     }
 
     private fun pauseForDevour(
