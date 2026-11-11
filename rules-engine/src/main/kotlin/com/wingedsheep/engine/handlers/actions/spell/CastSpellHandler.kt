@@ -1293,7 +1293,8 @@ class CastSpellHandler(
             val verb = when (kind) {
                 AdditionalCostSelectionKind.SACRIFICE -> "sacrifice"
                 AdditionalCostSelectionKind.DISCARD -> "discard"
-                AdditionalCostSelectionKind.EXILE -> "exile"
+                AdditionalCostSelectionKind.EXILE ->
+                    if (atom is CostAtom.ExileFrom && !atom.exiles) "put into its owner's graveyard" else "exile"
                 AdditionalCostSelectionKind.TAP -> "tap"
                 AdditionalCostSelectionKind.RETURN_TO_HAND -> "return to hand"
                 AdditionalCostSelectionKind.PUT_COUNTERS -> "put counters on"

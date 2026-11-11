@@ -1,8 +1,11 @@
 package com.wingedsheep.ai.engine
 
+import com.wingedsheep.ai.engine.evaluation.SynergyPresence
+import com.wingedsheep.ai.engine.knowledge.IntentCatalog
 import com.wingedsheep.ai.engine.knowledge.SynergyAxes
 import com.wingedsheep.ai.engine.knowledge.SynergyAxis
 import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -33,6 +36,24 @@ class ProcessorCostAiTest : FunSpec({
             SynergyAxis.OPPONENT_EXILE
         // A processor doesn't feed itself: the cost spends the resource.
         SynergyAxes.of(CrypticCruiser).feeds shouldNotContain SynergyAxis.OPPONENT_EXILE
+    }
+
+    test("a processor on the board is worth the cards its opponents have in exile") {
+        val d = GameTestDriver()
+        d.registerCards(TestCards.all + CrypticCruiser)
+        d.initMirrorMatch(Deck.of("Island" to 40), skipMulligans = true)
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val player = d.activePlayer!!
+        val opponent = d.getOpponent(player)
+        d.putCreatureOnBattlefield(player, CrypticCruiser.name)
+        d.putCardInExile(player, "Island")
+        val term = SynergyPresence(IntentCatalog.of(CardRegistry().apply { register(TestCards.all + CrypticCruiser) }))
+        fun value() = term.value(d.state, d.state.projectedState, player, ownSeat = true)
+
+        // Our own exiled card is no fuel.
+        value() shouldBe 0.0
+        repeat(2) { d.putCardInExile(opponent, "Island") }
+        value() shouldBe SynergyPresence.PAIR_VALUE * 2
     }
 
     test("the AI casts Processor Assault, paying with the opponent's exiled card, at the opponent's creature") {

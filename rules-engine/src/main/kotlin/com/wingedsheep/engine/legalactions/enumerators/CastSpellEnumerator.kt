@@ -2946,7 +2946,7 @@ class CastSpellEnumerator(
                     // A variable exile ("exile X cards") takes any number up to the pool; a fixed
                     // one ("exile a card", a processor's "put a card … from exile") takes exactly
                     // its count, which is all payment validation accepts.
-                    exileMaxCount = if (additionalCosts.any {
+                    exileMaxCount = if (com.wingedsheep.engine.mechanics.cost.spell.SpellCosts.flattenComposites(additionalCosts).any {
                             it is AdditionalCost.VariableCards && it.action == CardCostAction.EXILE
                         }
                     ) offer.exileTargets.size else offer.exileMinCount

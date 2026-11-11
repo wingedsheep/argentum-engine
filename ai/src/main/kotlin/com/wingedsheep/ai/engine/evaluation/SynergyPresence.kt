@@ -103,6 +103,12 @@ class SynergyPresence(private val intents: IntentCatalog) : BoardFeature {
             }
         }
         if (payoffs.isEmpty()) return 0.0
+        // The opponent-exile axis's fuel is the resource itself, not a feeder: every card an
+        // opponent owns in exile is one more payment a processor can make.
+        if (payoffs.any { SynergyAxis.OPPONENT_EXILE in it }) {
+            val exiled = state.turnOrder.filter { it != player }.sumOf { state.getZone(it, Zone.EXILE).size }
+            if (exiled > 0) inPlay.merge(SynergyAxis.OPPONENT_EXILE, exiled, Int::plus)
+        }
 
         val inHand = EnumMap<SynergyAxis, Int>(SynergyAxis::class.java)
         if (ownSeat) {

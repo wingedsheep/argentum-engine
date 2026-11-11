@@ -430,6 +430,10 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
                 "ExileFrom destination must be EXILE or GRAVEYARD, was $destination"
             }
             require(destination != zone) { "ExileFrom can't move cards from $zone into $zone" }
+            // The one non-exile shape that is wired: the processor cost, exile → graveyard.
+            require(destination == Zone.EXILE || zone == Zone.EXILE) {
+                "ExileFrom into $destination is wired only from EXILE, was from $zone"
+            }
         }
 
         /** True when the cards really are exiled (the default), false for a processor-style move. */

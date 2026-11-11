@@ -242,15 +242,21 @@ class ProcessorCostScenarioTest : FunSpec({
         val (alice, bob) = d.startTwoPlayer()
         val spell = d.putCardInHand(alice, "Test Processor Sorcery")
         val exiled = d.putCardInExile(bob, "Grizzly Bears")
+        val other = d.putCardInExile(bob, "Island")
         d.giveColorlessMana(alice, 1)
 
         val info = d.legalActions(alice).first { (it.action as? CastSpell)?.cardId == spell }
-        withClue("the cast offers the opponent's exiled card: ${info.additionalCostInfo}") {
-            info.additionalCostInfo!!.validExileTargets shouldContainExactlyInAnyOrder listOf(exiled)
+        withClue("the cast offers the opponent's exiled cards: ${info.additionalCostInfo}") {
+            info.additionalCostInfo!!.validExileTargets shouldContainExactlyInAnyOrder listOf(exiled, other)
+        }
+        withClue("the picker takes exactly the cost's one card, not up to the whole pool") {
+            info.additionalCostInfo!!.exileMinCount shouldBe 1
+            info.additionalCostInfo!!.exileMaxCount shouldBe 1
         }
 
         d.castProcessorSpell(alice, spell, listOf(exiled)).error shouldBe null
         d.getGraveyard(bob) shouldContain exiled
+        d.exile(bob) shouldContain other
         d.bothPass()
         d.getLifeTotal(alice) shouldBe 23
     }
