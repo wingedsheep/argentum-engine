@@ -28,6 +28,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AttackTax
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerStepScope
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -135,10 +136,10 @@ internal class PlayerActiveEffectsProjector(
             when (modification) {
                 is SerializableModification.PreventAllCombatDamage -> tally.preventsAllCombatDamage = true
                 is SerializableModification.PreventCombatDamageFromGroup ->
-                    tally.preventedCombatDamageSources.add(modification.filter.description)
+                    tally.preventedCombatDamageSources.add(groupText(state, modification.filter, audience))
                 is SerializableModification.PreventAllDamageFromGroup ->
-                    if (modification.combatOnly) tally.preventedCombatDamageSources.add(modification.filter.description)
-                    else tally.preventedAllDamageSources.add(modification.filter.description)
+                    if (modification.combatOnly) tally.preventedCombatDamageSources.add(groupText(state, modification.filter, audience))
+                    else tally.preventedAllDamageSources.add(groupText(state, modification.filter, audience))
                 else -> {}
             }
             if (playerId !in floatingEffect.effect.affectedEntities) continue
@@ -1097,6 +1098,21 @@ internal class PlayerActiveEffectsProjector(
         collect(effectJson.encodeToJsonElement<Effect>(effect))
         val names = captured.map { publicName(state, it, audience) }.distinct()
         return if (names.size == 1) text.replace(SPECIFIC_ENTITY, names.single()) else text
+    }
+
+    /**
+     * A shield's source group as text, the controller after the noun as Oracle prints it
+     * ("creatures you control"). A group baked at resolution — "creatures target opponent
+     * controls" (Encircling Fissure) — names its player as an [EffectTarget.SpecificEntity], whose
+     * own text is only "specific entity"; that player's name replaces it, so two shields aimed at
+     * different players stay two badges.
+     */
+    private fun groupText(state: GameState, filter: GameObjectFilter, audience: Audience): String {
+        val text = filter.pluralPermanentDescription
+        if (SPECIFIC_ENTITY !in text) return text
+        val player = ((filter.controllerPredicate as? ControllerPredicate.ControlledByReferencedPlayer)
+            ?.target as? EffectTarget.SpecificEntity)?.entityId ?: return text
+        return text.replace(SPECIFIC_ENTITY, publicName(state, player, audience))
     }
 
     /** What [audience] may call [entityId]: a player's name, a public card's, or a placeholder. */

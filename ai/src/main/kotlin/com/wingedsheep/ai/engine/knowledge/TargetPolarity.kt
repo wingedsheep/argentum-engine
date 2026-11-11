@@ -138,7 +138,9 @@ import com.wingedsheep.sdk.scripting.effects.RemoveAnyNumberOfCountersEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveAllCountersOfTypeEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveUntilSourceLeavesEffect
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
+import com.wingedsheep.sdk.scripting.effects.PreventionSourceFilter
 import com.wingedsheep.sdk.scripting.effects.ProliferateEffect
 import com.wingedsheep.sdk.scripting.effects.PreventionDirection
 import com.wingedsheep.sdk.scripting.effects.HealDamageEffect
@@ -656,6 +658,9 @@ object TargetPolarityAnalyzer {
                 val reading = libraryTopPolarity(setOf(leaf.storeMatch, leaf.storeRevealed), effect)
                 if (reading != null) playerSlotOf(leaf.player, requirements)?.let { perSlot[it] += reading }
             }
+            // The muzzled player's slot reads here; the shield's own recipient (if it targets
+            // one) still reads through the classification below.
+            preventionSourceOwnerSlot(leaf, requirements)?.let { perSlot[it] += TargetPolarity.HARMFUL }
             val offenceWatch = offenceWatchSlot(leaf, requirements)
             if (offenceWatch != null) {
                 perSlot[offenceWatch] += TargetPolarity.BENEFICIAL
@@ -1251,8 +1256,23 @@ object TargetPolarityAnalyzer {
      * controls" — or null. An explicit reference names its slot; the implicit "target player"
      * predicate is the spell's player target, read only when there is exactly one.
      */
-    private fun groupOwnerSlot(space: IterationSpace.Group, requirements: List<TargetRequirement>): Int? {
-        val filter = space.filter.baseFilter
+    private fun groupOwnerSlot(space: IterationSpace.Group, requirements: List<TargetRequirement>): Int? =
+        controllingPlayerSlot(space.filter.baseFilter, requirements)
+
+    /**
+     * "Prevent all combat damage that would be dealt this turn by creatures target opponent
+     * controls" (Encircling Fissure): a shield over the sources a target player controls muzzles
+     * that player's side, so the player slot it names reads harmful. Null when the shield names
+     * no player slot through its source filter.
+     */
+    private fun preventionSourceOwnerSlot(leaf: Effect, requirements: List<TargetRequirement>): Int? {
+        if (leaf !is PreventDamageEffect || !leaf.preventDamage) return null
+        val sources = leaf.sourceFilter as? PreventionSourceFilter.Matching ?: return null
+        return controllingPlayerSlot(sources.filter, requirements)
+    }
+
+    /** The target-player slot whose permanents [filter] confines itself to, or null. */
+    private fun controllingPlayerSlot(filter: GameObjectFilter, requirements: List<TargetRequirement>): Int? {
         if (filter.anyOf.isNotEmpty()) return null
         return when (val controller = filter.controllerPredicate) {
             is ControllerPredicate.ControlledByReferencedPlayer -> slotOf(controller.target, requirements)

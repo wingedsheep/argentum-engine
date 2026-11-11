@@ -11,6 +11,7 @@ import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.ResolutionFilterBaker
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
@@ -53,7 +54,11 @@ class PreventDamageExecutor(
         // A chosen source needs a player decision before the shield exists.
         is PreventionSourceFilter.Chosen -> handleChosenSource(state, effect, sources.eligible, context)
         is PreventionSourceFilter.Matching -> {
-            val filter = bindChosenValues(state, sources.filter, context)
+            // The shield outlives this resolution, so a player the filter names through the
+            // resolving context — "creatures target opponent controls" (Encircling Fissure) — is
+            // pinned now; which creatures that player controls stays live at damage time.
+            val baked = ResolutionFilterBaker.bake(sources.filter, context, state)
+            val filter = bindChosenValues(state, baked, context)
             if (filter == null) {
                 EffectResult.error(state, "No chosen creature type on source ${context.sourceId} for a prevention shield")
             } else {

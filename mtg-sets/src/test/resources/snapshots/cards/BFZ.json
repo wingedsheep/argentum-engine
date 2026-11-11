@@ -800,6 +800,51 @@
     ]
 }
 
+// Boiling Earth
+{
+    "name": "Boiling Earth",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Boiling Earth deals 1 damage to each creature your opponents control.\nAwaken 4—{6}{R} (If you cast this spell for {6}{R}, also put four +1/+1 counters on target land you control and it becomes a 0/0 Elemental creature with haste. It's still a land.)",
+    "keywords": [
+        "AWAKEN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Awaken",
+            "count": 4,
+            "cost": "{6}{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                }
+            },
+            "body": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "target": "IterationEntity"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "artist": "Titus Lunter",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cdaab44c-4ce1-43fb-915c-c687fe8559ce.jpg?1783938195"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Brood Monitor
 {
     "name": "Brood Monitor",
@@ -1173,6 +1218,51 @@
         "artist": "Mike Bierek",
         "flavorText": "When Emeria's worshippers learned that she was no more than a twisted memory of Emrakul, they abandoned their temples to the god. The deserted shrines now serve as breeding grounds for the mantas.",
         "imageUri": "https://cards.scryfall.io/normal/front/1/8/1854f819-d08e-4a23-bedb-4618b79623e9.jpg?1783938210"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Clutch of Currents
+{
+    "name": "Clutch of Currents",
+    "manaCost": "{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target creature to its owner's hand.\nAwaken 3—{4}{U} (If you cast this spell for {4}{U}, also put three +1/+1 counters on target land you control and it becomes a 0/0 Elemental creature with haste. It's still a land.)",
+    "keywords": [
+        "AWAKEN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Awaken",
+            "count": 3,
+            "cost": "{4}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Hand"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d20f482-e0b2-4e4a-be32-347ab112912c.jpg?1783938210"
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -1673,6 +1763,62 @@
     ]
 }
 
+// Earthen Arms
+{
+    "name": "Earthen Arms",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put two +1/+1 counters on target permanent.\nAwaken 4—{6}{G} (If you cast this spell for {6}{G}, also put four +1/+1 counters on target land you control and it becomes a 0/0 Elemental creature with haste. It's still a land.)",
+    "keywords": [
+        "AWAKEN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Awaken",
+            "count": 4,
+            "cost": "{6}{G}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "AddCounters",
+            "counterType": "PLUS_ONE_PLUS_ONE",
+            "count": 2,
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "permanent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/dadc77d8-ef1c-431d-8716-9583f4fad33f.jpg?1783938189",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Any permanent can have a +1/+1 counter put on it. Those counters won't have any effect unless that permanent is or becomes a creature."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If you cast Earthen Arms for its awaken cost, a land you control can be both targets."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Eldrazi Devastator
 {
     "name": "Eldrazi Devastator",
@@ -1798,6 +1944,67 @@
             {
                 "date": "2015-08-25",
                 "text": "If you return an Aura to the battlefield this way, you choose what it will enchant as it enters the battlefield. This doesn't target any player or permanent, so you could attach an Aura to a permanent with hexproof controlled by an opponent, for example. If there's nothing the Aura can legally enchant, it stays in the graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Encircling Fissure
+{
+    "name": "Encircling Fissure",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Prevent all combat damage that would be dealt this turn by creatures target opponent controls.\nAwaken 2—{4}{W} (If you cast this spell for {4}{W}, also put two +1/+1 counters on target land you control and it becomes a 0/0 Elemental creature with haste. It's still a land.)",
+    "keywords": [
+        "AWAKEN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Awaken",
+            "count": 2,
+            "cost": "{4}{W}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "PreventDamageShield",
+            "scope": "CombatOnly",
+            "direction": "FromTarget",
+            "sourceFilter": {
+                "type": "PreventFromMatching",
+                "filter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ],
+                    "controllerPredicate": {
+                        "type": "ControlledByReferencedPlayer",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/7/575da7cb-6715-43df-a7b4-a4ca00216a1d.jpg?1783938221",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Encircling Fissure prevents all combat damage that would be dealt by any creature controlled by the target opponent, even if that creature wasn't on the battlefield or wasn't a creature as Encircling Fissure resolved."
             }
         ]
     },
@@ -2358,6 +2565,68 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Halimar Tidecaller
+{
+    "name": "Halimar Tidecaller",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Wizard Ally",
+    "oracleText": "When this creature enters, you may return target card with awaken from your graveyard to your hand.\nLand creatures you control have flying.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Halimar Tidecaller:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "kw:awaken own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING",
+                "filter": {
+                    "baseFilter": "creature land ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "rarity": "UNCOMMON",
+        "artist": "Magali Villeneuve",
+        "flavorText": "\"Quiet the waves? Why would I want to do that?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/c/dc3e3b18-bf00-4f1a-9918-9a0e9d75b747.jpg?1783938208"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3186,6 +3455,84 @@
     ]
 }
 
+// Mire's Malice
+{
+    "name": "Mire's Malice",
+    "manaCost": "{3}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent discards two cards.\nAwaken 3—{5}{B} (If you cast this spell for {5}{B}, also put three +1/+1 counters on target land you control and it becomes a 0/0 Elemental creature with haste. It's still a land.)",
+    "keywords": [
+        "AWAKEN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Awaken",
+            "count": 3,
+            "cost": "{5}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "hand"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "hand",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "chooser": "TargetPlayer",
+                    "storeSelected": "discarded",
+                    "prompt": "Choose 2 cards to discard"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "discarded",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "moveType": "Discard"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "artist": "Jakub Kasper",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c2d737fb-fd09-4483-8128-8897cbcdc4f5.jpg?1783938200"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Mist Intruder
 {
     "name": "Mist Intruder",
@@ -3599,6 +3946,56 @@
     ]
 }
 
+// Ondu Rising
+{
+    "name": "Ondu Rising",
+    "manaCost": "{1}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Whenever a creature attacks this turn, it gains lifelink until end of turn.\nAwaken 4—{4}{W} (If you cast this spell for {4}{W}, also put four +1/+1 counters on target land you control and it becomes a 0/0 Elemental creature with haste. It's still a land.)",
+    "keywords": [
+        "AWAKEN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Awaken",
+            "count": 4,
+            "cost": "{4}{W}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CreateDelayedTrigger",
+            "effect": {
+                "type": "GrantKeyword",
+                "keyword": "LIFELINK",
+                "target": "TriggeringEntity"
+            },
+            "trigger": {
+                "event": {
+                    "type": "AttackEvent",
+                    "filter": "creature"
+                },
+                "binding": "ANY"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/07cb9f87-7ba4-408c-952d-fc9a7611df42.jpg?1783938217",
+        "rulings": [
+            {
+                "date": "2015-10-02",
+                "text": "Ondu Rising creates a delayed triggered ability. Any creature that attacks that turn will cause that ability to trigger, including creatures controlled by a teammate and creatures you didn't control or that didn't exist as Ondu Rising resolved. Notably, this includes the land creature created if Ondu Rising is cast for its awaken cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Oran-Rief Invoker
 {
     "name": "Oran-Rief Invoker",
@@ -3699,6 +4096,108 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Part the Waterveil
+{
+    "name": "Part the Waterveil",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Take an extra turn after this one. Exile Part the Waterveil.\nAwaken 6—{6}{U}{U}{U} (If you cast this spell for {6}{U}{U}{U}, also put six +1/+1 counters on target land you control and it becomes a 0/0 Elemental creature with haste. It's still a land.)",
+    "keywords": [
+        "AWAKEN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Awaken",
+            "count": 6,
+            "cost": "{6}{U}{U}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": "TakeExtraTurn",
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "MYTHIC",
+        "artist": "Titus Lunter",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/3/83fe992f-0441-42be-89f9-2387b4bc24ce.jpg?1783938208",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Exiling Part the Waterveil is part of its effect. If Part the Waterveil doesn't resolve, including if it was cast for its awaken cost and the land you control became an illegal target, it will be put into its owner's graveyard."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "You can cast a spell with awaken for its mana cost and get only its first effect. If you cast a spell for its awaken cost, you'll get both effects."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Planar Outburst
+{
+    "name": "Planar Outburst",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy all nonland creatures.\nAwaken 4—{5}{W}{W}{W} (If you cast this spell for {5}{W}{W}{W}, also put four +1/+1 counters on target land you control and it becomes a 0/0 Elemental creature with haste. It's still a land.)",
+    "keywords": [
+        "AWAKEN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Awaken",
+            "count": 4,
+            "cost": "{5}{W}{W}{W}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "creature nonland"
+                    },
+                    "storeAs": "destroyAll_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "destroyAll_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "rarity": "RARE",
+        "artist": "Vincent Proce",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f34f930-a7c6-400d-b6e8-b9908e0f0404.jpg?1783938216",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "A \"nonland creature\" is a creature that isn't also a land."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If the non-awaken part of the spell doesn't require a target and you cast the spell for its awaken cost, then the spell won't resolve if the target land you control becomes illegal before the spell resolves (such as due to being destroyed in response to the spell being cast)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -4269,6 +4768,110 @@
     ]
 }
 
+// Rising Miasma
+{
+    "name": "Rising Miasma",
+    "manaCost": "{3}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "All creatures get -2/-2 until end of turn.\nAwaken 3—{5}{B}{B} (If you cast this spell for {5}{B}{B}, also put three +1/+1 counters on target land you control and it becomes a 0/0 Elemental creature with haste. It's still a land.)",
+    "keywords": [
+        "AWAKEN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Awaken",
+            "count": 3,
+            "cost": "{5}{B}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            },
+            "body": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": -2
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": -2
+                },
+                "target": "IterationEntity"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "UNCOMMON",
+        "artist": "Deruchenko Alexander",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4f9a8e87-3b8b-4dbf-9c1e-0a3290a33a0b.jpg?1783938199",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "If you cast Rising Miasma for its awaken cost, creatures will get -2/-2 before the land you targeted is turned into a creature. Unless it was already a land creature before Rising Miasma started resolving, it won't get -2/-2."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Roil Spout
+{
+    "name": "Roil Spout",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put target creature on top of its owner's library.\nAwaken 4—{4}{W}{U} (If you cast this spell for {4}{W}{U}, also put four +1/+1 counters on target land you control and it becomes a 0/0 Elemental creature with haste. It's still a land.)",
+    "keywords": [
+        "AWAKEN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Awaken",
+            "count": 4,
+            "cost": "{4}{W}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Library",
+            "placement": "Top"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "219",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/ee9fdecc-ba16-4aa2-9c20-7c2942ec143e.jpg?1783938178"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Rot Shambler
 {
     "name": "Rot Shambler",
@@ -4355,6 +4958,74 @@
     ]
 }
 
+// Rush of Ice
+{
+    "name": "Rush of Ice",
+    "manaCost": "{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Tap target creature. It doesn't untap during its controller's next untap step.\nAwaken 3—{4}{U} (If you cast this spell for {4}{U}, also put three +1/+1 counters on target land you control and it becomes a 0/0 Elemental creature with haste. It's still a land.)",
+    "keywords": [
+        "AWAKEN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Awaken",
+            "count": 3,
+            "cost": "{4}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "DOESNT_UNTAP",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "UntilAfterAffectedControllersNextUntap"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "artist": "Deruchenko Alexander",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f9ae6f63-d1b2-4bf9-a423-ed6fbb540d4b.jpg?1783938207",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Rush of Ice can target a creature that's already tapped. It still won't untap during its controller's next untap step."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Rush of Ice tracks the creature, but not its controller. If the creature changes controllers before its first controller's next untap step has come around, then it won't untap during its new controller's next untap step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Sandstone Bridge
 {
     "name": "Sandstone Bridge",
@@ -4429,6 +5100,46 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Scatter to the Winds
+{
+    "name": "Scatter to the Winds",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell.\nAwaken 3—{4}{U}{U} (If you cast this spell for {4}{U}{U}, also put three +1/+1 counters on target land you control and it becomes a 0/0 Elemental creature with haste. It's still a land.)",
+    "keywords": [
+        "AWAKEN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Awaken",
+            "count": 3,
+            "cost": "{4}{U}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": "Counter",
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "rarity": "RARE",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d73ad49f-fe15-4fe5-9731-fd71d31c1e7f.jpg?1783938207"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
