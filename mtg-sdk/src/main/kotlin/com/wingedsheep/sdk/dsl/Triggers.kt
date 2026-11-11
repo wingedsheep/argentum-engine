@@ -270,14 +270,17 @@ class ObjectTriggerSubject internal constructor(
      * `by` fires once **per matching blocker**, with that blocker as the triggering entity
      * (Sylvan Basilisk, "destroy that creature"). `by` also supports [Triggers.attached]. A
      * filtered SELF/ATTACHED subject is rejected: the event's filter axis is the blocker.
+     * [oncePerCombat] (with `by`) is the "becomes blocked by **one or more** [filter] creatures"
+     * wording: one trigger however many matching creatures block (Hedron Blade).
      * Under [Triggers.a] the subject filter is the blocked creature ("whenever a Beast becomes blocked").
      */
-    fun becomesBlocked(by: GameObjectFilter? = null): TriggerSpec {
+    fun becomesBlocked(by: GameObjectFilter? = null, oncePerCombat: Boolean = false): TriggerSpec {
         if (binding == TriggerBinding.SELF || binding == TriggerBinding.ATTACHED) {
             unfiltered("becomesBlocked")
-            return spec(BecomesBlockedEvent(filter = by))
+            require(!oncePerCombat || by != null) { "becomesBlocked(oncePerCombat) needs a blocker filter `by`" }
+            return spec(BecomesBlockedEvent(filter = by, oncePerCombat = oncePerCombat))
         }
-        require(by == null) { "becomesBlocked(by) requires Triggers.self or Triggers.attached" }
+        require(by == null && !oncePerCombat) { "becomesBlocked(by, oncePerCombat) requires Triggers.self or Triggers.attached" }
         return spec(BecomesBlockedEvent(filter = filter))
     }
 

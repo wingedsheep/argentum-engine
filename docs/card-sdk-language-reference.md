@@ -1706,7 +1706,8 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
 (replacement effects). Their serial names are unchanged.
 
 `Triggers.attached.becomesBlocked(by = filter)` uses the same per-blocker semantics for an equipped
-or enchanted creature (Infiltration Lens). Omit `by` for one trigger when that creature first becomes
+or enchanted creature (Infiltration Lens); add `oncePerCombat = true` for "by one or more [filter]
+creatures" (Hedron Blade). Omit `by` for one trigger when that creature first becomes
 blocked. The source and controller remain the attachment; the triggering entity is the blocker with
 `by`, or the attached creature without it. Both declared blocks and later blocking relationships use
 this path, with blocker filters evaluated against projected state.
@@ -8641,7 +8642,7 @@ control dies" is `Triggers.a(filter)`, not `self.matching(filter)`.
 
 **Object verbs** (`self` / `attached` / `a` / `another`): `enters(from?)`, `leaves(to?, excludeTo?,
 excludeSacrifice?, asCraftMaterial?)`, `dies()`, `changesZone(from?, to?, excludeTo?)` (non-battlefield
-moves), `attacks(requires)`, `blocks(attackerFilter?, minBlockedAttackers?)`, `becomesBlocked(by?)`,
+moves), `attacks(requires)`, `blocks(attackerFilter?, minBlockedAttackers?)`, `becomesBlocked(by?, oncePerCombat?)`,
 `blocksOrBecomesBlocked(by?, oncePerCombat?)`, `attacksAndIsntBlocked()`, `dealsDamage(to, damageType,
 requireExcess, batch, requires)`, `dealsCombatDamage(to, …)`, `isDealtDamage(by)`,
 `damagedCreatureDies(dying?)`, `becomesTapped(reason?, firstTimeEachTurn?)`, `becomesUntapped()`, `tappedForMana()` (SELF / ATTACHED), `manaAbilityResolves()` (SELF only),
@@ -9139,6 +9140,16 @@ The shapes in this family, with their engine notes.
   filter constrains the **blocker** (Ogre Leadfoot, Sylvan Basilisk, Battering Ram). `by` is
   supported by SELF and ATTACHED. Filtered subjects are rejected — for these bindings the event's
   one filter axis is the blocker, so a subject filter would silently be read as a blocker filter.
+- `Triggers.self.becomesBlocked(by = filter, oncePerCombat = true)` /
+  `Triggers.attached.becomesBlocked(by = filter, oncePerCombat = true)` — "becomes blocked by **one or
+  more** [filter] creatures" (CR 509.3e's "at least a certain number" case): **one** trigger per
+  blocking event however many matching creatures block, none when no blocker matches. The first
+  matching blocker is the `TriggeringEntity` and every matching blocker is captured
+  (`CollectionSlot.TriggerCaptured`) — the same shape as `blocksOrBecomesBlocked(oncePerCombat)`.
+  An effect that later adds a matching blocker can trigger it again. Requires `by`
+  (`BecomesBlockedEvent.oncePerCombat`). Hedron Blade: `Triggers.attached.becomesBlocked(by =
+  Creature.withCardPredicate(IsColorless), oncePerCombat = true)` +
+  `Effects.GrantKeyword(DEATHTOUCH, EffectTarget.EquippedCreature)`.
 - `Triggers.<subject>.blocks(attackerFilter, minBlockedAttackers)` — `filter`
   constrains the blocker (ANY binding). `attackerFilter` constrains the blocked attacker — requires
   SELF binding for "whenever this creature blocks a [filter]" (Skystinger);
