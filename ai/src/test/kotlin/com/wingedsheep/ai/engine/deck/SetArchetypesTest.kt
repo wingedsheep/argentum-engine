@@ -666,6 +666,28 @@ class SetArchetypesTest : StringSpec({
             "Humans" to listOf("Human"),
         )
     }
+    "Oath of the Gatewatch exposes its ten colour-pair archetypes, one of them tribal" {
+        val synergies = requireNotNull(SetArchetypes.getForSet("ogw"))
+
+        synergies.setName shouldBe "Oath of the Gatewatch"
+        synergies.archetypes.map { it.name } shouldContainExactly listOf(
+            "Fliers Tempo",
+            "Colorless Control",
+            "Devoid Aggro",
+            "Ramp and Stomp",
+            "Support Counters",
+            "Lifegain Drain",
+            "Surge Spells",
+            "Graveyard Midrange",
+            "Ally Equipment Aggro",
+            "Eldrazi Ramp",
+        )
+        synergies.archetypes.map { it.colors.toSet() } shouldContainExactly ALL_COLOR_PAIRS.toList()
+        synergies.archetypes.filter { it.creatureTypes.isNotEmpty() }.associate { it.name to it.creatureTypes } shouldBe mapOf(
+            "Ally Equipment Aggro" to listOf("Ally"),
+        )
+    }
+
     "Eldritch Moon exposes its ten colour-pair archetypes, four of them tribal" {
         val synergies = requireNotNull(SetArchetypes.getForSet("emn"))
 

@@ -1417,6 +1417,33 @@ object SetArchetypes {
                     "Play cheap creatures with value on entering or dying, then sacrifice them to emerge Eldrazi for a fraction of their cost. A ramp-flavoured value deck that cashes every body into a bigger threat."),
             )
         ),
+        "OGW" to SetSynergies(
+            setCode = "OGW",
+            setName = "Oath of the Gatewatch",
+            archetypes = listOf(
+                Archetype("Fliers Tempo", listOf(Color.WHITE, Color.BLUE),
+                    "Fly over the ground with evasive creatures and reset the opponent's best blocker with bounce like Reflector Mage. A tempo deck that wins races in the air."),
+                Archetype("Colorless Control", listOf(Color.BLUE, Color.BLACK),
+                    "Play devoid Eldrazi and colorless mana sources such as Wastes to power {C} costs, then grind the opponent out with removal and evasive threats. A controlling deck that rewards building around colorless mana."),
+                Archetype("Devoid Aggro", listOf(Color.BLACK, Color.RED),
+                    "Curve out with devoid creatures so every colorless body that enters drains the opponent through payoffs like Flayer Drone. An aggressive deck that turns a wide colorless board into reach."),
+                Archetype("Ramp and Stomp", listOf(Color.RED, Color.GREEN),
+                    "Ramp into big creatures and sink spare mana into pump abilities like Relentless Hunter's. A stompy midrange deck that overpowers the ground."),
+                Archetype("Support Counters", listOf(Color.GREEN, Color.WHITE),
+                    "Spread +1/+1 counters across your team with support and grow a board that outclasses the opponent's creatures. A go-wide midrange deck that wins through bigger bodies."),
+                Archetype("Lifegain Drain", listOf(Color.WHITE, Color.BLACK),
+                    "Gain life in small chunks and turn each gain into lost life for the opponent with payoffs like Cliffhaven Vampire. A grindy deck that wins races by draining."),
+                Archetype("Surge Spells", listOf(Color.BLUE, Color.RED),
+                    "Cast two spells in a turn to pay surge costs and grow prowess creatures, chaining cheap instants into card draw and burn. A tempo deck that wins on its two-spell turns."),
+                Archetype("Graveyard Midrange", listOf(Color.BLACK, Color.GREEN),
+                    "Trade creatures early, sacrifice Eldrazi Scions for value, then return the best ones from your graveyard. A grindy midrange deck that out-values the opponent in the long game."),
+                Archetype("Ally Equipment Aggro", listOf(Color.RED, Color.WHITE),
+                    "Build a team of Allies that tap together for cohort effects, and suit them up with Equipment so the whole team hits harder. An aggressive go-wide deck that ends the game before the Eldrazi land.",
+                    creatureTypes = listOf("Ally")),
+                Archetype("Eldrazi Ramp", listOf(Color.GREEN, Color.BLUE),
+                    "Ramp with Eldrazi Scions and colorless mana, protect your threats with flash creatures, and cast big Eldrazi ahead of curve. A ramp deck that lands the largest threats on the board."),
+            )
+        ),
         "MOM" to SetSynergies(
             setCode = "MOM",
             setName = "March of the Machine",

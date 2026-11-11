@@ -3282,6 +3282,73 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  OGW: {
+    setCode: 'OGW',
+    setName: 'Oath of the Gatewatch',
+    archetypes: [
+      {
+        name: 'Fliers Tempo',
+        colors: ['W', 'U'],
+        keyCard: 'Reflector Mage',
+        description: 'Fly over the ground with evasive creatures and reset the opponent\'s best blocker with bounce like Reflector Mage. A tempo deck that wins races in the air.',
+      },
+      {
+        name: 'Colorless Control',
+        colors: ['U', 'B'],
+        keyCard: 'Mindmelter',
+        description: 'Play devoid Eldrazi and colorless mana sources such as Wastes to power {C} costs, then grind the opponent out with removal and evasive threats. A controlling deck that rewards building around colorless mana.',
+      },
+      {
+        name: 'Devoid Aggro',
+        colors: ['B', 'R'],
+        keyCard: 'Flayer Drone',
+        description: 'Curve out with devoid creatures so every colorless body that enters drains the opponent through payoffs like Flayer Drone. An aggressive deck that turns a wide colorless board into reach.',
+      },
+      {
+        name: 'Ramp and Stomp',
+        colors: ['R', 'G'],
+        keyCard: 'Relentless Hunter',
+        description: "Ramp into big creatures and sink spare mana into pump abilities like Relentless Hunter's. A stompy midrange deck that overpowers the ground.",
+      },
+      {
+        name: 'Support Counters',
+        colors: ['G', 'W'],
+        keyCard: 'Joraga Auxiliary',
+        description: 'Spread +1/+1 counters across your team with support and grow a board that outclasses the opponent\'s creatures. A go-wide midrange deck that wins through bigger bodies.',
+      },
+      {
+        name: 'Lifegain Drain',
+        colors: ['W', 'B'],
+        keyCard: 'Cliffhaven Vampire',
+        description: 'Gain life in small chunks and turn each gain into lost life for the opponent with payoffs like Cliffhaven Vampire. A grindy deck that wins races by draining.',
+      },
+      {
+        name: 'Surge Spells',
+        colors: ['U', 'R'],
+        keyCard: 'Stormchaser Mage',
+        description: 'Cast two spells in a turn to pay surge costs and grow prowess creatures, chaining cheap instants into card draw and burn. A tempo deck that wins on its two-spell turns.',
+      },
+      {
+        name: 'Graveyard Midrange',
+        colors: ['B', 'G'],
+        keyCard: 'Baloth Null',
+        description: 'Trade creatures early, sacrifice Eldrazi Scions for value, then return the best ones from your graveyard. A grindy midrange deck that out-values the opponent in the long game.',
+      },
+      {
+        name: 'Ally Equipment Aggro',
+        colors: ['R', 'W'],
+        keyCard: 'Weapons Trainer',
+        description: 'Build a team of Allies that tap together for cohort effects, and suit them up with Equipment so the whole team hits harder. An aggressive go-wide deck that ends the game before the Eldrazi land.',
+        creatureTypes: ['Ally'],
+      },
+      {
+        name: 'Eldrazi Ramp',
+        colors: ['G', 'U'],
+        keyCard: 'Void Grafter',
+        description: 'Ramp with Eldrazi Scions and colorless mana, protect your threats with flash creatures, and cast big Eldrazi ahead of curve. A ramp deck that lands the largest threats on the board.',
+      },
+    ],
+  },
   MOM: {
     setCode: 'MOM',
     setName: 'March of the Machine',
