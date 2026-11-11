@@ -44,6 +44,14 @@ class EncirclingFissureScenarioTest : ScenarioTestBase() {
             game.castSpellTargetingPlayer(1, "Encircling Fissure", 2).error shouldBe null
             game.resolveStack()
 
+            withClue("the shield's badge names the targeted opponent, not a placeholder") {
+                val badges = stateTransformer.transform(game.state, game.player1Id).players
+                    .flatMap { it.activeEffects }
+                    .filter { it.effectId.startsWith("prevent_combat_damage_from_") }
+                badges.isNotEmpty() shouldBe true
+                badges.all { "dealt by creatures Opponent controls" in it.description.orEmpty() } shouldBe true
+            }
+
             // A haste creature the opponent controls only after the spell resolved is covered too.
             game.castSpell(2, "Raging Goblin").error shouldBe null
             game.resolveStack()

@@ -658,11 +658,9 @@ object TargetPolarityAnalyzer {
                 val reading = libraryTopPolarity(setOf(leaf.storeMatch, leaf.storeRevealed), effect)
                 if (reading != null) playerSlotOf(leaf.player, requirements)?.let { perSlot[it] += reading }
             }
-            val muzzled = preventionSourceOwnerSlot(leaf, requirements)
-            if (muzzled != null) {
-                perSlot[muzzled] += TargetPolarity.HARMFUL
-                continue
-            }
+            // The muzzled player's slot reads here; the shield's own recipient (if it targets
+            // one) still reads through the classification below.
+            preventionSourceOwnerSlot(leaf, requirements)?.let { perSlot[it] += TargetPolarity.HARMFUL }
             val offenceWatch = offenceWatchSlot(leaf, requirements)
             if (offenceWatch != null) {
                 perSlot[offenceWatch] += TargetPolarity.BENEFICIAL

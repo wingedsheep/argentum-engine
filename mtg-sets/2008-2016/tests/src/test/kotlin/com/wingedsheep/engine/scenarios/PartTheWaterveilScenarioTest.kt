@@ -77,5 +77,35 @@ class PartTheWaterveilScenarioTest : ScenarioTestBase() {
                 game.state.activePlayerId shouldBe game.player1Id
             }
         }
+        test("awakened with its only target gone, it doesn't resolve: no extra turn, and it goes to the graveyard") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardInHand(1, "Part the Waterveil")
+                .withCardInHand(1, "Boomerang")
+                .withLandsOnBattlefield(1, "Island", 11)
+                .withCardInLibrary(1, "Island")
+                .withCardInLibrary(1, "Island")
+                .withCardInLibrary(2, "Island")
+                .withCardInLibrary(2, "Island")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val land = game.findPermanent("Island")!!
+
+            game.castSpellWithAwaken(1, "Part the Waterveil", listOf(land)).error shouldBe null
+            game.castSpell(1, "Boomerang", land).error shouldBe null
+            game.resolveStack()
+
+            withClue("a spell that doesn't resolve never reaches its self-exile (ruling)") {
+                game.isInGraveyard(1, "Part the Waterveil") shouldBe true
+                game.isInExile(1, "Part the Waterveil") shouldBe false
+            }
+
+            game.passUntilPhase(Phase.ENDING, Step.END)
+            game.passUntilPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+            withClue("no extra turn: the opponent is next") {
+                game.state.activePlayerId shouldBe game.player2Id
+            }
+        }
     }
 }
