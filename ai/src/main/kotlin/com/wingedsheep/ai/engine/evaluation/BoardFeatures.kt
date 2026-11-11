@@ -22,6 +22,7 @@ import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.PlayerTurnsTakenComponent
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
@@ -834,6 +835,8 @@ object BoardPresence : BoardFeature {
         if (Keyword.FEAR.name in keywords) value += 0.8
         if (Keyword.INTIMIDATE.name in keywords) value += 0.8
         if (Keyword.SHADOW.name in keywords) value += 1.0
+        // "Can't be blocked" is evasion no blocker answers, so it is worth at least flying.
+        if (AbilityFlag.CANT_BE_BLOCKED.name in keywords) value += 1.5 + power * 0.3
         // Skulk evades only bigger blockers, so it is worth most on a small body.
         if (Keyword.SKULK.name in keywords) value += (0.9 - power * 0.15).coerceAtLeast(0.2)
         // Landwalk — contextual but often evasion
@@ -852,6 +855,9 @@ object BoardPresence : BoardFeature {
         if (Keyword.PROVOKE.name in keywords) value += 0.5
         // Afflict: every block costs the defender life (CR 702.130a), a tax on blocking it.
         if (Keyword.AFFLICT.name in keywords) value += 0.6
+        // Ingest: every hit exiles the damaged player's top card (CR 702.115a) — a little mill,
+        // and the fuel a processor spends.
+        if (Keyword.INGEST.name in keywords) value += 0.3
 
         // ── Survivability ──
         if (Keyword.INDESTRUCTIBLE.name in keywords) value += 3.0

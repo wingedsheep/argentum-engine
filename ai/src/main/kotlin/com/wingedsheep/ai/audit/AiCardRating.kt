@@ -182,6 +182,11 @@ object AiCardRating {
                     val v = body(power, toughness, setOf(keyword.name)) - base
                     if (v != 0.0) add(Part(keyword.displayName, v))
                 }
+                // Printed flags project as keywords too ("can't be blocked" is evasion the body prices).
+                for (flag in card.flags.sortedBy { it.name }) {
+                    val v = body(power, toughness, setOf(flag.name)) - base
+                    if (v != 0.0) add(Part(flag.displayName, v))
+                }
             }
             return Board(
                 BoardKind.CREATURE, parts.sumOf { it.value }, parts,

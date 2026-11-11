@@ -15200,6 +15200,15 @@ MacCready, Lamplight Mayor (granted).
   "attacked" and don't re-trigger it. Each copy attacks "that player or a planeswalker they control": the
   copy's controller picks, asked only when that opponent controls a planeswalker. In a two-player game it
   does nothing.
+- `Keyword.INGEST` — **engine-live.** Declare it and nothing else: `keywords(Keyword.INGEST)` (Mist
+  Intruder, Benthic Infiltrator), or `keywordAbilities(KeywordAbility.Simple(Keyword.INGEST), …)` for
+  several instances. The engine supplies the CR 702.115a trigger from
+  [`Ingest`](../mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/scripting/Ingest.kt) — pure composition:
+  `Triggers.self.dealsCombatDamage(to = AnyPlayer)` → `Patterns.Library.exileTop(1,
+  PlayerRef(TriggeringPlayer))`, so the player the creature hit exiles their top card face up (an empty
+  library exiles nothing). Damage to a planeswalker or a blocker doesn't trigger it; double strike
+  triggers it once per combat damage step. Gated on the projected keyword (lost with all abilities); one
+  trigger per printed instance (CR 702.115b), exactly one for a static or until-end-of-turn grant.
 - `Rampage(n)` — **engine-live**, the same shape as `Bushido(n)`. Declare it with `card { rampage(n) }`
   (just this keyword ability); the engine derives CR 702.23a's "whenever this creature becomes blocked,
   it gets +N/+N until end of turn for each creature blocking it beyond the first" from

@@ -183,6 +183,7 @@ export enum Keyword {
   FLANKING = 'FLANKING',
   EXALTED = 'EXALTED',
   MYRIAD = 'MYRIAD',
+  INGEST = 'INGEST',
   BANDING = 'BANDING',
   // ETB modification
   AMPLIFY = 'AMPLIFY',
@@ -358,6 +359,7 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.FLANKING]: 'Flanking',
   [Keyword.EXALTED]: 'Exalted',
   [Keyword.MYRIAD]: 'Myriad',
+  [Keyword.INGEST]: 'Ingest',
   [Keyword.BANDING]: 'Banding',
   [Keyword.AMPLIFY]: 'Amplify',
   [Keyword.RIOT]: 'Riot',
