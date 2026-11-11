@@ -1,0 +1,1 @@
+- #TBD The AI reads a prevention shield over the creatures a target opponent controls (Encircling Fissure) as aimed against that opponent

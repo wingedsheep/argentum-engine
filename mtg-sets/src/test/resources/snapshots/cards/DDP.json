@@ -63,3 +63,49 @@
         "GREEN"
     ]
 }
+
+// Sheer Drop
+{
+    "name": "Sheer Drop",
+    "manaCost": "{2}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target tapped creature.\nAwaken 3—{5}{W} (If you cast this spell for {5}{W}, also put three +1/+1 counters on target land you control and it becomes a 0/0 Elemental creature with haste. It's still a land.)",
+    "keywords": [
+        "AWAKEN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Awaken",
+            "count": 3,
+            "cost": "{5}{W}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature tapped"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "artist": "Clint Cearley",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca6e9658-684e-44fd-9c72-c5c3faa9fb1f.jpg?1783938258"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
