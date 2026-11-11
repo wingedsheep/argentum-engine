@@ -1,0 +1,1 @@
+- #4640 The AI reads an awaken cast's added land target as one that helps its target (so the spell's own slots keep their reading), and counts awaken spells as +1/+1-counter feeders when drafting and building

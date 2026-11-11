@@ -610,6 +610,11 @@ internal class CastCostTotaller(
         AlternativeCostType.OVERLOAD to {
             cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Overload>().firstOrNull()?.let { priced(it.cost) }
         },
+        // Awaken (CR 702.113a — an alternative cost; the awaken spell ability is appended at cast
+        // and resolution, not here).
+        AlternativeCostType.AWAKEN to {
+            cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Awaken>().firstOrNull()?.let { priced(it.cost) }
+        },
         // Miracle (CR 702.94a — printed or granted in hand). Only an explicit MIRACLE cast prices it,
         // and only the miracle trigger's resolution makes one: CastValidator refuses a player's.
         AlternativeCostType.MIRACLE to {

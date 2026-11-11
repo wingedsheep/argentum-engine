@@ -10,6 +10,14 @@ import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.WardCost
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import com.wingedsheep.sdk.dsl.firebending
@@ -605,7 +613,7 @@ sealed interface KeywordAbility {
     data class Morph(
         val morphCost: PayCost,
         /** Effect to execute as a replacement effect when turned face up (e.g., put 5 +1/+1 counters on it) */
-        val faceUpEffect: com.wingedsheep.sdk.scripting.effects.Effect? = null
+        val faceUpEffect: Effect? = null
     ) : KeywordAbility {
         /** Convenience constructor for mana-based morph costs. */
         constructor(cost: ManaCost) : this(PayCost.Atom(CostAtom.Mana(cost)))
@@ -641,7 +649,7 @@ sealed interface KeywordAbility {
          * exact sibling of [Morph.faceUpEffect] — it does *not* use the stack and can't be
          * responded to, which is what separates it from a `Triggers.self.turnedFaceUp()` ability.
          */
-        val faceUpEffect: com.wingedsheep.sdk.scripting.effects.Effect? = null,
+        val faceUpEffect: Effect? = null,
         /**
          * "This cost is reduced by {1} for each …" (Fugitive Codebreaker). A *self*-scoped generic
          * reduction on this card's own disguise cost, distinct from
@@ -1042,7 +1050,7 @@ sealed interface KeywordAbility {
      * machinery serves both a printed suspend (stamped by the engine's
      * `SuspendCardFromHandHandler` special action) and a suspend granted at runtime to an
      * otherwise-ordinary card (e.g. Taigam, Master Opportunist, via
-     * [com.wingedsheep.sdk.dsl.Effects.Suspend]).
+     * [Effects.Suspend]).
      */
     @SerialName("Suspend")
     @Serializable
@@ -1538,6 +1546,65 @@ sealed interface KeywordAbility {
     }
 
     // =========================================================================
+    // Awaken
+    // =========================================================================
+
+    /**
+     * Awaken [count]—[cost] (CR 702.113, Battle for Zendikar). Two abilities on an instant or
+     * sorcery (CR 702.113a): "You may pay [cost] rather than pay this spell's mana cost as you cast
+     * this spell" and the spell ability "If this spell's awaken cost was paid, put [count] +1/+1
+     * counters on target land you control. That land becomes a 0/0 Elemental creature with haste.
+     * It's still a land."
+     *
+     * An alternative cost like [Cleave] and [Overload], but one that *adds* text rather than
+     * changing it, so the card author writes only the printed spell: the engine appends
+     * [landTarget] after the spell's own target requirements — chosen only when the awaken cost is
+     * paid (CR 702.113b) — and runs [spellAbility] after the spell's own effect. Neither is
+     * serialized; both derive from [count]. The awaken cost never changes mana value (CR 118.9c),
+     * and a copy of an awakened spell is awakened too (CR 707.10).
+     */
+    @SerialName("Awaken")
+    @Serializable
+    data class Awaken(val count: Int, val cost: ManaCost) : KeywordAbility {
+        override val keyword: Keyword = Keyword.AWAKEN
+        override val description: String = "Awaken $count\u2014$cost"
+
+        /** The awaken spell ability's own target: "target land you control" (CR 702.113a). */
+        val landTarget: TargetRequirement
+            get() = TargetObject(
+                filter = TargetFilter(GameObjectFilter.Land.youControl()),
+                id = LAND_TARGET_ID,
+            )
+
+        /**
+         * "Put [count] +1/+1 counters on target land you control. That land becomes a 0/0
+         * Elemental creature with haste. It's still a land." — permanently (the effect has no
+         * duration). Reads [landTarget] by its id, so it composes after any spell effect.
+         */
+        val spellAbility: Effect
+            get() {
+                val land = EffectTarget.BoundVariable(LAND_TARGET_ID)
+                return CompositeEffect(listOf(
+                    Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, count, land),
+                    Effects.BecomeCreature(
+                        target = land,
+                        power = 0,
+                        toughness = 0,
+                        keywords = setOf(Keyword.HASTE),
+                        creatureTypes = setOf("Elemental"),
+                        duration = Duration.Permanent,
+                    ),
+                ), descriptionOverride = "Put $count +1/+1 counter${if (count == 1) "" else "s"} on target land you " +
+                    "control. That land becomes a 0/0 Elemental creature with haste. It's still a land.")
+            }
+
+        companion object {
+            /** The [landTarget]'s requirement id — distinct from the `t<n>` ids spell targets get. */
+            const val LAND_TARGET_ID: String = "awaken"
+        }
+    }
+
+    // =========================================================================
     // Devour
     // =========================================================================
 
@@ -1995,6 +2062,13 @@ sealed interface KeywordAbility {
          * the card's `spell { }` block via `overloadEffect`.
          */
         fun overload(cost: String): KeywordAbility = Overload(ManaCost.parse(cost))
+
+        /**
+         * Create Awaken N—[cost] (CR 702.113). E.g. `awaken(3, "{5}{B}{B}")` for
+         * "Awaken 3—{5}{B}{B}". The card's `spell { }` block holds only the printed spell; the
+         * engine adds the land target and the awaken effect when the awaken cost is paid.
+         */
+        fun awaken(count: Int, cost: String): KeywordAbility = Awaken(count, ManaCost.parse(cost))
 
         /**
          * Create Conspire keyword ability.

@@ -249,7 +249,13 @@ object TargetSelection {
                     } else {
                         intents.spellTargetPolarities(name, transformed, base.faceIndex, base.castFused)
                     }
-                }.orEmpty()
+                }.orEmpty().let { printed ->
+                    // Awaken (CR 702.113b) appends "target land you control" after the printed
+                    // slots, and puts +1/+1 counters on it — a slot that helps its target.
+                    if (base.useAlternativeCost && base.alternativeCostType == AlternativeCostType.AWAKEN) {
+                        printed + TargetPolarity.BENEFICIAL
+                    } else printed
+                }
             is ActivateAbility -> state.getEntity(base.sourceId)?.get<CardComponent>()?.name
                 ?.let { intents.abilityTargetPolarities(it, base.abilityId) }.orEmpty()
             else -> emptyList()

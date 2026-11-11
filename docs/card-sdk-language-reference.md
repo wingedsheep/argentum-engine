@@ -1108,6 +1108,7 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   the beginning of the next end step (not exiled — unlike warp, dash has no later recast).
 - `keywordAbility(KeywordAbility.blitz("{2}{R}"))` — blitz (CR 702.152); see **Blitz** below.
 - `keywordAbility(KeywordAbility.surge("{1}{R}"))` — surge (CR 702.117); see **Surge** below.
+- `keywordAbility(KeywordAbility.awaken(4, "{5}{B}{B}"))` — awaken (CR 702.113); see `Awaken(count, cost)` under keyword abilities.
 - `conditionalFlash` — flash while condition holds (may read the announced X — Silver Scrutiny).
 - `cantBeCountered` — spell is uncounterable.
 - `cantBeCounteredIf = condition` — uncounterable only while `condition` holds for the spell on the stack (Banefire).
@@ -15384,6 +15385,23 @@ MacCready, Lamplight Mayor (granted).
   alongside the normal cast so the player explicitly picks one (CR 118.9a). When the cleave cost
   carries {X} (Lantern Flare), the cleave action also carries `hasXCost`/`maxAffordableX` so the
   client prompts for X, just like an {X} in a printed cost.
+- `Awaken(count, cost)` (`KeywordAbility.awaken(N, "{cost}")`) — Awaken N—{cost} (CR 702.113, Battle for
+  Zendikar): "You may pay [cost] rather than pay this spell's mana cost" **and** "If this spell's awaken cost
+  was paid, put N +1/+1 counters on target land you control. That land becomes a 0/0 Elemental creature with
+  haste. It's still a land." An alternative cost (`AlternativeCostType.AWAKEN`, offered as its own
+  `CastWithAlternativeCost` "Awaken" action) that *adds* text rather than changing it, so — unlike cleave and
+  overload — the card writes **only its printed spell**: no variant effect, no variant targets. The keyword
+  derives both halves from N: `landTarget` (a `TargetObject` over `Land.youControl()`, id `"awaken"`) is
+  appended after the spell's own target requirements only on the awaken cast (CR 702.113b), and
+  `spellAbility` (`AddCounters(+1/+1, N)` then `BecomeCreature(0/0, Elemental, haste, Duration.Permanent)`
+  on that target) runs after the spell's own effect. Usual partial-fizzle rules apply (CR 608.2b): with
+  the land gone the spell's own effect still happens; with the land as the only target (Coastal Discovery)
+  the spell doesn't resolve at all. Mana value is unchanged (CR 118.9c); a copy keeps the alternative cost
+  paid, so it awakens too (CR 707.10). The stack text shows the awaken clause. `Keyword.AWAKEN` is surfaced
+  for "card with awaken" filters. Scenario tests cast it with `castSpellWithAwaken(player, name, targets)`
+  (the spell's own targets, then the land).
+  - **Ruinous Path** — `keywordAbility(KeywordAbility.awaken(4, "{5}{B}{B}"))` plus
+    `spell { val t = target(Targets.CreatureOrPlaneswalker); effect = Effects.Destroy(t) }`.
 - `Overload(cost)` (`KeywordAbility.overload("{cost}")`) — Overload {cost} (CR 702.96): "You may choose
   to pay [cost] rather than pay this spell's mana cost" **and** "If you chose to pay this spell's overload
   cost, change its text by replacing all instances of the word 'target' with the word 'each.'" Modelled

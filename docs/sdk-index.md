@@ -1349,6 +1349,7 @@ Families:
 
 - `KeywordAbility.Affinity(forType: CardType)` — Affinity for a card type.
 - `KeywordAbility.AffinityForSubtype(forSubtype: Subtype)` — Affinity for a creature subtype.
+- `KeywordAbility.Awaken(count: Int, cost: ManaCost)` — Awaken count—cost (CR 702.113, Battle for Zendikar).
 - `KeywordAbility.BandsWithOther(supertype: Supertype?, subtype: Subtype?, name: String?)` — "Bands with other quality" (CR 702.22b) — the special form of banding Legends printed.
 - `KeywordAbility.BeamMeUp(cost: ManaCost)` — Beam me up cost (Star Trek): "You may cast this card from your graveyard for cost if you also return a creature you control to its owner's hand.
 - `KeywordAbility.Bestow(cost: ManaCost, additionalCost: AdditionalCost?)`

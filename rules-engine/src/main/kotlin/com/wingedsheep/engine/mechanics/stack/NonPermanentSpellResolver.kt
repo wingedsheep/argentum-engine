@@ -1031,6 +1031,23 @@ internal class NonPermanentSpellResolver(
 }
 
 /**
+ * Awaken (CR 702.113a): a spell whose awaken cost was paid runs the awaken spell ability — counters
+ * on its land target, then the animate — after its own effect. A copy keeps the alternative cost it
+ * copies (CR 707.10), so it awakens too. Any other spell resolves with [effect] unchanged.
+ */
+internal fun withAwakenAbility(
+    spellComponent: SpellOnStackComponent,
+    cardDef: com.wingedsheep.sdk.model.CardDefinition?,
+    effect: Effect?,
+): Effect? {
+    if (spellComponent.alternativeCost != com.wingedsheep.engine.core.AlternativeCostType.AWAKEN) return effect
+    val awaken = cardDef?.keywordAbilities
+        ?.filterIsInstance<com.wingedsheep.sdk.scripting.KeywordAbility.Awaken>()?.firstOrNull() ?: return effect
+    return if (effect == null) awaken.spellAbility
+    else com.wingedsheep.sdk.scripting.effects.CompositeEffect(listOf(effect, awaken.spellAbility))
+}
+
+/**
  * The effect the spell resolves with: the cast face's (Adventure / split, CR 715 / 709), the
  * kicked or cleaved variant, or the card's own — with any text-changing effect applied. Shared
  * with [com.wingedsheep.sdk.scripting.predicates.CardPredicate.WouldDestroy], which previews it.
@@ -1064,7 +1081,7 @@ internal fun resolvingSpellEffect(
             resolvedCardDef?.script?.overloadSpellEffect ?: cardComponent.spellEffect
         else -> cardComponent?.spellEffect
     }
-    val rawSpellEffect = baseSpellEffect
+    val rawSpellEffect = withAwakenAbility(spellComponent, resolvedCardDef, baseSpellEffect)
     val textReplacement = TextChanges.forSpell(state, spellId)
     return if (rawSpellEffect != null && textReplacement != null) {
         rawSpellEffect.applyTextReplacement(textReplacement)

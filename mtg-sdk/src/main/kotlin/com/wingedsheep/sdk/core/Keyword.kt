@@ -549,6 +549,20 @@ enum class Keyword(val displayName: String) {
     OVERLOAD("Overload"),
 
     /**
+     * Awaken N—[cost] (CR 702.113, Battle for Zendikar). On instants and sorceries: "You may pay
+     * [cost] rather than pay this spell's mana cost as you cast this spell" and "If this spell's
+     * awaken cost was paid, put N +1/+1 counters on target land you control. That land becomes a
+     * 0/0 Elemental creature with haste. It's still a land." (CR 702.113a). The land target exists
+     * only when the awaken cost is paid (CR 702.113b).
+     *
+     * Modelled as an alternative cost ([com.wingedsheep.sdk.scripting.KeywordAbility.Awaken]) whose
+     * paid branch *appends* the awaken spell ability — its land target after the spell's own targets
+     * and its effect after the spell's own effect — so the card author writes only the printed spell.
+     * Surfaced as a keyword so "card with awaken" filters (Halimar Tidecaller) can read it.
+     */
+    AWAKEN("Awaken"),
+
+    /**
      * Daybound (CR 702.145, Innistrad: Midnight Hunt / Crimson Vow). Found on the **front** faces of
      * some transforming double-faced cards; represents three static abilities: "If it is night and
      * this permanent is represented by a transforming double-faced card, it enters transformed"; "As

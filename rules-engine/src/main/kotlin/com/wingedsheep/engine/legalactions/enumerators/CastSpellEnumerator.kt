@@ -526,6 +526,16 @@ class CastSpellEnumerator(
                 context.manaSolver.canPay(state, playerId, overloadMana, precomputedSources = cachedSources)
             } else false
 
+            // Awaken (CR 702.113) — likewise its own legal action below (adds the land target).
+            val awakenAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Awaken>().firstOrNull()
+            val canAffordAwaken = if (awakenAbility != null) {
+                val awakenMana = context.costCalculator.priceByTargets(
+                    state, cardDef, playerId, cardId, baseCost = awakenAbility.cost, withTable = false,
+                    requirements = cardDef.script.targetRequirements + awakenAbility.landTarget,
+                ).min
+                context.manaSolver.canPay(state, playerId, awakenMana, precomputedSources = cachedSources)
+            } else false
+
             // Check blight path affordability (base cost without the extra mana, but needs a creature)
             val canAffordBlightPath = if (blightOrPayCost != null && offer.blightCreatures.isNotEmpty()) {
                 context.manaSolver.canPay(state, playerId, blightBaseCost, spellContext = spellContext, precomputedSources = cachedSources)
@@ -548,7 +558,7 @@ class CastSpellEnumerator(
                 context.freeCastCost(cardDef, com.wingedsheep.sdk.core.Zone.HAND, cardId)
             } else null
             val canAffordFreeCast = freeCastCost != null && context.canPayMana(freeCastCost, spellContext)
-            if (!canAfford && !canAffordAlternative && !canAffordSelfAlternative && !canAffordEvoke && !canAffordImpending && !canAffordCleave && !canAffordOverload && !canAffordBlightPath && !canAffordOrPayPath && !canAffordFreeCast) {
+            if (!canAfford && !canAffordAlternative && !canAffordSelfAlternative && !canAffordEvoke && !canAffordImpending && !canAffordCleave && !canAffordOverload && !canAffordAwaken && !canAffordBlightPath && !canAffordOrPayPath && !canAffordFreeCast) {
                 // The primary face can't be paid for by any path. Normally we skip it entirely.
                 // But if this is an Adventure/Omen/modal-DFC card whose *secondary* face is
                 // affordable, surface a grayed-out placeholder for the primary face so the
@@ -1528,6 +1538,9 @@ class CastSpellEnumerator(
 
         // --- Overload (CR 702.96) ---
         enumerateOverload(context, hand, result)
+
+        // --- Awaken (CR 702.113) ---
+        enumerateAwaken(context, hand, result)
 
         // --- Conspire ---
         enumerateConspire(context, hand, result)
@@ -2648,6 +2661,24 @@ class CastSpellEnumerator(
         context, hand, result, AlternativeCostType.OVERLOAD, "Overload",
         costOf = { def -> def.keywordAbilities.filterIsInstance<KeywordAbility.Overload>().firstOrNull()?.cost },
         targetRequirementsOf = { emptyList() },
+    )
+
+    /**
+     * Enumerates the awaken cast (CR 702.113a): the same alternative-cost pass as [enumerateCleave],
+     * but paying it *adds* a target — the awaken ability's "target land you control", after the
+     * spell's own targets (CR 702.113b) — so it is offered only while you control a land.
+     */
+    private fun enumerateAwaken(
+        context: EnumerationContext,
+        hand: List<EntityId>,
+        result: MutableList<LegalAction>
+    ) = enumerateTextChangingAlternativeCost(
+        context, hand, result, AlternativeCostType.AWAKEN, "Awaken",
+        costOf = { def -> def.keywordAbilities.filterIsInstance<KeywordAbility.Awaken>().firstOrNull()?.cost },
+        targetRequirementsOf = { def ->
+            val awaken = def.keywordAbilities.filterIsInstance<KeywordAbility.Awaken>().first()
+            def.script.targetRequirements + awaken.landTarget
+        },
     )
 
     /**

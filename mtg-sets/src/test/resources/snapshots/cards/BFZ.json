@@ -1142,6 +1142,42 @@
     ]
 }
 
+// Coastal Discovery
+{
+    "name": "Coastal Discovery",
+    "manaCost": "{3}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw two cards.\nAwaken 4—{5}{U} (If you cast this spell for {5}{U}, also put four +1/+1 counters on target land you control and it becomes a 0/0 Elemental creature with haste. It's still a land.)",
+    "keywords": [
+        "AWAKEN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Awaken",
+            "count": 4,
+            "cost": "{5}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 2
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/1/c1df2411-0b0d-4b93-bf30-a22487b3c6ef.jpg?1783938209"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Complete Disregard
 {
     "name": "Complete Disregard",
@@ -3963,6 +3999,50 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Ruinous Path
+{
+    "name": "Ruinous Path",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target creature or planeswalker.\nAwaken 4—{5}{B}{B} (If you cast this spell for {5}{B}{B}, also put four +1/+1 counters on target land you control and it becomes a 0/0 Elemental creature with haste. It's still a land.)",
+    "keywords": [
+        "AWAKEN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Awaken",
+            "count": 4,
+            "cost": "{5}{B}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "rarity": "RARE",
+        "artist": "Jaime Jones",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/0/709ab9cf-eed8-4d73-b10d-c7f6d8750328.jpg?1783938199"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

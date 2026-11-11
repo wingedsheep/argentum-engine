@@ -892,6 +892,23 @@ abstract class ScenarioTestBase : FunSpec() {
         }
 
         /**
+         * Cast a spell for its awaken cost (CR 702.113). [targets] are the spell's own permanent
+         * targets in order, followed by the land to awaken (CR 702.113b).
+         */
+        fun castSpellWithAwaken(playerNumber: Int, spellName: String, targets: List<EntityId>): ExecutionResult {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            val cardId = state.getHand(playerId).find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == spellName
+            } ?: error("Card '$spellName' not found in player $playerNumber's hand")
+            return execute(CastSpell(
+                playerId, cardId,
+                targets = targets.map { ChosenTarget.Permanent(it) },
+                useAlternativeCost = true,
+                alternativeCostType = AlternativeCostType.AWAKEN
+            ))
+        }
+
+        /**
          * Cast a spell for its Overload cost (CR 702.96). An overloaded spell has no targets
          * (CR 702.96b), so none are passed.
          */
