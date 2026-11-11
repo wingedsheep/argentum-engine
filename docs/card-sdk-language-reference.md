@@ -20119,7 +20119,12 @@ The priority groups are (CR 616.1a–f):
     `GainLifeEffect` (fixed amount, gained by the replacement source's controller;
     emits `LifeChangedEvent` so life-gain triggers fire), the card-scoped hand restrictions
     `CantPlayCardsFromHandEffect` / `RevealCardInHandEffect` on the redirected card (Firestorm Phoenix),
-    and a `CompositeEffect` of whitelisted parts, run in order.
+    and a `CompositeEffect` of those parts, run in order. Any other rider — Kalitas, Traitor of
+    Ghet's "instead exile that card and create a 2/2 black Zombie creature token" is an
+    `Effects.CreateToken(...)` rider — is queued as a pending replacement rider and run through the full
+    effect pipeline before anything else happens (end of the moving instruction, inside the same
+    state-based-action pass, or at the settle boundary): still no stack, sourced from the replacement's
+    host, "you" its controller, the redirected card its `TriggeringEntity`.
   - `WHEN_YOU_DO` — "exile it instead. When you do, …": a reflexive triggered ability (CR 603.12). Each
     time the replacement applies it emits a `ReflexiveAbilityTriggeredEvent`; the rider goes on the
     stack controlled by the replacement source's controller, with the redirected card as its

@@ -4761,6 +4761,102 @@
     ]
 }
 
+// Kalitas, Traitor of Ghet
+{
+    "name": "Kalitas, Traitor of Ghet",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Legendary Creature — Vampire Warrior",
+    "oracleText": "Lifelink\nIf a nontoken creature an opponent controls would die, instead exile that card and create a 2/2 black Zombie creature token.\n{2}{B}, Sacrifice another Vampire or Zombie: Put two +1/+1 counters on Kalitas.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kalitas, Traitor of Ghet:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "Vampire|Zombie",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": "Self"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChangeWithEffect",
+                "newDestination": "Exile",
+                "additionalEffect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0bde78b-98d1-4864-899b-fc2f945ce06b.jpg?1783937860"
+                },
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:opponent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "rarity": "MYTHIC",
+        "artist": "Todd Lockwood",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/17a278d0-f601-4d57-bc3d-2972f8602a69.jpg?1783937911",
+        "rulings": [
+            {
+                "date": "2016-01-22",
+                "text": "Abilities that trigger whenever a creature an opponent controls dies won't trigger unless that creature is a token (see below)."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "If a creature token an opponent controls dies, it goes to that player's graveyard as normal before ceasing to exist."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "If Kalitas dies at the same time as creatures your opponents control, those creature cards will be exiled and you'll get that many Zombies."
+            },
+            {
+                "date": "2016-01-22",
+                "text": "You can't sacrifice Kalitas to activate the last ability, even if it's somehow become a Zombie."
+            }
+        ]
+    }
+}
+
 // Kor Scythemaster
 {
     "name": "Kor Scythemaster",

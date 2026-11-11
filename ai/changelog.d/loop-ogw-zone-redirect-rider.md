@@ -1,0 +1,1 @@
+- #4633 The AI reads a zone-change replacement's rider over other objects — immediate or "when you do" (Kalitas's Zombie on each opposing death, The Darkness Crystal's life, Valentin's Pest) — as what the card does: token making, life gain.
