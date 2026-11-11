@@ -52,7 +52,8 @@ object FinalFantasySet : MtgSet {
                 "Sharlayan, Nation of Scholars", "Treno, Dark City", "Vector, Imperial Capital",
                 "Windurst, Federation Center",
             ),
-            basicLands = basicLands.filter { it.metadata.inBooster },
+            // Wastes reaches the land slot through the pool, as a pack-only basic.
+            basicLands = basicLands.filter { it.metadata.inBooster && it.typeLine.isFreelyAddedBasicLand },
             nonbasicChance = 0.55,
         )
     }

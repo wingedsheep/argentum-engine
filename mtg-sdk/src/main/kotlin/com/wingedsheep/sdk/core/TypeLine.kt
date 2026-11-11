@@ -35,6 +35,16 @@ data class TypeLine(
     val isBasicLand: Boolean get() = isLand && Supertype.BASIC in supertypes
     val isLegendary: Boolean get() = Supertype.LEGENDARY in supertypes
     val isSnow: Boolean get() = Supertype.SNOW in supertypes
+
+    /**
+     * A basic land a Limited player may add to their deck in any number: a nonsnow basic with one
+     * of the five basic land types. Basic snow lands (Kaldheim's ruling) and Wastes (Oath of the
+     * Gatewatch's: "you can play Wastes only if it's in your card pool") are played only as opened
+     * or drafted, so in Limited they are pool cards like any other — and a set's own printing of
+     * one is a booster card rather than a land-station basic.
+     */
+    val isFreelyAddedBasicLand: Boolean
+        get() = isBasicLand && !isSnow && subtypes.any { it.value in Subtype.ALL_BASIC_LAND_TYPES }
     val isHistoric: Boolean get() = isLegendary || isArtifact || isSaga
 
     fun hasSubtype(subtype: Subtype): Boolean = subtype in subtypes

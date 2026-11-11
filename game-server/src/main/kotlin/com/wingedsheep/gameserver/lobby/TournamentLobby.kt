@@ -2251,7 +2251,7 @@ class TournamentLobby(
         }
 
         val poolCounts = pool
-            .filterNot { it.typeLine.isBasicLand && !it.typeLine.isSnow }
+            .filterNot { it.typeLine.isFreelyAddedBasicLand }
             .groupingBy { it.name }
             .eachCount()
 

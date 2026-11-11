@@ -355,6 +355,29 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         boosterGenerator.getBasicLands("KHM").keys shouldBe setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
     }
 
+    test("Oath of the Gatewatch's two Wastes printings are common pack cards, not land-station basics") {
+        // Wastes is a pack-only basic: in Limited a player plays only the Wastes they open or draft,
+        // and the set prints two at common, so the name opens twice as often as any other common.
+        val ogw = boosterGenerator.availableSets["OGW"].shouldNotBeNull()
+        val wastes = ogw.cards.filter { it.name == "Wastes" }
+        wastes.map { it.metadata.collectorNumber }.toSet() shouldBe setOf("183", "184")
+        wastes.all { it.metadata.rarity == Rarity.COMMON && it.setCode == "OGW" } shouldBe true
+        boosterGenerator.getBasicLands("OGW").keys shouldBe setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
+        boosterGenerator.getBasicLands("OGW").values.all { it.setCode == "BFZ" } shouldBe true
+    }
+
+    test("Final Fantasy's Wastes opens only in the land slot and is never a land-station basic") {
+        val fin = boosterGenerator.availableSets["FIN"].shouldNotBeNull()
+        val strategy = fin.boosterStrategy.shouldBeInstanceOf<LandSlotBooster>()
+        strategy.basicLands.none { it.name == "Wastes" } shouldBe true
+        fin.cards.count { it.name == "Wastes" } shouldBe 1
+        boosterGenerator.getBasicLands("FIN").keys shouldBe setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
+        repeat(300) {
+            val pack = boosterGenerator.generateBooster("FIN")
+            pack.dropLast(1).none { it.name == "Wastes" } shouldBe true
+        }
+    }
+
     test("Core Set 2019 draft pack opens 10 commons, 3 uncommons, a rare or mythic and a land-slot card") {
         // M19 draft sheets (taw/magic-search-engine, mtg.wtf/pack/m19): 10 commons, 3 uncommons,
         // 1 rare/mythic (rares weighted 2, mythics 1 -> 16/122), and a land slot of 30 cards at 1/30 each:
