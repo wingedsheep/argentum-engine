@@ -199,7 +199,8 @@ internal object CardAsks {
     /**
      * The kinds of permanent [scripts] count among yours — a [DynamicAmount.AggregateBattlefield]
      * count or a battlefield [DynamicAmount.Count] over [Player.You], or a
-     * [PermanentTypeEnteredBattlefieldThisTurn] check on your own — each as "<filter> you control". Walked reflectively, like [GraveyardSynergy], so an amount is found wherever an
+     * [PermanentTypeEnteredBattlefieldThisTurn] check on your own — each as "<filter> you
+     * control". Walked reflectively, like [GraveyardSynergy], so an amount is found wherever an
      * effect, cost, condition or static holds it.
      */
     private fun ownPermanentCounts(scripts: List<CardScript>): List<GameObjectFilter> {
