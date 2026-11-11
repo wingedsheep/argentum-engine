@@ -165,17 +165,29 @@ class DraftsimDeckBuilder(
      */
     private fun castable(card: ScorerCard, colors: List<String>, fixed: Set<String>) =
         (ops.colorsOf(card).isEmpty() || DraftsimMana.fitsColors(card.manaCost, colors)) &&
+            (DraftsimMana.COLORLESS in fixed || DraftsimMana.colorlessPips(card.manaCost) == 0) &&
             card.activationCosts.all { DraftsimMana.activationPayable(it, colors + fixed) }
 
     /**
      * Colours the pool's lands fix for an activation whatever the build's colours:
      * [ActivationMana.FIXING_SOURCES] or more lands that each fix four or more colours — the lands
      * [buildManabase] always takes. A dual in the build's own pair adds nothing an activation needs.
+     * Holds [DraftsimMana.COLORLESS] when the pool has [PipDemand.MIN_COLORLESS_SOURCES] colorless
+     * lands, the fewest that make a `{C}` spell worth a slot ([castable]); [buildManabase] plays them.
      */
     private fun activationFixing(poolLands: List<DraftsimPoolCard>): Set<String> {
         val rainbow = poolLands.map { landFixing(it) }.filter { it.size >= 4 }
-        return DraftsimMana.COLORS.filter { c -> rainbow.count { c in it } >= ActivationMana.FIXING_SOURCES }.toSet()
+        val colors = DraftsimMana.COLORS.filter { c -> rainbow.count { c in it } >= ActivationMana.FIXING_SOURCES }.toSet()
+        val colorless = poolLands.count { it.card.makesColorless } >= PipDemand.MIN_COLORLESS_SOURCES
+        return if (colorless) colors + DraftsimMana.COLORLESS else colors
     }
+
+    /**
+     * A land of the pool's own: every non-basic, and a basic no deck may add freely — Wastes, which
+     * a Limited deck plays only as opened or drafted, so it is the pool's colorless source rather than
+     * one of the basics [buildManabase] hands out.
+     */
+    private fun isPoolLand(card: ScorerCard) = ops.isLand(card) && (!ops.isBasic(card) || card.makesColorless)
     private fun isRemoval(card: ScorerCard) = card.name.lowercase() in tables.removal
 
     /** Synthetic basic-land pool cards (`I4`). */
@@ -405,7 +417,7 @@ class DraftsimDeckBuilder(
         allowBombSplash: Boolean = true,
     ): DraftsimBuild {
         val nonlandPC = pool.filter { !ops.isLand(it.card) }
-        val poolLands = pool.filter { ops.isLand(it.card) && !ops.isBasic(it.card) }
+        val poolLands = pool.filter { isPoolLand(it.card) }
         val forcedMap = mapOf(archName to archColors)
         val nonlandCards = nonlandPC.map { it.card }
         val fixed = activationFixing(poolLands)
@@ -608,7 +620,15 @@ class DraftsimDeckBuilder(
             fix.isNotEmpty() && (fix.size >= 4 || fix.all { it in deckColorSet })
         }
         val (fetchers, makers) = fitting.partition { it.card.fetchesBasic }
-        val usefulLands = (makers + fetchers.take(lands / 2)).take(lands)
+        val coloredLands = (makers + fetchers.take(lands / 2)).take(lands)
+        // §3.3b `{C}` pips: no basic pays them, only the pool's colorless lands — Wastes, a
+        // colorless utility land — so a deck with a `{C}` card plays as many as
+        // [DraftsimMana.colorlessSourcesWanted] asks, and a deck with none plays none.
+        val colorlessWanted = DraftsimMana.colorlessSourcesWanted(deckCards.map { it.card })
+        val colorlessHeld = coloredLands.count { it.card.makesColorless }
+        val colorlessLands = poolLands.filter { it.card.makesColorless && it !in coloredLands }
+            .take(max(0, colorlessWanted - colorlessHeld))
+        val usefulLands = (coloredLands + colorlessLands).take(lands)
         var basicsCount = max(0, lands - usefulLands.size)
 
         // Basics only ever fix the deck's committed colors ([deckColorSet]) — never an off-color card
@@ -739,7 +759,7 @@ class DraftsimDeckBuilder(
         val chosen = build.deckInstanceIds.toHashSet()
         val deckNonland = pool.filter { it.instanceId in chosen && !ops.isLand(it.card) }.toMutableList()
         var best = deckScorer.scoreNonlandSet(deckNonland.map { it.card })
-        val poolLands = pool.filter { ops.isLand(it.card) && !ops.isBasic(it.card) }
+        val poolLands = pool.filter { isPoolLand(it.card) }
         val fixed = activationFixing(poolLands)
         val mainColors = build.colors.filter { it != build.splashColor }
 
@@ -791,7 +811,7 @@ class DraftsimDeckBuilder(
      */
     private fun goodStuffBuild(pool: List<DraftsimPoolCard>): DraftsimBuild? {
         val nonlandPC = pool.filter { !ops.isLand(it.card) }
-        val poolLands = pool.filter { ops.isLand(it.card) && !ops.isBasic(it.card) }
+        val poolLands = pool.filter { isPoolLand(it.card) }
         val fixed = activationFixing(poolLands)
 
         // 1. best 3-color shell by top-16 raw ratings.

@@ -67,7 +67,7 @@ private fun report(card: CardDefinition, reading: AiReadingAudit.CardReading, ra
     val e = rating.limited.explanation
     val source = when (e.source) {
         LimitedCardRater.Source.BASIC_LAND -> "basic land"
-        LimitedCardRater.Source.LAND -> "flat non-basic land rating"
+        LimitedCardRater.Source.LAND -> "flat pool-land rating"
         LimitedCardRater.Source.WIN_RATE -> "17Lands win rate ${f(e.winRate!! * 100)}% over ${e.games} games"
         LimitedCardRater.Source.TABLE -> "${e.tableSet} pick table"
         LimitedCardRater.Source.HEURISTIC -> "effect heuristic"

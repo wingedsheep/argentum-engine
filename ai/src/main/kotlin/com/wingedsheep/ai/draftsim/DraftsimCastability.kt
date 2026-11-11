@@ -18,7 +18,10 @@ import kotlin.math.min
  *
  * Sources: a land counts once for each colour it fixes ([DraftsimCardOps.fixingOf] — a dual for two,
  * Evolving Wilds for every colour), a nonland fixer for each colour it makes, only for the spells
- * cast after it and at half a land unless it's free ([Sources.at]).
+ * cast after it and at half a land unless it's free ([Sources.at]). A `{C}` pip
+ * ([DraftsimMana.COLORLESS]) is a colour of its own here: Wastes and every other land that makes
+ * colorless mana are its sources, a colorless mana rock a nonland one, and a deck with none of them
+ * never casts Thought-Knot Seer.
  */
 internal class DraftsimCastability(private val ops: DraftsimCardOps) {
 
@@ -65,6 +68,11 @@ internal class DraftsimCastability(private val ops: DraftsimCardOps) {
                 else -> {}
             }
             if (ops.isLand(card) && !card.fetchesBasic) for (c in fix) lands[c] = (lands[c] ?: 0.0) + 1.0
+            if (card.makesColorless) {
+                val c = DraftsimMana.COLORLESS
+                if (ops.isLand(card)) lands[c] = (lands[c] ?: 0.0) + 1.0
+                else fixers += Fixer(ceil(card.cmc).toInt(), setOf(c), ops.fixingSourceWeight(card))
+            }
         }
         for ((c, n) in fetched) lands[c] = (lands[c] ?: 0.0) + min(n, basics[c] ?: 0)
         return Sources(lands, fixers)

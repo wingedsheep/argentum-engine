@@ -183,8 +183,10 @@ object LimitedCardRater {
     private fun measured(card: CardDefinition): Explanation? {
         fun of(rating: Double, source: Source, winRate: Double? = null, games: Int? = null) =
             Explanation(rating, source, winRate = winRate, games = games, heuristic = emptyList(), heuristicRating = 0.0)
-        if (card.typeLine.isBasicLand) return of(0.0, Source.BASIC_LAND)
-        if (card.typeLine.isLand) return of(1.5, Source.LAND) // non-basic lands are decent filler
+        // A basic the land station hands out costs no pick. Wastes and basic snow lands are played
+        // only as opened or drafted, so they rate like the other lands a pool brings.
+        if (card.typeLine.isFreelyAddedBasicLand) return of(0.0, Source.BASIC_LAND)
+        if (card.typeLine.isLand) return of(1.5, Source.LAND) // a pool's own lands are decent filler
 
         // Try 17Lands data first
         val dataRating = allRatings[card.name]
