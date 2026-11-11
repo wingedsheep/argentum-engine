@@ -1223,7 +1223,7 @@ Back for Seconds
 Back on Track
 Back to Nature
 Backdraft
-Backfire	polarity: Aura>DealDamageEffect
+Backfire
 Backlash
 Backslide	intent: TurnFaceDownEffect; polarity: TurnFaceDownEffect
 Backstreet Bruiser
@@ -13842,7 +13842,7 @@ Ragefire Hellkite
 Ragged Playmate
 Ragged Recluse
 Ragged Short Spear
-Ragged Veins	polarity: Aura>LoseLifeEffect
+Ragged Veins
 Raging Battle Mouse
 Raging Bull
 Raging Cougar
@@ -16853,7 +16853,7 @@ Spire of Industry
 Spirebluff Canal
 Spireside Infiltrator
 Spirit Bonds
-Spirit Link	polarity: Aura>GainLifeEffect
+Spirit Link
 Spirit Mascot
 Spirit Shackle	polarity: Aura>AddCountersEffect
 Spirit Shield
@@ -19935,6 +19935,7 @@ Vision of Love
 Visionary Augmenter
 Visionary's Dance
 Visions	intent: Pipeline(TopOfLibrary→?); polarity: Pipeline(TopOfLibrary→?)
+Visions of Brutality
 Visions of Phyrexia
 Visions of Villainy
 Vitality Charm
