@@ -52,7 +52,12 @@ internal fun isOverloadCast(action: CastSpell, cardDef: com.wingedsheep.sdk.mode
  * (CR 702.113b — the land is targeted only when the awaken cost is paid).
  */
 internal fun awakenOf(action: CastSpell, cardDef: com.wingedsheep.sdk.model.CardDefinition): KeywordAbility.Awaken? =
-    if (action.useAlternativeCost && action.altAllows(AlternativeCostType.AWAKEN)) {
+    // Only an explicit, paid awaken cast: the resolver awakens off the recorded alternative cost,
+    // which a free cast (CR 118.9 — one alternative cost) never records, so the land target must
+    // not be added for one either.
+    if (action.useAlternativeCost && action.alternativeCostType == AlternativeCostType.AWAKEN &&
+        !action.useWithoutPayingManaCost
+    ) {
         cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Awaken>().firstOrNull()
     } else null
 

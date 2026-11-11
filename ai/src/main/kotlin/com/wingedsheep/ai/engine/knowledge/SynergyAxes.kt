@@ -2,6 +2,7 @@ package com.wingedsheep.ai.engine.knowledge
 
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
@@ -220,7 +221,7 @@ object SynergyAxes {
             if (Keyword.LIFELINK in card.keywords) add(SynergyAxis.LIFEGAIN)
             // Awaken (CR 702.113): the awakened land gets N +1/+1 counters. The ability is derived
             // from the keyword, not written into the spell's script, so the effect walk misses it.
-            if (card.keywordAbilities.any { it is com.wingedsheep.sdk.scripting.KeywordAbility.Awaken }) {
+            if (card.keywordAbilities.any { it is KeywordAbility.Awaken }) {
                 add(SynergyAxis.PLUS_COUNTERS)
             }
         }

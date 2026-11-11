@@ -892,10 +892,6 @@ abstract class ScenarioTestBase : FunSpec() {
         }
 
         /**
-         * Cast a spell for its Overload cost (CR 702.96). An overloaded spell has no targets
-         * (CR 702.96b), so none are passed.
-         */
-        /**
          * Cast a spell for its awaken cost (CR 702.113). [targets] are the spell's own permanent
          * targets in order, followed by the land to awaken (CR 702.113b).
          */
@@ -912,6 +908,10 @@ abstract class ScenarioTestBase : FunSpec() {
             ))
         }
 
+        /**
+         * Cast a spell for its Overload cost (CR 702.96). An overloaded spell has no targets
+         * (CR 702.96b), so none are passed.
+         */
         fun castSpellWithOverload(playerNumber: Int, spellName: String): ExecutionResult {
             val playerId = if (playerNumber == 1) player1Id else player2Id
             val cardId = state.getHand(playerId).find { entityId ->

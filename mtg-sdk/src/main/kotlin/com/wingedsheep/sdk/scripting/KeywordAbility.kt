@@ -10,6 +10,14 @@ import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.WardCost
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import com.wingedsheep.sdk.dsl.firebending
@@ -605,7 +613,7 @@ sealed interface KeywordAbility {
     data class Morph(
         val morphCost: PayCost,
         /** Effect to execute as a replacement effect when turned face up (e.g., put 5 +1/+1 counters on it) */
-        val faceUpEffect: com.wingedsheep.sdk.scripting.effects.Effect? = null
+        val faceUpEffect: Effect? = null
     ) : KeywordAbility {
         /** Convenience constructor for mana-based morph costs. */
         constructor(cost: ManaCost) : this(PayCost.Atom(CostAtom.Mana(cost)))
@@ -641,7 +649,7 @@ sealed interface KeywordAbility {
          * exact sibling of [Morph.faceUpEffect] — it does *not* use the stack and can't be
          * responded to, which is what separates it from a `Triggers.self.turnedFaceUp()` ability.
          */
-        val faceUpEffect: com.wingedsheep.sdk.scripting.effects.Effect? = null,
+        val faceUpEffect: Effect? = null,
         /**
          * "This cost is reduced by {1} for each …" (Fugitive Codebreaker). A *self*-scoped generic
          * reduction on this card's own disguise cost, distinct from
@@ -1042,7 +1050,7 @@ sealed interface KeywordAbility {
      * machinery serves both a printed suspend (stamped by the engine's
      * `SuspendCardFromHandHandler` special action) and a suspend granted at runtime to an
      * otherwise-ordinary card (e.g. Taigam, Master Opportunist, via
-     * [com.wingedsheep.sdk.dsl.Effects.Suspend]).
+     * [Effects.Suspend]).
      */
     @SerialName("Suspend")
     @Serializable
@@ -1562,9 +1570,9 @@ sealed interface KeywordAbility {
         override val description: String = "Awaken $count\u2014$cost"
 
         /** The awaken spell ability's own target: "target land you control" (CR 702.113a). */
-        val landTarget: com.wingedsheep.sdk.scripting.targets.TargetRequirement
-            get() = com.wingedsheep.sdk.scripting.targets.TargetObject(
-                filter = com.wingedsheep.sdk.scripting.filters.unified.TargetFilter(GameObjectFilter.Land.youControl()),
+        val landTarget: TargetRequirement
+            get() = TargetObject(
+                filter = TargetFilter(GameObjectFilter.Land.youControl()),
                 id = LAND_TARGET_ID,
             )
 
@@ -1573,12 +1581,12 @@ sealed interface KeywordAbility {
          * Elemental creature with haste. It's still a land." — permanently (the effect has no
          * duration). Reads [landTarget] by its id, so it composes after any spell effect.
          */
-        val spellAbility: com.wingedsheep.sdk.scripting.effects.Effect
+        val spellAbility: Effect
             get() {
-                val land = com.wingedsheep.sdk.scripting.targets.EffectTarget.BoundVariable(LAND_TARGET_ID)
-                return com.wingedsheep.sdk.scripting.effects.CompositeEffect(listOf(
-                    com.wingedsheep.sdk.dsl.Effects.AddCounters(com.wingedsheep.sdk.core.CounterType.PLUS_ONE_PLUS_ONE, count, land),
-                    com.wingedsheep.sdk.dsl.Effects.BecomeCreature(
+                val land = EffectTarget.BoundVariable(LAND_TARGET_ID)
+                return CompositeEffect(listOf(
+                    Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, count, land),
+                    Effects.BecomeCreature(
                         target = land,
                         power = 0,
                         toughness = 0,
