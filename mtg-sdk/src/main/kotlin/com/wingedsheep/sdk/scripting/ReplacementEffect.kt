@@ -3291,13 +3291,28 @@ data class EntersWithRevealCounters(
 }
 
 /**
- * As this permanent enters, its controller may exile up to [maxCards] matching cards from their
- * [sourceZone]. The exiled cards are linked to the entering permanent, and it enters with
- * [countersPerCard] [counterType] counters for each card actually exiled this way.
+ * As this permanent enters, its controller may move up to [maxCards] matching cards out of a
+ * [sourceZone] — exiling them by default — and it enters with [countersPerCard] [counterType]
+ * counters for each card actually moved this way.
  *
  * This is the reusable linked-exile counterpart to [EntersWithRevealCounters]. The selection and
  * zone changes happen as part of the entry replacement, before the permanent reaches the
  * battlefield; no triggered ability is put on the stack.
+ *
+ * Axes (each defaults to the original "exile from your own zone, up to N" shape):
+ * - [anyPlayersZone] — the pool is every player's [sourceZone], narrowed by [filter] (e.g.
+ *   `ownedByOpponent()`), instead of only the controller's. Mirrors `CostAtom.ExileFrom.anyPlayersZone`.
+ * - [destination] — where the chosen cards go: [Zone.EXILE] (linked to the entering permanent) or
+ *   [Zone.GRAVEYARD] (each card to its owner's graveyard, not linked).
+ * - [allOrNone] — "you may move **exactly** [maxCards] cards. If you do, …": the controller is
+ *   asked yes/no and then picks exactly that many; with fewer than [maxCards] candidates the option
+ *   isn't offered and the permanent enters without counters.
+ *
+ * Examples:
+ * - The Mimeoplasm, Revered One: `EntersWithExileCounters(filter = Creature, maxCards = X)`
+ * - Ulamog's Despoiler ("you may put two cards your opponents own from exile into their owners'
+ *   graveyards. If you do, it enters with four +1/+1 counters"): `sourceZone = EXILE,
+ *   anyPlayersZone = true, destination = GRAVEYARD, maxCards = 2, countersPerCard = 2, allOrNone = true`
  */
 @SerialName("EntersWithExileCounters")
 @Serializable
@@ -3307,15 +3322,31 @@ data class EntersWithExileCounters(
     val maxCards: DynamicAmount,
     val counterType: CounterType = CounterType.PLUS_ONE_PLUS_ONE,
     val countersPerCard: Int = 1,
+    val anyPlayersZone: Boolean = false,
+    val destination: Zone = Zone.EXILE,
+    val allOrNone: Boolean = false,
     override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
         filter = GameObjectFilter.Any,
         to = Zone.BATTLEFIELD
     )
 ) : ReplacementEffect {
-    override val description: String =
-        "As this permanent enters, exile up to ${maxCards.description} matching cards from your " +
-            "${sourceZone.name.lowercase()}. It enters with $countersPerCard ${counterType.printed} " +
-            "counter${if (countersPerCard == 1) "" else "s"} for each card exiled this way."
+    init {
+        require(destination == Zone.EXILE || destination == Zone.GRAVEYARD) {
+            "EntersWithExileCounters moves cards to EXILE or GRAVEYARD, not $destination"
+        }
+        require(destination != sourceZone) { "EntersWithExileCounters can't move cards to the zone they're in" }
+    }
+
+    override val description: String = run {
+        val count = if (allOrNone) maxCards.description else "up to ${maxCards.description}"
+        val from = if (anyPlayersZone) sourceZone.name.lowercase() else "your ${sourceZone.name.lowercase()}"
+        val verb = if (destination == Zone.EXILE) "exile $count matching cards from $from"
+            else "put $count matching cards from $from into their owners' ${destination.name.lowercase()}s"
+        val counters = "$countersPerCard ${counterType.printed} counter${if (countersPerCard == 1) "" else "s"}"
+        val moved = if (destination == Zone.EXILE) "exiled" else "moved"
+        if (allOrNone) "As this permanent enters, you may $verb. If you do, it enters with $counters for each of them."
+        else "As this permanent enters, $verb. It enters with $counters for each card $moved this way."
+    }
 
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
         val newFilter = filter.applyTextReplacement(replacer)

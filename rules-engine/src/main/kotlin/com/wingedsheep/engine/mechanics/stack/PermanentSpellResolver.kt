@@ -446,40 +446,81 @@ internal class PermanentSpellResolver(
             .filterIsInstance<com.wingedsheep.sdk.scripting.EntersWithExileCounters>()
             .firstOrNull()
         if (exileCountersEffect != null) {
+            val effect = exileCountersEffect
             val predicateContext = PredicateContext(controllerId = controllerId, sourceId = spellId)
-            val candidates = state.getZone(ZoneKey(controllerId, exileCountersEffect.sourceZone)).filter { cardId ->
-                predicateEvaluator.matches(
-                    state, state.projectedState, cardId, exileCountersEffect.filter, predicateContext
-                )
+            val owners = if (effect.anyPlayersZone) state.turnOrder else listOf(controllerId)
+            val candidates = owners.flatMap { state.getZone(ZoneKey(it, effect.sourceZone)) }.filter { cardId ->
+                cardId != spellId &&
+                    predicateEvaluator.matches(state, state.projectedState, cardId, effect.filter, predicateContext)
             }
-            val maxCards = amountEvaluator.evaluate(
+            val evaluatedMax = amountEvaluator.evaluate(
                 state,
-                exileCountersEffect.maxCards,
+                effect.maxCards,
                 EffectContext(
                     sourceId = spellId,
                     controllerId = controllerId,
                     xValue = spellComponent.xValue ?: 0
                 )
-            ).coerceAtLeast(0).coerceAtMost(candidates.size)
-            if (candidates.isNotEmpty() && maxCards > 0) {
-                val continuation = ExileCountersContinuation(
-                    spellId = spellId,
-                    controllerId = controllerId,
-                    ownerId = ownerId,
-                    counterType = exileCountersEffect.counterType,
-                    countersPerCard = exileCountersEffect.countersPerCard
+            ).coerceAtLeast(0)
+            val maxCards = evaluatedMax.coerceAtMost(candidates.size)
+            val zoneName = effect.sourceZone.name.lowercase()
+            val fromText = if (effect.anyPlayersZone) zoneName else "your $zoneName"
+            // "creature cards", but "cards an opponent owns" — an owner clause follows the noun.
+            val filterText = effect.filter.description
+            val cards = when {
+                filterText.isBlank() || filterText.equals("any", ignoreCase = true) -> "cards"
+                filterText.endsWith(" owns") || filterText.endsWith(" controls") -> "cards $filterText"
+                else -> "$filterText cards"
+            }
+            val count = if (effect.allOrNone) "$maxCards" else "up to $maxCards"
+            val selectPrompt = if (effect.destination == Zone.EXILE) {
+                "Exile $count $cards from $fromText"
+            } else {
+                "Put $count $cards from $fromText into their owners' ${effect.destination.name.lowercase()}s"
+            }
+            val context = DecisionContext(
+                sourceId = spellId,
+                sourceName = cardComponent.name,
+                phase = DecisionPhase.RESOLUTION
+            )
+            val continuation = ExileCountersContinuation(
+                spellId = spellId,
+                controllerId = controllerId,
+                ownerId = ownerId,
+                counterType = effect.counterType,
+                countersPerCard = effect.countersPerCard,
+                destination = effect.destination
+            )
+            if (effect.allOrNone) {
+                // "You may move exactly N. If you do, …" — not offered when fewer than N can move.
+                if (evaluatedMax <= 0 || candidates.size < evaluatedMax) return null
+                val totalCounters = evaluatedMax * effect.countersPerCard
+                return state.suspendForDecision(
+                    question = { decisionId ->
+                        YesNoDecision(
+                            id = decisionId,
+                            playerId = controllerId,
+                            prompt = "${selectPrompt.replaceFirstChar { it.uppercase() }}?",
+                            context = context,
+                            yesText = "Yes ($totalCounters ${effect.counterType.printed} counter${if (totalCounters == 1) "" else "s"})",
+                            noText = "No"
+                        )
+                    },
+                    answer = continuation.copy(
+                        exactCount = evaluatedMax,
+                        candidates = candidates,
+                        selectPrompt = selectPrompt
+                    )
                 )
+            }
+            if (candidates.isNotEmpty() && maxCards > 0) {
                 return state.suspendForDecision(
                     question = { decisionId ->
                         SelectCardsDecision(
                             id = decisionId,
                             playerId = controllerId,
-                            prompt = "Exile up to $maxCards ${exileCountersEffect.filter.description} cards from your ${exileCountersEffect.sourceZone.name.lowercase()} for ${cardComponent.name}",
-                            context = DecisionContext(
-                                sourceId = spellId,
-                                sourceName = cardComponent.name,
-                                phase = DecisionPhase.RESOLUTION
-                            ),
+                            prompt = selectPrompt,
+                            context = context,
                             options = candidates,
                             minSelections = 0,
                             maxSelections = maxCards

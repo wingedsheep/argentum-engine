@@ -532,14 +532,23 @@ data class RevealCountersContinuation(
     val countersPerReveal: Int
 ) : AnswerContinuation
 
-/** Resume an as-enters linked-exile selection before the permanent enters the battlefield. */
+/**
+ * Resume an as-enters [com.wingedsheep.sdk.scripting.EntersWithExileCounters] choice before the
+ * permanent enters the battlefield. Answered by a card selection (move those cards), or — for the
+ * all-or-none form, where [exactCount] is set — first by a yes/no, after which the resumer asks for
+ * exactly [exactCount] of [candidates] (or moves them all when there are just that many).
+ */
 @Serializable
 data class ExileCountersContinuation(
     val spellId: EntityId,
     val controllerId: EntityId,
     val ownerId: EntityId,
     val counterType: CounterType,
-    val countersPerCard: Int
+    val countersPerCard: Int,
+    val destination: Zone = Zone.EXILE,
+    val exactCount: Int? = null,
+    val candidates: List<EntityId> = emptyList(),
+    val selectPrompt: String = ""
 ) : AnswerContinuation
 
 /**

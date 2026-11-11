@@ -1,0 +1,1 @@
+- #PR The AI counts opponents' exiled cards as fuel for an as-enters processor (Ulamog's Despoiler) and processes two so it enters with its counters
