@@ -2006,6 +2006,7 @@ Bogstomper
 Bogwater Lumaret
 Boil
 Boilerbilges Ripper
+Boiling Earth
 Boiling Rock Prison
 Boiling Rock Rioter	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(FromLinkedExile→?)
 Boiling Seas
@@ -3234,6 +3235,7 @@ Cloudspire Skycycle
 Cloudsteel Kirin	intent: UnattachEquipmentEffect
 Cloudstone Curio
 Cloudthresher
+Clutch of Currents
 Clutch of Undeath
 Clutch of the Undercity
 Coal Golem
@@ -5174,6 +5176,7 @@ Earthbind
 Earthblighter
 Earthcraft
 Earthen Ally
+Earthen Arms
 Earthquake
 Earthquake Dragon
 Earthrumbler	timing: AddCardTypeEffect
@@ -5515,6 +5518,7 @@ Enchanted Carriage
 Enchanted River's Grasp
 Enchantment Alteration	intent: AttachToChosenHostEffect; polarity: AttachToChosenHostEffect
 Enchantress's Presence
+Encircling Fissure
 Encounter the Unknown
 Encouraging Aviator	timing: GrantKeywordEffect
 Encroaching Dragonstorm
@@ -7998,6 +8002,7 @@ Halberdier
 Halcyon Glaze
 Half-Elf Monk
 Halfdane	polarity: SetBaseStatsEffect
+Halimar Tidecaller
 Haliya, Ascendant Cadet
 Haliya, Guided by Light
 Hall Monitor
@@ -11452,6 +11457,7 @@ Mire Boa
 Mire Triton
 Mire in Misery
 Mire's Grasp
+Mire's Malice
 Mirelurk Queen	polarity: AddCountersEffect
 Miriam, Herd Whisperer
 Mirkwood
@@ -12575,6 +12581,7 @@ Ondu Giant
 Ondu Greathorn
 Ondu Inversion
 Ondu Knotmaster
+Ondu Rising
 Ondu War Cleric
 One Dozen Eyes
 One Last Job	polarity: PutOntoBattlefieldAttachedToChosenEffect
@@ -12899,6 +12906,7 @@ Parker Luck
 Part Water
 Part in Friendship
 Part the Veil
+Part the Waterveil
 Parting Gust
 Party Dude
 Party Thrasher
@@ -13261,6 +13269,7 @@ Planar Gate
 Planar Genesis
 Planar Guide	intent: Pipeline(BattlefieldMatching→battlefield|exile)
 Planar Incision
+Planar Outburst
 Planar Portal
 Planetarium of Wan Shi Tong
 Planetary Annihilation
@@ -14642,6 +14651,7 @@ Rishadan Dockhand
 Rishadan Port
 Rishkar's Expertise
 Rishkar, Peema Renegade
+Rising Miasma
 Rising Populace
 Rising of the Day
 Risk Factor
@@ -14762,6 +14772,7 @@ Rohirrim Lancer
 Roil Cartographer
 Roil Elemental
 Roil Eruption
+Roil Spout
 Roiling Canopy
 Roiling Dragonstorm
 Roiling Regrowth
@@ -14958,6 +14969,7 @@ Ruric Thar, Magecrusher
 Rush of Adrenaline
 Rush of Battle
 Rush of Dread
+Rush of Ice
 Rush of Inspiration
 Rush of Knowledge
 Rush of Vitality
@@ -15311,6 +15323,7 @@ Scathe Zombies
 Scathing Shadelock
 Scatter Ray
 Scatter the Seeds
+Scatter to the Winds
 Scattered Groves
 Scattered Thoughts
 Scattering Stroke
@@ -15870,6 +15883,7 @@ Shauku's Minion
 Shaun, Father of Synths
 She-Hulk, Jade Defender
 Shed Weakness
+Sheer Drop
 Shefet Archfiend
 Shefet Dunes
 Shefet Monitor
