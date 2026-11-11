@@ -347,6 +347,7 @@ Akki Scrapchomper
 Akki Underminer
 Akki War Paint
 Akoum Boulderfoot
+Akoum Firebird
 Akoum Flameseeker
 Akoum Hellhound
 Akoum Refuge
@@ -3950,6 +3951,7 @@ Damnable Pact
 Damnation
 Damning Verdict
 Dampen Thought
+Dampening Pulse
 Damping Field
 Damping Matrix
 Damping Sphere
@@ -7770,6 +7772,7 @@ Greenbelt Rampager
 Greenhouse // Rickety Gazebo
 Greenhouse Propagator
 Greenseeker
+Greenwarden of Murasa
 Greenweaver Druid
 Greenwheel Liberator
 Greenwood Sentinel
@@ -11987,6 +11990,7 @@ Nasty Little Rabbit
 Nath of the Gilt-Leaf
 Nath's Buffoon
 Nath's Elite
+Natural Connection
 Natural End
 Natural Obsolescence
 Natural Order
@@ -14171,6 +14175,7 @@ Reckoner Bankbuster
 Reckoner Shakedown
 Reckoner's Bargain
 Reclaim the Wastes
+Reclaiming Vines
 Reclamation Sage
 Reclusive Taxidermist
 Reclusive Wight
@@ -14434,6 +14439,7 @@ Resurrected Cultist
 Resurrection
 Retched Wretch
 Retreat to Coralhelm
+Retreat to Emeria
 Retreat to Hagra
 Retreat to Kazandu
 Retreat to Valakut
@@ -14817,6 +14823,7 @@ Rosethorn Halberd
 Rosheen, Roaring Prophet
 Rosie Cotton of South Lane
 Rot Farm Mortipede
+Rot Shambler
 Rot-Curse Rakshasa	intent: ForEach>AddCountersEffect; polarity: ForEachEffect
 Rot-Tide Gargantua
 Rotcrown Ghoul
@@ -16005,6 +16012,7 @@ Shrike Force
 Shrill Howler
 Shrine Keeper
 Shrine Steward
+Shrine of the Forsaken Gods
 Shrivel
 Shroofus Sproutsire
 Shrouded Shepherd
@@ -16091,6 +16099,7 @@ Silent Departure
 Silent Gravestone
 Silent Hallcreeper
 Silent Observer
+Silent Skimmer
 Silent Specter
 Silent Submersible
 Silent-Blade Oni
@@ -16318,6 +16327,7 @@ Skyhunter Skirmisher
 Skyknight Legionnaire
 Skyknight Squire
 Skyknight Vanguard
+Skyline Cascade
 Skyline Predator
 Skyline Scout
 Skymarch Bloodletter
@@ -16472,6 +16482,7 @@ Smoldering Marsh
 Smoldering Tar
 Smoldering Werewolf
 Smother
+Smothering Abomination
 Smothering Tithe	intent: PayOrSufferEffect
 Smuggler's Copter
 Smuggler's Surprise
@@ -16749,6 +16760,7 @@ Spell Blast
 Spell Pierce
 Spell Queller	intent: ExileTargetSpellEffect
 Spell Satchel
+Spell Shrivel
 Spell Snare
 Spell Stutter
 Spell Swindle
