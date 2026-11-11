@@ -20,6 +20,7 @@ import { SessionReplacedOverlay } from './components/ui/SessionReplacedOverlay'
 import { MatchIntroAnimation } from './components/animations/MatchIntroAnimation'
 import { SubgameTransition } from './components/animations/SubgameTransition'
 import { StandaloneConcedeButton } from './components/game/overlay'
+import { NextGameActions } from './components/tournament/NextGameActions'
 import overlay from './components/game/overlay/GameOverlays.module.css'
 import { AnteResultPanel } from './components/ante/AnteResultPanel'
 import { trackPageView } from './utils/analytics'
@@ -540,6 +541,14 @@ function GameOverlay() {
   const betweenGames = useGameStore((state) => state.tournamentState?.betweenGames ?? null)
   const lastMatchScore = useGameStore((state) => state.tournamentState?.lastMatchScore ?? null)
   const matchStanding = describeMatchStanding(betweenGames, lastMatchScore)
+  const submitMatchDeck = useGameStore((state) => state.submitMatchDeck)
+  // Ready for the next game with the deck that just played. Leaving the board first lands on the
+  // sideboarding screen in its waiting state, where Keep editing still takes the Ready back.
+  const readyWithSameDeck = (playFirst?: boolean) => {
+    const snapshot = betweenGames
+    returnToMenu()
+    if (snapshot && !snapshot.youAreReady) submitMatchDeck(snapshot.deck, snapshot.youChoosePlayDraw ? playFirst : undefined)
+  }
 
   // Auto-dismiss is handled centrally in the store (setError schedules clearError), so it
   // works on every route — not just where this overlay happens to be mounted. The × button
@@ -563,7 +572,7 @@ function GameOverlay() {
           <p className={overlay.eyebrow}>Game over</p>
           <h1 id="game-over-title" className={overlay.title}>{title}</h1>
           <p className={overlay.reason}>{reasonText}</p>
-          {matchStanding && <p className={overlay.matchLine} data-testid="game-over-match">{matchStanding.text}</p>}
+          {matchStanding && <p className={overlay.matchLine} data-testid="game-over-match">{matchStanding}</p>}
           {/* Played for ante (CR 407): what changed hands, before the next-step actions. */}
           {gameOverState.ante && <AnteResultPanel ante={gameOverState.ante} viewerId={viewerId} />}
           {postGame && <PostGamePanel postGame={postGame} />}
@@ -578,11 +587,10 @@ function GameOverlay() {
                 A rematch and a saved setup are the same object with different seats: a rematch is
                 a recipe replayed with the seats intact, a setup is one replayed with them open. */}
             {/* Against a person, the panel above carries the one primary action (Rematch). */}
-            {matchStanding?.nextGame ? (
-              // The match goes on: the one way forward is the sideboarding step for the next game.
-              <button type="button" onClick={returnToMenu} className={overlay.primary} data-testid="game-over-continue">
-                {matchStanding.canSideboard ? `Sideboard for game ${matchStanding.nextGame}` : `Continue to game ${matchStanding.nextGame}`}
-              </button>
+            {betweenGames ? (
+              // The match goes on. Ready up with the same deck from here; "Sideboard first" below
+              // opens the sideboarding screen instead.
+              <NextGameActions snapshot={betweenGames} onReady={readyWithSameDeck} />
             ) : postGame ? null : rematch ? (
               <button type="button" onClick={rematch.play} className={overlay.primary} data-testid="game-over-play-again">
                 Play Again
@@ -593,6 +601,11 @@ function GameOverlay() {
               </button>
             )}
             <div className={overlay.secondaryRow}>
+              {betweenGames?.canSideboard && !betweenGames.youAreReady && (
+                <button type="button" onClick={returnToMenu} className={overlay.secondary} data-testid="game-over-sideboard">
+                  Sideboard first
+                </button>
+              )}
               {/* Eliminated from a multiplayer game that plays on: offer to stay and
                   spectate the rest of it (board overview, action UI hidden). */}
               {gameOverState.eliminated && (
@@ -639,17 +652,11 @@ function GameOverlay() {
 function describeMatchStanding(
   between: BetweenGamesMessage | null,
   last: LastMatchScore | null,
-): { text: string; nextGame: number | null; canSideboard: boolean } | null {
-  if (between) {
-    return {
-      text: `Match ${between.yourGameWins}–${between.opponentGameWins} · Game ${between.nextGameNumber} next`,
-      nextGame: between.nextGameNumber,
-      canSideboard: between.canSideboard,
-    }
-  }
+): string | null {
+  if (between) return `Match ${between.yourGameWins}–${between.opponentGameWins} · Game ${between.nextGameNumber} next`
   if (!last) return null
   const verdict = last.result === 'DRAW' ? 'Match drawn' : last.result === 'WIN' ? 'You won the match' : 'You lost the match'
-  return { text: `${verdict} ${last.yourGameWins}–${last.opponentGameWins}`, nextGame: null, canSideboard: false }
+  return `${verdict} ${last.yourGameWins}–${last.opponentGameWins}`
 }
 
 function WaitingForMulliganOverlay() {
