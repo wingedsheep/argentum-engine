@@ -8350,7 +8350,7 @@
     "oracleText": "Devoid (This card has no color.)\nFlying\nWhenever you cast a colorless spell, this creature gets +1/+0 until end of turn.",
     "creatureStats": {
         "power": 1,
-        "toughness": 1
+        "toughness": 2
     },
     "keywords": [
         "DEVOID",

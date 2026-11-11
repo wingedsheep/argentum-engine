@@ -12,7 +12,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 /**
  * Sky Scourer — Oath of the Gatewatch #78
  * {1}{B} · Creature — Eldrazi Drone · Common
- * 1/1
+ * 1/2
  *
  * Devoid (This card has no color.)
  * Flying
@@ -27,7 +27,7 @@ val SkyScourer = card("Sky Scourer") {
     colorIdentity = "B"
     typeLine = "Creature — Eldrazi Drone"
     power = 1
-    toughness = 1
+    toughness = 2
     oracleText = "Devoid (This card has no color.)\n" +
         "Flying\n" +
         "Whenever you cast a colorless spell, this creature gets +1/+0 until end of turn."

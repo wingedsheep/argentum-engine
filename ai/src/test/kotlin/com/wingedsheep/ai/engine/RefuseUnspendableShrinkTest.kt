@@ -178,20 +178,20 @@ class RefuseUnspendableShrinkTest : ScenarioTestBase() {
         }
 
         test("Gift of Tusks' vanilla 3/3 waits for a fight the opposing creature can still be in") {
-            fun giftOn(activePlayer: Int, step: Step) = scenario()
+            fun giftOn(activePlayer: Int, step: Step, theirs: String = "Serra Angel") = scenario()
                 .withPlayers()
                 .withTurnNumber(8)
                 .withActivePlayer(activePlayer)
                 .withLandsOnBattlefield(1, "Island", 1)
                 .withCardInHand(1, "Gift of Tusks")
-                .withCardOnBattlefield(2, "Serra Angel")
+                .withCardOnBattlefield(2, theirs)
                 .build()
                 .advanceToPriority(1, step)
-            fun TestGame.giftVerdict(refuseWastedPayoffs: Boolean = true): TimingVerdict {
+            fun TestGame.giftVerdict(refuseWastedPayoffs: Boolean = true, theirs: String = "Serra Angel"): TimingVerdict {
                 val gift = state.getZone(player1Id, Zone.HAND).first {
                     state.getEntity(it)?.get<CardComponent>()?.name == "Gift of Tusks"
                 }
-                val cast = CastSpell(player1Id, gift, targets = listOf(ChosenTarget.Permanent(findPermanent("Serra Angel")!!)))
+                val cast = CastSpell(player1Id, gift, targets = listOf(ChosenTarget.Permanent(findPermanent(theirs)!!)))
                 return HoldPolicy(intents, refuseWastedPayoffs = refuseWastedPayoffs)
                     .verdictFor(state, player1Id, "Gift of Tusks", cast = cast)
             }
@@ -204,6 +204,10 @@ class RefuseUnspendableShrinkTest : ScenarioTestBase() {
             val angel = afterCombat.findPermanent("Serra Angel")!!
             afterCombat.state = afterCombat.state.updateEntity(angel) { it.with(DamageComponent(3)) }
             afterCombat.giftVerdict() shouldNotBe TimingVerdict.NoWindow
+            // An opposing creature with an ability it could still use this turn (Prodigal
+            // Sorcerer's ping) is worth silencing even with no fight left.
+            giftOn(activePlayer = 1, step = Step.POSTCOMBAT_MAIN, theirs = "Prodigal Sorcerer")
+                .giftVerdict(theirs = "Prodigal Sorcerer") shouldNotBe TimingVerdict.NoWindow
         }
 
         test("before their attack, a creature that can still attack is a fight to shrink") {

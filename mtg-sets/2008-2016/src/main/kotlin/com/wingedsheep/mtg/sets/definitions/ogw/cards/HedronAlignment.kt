@@ -27,8 +27,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * The win check is not an intervening "if": the ability always triggers, and the four-zone test
  * runs on resolution after the reveal. Hand, graveyard and exile are owner-keyed zones, so
  * `Player.You` reads cards you own there; the battlefield copy is read across every player's
- * permanents filtered by *ownership*, so a Hedron Alignment you own but an opponent controls
- * still counts (and one you control but don't own doesn't). The exiled copy must be face up
+ * permanents filtered by *ownership* ("own", not "control"). The exiled copy must be face up
  * (ruling).
  */
 private val namedHedronAlignment = GameObjectFilter.Any.named("Hedron Alignment")
