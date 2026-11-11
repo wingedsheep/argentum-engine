@@ -3897,6 +3897,7 @@ Cyberdrive Awakener	intent: MassAnimateEffect
 Cybernetic Specialist
 Cycle of Renewal
 Cyclone
+Cyclone Sire
 Cyclone Summoner
 Cyclonic Rift
 Cyclopean Mummy
@@ -4882,6 +4883,7 @@ Draugr's Helm
 Drawn from Dreams
 Dread
 Dread Charge	intent: GrantCantBeBlockedExceptByColorEffect
+Dread Defiler
 Dread Fugue
 Dread Presence
 Dread Reaper
@@ -6423,6 +6425,7 @@ Flawless Maneuver
 Flaxen Intruder
 Flayed Nim
 Flayer Drone
+Flaying Tendrils
 Fledgling Dragon
 Fledgling Imp
 Fledgling Mawcor
@@ -7170,6 +7173,7 @@ Gift of Growth
 Gift of Paradise
 Gift of Strands
 Gift of Strength
+Gift of Tusks
 Gift of Wrath
 Gift of the Gargantuan
 Gift of the Viper
@@ -8218,6 +8222,7 @@ Hedge Shredder	intent: Pipeline(?→battlefield)
 Hedge Troll
 Hedge Whisperer
 Hedgewitch's Mask
+Hedron Alignment
 Hedron Archive
 Hedron Crab
 Hedron Crawler
@@ -12376,6 +12381,7 @@ Oasis Gardener
 Oasis Ritualist
 Oath of Ajani
 Oath of Gideon
+Oath of Jace
 Oath of Kaya
 Oath of Liliana
 Oath of Nissa
@@ -14294,6 +14300,7 @@ Remand
 Reminisce	intent: Pipeline(graveyard→library); polarity: Pipeline(graveyard→library)
 Remnant Elemental
 Remorseful Cleric
+Remorseless Punishment
 Remote Isle
 Remove
 Remove Enchantments
@@ -16266,6 +16273,7 @@ Skulltap
 Sky Crier
 Sky Diamond
 Sky Ruin Drake
+Sky Scourer
 Sky Skiff
 Sky Spirit
 Sky Terror
@@ -16399,6 +16407,7 @@ Slinn Voda, the Rising Deep
 Slinza, the Spiked Stampede
 Slip On the Ring
 Slip Out the Back
+Slip Through Space
 Slippery Karst
 Slippery Scoundrel
 Slipstream Eel
@@ -19295,6 +19304,7 @@ Ulvenwald Hydra
 Ulvenwald Mysteries
 Ulvenwald Observer
 Ulvenwald Oddity
+Umara Entangler
 Umara Mystic
 Umara Raptor
 Umara Wizard
@@ -20000,6 +20010,7 @@ Void Beckoner
 Void Extrapolator
 Void Grafter
 Void Rend
+Void Shatter
 Void Snare
 Void Squall
 Voidforged Titan
@@ -20283,6 +20294,7 @@ Warpath Ghoul
 Warped Landscape
 Warped Researcher
 Warped Tusker
+Warping Wail
 Warrant // Warden
 Warren Elder
 Warren Instigator
@@ -20391,6 +20403,7 @@ Weapon Rack
 Weaponcraft Enthusiast
 Weaponize the Monsters
 Weapons Manufacturing
+Weapons Trainer
 Weapons Vendor
 Wear // Tear
 Wear Away
@@ -20754,6 +20767,7 @@ Withstand Death
 Witness Protection
 Witness of Tomorrows
 Witness of the Ages
+Witness the End
 Witness the Future
 Witty Roastmaster
 Wizard Class
