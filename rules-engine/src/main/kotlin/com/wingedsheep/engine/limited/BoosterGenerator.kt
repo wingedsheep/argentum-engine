@@ -397,7 +397,9 @@ class BoosterGenerator(
      * product (see [BasicLandArt]). Special treatments (full-art, extended, borderless) stay
      * defined for collection and display; they're simply not what a drafted deck is played with.
      * The chosen printing is both what the deck builder previews and — via [withBasicLandArt] —
-     * what every copy in the submitted deck resolves to.
+     * what every copy in the submitted deck resolves to. Only freely added basics qualify
+     * ([com.wingedsheep.sdk.core.TypeLine.isFreelyAddedBasicLand]): a set's Wastes or basic snow
+     * lands are pack cards, never land-station basics.
      *
      * @param setCode The set code
      * @return Map of land name to the set's standard printing of it
@@ -407,7 +409,7 @@ class BoosterGenerator(
             ?: throw IllegalArgumentException("Unknown set code: $setCode")
 
         return setConfig.basicLands
-            .filter { it.metadata.inBooster }
+            .filter { it.metadata.inBooster && it.typeLine.isFreelyAddedBasicLand }
             .groupBy { it.name }
             .mapValues { (_, variants) -> variants.minWith(BasicLandArt.standardFirst) }
     }
@@ -443,9 +445,10 @@ class BoosterGenerator(
      * booster pool only. Banned names are matched case-insensitively so a host typo in casing
      * still excludes the card.
      *
-     * Basic *snow* lands stay: Limited players can't add them freely the way they add basics (the
-     * Kaldheim snow-basic ruling), so a pack is the only way to get one, and a land-slot strategy
-     * opens them from here.
+     * Basic *snow* lands and Wastes stay: Limited players can't add them freely the way they add
+     * basics (the Kaldheim snow-basic ruling; Oath of the Gatewatch's Wastes ruling), so a pack is
+     * the only way to get one — a land-slot strategy opens them from here, and Oath of the
+     * Gatewatch's Wastes open in its common slot.
      *
      * Meld results ([CardDefinition.meldResult]) are dropped here rather than left to
      * `metadata.inBooster`: Scryfall reports them as `booster: true` — the physical card *is* in
@@ -464,5 +467,5 @@ class BoosterGenerator(
     }
 
     private val CardDefinition.isBoosterEligible: Boolean
-        get() = (!typeLine.isBasicLand || typeLine.isSnow) && !meldResult && metadata.inBooster
+        get() = !typeLine.isFreelyAddedBasicLand && !meldResult && metadata.inBooster
 }

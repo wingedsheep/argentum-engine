@@ -89,7 +89,7 @@ private fun buildFreshSealedDeck(pool: List<CardDefinition>, targetSize: Int): M
     val ratings = pool.associateWith { LimitedCardRater.rate(it) }
 
     val nonLands = pool.filter { !it.typeLine.isLand }
-    val poolLands = pool.filter { it.typeLine.isLand && (!it.typeLine.isBasicLand || it.typeLine.isSnow) }
+    val poolLands = pool.filter { it.typeLine.isLand && !it.typeLine.isFreelyAddedBasicLand }
 
     // Score each color by the total limited rating of its cards
     val colorScores = mutableMapOf<Color, Double>()
@@ -503,7 +503,7 @@ private fun completeSealedDeck(
     // Copies the player already locked count toward the legend discount: a locked legend's next
     // copy from the pool is already its second.
     val fixed = fixingColors(
-        pool.filter { it.typeLine.isLand && (!it.typeLine.isBasicLand || it.typeLine.isSnow) && landFitsColors(it, bestColors) },
+        pool.filter { it.typeLine.isLand && !it.typeLine.isFreelyAddedBasicLand && landFitsColors(it, bestColors) },
     )
     val candidates = rankByMarginalValue(
         pool.filter { !it.typeLine.isLand && fitsDeckColors(it, bestColors, fixed) },
@@ -518,7 +518,7 @@ private fun completeSealedDeck(
     }
 
     // On-color non-basic lands from the pool.
-    for (land in pool.filter { it.typeLine.isLand && (!it.typeLine.isBasicLand || it.typeLine.isSnow) && landFitsColors(it, bestColors) }) {
+    for (land in pool.filter { it.typeLine.isLand && !it.typeLine.isFreelyAddedBasicLand && landFitsColors(it, bestColors) }) {
         if (total() >= targetSize) break
         val have = deck[land.name] ?: 0
         val available = poolCounts[land.name] ?: 0

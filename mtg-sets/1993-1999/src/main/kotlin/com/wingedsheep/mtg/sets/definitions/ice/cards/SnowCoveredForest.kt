@@ -16,10 +16,10 @@ import com.wingedsheep.sdk.scripting.TimingRule
  * "Basic Land — <type>" type line and cannot carry the Snow supertype. The intrinsic mana ability is
  * spelled out here to match what `basicLand` would have generated.
  *
- * `inBooster = false` is load-bearing rather than cosmetic: `CardDiscovery.findBasicLandsIn` splits
- * on `typeLine.isBasicLand`, which a Basic *Snow* Land satisfies, so without the flag
- * `BoosterGenerator.getBasicLands` would offer this as a freely-addable basic during limited deck
- * building — which the card's own ruling forbids.
+ * `CardDiscovery.findBasicLandsIn` files this into Ice Age's `basicLands` (it is a Basic land), but
+ * a snow basic is never a land-station basic (`TypeLine.isFreelyAddedBasicLand`). `inBooster = false`
+ * keeps it out of Ice Age's own booster pool, where a set's pack-only basics would otherwise join
+ * its commons; Kaldheim's land slot reaches snow basics through its reprint rows instead.
  */
 val SnowCoveredForest = card("Snow-Covered Forest") {
     manaCost = ""

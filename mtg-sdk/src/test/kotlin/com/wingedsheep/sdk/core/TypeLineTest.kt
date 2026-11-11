@@ -30,4 +30,21 @@ class TypeLineTest : DescribeSpec({
             parsed.subtypes shouldBe setOf(Subtype("Assembly-Worker"))
         }
     }
+
+    describe("isFreelyAddedBasicLand") {
+        it("is true for the five nonsnow basic land types") {
+            TypeLine.parse("Basic Land — Plains").isFreelyAddedBasicLand shouldBe true
+            TypeLine.parse("Basic Land — Forest").isFreelyAddedBasicLand shouldBe true
+        }
+
+        it("is false for pack-only basics: snow basics and Wastes") {
+            TypeLine.parse("Basic Snow Land — Island").isFreelyAddedBasicLand shouldBe false
+            TypeLine.parse("Basic Land").isFreelyAddedBasicLand shouldBe false
+            TypeLine.parse("Basic Snow Land").isFreelyAddedBasicLand shouldBe false
+        }
+
+        it("is false for nonbasic lands with a basic land type") {
+            TypeLine.parse("Land — Mountain Forest").isFreelyAddedBasicLand shouldBe false
+        }
+    }
 })

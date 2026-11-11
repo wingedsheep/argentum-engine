@@ -22,6 +22,13 @@ object OathOfTheGatewatchSet : MtgSet {
     override val block = "Battle for Zendikar"
     override val sealedSupported = false
 
+    /**
+     * Oath of the Gatewatch's only basics are its two Wastes, which are pack cards (a Limited
+     * player plays only the Wastes they open), so deck building hands out Battle for Zendikar's
+     * basics — the ones its boosters' land slot carried.
+     */
+    override val basicLandsFallbackCode = "BFZ"
+
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
     }

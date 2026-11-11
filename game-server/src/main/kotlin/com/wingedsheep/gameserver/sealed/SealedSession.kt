@@ -216,9 +216,9 @@ class SealedSession(
         }
 
         // Count available copies from pool (excluding basic lands, which are free — but not basic
-        // snow lands: Limited players only get those by opening them)
+        // snow lands or Wastes: Limited players only get those by opening them)
         val poolCounts = pool
-            .filterNot { it.typeLine.isBasicLand && !it.typeLine.isSnow }
+            .filterNot { it.typeLine.isFreelyAddedBasicLand }
             .groupingBy { it.name }
             .eachCount()
 
