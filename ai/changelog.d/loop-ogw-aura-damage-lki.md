@@ -1,1 +1,1 @@
-- #TBD Aims Auras whose damage triggers drain the host's controller (Ragged Veins, Visions of Brutality) at opposing creatures, and Spirit Link-style "you gain" damage Auras at its own
+- #4634 Aims Auras whose damage triggers drain the host's controller (Ragged Veins, Visions of Brutality) at opposing creatures, and Spirit Link-style "you gain" damage Auras at its own
