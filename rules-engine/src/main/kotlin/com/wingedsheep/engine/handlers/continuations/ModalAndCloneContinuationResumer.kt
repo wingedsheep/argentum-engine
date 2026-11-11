@@ -1451,34 +1451,73 @@ class ModalAndCloneContinuationResumer(
         response: DecisionResponse,
         checkForMore: CheckForMore
     ): ExecutionResult {
-        if (response !is CardsSelectedResponse) {
-            return ExecutionResult.error(state, "Expected card selection response for exile counters")
+        val exactCount = continuation.exactCount
+        val selected: List<EntityId> = when (response) {
+            // The all-or-none form asks yes/no first; "yes" then needs exactly that many cards.
+            is YesNoResponse -> when {
+                exactCount == null -> return ExecutionResult.error(state, "Expected card selection response for exile counters")
+                !response.choice -> emptyList()
+                continuation.candidates.size <= exactCount -> continuation.candidates
+                else -> {
+                    val sourceName = state.getEntity(continuation.spellId)?.get<CardComponent>()?.name ?: ""
+                    return state.suspendForDecision(
+                        question = { decisionId ->
+                            SelectCardsDecision(
+                                id = decisionId,
+                                playerId = continuation.controllerId,
+                                prompt = continuation.selectPrompt,
+                                context = DecisionContext(
+                                    sourceId = continuation.spellId,
+                                    sourceName = sourceName,
+                                    phase = DecisionPhase.RESOLUTION
+                                ),
+                                options = continuation.candidates,
+                                minSelections = exactCount,
+                                maxSelections = exactCount
+                            )
+                        },
+                        answer = continuation,
+                        events = emptyList(),
+                    )
+                }
+            }
+            is CardsSelectedResponse -> {
+                if (exactCount != null && response.selectedCards.size != exactCount) {
+                    return ExecutionResult.error(state, "Choose exactly $exactCount cards")
+                }
+                response.selectedCards
+            }
+            else -> return ExecutionResult.error(state, "Expected card selection response for exile counters")
         }
 
         var newState = state
         val events = mutableListOf<GameEvent>()
-        val actuallyExiled = mutableListOf<com.wingedsheep.sdk.model.EntityId>()
-        for (cardId in response.selectedCards) {
-            val transition = services.zones.moveToZone(
-                newState, cardId, Zone.EXILE
-            )
+        val moved = mutableListOf<EntityId>()
+        for (cardId in selected) {
+            val transition = services.zones.moveToZone(newState, cardId, continuation.destination)
             newState = transition.state
             events.addAll(transition.events)
-            if (newState.getZone(com.wingedsheep.engine.state.ZoneKey(
-                    newState.getEntity(cardId)?.get<CardComponent>()?.ownerId ?: continuation.controllerId,
-                    Zone.EXILE
-                )).contains(cardId)
-            ) actuallyExiled.add(cardId)
+            val owner = newState.getEntity(cardId)?.get<CardComponent>()?.ownerId ?: continuation.controllerId
+            if (newState.getZone(com.wingedsheep.engine.state.ZoneKey(owner, continuation.destination)).contains(cardId)) {
+                moved.add(cardId)
+            }
         }
+        // A linked exile counts only the cards that reached exile. Putting a card into a graveyard
+        // is done even when a replacement effect exiles it instead (BFZ processor rulings), so every
+        // chosen card counts — and for the all-or-none form "if you do" holds exactly then.
+        val countedCards = (if (continuation.destination == Zone.EXILE) moved.size else selected.size)
+            .let { if (exactCount != null && it < exactCount) 0 else it }
 
-        if (actuallyExiled.isNotEmpty()) {
+        if (continuation.destination == Zone.EXILE && moved.isNotEmpty()) {
             val linked = newState.getEntity(continuation.spellId)
                 ?.get<com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent>()
                 ?.exiledIds.orEmpty()
             newState = newState.updateEntity(continuation.spellId) { container ->
-                container.with(com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent(linked + actuallyExiled))
+                container.with(com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent(linked + moved))
             }
-            val counterCount = actuallyExiled.size * continuation.countersPerCard
+        }
+        if (countedCards > 0) {
+            val counterCount = countedCards * continuation.countersPerCard
             val (counterState, counterEvents) = EntersWithReplacements.placeEntryCounters(
                 newState,
                 continuation.spellId,

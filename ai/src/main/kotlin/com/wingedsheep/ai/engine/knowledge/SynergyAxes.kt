@@ -54,6 +54,8 @@ import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.TurnTracker
+import com.wingedsheep.sdk.scripting.ReplacementEffect
+import com.wingedsheep.sdk.scripting.EntersWithExileCounters
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -204,8 +206,11 @@ object SynergyAxes {
             if (GraveyardSynergy.isPayoff(card)) add(SynergyAxis.GRAVEYARD)
             // The processor cost spends an opponent's exiled card: with none there, the ability
             // can't be activated and the spell can't be cast.
+            // So does an as-enters processor (Ulamog's Despoiler): with nothing to put back, it
+            // enters without its counters.
             if (scripts.any { script ->
-                    script.activatedAbilities.any { processes(it.cost) } || script.additionalCosts.any(::processes)
+                    script.activatedAbilities.any { processes(it.cost) } || script.additionalCosts.any(::processes) ||
+                        script.replacementEffects.any(::processes)
                 }
             ) add(SynergyAxis.OPPONENT_EXILE)
             // Carrying counters from one permanent to another — The Ozolith banking a leaving
@@ -578,6 +583,11 @@ object SynergyAxes {
     /** A processor cost: a card leaves an opponent's exile for their graveyard ([CostAtom.ExileFrom.exiles] false). */
     private fun processes(atom: CostAtom): Boolean =
         atom is CostAtom.ExileFrom && atom.zone == Zone.EXILE && !atom.exiles
+
+    /** An as-enters move out of exile that isn't a linked exile — the processor shape. */
+    private fun processes(effect: ReplacementEffect): Boolean =
+        effect is EntersWithExileCounters &&
+            effect.sourceZone == Zone.EXILE && effect.destination != Zone.EXILE
 
     private fun processes(cost: AbilityCost): Boolean = when (cost) {
         is AbilityCost.Atom -> processes(cost.atom)

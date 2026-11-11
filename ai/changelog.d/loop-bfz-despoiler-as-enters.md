@@ -1,0 +1,1 @@
+- #4643 The AI reads an as-enters processor (Ulamog's Despoiler) as a payoff for opponents' exiled cards when it drafts and builds around them

@@ -447,12 +447,11 @@ internal class PermanentSpellResolver(
             .firstOrNull()
         if (exileCountersEffect != null) {
             val predicateContext = PredicateContext(controllerId = controllerId, sourceId = spellId)
-            val candidates = state.getZone(ZoneKey(controllerId, exileCountersEffect.sourceZone)).filter { cardId ->
-                predicateEvaluator.matches(
-                    state, state.projectedState, cardId, exileCountersEffect.filter, predicateContext
-                )
+            val owners = if (exileCountersEffect.anyPlayersZone) state.turnOrder else listOf(controllerId)
+            val candidates = owners.flatMap { state.getZone(ZoneKey(it, exileCountersEffect.sourceZone)) }.filter { cardId ->
+                predicateEvaluator.matches(state, state.projectedState, cardId, exileCountersEffect.filter, predicateContext)
             }
-            val maxCards = amountEvaluator.evaluate(
+            val evaluatedMax = amountEvaluator.evaluate(
                 state,
                 exileCountersEffect.maxCards,
                 EffectContext(
@@ -460,26 +459,65 @@ internal class PermanentSpellResolver(
                     controllerId = controllerId,
                     xValue = spellComponent.xValue ?: 0
                 )
-            ).coerceAtLeast(0).coerceAtMost(candidates.size)
-            if (candidates.isNotEmpty() && maxCards > 0) {
-                val continuation = ExileCountersContinuation(
-                    spellId = spellId,
-                    controllerId = controllerId,
-                    ownerId = ownerId,
-                    counterType = exileCountersEffect.counterType,
-                    countersPerCard = exileCountersEffect.countersPerCard
+            ).coerceAtLeast(0)
+            val maxCards = evaluatedMax.coerceAtMost(candidates.size)
+            val zoneName = exileCountersEffect.sourceZone.name.lowercase()
+            val fromText = if (exileCountersEffect.anyPlayersZone) zoneName else "your $zoneName"
+            // "creature cards", but "creature cards an opponent owns" — an owner clause follows the noun.
+            val filterText = " " + exileCountersEffect.filter.description
+            val ownerClause = OWNER_CLAUSES.firstOrNull { filterText.contains(it) }
+            val kind = (if (ownerClause == null) filterText else filterText.substringBefore(ownerClause))
+                .trim().removeSuffix("card").trim().takeUnless { it.isBlank() || it.equals("any", ignoreCase = true) }
+            val cards = listOfNotNull(kind, "cards", ownerClause?.trim()).joinToString(" ")
+            val count = if (exileCountersEffect.allOrNone) "$maxCards" else "up to $maxCards"
+            val selectPrompt = if (exileCountersEffect.destination == Zone.EXILE) {
+                "Exile $count $cards from $fromText"
+            } else {
+                "Put $count $cards from $fromText into their owners' ${exileCountersEffect.destination.name.lowercase()}s"
+            }
+            val context = DecisionContext(
+                sourceId = spellId,
+                sourceName = cardComponent.name,
+                phase = DecisionPhase.RESOLUTION
+            )
+            val continuation = ExileCountersContinuation(
+                spellId = spellId,
+                controllerId = controllerId,
+                ownerId = ownerId,
+                counterType = exileCountersEffect.counterType,
+                countersPerCard = exileCountersEffect.countersPerCard,
+                destination = exileCountersEffect.destination
+            )
+            if (exileCountersEffect.allOrNone) {
+                // "You may move exactly N. If you do, …" — not offered when fewer than N can move.
+                if (evaluatedMax <= 0 || candidates.size < evaluatedMax) return null
+                val totalCounters = evaluatedMax * exileCountersEffect.countersPerCard
+                return state.suspendForDecision(
+                    question = { decisionId ->
+                        YesNoDecision(
+                            id = decisionId,
+                            playerId = controllerId,
+                            prompt = "${selectPrompt.replaceFirstChar { it.uppercase() }}?",
+                            context = context,
+                            yesText = "Yes ($totalCounters ${exileCountersEffect.counterType.printed} counter${if (totalCounters == 1) "" else "s"})",
+                            noText = "No"
+                        )
+                    },
+                    answer = continuation.copy(
+                        exactCount = evaluatedMax,
+                        candidates = candidates,
+                        selectPrompt = selectPrompt
+                    )
                 )
+            }
+            if (candidates.isNotEmpty() && maxCards > 0) {
                 return state.suspendForDecision(
                     question = { decisionId ->
                         SelectCardsDecision(
                             id = decisionId,
                             playerId = controllerId,
-                            prompt = "Exile up to $maxCards ${exileCountersEffect.filter.description} cards from your ${exileCountersEffect.sourceZone.name.lowercase()} for ${cardComponent.name}",
-                            context = DecisionContext(
-                                sourceId = spellId,
-                                sourceName = cardComponent.name,
-                                phase = DecisionPhase.RESOLUTION
-                            ),
+                            prompt = selectPrompt,
+                            context = context,
                             options = candidates,
                             minSelections = 0,
                             maxSelections = maxCards
@@ -490,6 +528,11 @@ internal class PermanentSpellResolver(
             }
         }
         return null
+    }
+
+    private companion object {
+        /** Owner/controller clauses a filter description appends after its noun. */
+        val OWNER_CLAUSES = listOf(" an opponent owns", " you own", " an opponent controls", " you control")
     }
 
     private fun pauseForDevour(

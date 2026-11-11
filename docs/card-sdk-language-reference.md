@@ -20331,13 +20331,24 @@ The priority groups are (CR 616.1a–f):
   "Devour land N" wording. **Scope today:** only the stack-spell entry path is wired; reanimation and
   token entries skip Devour (which is fine for printed cards — Devour creatures all cost real mana to
   cast).
-- `EntersWithExileCounters(filter, sourceZone, maxCards, counterType, countersPerCard)` — as the
+- `EntersWithExileCounters(filter, sourceZone, maxCards, counterType, countersPerCard, anyPlayersZone, destination, allOrNone)` — as the
   permanent resolves from the stack, its controller may select up to the dynamic `maxCards` matching
   cards from their `sourceZone` (graveyard by default). The selected cards move to exile linked to the
   entering permanent's `LinkedExileComponent`, and the permanent enters with `countersPerCard` counters
   for each card that actually reached exile. `maxCards = DynamicAmount.XValue` models X-bounded entry
   choices; a zero maximum or no matching cards skips the prompt. **Mimeoplasm, Revered One** uses this
   with creature cards, three +1/+1 counters per card, and later targets the linked exile pile.
+  Three axes widen it beyond "exile from your own zone": **`anyPlayersZone = true`** pools every
+  player's `sourceZone` and lets `filter` narrow it (e.g. `GameObjectFilter.Any.ownedByOpponent()`);
+  **`destination = Zone.GRAVEYARD`** puts each chosen card into its owner's graveyard instead of
+  exiling it (nothing is linked); **`allOrNone = true`** reads "you may move *exactly* `maxCards`
+  cards. If you do, …" — a yes/no, then a pick of exactly that many, and with fewer candidates than
+  `maxCards` the option isn't offered at all. **Ulamog's Despoiler** ("you may put two cards your
+  opponents own from exile into their owners' graveyards. If you do, it enters with four +1/+1
+  counters") is `filter = Any.ownedByOpponent(), sourceZone = EXILE, anyPlayersZone = true,
+  destination = GRAVEYARD, maxCards = Fixed(2), countersPerCard = 2, allOrNone = true`. **Scope:** only
+  the stack-spell entry path is wired; a permanent put onto the battlefield another way enters without
+  the option.
 - `ModifyCounterPlacement(modifier, appliesTo, placer?)` / `ScaleCounterPlacement(scale?, placer?, appliesTo, effectsOnly?)` —
   **static** counter-placement modifiers living on a battlefield permanent for as long as it remains
   (Hardened Scales `+1`, Winding Constrictor `+1`, Doubling Season doubles). `ScaleCounterPlacement`'s
