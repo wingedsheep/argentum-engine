@@ -1915,9 +1915,12 @@ class TournamentLobby(
         // PREMADE_DECKS (constructed) there is no pool, so the explicit client sideboard is kept.
         // Pool Play's "pool" is the whole cube, so deriving would seed a 300+ card SIDEBOARD zone
         // (and hand wish effects the entire cube) — it gets a fifteen-card wishboard of cube cards
-        // the deck doesn't play instead, the constructed-sized sideboard of CR 100.4a.
+        // the deck doesn't play instead, the constructed-sized sideboard of CR 100.4a. A Jumpstart
+        // deck is exactly its two packs and plays without a sideboard, so it gets no basic-land
+        // supply either.
         val effectiveSideboard = when {
             isPremade -> sideboard
+            isJumpstart -> emptyMap()
             isCubePoolPlay -> Wishboard.build(playerState.cardPool, exclude = deckList.keys)
             else -> SideboardDerivation.fromPool(playerState.cardPool, deckList)
         }
@@ -2346,6 +2349,18 @@ class TournamentLobby(
             isCubePoolPlay -> Wishboard.build(playerState.cardPool, exclude = deckList.keys)
             else -> SideboardDerivation.fromPool(playerState.cardPool, deckList)
         }
+    }
+
+    /**
+     * The sideboard the between-games screen lays out for [playerId] to bring cards in from: their
+     * [sideboardFor] minus, in Limited, the free basic-land supply ([SideboardDerivation]). The
+     * screen offers basics on + / − steppers of their own, so listing the supply's fifty as
+     * sideboard cards too would show them twice and cap a free resource at ten.
+     */
+    fun sideboardingWallFor(playerId: EntityId, deckList: Map<String, Int>): Map<String, Int> {
+        val sideboard = sideboardFor(playerId, deckList)
+        if (format == TournamentFormat.PREMADE_DECKS) return sideboard
+        return sideboard.filterKeys { !SideboardDerivation.isSuppliedBasic(it) }
     }
 
     sealed interface DeckSubmissionResult {

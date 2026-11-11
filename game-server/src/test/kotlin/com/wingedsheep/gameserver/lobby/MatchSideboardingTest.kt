@@ -1,6 +1,7 @@
 package com.wingedsheep.gameserver.lobby
 
 import com.wingedsheep.engine.limited.BoosterGenerator
+import com.wingedsheep.engine.limited.SideboardDerivation
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.gameserver.persistence.restoreTournamentLobby
 import com.wingedsheep.gameserver.persistence.toPersistent
@@ -12,6 +13,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.maps.shouldContainAll
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 
@@ -56,6 +58,21 @@ class MatchSideboardingTest : FunSpec({
         lobby.sideboardFor(host, sideboarded)["Bear 30"] shouldBe null
     }
 
+    test("a Limited sideboard holds ten of each basic land for wishes to fetch") {
+        val lobby = sealedLobby()
+        val sideboard = lobby.getSubmittedSideboard(host)
+
+        // Pool Bears 24–30 went unplayed; the deck's 17 Forests don't come out of the supply.
+        sideboard.filterKeys { it.startsWith("Bear") }.keys shouldBe (24..30).map { "Bear $it" }.toSet()
+        sideboard.filterKeys { SideboardDerivation.isSuppliedBasic(it) } shouldBe SideboardDerivation.basicLandSupply
+        lobby.sideboardFor(host, registered + ("Forest" to 18)) shouldContainAll SideboardDerivation.basicLandSupply
+    }
+
+    test("the sideboarding screen lists pool cards only; basics have their own steppers") {
+        val lobby = sealedLobby()
+        lobby.sideboardingWallFor(host, registered) shouldBe (24..30).associate { "Bear $it" to 1 }
+    }
+
     test("basic lands are free, so a land count can change without a sideboard card") {
         sealedLobby().matchDeckError(host, registered + ("Forest" to 18) + ("Island" to 2)).shouldBeNull()
     }
@@ -94,6 +111,8 @@ class MatchSideboardingTest : FunSpec({
         val swapped = deck + ("Bear 1" to 2) + ("Bear 11" to 2)
         lobby.matchDeckError(host, swapped).shouldBeNull()
         lobby.sideboardFor(host, swapped) shouldBe mapOf("Bear 1" to 2, "Bear 11" to 1)
+        // A brought sideboard is exactly what was registered: no free basics join it.
+        lobby.sideboardingWallFor(host, swapped) shouldBe mapOf("Bear 1" to 2, "Bear 11" to 1)
 
         lobby.matchDeckError(host, deck + ("Bear 11" to 4))!! shouldContain "Only 3 copies of Bear 11"
         lobby.matchDeckError(host, deck + ("Bear 12" to 1))!! shouldContain "isn't in your deck or sideboard"

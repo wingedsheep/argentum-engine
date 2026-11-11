@@ -1072,7 +1072,8 @@ class TournamentMatchHandler(
         val registered = lobby.getSubmittedDeck(playerId) ?: return null
         val deck = matchDeck(lobby, match, playerId) ?: registered
         val canSideboard = lobby.allowsSideboarding
-        val sideboard = if (canSideboard) lobby.sideboardFor(playerId, deck) else emptyMap()
+        val sideboard = if (canSideboard) lobby.sideboardingWallFor(playerId, deck) else emptyMap()
+        val isLimited = lobby.format != com.wingedsheep.gameserver.lobby.TournamentFormat.PREMADE_DECKS
 
         val lastGameResult = when (match.lastGameWinnerId) {
             null -> "DRAW"
@@ -1080,7 +1081,7 @@ class TournamentMatchHandler(
             else -> "LOSS"
         }
 
-        val basics = if (canSideboard && lobby.format != com.wingedsheep.gameserver.lobby.TournamentFormat.PREMADE_DECKS) {
+        val basics = if (canSideboard && isLimited) {
             lobby.basicLands.values.toList()
         } else emptyList()
         val known = (playerState.cardPool + lobby.basicLands.values).associateBy { it.name }
