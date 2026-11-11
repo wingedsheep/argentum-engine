@@ -8,6 +8,7 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.GameAction
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
@@ -174,6 +175,35 @@ class RefuseUnspendableShrinkTest : ScenarioTestBase() {
             val game = position(activePlayer = 1, step = Step.POSTCOMBAT_MAIN, theirCreature = "Raging Goblin")
 
             game.shrinkVerdict("Raging Goblin") shouldNotBe TimingVerdict.NoWindow
+        }
+
+        test("Gift of Tusks' vanilla 3/3 waits for a fight the opposing creature can still be in") {
+            fun giftOn(activePlayer: Int, step: Step) = scenario()
+                .withPlayers()
+                .withTurnNumber(8)
+                .withActivePlayer(activePlayer)
+                .withLandsOnBattlefield(1, "Island", 1)
+                .withCardInHand(1, "Gift of Tusks")
+                .withCardOnBattlefield(2, "Serra Angel")
+                .build()
+                .advanceToPriority(1, step)
+            fun TestGame.giftVerdict(refuseWastedPayoffs: Boolean = true): TimingVerdict {
+                val gift = state.getZone(player1Id, Zone.HAND).first {
+                    state.getEntity(it)?.get<CardComponent>()?.name == "Gift of Tusks"
+                }
+                val cast = CastSpell(player1Id, gift, targets = listOf(ChosenTarget.Permanent(findPermanent("Serra Angel")!!)))
+                return HoldPolicy(intents, refuseWastedPayoffs = refuseWastedPayoffs)
+                    .verdictFor(state, player1Id, "Gift of Tusks", cast = cast)
+            }
+
+            // After our combat the 4/4 flyer fights nothing before cleanup restores it.
+            val afterCombat = giftOn(activePlayer = 1, step = Step.POSTCOMBAT_MAIN)
+            afterCombat.giftVerdict() shouldBe TimingVerdict.NoWindow
+            afterCombat.giftVerdict(refuseWastedPayoffs = false) shouldNotBe TimingVerdict.NoWindow
+            // With 3 damage marked, base toughness 3 kills it: removal, and the leaf's call.
+            val angel = afterCombat.findPermanent("Serra Angel")!!
+            afterCombat.state = afterCombat.state.updateEntity(angel) { it.with(DamageComponent(3)) }
+            afterCombat.giftVerdict() shouldNotBe TimingVerdict.NoWindow
         }
 
         test("before their attack, a creature that can still attack is a fight to shrink") {

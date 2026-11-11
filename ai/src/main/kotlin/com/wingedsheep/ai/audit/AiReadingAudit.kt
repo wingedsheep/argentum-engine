@@ -391,8 +391,11 @@ object AiReadingAudit {
                     // modal one: its tags are the union of its modes, the hold reads the chosen ones.
                     val heldWhole = IntentTag.COMBAT_TRICK in intent.tags &&
                         EffectWalker.leaves(spell).none { it is ModalEffect }
+                    // The whole spell is what the timing floor judges: a leaf read only beside
+                    // another (Gift of Tusks' "loses all abilities" riding on its 3/3) is read with it.
+                    val wholeRead by lazy { ExpiringGrantWindow.hasExpiringReading(spell, creatureGrants = false) }
                     timing(spell, sink) { leaf ->
-                        ExpiringGrantWindow.hasExpiringReading(leaf, creatureGrants = false) ||
+                        ExpiringGrantWindow.hasExpiringReading(leaf, creatureGrants = false) || wholeRead ||
                             (heldWhole || (leaf is ModifyStatsEffect && IntentTag.COMBAT_TRICK in intent.tags)) ||
                             (leaf is ForEachEffect && intent.expiringGroupPump) ||
                             // Haste until end of turn on a creature: all it buys is a fresh creature
