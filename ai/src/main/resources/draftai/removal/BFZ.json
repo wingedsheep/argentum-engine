@@ -1,0 +1,170 @@
+{
+  "Akoum Hellkite": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Aligned Hedron Network": [
+    "removal",
+    "creature-removal"
+  ],
+  "Barrage Tyrant": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Boiling Earth": [
+    "removal",
+    "creature-removal"
+  ],
+  "Bone Splinters": [
+    "removal",
+    "creature-removal"
+  ],
+  "Brood Butcher": [
+    "removal",
+    "creature-removal"
+  ],
+  "Brutal Expulsion": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Clutch of Currents": [
+    "removal",
+    "creature-removal"
+  ],
+  "Complete Disregard": [
+    "removal",
+    "creature-removal"
+  ],
+  "Demon's Grasp": [
+    "removal",
+    "creature-removal"
+  ],
+  "Exert Influence": [
+    "removal",
+    "creature-removal"
+  ],
+  "Gideon's Reproach": [
+    "removal",
+    "creature-removal"
+  ],
+  "Grip of Desolation": [
+    "removal",
+    "creature-removal"
+  ],
+  "Gruesome Slaughter": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hagra Sharpshooter": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ob Nixilis Reignited": [
+    "removal",
+    "creature-removal"
+  ],
+  "Planar Outburst": [
+    "removal",
+    "creature-removal"
+  ],
+  "Plummet": [
+    "removal",
+    "creature-removal"
+  ],
+  "Processor Assault": [
+    "removal",
+    "creature-removal"
+  ],
+  "Quarantine Field": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Radiant Flames": [
+    "removal",
+    "creature-removal"
+  ],
+  "Reclaiming Vines": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Rising Miasma": [
+    "removal",
+    "creature-removal"
+  ],
+  "Roil Spout": [
+    "removal",
+    "creature-removal"
+  ],
+  "Roil's Retribution": [
+    "removal",
+    "creature-removal"
+  ],
+  "Rolling Thunder": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Ruinous Path": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Scour from Existence": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Serpentine Spike": [
+    "removal",
+    "creature-removal"
+  ],
+  "Sheer Drop": [
+    "removal",
+    "creature-removal"
+  ],
+  "Smite the Monstrous": [
+    "removal",
+    "creature-removal"
+  ],
+  "Stasis Snare": [
+    "removal",
+    "creature-removal"
+  ],
+  "Stonefury": [
+    "removal",
+    "creature-removal"
+  ],
+  "Tightening Coils": [
+    "removal",
+    "creature-removal"
+  ],
+  "Touch of the Void": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Ulamog, the Ceaseless Hunger": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Unnatural Aggression": [
+    "removal",
+    "creature-removal"
+  ],
+  "Wasteland Strangler": [
+    "removal",
+    "creature-removal"
+  ]
+}

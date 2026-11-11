@@ -1,0 +1,1 @@
+- #4639 Drafts and builds Battle for Zendikar decks from a first-party pick-rating and removal table instead of guessing every BFZ card from the effect heuristic
