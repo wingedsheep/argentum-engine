@@ -17,7 +17,6 @@ object BattleForZendikarSet : MtgSet {
     override val displayName = "Battle for Zendikar"
     override val releaseDate = "2015-10-02"
     override val block = "Battle for Zendikar"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)

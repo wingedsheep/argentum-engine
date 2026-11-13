@@ -30,6 +30,15 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-bfz',
+    date: '2026-11-14',
+    kind: 'set',
+    setCode: 'BFZ',
+    title: 'Battle for Zendikar is complete',
+    body: "Ulamog's devoid Eldrazi broods return to Zendikar. Ingest your opponent's library and process their exiled cards, ramp on Eldrazi Scions into colourless giants, awaken your lands into creatures and rally Allies to fight back, with landfall and converge rewarding every land and every colour you play.",
+    tryIf: 'colourless Eldrazi, land-drop payoffs and building around a two-part engine',
+  },
+  {
     id: 'set-ogw',
     date: '2026-11-11',
     kind: 'set',
