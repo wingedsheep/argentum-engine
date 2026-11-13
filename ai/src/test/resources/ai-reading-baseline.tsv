@@ -1767,6 +1767,7 @@ Blessing of Belzenlok
 Blessing of Frost
 Blex, Vexing Pest
 Blight	polarity: Aura>MoveToZoneEffect
+Blight Herder
 Blight Keeper
 Blight Pile
 Blight Rot
@@ -3819,6 +3820,7 @@ Cuboid Colony
 Cubwarden
 Cudgel Troll
 Culber and Stamets, Star-Crossed
+Culling Drone
 Culling Ritual
 Culling Scales
 Culling the Weak
@@ -4712,6 +4714,7 @@ Dollmaker's Shop // Porcelain Gallery
 Dolmen Gate
 Domesticated Hydra	intent: BecomeMonstrousEffect
 Dominating Vampire
+Dominator Drone
 Domineer
 Dominion Assault Force
 Dominion Infiltration
@@ -6064,6 +6067,7 @@ Fatehold Chronologist
 Fates' Reversal
 Fateshaper Aspirant
 Fatespinner	intent: ChooseActionEffect
+Fathom Feeder
 Fathom Fleet Boarder
 Fathom Fleet Captain
 Fathom Fleet Cutthroat
@@ -11389,6 +11393,7 @@ Mind Drill Assailant
 Mind Flayer
 Mind Knives
 Mind Meanderer
+Mind Raker
 Mind Roots
 Mind Rot
 Mind Sludge
@@ -11852,6 +11857,7 @@ Murderous Cut
 Murderous Rider
 Murdock's Crusade
 Murk Dwellers
+Murk Strider
 Murky Sewer
 Murmuration
 Murmuring Mystic
@@ -12625,6 +12631,7 @@ Oppression
 Opt
 Optimistic Scavenger
 Opulent Palace
+Oracle of Dust
 Oracle of Mul Daya
 Oracle of Tragedy	polarity: Pipeline(ChosenTargets→library)
 Oracle's Restoration
@@ -14900,10 +14907,12 @@ Rugged Highlands
 Rugged Prairie
 Ruham Djinn
 Ruin Crab
+Ruin Processor
 Ruin Raider
 Ruin Rat
 Ruin in Their Wake
 Ruin-Lurker Bat
+Ruination Guide
 Ruination Wurm
 Ruinous Gremlin
 Ruinous Path
@@ -15100,6 +15109,7 @@ Saltblast
 Saltfield Recluse
 Saltwater Stalwart
 Salvage
+Salvage Drone
 Salvage Scout
 Salvage Scuttler
 Salvaged Manaworker
@@ -16465,6 +16475,7 @@ Sliver Overlord
 Slobad, Goblin Tinkerer
 Slobad, Iron Goblin
 Slogurk, the Overslime
+Sludge Crawler
 Sludge Monster	intent: AddCountersEffect; polarity: AddCountersEffect
 Slum Reaper
 Slumbering Cerberus
@@ -19324,6 +19335,7 @@ Uktabi Faerie
 Uktabi Orangutan
 Ukud Cobra
 Ulamog's Despoiler
+Ulamog's Reclaimer
 Ulamog, the Ceaseless Hunger	intent: Pipeline(TopOfLibrary→exile)
 Ulamog, the Defiler
 Ulamog, the Infinite Gyre	intent: Pipeline(graveyard→library)
@@ -19898,6 +19910,7 @@ Vigorbloom Vanguard
 Vigorous Charge	timing: GrantKeywordEffect; timing: GrantTriggeredAbilityEffect
 Vigorspore Wurm
 Vildin-Pack Outcast
+Vile Aggregate
 Vile Consumption
 Vile Deacon
 Vile Entomber
@@ -20050,6 +20063,7 @@ Voice of the Vermin
 Voice of the Woods
 Voiceless Spirit
 Void	intent: ChooseNumberThenEffect; polarity: ChooseNumberThenEffect
+Void Attendant
 Void Beckoner
 Void Extrapolator
 Void Grafter
@@ -20371,6 +20385,7 @@ Wasteful Harvest
 Wasteland
 Wasteland Raider
 Wasteland Scorpion
+Wasteland Strangler
 Wastescape Battlemage
 Wastewood Verge
 Watcher Sliver
