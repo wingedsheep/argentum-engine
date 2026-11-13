@@ -1081,6 +1081,65 @@
     ]
 }
 
+// Call the Scions
+{
+    "name": "Call the Scions",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Devoid (This card has no color.)\nCreate two 1/1 colorless Eldrazi Scion creature tokens. They have \"Sacrifice this token: Add {C}.\"",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "count": {
+                "type": "Fixed",
+                "amount": 2
+            },
+            "power": 1,
+            "toughness": 1,
+            "colors": [],
+            "creatureTypes": [
+                "Eldrazi",
+                "Scion"
+            ],
+            "imageUri": "https://cards.scryfall.io/normal/front/b/9/b999a0fe-d2d0-4367-9abb-6ce5f3764f19.jpg?1783938121",
+            "activatedAbilities": [
+                {
+                    "id": "Call the Scions:1",
+                    "cost": "CostSacrificeSelf",
+                    "effect": {
+                        "type": "AddColorlessMana",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true,
+                    "descriptionOverride": "Sacrifice this token: Add {C}."
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "artist": "Winona Nelson",
+        "flavorText": "Ulamog's progeny swarm the land, draining Zendikar's mana to feed the titan's insatiable hunger.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5d248ed0-c2b4-4558-9a09-ace8fd4b0599.jpg?1783938190",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Sacrificing an Eldrazi Scion creature token to add {C} is a mana ability. It doesn't use the stack and can't be responded to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Canopy Vista
 {
     "name": "Canopy Vista",
@@ -2240,6 +2299,78 @@
     ]
 }
 
+// Eyeless Watcher
+{
+    "name": "Eyeless Watcher",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nWhen this creature enters, create two 1/1 colorless Eldrazi Scion creature tokens. They have \"Sacrifice this token: Add {C}.\"",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Eyeless Watcher:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Eldrazi",
+                        "Scion"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/9/b999a0fe-d2d0-4367-9abb-6ce5f3764f19.jpg?1783938121",
+                    "activatedAbilities": [
+                        {
+                            "id": "Eyeless Watcher:1",
+                            "cost": "CostSacrificeSelf",
+                            "effect": {
+                                "type": "AddColorlessMana",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "timing": "ManaAbility",
+                            "isManaAbility": true,
+                            "descriptionOverride": "Sacrifice this token: Add {C}."
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "166",
+        "artist": "Yohann Schepacz",
+        "flavorText": "Every Eldrazi in Ulamog's lineage is an extension of the titan's will.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4d949d0e-baf7-4573-bb15-7e30e3e9b202.jpg?1783938189",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Sacrificing an Eldrazi Scion creature token to add {C} is a mana ability. It doesn't use the stack and can't be responded to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Fathom Feeder
 {
     "name": "Fathom Feeder",
@@ -2455,6 +2586,133 @@
     ]
 }
 
+// From Beyond
+{
+    "name": "From Beyond",
+    "manaCost": "{3}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Devoid (This card has no color.)\nAt the beginning of your upkeep, create a 1/1 colorless Eldrazi Scion creature token. It has \"Sacrifice this token: Add {C}.\"\n{1}{G}, Sacrifice this enchantment: Search your library for an Eldrazi card, reveal it, put it into your hand, then shuffle.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "From Beyond:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Eldrazi",
+                        "Scion"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/9/b999a0fe-d2d0-4367-9abb-6ce5f3764f19.jpg?1783938121",
+                    "activatedAbilities": [
+                        {
+                            "id": "From Beyond:1",
+                            "cost": "CostSacrificeSelf",
+                            "effect": {
+                                "type": "AddColorlessMana",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "timing": "ManaAbility",
+                            "isManaAbility": true,
+                            "descriptionOverride": "Sacrifice this token: Add {C}."
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "From Beyond:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{G}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "Eldrazi"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for an Eldrazi card to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "rarity": "RARE",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f5559960-e306-4992-b607-9654327c4507.jpg?1783938189",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "An Eldrazi card is one with the creature type Eldrazi. Just having \"Eldrazi\" in its name or being an Eldrazi-themed card doesn't count."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Sacrificing an Eldrazi Scion creature token to add {C} is a mana ability. It doesn't use the stack and can't be responded to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Geyserfield Stalker
 {
     "name": "Geyserfield Stalker",
@@ -2575,6 +2833,126 @@
         "flavorText": "\"Suddenly, Gideon was there with us, clearing the way so that we could escape.\"\n—*The War Diaries*",
         "imageUri": "https://cards.scryfall.io/normal/front/4/5/453d8ec3-15ae-4851-9efb-161ca2ee6019.jpg?1783938218"
     },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Gideon, Ally of Zendikar
+{
+    "name": "Gideon, Ally of Zendikar",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Legendary Planeswalker — Gideon",
+    "oracleText": "+1: Until end of turn, Gideon becomes a 5/5 Human Soldier Ally creature with indestructible that's still a planeswalker. Prevent all damage that would be dealt to him this turn.\n0: Create a 2/2 white Knight Ally creature token.\n−4: You get an emblem with \"Creatures you control get +1/+1.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Gideon, Ally of Zendikar:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "BecomeCreature",
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 5
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 5
+                            },
+                            "keywords": [
+                                "INDESTRUCTIBLE"
+                            ],
+                            "creatureTypes": [
+                                "Human",
+                                "Soldier",
+                                "Ally"
+                            ]
+                        },
+                        {
+                            "type": "PreventDamageShield",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Until end of turn, Gideon becomes a 5/5 Human Soldier Ally creature with indestructible that's still a planeswalker. Prevent all damage that would be dealt to him this turn."
+            },
+            {
+                "id": "Gideon, Ally of Zendikar:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 0
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Knight",
+                        "Ally"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/0/4/0419a202-6e32-4f0a-a032-72f6c00cae5e.jpg?1783938120"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Create a 2/2 white Knight Ally creature token."
+            },
+            {
+                "id": "Gideon, Ally of Zendikar:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -4
+                },
+                "effect": {
+                    "type": "CreatePermanentEmblem",
+                    "groupFilter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "powerBonus": 1,
+                    "toughnessBonus": 1,
+                    "emblemDescription": "Creatures you control get +1/+1."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You get an emblem with \"Creatures you control get +1/+1.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "MYTHIC",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/187e887c-c39d-4d25-a506-cdc95fc70316.jpg?1783938219",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Gideon's first ability doesn't count as a creature entering the battlefield. Gideon was already on the battlefield; he only changed his types. Specifically, your rally abilities won't trigger. (Of course, Gideon's second ability will cause rally abilities to trigger.)"
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If Gideon becomes a creature the same turn he enters the battlefield, you can't attack with him or use any of his {T} abilities (if he gains any)."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Gideon's first ability causes him to become a creature with the creature types Human, Soldier, and Ally. He remains a planeswalker with the planeswalker type Gideon. (He also retains any other card types or subtypes he may have had.) Each subtype is correlated to the proper card type: planeswalker is only a type (not a creature type), and Human, Soldier, and Ally are just creature types (not planeswalker types)."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If damage that can't be prevented is dealt to Gideon after his first ability has resolved, that damage will have all applicable results: specifically, the damage is marked on Gideon (since he's a creature) and that damage causes that many loyalty counters to be removed from him (since he's a planeswalker). Even though he has indestructible, if Gideon has no loyalty counters on him, he's put into his owner's graveyard."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
     "colorIdentityOverride": [
         "WHITE"
     ]
@@ -3084,6 +3462,57 @@
     ]
 }
 
+// Infuse with the Elements
+{
+    "name": "Infuse with the Elements",
+    "manaCost": "{3}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Converge — Put X +1/+1 counters on target creature, where X is the number of colors of mana spent to cast this spell. That creature gains trample until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": "DistinctColorsManaSpent",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "\"Zendikar has given us the weapons to wage war on the appropriate scale.\"\n—Najiya, leader of the Tajuru",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0ec25fe4-7967-42e2-8790-593738991eaa.jpg?1783938188"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Jaddi Offshoot
 {
     "name": "Jaddi Offshoot",
@@ -3288,6 +3717,47 @@
         "artist": "Steven Belledin",
         "flavorText": "The high-pitched whirl of a hook is the only battle cry she needs.",
         "imageUri": "https://cards.scryfall.io/normal/front/e/3/e31b12c7-df11-4450-95e1-b9a5aa97af0e.jpg?1783938218"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Kor Castigator
+{
+    "name": "Kor Castigator",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Kor Wizard Ally",
+    "oracleText": "This creature can't be blocked by Eldrazi Scions.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "HasSubtype",
+                            "subtype": "Eldrazi"
+                        },
+                        {
+                            "type": "HasSubtype",
+                            "subtype": "Scion"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "artist": "Greg Opalinski",
+        "flavorText": "\"He told us not to worry, and he walked into the cavern. The swirling mass of Eldrazi parted to admit him, then closed in his wake.\"\n—Akiri, kor line-slinger",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f4db2f0e-d7d4-417b-9b94-5ade727907e9.jpg"
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -4314,6 +4784,73 @@
     ]
 }
 
+// Nissa's Renewal
+{
+    "name": "Nissa's Renewal",
+    "manaCost": "{5}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for up to three basic land cards, put them onto the battlefield tapped, then shuffle. You gain 7 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "basicland"
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for up to three basic land cards to put onto the battlefield tapped",
+                    "selectedLabel": "Put onto the battlefield tapped"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent",
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "rarity": "RARE",
+        "artist": "Lius Lasahido",
+        "flavorText": "Her connection to the plane restored, Nissa felt the power of Zendikar surge through her.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/91aa2ff1-12ea-4896-a955-a9cd76c3b49d.jpg?1783938187"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Omnath, Locus of Rage
 {
     "name": "Omnath, Locus of Rage",
@@ -4648,6 +5185,67 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Oran-Rief Hydra
+{
+    "name": "Oran-Rief Hydra",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Hydra",
+    "oracleText": "Trample\nLandfall — Whenever a land you control enters, put a +1/+1 counter on this creature. If that land is a Forest, put two +1/+1 counters on this creature instead.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Oran-Rief Hydra:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "TriggeringEntity",
+                            "filter": "land Forest"
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 2,
+                        "target": "Self"
+                    },
+                    "otherwise": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "Self"
+                    }
+                },
+                "descriptionOverride": "Landfall — Whenever a land you control enters, put a +1/+1 counter on this creature. If that land is a Forest, put two +1/+1 counters on this creature instead."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/74c3276b-2cbc-4266-b16a-bf72c044d95b.jpg?1783938186"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -4991,6 +5589,96 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Quarantine Field
+{
+    "name": "Quarantine Field",
+    "manaCost": "{X}{X}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "This enchantment enters with X isolation counters on it.\nWhen this enchantment enters, for each isolation counter on it, exile up to one target nonland permanent an opponent controls until this enchantment leaves the battlefield.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Quarantine Field:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "MoveUntilSourceLeaves",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Exile"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "nonland permanent ctrl:opponent"
+                    },
+                    "id": "t0",
+                    "dynamicMaxCount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "ISOLATION"
+                        }
+                    }
+                },
+                "descriptionOverride": "When this enchantment enters, for each isolation counter on it, exile up to one target nonland permanent an opponent controls until this enchantment leaves the battlefield."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "counterType": "ISOLATION",
+                "count": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "rarity": "MYTHIC",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/30c525ab-08d5-4d29-aef1-01b0c75ee8d9.jpg?1783938216",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Use the number of isolation counters on Quarantine Field as its triggered ability is put on the stack to determine how many targets you may choose. Once the targets are chosen, the number of targets the ability has is locked in. Changing the number of isolation counters on Quarantine Field won't change how many nonland permanents are exiled."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If Quarantine Field exiles multiple permanents, those cards all return to the battlefield at the same time."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If Quarantine Field leaves the battlefield before its triggered ability resolves, no permanents will be exiled."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Auras attached to the exiled permanents will be put into their owners' graveyards. Equipment attached to the exiled creatures will become unattached and remain on the battlefield. Any counters on the exiled permanents will cease to exist."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If a token is exiled, it ceases to exist. It won't be returned to the battlefield."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "The exiled cards return to the battlefield immediately after Quarantine Field leaves the battlefield. Nothing happens between the two events, including state-based actions."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -5524,6 +6212,64 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLUE"
+    ]
+}
+
+// Roil's Retribution
+{
+    "name": "Roil's Retribution",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Roil's Retribution deals 5 damage divided as you choose among any number of target attacking or blocking creatures.",
+    "script": {
+        "spellEffect": {
+            "type": "DividedDamage",
+            "totalDamage": 5,
+            "maxTargets": 5
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 5,
+                "minCount": 1,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "StateOr",
+                                "predicates": [
+                                    "IsAttacking",
+                                    "IsBlocking"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "rarity": "UNCOMMON",
+        "artist": "Raymond Swanland",
+        "flavorText": "\"We can use their hunger to lead them into danger. If we're already prey, we may as well be bait!\"\n—Yon Basrel, Oran-Rief survivalist",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c0de575e-d955-48da-8fc8-05d7398bd261.jpg?1783938215",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "You choose how many targets Roil's Retribution has and how the damage is divided as you cast the spell. Each target must receive at least 1 damage."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If some, but not all, of the targets become illegal by the time Roil's Retribution tries to resolve, the original division of damage still applies, but no damage is dealt to illegal targets. If all the targets are illegal, the spell won't resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -6985,6 +7731,94 @@
     ]
 }
 
+// Swell of Growth
+{
+    "name": "Swell of Growth",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +2/+2 until end of turn. You may put a land card from your hand onto the battlefield.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "land"
+                            },
+                            "storeAs": "put_candidates"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "put_candidates",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "putting"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "putting",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "artist": "Magali Villeneuve",
+        "flavorText": "\"Nissa is not the only one with a deep connection to Zendikar's primal elements.\"\n—Kiora",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b06da6fe-57bf-437e-8589-7e57a5881801.jpg?1783938185",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Putting a land onto the battlefield this way is not the same as playing a land. Swell of Growth doesn't affect how many lands you can play from your hand during your turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Tajuru Beastmaster
 {
     "name": "Tajuru Beastmaster",
@@ -7034,6 +7868,41 @@
         "artist": "Greg Opalinski",
         "flavorText": "\"My mount needs neither reins nor bridle. We both share a common purpose.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/3/4/3447b4af-2eb2-48ae-a12e-2fdf83d4cb70.jpg?1783938184"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Tajuru Stalwart
+{
+    "name": "Tajuru Stalwart",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Elf Scout Ally",
+    "oracleText": "Converge — This creature enters with a +1/+1 counter on it for each color of mana spent to cast it.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": "DistinctColorsManaSpent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "194",
+        "artist": "Wesley Burt",
+        "flavorText": "In its time of hardship, all of Zendikar cries out in pain. Are you listening?",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f916220b-a942-41af-8949-aa384fa7857d.jpg?1783938184",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "If you cast a spell with converge without spending any mana to cast it (perhaps because an effect allowed you to cast it without paying its mana cost), then the number of colors spent to cast it will be zero."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -7598,6 +8467,40 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Unified Front
+{
+    "name": "Unified Front",
+    "manaCost": "{3}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Converge — Create a 1/1 white Kor Ally creature token for each color of mana spent to cast this spell.",
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "count": "DistinctColorsManaSpent",
+            "power": 1,
+            "toughness": 1,
+            "colors": [
+                "WHITE"
+            ],
+            "creatureTypes": [
+                "Kor",
+                "Ally"
+            ],
+            "imageUri": "https://cards.scryfall.io/normal/front/b/e/be224180-a482-4b94-8a9d-3a92ee0eb34b.jpg?1783938120"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "The kor's pride in their independence has given way to a strong sense of community that embraces all of Zendikar.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/53472387-6909-462e-8183-02fd1d45126e.jpg?1783938214"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -8329,6 +9232,50 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Woodland Wanderer
+{
+    "name": "Woodland Wanderer",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Vigilance, trample\nConverge — This creature enters with a +1/+1 counter on it for each color of mana spent to cast it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE",
+        "TRAMPLE"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": "DistinctColorsManaSpent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "rarity": "RARE",
+        "artist": "Vincent Proce",
+        "flavorText": "\"The elements understand better than anyone that actions speak louder than words.\"\n—Gideon Jura",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc1e6db8-5093-44e4-95d7-3fdf8c55c1dd.jpg?1783938183",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "The maximum number of colors of mana you can spend to cast a spell is five. Colorless is not a color. Note that the cost of a spell with converge may limit how many colors of mana you can spend."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If you cast a spell with converge without spending any mana to cast it (perhaps because an effect allowed you to cast it without paying its mana cost), then the number of colors spent to cast it will be zero."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 

@@ -447,7 +447,13 @@ object AiReadingAudit {
                             // it on purpose. Faces too (Assure // Assemble): the argument needs no hold.
                             // Stricter than the analyzer: a shield or player hexproof that ends at
                             // cleanup is not lasting here (Blinding Fog stays flagged).
-                            protectionBesideLastingPayoff(spell, leaf)
+                            protectionBesideLastingPayoff(spell, leaf) ||
+                            // Any keyword riding on +1/+1 counters put on the same creature (Infuse
+                            // with the Elements' trample, Arbor Armament's reach): the counters are the
+                            // lasting pump, worth casting in any window — CardIntentAnalyzer keeps an
+                            // instant-speed counter PUMP, never COMBAT_TRICK, on purpose — and the
+                            // cast's simulation prices the keyword in whatever window it is cast in.
+                            keywordBesideLastingCounters(spell, leaf)
                     }
                 }
                 modal(spell, sink)
@@ -1238,6 +1244,22 @@ object AiReadingAudit {
         if (!grant) return false
         val all = EffectWalker.leaves(spell).flatMap { if (it is ForEachEffect) EffectWalker.leaves(it.body) else listOf(it) }
         return all.any { !endsThisTurn(it) && CardIntentAnalyzer.analyzeEffect(it).tags.isNotEmpty() }
+    }
+
+    /**
+     * Whether [leaf] is an until-end-of-turn keyword grant on a creature that the same [spell] also
+     * gives +1/+1-style counters — counters that raise its stats and outlive the turn.
+     */
+    private fun keywordBesideLastingCounters(spell: Effect, leaf: Effect): Boolean {
+        if (leaf !is GrantKeywordEffect || !endsThisTurn(leaf)) return false
+        fun raises(type: CounterType) = type.ptDelta?.let { (p, t) -> p >= 0 && t >= 0 && p + t > 0 } == true
+        return EffectWalker.leaves(spell).any { other ->
+            when (other) {
+                is AddCountersEffect -> other.target == leaf.target && raises(other.counterType)
+                is AddDynamicCountersEffect -> other.target == leaf.target && raises(other.counterType)
+                else -> false
+            }
+        }
     }
 
     /** Haste granted until end of turn to a creature target (not `Self`). */
