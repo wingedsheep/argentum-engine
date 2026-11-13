@@ -1883,8 +1883,9 @@ object CardIntentAnalyzer {
             val (player, filter) = when (val source = leaf.source) {
                 is CardSource.BattlefieldMatching -> source.player to source.filter
                 is CardSource.ControlledPermanents -> source.player to source.filter
-                // "Defending player exiles two permanents they control" (Bane of Bala Ged): the
-                // battlefield gathered as a zone is the same board, an edict when its player picks.
+                // "Defending player exiles two permanents they control" (Bane of Bala Ged), and the
+                // zone-gathered sweepers/edicts (Sunfall, Flood of Tears, Doomfall): the battlefield
+                // gathered as a zone is the same board, an edict when its player picks.
                 is CardSource.FromZone -> if (source.zone == Zone.BATTLEFIELD) source.player to source.filter else continue
                 else -> continue
             }
