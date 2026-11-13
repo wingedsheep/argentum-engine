@@ -737,7 +737,7 @@ Araña, Heart of the Spider
 Arbalest Engineers
 Arbiter of Knollridge
 Arbiter of Woe
-Arbor Armament	timing: GrantKeywordEffect
+Arbor Armament
 Arbor Elf
 Arborback Stomper
 Arborea Pegasus
@@ -1442,7 +1442,7 @@ Battlefield Butcher
 Battlefield Forge
 Battlefield Medic
 Battlefield Percher
-Battlefield Promotion	timing: GrantKeywordEffect
+Battlefield Promotion
 Battlefield Raptor
 Battlefield Scavenger
 Battlefly Swarm
@@ -1635,7 +1635,7 @@ Biomathematician
 Biomechan Engineer
 Biorganic Carapace
 Biorhythm
-Biosynthic Burst	timing: GrantKeywordEffect
+Biosynthic Burst
 Biotech Specialist
 Birchlore Rangers
 Bird Admirer
@@ -2527,6 +2527,7 @@ Call the Cavalry
 Call the Coppercoats	polarity: CreateTokenEffect
 Call the Gatewatch
 Call the Mountain Chocobo
+Call the Scions
 Call the Spirit Dragons
 Call to Glory
 Call to the Feast
@@ -5251,7 +5252,7 @@ Eerie Procession
 Eerie Soultender
 Eerie Ultimatum
 Efficient Construction
-Efflorescence	timing: GrantKeywordEffect
+Efflorescence
 Effortless Master
 Efreet Flamepainter
 Efreet Weaponmaster
@@ -5894,6 +5895,7 @@ Eyeblight Assassin
 Eyeblight Massacre
 Eyeblight's Ending
 Eyekite
+Eyeless Watcher
 Eyes Everywhere
 Eyes of Gitaxias
 Eyes of the Beholder
@@ -6451,7 +6453,7 @@ Fleetfoot Dancer
 Fleeting Aven
 Fleeting Distraction
 Fleeting Effigy
-Fleeting Flight	timing: GrantKeywordEffect
+Fleeting Flight
 Fleeting Image
 Fleeting Memories
 Fleeting Reflection
@@ -6746,6 +6748,7 @@ Frogify
 Frogmite
 Frogmyr Enforcer
 Frolicking Familiar
+From Beyond
 From Father to Son
 From Under the Floorboards
 Frondland Felidar
@@ -6857,7 +6860,7 @@ Gaea's Blessing	intent: Pipeline(graveyard→library); polarity: DrawCardsEffect
 Gaea's Bounty
 Gaea's Courser
 Gaea's Cradle
-Gaea's Gift	timing: GrantKeywordEffect
+Gaea's Gift
 Gaea's Liege	intent: SetLandTypeEffect; polarity: SetLandTypeEffect
 Gaea's Might
 Gaea's Protector
@@ -7178,6 +7181,7 @@ Gideon's Reproach
 Gideon's Resolve
 Gideon's Sacrifice	timing: RedirectNextDamageEffect
 Gideon's Triumph
+Gideon, Ally of Zendikar
 Gideon, Champion of Justice	polarity: AddDynamicCountersEffect
 Gideon, Martial Paragon
 Gideon, the Oathsworn	intent: AddCountersToCollectionEffect; intent: Pipeline(?→?)
@@ -8996,6 +9000,7 @@ Information Dealer
 Informed Inkwright
 Infuriate
 Infuse with Vitality	timing: GrantKeywordEffect
+Infuse with the Elements
 Inga Rune-Eyes
 Inga and Esika
 Ingenious Infiltrator
@@ -9978,6 +9983,7 @@ Kopala, Warden of Waves
 Kor Blademaster
 Kor Bladewhirl
 Kor Cartographer
+Kor Castigator
 Kor Celebrant
 Kor Entanglers
 Kor Halberd
@@ -10389,7 +10395,7 @@ Light the Way
 Light-Paws, Emperor's Voice
 Lightbringer
 Lightfoot Rogue
-Lightfoot Technique	timing: GrantKeywordEffect
+Lightfoot Technique
 Lightless Evangel
 Lightning Angel
 Lightning Axe
@@ -11139,7 +11145,7 @@ Mawcor
 Maximize Altitude
 Maximize Velocity
 Maximum Carnage	intent: ForEach>GoadEffect
-Maximum Overdrive	timing: GrantKeywordEffect
+Maximum Overdrive
 Mayhem Devil
 Mayhem Patrol
 Mayor of Avabruck
@@ -12261,6 +12267,7 @@ Nissa of Shadowed Boughs	intent: AddCountersToCollectionEffect; intent: Pipeline
 Nissa's Defeat
 Nissa's Encouragement
 Nissa's Judgment
+Nissa's Renewal
 Nissa's Triumph
 Nissa's Zendikon
 Nissa, Ascended Animist
@@ -12637,6 +12644,7 @@ Oracle of Tragedy	polarity: Pipeline(ChosenTargets→library)
 Oracle's Restoration
 Oracle's Vault
 Orah, Skyclave Hierophant
+Oran-Rief Hydra
 Oran-Rief Invoker
 Oran-Rief Ooze
 Oran-Rief Survivalist
@@ -13756,6 +13764,7 @@ Quandrix Cultivator
 Quandrix Pledgemage
 Quandrix, the Proof
 Quantum Riddler
+Quarantine Field
 Quark's Bar
 Quark, Humble Proprietor
 Quarrel
@@ -14780,6 +14789,7 @@ Roil Cartographer
 Roil Elemental
 Roil Eruption
 Roil Spout
+Roil's Retribution
 Roiling Canopy
 Roiling Dragonstorm
 Roiling Regrowth
@@ -15278,7 +15288,7 @@ Savannah
 Savannah Lions
 Savannah Sage
 Savanti Romero, Time's Exile
-Saved by the Shell	timing: GrantKeywordEffect
+Saved by the Shell
 Saving Grace
 Savior of Ollenbock
 Savior of the Sleeping
@@ -16016,7 +16026,7 @@ Short Sword
 Shortcut Seeker
 Shortcut to Mushrooms
 Shoulder to Shoulder
-Show of Confidence	timing: GrantKeywordEffect
+Show of Confidence
 Show of Valor
 Showdown of the Skalds
 Shower of Arrows
@@ -17703,6 +17713,7 @@ Sweatworks Brawler
 Sweep Away
 Sweet Oblivion
 Sweettooth Witch
+Swell of Growth
 Swelter	polarity: ForEachEffect
 Sweltering Suns
 Swift Justice
@@ -17842,6 +17853,7 @@ Tajuru Blightblade
 Tajuru Paragon
 Tajuru Pathwarden
 Tajuru Snarecaster
+Tajuru Stalwart
 Tajuru Warcaller
 Take Down
 Take Flight
@@ -17849,7 +17861,7 @@ Take Heart
 Take Inventory
 Take Out the Trash
 Take Up Arms
-Take Up the Shield	timing: GrantKeywordEffect
+Take Up the Shield
 Take Vengeance
 Take for a Ride
 Take into Custody
@@ -19476,6 +19488,7 @@ Unholy Indenture	polarity: Aura>MoveToZoneEffect
 Unholy Officiant
 Unholy Strength
 Unidentified Hovership	intent: ForEach>EmitManifestedDreadEventEffect; intent: ForEach>Pipeline(TopOfLibrary→battlefield|graveyard)
+Unified Front
 Unified Strike
 Uninvited Geist
 Union of the Third Path
@@ -20884,6 +20897,7 @@ Woodland Liege
 Woodland Mystic
 Woodland Patrol
 Woodland Stream
+Woodland Wanderer
 Woodland Weavemaster
 Woodweaver's Puzzleknot
 Woodwork Prodigy
