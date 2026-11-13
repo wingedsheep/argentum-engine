@@ -156,6 +156,7 @@ Adventuring Gear
 Adventurous Eater
 Adventurous Impulse
 Adversary by Algorithm
+Adverse Conditions
 Advocate of the Beast
 Aegar, the Freezing Flame
 Aegis Automaton
@@ -2280,6 +2281,7 @@ Brigone, Soldier of Meletis
 Brilliance Unleashed
 Brilliant Plan
 Brilliant Restoration
+Brilliant Spectrum
 Brimaz, King of Oreskos
 Brimstone Dragon
 Brimstone Roundup
@@ -4297,6 +4299,7 @@ Defenestrate
 Defenestrated Phantom
 Defense Force Aggressor
 Defensive Maneuvers
+Defiant Bloodlord
 Defiant Elf
 Defiant Falcon
 Defiant Greatmaw
@@ -5004,6 +5007,7 @@ Drown in the Loch
 Drowned
 Drowned Catacomb
 Drowned Secrets
+Drowner of Hope
 Drowner of Secrets
 Drowner of Truth
 Drownyard Amalgam
@@ -5303,6 +5307,7 @@ Eldrazi Mimic
 Eldrazi Obligator
 Eldrazi Ravager
 Eldrazi Repurposer
+Eldrazi Skyspawner
 Eldritch Evolution
 Electric Eel
 Electric Revelation
@@ -5795,6 +5800,7 @@ Execute
 Executioner's Capsule
 Exemplar of Light
 Exemplar of Strength
+Exert Influence
 Exhaustion
 Exhibition Magician
 Exhibition Tidecaller
@@ -7696,6 +7702,7 @@ Grasslands
 Grateful Apparition
 Gratuitous Violence
 Gravblade Heavy
+Grave Birthing
 Grave Bramble
 Grave Exchange
 Grave Pact
@@ -7830,6 +7837,7 @@ Grind // Dust
 Grinning Demon
 Grinning Ignus
 Grip of Chaos	intent: ReselectTargetRandomlyEffect
+Grip of Desolation
 Grip of the Roil
 Griptide
 Griselbrand
@@ -7916,6 +7924,7 @@ Guardian of Ghirapur
 Guardian of New Benalia
 Guardian of Pilgrims
 Guardian of Solitude
+Guardian of Tazeem
 Guardian of Vitu-Ghazi
 Guardian of the Forgotten	intent: Pipeline(TopOfLibrary→battlefield)
 Guardian of the Great Conduit
@@ -8574,6 +8583,7 @@ Hornet Queen
 Hornet Sting
 Hornswoggle
 Horobi, Death's Wail
+Horribly Awry
 Horrid Shadowspinner
 Horrid Vigor
 Horrific Assault
@@ -8936,6 +8946,7 @@ Incriminate	intent: Pipeline(ChosenTargets→graveyard); polarity: Pipeline(Chos
 Incubation // Incongruity
 Incubation Druid
 Incubation Sac
+Incubator Drone
 Incurable Ogre
 Indatha Crystal
 Indatha Triome
@@ -14796,6 +14807,7 @@ Roiling Dragonstorm
 Roiling Regrowth
 Roiling Vortex	intent: LockLifeGainEffect; timing: LockLifeGainEffect
 Roiling Waters
+Roilmage's Trick
 Rok-Tahk, Budding Scientist
 Role Reversal
 Roll-Roll-Roll-Roll
@@ -18750,6 +18762,7 @@ Tidal Kraken
 Tidal Surge
 Tidal Terror
 Tidal Visionary	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
+Tide Drifter
 Tide Skimmer
 Tide of War	intent: FlipCoinEffect
 Tidecaller Mentor
@@ -18769,6 +18782,7 @@ Tiger-Dillo
 Tiger-Seal
 Tiger-Tribe Hunter
 Tigereye Cameo
+Tightening Coils
 Tigra, Feline Fury
 Tiller of Flesh
 Tilonalli's Crown
@@ -19338,6 +19352,7 @@ Uba Mask
 Uchbenbak, the Great Mistake
 Ugin's Binding
 Ugin's Conjurant
+Ugin's Insight
 Ugin's Labyrinth	intent: Pipeline(FromLinkedExile→hand); intent: Pipeline(hand→exile)
 Ugin's Nexus
 Ugin, Eye of the Storms
