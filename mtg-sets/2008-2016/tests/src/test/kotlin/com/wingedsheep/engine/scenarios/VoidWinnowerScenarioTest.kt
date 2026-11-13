@@ -55,6 +55,18 @@ class VoidWinnowerScenarioTest : ScenarioTestBase() {
             game.execute(CastSpell(game.player2Id, purist, castFaceDown = true)).error.shouldNotBeNull()
         }
 
+        test("without Void Winnower the same face-down cast is legal") {
+            val game = scenario()
+                .withPlayers()
+                .withLandsOnBattlefield(2, "Plains", 7)
+                .withCardInHand(2, "Dawning Purist")
+                .withActivePlayer(2)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val purist = game.handCard(game.player2Id, "Dawning Purist")
+            game.execute(CastSpell(game.player2Id, purist, castFaceDown = true)).error.shouldBeNull()
+        }
+
         test("Void Winnower's controller isn't restricted") {
             val game = scenario()
                 .withPlayers()
