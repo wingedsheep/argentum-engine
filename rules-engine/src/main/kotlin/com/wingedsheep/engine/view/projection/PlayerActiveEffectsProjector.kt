@@ -113,6 +113,8 @@ internal class PlayerActiveEffectsProjector(
         var preventsAllDamage = false
         var preventsAllCombatDamage = false
         val preventedNextFromMatching = mutableSetOf<String>()
+        /** "Prevent all damage that would be dealt to you this turn by <sources>" shields. */
+        val preventedAllDamageToYouFrom = mutableSetOf<String>()
         val preventedCombatDamageSources = mutableSetOf<String>()
         val preventedAllDamageSources = mutableSetOf<String>()
         val preventedFromSources = mutableSetOf<EntityId>()
@@ -146,7 +148,12 @@ internal class PlayerActiveEffectsProjector(
             when (modification) {
                 is SerializableModification.PreventAllDamageTo -> {
                     // A Silhouette-style shield covers only targeted damage, not "all damage".
-                    if (!modification.onlyCausedByObjectTargetingIt) tally.preventsAllDamage = true
+                    when {
+                        modification.onlyCausedByObjectTargetingIt -> {}
+                        modification.sourceFilter != null ->
+                            tally.preventedAllDamageToYouFrom.add(modification.sourceFilter!!.sourcesPhrase())
+                        else -> tally.preventsAllDamage = true
+                    }
                 }
                 is SerializableModification.PreventNextDamage -> {
                     tally.preventNext += durationPhrase(state, floatingEffect) to modification.remainingAmount
@@ -238,6 +245,16 @@ internal class PlayerActiveEffectsProjector(
                         (ending?.let { " ($it)" } ?: ""),
                     icon = "prevent-damage",
                     duration = ending
+                )
+            )
+        }
+        for (sourceDescription in preventedAllDamageToYouFrom) {
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "prevent_all_damage_from_${sourceDescription.lowercase().replace(' ', '_')}",
+                    name = "Prevent Damage",
+                    description = "All damage that would be dealt to you by $sourceDescription is prevented",
+                    icon = "prevent-damage"
                 )
             )
         }

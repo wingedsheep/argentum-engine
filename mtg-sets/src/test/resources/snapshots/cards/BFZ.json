@@ -3977,6 +3977,75 @@
     ]
 }
 
+// Lithomancer's Focus
+{
+    "name": "Lithomancer's Focus",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +2/+2 until end of turn. Prevent all damage that would be dealt to that creature this turn by colorless sources.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "PreventDamageShield",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "sourceFilter": {
+                        "type": "PreventFromMatching",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsColorless"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "artist": "Cynthia Sheppard",
+        "flavorText": "\"Even in the hands of amateurs, Nahiri's hedrons can harm the Eldrazi.\"\n—Ugin",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd5a1376-88b3-4bdc-9ce9-e90617e6c55e.jpg?1783938217",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Lithomancer's Focus will prevent damage to the creature from any colorless source that turn, even if that source didn't exist or wasn't colorless as Lithomancer's Focus resolved."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Looming Spires
 {
     "name": "Looming Spires",

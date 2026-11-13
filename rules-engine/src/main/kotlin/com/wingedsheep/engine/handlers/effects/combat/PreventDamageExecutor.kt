@@ -354,6 +354,27 @@ class PreventDamageExecutor(
                 modification = SerializableModification.PreventNextDamageFromMatching(sourceFilter)
             }
 
+            // "Prevent all damage that would be dealt to that creature this turn by colorless
+            // sources" (Lithomancer's Focus): a prevent-all shield on one recipient that only
+            // covers damage from matching sources. The recipient is pinned now; which sources match
+            // is read at damage time.
+            sourceFilter != null && effect.direction == PreventionDirection.ToTarget &&
+            effect.amount == null && !effect.nextInstanceOnly && effect.preventDamage &&
+            !effect.halvePreventedDamage && !effect.gainLifeFromPrevented &&
+            effect.gainLifeFromColors.isEmpty() && effect.onPrevented == null &&
+            // The Controller default is Fog's untargeted shape; "to you by <sources>" is
+            // `alsoToYou`, so it stays an error here rather than a second spelling.
+            effect.target != EffectTarget.Controller -> {
+                val targetId = context.resolveTarget(effect.target, state)
+                    ?: return EffectResult.success(state)
+                state.getEntity(targetId) ?: return EffectResult.success(state)
+                affectedEntities = setOf(targetId)
+                modification = SerializableModification.PreventAllDamageTo(
+                    combatOnly = effect.scope == PreventionScope.CombatOnly,
+                    sourceFilter = sourceFilter
+                )
+            }
+
             // Prevent all damage — not just combat damage — that a group of sources would deal,
             // with no recipient clause ("prevent all damage that would be dealt by creatures this
             // turn", Ethereal Haze), optionally gaining the controller life for what it prevents
@@ -375,14 +396,13 @@ class PreventDamageExecutor(
                 modification = SerializableModification.PreventCombatDamageFromGroup(sourceFilter)
             }
 
-            // A Matching filter over one recipient has no lowering: its recipients are named by
-            // `recipientGroup` / `recipientGroupIncludesController` ("to you by attacking
-            // creatures"). Fail rather than guess a scope.
+            // Any other Matching shape over one recipient (a capped amount, a halving or
+            // life-gaining shield) has no lowering. Fail rather than guess a scope.
             sourceFilter != null -> {
                 return EffectResult.error(
                     state,
                     "PreventDamageEffect with a Matching source filter needs a recipient group, " +
-                        "the controller as recipient, FromTarget, or nextInstanceOnly"
+                        "the controller as recipient, FromTarget, nextInstanceOnly, or a prevent-all shield on one target"
                 )
             }
 

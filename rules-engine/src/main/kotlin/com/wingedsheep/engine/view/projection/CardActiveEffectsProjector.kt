@@ -27,6 +27,8 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CantBeBlockedByMoreThan
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 
@@ -311,6 +313,8 @@ internal class CardActiveEffectsProjector(
         is SerializableModification.PreventAllDamageTo -> when {
             modification.onlyCausedByObjectTargetingIt ->
                 "damage from spells and abilities that target it is prevented"
+            modification.sourceFilter != null ->
+                "${if (modification.combatOnly) "combat damage" else "damage"} to it from ${modification.sourceFilter!!.sourcesPhrase()} is prevented"
             modification.combatOnly -> "combat damage to it is prevented"
             else -> "damage to it is prevented"
         }
@@ -1130,4 +1134,17 @@ internal fun hasEveryCreatureType(subtypes: Collection<String>): Boolean {
     // this ~150 scans of it on every card of every state transform.
     val lookup = if (subtypes is Set<String>) subtypes else subtypes.toSet()
     return Subtype.ALL_CREATURE_TYPES.all { it in lookup }
+}
+
+/**
+ * A source filter as the sources it names: a bare color reads "colorless sources" / "red sources"
+ * (Lithomancer's Focus), anything with a type noun reads as its own description ("attacking
+ * creatures").
+ */
+internal fun GameObjectFilter.sourcesPhrase(): String {
+    val bareColor = cardPredicates.isNotEmpty() && cardPredicates.all {
+        it is CardPredicate.HasColor || it is CardPredicate.NotColor || it == CardPredicate.IsColorless ||
+            it == CardPredicate.IsMulticolored || it == CardPredicate.IsMonocolored
+    } && statePredicates.isEmpty() && controllerPredicate == null && anyOf.isEmpty()
+    return if (bareColor) "$description sources" else description
 }
