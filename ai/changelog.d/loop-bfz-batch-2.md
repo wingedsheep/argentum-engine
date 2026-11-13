@@ -1,1 +1,1 @@
-- #TBD Processor triggers (Wasteland Strangler, Ruin Processor) now count as payoffs for opponents' exiled cards, "each opponent discards" no longer reads as stocking your own graveyard, and Vile Aggregate and Dominator Drone now ask for colorless creatures
+- #4648 Processor triggers (Wasteland Strangler, Ruin Processor) now count as payoffs for opponents' exiled cards, "each opponent discards" no longer reads as stocking your own graveyard, and Vile Aggregate and Dominator Drone now ask for colorless creatures
