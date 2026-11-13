@@ -1,3 +1,107 @@
+// Adverse Conditions
+{
+    "name": "Adverse Conditions",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Devoid (This card has no color.)\nTap up to two target creatures. Those creatures don't untap during their controller's next untap step. Create a 1/1 colorless Eldrazi Scion creature token. It has \"Sacrifice this token: Add {C}.\"",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "TapUntap",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "DOESNT_UNTAP",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "duration": "UntilAfterAffectedControllersNextUntap"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Eldrazi",
+                        "Scion"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/9/b999a0fe-d2d0-4367-9abb-6ce5f3764f19.jpg?1783938121",
+                    "activatedAbilities": [
+                        {
+                            "id": "Adverse Conditions:1",
+                            "cost": "CostSacrificeSelf",
+                            "effect": {
+                                "type": "AddColorlessMana",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "timing": "ManaAbility",
+                            "isManaAbility": true,
+                            "descriptionOverride": "Sacrifice this token: Add {C}."
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/03d86e0b-294f-41b8-a5cd-d3144a019334.jpg?1783938214",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "You can cast Adverse Conditions with no targets. When it resolves, you'll get an Eldrazi Scion. However, if you cast Adverse Conditions with any targets and all of those targets are illegal as it tries to resolve, it won't resolve and none of its effects will happen. You won't get the Eldrazi Scion in that case."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Adverse Conditions tracks the creatures, but not their controller. If either of the creatures changes controllers before its first controller's next untap step has come around, then it won't untap during its new controller's next untap step."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Sacrificing an Eldrazi Scion creature token to add {C} is a mana ability. It doesn't use the stack and can't be responded to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Akoum Firebird
 {
     "name": "Akoum Firebird",
@@ -988,6 +1092,69 @@
     ]
 }
 
+// Brilliant Spectrum
+{
+    "name": "Brilliant Spectrum",
+    "manaCost": "{3}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Converge — Draw X cards, where X is the number of colors of mana spent to cast this spell. Then discard two cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": "DistinctColorsManaSpent"
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 2 cards to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "artist": "Winona Nelson",
+        "flavorText": "There are more sights on Zendikar than the eyes can see.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/f/1fc4013b-fb4f-4bbe-a15c-488f89545695.jpg?1783938210"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Brood Monitor
 {
     "name": "Brood Monitor",
@@ -1793,6 +1960,69 @@
     ]
 }
 
+// Defiant Bloodlord
+{
+    "name": "Defiant Bloodlord",
+    "manaCost": "{5}{B}{B}",
+    "typeLine": "Creature — Vampire",
+    "oracleText": "Flying\nWhenever you gain life, target opponent loses that much life.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Defiant Bloodlord:1",
+                "trigger": "LifeGainEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_LIFE_GAINED"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "rarity": "RARE",
+        "artist": "Craig J Spearing",
+        "flavorText": "\"Despite their bravado, mortals are fragile. If Zendikar is to endure, its lords must save it.\"\n—Drana, Kalastria bloodchief",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a4b5dd64-9e58-4f22-9d86-7a518d976037.jpg?1783938202",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "The ability triggers just once for each life-gaining event, whether it's 1 life from Drana's Emissary or 7 life from Nissa's Renewal."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "A creature with lifelink dealing combat damage is a single life-gaining event. For example, if two creatures you control with lifelink deal combat damage at the same time, the ability will trigger twice. However, if a single creature with lifelink deals combat damage to multiple creatures, players, and/or planeswalkers at the same time (perhaps because it has trample or was blocked by more than one creature), the ability will trigger only once."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "In a Two-Headed Giant game, life gained by your teammate won't cause the ability to trigger, even though it causes your team's life total to increase."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Demon's Grasp
 {
     "name": "Demon's Grasp",
@@ -2000,6 +2230,114 @@
     ]
 }
 
+// Drowner of Hope
+{
+    "name": "Drowner of Hope",
+    "manaCost": "{5}{U}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "Devoid (This card has no color.)\nWhen this creature enters, create two 1/1 colorless Eldrazi Scion creature tokens. They have \"Sacrifice this token: Add {C}.\"\nSacrifice an Eldrazi Scion: Tap target creature.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Drowner of Hope:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Eldrazi",
+                        "Scion"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/9/b999a0fe-d2d0-4367-9abb-6ce5f3764f19.jpg?1783938121",
+                    "activatedAbilities": [
+                        {
+                            "id": "Drowner of Hope:1",
+                            "cost": "CostSacrificeSelf",
+                            "effect": {
+                                "type": "AddColorlessMana",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "timing": "ManaAbility",
+                            "isManaAbility": true,
+                            "descriptionOverride": "Sacrifice this token: Add {C}."
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Drowner of Hope:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "permanent Eldrazi Scion"
+                    }
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "rarity": "RARE",
+        "artist": "Tomasz Jedruszek",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0fd5b48c-6850-47d4-8106-297be6c8f708.jpg?1783938213",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "You can sacrifice any Eldrazi Scion to activate Drowner of Hope's last ability, not just one created by Drowner of Hope."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "You can't sacrifice the same permanent to pay two different costs. Notably, if you sacrifice an Eldrazi Scion to activate the last ability of Drowner of Hope, you won't add {C}."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Sacrificing an Eldrazi Scion creature token to add {C} is a mana ability. It doesn't use the stack and can't be responded to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Earthen Arms
 {
     "name": "Earthen Arms",
@@ -2076,6 +2414,74 @@
         "imageUri": "https://cards.scryfall.io/normal/front/0/4/04b13e32-01b9-4a86-a3df-ca8b784c6a6c.jpg?1783938225"
     },
     "colorIdentityOverride": []
+}
+
+// Eldrazi Skyspawner
+{
+    "name": "Eldrazi Skyspawner",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nFlying\nWhen this creature enters, create a 1/1 colorless Eldrazi Scion creature token. It has \"Sacrifice this token: Add {C}.\"",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEVOID",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Eldrazi Skyspawner:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Eldrazi",
+                        "Scion"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/9/b999a0fe-d2d0-4367-9abb-6ce5f3764f19.jpg?1783938121",
+                    "activatedAbilities": [
+                        {
+                            "id": "Eldrazi Skyspawner:1",
+                            "cost": "CostSacrificeSelf",
+                            "effect": {
+                                "type": "AddColorlessMana",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "timing": "ManaAbility",
+                            "isManaAbility": true,
+                            "descriptionOverride": "Sacrifice this token: Add {C}."
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c9c1a10-446e-492a-95cc-a459dc6c08a0.jpg?1783938213",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Sacrificing an Eldrazi Scion creature token to add {C} is a mana ability. It doesn't use the stack and can't be responded to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Emeria Shepherd
@@ -2276,6 +2682,71 @@
         "imageUri": "https://cards.scryfall.io/normal/front/6/4/64820f4f-1f78-4338-beb8-5ed5a447cfe4.jpg?1783938224"
     },
     "colorIdentityOverride": []
+}
+
+// Exert Influence
+{
+    "name": "Exert Influence",
+    "manaCost": "{4}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Converge — Gain control of target creature if its power is less than or equal to the number of colors of mana spent to cast this spell.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "numericProperty": "Power"
+                    },
+                    "operator": "LTE",
+                    "right": "DistinctColorsManaSpent"
+                }
+            },
+            "then": {
+                "type": "GainControl",
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "rarity": "RARE",
+        "artist": "Magali Villeneuve",
+        "flavorText": "\"I can't control its mind—I'm not even sure it has one. But I can dominate its will.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c35e9d13-ee4b-42f1-a154-18ab32947ad3.jpg?1783938208",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Check the creature's power as Exert Influence resolves to see if it's less than or equal to the number of colors spent to cast Exert Influence. If it's greater, Exert Influence will finish resolving with no effect."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Once you've gained control of a creature with Exert Influence, it doesn't matter what happens to its power. Raising it won't cause the control-changing effect to end."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Expedition Envoy
@@ -2958,6 +3429,124 @@
     ]
 }
 
+// Grave Birthing
+{
+    "name": "Grave Birthing",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Devoid (This card has no color.)\nTarget opponent exiles a card from their graveyard. You create a 1/1 colorless Eldrazi Scion creature token. It has \"Sacrifice this token: Add {C}.\"\nDraw a card.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "chooser": "TargetPlayer",
+                    "storeSelected": "selected1",
+                    "prompt": "Exile a card from your graveyard"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Eldrazi",
+                        "Scion"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/9/b999a0fe-d2d0-4367-9abb-6ce5f3764f19.jpg?1783938121",
+                    "activatedAbilities": [
+                        {
+                            "id": "Grave Birthing:1",
+                            "cost": "CostSacrificeSelf",
+                            "effect": {
+                                "type": "AddColorlessMana",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "timing": "ManaAbility",
+                            "isManaAbility": true,
+                            "descriptionOverride": "Sacrifice this token: Add {C}."
+                        }
+                    ]
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "artist": "Craig J Spearing",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e996a30-3a4d-4a26-8386-f9eb9c999dc0.jpg?1783938205",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "The target opponent chooses which card to exile as Grave Birthing resolves."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "You can cast Grave Birthing targeting an opponent with an empty graveyard. Even though that player won't exile a card from their graveyard, you'll still get an Eldrazi Scion and draw a card."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Sacrificing an Eldrazi Scion creature token to add {C} is a mana ability. It doesn't use the stack and can't be responded to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Greenwarden of Murasa
 {
     "name": "Greenwarden of Murasa",
@@ -3048,6 +3637,72 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Grip of Desolation
+{
+    "name": "Grip of Desolation",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Devoid (This card has no color.)\nExile target creature and target land.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Exile"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "land"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "UNCOMMON",
+        "artist": "Lius Lasahido",
+        "flavorText": "As the hand closed, there was first terror, then numbness, and finally nothingness.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/5/850b388a-c188-433a-8124-1d51b43a4e51.jpg?1783938205",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "You must target a creature and a land in order to cast Grip of Desolation. A permanent that's both a land and a creature can be chosen for both targets."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -3156,6 +3811,93 @@
     "colorIdentityOverride": [
         "GREEN",
         "WHITE"
+    ]
+}
+
+// Guardian of Tazeem
+{
+    "name": "Guardian of Tazeem",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Sphinx",
+    "oracleText": "Flying\nLandfall — Whenever a land you control enters, tap target creature an opponent controls. If that land is an Island, that creature doesn't untap during its controller's next untap step.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Guardian of Tazeem:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "EntityMatches",
+                                    "entity": "TriggeringEntity",
+                                    "filter": "land Island"
+                                }
+                            },
+                            "then": {
+                                "type": "GrantKeyword",
+                                "keyword": "DOESNT_UNTAP",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "duration": "UntilAfterAffectedControllersNextUntap"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Landfall — Whenever a land you control enters, tap target creature an opponent controls. If that land is an Island, that creature doesn't untap during its controller's next untap step."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "RARE",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5b55cf5e-4499-4e3a-9748-7b1568286b5a.jpg?1783938208",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Guardian of Tazeem's landfall ability can target a creature that's already tapped. If the land that caused it to trigger was an Island, that creature won't untap during its controller's next untap step."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "The ability tracks the creature, but not its controller. If the creature changes controllers before its first controller's next untap step has come around, then it won't untap during its new controller's next untap step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3459,6 +4201,117 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Horribly Awry
+{
+    "name": "Horribly Awry",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Devoid (This card has no color.)\nCounter target creature spell with mana value 4 or less. If that spell is countered this way, exile it instead of putting it into its owner's graveyard.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "counterDestination": "CounterDestination.Exile"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature mv<=4",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "UNCOMMON",
+        "artist": "Clint Cearley",
+        "flavorText": "\"We are nothing but dust to them—our bodies, our actions, even our words.\"\n—Jori En, expedition leader",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4cd05532-686e-40dc-858b-8a77a3628c99.jpg?1783938213",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "The mana value of a spell doesn't change if its controller paid an alternative cost (such as an evoke cost) to cast it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Incubator Drone
+{
+    "name": "Incubator Drone",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nWhen this creature enters, create a 1/1 colorless Eldrazi Scion creature token. It has \"Sacrifice this token: Add {C}.\"",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Incubator Drone:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Eldrazi",
+                        "Scion"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/9/b999a0fe-d2d0-4367-9abb-6ce5f3764f19.jpg?1783938121",
+                    "activatedAbilities": [
+                        {
+                            "id": "Incubator Drone:1",
+                            "cost": "CostSacrificeSelf",
+                            "effect": {
+                                "type": "AddColorlessMana",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "timing": "ManaAbility",
+                            "isManaAbility": true,
+                            "descriptionOverride": "Sacrifice this token: Add {C}."
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "artist": "Cynthia Sheppard",
+        "flavorText": "The touch of an Eldrazi brings life and death in turn.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0855762-7068-4111-a6bf-fe6d5b092c74.jpg?1783938212",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Sacrificing an Eldrazi Scion creature token to add {C} is a mana ability. It doesn't use the stack and can't be responded to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -6342,6 +7195,59 @@
     ]
 }
 
+// Roilmage's Trick
+{
+    "name": "Roilmage's Trick",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Converge — Creatures your opponents control get -X/-0 until end of turn, where X is the number of colors of mana spent to cast this spell.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Multiply",
+                            "amount": "DistinctColorsManaSpent",
+                            "multiplier": -1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "83",
+        "artist": "Johann Bodin",
+        "flavorText": "Weather on Zendikar is unpredictable—unless you're the one telling it what to do.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d2194713-c08c-4fba-8e31-bb67c9932173.jpg?1783938207"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Rot Shambler
 {
     "name": "Rot Shambler",
@@ -8095,6 +9001,92 @@
     ]
 }
 
+// Tide Drifter
+{
+    "name": "Tide Drifter",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nOther colorless creatures you control get +0/+1.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 5
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 0,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsColorless"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "flavorText": "It didn't do much, but the residents of Sea Gate gave it a wide berth all the same.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4c590579-e0ef-4839-8f67-f52813cd9fe7.jpg?1783938211"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Tightening Coils
+{
+    "name": "Tightening Coils",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets -6/-0 and loses flying.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": -6,
+                "toughnessBonus": 0
+            },
+            {
+                "type": "RemoveKeywordStatic",
+                "keyword": "FLYING"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "artist": "Tyler Jacobson",
+        "flavorText": "Having gone to the trouble of stealing a bident from a god on another world, Kiora was eager to test its capabilities.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a014dd06-626d-4917-8981-e0064718b571.jpg?1783938206",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "If an effect gives the enchanted creature flying after Tightening Coils became attached to it, the creature will have flying."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Titan's Presence
 {
     "name": "Titan's Presence",
@@ -8209,6 +9201,114 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Ugin's Insight
+{
+    "name": "Ugin's Insight",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Scry X, where X is the greatest mana value among permanents you control, then draw three cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "permanent",
+                            "aggregation": "MAX",
+                            "property": "MANA_VALUE"
+                        },
+                        "isScry": true
+                    },
+                    "storeAs": "scried"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "scried",
+                    "selection": "ChooseAnyNumber",
+                    "storeSelected": "toBottom",
+                    "storeRemainder": "toTop",
+                    "prompt": "Scry: choose cards to put on the bottom of your library",
+                    "selectedLabel": "Put on bottom",
+                    "remainderLabel": "Put on top"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "toBottom",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "toTop",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Top"
+                    },
+                    "order": "ControllerChooses"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "permanent",
+                                "aggregation": "MAX",
+                                "property": "MANA_VALUE"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 0
+                            }
+                        }
+                    },
+                    "then": "EmitScriedEvent"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "RARE",
+        "artist": "Tyler Jacobson",
+        "flavorText": "\"You speak to me of the threat of Ulamog. But do not forget: they came as three.\"\n—Ugin, to Jace Beleren",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/3/f37d5938-9c8f-4203-8f3f-d6e89ced28ef.jpg?1783938206",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Use the highest mana value among permanents you control as Ugin's Insight resolves to determine how many cards you scry."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If X is 0, you won't scry at all. Any abilities that trigger whenever you scry won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
