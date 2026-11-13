@@ -361,7 +361,10 @@ class PreventDamageExecutor(
             sourceFilter != null && effect.direction == PreventionDirection.ToTarget &&
             effect.amount == null && !effect.nextInstanceOnly && effect.preventDamage &&
             !effect.halvePreventedDamage && !effect.gainLifeFromPrevented &&
-            effect.gainLifeFromColors.isEmpty() && effect.onPrevented == null -> {
+            effect.gainLifeFromColors.isEmpty() && effect.onPrevented == null &&
+            // The Controller default is Fog's untargeted shape; "to you by <sources>" is
+            // `alsoToYou`, so it stays an error here rather than a second spelling.
+            effect.target != EffectTarget.Controller -> {
                 val targetId = context.resolveTarget(effect.target, state)
                     ?: return EffectResult.success(state)
                 state.getEntity(targetId) ?: return EffectResult.success(state)

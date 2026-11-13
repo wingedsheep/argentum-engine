@@ -16,7 +16,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.PreventionSourceFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
@@ -54,7 +53,8 @@ class MatchingTargetPreventionTest : FunSpec({
         manaCost = "{W}"
         typeLine = "Instant"
         spell {
-            effect = Effects.PreventDamage(target = EffectTarget.Controller, sources = PreventionSourceFilter.Matching(red))
+            val p = target(Targets.Player)
+            effect = Effects.PreventDamage(target = p, sources = PreventionSourceFilter.Matching(red))
         }
     }
     val cappedWard = card("Test Capped Red Ward") {
@@ -134,6 +134,25 @@ class MatchingTargetPreventionTest : FunSpec({
         }
     }
 
+    test("a combat-only shield prevents a matching blocker's combat damage") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+        val opponent = driver.getOpponent(player)
+        val warded = driver.putCreatureOnBattlefield(player, "Centaur Courser") // 3/3
+        driver.removeSummoningSickness(warded)
+        val goblin = driver.putCreatureOnBattlefield(opponent, "Goblin Guide") // red 2/1
+
+        driver.cast(player, "Test Red Combat Ward", Color.WHITE, warded)
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.declareAttackers(player, listOf(warded), defendingPlayer = opponent).error shouldBe null
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+        driver.declareBlockers(opponent, mapOf(goblin to listOf(warded))).error shouldBe null
+        driver.passPriorityUntil(Step.END_COMBAT)
+
+        withClue("the red blocker's combat damage to the warded attacker is prevented") { driver.damageOn(warded) shouldBe 0 }
+        withClue("the goblin still takes the attacker's damage") { driver.state.getBattlefield().contains(goblin) shouldBe false }
+    }
+
     test("a combat-only shield lets matching noncombat damage through") {
         val driver = createDriver()
         val player = driver.activePlayer!!
@@ -149,7 +168,7 @@ class MatchingTargetPreventionTest : FunSpec({
         val driver = createDriver()
         val player = driver.activePlayer!!
 
-        driver.cast(player, "Test Red Ward You", Color.WHITE)
+        driver.cast(player, "Test Red Ward You", Color.WHITE, player)
         val life = driver.getLifeTotal(player)
         driver.cast(player, "Test Red Blast", Color.RED, player)
         withClue("red damage to the shielded player is prevented") { driver.getLifeTotal(player) shouldBe life }
