@@ -989,6 +989,13 @@ value class CounterType(val name: String) {
          */
         val ISOLATION = CounterType("ISOLATION")
 
+        /**
+         * Crystal counter (BFZ — Prism Array). A pure marker with no inherent rule: the
+         * enchantment enters with one for each color of mana spent to cast it (converge), and
+         * removing one is the cost of its tap ability.
+         */
+        val CRYSTAL = CounterType("CRYSTAL")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -1161,6 +1168,7 @@ value class CounterType(val name: String) {
             VELOCITY,
             FEEDING,
             ISOLATION,
+            CRYSTAL,
         )
 
         /**

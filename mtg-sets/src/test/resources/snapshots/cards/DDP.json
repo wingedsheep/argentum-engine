@@ -133,6 +133,122 @@
     ]
 }
 
+// Oblivion Sower
+{
+    "name": "Oblivion Sower",
+    "manaCost": "{6}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "When you cast this spell, target opponent exiles the top four cards of their library, then you may put any number of land cards that player owns from exile onto the battlefield under your control.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 8
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Oblivion Sower:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "exiled_top"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "exiled_top",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Exile",
+                                        "player": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        },
+                                        "filter": {
+                                            "cardPredicates": [
+                                                "IsLand"
+                                            ],
+                                            "statePredicates": [
+                                                "IsFaceUp"
+                                            ]
+                                        }
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": "ChooseAnyNumber",
+                                    "storeSelected": "selected1",
+                                    "prompt": "You may put any number of land cards that player owns from exile onto the battlefield under your control",
+                                    "selectedLabel": "Put onto the battlefield"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "selected1",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Battlefield"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When you cast this spell, target opponent exiles the top four cards of their library, then you may put any number of land cards that player owns from exile onto the battlefield under your control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "rarity": "MYTHIC",
+        "artist": "Aleksi Briclot",
+        "flavorText": "The Eldrazi hunger without limit and consume without pause.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f3a5dea-0422-49f8-a35b-757ea500a52d.jpg?1783938246",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Oblivion Sower's ability allows you to put any land cards the player owns from exile onto the battlefield, regardless of how those cards were exiled."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Cards that are face down in exile have no characteristics. Such cards can't be put onto the battlefield with Oblivion Sower's ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Retreat to Kazandu
 {
     "name": "Retreat to Kazandu",
@@ -241,6 +357,105 @@
         "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca6e9658-684e-44fd-9c72-c5c3faa9fb1f.jpg?1783938258"
     },
     "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Veteran Warleader
+{
+    "name": "Veteran Warleader",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Creature — Human Soldier Ally",
+    "oracleText": "Veteran Warleader's power and toughness are each equal to the number of creatures you control.\nTap another untapped Ally you control: This creature gains your choice of first strike, vigilance, or trample until end of turn.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature"
+            }
+        }
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Veteran Warleader:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "filter": "permanent Ally",
+                        "excludeSelf": true
+                    }
+                },
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "This creature gains first strike until end of turn",
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "FIRST_STRIKE",
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "label": "This creature gains vigilance until end of turn",
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "VIGILANCE",
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "label": "This creature gains trample until end of turn",
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Tap another untapped Ally you control: This creature gains your choice of first strike, vigilance, or trample until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "rarity": "RARE",
+        "artist": "Josu Hernaiz",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/7/577d6061-c6b9-43e6-9832-6a00f3eb734e.jpg?1783938251",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "The ability that defines Veteran Warleader's power and toughness works in all zones, not just the battlefield. If Veteran Warleader is on the battlefield, it will count itself."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "To activate the last ability, you can tap any other untapped Ally you control, including one that hasn't been under your control since the beginning of your most recent turn. (Note that ability doesn't use the tap symbol.)"
+            },
+            {
+                "date": "2015-08-25",
+                "text": "You choose which ability Veteran Warleader gains as the last ability resolves, not as you activate it."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Vigilance matters only as attackers are declared. Giving a creature vigilance after that point won't untap it, even if it's attacking."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
         "WHITE"
     ]
 }

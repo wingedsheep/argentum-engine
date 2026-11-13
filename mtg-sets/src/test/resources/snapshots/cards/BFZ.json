@@ -532,6 +532,88 @@
     ]
 }
 
+// Bane of Bala Ged
+{
+    "name": "Bane of Bala Ged",
+    "manaCost": "{7}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "Whenever this creature attacks, defending player exiles two permanents they control.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bane of Bala Ged:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Battlefield",
+                                "player": "DefendingPlayer",
+                                "filter": "permanent"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "chooser": "DefendingPlayer",
+                            "storeSelected": "selected1",
+                            "prompt": "Choose two permanents you control to exile",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": "DefendingPlayer"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature attacks, defending player exiles two permanents they control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "UNCOMMON",
+        "artist": "Chase Stone",
+        "flavorText": "The continent of Bala Ged was ravaged by massive Eldrazi of Ulamog's lineage, its lush jungles and cascading rivers reduced to dust.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/3741e62a-4b86-46ff-a7df-a8ceaf3b9a0c.jpg?1783938225",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "If Bane of Bala Ged attacks a planeswalker, the defending player may exile that planeswalker. Bane of Bala Ged will still be attacking and may be blocked as normal. If it's not blocked, it won't deal combat damage."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "The permanents are exiled before blockers are chosen."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If the defending player controls only one permanent, that permanent will be exiled."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Barrage Tyrant
 {
     "name": "Barrage Tyrant",
@@ -1370,6 +1452,48 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Breaker of Armies
+{
+    "name": "Breaker of Armies",
+    "manaCost": "{8}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "All creatures able to block this creature do so.",
+    "creatureStats": {
+        "power": 10,
+        "toughness": 8
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "MustBeBlockedStatic",
+                "allCreatures": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "rarity": "UNCOMMON",
+        "artist": "Richard Wright",
+        "flavorText": "\"There are some who have lost everyone and everything. They actively seek out the Eldrazi, eager for the smallest measure of vengeance.\"\n—Munda, ambush leader",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/784e843e-7010-466d-adbd-1dd1595aead1.jpg?1783938225",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "If more than one Breaker of Armies is attacking, the controller of each creature that could block them chooses which one that creature blocks. In this case, creatures that can block multiple creatures must block as many attacking Breaker of Armies as possible."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If, during its controller's declare blockers step, a creature the defending player controls is tapped or is affected by a spell or ability that says it can't block, then it doesn't block. If there's a cost associated with having it block, its controller isn't forced to pay that cost. If they don't, the creature doesn't have to block."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If a creature can't legally block Breaker of Armies but could block another attacking creature, it may do so. Likewise, if a creature the defending player controls can't block Breaker of Armies unless its controller pays a cost, its controller may decline to pay that cost and block a different attacking creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Brilliant Spectrum
@@ -2419,6 +2543,115 @@
     ]
 }
 
+// Conduit of Ruin
+{
+    "name": "Conduit of Ruin",
+    "manaCost": "{6}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "When you cast this spell, you may search your library for a colorless creature card with mana value 7 or greater, reveal it, then shuffle and put that card on top.\nThe first creature spell you cast each turn costs {2} less to cast.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Conduit of Ruin:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsCreature",
+                                            "IsColorless",
+                                            {
+                                                "type": "ManaValueAtLeast",
+                                                "min": 7
+                                            }
+                                        ]
+                                    }
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a colorless creature card with mana value 7 or greater to put on top of your library",
+                                "selectedLabel": "Put on top of your library"
+                            },
+                            "ShuffleLibrary",
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "placement": "Top"
+                                },
+                                "revealed": true
+                            },
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                },
+                "descriptionOverride": "When you cast this spell, you may search your library for a colorless creature card with mana value 7 or greater, reveal it, then shuffle and put that card on top."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "creature"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 2
+                },
+                "gating": {
+                    "type": "NthOfTypePerTurn",
+                    "n": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4bc855d3-817c-4748-a7f5-1533d8b0e930.jpg?1783938225",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Conduit of Ruin's last ability will look at the entire turn, even if Conduit of Ruin wasn't on the battlefield for some of it. Notably, if you cast Conduit of Ruin in a turn, then no other creature spell you cast that turn can be your first."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If you control more than one Conduit of Ruin, the last ability of each of them applies only to the first creature spell you cast each turn, not to different spells; the first creature spell you cast each turn will cost {4} less."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Coralhelm Guide
 {
     "name": "Coralhelm Guide",
@@ -2787,6 +3020,52 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Deathless Behemoth
+{
+    "name": "Deathless Behemoth",
+    "manaCost": "{6}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "Vigilance\nSacrifice two Eldrazi Scions: Return this card from your graveyard to your hand. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Deathless Behemoth:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "permanent Eldrazi Scion",
+                        "count": 2
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand",
+                    "fromZone": "Graveyard"
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Return Deathless Behemoth from your graveyard to your hand"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Felix",
+        "flavorText": "\"Over and over it rose. Over and over we fell.\"\n—Ganda, Goma Fada deserter",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0d98f1df-f99a-43c5-81cd-9d333226857a.jpg?1783938224"
+    }
 }
 
 // Defiant Bloodlord
@@ -4709,6 +4988,62 @@
         "GREEN",
         "WHITE"
     ]
+}
+
+// Gruesome Slaughter
+{
+    "name": "Gruesome Slaughter",
+    "manaCost": "{6}",
+    "typeLine": "Sorcery",
+    "oracleText": "Until end of turn, colorless creatures you control gain \"{T}: This creature deals damage equal to its power to target creature.\"",
+    "script": {
+        "spellEffect": {
+            "type": "GrantActivatedAbilityToGroup",
+            "ability": {
+                "id": "Gruesome Slaughter:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "damageSource": "Self"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}: This creature deals damage equal to its power to target creature."
+            },
+            "filter": {
+                "baseFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        "IsColorless"
+                    ],
+                    "controllerPredicate": "ControlledByYou"
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "rarity": "RARE",
+        "artist": "Aleksi Briclot",
+        "flavorText": "Though Gideon arrived at Sea Gate too late to prevent the massacre, he still had enough time to lead its survivors to relative safety.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d3e464c-3032-4579-8840-4fe75474e3fb.jpg?1783938224"
+    }
 }
 
 // Guardian of Tazeem
@@ -7391,6 +7726,109 @@
     ]
 }
 
+// Noyan Dar, Roil Shaper
+{
+    "name": "Noyan Dar, Roil Shaper",
+    "manaCost": "{3}{W}{U}",
+    "typeLine": "Legendary Creature — Merfolk Ally",
+    "oracleText": "Whenever you cast an instant or sorcery spell, you may put three +1/+1 counters on target land you control. If you do, that land becomes a 0/0 Elemental creature with haste that's still a land.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Noyan Dar, Roil Shaper:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 3,
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "BecomeCreature",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "power": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "toughness": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "keywords": [
+                                    "HASTE"
+                                ],
+                                "creatureTypes": [
+                                    "Elemental"
+                                ],
+                                "duration": "Permanent"
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "land ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you cast an instant or sorcery spell, you may put three +1/+1 counters on target land you control. If you do, that land becomes a 0/0 Elemental creature with haste that's still a land."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "216",
+        "rarity": "RARE",
+        "artist": "Karl Kopinski",
+        "flavorText": "After many years as a lullmage, Noyan Dar turned his talents from allaying Zendikar's fury to the considerably easier task of rousing it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/018a66fc-e7aa-42df-a622-50743cb20183.jpg?1783938179",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Although Noyan Dar's ability is very similar to awaken, it is not the same ability. Any card that refers to a \"card with awaken\" doesn't include Noyan Dar."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "The ability will resolve before the instant or sorcery spell that caused it to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Ob Nixilis Reignited
 {
     "name": "Ob Nixilis Reignited",
@@ -8098,6 +8536,146 @@
     ]
 }
 
+// Pathway Arrows
+{
+    "name": "Pathway Arrows",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature has \"{2}, {T}: This creature deals 1 damage to target creature. If a colorless creature is dealt damage this way, tap it.\"\nEquip {2}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Pathway Arrows:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Pathway Arrows:1",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{2}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "damageSource": "Self",
+                                "damageDealtVariable": "storedNumber0"
+                            },
+                            {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "All",
+                                        "conditions": [
+                                            {
+                                                "type": "Compare",
+                                                "left": {
+                                                    "type": "VariableReference",
+                                                    "variableName": "storedNumber0"
+                                                },
+                                                "operator": "GT",
+                                                "right": {
+                                                    "type": "Fixed",
+                                                    "amount": 0
+                                                }
+                                            },
+                                            {
+                                                "type": "EntityMatches",
+                                                "entity": {
+                                                    "type": "BoundVariable",
+                                                    "name": "t0"
+                                                },
+                                                "filter": {
+                                                    "cardPredicates": [
+                                                        "IsCreature",
+                                                        "IsColorless"
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "then": {
+                                    "type": "TapUntap",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "225",
+        "rarity": "UNCOMMON",
+        "artist": "Kev Walker",
+        "flavorText": "Also called \"pathway stones,\" hedron shards can immobilize Eldrazi on contact.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/15b98611-a6f7-498c-87e3-893a3f4b4f73.jpg?1783938177"
+    },
+    "colorIdentityOverride": []
+}
+
 // Planar Outburst
 {
     "name": "Planar Outburst",
@@ -8221,6 +8799,90 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLUE"
+    ]
+}
+
+// Prism Array
+{
+    "name": "Prism Array",
+    "manaCost": "{4}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Converge — This enchantment enters with a crystal counter on it for each color of mana spent to cast it.\nRemove a crystal counter from this enchantment: Tap target creature.\n{W}{U}{B}{R}{G}: Scry 3.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Prism Array:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomRemoveCounters",
+                        "counterType": "CRYSTAL",
+                        "self": true
+                    }
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Remove a crystal counter: Tap target creature."
+            },
+            {
+                "id": "Prism Array:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{W}{U}{B}{R}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Scry",
+                    "count": 3
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "counterType": "CRYSTAL",
+                "count": "DistinctColorsManaSpent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "RARE",
+        "artist": "Philip Straub",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6e18c46d-dd6b-4feb-9eb3-3d52985ce6e1.jpg?1783938208",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "If you cast a spell with converge without spending any mana to cast it (perhaps because an effect allowed you to cast it without paying its mana cost), then the number of colors spent to cast it will be zero."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If there are any alternative or additional costs to cast a spell with a converge ability, the mana spent to pay those costs will count."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
     ]
 }
 
@@ -10179,6 +10841,89 @@
     ]
 }
 
+// Sire of Stagnation
+{
+    "name": "Sire of Stagnation",
+    "manaCost": "{4}{U}{B}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "Devoid (This card has no color.)\nWhenever a land an opponent controls enters, that player exiles the top two cards of their library and you draw two cards.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 7
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sire of Stagnation:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:opponent",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "player": "ControllerOfTriggeringEntity"
+                            },
+                            "storeAs": "exiled_top"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "exiled_top",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": "ControllerOfTriggeringEntity"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever a land an opponent controls enters, that player exiles the top two cards of their library and you draw two cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "rarity": "MYTHIC",
+        "artist": "Tyler Jacobson",
+        "flavorText": "As the great scourge passed by, Zendikar shivered, then lay silent.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d6252913-7b8e-4746-91e0-658ce13cdf18.jpg?1783938181",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "The cards are exiled from the library face up."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If that player has one card in their library when Sire of Stagnation's triggered ability resolves, that card will be exiled. If their library has zero cards, no cards are exiled. In both cases, you'll still draw two cards. That player won't lose the game (until they attempt to draw a card from an empty library)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Skitterskin
 {
     "name": "Skitterskin",
@@ -10307,6 +11052,172 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Skyrider Elf
+{
+    "name": "Skyrider Elf",
+    "manaCost": "{X}{G}{U}",
+    "typeLine": "Creature — Elf Warrior Ally",
+    "oracleText": "Flying\nConverge — This creature enters with a +1/+1 counter on it for each color of mana spent to cast it.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": "DistinctColorsManaSpent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "220",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "\"It may be unconventional, but I'll take any steady mount in a storm.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/477eb787-aec7-43fd-9813-184111d9dcc5.jpg?1783938178",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "You can choose any value for X. The value chosen for X doesn't directly affect the number of +1/+1 counters Skyrider Elf enters the battlefield with, but it does let you pay more mana and thus spend more colors of mana to cast it. For example, you can choose 0 for the value of X and pay {G}{U} to cast Skyrider Elf for two +1/+1 counters. You can also choose 3 for the value of X, making its mana cost {3}{G}{U}, and pay {W}{U}{B}{R}{G} for five +1/+1 counters."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "The maximum number of colors of mana you can spend to cast a spell is five. Colorless is not a color. Note that the cost of a spell with converge may limit how many colors of mana you can spend."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If you cast a spell with converge without spending any mana to cast it (perhaps because an effect allowed you to cast it without paying its mana cost), then the number of colors spent to cast it will be zero."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
+// Slab Hammer
+{
+    "name": "Slab Hammer",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Whenever equipped creature attacks, you may return a land you control to its owner's hand. If you do, the creature gets +2/+2 until end of turn.\nEquip {2}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Slab Hammer:1",
+                "trigger": "AttackEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "BattlefieldMatching",
+                                            "filter": "land",
+                                            "player": "You"
+                                        },
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered0",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "returnedLand",
+                                        "prompt": "Return a land you control to its owner's hand",
+                                        "useTargetingUI": true
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "returnedLand",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        }
+                                    }
+                                ]
+                            },
+                            "successCriterion": {
+                                "type": "SuccessCriterion.CollectionNonEmpty",
+                                "name": "returnedLand"
+                            }
+                        },
+                        "then": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": "TriggeringEntity"
+                        }
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Slab Hammer:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "227",
+        "rarity": "UNCOMMON",
+        "artist": "Joseph Meehan",
+        "flavorText": "Neither subtle nor pretty.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/18c64671-9bdd-475f-8def-7575775bf900.jpg?1783938176"
+    },
+    "colorIdentityOverride": []
 }
 
 // Sludge Crawler
@@ -11792,6 +12703,126 @@
             }
         ]
     }
+}
+
+// Ulamog's Nullifier
+{
+    "name": "Ulamog's Nullifier",
+    "manaCost": "{2}{U}{B}",
+    "typeLine": "Creature — Eldrazi Processor",
+    "oracleText": "Devoid (This card has no color.)\nFlash\nFlying\nWhen this creature enters, you may put two cards your opponents own from exile into their owners' graveyards. If you do, counter target spell.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEVOID",
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ulamog's Nullifier:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Put two cards your opponents own from exile into their owners' graveyards to counter the spell?"
+                    },
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Exile",
+                                            "player": "EachOpponent"
+                                        },
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered0",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 2
+                                            }
+                                        },
+                                        "storeSelected": "processed",
+                                        "prompt": "Choose two cards your opponents own from exile to put into their owners' graveyards",
+                                        "selectedLabel": "Put into graveyard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "processed",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        }
+                                    }
+                                ]
+                            },
+                            "successCriterion": {
+                                "type": "SuccessCriterion.CollectionNonEmpty",
+                                "name": "processed",
+                                "min": 2
+                            }
+                        },
+                        "then": "Counter"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {},
+                        "zone": "Stack"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, you may put two cards your opponents own from exile into their owners' graveyards. If you do, counter target spell."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "UNCOMMON",
+        "artist": "Aleksi Briclot",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/acd482ad-ca4a-470f-8a76-14ec7b58316a.jpg?1783938181",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "If a spell or ability requires that you put more than one exiled card into the graveyard, you may choose cards owned by different opponents. Each card chosen will be put into its owner's graveyard."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If a replacement effect will cause cards that would be put into a graveyard from anywhere to be exiled instead (such as the one created by Anafenza, the Foremost), you can still put an exiled card into its opponent's graveyard. The card becomes a new object and remains in exile. In this situation, you can't use a single exiled card if required to put more than one exiled card into the graveyard. Conversely, you could use the same card in this situation if two separate spells or abilities each required you to put a single exiled card into its owner's graveyard."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "You can't look at face-down cards in exile unless an effect allows you to."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Face-down cards in exile are grouped using two criteria: what caused them to be exiled face down and when they were exiled face down. If you want to put a face-down card in exile into its owner's graveyard, you must first choose one of these groups and then choose a card from within that group at random. For example, say an artifact causes your opponent to exile their hand of three cards face down. Then on a later turn, that artifact causes your opponent to exile another two cards face down. If you use Wasteland Strangler to put one of those cards into their graveyard, you would pick the first or second pile and put a card chosen at random from that pile into the graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
 }
 
 // Ulamog's Reclaimer

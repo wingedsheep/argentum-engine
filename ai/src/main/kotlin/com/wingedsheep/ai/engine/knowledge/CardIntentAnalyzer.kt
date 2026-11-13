@@ -1883,6 +1883,10 @@ object CardIntentAnalyzer {
             val (player, filter) = when (val source = leaf.source) {
                 is CardSource.BattlefieldMatching -> source.player to source.filter
                 is CardSource.ControlledPermanents -> source.player to source.filter
+                // "Defending player exiles two permanents they control" (Bane of Bala Ged), and the
+                // zone-gathered sweepers/edicts (Sunfall, Flood of Tears, Doomfall): the battlefield
+                // gathered as a zone is the same board, an edict when its player picks.
+                is CardSource.FromZone -> if (source.zone == Zone.BATTLEFIELD) source.player to source.filter else continue
                 else -> continue
             }
             val ownOnly = player == Player.You || filter.controllerPredicate == ControllerPredicate.ControlledByYou
@@ -2663,6 +2667,23 @@ object CardIntentAnalyzer {
             effect.duration != Duration.EndOfTurn &&
                 TargetPolarityAnalyzer.grantedActivatedPolarity(effect.ability) == TargetPolarity.BENEFICIAL ->
                 analyzeEffect(effect.ability.effect, effect.ability.targetRequirements).tags
+            else -> emptySet()
+        }
+
+        // "Until end of turn, colorless creatures you control gain '{T}: This creature deals damage
+        // equal to its power to target creature'" (Gruesome Slaughter), "Wizards you control gain
+        // '{T}: Counter target spell'" (Psychic Trance): a helpful ability handed to a group of ours
+        // does what the same ability printed on each of them does — removal, a counterspell, a mana
+        // source. A grant to an opponent's group is theirs to use, and reads as nothing of ours. A
+        // turn-long grant still waits on its activation, so its card flow (a granted "{T}: Draw a
+        // card") stays out of the tags the HoldPolicy card-flow windows cash.
+        is GrantActivatedAbilityToGroupEffect -> when {
+            opponentsOnly(effect.filter.baseFilter.controllerPredicate) -> emptySet()
+            effect.ability.isManaAbility -> setOf(IntentTag.RAMP)
+            TargetPolarityAnalyzer.grantedActivatedPolarity(effect.ability) == TargetPolarity.BENEFICIAL ->
+                analyzeEffect(effect.ability.effect, effect.ability.targetRequirements).tags.let {
+                    if (effect.duration == Duration.EndOfTurn) it - setOf(IntentTag.DRAW, IntentTag.TUTOR, IntentTag.CARD_SELECTION) else it
+                }
             else -> emptySet()
         }
 
