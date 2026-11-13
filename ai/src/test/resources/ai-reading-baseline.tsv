@@ -594,6 +594,7 @@ Angelic Accord
 Angelic Arbiter
 Angelic Ascension
 Angelic Blessing
+Angelic Captain
 Angelic Cub
 Angelic Curator
 Angelic Destiny
@@ -2300,6 +2301,7 @@ Brinebarrow Intruder
 Brineborn Cutthroat
 Bring Low
 Bring the Ending
+Bring to Light
 Bring to Trial
 Bringer of the Last Gift
 Brion Stoutarm
@@ -2336,6 +2338,7 @@ Bronze Tablet
 Bronze Walrus
 Bronzehide Lion	intent: PutOntoBattlefieldAsAuraEffect
 Bronzeplate Boar	intent: UnattachEquipmentEffect
+Brood Butcher
 Brood Monitor
 Brood Sliver
 Brood Weaver
@@ -2367,6 +2370,7 @@ Brushstrider
 Brushwagg
 Brutal Cathar
 Brutal Deceiver	intent: Pipeline(TopOfLibrary→?)
+Brutal Expulsion
 Brutal Hordechief	combat: MustBlockGroupEffect; intent: ControlCombatDeclarationsThisTurnEffect; intent: MustBlockGroupEffect; timing: MustBlockGroupEffect
 Brutal Nightstalker
 Brute Force
@@ -2721,6 +2725,7 @@ Cat-Gator
 Cat-Owl
 Cataclysmic Gearhulk
 Catacomb Crocodile
+Catacomb Sifter
 Catacomb Slug
 Catalog
 Catalyst Elemental
@@ -5102,6 +5107,7 @@ Duskwielder
 Duskworker
 Dust Animus
 Dust Bowl
+Dust Stalker
 Dust to Dust
 Dusyut Earthcarver
 Dutiful Griffin
@@ -6623,6 +6629,7 @@ Foreboding Statue
 Forecasting Fortune Teller
 Forensic Gadgeteer
 Forensic Researcher
+Forerunner of Slaughter
 Forerunner of the Coalition
 Forerunner of the Empire
 Forerunner of the Heralds
@@ -8326,6 +8333,7 @@ Herald of Dromoka
 Herald of Eternal Dawn
 Herald of Faith
 Herald of Hadar
+Herald of Kozilek
 Herald of Secret Streams
 Herald of War
 Herald of the Dreadhorde
@@ -9869,6 +9877,7 @@ Kiora of Salt and Sand
 Kiora's Dambreaker
 Kiora's Follower
 Kiora, Behemoth Beckoner
+Kiora, Master of the Depths
 Kiora, Sovereign of the Deep
 Kiora, the Rising Tide
 Kira Nerys, Firebrand
@@ -11002,6 +11011,7 @@ Marble Diamond
 Marble Gargoyle
 Marble Priest
 March from the Black Gate
+March from the Tomb
 March of Burgeoning Life	polarity: Pipeline(library→battlefield)
 March of Otherworldly Light
 March of Reckless Joy
@@ -11868,6 +11878,7 @@ Multiversal Incursion
 Multiversal Passage
 Mummy Paramount
 Munda's Vanguard
+Munda, Ambush Leader
 Munitions Enthusiast
 Muraganda Raceway
 Murasa Brute
@@ -14827,6 +14838,7 @@ Rolling Earthquake
 Rolling Hamsphere
 Rolling Spoil
 Rolling Temblor
+Rolling Thunder
 Romantic Rendezvous
 Romulan Bird-of-Prey
 Romulus
@@ -15765,6 +15777,7 @@ Serpentine Ambush
 Serpentine Basilisk
 Serpentine Curve
 Serpentine Kavu
+Serpentine Spike
 Serra Advocate
 Serra Angel
 Serra Ascendant
@@ -18981,6 +18994,7 @@ Totentanz, Swarm Piper
 Touch of Brilliance
 Touch of Darkness	intent: ForEach>ChangeColorEffect; polarity: ForEachEffect
 Touch of Invisibility
+Touch of the Void
 Touch the Spirit Realm
 Tough Cookie
 Tourach's Chant
@@ -19264,6 +19278,7 @@ Tunneler Wurm
 Tunneling Geopede
 Tura Kennerüd, Skyknight
 Turf Wound	polarity: PreventLandPlaysThisTurnEffect
+Turn Against
 Turn Aside
 Turn Inside Out
 Turn into a Pumpkin
