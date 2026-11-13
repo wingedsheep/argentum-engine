@@ -351,7 +351,9 @@ Akoum Boulderfoot
 Akoum Firebird
 Akoum Flameseeker
 Akoum Hellhound
+Akoum Hellkite
 Akoum Refuge
+Akoum Stonewaker
 Akoum Warrior
 Akroan Crusader
 Akroan Jailer
@@ -1356,6 +1358,7 @@ Baron Strucker, HYDRA Overlord
 Baron, Airship Kingdom
 Barony Vampire
 Barrage Ogre
+Barrage Tyrant
 Barrage of Boulders
 Barrage of Expendables
 Barrels of Blasting Jelly
@@ -3762,6 +3765,7 @@ Cruel Witness
 Cruelclaw's Heist	polarity: Pipeline(hand→exile)
 Crumb and Get It
 Crumble
+Crumble to Dust
 Crumbling Ashes
 Crumbling Necropolis
 Crumbling Vestige
@@ -7978,6 +7982,7 @@ Gutterbones
 Guttersnipe
 Gutwrencher Oni
 Guul Draz Mucklord
+Guul Draz Overseer
 Guy in the Chair
 Gwaihir the Windlord
 Gwen Stacy	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
@@ -10018,6 +10023,7 @@ Kozilek's Channeler
 Kozilek's Command
 Kozilek's Pathfinder
 Kozilek's Return
+Kozilek's Sentinel
 Kozilek's Shrieker
 Kozilek's Translator
 Kozilek's Unsealing
@@ -11650,6 +11656,7 @@ Molten Gatekeeper
 Molten Man, Inferno Incarnate
 Molten Monstrosity
 Molten Note
+Molten Nursery
 Molten Psyche
 Molten Rain
 Molten Ravager
@@ -12143,6 +12150,7 @@ Nether Void
 Netherborn Phalanx
 Nethergoyf
 Nethroi, Apex of Death
+Nettle Drone
 Nettle Guard
 Nettle Swine
 Nettletooth Djinn
@@ -12439,6 +12447,7 @@ Oathkeeper, Takeno's Daisho
 Oathsworn Giant
 Oathsworn Knight
 Oathsworn Vampire
+Ob Nixilis Reignited
 Ob Nixilis's Cruelty
 Ob Nixilis, Captive Kingpin
 Ob Nixilis, the Adversary
@@ -12867,6 +12876,7 @@ Pain Kami
 Pain for All
 Painful Lesson
 Painful Quandary
+Painful Truths
 Painted Bluffs
 Painter's Studio // Defaced Gallery
 Painwracker Oni
@@ -13861,6 +13871,7 @@ Radha, Coalition Warlord
 Radha, Heart of Keld
 Radha, Heir to Keld
 Radiant Destiny
+Radiant Flames
 Radiant Fountain
 Radiant Grace
 Radiant Grove
@@ -14197,6 +14208,7 @@ Reckless Assault
 Reckless Barbarian
 Reckless Bushwhacker
 Reckless Charge
+Reckless Cohort
 Reckless Crew
 Reckless Detective
 Reckless Fireweaver
@@ -16313,6 +16325,7 @@ Skittering Horror
 Skittering Precursor
 Skittering Skirge
 Skittering Surveyor
+Skitterskin
 Skittish Kavu
 Skittish Valesk	intent: FlipCoinEffect
 Skizzik
@@ -17709,6 +17722,7 @@ Swarm Culler
 Swarm Guildmage
 Swarm Intelligence
 Swarm Shambler
+Swarm Surge
 Swarm of Bloodflies
 Swarm of Rats
 Swarm, Being of Bees
@@ -19051,6 +19065,7 @@ Transcendent Envoy
 Transcendent Message
 Transdimensional Bovine
 Transformative Commons
+Transgress the Mind
 Transguild Promenade
 Transit Mage
 Transluminant
