@@ -7635,7 +7635,11 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   reading `DynamicAmount.CastChoice(ChoiceSlot.CHOSEN_NUMBER)` — the number recorded by its
   `EntersWithChoice(ChoiceType.NUMBER, minValue = 1, maxValue = 10)` as-enters replacement.
 - `.manaValueIsOdd()` / `.manaValueIsEven()` — mana-value parity (zero is even). Pair with modal
-  spells whose modes ask the caster to choose a parity (e.g. *Mutinous Massacre*).
+  spells whose modes ask the caster to choose a parity (e.g. *Mutinous Massacre*). Every mana-value
+  predicate (these, `manaValueEquals/AtMost/AtLeast`) reads a face-down object as mana value 0 (it has
+  no mana cost, CR 708.2) in every path — resolution, triggers, a cast proposed face down, and a static
+  ability's affects-filter during projection — so *Void Winnower*'s `CantBlock(GroupFilter(Creature
+  .opponentControls().manaValueIsEven()))` stops a face-down creature from blocking.
 - `.hasXInManaCost()` — the card's **printed** mana cost contains an `{X}` symbol (inspects
   `manaCost.hasX`, not the computed mana value), so a spell cast with X=0 still matches by its
   printed cost. Face-down objects (no mana cost) never match; the cast-record path returns `false`

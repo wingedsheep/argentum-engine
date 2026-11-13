@@ -82,6 +82,15 @@ class CardIntentAnalyzerTest : ScenarioTestBase() {
             intentOf("Jace, Arcane Strategist").tags shouldContain IntentTag.EVASION_GRANT
         }
 
+        test("a lasting can't-block static over opponents' creatures reads as an evasion grant") {
+            // Void Winnower: "your opponents can't block with creatures with even mana values" is a
+            // permanent CantBlock on their side of the table, beside a cast ban.
+            val intent = intentOf("Void Winnower")
+            intent.tags shouldContain IntentTag.EVASION_GRANT
+            intent.tags shouldContain IntentTag.CAST_BAN
+            intent.tags shouldNotContain IntentTag.COMBAT_RESTRICTION
+        }
+
         test("an extra-mana-when-you-tap-a-land static is ramp") {
             // Zendikar Resurgent / Mirari's Wake: "whenever you tap a land for mana, add one mana of
             // any type that land produced" doubles every land you tap.

@@ -1039,6 +1039,13 @@ internal class AffectsFilterResolver(
         return entityPower <= minPower
     }
 
+    /**
+     * The permanent's mana value as a static ability's affects-filter reads it: 0 while face down
+     * (CR 708.2), otherwise the card's own (`{X}` is 0 off the stack, CR 202.3e).
+     */
+    private fun faceDownAwareManaValue(card: CardComponent, isFaceDown: Boolean): Int =
+        if (isFaceDown) 0 else card.manaValue
+
     private fun matchesCardPredicateForProjection(
         predicate: CardPredicate,
         card: CardComponent,
@@ -1118,9 +1125,12 @@ internal class AffectsFilterResolver(
             val toughness = projected?.toughness ?: card.baseStats?.baseToughness ?: 0
             (power + toughness) <= predicate.max
         }
-        is CardPredicate.ManaValueEquals -> card.manaValue == predicate.value
-        is CardPredicate.ManaValueAtMost -> card.manaValue <= predicate.max
-        is CardPredicate.ManaValueAtLeast -> card.manaValue >= predicate.min
+        // A face-down permanent has no mana cost, so its mana value is 0 (CR 708.2) — the same
+        // reading PredicateEvaluator and TriggerMatcher give it (Void Winnower's "can't block with
+        // creatures with even mana values" stops a morph from blocking).
+        is CardPredicate.ManaValueEquals -> faceDownAwareManaValue(card, isFaceDown) == predicate.value
+        is CardPredicate.ManaValueAtMost -> faceDownAwareManaValue(card, isFaceDown) <= predicate.max
+        is CardPredicate.ManaValueAtLeast -> faceDownAwareManaValue(card, isFaceDown) >= predicate.min
         // Entity-relative — layer-projection has no trigger/source context for filter purposes here.
         is CardPredicate.ManaValueAtMostEntity -> false
         is CardPredicate.ManaValueAtMostEntityManaSpent -> false
@@ -1144,8 +1154,8 @@ internal class AffectsFilterResolver(
             val currentPower = projected?.power ?: basePower
             basePower != null && currentPower != null && currentPower > basePower
         }
-        CardPredicate.ManaValueIsEven -> card.manaValue % 2 == 0
-        CardPredicate.ManaValueIsOdd -> card.manaValue % 2 != 0
+        CardPredicate.ManaValueIsEven -> faceDownAwareManaValue(card, isFaceDown) % 2 == 0
+        CardPredicate.ManaValueIsOdd -> faceDownAwareManaValue(card, isFaceDown) % 2 != 0
         CardPredicate.HasXInManaCost -> if (isFaceDown) false else card.manaCost.hasX
         CardPredicate.HasRepeatedManaSymbol -> if (isFaceDown) false else card.manaCost.hasRepeatedSymbol
         is CardPredicate.ManaCostIs -> if (isFaceDown) false else card.manaCost == predicate.manaCost
@@ -1153,7 +1163,8 @@ internal class AffectsFilterResolver(
             // Printed cost's colored pips (CR 107.4e/f); face-down has no mana cost (CR 708.2).
             if (isFaceDown) false
             else card.manaCost.coloredSymbolCount(predicate.colors.toSet()) >= predicate.min
-        is CardPredicate.NameEquals -> card.name == predicate.name
+        // Face-down objects have no name (CR 708.2).
+        is CardPredicate.NameEquals -> !isFaceDown && card.name == predicate.name
         // Room-name distinctness is a resolution-time search filter, not a continuous/static
         // affects-filter concern.
         CardPredicate.NameNotSharedWithControlledRoom -> false
