@@ -20,6 +20,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.decodeFromString
@@ -222,8 +223,28 @@ class MoveUntilSourceLeavesTest : ScenarioTestBase() {
                     game.state.getEntity(giant)!!.get<OwnerComponent>()!!.playerId
             }
             result.state.zoneReturns.size shouldBe 0
-            result.events.filterIsInstance<ZoneChangeEvent>().filter { it.toZone == Zone.BATTLEFIELD }
-                .map { it.transitionCause }.toSet() shouldBe setOf(ZoneTransitionCause.DURATION_RETURN)
+            val returns = result.events.filterIsInstance<ZoneChangeEvent>().filter { it.toZone == Zone.BATTLEFIELD }
+            returns.map { it.transitionCause }.toSet() shouldBe setOf(ZoneTransitionCause.DURATION_RETURN)
+            // One simultaneous entry event, not one card after another.
+            returns.size shouldBe 2
+            returns.map { it.simultaneousEntryGroup }.toSet().single() shouldNotBe null
+        }
+
+        test("a group member controlled by a non-owner returns under its owner's control") {
+            val game = groupBoard()
+            val source = game.findPermanent("Sol Ring")!!
+            val stolen = game.findAllPermanents("Hill Giant").first {
+                game.state.getEntity(it)!!.get<OwnerComponent>()!!.playerId == game.player2Id
+            }
+            val start = game.state.updateEntity(stolen) {
+                it.with(com.wingedsheep.engine.state.components.identity.ControllerComponent(game.player1Id))
+            }
+            start.projectedState.getController(stolen) shouldBe game.player1Id
+            val moved = executor.execute(start, bigCreatures(), context(start, source))
+            moved.state.getExile(game.player2Id) shouldContain stolen
+            val result = zones.moveToZone(moved.state, source, Zone.GRAVEYARD)
+            result.state.getBattlefield() shouldContain stolen
+            result.state.projectedState.getController(stolen) shouldBe game.player2Id
         }
 
         test("a group effect from a source already gone moves nothing") {

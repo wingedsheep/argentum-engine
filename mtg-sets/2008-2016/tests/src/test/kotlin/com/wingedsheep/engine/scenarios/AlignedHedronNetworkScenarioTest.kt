@@ -20,7 +20,9 @@ class AlignedHedronNetworkScenarioTest : ScenarioTestBase() {
         .withPlayers("Player1", "Player2")
         .withCardInHand(1, "Aligned Hedron Network")
         .withCardInHand(1, "Shatter")
+        .withCardInHand(1, "Giant Growth")
         .withLandsOnBattlefield(1, "Mountain", 6)
+        .withLandsOnBattlefield(1, "Forest", 1)
         .withCardOnBattlefield(1, "Craw Wurm")                      // 6/4, your own
         .withCardOnBattlefield(2, "Craw Wurm")                      // 6/4, theirs
         .withCardOnBattlefield(2, "Hill Giant")                     // 3/3, stays
@@ -56,6 +58,22 @@ class AlignedHedronNetworkScenarioTest : ScenarioTestBase() {
             wurms.map { game.state.projectedState.getController(it) }.toSet() shouldBe
                 setOf(game.player1Id, game.player2Id)
             game.state.stack.size shouldBe 0
+        }
+
+        test("power is checked as the ability resolves: a creature pumped to 5 or more is exiled too") {
+            val game = board()
+            val giant = game.findPermanent("Hill Giant")!!
+            game.castSpell(1, "Giant Growth", giant).error shouldBe null // 3/3 -> 6/6 until end of turn
+            game.payIfAsked()
+            game.resolveStack()
+            game.state.projectedState.getPower(giant) shouldBe 6
+
+            game.castSpell(1, "Aligned Hedron Network").error shouldBe null
+            game.payIfAsked()
+            game.resolveStack()
+
+            game.isOnBattlefield("Hill Giant") shouldBe false
+            game.isInExile(2, "Hill Giant") shouldBe true
         }
 
         test("nothing is exiled if the Network leaves before its enters ability resolves") {

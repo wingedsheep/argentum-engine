@@ -5,6 +5,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
+import com.wingedsheep.engine.handlers.effects.ZoneEntryOptions
 import com.wingedsheep.engine.handlers.effects.ZoneReturnService
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.state.GameState
@@ -67,10 +68,11 @@ class MoveUntilSourceLeavesExecutor(private val zones: ZoneTransitionService) : 
         }.toMap()
         if (previousZones.isEmpty()) return EffectResult.success(state)
         val movingRefs = previousZones.keys.mapNotNull { id -> state.objectRef(id)?.let { it to id } }.toMap()
+        val options = ZoneEntryOptions(exiledBy = context.controllerId.takeIf { effect.destination == Zone.EXILE })
         val result = if (previousZones.size == 1) {
-            zones.moveToZone(state, previousZones.keys.single(), effect.destination)
+            zones.moveToZone(state, previousZones.keys.single(), effect.destination, options)
         } else {
-            zones.moveToZoneBatch(state, previousZones.keys.toList(), effect.destination)
+            zones.moveToZoneBatch(state, previousZones.keys.toList(), effect.destination, options)
         }
         val moved = result.transitions.mapNotNull { transition ->
             val oldId = movingRefs[transition.oldObject] ?: return@mapNotNull null
