@@ -929,6 +929,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.VELOCITY,
   // Nazar's lifegain tally: three may be removed when it attacks to draw three and lose 3 life.
   CounterType.FEEDING,
+  // Quarantine Field: enters with X; its entry trigger exiles up to one permanent per counter.
+  CounterType.ISOLATION,
   CounterType.PLUS_ONE_PLUS_TWO,
   CounterType.PLUS_TWO_PLUS_TWO,
   CounterType.MINUS_TWO_MINUS_TWO,

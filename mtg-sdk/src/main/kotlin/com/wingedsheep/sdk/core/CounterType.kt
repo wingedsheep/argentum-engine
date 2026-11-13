@@ -982,6 +982,13 @@ value class CounterType(val name: String) {
          */
         val FEEDING = CounterType("FEEDING")
 
+        /**
+         * Isolation counter (BFZ — Quarantine Field). A pure marker with no inherent rule: the
+         * enchantment enters with X of them, and its entry trigger reads the count as the number
+         * of "up to one target" slots it gets.
+         */
+        val ISOLATION = CounterType("ISOLATION")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -1153,6 +1160,7 @@ value class CounterType(val name: String) {
             UNITY,
             VELOCITY,
             FEEDING,
+            ISOLATION,
         )
 
         /**

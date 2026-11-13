@@ -60,6 +60,10 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.TurnTracker
 import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.scripting.EntersWithExileCounters
+import com.wingedsheep.sdk.scripting.EntersWithCounters
+import com.wingedsheep.sdk.scripting.EntersWithDevour
+import com.wingedsheep.sdk.scripting.EntersWithDynamicCounters
+import com.wingedsheep.sdk.scripting.EntersWithRevealCounters
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -420,6 +424,12 @@ object SynergyAxes {
             if (TargetPolarityAnalyzer.grantedTriggerPolarity(grant.ability) != TargetPolarity.BENEFICIAL) continue
             addAll(effectFeeds(grant.ability.effect, couldBeCreature(grant.filter.baseFilter), grant.ability.allTargetRequirements))
         }
+        // "This creature enters with a +1/+1 counter on it for each color of mana spent to cast it"
+        // (Converge: Tajuru Stalwart, Woodland Wanderer), "enters with two +1/+1 counters", Amplify,
+        // Devour, "each other creature you control enters with an additional +1/+1 counter": the
+        // counters arrive through an as-enters replacement rather than an effect, so the effect
+        // walk above never sees them — but they are +1/+1 counters put down all the same.
+        if (script.replacementEffects.any(::entersWithPlusCounters)) add(SynergyAxis.PLUS_COUNTERS)
         if (script.additionalCosts.any(::sacrifices)) add(SynergyAxis.DEATH)
         // "As an additional cost, discard a card / X cards" bins our cards like a discard effect
         // (Nahiri's Wrath, Channeled Force, Tormenting Voice).
@@ -604,6 +614,15 @@ object SynergyAxes {
                 else -> false
             }
         }
+    }
+
+    /** An as-enters replacement that puts +1/+1 counters on the entering permanent. */
+    private fun entersWithPlusCounters(effect: ReplacementEffect): Boolean = when (effect) {
+        is EntersWithCounters -> effect.counterType == CounterType.PLUS_ONE_PLUS_ONE && effect.count > 0
+        is EntersWithDynamicCounters -> effect.counterType == CounterType.PLUS_ONE_PLUS_ONE
+        is EntersWithRevealCounters -> effect.counterType == CounterType.PLUS_ONE_PLUS_ONE
+        is EntersWithDevour -> effect.counterType == CounterType.PLUS_ONE_PLUS_ONE
+        else -> false
     }
 
     private fun plusCounters(type: CounterType): Set<SynergyAxis> =
