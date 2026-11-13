@@ -2,8 +2,10 @@ package com.wingedsheep.engine.handlers.effects.linkedexile
 
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
+import com.wingedsheep.engine.handlers.effects.ZoneEntryOptions
 import com.wingedsheep.engine.handlers.effects.ZoneReturnService
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.state.GameState
@@ -42,7 +44,11 @@ class MoveUntilSourceLeavesExecutor(private val zones: ZoneTransitionService) : 
         return move(state, effect, context, source, linkTo = sourceId)
     }
 
-    /** Move the target, recording a return for when [anchor]'s battlefield visit ends. */
+    /**
+     * Move the target — or, for an [EffectTarget.GroupRef], every member of the group in one
+     * simultaneous move — recording a return per moved object for when [anchor]'s battlefield
+     * visit ends.
+     */
     private fun move(
         state: GameState,
         effect: MoveUntilSourceLeavesEffect,
@@ -50,26 +56,44 @@ class MoveUntilSourceLeavesExecutor(private val zones: ZoneTransitionService) : 
         anchor: ObjectRef,
         linkTo: EntityId?
     ): EffectResult {
-        val targetId = context.resolveTarget(effect.target, state) ?: return EffectResult.success(state)
-        val previousZone = state.logicalZone(targetId)?.zoneType ?: return EffectResult.success(state)
-        if (previousZone == effect.destination) return EffectResult.success(state)
-        val result = zones.moveToZone(state, targetId, effect.destination)
-        val moved = result.transitions.filter {
-            it.oldObject == state.objectRef(targetId) &&
-                it.cause == com.wingedsheep.engine.core.ZoneTransitionCause.PRIMARY &&
-                it.toZone == effect.destination
-        }.mapNotNull { it.newObject }.filter(result.state::isCurrentObject)
-        if (result.actualDestination != effect.destination || moved.isEmpty()) {
-            return EffectResult.success(result.state, result.events)
+        val ids = when (val target = effect.target) {
+            is EffectTarget.GroupRef ->
+                BattlefieldFilterUtils.resolveGroup(state, target.filter, context, zones.predicateEvaluator)
+            else -> listOfNotNull(context.resolveTarget(target, state))
         }
+        // Each object returns to the zone it left; one already in the destination stays put.
+        val previousZones = ids.mapNotNull { id ->
+            val zone = state.logicalZone(id)?.zoneType ?: return@mapNotNull null
+            if (zone == effect.destination) null else id to zone
+        }.toMap()
+        if (previousZones.isEmpty()) return EffectResult.success(state)
+        val movingRefs = previousZones.keys.mapNotNull { id -> state.objectRef(id)?.let { it to id } }.toMap()
+        val options = ZoneEntryOptions(exiledBy = context.controllerId.takeIf { effect.destination == Zone.EXILE })
+        val result = if (previousZones.size == 1) {
+            zones.moveToZone(state, previousZones.keys.single(), effect.destination, options)
+        } else {
+            zones.moveToZoneBatch(state, previousZones.keys.toList(), effect.destination, options)
+        }
+        val moved = result.transitions.mapNotNull { transition ->
+            val oldId = movingRefs[transition.oldObject] ?: return@mapNotNull null
+            if (transition.cause != com.wingedsheep.engine.core.ZoneTransitionCause.PRIMARY ||
+                transition.toZone != effect.destination
+            ) return@mapNotNull null
+            val newObject = transition.newObject ?: return@mapNotNull null
+            if (!result.state.isCurrentObject(newObject)) null else newObject to previousZones.getValue(oldId)
+        }
+        if (moved.isEmpty()) return EffectResult.success(result.state, result.events)
         // Keep the ordinary linked-exile view for both cards of a departed meld.
         var linked = result.state
         // Only this source's own pile: another anchor's linked abilities must not see the card.
         if (linkTo != null && effect.destination == Zone.EXILE && linked.isCurrentObject(anchor)) {
-            for (card in moved) linked = ZoneMovementUtils.linkExiledToSource(linked, card.entityId, linkTo)
+            for ((card, _) in moved) linked = ZoneMovementUtils.linkExiledToSource(linked, card.entityId, linkTo)
         }
-        val recorded = linked.copy(zoneReturns = linked.zoneReturns + moved.map { ZoneReturn(anchor, it, previousZone) })
-        // Moving the anchor itself can end the duration as part of the initial move.
+        val recorded = linked.copy(
+            zoneReturns = linked.zoneReturns + moved.map { (card, from) -> ZoneReturn(anchor, card, from) }
+        )
+        // Moving the anchor itself (a group that includes the source) ends the duration as part of
+        // the initial move: every object it moved returns at once, the source included.
         val returns = ZoneReturnService.returnDepartedSources(zones, recorded)
         return EffectResult.success(returns.state, result.events + returns.events)
     }

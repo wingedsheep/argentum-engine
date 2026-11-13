@@ -929,6 +929,10 @@ data class MoveTrackedBattlefieldObjectEffect(
  * [anchor] is the permanent whose departure ends the duration: this source by default, or another
  * permanent ("until target enchantment you control leaves the battlefield" — Calix, Destiny's
  * Hand). If the anchor is no longer on the battlefield as the effect resolves, nothing moves.
+ *
+ * [target] is one object, or an [EffectTarget.GroupRef] for "exile all <filter> until …": the
+ * whole group moves in one simultaneous move and every member returns at once (Aligned Hedron
+ * Network). A group that includes the anchor itself ends the duration in the same move.
  */
 @SerialName("MoveUntilSourceLeaves")
 @Serializable

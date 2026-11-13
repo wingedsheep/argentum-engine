@@ -299,6 +299,77 @@
     ]
 }
 
+// Aligned Hedron Network
+{
+    "name": "Aligned Hedron Network",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters, exile all creatures with power 5 or greater until this artifact leaves the battlefield. (Those creatures return under their owners' control.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aligned Hedron Network:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveUntilSourceLeaves",
+                    "target": {
+                        "type": "GroupRef",
+                        "filter": {
+                            "baseFilter": "creature pow>=5"
+                        }
+                    },
+                    "destination": "Exile"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "RARE",
+        "artist": "Richard Wright",
+        "flavorText": "The last hedron slotted into place, locking Ulamog in an infinite loop of binding energy.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c0ef436b-e82e-4e1f-9da0-5e35f0c37bde.jpg?1783938178",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Check the power of each creature as Aligned Hedron Network's ability resolves to determine if it's exiled. It doesn't matter who controls the creature."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If Aligned Hedron Network exiles multiple creatures, those cards all return to the battlefield at the same time."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If Aligned Hedron Network leaves the battlefield before its triggered ability resolves, no creatures will be exiled."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Auras attached to the exiled creatures will be put into their owners' graveyards. Equipment attached to the exiled creatures will become unattached and remain on the battlefield. Any counters on the exiled creatures will cease to exist."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If a creature token is exiled, it ceases to exist. It won't be returned to the battlefield."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "The exiled cards return to the battlefield immediately after Aligned Hedron Network leaves the battlefield. Nothing happens between the two events, including state-based actions."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "In a multiplayer game, if Aligned Hedron Network's owner leaves the game, the exiled cards will return to the battlefield. Because the one-shot effect that returns the cards isn't an ability that goes on the stack, it won't cease to exist along with the leaving player's spells and abilities on the stack."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "In some very rare situations, Aligned Hedron Network may enter the battlefield as a creature with power 5 or greater. If this happens, Aligned Hedron Network will exile itself along with other creatures with power 5 or greater. Those cards will immediately return to the battlefield. If this causes a loop with Aligned Hedron Network continually exiling and returning itself, the game will be a draw unless a player breaks the loop somehow."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Ally Encampment
 {
     "name": "Ally Encampment",

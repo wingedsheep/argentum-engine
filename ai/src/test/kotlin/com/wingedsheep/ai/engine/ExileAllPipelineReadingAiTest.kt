@@ -14,7 +14,7 @@ import io.kotest.matchers.shouldBe
 
 /**
  * "Exile all artifacts your opponents control until this enchantment leaves the battlefield" —
- * `Effects.ExileGroupAndLink`, a battlefield gather moved to exile. The destroy-all and bounce-all
+ * the group form of `Effects.MoveUntilSourceLeaves` (an `EffectTarget.GroupRef` moved to exile). The destroy-all and bounce-all
  * spellings already read as a sweep; unread, the exile-all left Consulate Crackdown a blank
  * enchantment the AI couldn't place.
  */

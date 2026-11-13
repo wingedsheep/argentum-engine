@@ -15002,65 +15002,14 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Gated",
-                    "gate": {
-                        "type": "Gate.WhenCondition",
-                        "condition": {
-                            "type": "SourceInZone",
-                            "zones": [
-                                "Battlefield"
-                            ]
+                    "type": "MoveUntilSourceLeaves",
+                    "target": {
+                        "type": "GroupRef",
+                        "filter": {
+                            "baseFilter": "nonland permanent mv<=2"
                         }
                     },
-                    "then": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "GatherCards",
-                                "source": {
-                                    "type": "BattlefieldMatching",
-                                    "filter": "nonland permanent mv<=2",
-                                    "excludeSelf": true
-                                },
-                                "storeAs": "linked_exile"
-                            },
-                            {
-                                "type": "MoveCollection",
-                                "from": "linked_exile",
-                                "destination": {
-                                    "type": "ToZone",
-                                    "zone": "Exile"
-                                },
-                                "linkToSource": true
-                            }
-                        ]
-                    }
-                }
-            },
-            {
-                "id": "Temporary Lockdown:2",
-                "trigger": {
-                    "type": "ZoneChangeEvent",
-                    "from": "Battlefield"
-                },
-                "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": "FromLinkedExile",
-                            "storeAs": "linked_return"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "linked_return",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Battlefield"
-                            },
-                            "underOwnersControl": true
-                        }
-                    ]
+                    "destination": "Exile"
                 }
             }
         ]

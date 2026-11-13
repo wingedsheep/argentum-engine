@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.aer.cards
 
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -16,10 +15,10 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
  * When this enchantment enters, exile all artifacts your opponents control until this
  * enchantment leaves the battlefield.
  *
- * Same shape as Temporary Lockdown: `ExileGroupAndLink` links the pile to the enchantment and the
- * leaves trigger returns it under its owners' control. The exile is gated on the enchantment still
- * being on the battlefield, since per the ruling nothing is exiled if it has already left by the
- * time its enters ability resolves.
+ * Same shape as Temporary Lockdown: the group form of `MoveUntilSourceLeaves` exiles every
+ * artifact in one move and returns them all under their owners' control the moment the
+ * enchantment leaves — a one-shot return, not a trigger. Nothing is exiled if the enchantment has
+ * already left by the time its enters ability resolves.
  */
 val ConsulateCrackdown = card("Consulate Crackdown") {
     manaCost = "{3}{W}{W}"
@@ -29,17 +28,10 @@ val ConsulateCrackdown = card("Consulate Crackdown") {
 
     triggeredAbility {
         trigger = Triggers.self.enters()
-        effect = Effects.If(
-            condition = Conditions.SourceInZone(Zone.BATTLEFIELD),
-            then = Effects.ExileGroupAndLink(
-                GroupFilter(GameObjectFilter.Artifact.opponentControls())
-            )
+        effect = Effects.MoveUntilSourceLeaves(
+            GroupFilter(GameObjectFilter.Artifact.opponentControls()),
+            Zone.EXILE
         )
-    }
-
-    triggeredAbility {
-        trigger = Triggers.self.leaves()
-        effect = Effects.ReturnLinkedExileUnderOwnersControl()
     }
 
     metadata {
