@@ -1,1 +1,1 @@
-- #<pr> Counts creatures that enter with +1/+1 counters (Converge: Tajuru Stalwart, Woodland Wanderer, Springmantle Cleric; Amplify; Devour) as +1/+1-counter makers, so drafting and deckbuilding pair them with counter payoffs
+- #4649 Counts creatures that enter with +1/+1 counters (Converge: Tajuru Stalwart, Woodland Wanderer, Springmantle Cleric; Amplify; Devour) as +1/+1-counter makers, so drafting and deckbuilding pair them with counter payoffs
