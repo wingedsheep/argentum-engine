@@ -162,6 +162,143 @@
     ]
 }
 
+// Akoum Hellkite
+{
+    "name": "Akoum Hellkite",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nLandfall — Whenever a land you control enters, this creature deals 1 damage to any target. If that land is a Mountain, this creature deals 2 damage instead.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Akoum Hellkite:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "TriggeringEntity",
+                            "filter": "land Mountain"
+                        }
+                    },
+                    "then": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "otherwise": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Landfall — Whenever a land you control enters, this creature deals 1 damage to any target. If that land is a Mountain, this creature deals 2 damage instead."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "rarity": "RARE",
+        "artist": "Jaime Jones",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce837a65-a588-4b50-b298-f4ca37dbd06d.jpg?1783938196"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Akoum Stonewaker
+{
+    "name": "Akoum Stonewaker",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "Landfall — Whenever a land you control enters, you may pay {2}{R}. If you do, create a 3/1 red Elemental creature token with trample and haste. Exile that token at the beginning of the next end step.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Akoum Stonewaker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{2}{R}"
+                        }
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "power": 3,
+                        "toughness": 1,
+                        "colors": [
+                            "RED"
+                        ],
+                        "creatureTypes": [
+                            "Elemental"
+                        ],
+                        "keywords": [
+                            "TRAMPLE",
+                            "HASTE"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/1/0/10cb10f5-e22a-4ccd-a1b0-c6f245b15f64.jpg?1783938120",
+                        "exileAtStep": "END"
+                    }
+                },
+                "descriptionOverride": "Landfall — Whenever a land you control enters, you may pay {2}{R}. If you do, create a 3/1 red Elemental creature token with trample and haste. Exile that token at the beginning of the next end step."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "rarity": "UNCOMMON",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c92ab7b5-6a29-463e-b294-3cb0efaccddb.jpg?1783938195"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Ally Encampment
 {
     "name": "Ally Encampment",
@@ -331,6 +468,88 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Barrage Tyrant
+{
+    "name": "Barrage Tyrant",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "Devoid (This card has no color.)\n{2}{R}, Sacrifice another colorless creature: This creature deals damage equal to the sacrificed creature's power to any target.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Barrage Tyrant:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{R}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        "IsColorless"
+                                    ]
+                                },
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "SacrificedAsCost",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Barrage Tyrant deals damage equal to the sacrificed colorless creature's power to any target."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "RARE",
+        "artist": "Chris Rallis",
+        "flavorText": "Terrible fury. Excellent aim.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/08a83120-c0c5-4277-acae-6ecb6f6bf3e1.jpg?1783938199",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Barrage Tyrant deals the damage, not the sacrificed creature. For example, if the sacrificed creature had lifelink, you won't gain life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -1804,6 +2023,129 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Crumble to Dust
+{
+    "name": "Crumble to Dust",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Devoid (This card has no color.)\nExile target nonbasic land. Search its controller's graveyard, hand, and library for any number of cards with the same name as that land and exile them. Then that player shuffles.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "StoreCardName",
+                    "from": "gathered0",
+                    "storeAs": "cardName1"
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromMultipleZones",
+                        "zones": [
+                            "Graveyard",
+                            "Hand",
+                            "Library"
+                        ],
+                        "player": {
+                            "type": "ControllerOf",
+                            "targetDescription": "target nonbasic land"
+                        },
+                        "filter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "NameEqualsChosen",
+                                    "variableName": "cardName1"
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "gathered3",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered3",
+                    "selection": "ChooseAnyNumber",
+                    "storeSelected": "selected4",
+                    "prompt": "Choose any number of cards with that name to exile",
+                    "selectedLabel": "Exile"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected4",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile",
+                        "player": {
+                            "type": "ControllerOf",
+                            "targetDescription": "target nonbasic land"
+                        }
+                    }
+                },
+                {
+                    "type": "ShuffleLibrary",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": {
+                            "type": "ControllerOf",
+                            "targetDescription": "target nonbasic land"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsLand",
+                            {
+                                "type": "Not",
+                                "predicate": "IsBasicLand"
+                            }
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "UNCOMMON",
+        "artist": "James Paick",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/63352c11-807d-4878-a975-02ef451c3184.jpg?1783938198",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "You may leave any cards with that name in the player's graveyard, hand, or library. You don't have to exile them."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -3901,6 +4243,99 @@
     ]
 }
 
+// Guul Draz Overseer
+{
+    "name": "Guul Draz Overseer",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Vampire",
+    "oracleText": "Flying\nLandfall — Whenever a land you control enters, other creatures you control get +1/+0 until end of turn. If that land is a Swamp, those creatures get +2/+0 until end of turn instead.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Guul Draz Overseer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "TriggeringEntity",
+                            "filter": "land Swamp"
+                        }
+                    },
+                    "then": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you",
+                                "excludeSelf": true
+                            }
+                        },
+                        "body": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "otherwise": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you",
+                                "excludeSelf": true
+                            }
+                        },
+                        "body": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "IterationEntity"
+                        }
+                    }
+                },
+                "descriptionOverride": "Landfall — Whenever a land you control enters, other creatures you control get +1/+0 until end of turn. If that land is a Swamp, those creatures get +2/+0 until end of turn instead."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "RARE",
+        "artist": "Karl Kopinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/9/793bb4e0-8fdd-440e-9e6e-92a899794cae.jpg?1783938201"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Hagra Sharpshooter
 {
     "name": "Hagra Sharpshooter",
@@ -4702,6 +5137,59 @@
     "colorIdentityOverride": []
 }
 
+// Kozilek's Sentinel
+{
+    "name": "Kozilek's Sentinel",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nWhenever you cast a colorless spell, this creature gets +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kozilek's Sentinel:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsColorless"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever you cast a colorless spell, this creature gets +1/+0 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "artist": "Raymond Swanland",
+        "flavorText": "It moves through the tunnels as slowly and surely as the shifting stones.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/786c6a0f-3f75-45ff-aae9-5c866be279d0.jpg?1783938198"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Lantern Scout
 {
     "name": "Lantern Scout",
@@ -5375,6 +5863,59 @@
     ]
 }
 
+// Molten Nursery
+{
+    "name": "Molten Nursery",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Devoid (This card has no color.)\nWhenever you cast a colorless spell, this enchantment deals 1 damage to any target.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Molten Nursery:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsColorless"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you cast a colorless spell, this enchantment deals 1 damage to any target."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "rarity": "UNCOMMON",
+        "artist": "Raymond Swanland",
+        "flavorText": "\"Some detours just aren't worth it.\"\n—Raff Slugeater, goblin shortcutter",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3db8aaf5-e2bf-40ea-bd5d-663017cfd4a6.jpg?1783938198"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Mortuary Mire
 {
     "name": "Mortuary Mire",
@@ -5671,6 +6212,69 @@
     ]
 }
 
+// Nettle Drone
+{
+    "name": "Nettle Drone",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\n{T}: This creature deals 1 damage to each opponent.\nWhenever you cast a colorless spell, untap this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nettle Drone:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsColorless"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "Self",
+                    "tap": false
+                },
+                "descriptionOverride": "Whenever you cast a colorless spell, untap this creature."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Nettle Drone:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "descriptionOverride": "{T}: This creature deals 1 damage to each opponent."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "artist": "Clint Cearley",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e633833a-cc4b-4c8c-a0d3-cd263e09df81.jpg?1783938197"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Nirkana Assassin
 {
     "name": "Nirkana Assassin",
@@ -5770,6 +6374,137 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Ob Nixilis Reignited
+{
+    "name": "Ob Nixilis Reignited",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Legendary Planeswalker — Nixilis",
+    "oracleText": "+1: You draw a card and you lose 1 life.\n−3: Destroy target creature.\n−8: Target opponent gets an emblem with \"Whenever a player draws a card, you lose 2 life.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ob Nixilis Reignited:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You draw a card and you lose 1 life."
+            },
+            {
+                "id": "Ob Nixilis Reignited:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Destroy target creature."
+            },
+            {
+                "id": "Ob Nixilis Reignited:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -8
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "TargetOpponent"
+                    },
+                    "body": {
+                        "type": "CreateGlobalTriggeredAbility",
+                        "ability": {
+                            "id": "Ob Nixilis Reignited:3",
+                            "trigger": {
+                                "type": "DrawEvent",
+                                "player": "Each"
+                            },
+                            "binding": "ANY",
+                            "effect": {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": "Controller"
+                            },
+                            "descriptionOverride": "Whenever a player draws a card, you lose 2 life."
+                        },
+                        "descriptionOverride": "Whenever a player draws a card, you lose 2 life.",
+                        "emblem": true
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Target opponent gets an emblem with \"Whenever a player draws a card, you lose 2 life.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/53b2d6e9-2a43-4ebe-9ae8-944375b46cce.jpg?1783938200",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "The emblem created by Ob Nixilis Reignited's last ability is both owned and controlled by the target opponent. In a multiplayer game, if you own Ob Nixilis Reignited and use him to give one of your opponents an emblem, the emblem remains even if you leave the game."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -6274,6 +7009,40 @@
     ]
 }
 
+// Painful Truths
+{
+    "name": "Painful Truths",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Converge — You draw X cards and lose X life, where X is the number of colors of mana spent to cast this spell.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": "DistinctColorsManaSpent"
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": "DistinctColorsManaSpent",
+                    "target": "Controller"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "rarity": "RARE",
+        "artist": "Winona Nelson",
+        "flavorText": "As the Eldrazi spread, no secret that could give Zendikar's defenders an advantage was considered too dangerous to seek.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/46a3afdb-aeb2-4699-91f9-5c42284b3a4a.jpg?1783938200"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Part the Waterveil
 {
     "name": "Part the Waterveil",
@@ -6601,6 +7370,87 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Radiant Flames
+{
+    "name": "Radiant Flames",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Converge — Radiant Flames deals X damage to each creature, where X is the number of colors of mana spent to cast this spell.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            },
+            "body": {
+                "type": "DealDamage",
+                "amount": "DistinctColorsManaSpent",
+                "target": "IterationEntity"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "151",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "flavorText": "The fires of Zendikar are always hungry, and there is much on which they can feed.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/0/70f4fe69-c541-4320-9074-9c6a3bc70ea3.jpg?1783938193"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Reckless Cohort
+{
+    "name": "Reckless Cohort",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Warrior Ally",
+    "oracleText": "This creature attacks each combat if able unless you control another Ally.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "MustAttack",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Ally",
+                    "negate": true,
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "artist": "Volkan Baǵa",
+        "flavorText": "\"You have a family. Mine died at Sea Gate. You go to yours, and I'll go to mine.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/7/77a4cdec-e5fc-4ea8-a7bc-f1109fadae3c.jpg?1783938192",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Reckless Cohort can attack if you control another Ally. It just isn't forced to."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Reckless Cohort checks whether you control another Ally as attacking creatures are declared. At that time, if you don't, Reckless Cohort attacks if able."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -8134,6 +8984,78 @@
     ]
 }
 
+// Skitterskin
+{
+    "name": "Skitterskin",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nThis creature can't block.\n{1}{B}: Regenerate this creature. Activate only if you control another colorless creature.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Skitterskin:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "Self"
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsColorless"
+                                ]
+                            },
+                            "excludeSelf": true
+                        }
+                    }
+                ]
+            }
+        ],
+        "staticAbilities": [
+            "CantBlock"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "rarity": "UNCOMMON",
+        "artist": "Michael Komarck",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e3cbecdc-bc30-4797-bf6f-a7a61db05b48.jpg?1783938204",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Once you legally activate the ability, it doesn't matter what happens to the other colorless creature. The ability will resolve and create a regeneration shield even if you don't control another colorless creature at that time."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Skitterskin's activated ability doesn't depend on Skitterskin being colorless. If it gains one or more colors, you can still activate the ability if you control another creature that's colorless."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Skyline Cascade
 {
     "name": "Skyline Cascade",
@@ -8706,6 +9628,80 @@
     ]
 }
 
+// Swarm Surge
+{
+    "name": "Swarm Surge",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Devoid (This card has no color.)\nCreatures you control get +2/+0 until end of turn. Colorless creatures you control also gain first strike until end of turn.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsColorless"
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "FIRST_STRIKE",
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "artist": "Svetlin Velinov",
+        "flavorText": "The Eldrazi rampaged across Zendikar in a tide of chittering, heaving flesh.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/3/837287cc-f3a4-4ba7-8518-9b1e4a53acda.jpg?1783938204",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "A colorless creature given first strike by Swarm Surge won't lose first strike if it stops being colorless later in the turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Swell of Growth
 {
     "name": "Swell of Growth",
@@ -9156,6 +10152,85 @@
         "flavorText": "Dust and memory are all that remain in Ulamog's wake.",
         "imageUri": "https://cards.scryfall.io/normal/front/3/9/39d5e3ab-9719-4918-af4f-25bda5401191.jpg?1783938222"
     }
+}
+
+// Transgress the Mind
+{
+    "name": "Transgress the Mind",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Devoid (This card has no color.)\nTarget player reveals their hand. You choose a card from it with mana value 3 or greater and exile that card.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RevealHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "filter": "mv>=3"
+                    },
+                    "storeAs": "chosenCardCandidates"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "chosenCardCandidates",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "chosenCard",
+                    "prompt": "Choose a card with mana value 3 or greater to exile"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "chosenCard",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "UNCOMMON",
+        "artist": "Cynthia Sheppard",
+        "flavorText": "\"Fear of the unknown can be a wonderfully innocent thing, relatively speaking.\"\n—Anowon, the Ruin Sage",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f5742910-3d0f-4710-a5f5-f7a7908833dc.jpg?1783938204"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Tunneling Geopede
