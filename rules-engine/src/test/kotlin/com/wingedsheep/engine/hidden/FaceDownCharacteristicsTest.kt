@@ -14,9 +14,14 @@ import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.CantBlock
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.ModifyStats
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.effects.DistributeCountersFromSelfEffect
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
@@ -36,8 +41,27 @@ class FaceDownCharacteristicsTest : ScenarioTestBase() {
         toughness = 1
     }
 
+    private fun staticEnchantment(name: String, ability: com.wingedsheep.sdk.scripting.StaticAbility) = card(name) {
+        manaCost = "{1}"
+        typeLine = "Enchantment"
+        staticAbility { this.ability = ability }
+    }
+
+    private val evenCantBlock = staticEnchantment(
+        "Test Even Blocker Lock", CantBlock(GroupFilter(GameObjectFilter.Creature.manaValueIsEven()))
+    )
+    private val oddCantBlock = staticEnchantment(
+        "Test Odd Blocker Lock", CantBlock(GroupFilter(GameObjectFilter.Creature.manaValueIsOdd()))
+    )
+    private val bigAnthem = staticEnchantment(
+        "Test Big Anthem", ModifyStats(1, 1, GroupFilter(GameObjectFilter.Creature.manaValueAtLeast(3)))
+    )
+    private val courserAnthem = staticEnchantment(
+        "Test Courser Anthem", ModifyStats(1, 1, GroupFilter(GameObjectFilter.Creature.named("Centaur Courser")))
+    )
+
     init {
-        cardRegistry.register(listOf(legendarySpider))
+        cardRegistry.register(listOf(legendarySpider, evenCantBlock, oddCantBlock, bigAnthem, courserAnthem))
     }
 
     private fun TestGame.turnFaceDown(name: String): EntityId {
@@ -138,6 +162,64 @@ class FaceDownCharacteristicsTest : ScenarioTestBase() {
 
             game.state.activePlayerId shouldBe game.player1Id
             game.state.getEntity(forest)!!.has<TappedComponent>() shouldBe false
+        }
+
+        // A static ability's affects-filter is resolved during projection, which used to read the
+        // card's printed mana value and name under a face-down permanent. Face down it has no mana
+        // cost — mana value 0 — and no name (CR 708.2).
+        fun blockScenario(lock: String, faceDown: Boolean): TestGame {
+            val game = scenario()
+                .withPlayers()
+                .withCardOnBattlefield(1, "Grizzly Bears")
+                .withCardOnBattlefield(2, "Centaur Courser")
+                .withCardOnBattlefield(2, lock)
+                .withActivePlayer(1)
+                .inPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                .build()
+            if (faceDown) game.turnFaceDown("Centaur Courser")
+            game.declareAttackers(mapOf("Grizzly Bears" to 2)).error.shouldBeNull()
+            game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+            return game
+        }
+
+        test("an even-mana-value blocking lock stops a face-down creature, whose mana value is 0") {
+            blockScenario("Test Even Blocker Lock", faceDown = false)
+                .declareBlockers(mapOf("Centaur Courser" to listOf("Grizzly Bears"))).error.shouldBeNull()
+            blockScenario("Test Even Blocker Lock", faceDown = true)
+                .declareBlockers(mapOf("Centaur Courser" to listOf("Grizzly Bears"))).error.shouldNotBeNull()
+        }
+
+        test("an odd-mana-value blocking lock lets a face-down creature block") {
+            blockScenario("Test Odd Blocker Lock", faceDown = false)
+                .declareBlockers(mapOf("Centaur Courser" to listOf("Grizzly Bears"))).error.shouldNotBeNull()
+            blockScenario("Test Odd Blocker Lock", faceDown = true)
+                .declareBlockers(mapOf("Centaur Courser" to listOf("Grizzly Bears"))).error.shouldBeNull()
+        }
+
+        fun anthemScenario(anthem: String): TestGame = scenario()
+            .withPlayers()
+            .withCardOnBattlefield(1, "Centaur Courser")
+            .withCardOnBattlefield(1, "Hill Giant")
+            .withCardOnBattlefield(1, anthem)
+            .withActivePlayer(1)
+            .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+            .build()
+
+        test("a mana-value-3-or-greater anthem skips a face-down creature") {
+            val game = anthemScenario("Test Big Anthem")
+            val giant = game.findPermanent("Hill Giant")!!
+            val courser = game.turnFaceDown("Centaur Courser")
+            game.state.projectedState.getPower(giant) shouldBe 4
+            game.state.projectedState.getPower(courser) shouldBe 2
+            game.state.projectedState.getToughness(courser) shouldBe 2
+        }
+
+        test("an anthem for a named creature skips that card face down") {
+            val game = anthemScenario("Test Courser Anthem")
+            val courser = game.findPermanent("Centaur Courser")!!
+            game.state.projectedState.getPower(courser) shouldBe 4
+            game.turnFaceDown("Centaur Courser")
+            game.state.projectedState.getPower(courser) shouldBe 2
         }
     }
 }

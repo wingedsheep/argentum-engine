@@ -13628,6 +13628,68 @@
     ]
 }
 
+// Void Winnower
+{
+    "name": "Void Winnower",
+    "manaCost": "{9}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "Your opponents can't cast spells with even mana values. (Zero is even.)\nYour opponents can't block with creatures with even mana values.",
+    "creatureStats": {
+        "power": 11,
+        "toughness": 9
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "PlayersCantCastSpells",
+                "spellFilter": {
+                    "cardPredicates": [
+                        "ManaValueIsEven"
+                    ]
+                }
+            },
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "ManaValueIsEven"
+                        ],
+                        "controllerPredicate": "ControlledByOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "rarity": "MYTHIC",
+        "artist": "Chase Stone",
+        "flavorText": "\"Have you ever seen a world fall to its knees? Watch, and learn.\"\n—Ob Nixilis",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8cbedb0a-34ca-4d42-bb43-cbea0f3c6d02.jpg?1783938221",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Effects that increase or reduce the cost to cast a spell don't affect that spell's mana value."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "For spells with {X} in their mana costs, use the value chosen for X to determine if the spell's mana value is even or not. For example, your opponent could cast Endless One (with mana cost {X}) with X equal to 5, but not with X equal to 6."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "For creatures on the battlefield with {X} in their mana costs, the value for X is 0. Mistcutter Hydra (a creature with mana cost {X}{G}) could block, but Endless One could not."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "The mana value of a face-down creature spell or a face-down creature is 0. Void Winnower will stop face-down creature spells from being cast and face-down creatures from blocking."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Volcanic Upheaval
 {
     "name": "Volcanic Upheaval",

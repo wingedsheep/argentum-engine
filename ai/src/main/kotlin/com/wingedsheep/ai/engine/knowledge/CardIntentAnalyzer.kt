@@ -3434,8 +3434,15 @@ object CardIntentAnalyzer {
             else -> emptySet()
         }
         is CantAttack -> neutralizeTags(static.filter)
-        is CantBlock -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION)
-            else neutralizeTags(static.filter)
+        // "Your opponents can't block with creatures with even mana values" (Void Winnower), "creatures
+        // your opponents control can't block": a lasting [CantBlockGroupEffect] on their side of the
+        // table — evasion for every attacker you have, as the one-shot form reads.
+        is CantBlock -> when {
+            static.filter.scope == Scope.Self -> setOf(IntentTag.COMBAT_RESTRICTION)
+            static.filter.scope == Scope.Battlefield && opponentsOnly(static.filter.baseFilter.controllerPredicate) ->
+                setOf(IntentTag.EVASION_GRANT)
+            else -> neutralizeTags(static.filter)
+        }
         is CantAttackUnlessCoAttacker -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
         // "This creature can't attack unless you control an artifact" (Desperate Castaways, Gadrak):
         // a condition on its own attacks — the same drawback on the body as needing a co-attacker.
