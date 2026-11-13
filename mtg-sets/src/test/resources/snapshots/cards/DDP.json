@@ -70,6 +70,69 @@
     ]
 }
 
+// Forerunner of Slaughter
+{
+    "name": "Forerunner of Slaughter",
+    "manaCost": "{B}{R}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\n{1}: Target colorless creature gains haste until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Forerunner of Slaughter:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsColorless"
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{1}: Target colorless creature gains haste until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "UNCOMMON",
+        "artist": "James Zapata",
+        "flavorText": "\"While we delay, they're on the move. They will not wait as we bicker. We are losing this war by moments as our goal slips beyond our reach.\"\n—Gideon Jura",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/195b867e-41ca-48af-bbd2-5e2c97411752.jpg?1783938236"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Retreat to Kazandu
 {
     "name": "Retreat to Kazandu",
