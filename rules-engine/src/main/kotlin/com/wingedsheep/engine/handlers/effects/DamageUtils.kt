@@ -1625,7 +1625,11 @@ object DamageUtils {
                 mod is SerializableModification.PreventAllDamageTo &&
                     (!mod.combatOnly || isCombatDamage) &&
                     targetId in it.effect.affectedEntities &&
-                    (!mod.onlyCausedByObjectTargetingIt || resolvingObjectTargets(state, targetId))
+                    (!mod.onlyCausedByObjectTargetingIt || resolvingObjectTargets(state, targetId)) &&
+                    // Fail closed on an unidentifiable source, like the recipient-group shield.
+                    (mod.sourceFilter == null || sourceId != null && predicateEvaluator.matches(
+                        state, state.projectedState, sourceId, mod.sourceFilter,
+                        PredicateContext(controllerId = it.controllerId, sourceId = it.sourceId)))
             }) {
             return PreventionShieldResult(state, 0)
         }

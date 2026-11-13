@@ -594,7 +594,8 @@ object DamageReplacementChain {
 
                 }
                 is SerializableModification.PreventAllDamageTo -> if (targetMatches && (!mod.combatOnly || d.isCombatDamage) &&
-                    (!mod.onlyCausedByObjectTargetingIt || DamageUtils.resolvingObjectTargets(state, d.targetId))) preventAll()
+                    (!mod.onlyCausedByObjectTargetingIt || DamageUtils.resolvingObjectTargets(state, d.targetId)) &&
+                    (mod.sourceFilter == null || sourceMatches(floating, mod.sourceFilter!!))) preventAll()
                 is SerializableModification.PreventAllDamageToGroup -> if ((!mod.combatOnly || d.isCombatDamage) &&
                     (mod.includesController && d.targetId == floating.controllerId || mod.filter != null && d.targetId in state.getBattlefield() &&
                         evaluator.matches(viewState, projected, d.targetId, mod.filter!!, PredicateContext(controllerId = floating.controllerId))) &&
