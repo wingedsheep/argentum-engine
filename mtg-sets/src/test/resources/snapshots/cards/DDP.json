@@ -1,3 +1,75 @@
+// Dominator Drone
+{
+    "name": "Dominator Drone",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nIngest (Whenever this creature deals combat damage to a player, that player exiles the top card of their library.)\nWhen this creature enters, if you control another colorless creature, each opponent loses 2 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEVOID",
+        "INGEST"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dominator Drone:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsColorless"
+                        ]
+                    },
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "artist": "James Zapata",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d9f48118-243b-4780-98a3-389f59e1b5b0.jpg?1783938241",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Dominator Drone's last ability checks to see if you control another colorless creature at the moment it enters the battlefield. If you don't, the ability won't trigger at all. If you do, the ability will check again as it tries to resolve. If you no longer control another colorless creature, the ability will be removed from the stack and have no effect."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "The card exiled by the ingest ability is exiled face up."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If the player has no cards in their library when the ingest ability resolves, nothing happens. That player won't lose the game (until they have to draw a card from an empty library)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Retreat to Kazandu
 {
     "name": "Retreat to Kazandu",

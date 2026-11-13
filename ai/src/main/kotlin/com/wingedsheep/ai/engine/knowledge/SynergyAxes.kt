@@ -43,7 +43,11 @@ import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.CreateGlobalTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
+import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
+import com.wingedsheep.sdk.scripting.effects.IterationSpace
+import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SurveilEffect
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.targets.TargetObject
@@ -213,6 +217,13 @@ object SynergyAxes {
                         script.replacementEffects.any(::processes)
                 }
             ) add(SynergyAxis.OPPONENT_EXILE)
+            // So does any effect that gathers from an opponent's exile — a processor trigger's "you
+            // may put a card an opponent owns from exile into that player's graveyard. If you do, …"
+            // (Wasteland Strangler, Ruin Processor), Ashiok's "cast spells from among cards your
+            // opponents own from exile": with their exile empty, the pick finds nothing.
+            if (scripts.any { script -> EffectWalker.slots(script).any { gathersOpponentExile(it.effect) } }) {
+                add(SynergyAxis.OPPONENT_EXILE)
+            }
             // Carrying counters from one permanent to another — The Ozolith banking a leaving
             // creature's counters and moving them on, Essence Channeler's "put its counters on target
             // creature you control", Aetherborn Marauder gathering them from your other permanents —
@@ -420,10 +431,22 @@ object SynergyAxes {
         creatureSource: Boolean,
         requirements: List<TargetRequirement> = emptyList(),
     ): Set<SynergyAxis> = buildSet {
-        for (leaf in EffectWalker.leaves(effect)) {
+        val leaves = EffectWalker.leaves(effect)
+        val opponentsCards = opponentOwnedCollections(leaves)
+        for (leaf in leaves) {
             // "Put a +1/+1 counter on each other creature you control" is a ForEach whose body is
             // the feeding leaf; the walk stops at ForEach bodies, so open them here.
             if (leaf is ForEachEffect) {
+                // "Each opponent discards a card" (Mind Raker) runs its body as each opponent, with
+                // `Player.You` rebound to them: what it bins is theirs, not ours. Only what the body
+                // makes for the source's controller by name feeds us — "for each opponent, create a
+                // 1/1 Human" under `ControllerOfSource` (Adeline, Resplendent Cathar).
+                if ((leaf.space as? IterationSpace.Players)?.players in CardIntentAnalyzer.OPPONENT_PLAYERS) {
+                    for (gift in EffectWalker.leaves(leaf.body).filter(CardIntentAnalyzer::giftsTheSourceController)) {
+                        addAll(effectFeeds(gift, creatureSource, requirements))
+                    }
+                    continue
+                }
                 addAll(effectFeeds(leaf.body, creatureSource, requirements))
                 continue
             }
@@ -466,7 +489,10 @@ object SynergyAxes {
             // The reaction a prevention shield carries ("for each 1 damage prevented this way,
             // create a 2/1 Inkling", Inkshield) produces what it does when the shield fires.
             if (leaf is PreventDamageEffect) leaf.onPrevented?.let { addAll(effectFeeds(it, creatureSource)) }
-            addAll(leafFeeds(leaf))
+            // A processor's "put a card an opponent owns from exile into that player's graveyard" is
+            // written as a move to our graveyard, but a card always goes to its owner's: it stocks
+            // theirs, not ours.
+            if (!(leaf is MoveCollectionEffect && leaf.from in opponentsCards)) addAll(leafFeeds(leaf))
             val tags = CardIntentAnalyzer.analyzeEffect(leaf).tags
             if (IntentTag.LIFEGAIN in tags) add(SynergyAxis.LIFEGAIN)
             if (IntentTag.TOKEN_MAKER in tags) add(SynergyAxis.TOKENS)
@@ -524,6 +550,31 @@ object SynergyAxes {
             }
         }
         else -> emptySet()
+    }
+
+    /** Whether [effect] gathers cards from an opponent's exile ([CardSource.FromZone]), gates opened. */
+    private fun gathersOpponentExile(effect: Effect): Boolean =
+        CardIntentAnalyzer.gateInteriorLeaves(effect).any { leaf ->
+            val source = (leaf as? GatherCardsEffect)?.source as? CardSource.FromZone
+            source != null && source.zone == Zone.EXILE && source.player in CardIntentAnalyzer.OPPONENT_PLAYERS
+        }
+
+    /**
+     * The pipeline collections among [leaves] that hold cards an opponent owns: gathered from an
+     * opponent's zone, and every selection or filter taken from one.
+     */
+    private fun opponentOwnedCollections(leaves: List<Effect>): Set<String> {
+        val names = HashSet<String>()
+        for (leaf in leaves) when (leaf) {
+            is GatherCardsEffect ->
+                if ((leaf.source as? CardSource.FromZone)?.player in CardIntentAnalyzer.OPPONENT_PLAYERS) names += leaf.storeAs
+            is SelectFromCollectionEffect ->
+                if (leaf.from in names) names += listOfNotNull(leaf.storeSelected, leaf.storeRemainder)
+            is FilterCollectionEffect ->
+                if (leaf.from in names) names += listOfNotNull(leaf.storeMatching, leaf.storeNonMatching)
+            else -> Unit
+        }
+        return names
     }
 
     private fun carriesCounters(effect: Effect): Boolean = EffectWalker.leaves(effect).any {

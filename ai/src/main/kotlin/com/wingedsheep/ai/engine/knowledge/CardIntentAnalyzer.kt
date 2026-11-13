@@ -1932,7 +1932,8 @@ object CardIntentAnalyzer {
     /** Whether an iteration over [players] visits the ability's controller. */
     private fun includesYou(players: Player): Boolean = players !in OPPONENT_PLAYERS
 
-    private val OPPONENT_PLAYERS: Set<Player> = setOf(
+    /** The players that are always an opponent of the ability's controller; shared with [SynergyAxes]. */
+    internal val OPPONENT_PLAYERS: Set<Player> = setOf(
         Player.EachOpponent, Player.AnOpponent, Player.TargetOpponent, Player.ChosenOpponent,
         Player.DefendingPlayer, Player.EachDefendingPlayer, Player.EachAttackedPlayer,
     )
@@ -2880,7 +2881,7 @@ object CardIntentAnalyzer {
      * card" for each opponent who didn't discard (Garruk, Veiled Butcher). Inside an iteration
      * over players `you` is rebound to the player visited, so only this spelling reaches us.
      */
-    private fun giftsTheSourceController(leaf: Effect): Boolean {
+    internal fun giftsTheSourceController(leaf: Effect): Boolean {
         val recipient = when (leaf) {
             is DrawCardsEffect -> leaf.target
             is GainLifeEffect -> leaf.target
