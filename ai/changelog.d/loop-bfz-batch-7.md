@@ -1,0 +1,1 @@
+- #TBD The AI reads an opponent exiling permanents of their choosing (Bane of Bala Ged) as exile removal and an activated ability granted to a group of its creatures (Gruesome Slaughter) as what that ability does, and counts any effect that exiles an opponent's cards (Sire of Stagnation, Oblivion Sower) as fuel for processors.

@@ -28,6 +28,7 @@ import com.wingedsheep.sdk.scripting.effects.MoveCountersEachKindMissingEffect
 import com.wingedsheep.sdk.scripting.effects.MoveChosenCountersToTargetEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCountersEffect
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CopyEachSpellCastEffect
 import com.wingedsheep.sdk.scripting.events.SpellCastPredicate
 import com.wingedsheep.sdk.scripting.effects.CopyEachTargetSpellEffect
@@ -51,6 +52,7 @@ import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SurveilEffect
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.targets.TargetSpellOrPermanent
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
@@ -98,8 +100,9 @@ enum class SynergyAxis {
 
     /**
      * Cards your opponents own in exile (Battle for Zendikar's ingest/processor pair). Fed by ingest
-     * (each hit exiles the top card of the damaged player's library) and by exile removal aimed at
-     * their permanents; cashed in by the *processor* cost — "put a card an opponent owns from exile
+     * (each hit exiles the top card of the damaged player's library), by exile removal aimed at
+     * their permanents, and by any effect that exiles cards they own (Sire of Stagnation's "that
+     * player exiles the top two cards of their library"); cashed in by the *processor* cost — "put a card an opponent owns from exile
      * into that player's graveyard" (Cryptic Cruiser, Processor Assault) — which can't be paid with
      * nothing in their exile.
      */
@@ -259,6 +262,11 @@ object SynergyAxes {
             if (Keyword.INGEST in card.keywords ||
                 IntentTag.EXILE_REMOVAL in CardIntentAnalyzer.analyze(card).tags
             ) add(SynergyAxis.OPPONENT_EXILE)
+            // So does any effect that moves cards an opponent owns into exile, whoever picks them:
+            // "that player exiles the top two cards of their library" (Sire of Stagnation), "target
+            // opponent exiles the top four" (Oblivion Sower), "defending player exiles two
+            // permanents they control" (Bane of Bala Ged).
+            if (scripts.any(::exilesOpponentsCards)) add(SynergyAxis.OPPONENT_EXILE)
             // Awaken (CR 702.113): the awakened land gets N +1/+1 counters. The ability is derived
             // from the keyword, not written into the spell's script, so the effect walk misses it.
             if (card.keywordAbilities.any { it is KeywordAbility.Awaken }) {
@@ -568,6 +576,71 @@ object SynergyAxes {
             val source = (leaf as? GatherCardsEffect)?.source as? CardSource.FromZone
             source != null && source.zone == Zone.EXILE && source.player in CardIntentAnalyzer.OPPONENT_PLAYERS
         }
+
+    /** Whether any of [script]'s spell, triggered or activated effects exiles cards an opponent owns. */
+    private fun exilesOpponentsCards(script: CardScript): Boolean =
+        script.spellEffect?.let { exilesOpponentsCards(it, script.targetRequirements, triggeredByOpponent = false) } == true ||
+            script.triggeredAbilities.any {
+                exilesOpponentsCards(it.effect, it.allTargetRequirements, watchesOpponents(it.trigger))
+            } ||
+            script.activatedAbilities.any { exilesOpponentsCards(it.effect, it.targetRequirements, triggeredByOpponent = false) }
+
+    /**
+     * Whether [effect] gathers cards from an opponent's library or board — an opponent named
+     * outright, a target-opponent slot, or the controller of a triggering object only an opponent
+     * can control ([triggeredByOpponent]) — and moves them, or the ones picked from among them, into
+     * exile. Cards already in exile (a processor's pick) are spent, not stocked.
+     */
+    private fun exilesOpponentsCards(
+        effect: Effect,
+        requirements: List<TargetRequirement>,
+        triggeredByOpponent: Boolean,
+        youAreAnOpponent: Boolean = false,
+    ): Boolean {
+        fun isOpponent(player: Player): Boolean = when (player) {
+            in CardIntentAnalyzer.OPPONENT_PLAYERS -> true
+            Player.You -> youAreAnOpponent
+            is Player.ContextPlayer -> requirements.getOrNull(player.index) is TargetOpponent
+            is Player.BoundVariable -> requirements.firstOrNull { it.id == player.name } is TargetOpponent
+            Player.ControllerOfTriggeringEntity -> triggeredByOpponent
+            else -> false
+        }
+        val leaves = CardIntentAnalyzer.gateInteriorLeaves(effect)
+        val theirs = HashSet<String>()
+        for (leaf in leaves) when (leaf) {
+            // "Each opponent exiles the top card of their library" (Fathom Feeder) runs its body as
+            // each opponent, with `Player.You` rebound to them.
+            is ForEachEffect ->
+                if ((leaf.space as? IterationSpace.Players)?.players in CardIntentAnalyzer.OPPONENT_PLAYERS &&
+                    exilesOpponentsCards(leaf.body, requirements, triggeredByOpponent, youAreAnOpponent = true)
+                ) return true
+            is GatherCardsEffect -> {
+                val player = when (val source = leaf.source) {
+                    is CardSource.TopOfLibrary -> source.player
+                    is CardSource.FromZone -> source.player.takeIf { source.zone != Zone.EXILE }
+                    is CardSource.ControlledPermanents -> source.player
+                    else -> null
+                }
+                if (player != null && isOpponent(player)) theirs += leaf.storeAs
+            }
+            is SelectFromCollectionEffect ->
+                if (leaf.from in theirs) theirs += listOfNotNull(leaf.storeSelected, leaf.storeRemainder)
+            is FilterCollectionEffect ->
+                if (leaf.from in theirs) theirs += listOfNotNull(leaf.storeMatching, leaf.storeNonMatching)
+            else -> Unit
+        }
+        return leaves.any { leaf ->
+            leaf is MoveCollectionEffect && leaf.from in theirs &&
+                (leaf.destination as? CardDestination.ToZone)?.zone == Zone.EXILE
+        }
+    }
+
+    /** "Whenever a land an opponent controls enters": the triggering object is always an opponent's. */
+    private fun watchesOpponents(pattern: EventPattern): Boolean = when (pattern) {
+        is EventPattern.ZoneChangeEvent -> opponents(pattern.filter)
+        is EventPattern.PermanentsEnteredEvent -> opponents(pattern.filter)
+        else -> false
+    }
 
     /**
      * The pipeline collections among [leaves] that hold cards an opponent owns: gathered from an

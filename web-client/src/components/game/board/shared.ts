@@ -931,6 +931,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.FEEDING,
   // Quarantine Field: enters with X; its entry trigger exiles up to one permanent per counter.
   CounterType.ISOLATION,
+  // Prism Array: enters with one per color spent (converge); remove one to tap target creature.
+  CounterType.CRYSTAL,
   CounterType.PLUS_ONE_PLUS_TWO,
   CounterType.PLUS_TWO_PLUS_TWO,
   CounterType.MINUS_TWO_MINUS_TWO,
