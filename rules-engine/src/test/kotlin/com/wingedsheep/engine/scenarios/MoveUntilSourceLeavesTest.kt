@@ -14,7 +14,9 @@ import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.MoveUntilSourceLeavesEffect
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
@@ -192,7 +194,88 @@ class MoveUntilSourceLeavesTest : ScenarioTestBase() {
             result.state.getBattlefield() shouldContain victim
             result.state.zoneReturns.size shouldBe 0
         }
+        // "Exile all <filter> until this leaves the battlefield" — the GroupRef form (Aligned Hedron Network).
+        test("a group moves in one simultaneous move, whoever controls each member, and links every card") {
+            val game = groupBoard()
+            val source = game.findPermanent("Sol Ring")!!
+            val giants = game.findAllPermanents("Hill Giant")
+            val bears = game.findPermanent("Grizzly Bears")!!
+            val moved = executor.execute(game.state, bigCreatures(), context(game.state, source))
+            for (giant in giants) moved.state.getBattlefield().contains(giant) shouldBe false
+            moved.state.getExile(game.player1Id) shouldContain giants.first { game.state.getEntity(it)!!.get<OwnerComponent>()!!.playerId == game.player1Id }
+            moved.state.getExile(game.player2Id) shouldContain giants.first { game.state.getEntity(it)!!.get<OwnerComponent>()!!.playerId == game.player2Id }
+            moved.state.getBattlefield() shouldContain bears
+            moved.state.zoneReturns.size shouldBe 2
+            moved.state.getEntity(source)!!.get<LinkedExileComponent>()!!.exiledIds.toSet() shouldBe giants.toSet()
+            moved.events.filterIsInstance<ZoneChangeEvent>().count { it.toZone == Zone.EXILE } shouldBe 2
+        }
+
+        test("every member of the group returns at once, under its owner's control, when the source leaves") {
+            val game = groupBoard()
+            val source = game.findPermanent("Sol Ring")!!
+            val giants = game.findAllPermanents("Hill Giant")
+            val moved = executor.execute(game.state, bigCreatures(), context(game.state, source))
+            val result = zones.moveToZone(moved.state, source, Zone.GRAVEYARD)
+            for (giant in giants) {
+                result.state.getBattlefield() shouldContain giant
+                result.state.projectedState.getController(giant) shouldBe
+                    game.state.getEntity(giant)!!.get<OwnerComponent>()!!.playerId
+            }
+            result.state.zoneReturns.size shouldBe 0
+            result.events.filterIsInstance<ZoneChangeEvent>().filter { it.toZone == Zone.BATTLEFIELD }
+                .map { it.transitionCause }.toSet() shouldBe setOf(ZoneTransitionCause.DURATION_RETURN)
+        }
+
+        test("a group effect from a source already gone moves nothing") {
+            val game = groupBoard()
+            val source = game.findPermanent("Sol Ring")!!
+            val captured = context(game.state, source)
+            val gone = zones.moveToZone(game.state, source, Zone.GRAVEYARD).state
+            val result = executor.execute(gone, bigCreatures(), captured)
+            for (giant in game.findAllPermanents("Hill Giant")) result.state.getBattlefield() shouldContain giant
+            result.state.zoneReturns.size shouldBe 0
+            result.events.size shouldBe 0
+        }
+
+        test("a group that includes the source exiles it with the rest, and everything returns immediately") {
+            val game = groupBoard()
+            val source = game.findPermanent("Sol Ring")!!
+            val giants = game.findAllPermanents("Hill Giant")
+            val effect = MoveUntilSourceLeavesEffect(
+                EffectTarget.GroupRef(GroupFilter(GameObjectFilter.Artifact or GameObjectFilter.Creature.powerAtLeast(3))),
+                Zone.EXILE
+            )
+            val result = executor.execute(game.state, effect, context(game.state, source))
+            result.state.getBattlefield() shouldContain source
+            for (giant in giants) result.state.getBattlefield() shouldContain giant
+            result.state.zoneReturns.size shouldBe 0
+            result.events.filterIsInstance<ZoneChangeEvent>().count { it.toZone == Zone.EXILE } shouldBe 3
+            result.events.filterIsInstance<ZoneChangeEvent>().count { it.toZone == Zone.BATTLEFIELD } shouldBe 3
+        }
+
+        test("an empty group moves nothing") {
+            val game = board()
+            val source = game.findPermanent("Sol Ring")!!
+            val effect = MoveUntilSourceLeavesEffect(
+                EffectTarget.GroupRef(GroupFilter(GameObjectFilter.Creature.powerAtLeast(5))), Zone.EXILE
+            )
+            val result = executor.execute(game.state, effect, context(game.state, source))
+            result.state shouldBe game.state
+            result.events.size shouldBe 0
+        }
     }
+
+    private fun bigCreatures() = MoveUntilSourceLeavesEffect(
+        EffectTarget.GroupRef(GroupFilter(GameObjectFilter.Creature.powerAtLeast(3))), Zone.EXILE
+    )
+
+    private fun groupBoard() = scenario().withPlayers()
+        .withCardOnBattlefield(1, "Sol Ring")
+        .withCardOnBattlefield(1, "Hill Giant")
+        .withCardOnBattlefield(2, "Hill Giant")
+        .withCardOnBattlefield(2, "Grizzly Bears")
+        .withCardInLibrary(1, "Island")
+        .withCardInLibrary(2, "Island").build()
 
     private fun context(state: GameState, source: com.wingedsheep.sdk.model.EntityId) = EffectContext(
         sourceId = source,

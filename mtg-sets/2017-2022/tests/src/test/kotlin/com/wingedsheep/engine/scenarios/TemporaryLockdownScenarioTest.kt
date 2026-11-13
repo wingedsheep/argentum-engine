@@ -63,7 +63,7 @@ class TemporaryLockdownScenarioTest : ScenarioTestBase() {
                 val lockdown = game.findPermanent("Temporary Lockdown")!!
                 game.castSpell(1, "Disenchant", lockdown).error shouldBe null
                 game.payIfAsked()
-                game.resolveStack() // Disenchant, then the leaves-the-battlefield return
+                game.resolveStack() // Disenchant; the cards return the moment the enchantment leaves
 
                 game.isInGraveyard(1, "Temporary Lockdown") shouldBe true
                 withClue("the exiled cards return under their owners' control") {

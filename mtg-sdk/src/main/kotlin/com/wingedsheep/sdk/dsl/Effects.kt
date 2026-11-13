@@ -1251,6 +1251,14 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.MoveUntilSourceLeavesEffect(target, destination)
 
     /**
+     * "Exile all <filter> until this leaves the battlefield": every matching permanent moves in one
+     * simultaneous move, and they all return at once when this source leaves (Aligned Hedron
+     * Network, Consulate Crackdown). If the source already left, nothing moves.
+     */
+    fun MoveUntilSourceLeaves(group: GroupFilter, destination: Zone): Effect =
+        MoveUntilSourceLeaves(EffectTarget.GroupRef(group), destination)
+
+    /**
      * Move out of a zone and return immediately when [anchor] — another permanent, usually a
      * target — leaves the battlefield ("exile target creature until target enchantment you
      * control leaves the battlefield"). Nothing moves if the anchor is already gone.

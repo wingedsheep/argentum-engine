@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.eoe.cards
 
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
@@ -37,29 +36,22 @@ val PinnacleStarcage = card("Pinnacle Starcage") {
         // CardPredicate.Or plus an AND-ed ManaValueAtMost -- equivalent to
         // `GameObjectFilter.Artifact or GameObjectFilter.Creature` then `.manaValueAtMost(2)`,
         // since the `or` infix produces a single CardPredicate.Or that a trailing card
-        // predicate AND-conjoins. Gated on the source still being on the battlefield: the group
-        // pipeline has no built-in "until" gate, and per the ruling nothing is exiled if the
-        // Starcage has already left by the time this resolves.
-        effect = Effects.If(
-            condition = Conditions.SourceInZone(Zone.BATTLEFIELD),
-            then = Effects.ExileGroupAndLink(
-                GroupFilter(
-                    GameObjectFilter(
-                        cardPredicates = listOf(
-                            CardPredicate.Or(
-                                listOf(CardPredicate.IsArtifact, CardPredicate.IsCreature)
-                            ),
-                            CardPredicate.ManaValueAtMost(2)
-                        )
+        // predicate AND-conjoins. The group moves in one simultaneous move and returns the
+        // moment the Starcage leaves; nothing is exiled if it has already left by the time this
+        // resolves.
+        effect = Effects.MoveUntilSourceLeaves(
+            GroupFilter(
+                GameObjectFilter(
+                    cardPredicates = listOf(
+                        CardPredicate.Or(
+                            listOf(CardPredicate.IsArtifact, CardPredicate.IsCreature)
+                        ),
+                        CardPredicate.ManaValueAtMost(2)
                     )
                 )
-            )
+            ),
+            Zone.EXILE
         )
-    }
-
-    triggeredAbility {
-        trigger = Triggers.self.leaves()
-        effect = Effects.ReturnLinkedExileUnderOwnersControl()
     }
 
     activatedAbility {

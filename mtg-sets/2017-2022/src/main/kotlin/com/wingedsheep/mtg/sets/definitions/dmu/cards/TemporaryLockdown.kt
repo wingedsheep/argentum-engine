@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.dmu.cards
 
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -16,10 +15,10 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
  * When this enchantment enters, exile each nonland permanent with mana value 2 or less until this
  * enchantment leaves the battlefield.
  *
- * `ExileGroupAndLink` links the pile to the enchantment; the leaves trigger returns it under its
- * owners' control. The exile is gated on the enchantment still being on the battlefield: the group
- * pipeline has no built-in "until" gate, and per the ruling nothing is exiled if Temporary Lockdown
- * has already left by the time its enters ability resolves.
+ * The group form of `MoveUntilSourceLeaves` exiles the pile in one move and returns it under its
+ * owners' control the moment the enchantment leaves (a one-shot return, not a trigger). Per the
+ * ruling nothing is exiled if Temporary Lockdown has already left by the time its enters ability
+ * resolves.
  */
 val TemporaryLockdown = card("Temporary Lockdown") {
     manaCost = "{1}{W}{W}"
@@ -29,17 +28,10 @@ val TemporaryLockdown = card("Temporary Lockdown") {
 
     triggeredAbility {
         trigger = Triggers.self.enters()
-        effect = Effects.If(
-            condition = Conditions.SourceInZone(Zone.BATTLEFIELD),
-            then = Effects.ExileGroupAndLink(
-                GroupFilter(GameObjectFilter.NonlandPermanent.manaValueAtMost(2))
-            )
+        effect = Effects.MoveUntilSourceLeaves(
+            GroupFilter(GameObjectFilter.NonlandPermanent.manaValueAtMost(2)),
+            Zone.EXILE
         )
-    }
-
-    triggeredAbility {
-        trigger = Triggers.self.leaves()
-        effect = Effects.ReturnLinkedExileUnderOwnersControl()
     }
 
     metadata {

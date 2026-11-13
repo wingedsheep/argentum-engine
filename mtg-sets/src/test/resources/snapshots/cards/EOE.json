@@ -11252,71 +11252,20 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Gated",
-                    "gate": {
-                        "type": "Gate.WhenCondition",
-                        "condition": {
-                            "type": "SourceInZone",
-                            "zones": [
-                                "Battlefield"
-                            ]
+                    "type": "MoveUntilSourceLeaves",
+                    "target": {
+                        "type": "GroupRef",
+                        "filter": {
+                            "baseFilter": "artifact|creature mv<=2"
                         }
                     },
-                    "then": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "GatherCards",
-                                "source": {
-                                    "type": "BattlefieldMatching",
-                                    "filter": "artifact|creature mv<=2",
-                                    "excludeSelf": true
-                                },
-                                "storeAs": "linked_exile"
-                            },
-                            {
-                                "type": "MoveCollection",
-                                "from": "linked_exile",
-                                "destination": {
-                                    "type": "ToZone",
-                                    "zone": "Exile"
-                                },
-                                "linkToSource": true
-                            }
-                        ]
-                    }
-                }
-            },
-            {
-                "id": "Pinnacle Starcage:2",
-                "trigger": {
-                    "type": "ZoneChangeEvent",
-                    "from": "Battlefield"
-                },
-                "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": "FromLinkedExile",
-                            "storeAs": "linked_return"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "linked_return",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Battlefield"
-                            },
-                            "underOwnersControl": true
-                        }
-                    ]
+                    "destination": "Exile"
                 }
             }
         ],
         "activatedAbilities": [
             {
-                "id": "Pinnacle Starcage:3",
+                "id": "Pinnacle Starcage:2",
                 "cost": {
                     "type": "CostAtomWrapper",
                     "atom": {
