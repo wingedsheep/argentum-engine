@@ -512,6 +512,28 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Skulk', inPlay: 'A skulking creature can\'t be blocked by bigger creatures, so small sneaky attackers chip in all game.' },
     ],
   },
+  BFZ: {
+    tagline: 'The Eldrazi return to Zendikar: ingest and process exiled cards, awaken your lands into creatures and rally your Allies.',
+    setting: 'Zendikar as Ulamog\'s devoid Eldrazi broods consume the plane and its Allies gather to fight back.',
+    gameplay: 'Games are midrange and creature-driven, split between colourless devoid Eldrazi and Zendikar\'s Allies. Ingest creatures exile the top card of a player\'s library when they connect, and processors put opponents\' exiled cards into their graveyard for a bonus, so the two halves need each other. Eldrazi Scion tokens ramp into big devoid threats, landfall and awaken make every land drop count, and converge rewards spells cast with several colours.',
+    tips: [
+      'Pair processors with ingest and exile removal: a processor with nothing to process is just an overcosted body.',
+      'Save Eldrazi Scions to ramp out a six-drop a turn early, or to chump a big attacker.',
+      'Play awaken spells late for their awaken cost: the extra land-creature often matters more than the spell.',
+    ],
+    tryIf: 'colourless Eldrazi, land-drop payoffs and building around a two-part engine',
+    power: 3, speed: 3, complexity: 4,
+    themes: ['tribal', 'tokens', 'bigThings', 'multicolor'],
+    mechanics: [
+      { name: 'Ingest', inPlay: 'When this deals combat damage to a player, they exile their top card, fuelling your processors and slowly eroding their deck.' },
+      { name: 'Processors', inPlay: 'Put a card an opponent owns from exile into their graveyard for a bigger effect, so ingest and exile removal become a resource.' },
+      { name: 'Devoid', inPlay: 'Devoid cards have no colour even with coloured mana costs, so colour-based removal and protection treat them differently.' },
+      { name: 'Awaken', inPlay: 'Pay the awaken cost to also turn one of your lands into a 0/0 creature with +1/+1 counters, so late-game spells leave a body behind.' },
+      { name: 'Landfall', inPlay: 'Abilities trigger whenever a land enters under your control, so every land drop is a small spell.' },
+      { name: 'Converge', inPlay: 'The spell grows with the number of colours of mana spent on it, rewarding three-colour decks and fixing.' },
+      { name: 'Rally', inPlay: 'Whenever an Ally enters, your Allies get a team bonus, so Allies want to come down one after another.' },
+    ],
+  },
   OGW: {
     tagline: 'The Gatewatch makes its stand on Zendikar: surge two-spell turns, support your team with counters and pay colourless costs with Wastes.',
     setting: 'Zendikar as its heroes swear the Oath of the Gatewatch and fight back against Kozilek and his devoid Eldrazi.',
