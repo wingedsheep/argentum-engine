@@ -22,8 +22,7 @@ import com.wingedsheep.sdk.scripting.references.Player
  *
  * The processed card is chosen on resolution from every opponent's exile (the pool is keyed by
  * owner, so it is exactly "a card an opponent owns") and moves to its owner's graveyard. The "may"
- * is the up-to-one pick — choosing nothing, or an empty pool, skips the discard. "If you do" gates
- * on the pick, not on the card landing in the graveyard (2015-08-25 Anafenza ruling).
+ * is the up-to-one pick — choosing nothing, or an empty pool, skips the discard.
  */
 val MindRaker = card("Mind Raker") {
     manaCost = "{3}{B}"
@@ -65,6 +64,7 @@ val MindRaker = card("Mind Raker") {
         rarity = Rarity.COMMON
         collectorNumber = "95"
         artist = "Lius Lasahido"
+        flavorText = "It consumes any dreams of victory."
         imageUri = "https://cards.scryfall.io/normal/front/a/4/a4d07fea-e16a-45e3-a172-9d726cd42769.jpg?1783938205"
         ruling("2015-08-25", "If a spell or ability requires that you put more than one exiled card into the graveyard, you may choose cards owned by different opponents. Each card chosen will be put into its owner's graveyard.")
         ruling("2015-08-25", "If a replacement effect will cause cards that would be put into a graveyard from anywhere to be exiled instead (such as the one created by Anafenza, the Foremost), you can still put an exiled card into its opponent's graveyard. The card becomes a new object and remains in exile. In this situation, you can't use a single exiled card if required to put more than one exiled card into the graveyard. Conversely, you could use the same card in this situation if two separate spells or abilities each required you to put a single exiled card into its owner's graveyard.")

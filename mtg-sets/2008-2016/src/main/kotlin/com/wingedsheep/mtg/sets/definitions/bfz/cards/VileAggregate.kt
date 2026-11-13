@@ -20,8 +20,7 @@ import com.wingedsheep.sdk.scripting.references.Player
  *
  * The starred power is a characteristic-defining ability (`dynamicPower`). The StateProjector
  * resolves it against the in-progress projection, so the colorless check reads projected colour:
- * devoid creatures (Vile Aggregate itself included) count, colorless artifact creatures count,
- * and a creature given a colour doesn't.
+ * devoid creatures (Vile Aggregate itself included) count and colored creatures don't.
  */
 val VileAggregate = card("Vile Aggregate") {
     manaCost = "{2}{R}"

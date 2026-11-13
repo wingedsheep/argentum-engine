@@ -29,8 +29,8 @@ import com.wingedsheep.sdk.scripting.references.Player
  * exactly N from a pool]. If you do, …" idiom: `Effects.May` over an `IfYouDo` whose action picks
  * *exactly* two from every opponent's exile and whose bar is `min = 2`. With fewer than two cards
  * your opponents own in exile, "yes" can't clear that bar, so the option is unavailable and the
- * prompt is skipped (CR 608.2d); with two or more, "yes" forces a pick of exactly two, which may
- * come from different opponents (2015-08-25 ruling). Each card goes to its owner's graveyard.
+ * prompt is skipped (CR 608.2d); with two or more, "yes" forces a pick of exactly two. Each card
+ * goes to its owner's graveyard.
  */
 val BlightHerder = card("Blight Herder") {
     manaCost = "{5}"

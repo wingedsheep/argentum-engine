@@ -24,9 +24,7 @@ import com.wingedsheep.sdk.scripting.references.Player
  * The -3/-3 target is chosen as the trigger goes on the stack; the processed card is chosen on
  * resolution from every opponent's exile (the pool is keyed by owner, so it is exactly "a card an
  * opponent owns"), and the move routes it to its owner's graveyard. The "may" is the up-to-one
- * pick — choosing nothing, or an empty pool, skips the shrink. "If you do" gates on the pick, not
- * on the card landing in the graveyard: under a graveyard-to-exile replacement (Anafenza, the
- * Foremost) the card is still "put" there and stays in exile as a new object (2015-08-25 ruling).
+ * pick — choosing nothing, or an empty pool, skips the shrink.
  */
 val WastelandStrangler = card("Wasteland Strangler") {
     manaCost = "{2}{B}"

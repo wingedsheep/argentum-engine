@@ -105,4 +105,19 @@ class MurkStriderScenarioTest : FunSpec({
         driver.state.getZone(you, Zone.EXILE) shouldContain mine
         driver.state.getBattlefield() shouldContain bears
     }
+
+    test("with its target gone on resolution the ability does nothing, so nothing is processed") {
+        val (driver, you) = setup()
+        val opponent = driver.getOpponent(you)
+        val bears = driver.putCreatureOnBattlefield(opponent, "Grizzly Bears")
+        val exiled = driver.putCardInExile(opponent, "Island")
+
+        driver.castStriderTargeting(you, bears)
+        driver.moveToGraveyard(bears)
+        val offered = driver.resolveTrigger(you, listOf(exiled))
+
+        offered shouldBe null
+        driver.state.getZone(opponent, Zone.EXILE) shouldContain exiled
+        driver.getGraveyard(opponent) shouldNotContain exiled
+    }
 })

@@ -438,8 +438,15 @@ object SynergyAxes {
             // the feeding leaf; the walk stops at ForEach bodies, so open them here.
             if (leaf is ForEachEffect) {
                 // "Each opponent discards a card" (Mind Raker) runs its body as each opponent, with
-                // `Player.You` rebound to them: what it bins or makes is theirs, not ours.
-                if ((leaf.space as? IterationSpace.Players)?.players in OPPONENTS) continue
+                // `Player.You` rebound to them: what it bins is theirs, not ours. Only what the body
+                // makes for the source's controller by name feeds us — "for each opponent, create a
+                // 1/1 Human" under `ControllerOfSource` (Adeline, Resplendent Cathar).
+                if ((leaf.space as? IterationSpace.Players)?.players in CardIntentAnalyzer.OPPONENT_PLAYERS) {
+                    for (gift in EffectWalker.leaves(leaf.body).filter(CardIntentAnalyzer::giftsTheSourceController)) {
+                        addAll(effectFeeds(gift, creatureSource, requirements))
+                    }
+                    continue
+                }
                 addAll(effectFeeds(leaf.body, creatureSource, requirements))
                 continue
             }
@@ -549,7 +556,7 @@ object SynergyAxes {
     private fun gathersOpponentExile(effect: Effect): Boolean =
         CardIntentAnalyzer.gateInteriorLeaves(effect).any { leaf ->
             val source = (leaf as? GatherCardsEffect)?.source as? CardSource.FromZone
-            source != null && source.zone == Zone.EXILE && source.player in OPPONENTS
+            source != null && source.zone == Zone.EXILE && source.player in CardIntentAnalyzer.OPPONENT_PLAYERS
         }
 
     /**
@@ -560,7 +567,7 @@ object SynergyAxes {
         val names = HashSet<String>()
         for (leaf in leaves) when (leaf) {
             is GatherCardsEffect ->
-                if ((leaf.source as? CardSource.FromZone)?.player in OPPONENTS) names += leaf.storeAs
+                if ((leaf.source as? CardSource.FromZone)?.player in CardIntentAnalyzer.OPPONENT_PLAYERS) names += leaf.storeAs
             is SelectFromCollectionEffect ->
                 if (leaf.from in names) names += listOfNotNull(leaf.storeSelected, leaf.storeRemainder)
             is FilterCollectionEffect ->
@@ -674,10 +681,6 @@ object SynergyAxes {
         SpellCastPredicate.CastAsAdventure, SpellCastPredicate.CastAsPrepareSpell, SpellCastPredicate.IsCard,
         is SpellCastPredicate.SpellMatches -> false
     }
-
-    /** The players that are always an opponent of the ability's controller. */
-    private val OPPONENTS: Set<Player> =
-        setOf(Player.EachOpponent, Player.AnOpponent, Player.TargetOpponent, Player.ChosenOpponent)
 
     private val SPELL_PREDICATES: Set<CardPredicate> =
         setOf(CardPredicate.IsInstant, CardPredicate.IsSorcery, CardPredicate.IsNoncreature)

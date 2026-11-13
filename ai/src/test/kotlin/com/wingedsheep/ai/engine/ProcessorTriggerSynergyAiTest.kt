@@ -12,6 +12,7 @@ import com.wingedsheep.mtg.sets.definitions.bfz.cards.VileAggregate
 import com.wingedsheep.mtg.sets.definitions.bfz.cards.WastelandStrangler
 import com.wingedsheep.mtg.sets.definitions.ddp.cards.DominatorDrone
 import com.wingedsheep.mtg.sets.definitions.lea.cards.GrizzlyBears
+import com.wingedsheep.mtg.sets.definitions.mid.cards.AdelineResplendentCathar
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
@@ -44,6 +45,12 @@ class ProcessorTriggerSynergyAiTest : FunSpec({
         // An ingest creature stocks what the processor spends.
         SynergyAxes.of(WastelandStrangler).sharedWith(SynergyAxes.of(DominatorDrone)) shouldContain
             SynergyAxis.OPPONENT_EXILE
+    }
+
+    test("an each-opponent loop still feeds what it makes for the source's controller by name") {
+        // Mind Raker's "each opponent discards" bins their cards; Adeline's "for each opponent, create
+        // a 1/1 Human" under ControllerOfSource makes ours.
+        SynergyAxes.of(AdelineResplendentCathar).feeds shouldContain SynergyAxis.TOKENS
     }
 
     test("Vile Aggregate's power asks for colorless creatures") {
