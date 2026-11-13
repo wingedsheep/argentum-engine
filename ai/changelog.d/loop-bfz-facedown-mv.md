@@ -1,1 +1,1 @@
-- #PR A lasting "your opponents can't block with …" static (Void Winnower) now reads as an evasion grant for your attackers, so the AI values and rates such a permanent above its bare body.
+- #4656 A lasting "your opponents can't block with …" static (Void Winnower) now reads as an evasion grant for your attackers, so the AI values and rates such a permanent above its bare body.
