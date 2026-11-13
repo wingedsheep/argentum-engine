@@ -424,6 +424,67 @@
     ]
 }
 
+// Angelic Captain
+{
+    "name": "Angelic Captain",
+    "manaCost": "{3}{R}{W}",
+    "typeLine": "Creature — Angel Ally",
+    "oracleText": "Flying\nWhenever this creature attacks, it gets +1/+1 until end of turn for each other attacking Ally.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Angelic Captain:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "Each",
+                        "filter": "creature Ally attacking",
+                        "excludeSelf": true
+                    },
+                    "toughnessModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "Each",
+                        "filter": "creature Ally attacking",
+                        "excludeSelf": true
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever this creature attacks, it gets +1/+1 until end of turn for each other attacking Ally."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "208",
+        "rarity": "RARE",
+        "artist": "Volkan Baǵa",
+        "flavorText": "As the soldiers beneath her raised their voices, the angel spread her wings, their span seeming to cover the sky.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/ef0baf56-816a-4e0a-beb3-73b51487ff00.jpg?1783938181",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Count the number of other attacking Allies as the ability resolves to determine the size of the bonus. Attacking Allies controlled by a teammate will count toward this total."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Once the ability resolves, the bonus won't change later in the turn, even if the number of other attacking Allies does."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "RED"
+    ]
+}
+
 // Angelic Gift
 {
     "name": "Angelic Gift",
@@ -1374,6 +1435,237 @@
     ]
 }
 
+// Bring to Light
+{
+    "name": "Bring to Light",
+    "manaCost": "{3}{G}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Converge — Search your library for a creature, instant, or sorcery card with mana value less than or equal to the number of colors of mana spent to cast this spell, exile that card, then shuffle. You may cast that card without paying its mana cost.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                "IsInstant",
+                                                "IsSorcery"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "ManaValueAtMostColorsSpent",
+                                    "reference": "Self"
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "gathered0",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "prompt": "Search for a creature, instant, or sorcery card with mana value at most the number of colors of mana spent to cast Bring to Light"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    },
+                    "storeMovedAs": "moved2"
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent",
+                {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "CastFromCollectionWithoutPayingCost",
+                        "from": "moved2"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "rarity": "RARE",
+        "artist": "Jonas De Ro",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d25b13a4-6282-4426-8b01-9550f7d52d16.jpg?1783938180",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "If you cast a card \"without paying its mana cost,\" you can't choose to cast it for any alternative costs, such as awaken costs. You can, however, pay additional costs, such as kicker costs. If the card has any mandatory additional costs, you must pay those to cast the card."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If the card has {X} in its mana cost, you must choose 0 as the value of X."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If you cast the exiled card, you do so as part of the resolution of Bring to Light. You can't wait to cast it later in the turn. Timing restrictions based on the card's type are ignored, but other restrictions (such as \"Cast [this card] only during combat\") are not."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If you don't cast the card, it remains exiled."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If you cast an instant or sorcery card this way, it goes to your graveyard as normal. It doesn't return to exile."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If a spell with a converge ability is copied, no mana was spent to cast the copy, so the number of colors of mana spent to cast the spell will be zero. The number of colors spent to cast the original spell is not copied."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
+// Brood Butcher
+{
+    "name": "Brood Butcher",
+    "manaCost": "{3}{B}{G}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nWhen this creature enters, create a 1/1 colorless Eldrazi Scion creature token. It has \"Sacrifice this token: Add {C}.\"\n{B}{G}, Sacrifice a creature: Target creature gets -2/-2 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Brood Butcher:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Eldrazi",
+                        "Scion"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/9/b999a0fe-d2d0-4367-9abb-6ce5f3764f19.jpg?1783938121",
+                    "activatedAbilities": [
+                        {
+                            "id": "Brood Butcher:1",
+                            "cost": "CostSacrificeSelf",
+                            "effect": {
+                                "type": "AddColorlessMana",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "timing": "ManaAbility",
+                            "isManaAbility": true,
+                            "descriptionOverride": "Sacrifice this token: Add {C}."
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Brood Butcher:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{B}{G}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Target creature gets -2/-2 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "199",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2f60fdd6-bc18-4c04-83d8-c204f2b35ff1.jpg?1783938182",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Sacrificing an Eldrazi Scion creature token to add {C} is a mana ability. It doesn't use the stack and can't be responded to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Brood Monitor
 {
     "name": "Brood Monitor",
@@ -1464,6 +1756,117 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Brutal Expulsion
+{
+    "name": "Brutal Expulsion",
+    "manaCost": "{2}{U}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Devoid (This card has no color.)\nChoose one or both —\n• Return target spell or creature to its owner's hand.\n• Brutal Expulsion deals 2 damage to target creature or planeswalker. If that creature or planeswalker would die this turn, exile it instead.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ReturnSpellOrPermanentToOwnersHand",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetSpellOrPermanent",
+                            "id": "t0",
+                            "permanentFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ]
+                            }
+                        }
+                    ],
+                    "description": "Return target spell or creature to its owner's hand"
+                },
+                {
+                    "effect": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "filter": {
+                                    "statePredicates": [
+                                        "IsOnBattlefield"
+                                    ]
+                                }
+                            }
+                        },
+                        "then": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "DealDamage",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    },
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    }
+                                },
+                                {
+                                    "type": "MarkExileOnDeath",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetCreatureOrPlaneswalker",
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Deal 2 damage to target creature or planeswalker; if it would die this turn, exile it instead"
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1
+        }
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "RARE",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b0eb64b-a463-4f25-9278-340051139f0e.jpg?1783938182",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "If a spell is returned to its owner's hand, it's removed from the stack. The spell isn't countered, but it won't resolve. If a copy of a spell is returned to a hand this way, the copy will cease to exist the next time state-based actions are performed."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "The second mode will exile the target creature or planeswalker if it would be put into the graveyard this turn for any reason, not just due to lethal damage. The exile effect applies to that permanent even if Brutal Expulsion deals no damage to it (due to a prevention effect) or Brutal Expulsion deals damage to a different creature or planeswalker (due to a redirection effect)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
     ]
 }
 
@@ -1641,6 +2044,90 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Catacomb Sifter
+{
+    "name": "Catacomb Sifter",
+    "manaCost": "{1}{B}{G}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nWhen this creature enters, create a 1/1 colorless Eldrazi Scion creature token. It has \"Sacrifice this token: Add {C}.\"\nWhenever another creature you control dies, scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Catacomb Sifter:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Eldrazi",
+                        "Scion"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/9/b999a0fe-d2d0-4367-9abb-6ce5f3764f19.jpg?1783938121",
+                    "activatedAbilities": [
+                        {
+                            "id": "Catacomb Sifter:1",
+                            "cost": "CostSacrificeSelf",
+                            "effect": {
+                                "type": "AddColorlessMana",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "timing": "ManaAbility",
+                            "isManaAbility": true,
+                            "descriptionOverride": "Sacrifice this token: Add {C}."
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Catacomb Sifter:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                },
+                "descriptionOverride": "Whenever another creature you control dies, scry 1."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "rarity": "UNCOMMON",
+        "artist": "Craig J Spearing",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6c3b220b-e699-45b0-8ec1-1022c1f50329.jpg?1783938182",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Sacrificing an Eldrazi Scion creature token to add {C} is a mana ability. It doesn't use the stack and can't be responded to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
     ]
 }
 
@@ -2677,6 +3164,74 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Dust Stalker
+{
+    "name": "Dust Stalker",
+    "manaCost": "{2}{B}{R}",
+    "typeLine": "Creature — Eldrazi",
+    "oracleText": "Devoid (This card has no color.)\nHaste\nAt the beginning of each end step, if you control no other colorless creatures, return this creature to its owner's hand.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEVOID",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dust Stalker:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand"
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsColorless"
+                        ]
+                    },
+                    "negate": true,
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "202",
+        "rarity": "RARE",
+        "artist": "Clint Cearley",
+        "flavorText": "The only traces it leaves are silent gusts and prodigious amounts of wreckage.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/2322e8c3-a983-4b3d-b6fa-f6b67f6fa8cc.jpg?1783938182",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Dust Stalker's last ability checks to see if you control another colorless creature as the end step begins. If you do, the ability won't trigger. If you don't, the ability will check again as it tries to resolve. If you somehow control another colorless creature at that time, the ability won't do anything. You won't return Dust Stalker to its owner's hand."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Dust Stalker's last ability doesn't depend on Dust Stalker being colorless. If it gains one or more colors, the ability will still look for another creature you control that's colorless."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -4590,6 +5145,73 @@
     "colorIdentityOverride": []
 }
 
+// Herald of Kozilek
+{
+    "name": "Herald of Kozilek",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Creature — Eldrazi Drone",
+    "oracleText": "Devoid (This card has no color.)\nColorless spells you cast cost {1} less to cast.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsColorless"
+                        ]
+                    }
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "UNCOMMON",
+        "artist": "Johannes Voss",
+        "flavorText": "\"Some Eldrazi, their purpose is obvious: suck the life out of the land, birth new Eldrazi. Others aren't so obvious, and those are the ones that make me really nervous.\"\n—Chadir the Navigator",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2a4180ae-1fd9-4185-b4f0-9e8f668a5737.jpg?1783938181",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Herald of Kozilek's last ability doesn't change the mana cost or mana value of any spell. It changes only the total cost you actually pay."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Herald of Kozilek's last ability can't reduce the amount of colored mana you pay for a spell. It reduces only the generic component of that mana cost."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If there are additional costs to cast a spell, or if the cost to cast a spell is increased by an effect, apply those increases before applying cost reductions."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "The cost reduction can apply to alternative costs."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If a colorless spell you cast has {X} in its mana cost, you choose the value of X before calculating the spell's total cost. For example, if that spell's mana cost is {X}, you could choose 5 as the value of X and pay {4} to cast the spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Hero of Goma Fada
 {
     "name": "Hero of Goma Fada",
@@ -4935,6 +5557,240 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Kiora, Master of the Depths
+{
+    "name": "Kiora, Master of the Depths",
+    "manaCost": "{2}{G}{U}",
+    "typeLine": "Legendary Planeswalker — Kiora",
+    "oracleText": "+1: Untap up to one target creature and up to one target land.\n−2: Reveal the top four cards of your library. You may put a creature card and/or a land card from among them into your hand. Put the rest into your graveyard.\n−8: You get an emblem with \"Whenever a creature you control enters, you may have it fight target creature.\" Then create three 8/8 blue Octopus creature tokens.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kiora, Master of the Depths:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "TapUntapCollection",
+                            "collectionName": "gathered0",
+                            "tap": false
+                        }
+                    ],
+                    "descriptionOverride": "Untap up to one target creature and up to one target land."
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    },
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "land"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Untap up to one target creature and up to one target land."
+            },
+            {
+                "id": "Kiora, Master of the Depths:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "creature",
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "You may put a creature card into your hand",
+                            "selectedLabel": "Put in hand",
+                            "remainderLabel": "Leave",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "land",
+                            "storeSelected": "selected2",
+                            "storeRemainder": "remainder2",
+                            "prompt": "You may put a land card into your hand",
+                            "selectedLabel": "Put in hand",
+                            "remainderLabel": "Put into graveyard",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Reveal the top four cards of your library. You may put a creature card and/or a land card from among them into your hand. Put the rest into your graveyard."
+            },
+            {
+                "id": "Kiora, Master of the Depths:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -8
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateGlobalTriggeredAbility",
+                            "ability": {
+                                "id": "Kiora, Master of the Depths:3",
+                                "trigger": {
+                                    "type": "ZoneChangeEvent",
+                                    "filter": "creature ctrl:you",
+                                    "to": "Battlefield"
+                                },
+                                "binding": "ANY",
+                                "effect": {
+                                    "type": "Gated",
+                                    "gate": "Gate.MayDecide",
+                                    "then": {
+                                        "type": "Fight",
+                                        "target1": "TriggeringEntity",
+                                        "target2": {
+                                            "type": "BoundVariable",
+                                            "name": "t2"
+                                        }
+                                    },
+                                    "descriptionOverride": "Whenever a creature you control enters, you may have it fight target creature."
+                                },
+                                "targetRequirement": {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t2"
+                                },
+                                "descriptionOverride": "Whenever a creature you control enters, you may have it fight target creature."
+                            },
+                            "descriptionOverride": "Whenever a creature you control enters, you may have it fight target creature.",
+                            "emblem": true
+                        },
+                        {
+                            "type": "CreateToken",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "power": 8,
+                            "toughness": 8,
+                            "colors": [
+                                "BLUE"
+                            ],
+                            "creatureTypes": [
+                                "Octopus"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/1/9/19ac0a35-fae7-49f9-ae96-4406df992dc9.jpg?1783938120"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You get an emblem with \"Whenever a creature you control enters, you may have it fight target creature.\" Then create three 8/8 blue Octopus creature tokens."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "213",
+        "rarity": "MYTHIC",
+        "artist": "Jason Chan",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b63c228-3265-4029-9bc0-36b3e31dfb53.jpg?1783938179",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "You can activate Kiora's first ability with no targets just to put a loyalty counter on her."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "With Kiora's second ability, you could put no cards, a creature card, a land card, or a creature card and a land card into your hand."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "You will have the emblem by the time the Octopus creature tokens enter the battlefield—they'll be looking to fight!"
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
     ]
 }
 
@@ -5608,6 +6464,63 @@
     ]
 }
 
+// March from the Tomb
+{
+    "name": "March from the Tomb",
+    "manaCost": "{3}{W}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return any number of target Ally creature cards with total mana value 8 or less from your graveyard to the battlefield.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature Ally own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0",
+                "totalAtMost": {
+                    "property": "MANA_VALUE",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "214",
+        "rarity": "RARE",
+        "artist": "Lake Hurwitz",
+        "flavorText": "They came from all walks of life, from every part of Zendikar, and they returned with one unifying cause.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/044dd138-fc8e-4a24-ad6d-2df71f94c0c0.jpg?1783938179"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Mind Raker
 {
     "name": "Mind Raker",
@@ -5976,6 +6889,107 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Munda, Ambush Leader
+{
+    "name": "Munda, Ambush Leader",
+    "manaCost": "{2}{R}{W}",
+    "typeLine": "Legendary Creature — Kor Ally",
+    "oracleText": "Haste\nRally — Whenever Munda or another Ally you control enters, you may look at the top four cards of your library. If you do, reveal any number of Ally cards from among them, then put those cards on top of your library in any order and the rest on the bottom in any order.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Munda, Ambush Leader:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Ally ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 4
+                                    }
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": "ChooseAnyNumber",
+                                "filter": "Ally",
+                                "storeSelected": "selected1",
+                                "storeRemainder": "remainder1",
+                                "prompt": "Reveal any number of Ally cards to put on top of your library",
+                                "selectedLabel": "Reveal and put on top",
+                                "remainderLabel": "Put on bottom",
+                                "showAllCards": true
+                            },
+                            {
+                                "type": "RevealCollection",
+                                "from": "selected1",
+                                "revealToSelf": false
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "placement": "Top"
+                                },
+                                "order": "ControllerChooses"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "remainder1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "placement": "Bottom"
+                                },
+                                "order": "ControllerChooses"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "215",
+        "rarity": "RARE",
+        "artist": "Johannes Voss",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d8ee09fe-46d7-492b-a2f3-3fb0c3f83f07.jpg?1783938179",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "If a creature with a rally ability enters the battlefield under your control at the same time as other Allies, that ability will trigger once for each of those creatures and once for the creature with the ability itself."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
     ]
 }
 
@@ -8827,6 +9841,187 @@
     ]
 }
 
+// Serpentine Spike
+{
+    "name": "Serpentine Spike",
+    "manaCost": "{5}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Devoid (This card has no color.)\nSerpentine Spike deals 2 damage to target creature, 3 damage to another target creature, and 4 damage to a third target creature. If a creature dealt damage this way would die this turn, exile it instead.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "damageDealtVariable": "storedNumber0"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "VariableReference",
+                                "variableName": "storedNumber0"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 0
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "MarkExileOnDeath",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "damageDealtVariable": "storedNumber3"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "VariableReference",
+                                "variableName": "storedNumber3"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 0
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "MarkExileOnDeath",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t2"
+                    },
+                    "damageDealtVariable": "storedNumber6"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "VariableReference",
+                                "variableName": "storedNumber6"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 0
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "MarkExileOnDeath",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t2"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetOther",
+                "baseRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    }
+                },
+                "id": "t1"
+            },
+            {
+                "type": "TargetOther",
+                "baseRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    }
+                },
+                "id": "t2"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "RARE",
+        "artist": "Jaime Jones",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/53222f33-6d18-4008-a38d-6f7995691260.jpg?1783938196",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Each target must be a different creature. You can't cast Serpentine Spike without three different creatures available."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If one or two of those targets become illegal by the time Serpentine Spike resolves, you can't change how much damage will be dealt to the remaining legal targets."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "A creature doesn't necessarily have to be dealt lethal damage by Serpentine Spike to be exiled. After being dealt damage, if it would die for any reason that turn, it'll be exiled instead."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Shadow Glider
 {
     "name": "Shadow Glider",
@@ -10154,6 +11349,94 @@
     }
 }
 
+// Touch of the Void
+{
+    "name": "Touch of the Void",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Devoid (This card has no color.)\nTouch of the Void deals 3 damage to any target. If a creature dealt damage this way would die this turn, exile it instead.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "damageDealtVariable": "storedNumber0"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "All",
+                            "conditions": [
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "storedNumber0"
+                                    },
+                                    "operator": "GT",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
+                                },
+                                {
+                                    "type": "EntityMatches",
+                                    "entity": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "filter": "creature"
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "MarkExileOnDeath",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "artist": "David Gaillet",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/006ead4a-dc57-4856-8e13-235ba55483e6.jpg?1783938196",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "A creature doesn't necessarily have to be dealt lethal damage by Touch of the Void to be exiled. After being dealt damage, if it would die for any reason that turn, it'll be exiled instead."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Transgress the Mind
 {
     "name": "Transgress the Mind",
@@ -10273,6 +11556,77 @@
         "artist": "Tomasz Jedruszek",
         "flavorText": "As Ulamog's brood reduces the earth to dust, geopedes burst from their tunnels in search of solid ground.",
         "imageUri": "https://cards.scryfall.io/normal/front/d/4/d4071152-5e64-4133-88a2-8fa5cb0eeb6c.jpg?1783938191"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Turn Against
+{
+    "name": "Turn Against",
+    "manaCost": "{4}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Devoid (This card has no color.)\nGain control of target creature until end of turn. Untap that creature. It gains haste until end of turn.",
+    "keywords": [
+        "DEVOID"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rallis",
+        "flavorText": "\"No, don't! Nal, it's me—\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4de8ef35-f141-4bc6-8ea1-f87aa6f5ecd7.jpg?1783938196",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Turn Against can target any creature, even one that's untapped or one you already control."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "Gaining control of a creature doesn't cause you to gain control of any Auras or Equipment attached to it."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED"

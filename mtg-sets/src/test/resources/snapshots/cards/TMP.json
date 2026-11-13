@@ -4743,6 +4743,52 @@
     ]
 }
 
+// Rolling Thunder
+{
+    "name": "Rolling Thunder",
+    "manaCost": "{X}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Rolling Thunder deals X damage divided as you choose among any number of targets.",
+    "script": {
+        "spellEffect": {
+            "type": "DividedDamage",
+            "totalDamage": 0,
+            "dynamicTotal": "XValue"
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "minCount": 0,
+                "unlimited": true,
+                "dynamicMaxCount": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "artist": "Richard Thomas",
+        "flavorText": "\"Such rage,\" thought Vhati, gazing up at the thunderhead from the *Predator*. \"It is Greven's mind manifest.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0bb07402-d526-4938-89a3-9174d5b5a4de.jpg?1783946627",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "If X is 0, you can't choose any targets."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "You choose how many targets Rolling Thunder has and how the damage is divided as you cast the spell. Each target must receive at least 1 damage."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "If some, but not all, of the targets become illegal by the time Rolling Thunder tries to resolve, the original division of damage still applies, but no damage is dealt to illegal targets. If all the targets are illegal, the spell won't resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Rootbreaker Wurm
 {
     "name": "Rootbreaker Wurm",
