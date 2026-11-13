@@ -2871,9 +2871,30 @@ object CardIntentAnalyzer {
         return inner.isNotEmpty() && inner.all { it in OPPONENT_GIFTS }
     }
 
-    /** An opponents-only body's tags: the visited opponent's gains dropped, ours by name kept. */
+    /**
+     * An opponents-only body's tags: the visited opponent's gains dropped, ours by name kept, and
+     * the life the visited opponent loses by its own `you` read as the clock it is.
+     */
     private fun opponentIterationTags(body: Effect, inner: Set<IntentTag>): Set<IntentTag> =
-        (inner - OPPONENT_GIFTS) + readingLeaves(body).filter(::giftsTheSourceController).flatMap { tagsOf(it) }
+        (inner - OPPONENT_GIFTS) + readingLeaves(body).filter(::giftsTheSourceController).flatMap { tagsOf(it) } +
+            visitedOpponentLossTags(body)
+
+    /**
+     * Life the opponent visited loses by its own `you`. Inside an iteration over players `you` is
+     * rebound to the player visited, so "lose life" aimed at the controller is theirs to lose — and
+     * an emblem or rest-of-game trigger created there is theirs too: "target opponent gets an emblem
+     * with 'Whenever a player draws a card, you lose 2 life'" (Ob Nixilis Reignited's −8) drains
+     * that opponent on every draw. [TargetPolarityAnalyzer] reads the same loss as harm to a
+     * targeted visited player.
+     */
+    private fun visitedOpponentLossTags(body: Effect): Set<IntentTag> =
+        if (visitedPlayerLosesLife(body)) setOf(IntentTag.DAMAGE_TO_PLAYERS) else emptySet()
+
+    /** Whether the player an iteration over players visits loses life in [body] by its own `you`. */
+    internal fun visitedPlayerLosesLife(body: Effect): Boolean =
+        readingLeaves(body)
+            .flatMap { leaf -> if (leaf is CreateGlobalTriggeredAbilityEffect) readingLeaves(leaf.ability.effect) else listOf(leaf) }
+            .any { it is LoseLifeEffect && (it.target == EffectTarget.Controller || it.target == EffectTarget.PlayerRef(Player.You)) }
 
     /**
      * Whether [leaf] names the source's controller as the one who gains — "for each opponent,

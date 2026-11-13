@@ -1,0 +1,1 @@
+- #4652 The AI now reads an emblem it hands an opponent that costs them life (Ob Nixilis Reignited's −8) as damage to players, instead of an ability it has no intent for
