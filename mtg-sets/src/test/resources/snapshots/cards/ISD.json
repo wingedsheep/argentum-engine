@@ -5474,6 +5474,63 @@
     "colorIdentityOverride": []
 }
 
+// Orchard Spirit
+{
+    "name": "Orchard Spirit",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "This creature can't be blocked except by creatures with flying or reach.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedExceptBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                {
+                                    "type": "And",
+                                    "predicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "HasKeyword",
+                                            "keyword": "FLYING"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "And",
+                                    "predicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "HasKeyword",
+                                            "keyword": "REACH"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "artist": "Howard Lyon",
+        "flavorText": "\"Pick not the rotten fruit, but neither touch the best. Leave those as an offering for our unseen guests.\"\n—Radwick, farmer of Gatstaf",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aac43ced-35b0-4e70-a049-1a65db9b2b1e.jpg?1783940912"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Parallel Lives
 {
     "name": "Parallel Lives",

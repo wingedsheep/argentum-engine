@@ -628,6 +628,80 @@
     ]
 }
 
+// Llanowar Empath
+{
+    "name": "Llanowar Empath",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Elf Shaman",
+    "oracleText": "When this creature enters, scry 2, then reveal the top card of your library. If it's a creature card, put it into your hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Llanowar Empath:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Scry",
+                            "count": 2
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "RevealCollection",
+                                    "from": "gathered0"
+                                },
+                                {
+                                    "type": "FilterCollection",
+                                    "from": "gathered0",
+                                    "filter": "creature",
+                                    "storeMatching": "matching2"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "matching2",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Hand"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "artist": "Warren Mahy",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bf831ed3-d3ae-43ac-82ca-4984c05dde86.jpg?1783943099"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Mass of Ghouls
 {
     "name": "Mass of Ghouls",

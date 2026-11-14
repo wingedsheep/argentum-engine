@@ -4,6 +4,8 @@ import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.mtg.sets.definitions.aer.cards.HinterlandDrake
 import com.wingedsheep.mtg.sets.definitions.aer.cards.IceOver
+import com.wingedsheep.mtg.sets.definitions.isd.cards.OrchardSpirit
+import com.wingedsheep.mtg.sets.definitions.leg.cards.ElvenRiders
 import com.wingedsheep.mtg.sets.definitions.mrd.cards.VulshokGauntlets
 import com.wingedsheep.mtg.sets.definitions.soi.cards.HowlpackWolf
 import io.kotest.core.spec.style.FunSpec
@@ -11,12 +13,14 @@ import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
 
 /**
- * Two statics the intent reader left "not recognised":
+ * Statics the intent reader left "not recognised":
  * - `CanOnlyBlockCreaturesWith` on its own body ("can't block artifact creatures", "can block only
  *   creatures with flying") — a combat restriction, as "can't block" is; so is `CantBlockUnless`
  *   ("can't block unless you control another Wolf or Werewolf", Howlpack Wolf);
  * - an Aura's `GrantKeyword(DOESNT_UNTAP)` ("enchanted permanent doesn't untap") — the standing
- *   form of the tapper's lock. The same grant on an Equipment is its wearer's price.
+ *   form of the tapper's lock. The same grant on an Equipment is its wearer's price;
+ * - `CantBeBlockedExceptBy` ("can't be blocked except by creatures with flying or reach", Orchard
+ *   Spirit) — evasion, the inverse spelling of `CantBeBlockedBy`.
  */
 class BlockingAndUntapLockStaticReadingAiTest : FunSpec({
 
@@ -26,6 +30,11 @@ class BlockingAndUntapLockStaticReadingAiTest : FunSpec({
 
     test("a conditional self block restriction reads as a combat restriction") {
         CardIntentAnalyzer.analyze(HowlpackWolf).tags shouldContain IntentTag.COMBAT_RESTRICTION
+    }
+
+    test("can't be blocked except by flyers or reach reads as evasion") {
+        CardIntentAnalyzer.analyze(OrchardSpirit).tags shouldContain IntentTag.EVASION_GRANT
+        CardIntentAnalyzer.analyze(ElvenRiders).tags shouldContain IntentTag.EVASION_GRANT
     }
 
     test("an Aura's doesn't-untap lock reads as a tapper") {

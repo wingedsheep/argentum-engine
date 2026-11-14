@@ -3608,6 +3608,98 @@
     ]
 }
 
+// Evolutionary Leap
+{
+    "name": "Evolutionary Leap",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "{G}, Sacrifice a creature: Reveal cards from the top of your library until you reveal a creature card. Put that card into your hand and the rest on the bottom of your library in a random order.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Evolutionary Leap:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{G}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherUntilMatch",
+                            "filter": "creature",
+                            "storeMatch": "ignored",
+                            "storeRevealed": "revealed"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "revealed"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "revealed",
+                            "filter": "creature",
+                            "storeMatching": "matchedToHand",
+                            "storeNonMatching": "rest"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matchedToHand",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{G}, Sacrifice a creature: Reveal cards from the top of your library until you reveal a creature card. Put that card into your hand and the rest on the bottom of your library in a random order."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "flavorText": "The essence of nature is change.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c27f3193-3083-409e-99d8-10f5b1afe9f1.jpg?1783938323",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "If you don't reveal a creature card, you'll reveal all the cards from your library and then put them back in your library in a random order."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Exquisite Firecraft
 {
     "name": "Exquisite Firecraft",
@@ -4131,6 +4223,101 @@
         "flavorText": "All around the foundry, automatons unhitched themselves from their mounts and pivoted to face Chandra.",
         "imageUri": "https://cards.scryfall.io/normal/front/7/3/73f29e03-0a71-46cd-992e-7baa61f16ac5.jpg?1783938306"
     }
+}
+
+// Gather the Pack
+{
+    "name": "Gather the Pack",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Reveal the top five cards of your library. You may put a creature card from among them into your hand. Put the rest into your graveyard.\nSpell mastery — If there are two or more instant and/or sorcery cards in your graveyard, put up to two creature cards from among the revealed cards into your hand instead of one.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 5
+                        }
+                    },
+                    "storeAs": "looked",
+                    "revealed": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "looked",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Conditional",
+                            "condition": {
+                                "type": "Compare",
+                                "left": {
+                                    "type": "Count",
+                                    "player": "You",
+                                    "zone": "Graveyard",
+                                    "filter": "instant|sorcery"
+                                },
+                                "operator": "GTE",
+                                "right": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "ifTrue": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "ifFalse": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "filter": "creature",
+                    "storeSelected": "kept",
+                    "storeRemainder": "rest",
+                    "prompt": "You may put creature cards into your hand",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "kept",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "rest",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "178",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/a/9a4f5b00-ac50-485f-a38a-b9f409307d5c.jpg?1783938322",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Check to see if there are two or more instant and/or sorcery cards in your graveyard as the spell resolves to determine whether the spell mastery ability applies. The spell itself won't count because it's still on the stack as you make this check."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Ghirapur Aether Grid
@@ -5108,6 +5295,87 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Honored Hierarch
+{
+    "name": "Honored Hierarch",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Human Druid",
+    "oracleText": "Renown 1 (When this creature deals combat damage to a player, if it isn't renowned, put a +1/+1 counter on it and it becomes renowned.)\nAs long as this creature is renowned, it has vigilance and \"{T}: Add one mana of any color.\"",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "RENOWN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "RENOWN",
+            "n": 1
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "VIGILANCE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "IsRenowned"
+                        ]
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantActivatedAbility",
+                    "ability": {
+                        "id": "Honored Hierarch:1",
+                        "cost": "CostTap",
+                        "effect": "AddManaOfChoice",
+                        "timing": "ManaAbility",
+                        "isManaAbility": true
+                    },
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "IsRenowned"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "182",
+        "rarity": "RARE",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/769d0447-2c8f-41ef-a950-3a3022161c7f.jpg?1783938322"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -7334,6 +7602,526 @@
     ]
 }
 
+// Nissa's Pilgrimage
+{
+    "name": "Nissa's Pilgrimage",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for up to two basic Forest cards, reveal those cards, and put one onto the battlefield tapped and the rest into your hand. Then shuffle.\nSpell mastery — If there are two or more instant and/or sorcery cards in your graveyard, search your library for up to three basic Forest cards instead of two.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "basicland Forest"
+                    },
+                    "storeAs": "gathered0",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Conditional",
+                            "condition": {
+                                "type": "Compare",
+                                "left": {
+                                    "type": "Count",
+                                    "player": "You",
+                                    "zone": "Graveyard",
+                                    "filter": "instant|sorcery"
+                                },
+                                "operator": "GTE",
+                                "right": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "ifTrue": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "ifFalse": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "prompt": "Search your library for basic Forest cards"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "selected1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected2",
+                    "storeRemainder": "remainder2",
+                    "prompt": "Choose which Forest enters the battlefield tapped; the rest go to your hand.",
+                    "selectedLabel": "Onto the battlefield tapped",
+                    "remainderLabel": "Into your hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    },
+                    "revealed": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "remainder2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/800cef89-e90c-4f84-a7a0-3cd203532169.jpg?1783938319",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "If you only find one basic Forest card, you'll put it onto the battlefield tapped. You won't be able to put it into your hand, even if you want to."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If the spell mastery ability applies, and you find three basic Forest cards, one of them will be put onto the battlefield tapped and two of them will be put into your hand."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Check to see if there are two or more instant and/or sorcery cards in your graveyard as the spell resolves to determine whether the spell mastery ability applies. The spell itself won't count because it's still on the stack as you make this check."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Nissa's Revelation
+{
+    "name": "Nissa's Revelation",
+    "manaCost": "{5}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Scry 5, then reveal the top card of your library. If it's a creature card, you draw cards equal to its power and you gain life equal to its toughness.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Scry",
+                    "count": 5
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "gathered0"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "gathered0",
+                            "ifNotEmpty": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "StoreNumber",
+                                        "name": "number3",
+                                        "amount": {
+                                            "type": "IfPositive",
+                                            "amount": {
+                                                "type": "EntityProperty",
+                                                "entity": {
+                                                    "type": "PipelineTarget",
+                                                    "collectionName": "gathered0"
+                                                },
+                                                "numericProperty": "Power"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "type": "StoreNumber",
+                                        "name": "number4",
+                                        "amount": {
+                                            "type": "IfPositive",
+                                            "amount": {
+                                                "type": "EntityProperty",
+                                                "entity": {
+                                                    "type": "PipelineTarget",
+                                                    "collectionName": "gathered0"
+                                                },
+                                                "numericProperty": "Toughness"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "VariableReference",
+                                            "variableName": "number3"
+                                        }
+                                    },
+                                    {
+                                        "type": "GainLife",
+                                        "amount": {
+                                            "type": "VariableReference",
+                                            "variableName": "number4"
+                                        }
+                                    }
+                                ]
+                            },
+                            "filter": "creature"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "rarity": "RARE",
+        "artist": "Izzy",
+        "flavorText": "The evil inside the mountain pulsed at Nissa in a shock wave of madness.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/71143665-012f-4723-a58b-d5cfdbe82e8f.jpg?1783938319",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "If the top card of your library isn't a creature card or it's a creature card with power 0 or less, you won't draw any cards. Otherwise, the first card you draw will be the card you revealed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Nissa, Vastwood Seer
+{
+    "name": "Nissa, Vastwood Seer",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Elf Scout",
+    "oracleText": "When Nissa enters, you may search your library for a basic Forest card, reveal it, put it into your hand, then shuffle.\nWhenever a land you control enters, if you control seven or more lands, exile Nissa, then return her to the battlefield transformed under her owner's control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nissa, Vastwood Seer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "basicland Forest"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a basic Forest card to put into your hand",
+                                "selectedLabel": "Put into your hand"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    },
+                    "descriptionOverride": "When Nissa enters, you may search your library for a basic Forest card, reveal it, put it into your hand, then shuffle."
+                },
+                "descriptionOverride": "When Nissa enters, you may search your library for a basic Forest card, reveal it, put it into your hand, then shuffle."
+            },
+            {
+                "id": "Nissa, Vastwood Seer:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": "ExileAndReturnTransformed",
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                },
+                "descriptionOverride": "Whenever a land you control enters, if you control seven or more lands, exile Nissa, then return her to the battlefield transformed under her owner's control."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Nissa, Sage Animist",
+        "manaCost": "",
+        "typeLine": "Legendary Planeswalker — Nissa",
+        "oracleText": "+1: Reveal the top card of your library. If it's a land card, put it onto the battlefield. Otherwise, put it into your hand.\n−2: Create Ashaya, the Awoken World, a legendary 4/4 green Elemental creature token.\n−7: Untap up to six target lands. They become 6/6 Elemental creatures. They're still lands.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Nissa, Sage Animist:1",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": 1
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "RevealCollection",
+                                "from": "gathered0",
+                                "fromZone": "Library"
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "gathered0",
+                                "filter": "land",
+                                "storeMatching": "matching2",
+                                "storeNonMatching": "rest2"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "matching2",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "rest2",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            }
+                        ]
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Reveal the top card of your library. If it's a land card, put it onto the battlefield. Otherwise, put it into your hand."
+                },
+                {
+                    "id": "Nissa, Sage Animist:2",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -2
+                    },
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 4,
+                        "toughness": 4,
+                        "colors": [
+                            "GREEN"
+                        ],
+                        "creatureTypes": [
+                            "Elemental"
+                        ],
+                        "name": "Ashaya, the Awoken World",
+                        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0affd414-f774-48d1-af9e-bff74e58e1ca.jpg?1783938294",
+                        "legendary": true
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Create Ashaya, the Awoken World, a legendary 4/4 green Elemental creature token."
+                },
+                {
+                    "id": "Nissa, Sage Animist:3",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -7
+                    },
+                    "effect": {
+                        "type": "ForEach",
+                        "space": "IterationSpace.Targets",
+                        "body": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "TapUntap",
+                                    "target": {
+                                        "type": "ContextTarget",
+                                        "index": 0
+                                    },
+                                    "tap": false
+                                },
+                                {
+                                    "type": "BecomeCreature",
+                                    "target": {
+                                        "type": "ContextTarget",
+                                        "index": 0
+                                    },
+                                    "power": {
+                                        "type": "Fixed",
+                                        "amount": 6
+                                    },
+                                    "toughness": {
+                                        "type": "Fixed",
+                                        "amount": 6
+                                    },
+                                    "creatureTypes": [
+                                        "Elemental"
+                                    ],
+                                    "duration": "Permanent"
+                                }
+                            ]
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "count": 6,
+                            "optional": true,
+                            "filter": {
+                                "baseFilter": "land"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Untap up to six target lands. They become 6/6 Elemental creatures. They're still lands."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "189",
+            "rarity": "MYTHIC",
+            "artist": "Wesley Burt",
+            "imageUri": "https://cards.scryfall.io/normal/back/f/f/ff0063da-ab6b-499d-8e87-8b34d46f0372.jpg?1783938322",
+            "rulings": [
+                {
+                    "date": "2015-06-22",
+                    "text": "You can activate Nissa, Sage Animist's second ability even if you already control an Ashaya, the Awoken World. Just after the second token is created, you'll choose one to remain on the battlefield. The other will be put into your graveyard and subsequently cease to exist."
+                },
+                {
+                    "date": "2015-06-22",
+                    "text": "If a land becomes a creature but hasn't continuously been under its controller's control since that player's most recent turn began, it won't be able to attack and its abilities with {T} in the cost (including mana abilities) won't be able to be activated. In other words, look at how long the permanent itself has been under your control, not how long it's been a creature."
+                }
+            ]
+        },
+        "startingLoyalty": 3,
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "rarity": "MYTHIC",
+        "artist": "Wesley Burt",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff0063da-ab6b-499d-8e87-8b34d46f0372.jpg?1783938322",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "You can control two of this permanent, one front-face up and the other back-face up, at the same time."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Nissa, Vastwood Seer is exiled as a result of her second triggered ability. If she enters the battlefield while you control seven or more lands, she won't automatically be exiled and transform."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "A Magic Origins planeswalker that enters the battlefield because of the ability of its front face will enter with loyalty counters as normal."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "In some rare cases, a spell or ability may cause one of these five cards to transform while it's a creature (front face up) on the battlefield. If this happens, the resulting planeswalker won't have any loyalty counters on it and will subsequently be put into its owner's graveyard."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "You can activate one of the planeswalker's loyalty abilities the turn it enters the battlefield. However, you may do so only during one of your main phases when the stack is empty. For example, if the planeswalker enters the battlefield during combat, there will be an opportunity for your opponent to remove it before you can activate one of its abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Nivix Barrier
 {
     "name": "Nivix Barrier",
@@ -8463,6 +9251,60 @@
         "rarity": "RARE",
         "artist": "Dave Kendall",
         "imageUri": "https://cards.scryfall.io/normal/front/3/8/38d600b0-8649-424a-acad-879f3067b55e.jpg?1783938326"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Seismic Elemental
+{
+    "name": "Seismic Elemental",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "When this creature enters, creatures without flying can't block this turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Seismic Elemental:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CantBlockGroup",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotKeyword",
+                                    "keyword": "FLYING"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "descriptionOverride": "When this creature enters, creatures without flying can't block this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "161",
+        "rarity": "UNCOMMON",
+        "artist": "Jasper Sandner",
+        "flavorText": "\"Trying to stop it would be foolish. If you feel it coming—run!\"\n—Sergeant Ryda",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a60d957b-f71a-403e-82fe-30ea87d1e142.jpg?1783938326",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "No creature without flying will be able to block that turn, including creatures that lose flying after Seismic Elemental's ability resolves and creatures without flying that enter the battlefield after that ability resolves."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED"
@@ -10036,6 +10878,165 @@
     ]
 }
 
+// The Great Aurora
+{
+    "name": "The Great Aurora",
+    "manaCost": "{6}{G}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each player shuffles all cards from their hand and all permanents they own into their library, then draws that many cards. Each player may put any number of land cards from their hand onto the battlefield. Exile The Great Aurora.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromMultipleZones",
+                        "zones": [
+                            "Hand",
+                            "Battlefield"
+                        ],
+                        "player": "Each"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "gathered0",
+                    "filter": "token",
+                    "storeMatching": "matching1",
+                    "storeNonMatching": "rest1"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "rest1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": "ShuffleLibrary"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "matching1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    }
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "gathered0",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "InZone",
+                                "zone": "Library"
+                            }
+                        ]
+                    },
+                    "storeMatching": "matching5"
+                },
+                {
+                    "type": "CaptureControllers",
+                    "from": "matching5",
+                    "storeAs": "controllers6"
+                },
+                {
+                    "type": "ForEachCapturedController",
+                    "collection": "matching5",
+                    "originalCollection": "matching5",
+                    "controllerSnapshot": "controllers6",
+                    "countVariable": "count7",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "VariableReference",
+                                "variableName": "count7"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "ActivePlayerFirst"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "filter": "land"
+                                },
+                                "storeAs": "gathered10"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered10",
+                                "selection": "ChooseAnyNumber",
+                                "storeSelected": "selected11",
+                                "prompt": "Choose any number of land cards to put onto the battlefield",
+                                "selectedLabel": "Put onto the battlefield"
+                            }
+                        ]
+                    },
+                    "collectCollections": {
+                        "selected11": "collected12"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "collected12",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    },
+                    "underOwnersControl": true
+                }
+            ]
+        },
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "rarity": "MYTHIC",
+        "artist": "Sam Burley",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b1d0eb3b-00b9-42ca-9f7d-5543bffc3480.jpg?1783938322",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "As The Great Aurora resolves, first you choose any number of land cards in your hand to put onto the battlefield, and then each other player in turn order does the same. The lands enter the battlefield simultaneously."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "The number of cards you draw is equal to the number of permanents on the battlefield that you shuffle into your library plus the number of cards from your hand that you shuffle into your library."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "A token is owned by the player under whose control it entered the battlefield. Tokens shuffled into a library count toward the number of cards drawn, though they cease to exist upon becoming part of a library."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Thopter Engineer
 {
     "name": "Thopter Engineer",
@@ -10836,6 +11837,62 @@
     ]
 }
 
+// Valeron Wardens
+{
+    "name": "Valeron Wardens",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Human Monk",
+    "oracleText": "Renown 2 (When this creature deals combat damage to a player, if it isn't renowned, put two +1/+1 counters on it and it becomes renowned.)\nWhenever a creature you control becomes renowned, draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "RENOWN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "RENOWN",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Valeron Wardens:1",
+                "trigger": {
+                    "type": "BecameRenownedEvent",
+                    "filter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "rarity": "UNCOMMON",
+        "artist": "Howard Lyon",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e693a7e7-d95e-4cd8-9524-ca5fc517189a.jpg?1783938316",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "If a renown ability triggers, but the creature leaves the battlefield before that ability resolves, the creature doesn't become renowned. Any ability that triggers \"whenever a creature becomes renowned\" won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Valor in Akros
 {
     "name": "Valor in Akros",
@@ -11340,6 +12397,100 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Woodland Bellower
+{
+    "name": "Woodland Bellower",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "When this creature enters, you may search your library for a nonlegendary green creature card with mana value 3 or less, put it onto the battlefield, then shuffle.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Woodland Bellower:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsCreature",
+                                            "IsNonlegendary",
+                                            {
+                                                "type": "HasColor",
+                                                "color": "GREEN"
+                                            },
+                                            {
+                                                "type": "ManaValueAtMost",
+                                                "max": 3
+                                            }
+                                        ]
+                                    }
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a green creature nonlegendary card with mana value 3 or less to put onto the battlefield",
+                                "selectedLabel": "Put onto the battlefield"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "MYTHIC",
+        "artist": "Jasper Sandner",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a706d4bb-0b44-4e43-b340-7de799c086b8.jpg?1783938315",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "If a card has {X} in its mana cost, X is 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 

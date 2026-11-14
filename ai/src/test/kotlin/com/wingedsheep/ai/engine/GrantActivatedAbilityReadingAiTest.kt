@@ -86,6 +86,12 @@ class GrantActivatedAbilityReadingAiTest : ScenarioTestBase() {
             }
         }
 
+        test("Honored Hierarch: a mana ability the creature grants itself once renowned makes it a mana source") {
+            withClue("the conditional self-grant of '{T}: Add one mana of any color' reads as a printed mana ability would") {
+                tags("Honored Hierarch") shouldContain IntentTag.RAMP
+            }
+        }
+
         test("Emrakul, the Exigent Doom hands its mana ability to our land, not the opponent's") {
             val game = scenario()
                 .withPlayers()

@@ -1470,6 +1470,56 @@
     ]
 }
 
+// Timberpack Wolf
+{
+    "name": "Timberpack Wolf",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Wolf",
+    "oracleText": "This creature gets +1/+1 for each other creature you control named Timberpack Wolf.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "creature name:Timberpack Wolf",
+                    "excludeSelf": true
+                },
+                "toughnessBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "creature name:Timberpack Wolf",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "194",
+        "artist": "John Avon",
+        "flavorText": "\"The need for the pack is bred in their bones. Their true strength will not show itself for any other purpose.\"\n—Garruk Wildspeaker",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d16928c9-0470-46ec-b92d-0d6ff9f23ef7.jpg?1783940464",
+        "rulings": [
+            {
+                "date": "2018-03-16",
+                "text": "Because damage remains marked on a creature until it's removed as the turn ends, nonlethal damage dealt to Timberpack Wolf may become lethal if other Timberpack Wolves leave the battlefield during that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Trading Post
 {
     "name": "Trading Post",
