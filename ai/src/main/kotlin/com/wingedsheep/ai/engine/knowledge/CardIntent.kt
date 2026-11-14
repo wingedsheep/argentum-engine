@@ -223,6 +223,19 @@ data class CardIntent(
      * once; `CardIntentAnalyzer.priorLadder` prices them.
      */
     val cashableTags: Set<IntentTag> = emptySet(),
+    /**
+     * What the abilities behind [repeatable] do: a non-mana battlefield activation or a trigger that
+     * can fire again, neither of which spends its own source — not even through "you may sacrifice
+     * this. If you do, …". "Repeatable removal" asks this, not [tags]: Throwing Knife's equip recurs,
+     * its sacrifice-to-deal-2 does not.
+     */
+    val repeatableTags: Set<IntentTag> = emptySet(),
+    /**
+     * What the battlefield abilities that use up their own source do — a sacrifice-self cost, or
+     * "you may sacrifice this. If you do, …" on resolution. Removal found only here is one shot
+     * waiting on the board, which `CardIntentAnalyzer.priorLadder` prices below an O-Ring.
+     */
+    val spentTags: Set<IntentTag> = emptySet(),
 ) {
     /** [arrivalTags], falling back to [tags] where the analyzer did not split them. */
     val tagsOnArrival: Set<IntentTag> get() = arrivalTags ?: tags
@@ -537,6 +550,18 @@ enum class IntentTag {
      * form also starves its controller's own counters, so the draft heuristic prices it as a hoser.
      */
     COUNTER_LOCK,
+
+    /**
+     * Stops opponents gaining life, or turns their life gain into life loss — Archfiend of
+     * Despair's "your opponents can't gain life", Tainted Remedy's "if an opponent would gain life,
+     * that player loses that much life instead" ([LifeGainLocks]).
+     *
+     * Like [COUNTER_LOCK], a lock moves nothing — its payoff is life the opponent never gains — so
+     * no board simulation sees it. Only an opponents-only lock reads: one over its controller (Lich)
+     * is a price, and a symmetric one (Sulfuric Vortex) binds us as hard. A sideboard hoser against
+     * a lifegain deck in Limited.
+     */
+    LIFEGAIN_LOCK,
 
     /**
      * Takes the tokens an opponent would create — Crafty Cutpurse's "each token that would be

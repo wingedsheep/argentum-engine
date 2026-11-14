@@ -34,5 +34,15 @@ class PlayerDamageIntentTest : ScenarioTestBase() {
             self.tags shouldNotContain IntentTag.DAMAGE_TO_PLAYERS
             self.tags shouldNotContain IntentTag.REMOVAL
         }
+
+        test("a symmetric life loss drains the opponents too, while losing only our own life does not") {
+            // Rabid Bloodsucker's "when this creature enters, each player loses 2 life".
+            CardIntentAnalyzer.analyze(cardRegistry.getCard("Rabid Bloodsucker")!!).tags shouldContain
+                IntentTag.DAMAGE_TO_PLAYERS
+            CardIntentAnalyzer.analyzeEffect(Effects.LoseLife(2, EffectTarget.PlayerRef(Player.Each))).tags shouldBe
+                setOf(IntentTag.DAMAGE_TO_PLAYERS)
+            CardIntentAnalyzer.analyzeEffect(Effects.LoseLife(2, EffectTarget.Controller)).tags shouldNotContain
+                IntentTag.DAMAGE_TO_PLAYERS
+        }
     }
 }

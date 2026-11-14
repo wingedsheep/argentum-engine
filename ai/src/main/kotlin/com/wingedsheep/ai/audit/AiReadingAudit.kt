@@ -865,6 +865,7 @@ object AiReadingAudit {
         IntentTag.DAMAGE_TO_PLAYERS -> "damages or drains players"
         IntentTag.TRIGGER_LOCK -> "stops permanents entering or dying from triggering abilities"
         IntentTag.COUNTER_LOCK -> "stops counters being put on players or permanents"
+        IntentTag.LIFEGAIN_LOCK -> "stops opponents gaining life, or turns their life gain into loss"
         IntentTag.TOKEN_THEFT -> "takes the tokens opponents would create"
         IntentTag.DISCARD_SHIELD -> "puts cards an effect makes its controller discard back on their library"
         IntentTag.GAME_WIN -> "makes an opponent lose the game outright"

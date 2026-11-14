@@ -25,6 +25,7 @@ import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.ReduceActivatedAbilityCost
 import com.wingedsheep.sdk.scripting.RedirectZoneChange
 import com.wingedsheep.sdk.scripting.RedirectZoneChangeWith
+import com.wingedsheep.sdk.scripting.ReplaceLifeGainWith
 import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
@@ -415,6 +416,13 @@ object CardIntentAnalyzer {
         if (scripts.any { script -> script.replacementEffects.any(DiscardShields::reads) }) {
             tags += IntentTag.DISCARD_SHIELD
         }
+        // "Your opponents can't gain life" / "if an opponent would gain life, that player loses
+        // that much life instead" (Archfiend of Despair, Tainted Remedy — [LifeGainLocks]). What the
+        // opponent's gain becomes is read like any effect: Tainted Remedy's loss drains them.
+        for (script in scripts) for (replacement in script.replacementEffects.filter(LifeGainLocks::reads)) {
+            tags += IntentTag.LIFEGAIN_LOCK
+            if (replacement is ReplaceLifeGainWith) EffectWalker.leaves(replacement.replacementEffect).forEach { tags += tagsOf(it) }
+        }
 
         val activated = scripts.flatMap { it.activatedAbilities }
         if (activated.any { it.isManaAbility }) tags += IntentTag.RAMP
@@ -479,6 +487,8 @@ object CardIntentAnalyzer {
                 scripts.flatMap { it.sagaChapters }.flatMapTo(HashSet()) {
                     effectTags(it.effect, EffectWalker.chapterTargets(it), ownPile)
                 },
+            repeatableTags = repeatableTagsOf(card, scripts, ownPile, pileCast),
+            spentTags = spentTagsOf(card, scripts, ownPile, pileCast),
         )
         return intent.copy(staticPriorValue = priorValueOf(card, intent, scripts))
     }
@@ -2310,8 +2320,11 @@ object CardIntentAnalyzer {
         }
         // "Each opponent loses life equal to …" (Throne of the God-Pharaoh), "target player loses 2
         // life": the same clock on a player as face damage, minus the source. Life its controller
-        // loses is the card's price, not its point.
-        is LoseLifeEffect -> if (losesAnOpponent(effect.target)) setOf(IntentTag.DAMAGE_TO_PLAYERS) else emptySet()
+        // loses is the card's price, not its point. "Each player loses 2 life" (Rabid Bloodsucker)
+        // drains the opponents too — the same symmetric read [DealDamageEffect] gives "each player".
+        is LoseLifeEffect ->
+            if (losesAnOpponent(effect.target) || effect.target == EffectTarget.PlayerRef(Player.Each)) setOf(IntentTag.DAMAGE_TO_PLAYERS)
+            else emptySet()
 
         is DividedDamageEffect -> setOf(IntentTag.REMOVAL)
 
@@ -3710,7 +3723,7 @@ object CardIntentAnalyzer {
         if (Keyword.FLASH in card.keywords) return Speed.INSTANT
         if (scripts.any { script -> script.activatedAbilities.any { !it.isManaAbility } }) return Speed.ACTIVATED
         if (scripts.any { it.staticAbilities.isNotEmpty() } || IntentTag.ANTHEM in tags ||
-            IntentTag.DAMAGE_AMPLIFIER in tags ||
+            IntentTag.DAMAGE_AMPLIFIER in tags || IntentTag.LIFEGAIN_LOCK in tags ||
             scripts.any { script -> script.replacementEffects.any(DamageShields::reads) }) return Speed.STATIC
         return Speed.SORCERY
     }
@@ -3739,12 +3752,110 @@ object CardIntentAnalyzer {
     private fun repeatableOf(card: CardDefinition, scripts: List<CardScript>): Boolean {
         if (!card.typeLine.isPermanent) return false
         return scripts.any { script ->
-            script.activatedAbilities.any {
-                it.activateFromZone == Zone.BATTLEFIELD && !it.isManaAbility && !consumesSource(it.cost)
-            } ||
-                script.triggeredAbilities.any { canFireMoreThanOnce(it, isAura = script.auraTarget != null) }
+            script.activatedAbilities.any(::activatesRepeatedly) ||
+                script.triggeredAbilities.any { triggersRepeatedly(it, isAura = script.auraTarget != null) }
         }
     }
+
+    /** A non-mana battlefield activation that neither costs nor spends its own source. */
+    private fun activatesRepeatedly(ability: ActivatedAbility): Boolean =
+        ability.activateFromZone == Zone.BATTLEFIELD && !ability.isManaAbility &&
+            !consumesSource(ability.cost) && !sacrificesOwnSource(ability.effect)
+
+    /** A trigger that can fire again ([canFireMoreThanOnce]) and doesn't spend its own source. */
+    private fun triggersRepeatedly(ability: TriggeredAbility, isAura: Boolean): Boolean =
+        canFireMoreThanOnce(ability, isAura) && !sacrificesOwnSource(ability.effect)
+
+    /**
+     * [CardIntent.repeatableTags]: what the abilities that pass [activatesRepeatedly] and
+     * [triggersRepeatedly] do — so a repeatable equip beside a one-shot "you may sacrifice this
+     * Equipment. If you do, it deals 2 damage" (Throwing Knife) is not read as repeatable removal.
+     * An Equipment's or Aura's helpful granted ability counts as its own (Viridian Longbow's ping).
+     */
+    private fun repeatableTagsOf(
+        card: CardDefinition,
+        scripts: List<CardScript>,
+        ownPile: Boolean,
+        pileCast: Set<IntentTag>,
+    ): Set<IntentTag> = abilityTagsBySpend(card, scripts, ownPile, pileCast, spent = false)
+
+    /**
+     * [CardIntent.spentTags]: what the battlefield abilities that use up their own source do —
+     * "sacrifice this: …" (Pyrite Spellbomb), "you may sacrifice this Equipment. If you do, …"
+     * (Throwing Knife), an equipped creature's "{T}, Sacrifice Blazing Torch: …". Each pays off once.
+     */
+    private fun spentTagsOf(
+        card: CardDefinition,
+        scripts: List<CardScript>,
+        ownPile: Boolean,
+        pileCast: Set<IntentTag>,
+    ): Set<IntentTag> = abilityTagsBySpend(card, scripts, ownPile, pileCast, spent = true)
+
+    /**
+     * The tags of a permanent's battlefield abilities that recur (`spent = false`) or use up their
+     * source (`spent = true`). Triggers read through [EffectWalker.readableEffect], as [tags] does;
+     * a granted ability is read by [tagsOf] (its scope and polarity), its spend by the granter cost.
+     */
+    private fun abilityTagsBySpend(
+        card: CardDefinition,
+        scripts: List<CardScript>,
+        ownPile: Boolean,
+        pileCast: Set<IntentTag>,
+        spent: Boolean,
+    ): Set<IntentTag> {
+        if (!card.typeLine.isPermanent) return emptySet()
+        return scripts.flatMapTo(HashSet()) { script ->
+            val isAura = script.auraTarget != null
+            val activated = script.activatedAbilities.filter {
+                if (spent) it.activateFromZone == Zone.BATTLEFIELD && !it.isManaAbility &&
+                    (consumesSource(it.cost) || sacrificesOwnSource(it.effect))
+                else activatesRepeatedly(it)
+            }.flatMap { effectTags(it.effect, it.targetRequirements, ownPile, pileCast) }
+            val triggered = script.triggeredAbilities.filter {
+                if (spent) sacrificesOwnSource(EffectWalker.readableEffect(it)) else triggersRepeatedly(it, isAura)
+            }.flatMap { effectTags(EffectWalker.readableEffect(it), it.allTargetRequirements, ownPile, pileCast) }
+            val granted = script.staticAbilities.filter {
+                when (it) {
+                    is GrantActivatedAbility -> !it.ability.isManaAbility && spendsGranter(it.ability.cost) == spent
+                    is GrantTriggeredAbility -> !spent
+                    else -> false
+                }
+            }.flatMap { tagsOf(it) }
+            activated + triggered + granted
+        }
+    }
+
+    /** A granted activation whose cost sacrifices or exiles the permanent granting it (Blazing Torch). */
+    private fun spendsGranter(cost: AbilityCost): Boolean = when (cost) {
+        AbilityCost.SacrificeGrantingPermanent, AbilityCost.ExileGrantingPermanent -> true
+        is AbilityCost.Composite -> cost.costs.any { spendsGranter(it) }
+        else -> false
+    }
+
+    /**
+     * Whether resolving [effect] always sacrifices the ability's own source — "you may sacrifice
+     * this Equipment. If you do, …" (Throwing Knife's [Gate.MayPay] or [Gate.DoAction] price), a
+     * "you may sacrifice this", or a bare "sacrifice this" among its steps. Such an ability pays off
+     * once, whatever its trigger or cost. A sacrifice behind a condition — an Ordeal's "then if it
+     * has three or more +1/+1 counters on it, sacrifice this" — is the payoff's end, not every
+     * firing's price, so it doesn't count.
+     */
+    private fun sacrificesOwnSource(effect: Effect): Boolean = EffectWalker.fold(effect, SpendsSource)
+
+    private object SpendsSource : EffectWalker.Fold<Boolean> {
+        override fun leaf(effect: Effect): Boolean =
+            isSelfSacrifice(effect) || (effect is GatedEffect && effect.decisionMaker == null && when (val gate = effect.gate) {
+                is Gate.MayPay -> EffectWalker.leaves(gate.cost).any(::isSelfSacrifice)
+                is Gate.DoAction -> EffectWalker.leaves(gate.action).any(::isSelfSacrifice)
+                else -> false
+            })
+        override fun composite(parts: List<Boolean>): Boolean = parts.any { it }
+        override fun conditional(thenValue: Boolean, elseValue: Boolean?): Boolean = false
+        override fun may(thenValue: Boolean): Boolean = thenValue
+    }
+
+    private fun isSelfSacrifice(leaf: Effect): Boolean =
+        leaf is SacrificeSelfEffect || (leaf is SacrificeTargetEffect && leaf.target == EffectTarget.Self)
 
     /** "At the beginning of the end step, sacrifice this creature" — a body that leaves the turn it arrives. */
     private fun sacrificesItselfAtEndStep(scripts: List<CardScript>): Boolean = scripts.any { script ->
@@ -3822,8 +3933,7 @@ object CardIntentAnalyzer {
             // Off-zone abilities and self-consuming costs cannot keep answering opposing threats.
             val repeatableRemoval = scripts.any { script ->
                 script.activatedAbilities.any { ability ->
-                    ability.activateFromZone == Zone.BATTLEFIELD && !ability.isManaAbility &&
-                        !consumesSource(ability.cost) &&
+                    activatesRepeatedly(ability) &&
                         IntentTag.REMOVAL in analyzeEffect(ability.effect, ability.targetRequirements).tags &&
                         TargetPolarityAnalyzer.forRequirements(ability.effect, ability.targetRequirements)
                             .withIndex().any { (index, polarity) ->
@@ -3836,8 +3946,7 @@ object CardIntentAnalyzer {
             // recursion deck honest, but answers nothing on the board — a third of removal's term.
             val repeatableHate = !repeatableRemoval && scripts.any { script ->
                 script.activatedAbilities.any { ability ->
-                    ability.activateFromZone == Zone.BATTLEFIELD && !ability.isManaAbility &&
-                        !consumesSource(ability.cost) &&
+                    activatesRepeatedly(ability) &&
                         IntentTag.GRAVEYARD_HATE in analyzeEffect(ability.effect, ability.targetRequirements).tags
                 }
             }
@@ -3914,12 +4023,21 @@ object CardIntentAnalyzer {
         return buildList {
             // Removal that can answer a *new* permanent every turn is the strongest thing a
             // non-creature permanent does.
-            if (repeatable && removal) add(PriorRung("repeatable removal", 4.0))
+            // The removal itself must recur: a one-shot "sacrifice this: deal 2 damage" beside a
+            // repeatable equip is removal once ([CardIntent.repeatableTags]).
+            if (IntentTag.REMOVAL in intent.repeatableTags || IntentTag.EXILE_REMOVAL in intent.repeatableTags) {
+                add(PriorRung("repeatable removal", 4.0))
+            }
             // A repeatable tapper answers the same permanent every turn, and an O-Ring answers one
             // permanent for as long as it lives. Different mechanisms, comparable worth — and both
             // are things you spend a Disenchant on.
             if (repeatable && IntentTag.TAPPER in tags) add(PriorRung("repeatable tapper", 3.5))
-            if (removal) add(PriorRung("removal", 3.5))
+            // Removal the permanent can only use by spending itself (Throwing Knife, Pyrite
+            // Spellbomb) is one answer waiting on the board, a card's worth like the one-shot rungs
+            // below — not the O-Ring that holds a permanent away for as long as it stays.
+            val removalTags = setOf(IntentTag.REMOVAL, IntentTag.EXILE_REMOVAL)
+            val spentRemoval = removalTags.any { it in intent.spentTags } && removalTags.none { it in intent.repeatableTags }
+            if (removal) add(if (spentRemoval) PriorRung("one-shot removal", 1.0) else PriorRung("removal", 3.5))
             if (repeatable && IntentTag.MILL in tags) add(PriorRung("repeatable mill win condition", 2.0))
             if (repeatable && IntentTag.DRAW in tags) add(PriorRung("repeatable card draw", 3.0))
             // A card a turn that must be spent the turn it comes (Birgi, Ark of Hunger): an engine,

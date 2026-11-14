@@ -23,6 +23,8 @@ import io.kotest.matchers.shouldBe
  *   noncreature permanent can be, above a repeatable tapper.
  * - "Discard a card: draw a card" (Murmuring Volume, Solitary Cell) trades card for card: a filter,
  *   not the repeatable card draw (3.0) it read as.
+ * - "Whenever equipped creature attacks, you may sacrifice this Equipment. If you do, it deals 2
+ *   damage to any target" (Throwing Knife) answers once: its equip recurs, its removal doesn't.
  * - Exiling a permanent *you control* (Identity Echo's polymorph) takes away our own creature: the
  *   price of what follows, not removal.
  */
@@ -46,6 +48,51 @@ class InPlayRemovalReadingAiTest : ScenarioTestBase() {
             }
             withClue("Gideon's Memorial's discard ability works only from the hand: in play it is a token anthem, no removal") {
                 value("Gideon's Memorial") shouldBeLessThan value("Icy Manipulator")
+            }
+        }
+
+        test("an Equipment that sacrifices itself to deal its damage is one-shot removal, not repeatable") {
+            val knife = CardIntentAnalyzer.analyzeInPlay(card("Throwing Knife"))
+            knife.tags shouldContain IntentTag.REMOVAL
+            knife.repeatableTags shouldNotContain IntentTag.REMOVAL
+            withClue("priced below the 4.0 repeatable-removal rung") { knife.staticPriorValue shouldBeLessThan 3.5 }
+            val game = scenario().withPlayers()
+                .withCardOnBattlefield(2, "Throwing Knife")
+                .withCardOnBattlefield(2, "Icy Manipulator")
+                .build()
+            val intents = IntentCatalog.of(cardRegistry)
+            fun value(name: String): Double {
+                val id = game.findPermanent(name)!!
+                val component = game.state.getEntity(id)!!.get<CardComponent>()!!
+                return BoardPresence.permanentValue(
+                    game.state, game.state.projectedState, id, component, intents, AiProfile.LIVE.creatureValuation,
+                )
+            }
+            value("Throwing Knife") shouldBeLessThan value("Icy Manipulator")
+        }
+
+        test("a sacrifice-to-pay removal permanent is one-shot removal, granted or printed") {
+            CardIntentAnalyzer.analyzeInPlay(card("Seal of Doom")).staticPriorValue shouldBe 1.0
+            // The Torch's equip and evasion grant still price it like any Equipment (1.5) — below removal's 3.5.
+            val torch = CardIntentAnalyzer.analyzeInPlay(card("Blazing Torch"))
+            torch.spentTags shouldContain IntentTag.REMOVAL
+            torch.repeatableTags shouldNotContain IntentTag.REMOVAL
+            torch.staticPriorValue shouldBeLessThan 3.5
+        }
+
+        test("repeatable removal stays repeatable: a granted ping, and a trigger read through its captured stand-in") {
+            for (name in listOf("Viridian Longbow", "Godsend")) {
+                withClue(name) { CardIntentAnalyzer.analyzeInPlay(card(name)).staticPriorValue shouldBe 4.0 }
+            }
+        }
+
+        test("a sacrifice behind a condition doesn't make the trigger single-use") {
+            for (name in listOf("Ordeal of Nylea", "Decree of Silence")) {
+                val intent = CardIntentAnalyzer.analyzeInPlay(card(name))
+                withClue(name) {
+                    intent.repeatable shouldBe true
+                    intent.spentTags shouldBe emptySet()
+                }
             }
         }
 

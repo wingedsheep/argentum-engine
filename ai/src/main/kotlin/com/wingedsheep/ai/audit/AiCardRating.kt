@@ -269,7 +269,7 @@ object AiCardRating {
             if (IntentTag.FIGHT in intent.tags) add("Its removal reach is the fighting creature's power")
             else if (intent.removalReach != null) add("Its damage answers toughness ${intent.removalReach} or less")
             intent.cardsDrawn?.let { add("Draws $it card${if (it == 1) "" else "s"} at a time") }
-            if (intent.repeatable) add("Can pay off more than once")
+            if (intent.repeatableTags.isNotEmpty()) add("Can pay off more than once")
             if (intent.anthemBonus > 0) add("Gives each of your creatures +${intent.anthemBonus} total P/T")
             if (intent.pumpToughness > 0) add("A trick that adds ${intent.pumpToughness} toughness until end of turn")
             intent.counterTax?.let { add("A soft counter: the caster can pay {$it}") }
@@ -323,6 +323,7 @@ object AiCardRating {
         IntentTag.DAMAGE_TO_PLAYERS to "Damages or drains players",
         IntentTag.TRIGGER_LOCK to "Locks out enter/dies triggers",
         IntentTag.COUNTER_LOCK to "Stops counters being put on players or permanents",
+        IntentTag.LIFEGAIN_LOCK to "Locks out opponents' life gain",
         IntentTag.TOKEN_THEFT to "Takes opponents' tokens",
         IntentTag.DISCARD_SHIELD to "Keeps cards an effect discards",
         IntentTag.GAME_WIN to "Wins the game outright",

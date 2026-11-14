@@ -175,7 +175,7 @@ class StatContext(
                     val container = root.getEntity(id) ?: continue
                     val card = container.get<CardComponent>() ?: continue
                     for (intent in intents.forPermanent(container, card.name)) {
-                        if (!intent.repeatable || IntentTag.REMOVAL !in intent.tags) continue
+                        if (IntentTag.REMOVAL !in intent.repeatableTags) continue
                         intent.removalReach?.let { best = maxOf(best ?: 0, it) }
                     }
                 }

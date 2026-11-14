@@ -1068,6 +1068,51 @@
     ]
 }
 
+// Bonded Construct
+{
+    "name": "Bonded Construct",
+    "manaCost": "{1}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "This creature can't attack alone.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnlessCoAttacker",
+                "coAttackerFilter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "artist": "Craig J Spearing",
+        "flavorText": "Loyal to a fault, it heeds its master's every command.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/43361897-f853-4cab-a132-5af48dad3b54.jpg?1783938312",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Bonded Construct can be declared as an attacker only if another creature is declared as an attacker at the same time."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If you control more than one creature that can't attack alone, they can attack together, even if no other creatures attack."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Although Bonded Construct can't attack alone, other attacking creatures don't have to attack the same player or planeswalker. For example, Bonded Construct could attack an opponent and another creature could attack a planeswalker that opponent controls."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Bounding Krasis
 {
     "name": "Bounding Krasis",
@@ -1585,6 +1630,76 @@
     ]
 }
 
+// Consecrated by Blood
+{
+    "name": "Consecrated by Blood",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+2 and has flying and \"Sacrifice two other creatures: Regenerate this creature.\" (The next time the creature would be destroyed this turn, instead tap it, remove it from combat, and heal all damage on it.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            },
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Consecrated by Blood:1",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomSacrifice",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "StateNot",
+                                        "predicate": "IsSource"
+                                    }
+                                ]
+                            },
+                            "count": 2
+                        }
+                    },
+                    "effect": {
+                        "type": "Regenerate",
+                        "target": "Self"
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "UNCOMMON",
+        "artist": "John Stanko",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d896df9-f897-4786-b1a1-d2375e81c9ef.jpg?1783938345",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "If the regeneration ability is activated before combat damage is dealt, the two creatures you sacrifice won't deal combat damage. However, you must regenerate a creature before it would be destroyed, so if you wait for combat damage to be dealt, the enchanted creature may be destroyed by that damage before it has the chance to regenerate."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Consul's Lieutenant
 {
     "name": "Consul's Lieutenant",
@@ -1653,6 +1768,100 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Dark Dabbling
+{
+    "name": "Dark Dabbling",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Regenerate target creature. Draw a card. (The next time the creature would be destroyed this turn, instead tap it, remove it from combat, and heal all damage on it.)\nSpell mastery — If there are two or more instant and/or sorcery cards in your graveyard, also regenerate each other creature you control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Regenerate",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Graveyard",
+                                "filter": "instant|sorcery"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you",
+                                "excludeTarget": true
+                            }
+                        },
+                        "body": {
+                            "type": "Regenerate",
+                            "target": "IterationEntity"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "artist": "Bastien L. Deharme",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b3d5a047-2315-41a5-a78d-6a690622c457.jpg?1783938344",
+        "rulings": [
+            {
+                "date": "2018-12-07",
+                "text": "If the target creature is an illegal target by the time Dark Dabbling tries to resolve, the ability doesn't resolve. You don't draw a card and no creatures are regenerated."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "Dark Dabbling's spell mastery ability is a normal spell effect, not a replacement effect. This means that if you replace drawing a card for Dark Dabbling's effect with dredging a card from your graveyard, the cards put into your graveyard this way may enable the additional regeneration."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Check to see if there are two or more instant and/or sorcery cards in your graveyard as the spell resolves to determine whether the spell mastery ability applies. The spell itself won't count because it's still on the stack as you make this check."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -2125,6 +2334,67 @@
     ]
 }
 
+// Despoiler of Souls
+{
+    "name": "Despoiler of Souls",
+    "manaCost": "{B}{B}",
+    "typeLine": "Creature — Horror",
+    "oracleText": "This creature can't block.\n{B}{B}, Exile two other creature cards from your graveyard: Return this card from your graveyard to the battlefield.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Despoiler of Souls:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{B}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomExileFrom",
+                                "zone": "Graveyard",
+                                "filter": "creature",
+                                "count": 2,
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                "activateFromZone": "Graveyard"
+            }
+        ],
+        "staticAbilities": [
+            "CantBlock"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "rarity": "RARE",
+        "artist": "Greg Staples",
+        "flavorText": "Rats and vultures devour. It desecrates.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/04a09fe4-d7a0-4065-968d-0837c3eafda0.jpg?1783938342"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Disciple of the Ring
 {
     "name": "Disciple of the Ring",
@@ -2586,6 +2856,129 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Erebos's Titan
+{
+    "name": "Erebos's Titan",
+    "manaCost": "{1}{B}{B}{B}",
+    "typeLine": "Creature — Giant",
+    "oracleText": "As long as your opponents control no creatures, this creature has indestructible. (Damage and effects that say \"destroy\" don't destroy it.)\nWhenever a creature card leaves an opponent's graveyard, you may discard a card. If you do, return this card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Erebos's Titan:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature own:opponent",
+                    "from": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Hand",
+                            "fromZone": "Graveyard"
+                        }
+                    }
+                },
+                "activeZones": [
+                    "Graveyard"
+                ],
+                "descriptionOverride": "You may discard a card. If you do, return Erebos's Titan from your graveyard to your hand."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "EachOpponent",
+                    "zone": "Battlefield",
+                    "filter": "creature",
+                    "negate": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "MYTHIC",
+        "artist": "Peter Mohrbacher",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f5972911-2d41-4a0c-8a8f-b3d35a6594d8.jpg?1783938343",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Damage dealt to a creature with indestructible remains marked on that creature. If Erebos's Titan has lethal damage marked on it and it loses indestructible (perhaps because your opponent controlled no creatures and then gained control of one), Erebos's Titan will be destroyed."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "The last ability triggers only if Erebos's Titan is in your graveyard."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "In a multiplayer game, the last ability won't trigger when a player with a creature card in their graveyard leaves the game."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -3121,6 +3514,84 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Gnarlroot Trapper
+{
+    "name": "Gnarlroot Trapper",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Elf Druid",
+    "oracleText": "{T}, Pay 1 life: Add {G}. Spend this mana only to cast an Elf creature spell.\n{T}: Target attacking Elf you control gains deathtouch until end of turn. (Any amount of damage it deals to a creature is enough to destroy it.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Gnarlroot Trapper:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN",
+                    "restriction": {
+                        "type": "SubtypeSpellsOrAbilitiesOnly",
+                        "subtype": "Elf",
+                        "creatureOnly": true
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}, Pay 1 life: Add {G}. Spend this mana only to cast an Elf creature spell."
+            },
+            {
+                "id": "Gnarlroot Trapper:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "DEATHTOUCH",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature Elf attacking ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "rarity": "UNCOMMON",
+        "artist": "Christopher Moeller",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e05572ba-3a26-41f5-96c1-960ec9367178.jpg?1783938341"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
     ]
 }
 
@@ -5333,6 +5804,213 @@
     ]
 }
 
+// Necromantic Summons
+{
+    "name": "Necromantic Summons",
+    "manaCost": "{4}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put target creature card from a graveyard onto the battlefield under your control.\nSpell mastery — If there are two or more instant and/or sorcery cards in your graveyard, that creature enters with two additional +1/+1 counters on it.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Battlefield",
+            "controllerOverride": "Controller",
+            "fromZone": "Graveyard",
+            "entryCounters": [
+                {
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": {
+                        "type": "Conditional",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Graveyard",
+                                "filter": "instant|sorcery"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        "ifTrue": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "ifFalse": {
+                            "type": "Fixed",
+                            "amount": 0
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Yee",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3afe7891-09d5-470e-aa41-71d89249875b.jpg?1783938339",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Check to see if there are two or more instant and/or sorcery cards in your graveyard as the spell resolves to determine whether the spell mastery ability applies. The spell itself won't count because it's still on the stack as you make this check."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Nightsnare
+{
+    "name": "Nightsnare",
+    "manaCost": "{3}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent reveals their hand. You may choose a nonland card from it. If you do, that player discards that card. If you don't, that player discards two cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RevealHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "nonland",
+                    "storeSelected": "selected2",
+                    "prompt": "You may choose a nonland card for that player to discard",
+                    "showAllCards": true,
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "ConditionalOnCollection",
+                    "collection": "selected2",
+                    "ifNotEmpty": {
+                        "type": "MoveCollection",
+                        "from": "selected2",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Graveyard",
+                            "player": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "moveType": "Discard"
+                    },
+                    "ifEmpty": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                "chooser": "TargetPlayer",
+                                "storeSelected": "discarded",
+                                "prompt": "Choose 2 cards to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "artist": "Min Yum",
+        "flavorText": "Ravnica would be safer if mere coin was all the Dimir could steal.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/391a1023-69e7-425c-ac54-987ba366f8f4.jpg?1783938338",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "If you don't choose a nonland card for the player to discard, that player chooses which two cards they will discard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Nivix Barrier
 {
     "name": "Nivix Barrier",
@@ -5959,6 +6637,103 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Rabid Bloodsucker
+{
+    "name": "Rabid Bloodsucker",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Vampire",
+    "oracleText": "Flying\nWhen this creature enters, each player loses 2 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rabid Bloodsucker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "Each"
+                    }
+                },
+                "descriptionOverride": "When this creature enters, each player loses 2 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "artist": "Seb McKinnon",
+        "flavorText": "She haunts the streets, wings spread wide, with carrion on her breath and blood in her eyes.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/7335da62-3b59-4c73-a19e-b1733393ed88.jpg?1783938338"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Ramroller
+{
+    "name": "Ramroller",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Juggernaut",
+    "oracleText": "This creature attacks each combat if able.\nThis creature gets +2/+0 as long as you control another artifact.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            "MustAttack",
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 0,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "artifact",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "237",
+        "rarity": "UNCOMMON",
+        "artist": "Craig J Spearing",
+        "flavorText": "As unstoppable as it is unsteerable.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/07f7ba4d-26bb-4631-a135-f27d94f376d1.jpg?1783938308",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "If, during its controller's declare attackers step, Ramroller is tapped or is affected by a spell or ability that says it can't attack, then Ramroller doesn't attack. If there's a cost associated with having it attack, its controller isn't forced to pay that cost. If they don't, Ramroller doesn't have to attack."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Reave Soul
@@ -7432,6 +8207,55 @@
     "colorIdentityOverride": []
 }
 
+// Tainted Remedy
+{
+    "name": "Tainted Remedy",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "If an opponent would gain life, that player loses that much life instead.",
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "ReplaceLifeGainWith",
+                "replacementEffect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "VariableReference",
+                        "variableName": "replacementLifeGainAmount"
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "appliesTo": {
+                    "player": "EachOpponent"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "rarity": "RARE",
+        "artist": "Izzy",
+        "flavorText": "\"Drink this, brother. It will bring you rest.\"\n—Liliana Vess",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cbb8edd0-4573-4b52-a3ea-83ed19dbf58d.jpg?1783938337",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "If more than one replacement effect tries to apply to a life gain event, the player who would gain life chooses the order in which they apply. For example, if a player who controls Alhammarret's Archive would gain 3 life while Tainted Remedy is on the battlefield, that player may choose to have the 3 life become doubled to 6 life and then lose 6 life. The player may also choose to apply Tainted Remedy first, turning \"gain 3 life\" into \"lose 3 life.\" Alhammarret's Archive would then not apply."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Having more than one Tainted Remedy on the battlefield doesn't have any noticeable effect on life gain. Once the effect of one Tainted Remedy applies, there is no life gain for the others to apply to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Talent of the Telepath
 {
     "name": "Talent of the Telepath",
@@ -7804,6 +8628,159 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Thornbow Archer
+{
+    "name": "Thornbow Archer",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Elf Archer",
+    "oracleText": "Whenever this creature attacks, each opponent who doesn't control an Elf loses 1 life.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thornbow Archer:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "Exists",
+                                "player": "You",
+                                "zone": "Battlefield",
+                                "filter": "permanent Elf",
+                                "negate": true
+                            }
+                        },
+                        "then": {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    }
+                },
+                "descriptionOverride": "Whenever this creature attacks, each opponent who doesn't control an Elf loses 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "artist": "Kev Walker",
+        "flavorText": "\"I will not rest until the stench of eyeblights is eradicated from these woods.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/3290c60a-f9a0-464d-a15e-8473a6d50d96.jpg?1783938339"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Throwing Knife
+{
+    "name": "Throwing Knife",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +2/+0.\nWhenever equipped creature attacks, you may sacrifice this Equipment. If you do, this Equipment deals 2 damage to any target.\nEquip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Throwing Knife:1",
+                "trigger": "AttackEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": "SacrificeSelf"
+                    },
+                    "then": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever equipped creature attacks, you may sacrifice this Equipment. If you do, this Equipment deals 2 damage to any target."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Throwing Knife:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 0
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "241",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5dfce9be-67a2-4e8a-a71f-e88f64067691.jpg?1783938307",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Throwing Knife's triggered ability triggers before blockers are declared. If you use the ability and destroy the targeted creature with lethal damage, it won't be on the battlefield to block."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Throwing Knife is the source of the damage dealt because of its triggered ability. For example, you could sacrifice Throwing Knife to deal 2 damage to a creature with protection from red, even if Throwing Knife is equipped to a red creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Thunderclap Wyvern
@@ -8258,6 +9235,81 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Unholy Hunger
+{
+    "name": "Unholy Hunger",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature.\nSpell mastery — If there are two or more instant and/or sorcery cards in your graveyard, you gain 2 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Graveyard",
+                                "filter": "instant|sorcery"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "artist": "Lius Lasahido",
+        "flavorText": "Liliana viewed the attention of the angels as a testament to her power. Even so, they were an annoyance.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/5994b7b0-3bca-480b-b265-ed269f15c17e.jpg?1783938335",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Check to see if there are two or more instant and/or sorcery cards in your graveyard as the spell resolves to determine whether the spell mastery ability applies. The spell itself won't count because it's still on the stack as you make this check."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
