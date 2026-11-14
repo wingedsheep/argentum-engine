@@ -12711,46 +12711,54 @@
             "modes": [
                 {
                     "effect": {
-                        "type": "ForEach",
-                        "space": {
-                            "type": "IterationSpace.Players",
-                            "players": "ActivePlayerFirst"
-                        },
-                        "body": {
-                            "type": "Composite",
-                            "effects": [
-                                {
-                                    "type": "GatherCards",
-                                    "source": {
-                                        "type": "FromZone",
-                                        "zone": "Hand"
-                                    },
-                                    "storeAs": "hand"
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Players",
+                                    "players": "ActivePlayerFirst"
                                 },
-                                {
-                                    "type": "SelectFromCollection",
-                                    "from": "hand",
-                                    "selection": {
-                                        "type": "ChooseExactly",
-                                        "count": {
-                                            "type": "Fixed",
-                                            "amount": 2
+                                "body": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Hand"
+                                            },
+                                            "storeAs": "hand"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "hand",
+                                            "selection": {
+                                                "type": "ChooseExactly",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 2
+                                                }
+                                            },
+                                            "storeSelected": "chosenToDiscard",
+                                            "prompt": "Choose 2 cards to discard"
                                         }
-                                    },
-                                    "storeSelected": "discarded",
-                                    "prompt": "Choose 2 cards to discard"
+                                    ]
                                 },
-                                {
-                                    "type": "MoveCollection",
-                                    "from": "discarded",
-                                    "destination": {
-                                        "type": "ToZone",
-                                        "zone": "Graveyard"
-                                    },
-                                    "moveType": "Discard"
+                                "collectCollections": {
+                                    "chosenToDiscard": "discarded_by_each_player"
                                 }
-                            ]
-                        }
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded_by_each_player",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
                     },
                     "description": "Each player discards two cards"
                 },

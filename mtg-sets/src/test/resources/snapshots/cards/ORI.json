@@ -5493,6 +5493,263 @@
     ]
 }
 
+// Liliana, Heretical Healer
+{
+    "name": "Liliana, Heretical Healer",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Legendary Creature — Human Cleric",
+    "oracleText": "Lifelink\nWhenever another nontoken creature you control dies, exile Liliana, Heretical Healer, then return her to the battlefield transformed under her owner's control. If you do, create a 2/2 black Zombie creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Liliana, Heretical Healer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        "ExileAndReturnTransformed",
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "Entity",
+                                "entity": "Self"
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "gathered1",
+                            "ifNotEmpty": {
+                                "type": "CreateToken",
+                                "power": 2,
+                                "toughness": 2,
+                                "colors": [
+                                    "BLACK"
+                                ],
+                                "creatureTypes": [
+                                    "Zombie"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/e/5/e5ccae95-95c2-4d11-aa68-5c80ecf90fd2.jpg?1783938294"
+                            },
+                            "filter": "planeswalker"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever another nontoken creature you control dies, exile Liliana, then return her to the battlefield transformed under her owner's control. If you do, create a 2/2 black Zombie creature token."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Liliana, Defiant Necromancer",
+        "manaCost": "",
+        "typeLine": "Legendary Planeswalker — Liliana",
+        "oracleText": "+2: Each player discards a card.\n−X: Return target nonlegendary creature card with mana value X from your graveyard to the battlefield.\n−8: You get an emblem with \"Whenever a creature dies, return it to the battlefield under your control at the beginning of the next end step.\"",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Liliana, Defiant Necromancer:1",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": 2
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Players",
+                                    "players": "ActivePlayerFirst"
+                                },
+                                "body": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Hand"
+                                            },
+                                            "storeAs": "hand"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "hand",
+                                            "selection": {
+                                                "type": "ChooseExactly",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "chosenToDiscard",
+                                            "prompt": "Choose a card to discard"
+                                        }
+                                    ]
+                                },
+                                "collectCollections": {
+                                    "chosenToDiscard": "discarded_by_each_player"
+                                }
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded_by_each_player",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Each player discards a card."
+                },
+                {
+                    "id": "Liliana, Defiant Necromancer:2",
+                    "cost": "CostLoyaltyX",
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Battlefield",
+                        "fromZone": "Graveyard"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        "IsNonlegendary",
+                                        {
+                                            "type": "CompareNumericProperty",
+                                            "property": "MANA_VALUE",
+                                            "operator": "EQ",
+                                            "amount": "XValue"
+                                        }
+                                    ],
+                                    "controllerPredicate": "OwnedByYou"
+                                },
+                                "zone": "Graveyard"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Return target nonlegendary creature card with mana value X from your graveyard to the battlefield."
+                },
+                {
+                    "id": "Liliana, Defiant Necromancer:4",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -8
+                    },
+                    "effect": {
+                        "type": "CreateGlobalTriggeredAbility",
+                        "ability": {
+                            "id": "Liliana, Defiant Necromancer:3",
+                            "trigger": {
+                                "type": "ZoneChangeEvent",
+                                "filter": "creature",
+                                "from": "Battlefield",
+                                "to": "Graveyard"
+                            },
+                            "binding": "ANY",
+                            "effect": {
+                                "type": "CreateDelayedTrigger",
+                                "step": "END",
+                                "effect": {
+                                    "type": "MoveToZone",
+                                    "target": "TriggeringEntity",
+                                    "destination": "Battlefield",
+                                    "controllerOverride": "Controller",
+                                    "fromZone": "Graveyard"
+                                }
+                            },
+                            "descriptionOverride": "Whenever a creature dies, return it to the battlefield under your control at the beginning of the next end step."
+                        },
+                        "descriptionOverride": "Whenever a creature dies, return it to the battlefield under your control at the beginning of the next end step.",
+                        "emblem": true
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "You get an emblem with \"Whenever a creature dies, return it to the battlefield under your control at the beginning of the next end step.\""
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "106",
+            "rarity": "MYTHIC",
+            "artist": "Karla Ortiz",
+            "imageUri": "https://cards.scryfall.io/normal/back/9/f/9f25e1cf-eeb4-458d-8fb2-b3a2f86bdd54.jpg?1783938343",
+            "rulings": [
+                {
+                    "date": "2015-06-22",
+                    "text": "When Liliana, Defiant Necromancer's first ability resolves, first you choose a card to discard, then each other player in turn order chooses a card to discard, then all those cards are discarded simultaneously. No one sees what the other players are discarding before deciding which card to discard."
+                }
+            ]
+        },
+        "startingLoyalty": 3,
+        "colorIdentityOverride": [
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "MYTHIC",
+        "artist": "Karla Ortiz",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f25e1cf-eeb4-458d-8fb2-b3a2f86bdd54.jpg?1783938343",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "You can control two of this permanent, one front-face up and the other back-face up, at the same time."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If multiple nontoken creatures you control die, then Liliana, Heretical Healer's ability will trigger that many times. However, since Liliana can be exiled and returned to the battlefield only once, only the first ability to resolve will create a Zombie token. The other abilities will resolve but won't do anything."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "A Magic Origins planeswalker that enters the battlefield because of the ability of its front face will enter with loyalty counters as normal."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "In some rare cases, a spell or ability may cause one of these five cards to transform while it's a creature (front face up) on the battlefield. If this happens, the resulting planeswalker won't have any loyalty counters on it and will subsequently be put into its owner's graveyard."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "You can activate one of the planeswalker's loyalty abilities the turn it enters the battlefield. However, you may do so only during one of your main phases when the stack is empty. For example, if the planeswalker enters the battlefield during combat, there will be an opportunity for your opponent to remove it before you can activate one of its abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Magmatic Insight
 {
     "name": "Magmatic Insight",

@@ -865,8 +865,8 @@ object Effects {
 
     /**
      * Each player (including you) discards N cards, each choosing their own — Rankle's Prank.
-     * The symmetric twin of [EachOpponentDiscards]: same ForEachPlayer → Gather → Select → Move
-     * pipeline, iterated over every player in APNAP order. See [HandPatterns.eachPlayerDiscards].
+     * Every player chooses in APNAP order before anything moves, then all chosen cards are
+     * discarded simultaneously (CR 101.4). See [HandPatterns.eachPlayerDiscards].
      */
     fun EachPlayerDiscards(count: Int = 1): Effect = HandPatterns.eachPlayerDiscards(count)
 
