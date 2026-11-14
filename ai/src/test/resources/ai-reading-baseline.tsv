@@ -8060,6 +8060,7 @@ Hall of the Bandit Lord
 Hallar, the Firefletcher
 Hallowed Fountain
 Hallowed Haunting
+Hallowed Moonlight
 Hallowed Respite
 Hallowed Spiritkeeper
 Hallway Heckler
@@ -11593,7 +11594,7 @@ Mist-Syndicate Naga
 Mistbind Clique	intent: EmitChampionedEventEffect; polarity: Pipeline(BattlefieldMatching→?)
 Mistblade Shinobi
 Mistbreath Elder
-Mistcaller	intent: GrantReplacementEffectEffect; timing: GrantReplacementEffectEffect
+Mistcaller
 Mistcutter Hydra
 Mister Fantastic, Reed Richards
 Mister Gutsy
