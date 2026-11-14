@@ -2524,6 +2524,7 @@ Calamity of Cinders
 Calamity's Wake	timing: CantCastSpellsEffect
 Calamity, Galloping Inferno
 Calciderm
+Calculated Dismissal
 Caldaia Strongarm
 Caldera Hellion
 Caldera Lake
@@ -4141,6 +4142,7 @@ Daxos, Blessed by the Sun
 Day of Black Sun
 Day of Judgment
 Day of the Dragons
+Day's Undoing
 Daybreak Chaplain
 Daybreak Charger
 Daybreak Chimera
@@ -4290,6 +4292,7 @@ Deep Water	intent: GrantStaticAbilityEffect; timing: GrantStaticAbilityEffect
 Deep Wood
 Deep-Cavern Bat	intent: Pipeline(FromLinkedExile→hand)
 Deep-Sea Serpent
+Deep-Sea Terror
 Deep-Slumber Titan
 Deepchannel Duelist
 Deepfathom Echo
@@ -4647,6 +4650,7 @@ Dispersal Technician
 Disperse
 Dispersing Orb
 Displace
+Displacement Wave
 Displacer Beast
 Displacer Kitten
 Display of Power	polarity: CopyEachTargetSpellEffect
@@ -4948,6 +4952,7 @@ Dreadlight Monstrosity
 Dreadmalkin
 Dreadmaw's Ire
 Dreadmobile
+Dreadwaters
 Dreadwing
 Dreadwing Scavenger
 Dreadwurm
@@ -5544,7 +5549,7 @@ Emrakul's Messenger
 Emrakul, the Exigent Doom
 Emrakul, the Promised End	intent: HijackNextTurnEffect; intent: TakeExtraTurnEffect; polarity: HijackNextTurnEffect; polarity: TakeExtraTurnEffect
 Emrakul, the World Anew	intent: Pipeline(BattlefieldMatching→graveyard)
-Emry, Lurker of the Loch	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?)
+Emry, Lurker of the Loch
 Enatu Golem
 Encampment Keeper
 Enchanted Being
@@ -8299,7 +8304,7 @@ Heedless One
 Hei Bai, Forest Guardian
 Hei Bai, Spirit of Balance
 Heightened Reflexes
-Heiko Yamazaki, the General	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?)
+Heiko Yamazaki, the General
 Heir of Falkenrath
 Heir of the Ancient Fang
 Heir of the Wilds
@@ -8783,6 +8788,7 @@ Hydro-Channeler
 Hydro-Man, Fluid Felon	intent: BecomeArtifactEffect
 Hydroelectric Specimen
 Hydroid Krasis
+Hydrolash
 Hydrosurge
 Hyena Pack
 Hylda of the Icy Crown
@@ -9380,6 +9386,7 @@ Jace's Ingenuity
 Jace's Machinations
 Jace's Projection	intent: AddCountersEffect
 Jace's Ruse
+Jace's Sanctum
 Jace's Scrutiny
 Jace's Sentinel
 Jace's Triumph
@@ -9389,6 +9396,7 @@ Jace, Ingenious Mind-Mage
 Jace, Mirror Mage
 Jace, Reality Sculptor	intent: ForEach>Pipeline(TopOfLibrary→exile)
 Jace, Unraveler of Secrets
+Jace, Vryn's Prodigy
 Jace, Wielder of Mysteries
 Jace, the Mind Sculptor	intent: Pipeline(TopOfLibrary→library); polarity: Pipeline(TopOfLibrary→library)
 Jace, the Perfected Mind
@@ -9538,7 +9546,7 @@ Joraga Auxiliary
 Joraga Invocation
 Joraga Visionary
 Jori En, Ruin Diver
-Jorn, God of Winter	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?)
+Jorn, God of Winter
 Jorubai Murk Lurker
 Joshua, Phoenix's Dominant
 Josu Vess, Lich Knight
@@ -11197,7 +11205,7 @@ Mausoleum Secrets
 Mausoleum Turnkey
 Mausoleum Wanderer
 Maverick Thopterist
-Mavinda, Students' Advocate	intent: GrantMayPlayFromExileEffect; intent: GrantPlayWithCostIncreaseEffect; intent: Pipeline(ChosenTargets→?)
+Mavinda, Students' Advocate
 Mavren Fein, Dusk Apostle
 Maw of Kozilek
 Maw of the Mire
@@ -11638,6 +11646,7 @@ Misty Palms Oasis
 Misty Rainforest
 Mite Overseer
 Mithril Coat
+Mizzium Meddler
 Mizzium Tank
 Mizzix's Mastery
 Mizzix, Replica Rider
@@ -12376,7 +12385,7 @@ Nomads' Assembly
 Noose Constrictor
 Noosegraf Mob
 Nori, Teller of Tales
-Norika Yamazaki, the Poet	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?)
+Norika Yamazaki, the Poet
 Norin, Swift Survivalist	intent: GrantMayPlayFromExileEffect; intent: Pipeline(Entity→exile)
 Norman Osborn
 Norn's Decree
@@ -13452,6 +13461,7 @@ Portent Tracker	intent: AddCountersEffect; intent: RemoveCountersEffect; polarit
 Portent of Betrayal
 Portent of Calamity
 Possessed Goat	intent: AddColorEffect; intent: AddCreatureTypeEffect
+Possessed Skaab
 Possession Engine
 Possibility Technician	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Postmortem Professor
@@ -15764,6 +15774,7 @@ Senate Courier
 Senate Griffin
 Senate Guildmage
 Send in the Pest
+Send to Sleep
 Sengir Connoisseur
 Sengir Vampire
 Sensei Golden-Tail	intent: AddCountersEffect; intent: AddCreatureTypeEffect; intent: GrantKeywordEffect; polarity: AddCountersEffect; polarity: AddCreatureTypeEffect; polarity: GrantKeywordEffect
@@ -16926,6 +16937,7 @@ Sphinx's Approach
 Sphinx's Decree
 Sphinx's Insight
 Sphinx's Revelation
+Sphinx's Tutelage
 Spicy Oatmeal Pizza
 Spider Food
 Spider Manifestation
@@ -17974,6 +17986,7 @@ Talas Scout
 Talas Warrior
 Tale of Tinúviel
 Tale's End
+Talent of the Telepath
 Tales of Master Seshiro
 Talion's Messenger
 Talion, the Kindly Lord
@@ -18901,7 +18914,7 @@ Tinker's Tote
 Tinybones Joins Up
 Tinybones, Bauble Burglar
 Tinybones, Pocket Nuisance
-Tinybones, the Pickpocket	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?)
+Tinybones, the Pickpocket
 Tireless Hauler
 Tireless Missionaries
 Tireless Provisioner
@@ -19336,6 +19349,7 @@ Turn Inside Out
 Turn into a Pumpkin
 Turn the Earth	polarity: GainLifeEffect; polarity: Pipeline(ChosenTargets→library)
 Turn to Dust
+Turn to Frog
 Turn to Slag
 Turncoat Kunoichi
 Turntimber Ascetic
@@ -20162,7 +20176,7 @@ Vodalian Serpent
 Vodalian Soldiers
 Vodalian War Machine
 Vodalian Zombie
-Vohar, Vodalian Desecrator	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?)
+Vohar, Vodalian Desecrator
 Voice of Duty
 Voice of Grace
 Voice of Law
@@ -20797,6 +20811,7 @@ Will, Scion of Peace	intent: ModifySpellCostsEffect
 Will-Forged Golem
 Will-o'-the-Wisp
 Willbender
+Willbreaker
 Willow Dryad
 Willow Elf
 Willow Geist
@@ -21311,7 +21326,7 @@ Zuko's Exile
 Zuko, Conflicted
 Zuko, Exiled Prince
 Zuko, Firebending Master
-Zul Ashur, Lich Lord	intent: GrantMayPlayFromExileEffect; intent: Pipeline(ChosenTargets→?)
+Zul Ashur, Lich Lord
 Zulaport Chainmage
 Zulaport Cutthroat
 Zulaport Duelist
