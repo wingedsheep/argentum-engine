@@ -1607,7 +1607,7 @@ Beza, the Bounding Spring
 Biblioplex Assistant
 Biblioplex Kraken
 Biblioplex Tomekeeper
-Bident of Thassa	intent: ForEach>MarkMustAttackEffect
+Bident of Thassa
 Bifur, Melodic Rider
 Big Game Hunter
 Big Play
@@ -7875,7 +7875,7 @@ Grist, Voracious Larva
 Gristle Glutton
 Grixis Battlemage
 Grixis Charm
-Grizzled Angler	intent: ForEach>MarkMustAttackEffect
+Grizzled Angler
 Grizzled Leotau
 Grizzled Outrider
 Grizzly Bears
@@ -8966,7 +8966,7 @@ Incinerating Blast
 Incinerator of the Guilty
 Incisor Glider
 Incite Hysteria
-Incite War	polarity: ForEachEffect
+Incite War
 Incorrigible Youths
 Increasing Devotion
 Incremental Growth
@@ -12184,7 +12184,7 @@ Nettle Guard
 Nettle Swine
 Nettletooth Djinn
 Nettlevine Blight	polarity: Aura>GrantTriggeredAbility
-Nettling Imp	polarity: CreateDelayedTriggerEffect; polarity: MarkMustAttackEffect
+Nettling Imp
 Network Disruptor
 Network Terminal
 Neurok Familiar
