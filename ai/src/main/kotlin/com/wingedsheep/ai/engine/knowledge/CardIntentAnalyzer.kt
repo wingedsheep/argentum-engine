@@ -982,10 +982,19 @@ object CardIntentAnalyzer {
      * Catalyst): the card comes back through the stack, the recursion a return to hand is
      * ([RECAST_FROM_OUR_GRAVEYARD]). The free cast of the same slot already reads as
      * [IntentTag.FREE_SPELL] — the mana it saves *and* the card — so only the paid cast is this.
+     *
+     * So is the paid cast granted rather than made on resolution — "you may cast target instant or
+     * sorcery card from your graveyard this turn. If that spell would be put into your graveyard,
+     * exile it instead" (Jace, Telepath Unbound; Vohar, Vodalian Desecrator): a
+     * [GrantMayPlayFromExileEffect] over the chosen graveyard card, which we then cast from where it
+     * lies, paying its costs. The exile rider only decides where the card goes after its one use.
      */
     internal fun castsChosenGraveyardTargetsPaying(effect: Effect, requirements: List<TargetRequirement>): Boolean =
         TargetPolarityAnalyzer.castGraveyardSlots(effect, requirements).isNotEmpty() &&
-            gateInteriorLeaves(effect).any { it is CastFromCollectionWithoutPayingCostEffect && it.payManaCost }
+            gateInteriorLeaves(effect).any {
+                (it is CastFromCollectionWithoutPayingCostEffect && it.payManaCost) ||
+                    (it is GrantMayPlayFromExileEffect && !it.ownerControls && it.recipient == EffectTarget.Controller)
+            }
 
     /**
      * Whether [effect] returns its own chosen targets, every one a graveyard card, to our hand —
