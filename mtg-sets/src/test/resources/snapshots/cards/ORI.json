@@ -729,6 +729,53 @@
     ]
 }
 
+// Aspiring Aeronaut
+{
+    "name": "Aspiring Aeronaut",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "Flying (This creature can't be blocked except by creatures with flying or reach.)\nWhen this creature enters, create a 1/1 colorless Thopter artifact creature token with flying.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aspiring Aeronaut:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Thopter"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "artifactToken": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "artist": "Willian Murai",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1ae6c87f-003b-44b7-96fd-ab8fca9af6f1.jpg?1783938354"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Aven Battle Priest
 {
     "name": "Aven Battle Priest",
@@ -977,6 +1024,83 @@
     ]
 }
 
+// Bounding Krasis
+{
+    "name": "Bounding Krasis",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Creature — Fish Lizard",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nWhen this creature enters, you may tap or untap target creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bounding Krasis:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Modal",
+                        "modes": [
+                            {
+                                "effect": {
+                                    "type": "TapUntap",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "description": "Tap target creature"
+                            },
+                            {
+                                "effect": {
+                                    "type": "TapUntap",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "tap": false
+                                },
+                                "description": "Untap target creature"
+                            }
+                        ],
+                        "countsAsModalSpell": false
+                    },
+                    "descriptionOverride": "When this creature enters, you may tap or untap target creature."
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, you may tap or untap target creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "UNCOMMON",
+        "artist": "Jack Wang",
+        "flavorText": "Unpredictable as a storm and destructive as a tidal wave.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/660befe5-9c98-4aa3-9ca7-e643eaf91490.jpg?1783938315"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Caustic Caterpillar
 {
     "name": "Caustic Caterpillar",
@@ -1191,6 +1315,43 @@
     ]
 }
 
+// Clash of Wills
+{
+    "name": "Clash of Wills",
+    "manaCost": "{X}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell unless its controller pays {X}.",
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "condition": {
+                "type": "CounterCondition.UnlessPaysDynamic",
+                "amount": "XValue"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "UNCOMMON",
+        "artist": "Yan Li",
+        "flavorText": "Alhammarret rose to his feet, and the full force of his mind hit Jace like a storm front.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/665ee42f-8d76-4f8b-9dd3-7455a90f0da7.jpg?1783938353"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Conclave Naturalists
 {
     "name": "Conclave Naturalists",
@@ -1329,6 +1490,87 @@
                 "text": "Check to see if there are two or more instant and/or sorcery cards in your graveyard as the spell resolves to determine whether the spell mastery ability applies. The spell itself won't count because it's still on the stack as you make this check."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Deadbridge Shaman
+{
+    "name": "Deadbridge Shaman",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Elf Shaman",
+    "oracleText": "When this creature dies, target opponent discards a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Deadbridge Shaman:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "artist": "Nils Hamm",
+        "flavorText": "\"Ending her life won't end the infestation.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2b62a4c2-e66d-4fc3-8703-a90b84f567bf.jpg?1783938343"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -1494,6 +1736,134 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Disciple of the Ring
+{
+    "name": "Disciple of the Ring",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{1}, Exile an instant or sorcery card from your graveyard: Choose one —\n• Counter target noncreature spell unless its controller pays {2}.\n• This creature gets +1/+1 until end of turn.\n• Tap target creature.\n• Untap target creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Disciple of the Ring:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomExileFrom",
+                                "zone": "Graveyard",
+                                "filter": "instant|sorcery"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Counter",
+                                "condition": {
+                                    "type": "CounterCondition.UnlessPaysMana",
+                                    "cost": "{2}"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "noncreature",
+                                        "zone": "Stack"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Counter target noncreature spell unless its controller pays {2}"
+                        },
+                        {
+                            "effect": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "Self"
+                            },
+                            "description": "This creature gets +1/+1 until end of turn"
+                        },
+                        {
+                            "effect": {
+                                "type": "TapUntap",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t1"
+                                }
+                            ],
+                            "description": "Tap target creature"
+                        },
+                        {
+                            "effect": {
+                                "type": "TapUntap",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t2"
+                                },
+                                "tap": false
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t2"
+                                }
+                            ],
+                            "description": "Untap target creature"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{1}, Exile an instant or sorcery card from your graveyard: Choose one — Counter target noncreature spell unless its controller pays {2}; this creature gets +1/+1 until end of turn; tap target creature; or untap target creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "rarity": "MYTHIC",
+        "artist": "Clint Cearley",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d344f86-a02d-4de3-82c1-2586dd9ddbfe.jpg?1783938352"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -1922,6 +2292,72 @@
     ]
 }
 
+// Foundry of the Consuls
+{
+    "name": "Foundry of the Consuls",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{5}, {T}, Sacrifice this land: Create two 1/1 colorless Thopter artifact creature tokens with flying.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Foundry of the Consuls:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Foundry of the Consuls:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Thopter"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "artifactToken": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "247",
+        "rarity": "UNCOMMON",
+        "artist": "Sam Burley",
+        "flavorText": "All around the foundry, automatons unhitched themselves from their mounts and pivoted to face Chandra.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/73f29e03-0a71-46cd-992e-7baa61f16ac5.jpg?1783938306"
+    }
+}
+
 // Ghirapur Aether Grid
 {
     "name": "Ghirapur Aether Grid",
@@ -1966,6 +2402,51 @@
         "artist": "Cynthia Sheppard",
         "flavorText": "The city of Ghirapur is a living thing, and living things defend themselves.",
         "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e4a0c29-a759-465f-9136-9d709b6f30fc.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Ghirapur Gearcrafter
+{
+    "name": "Ghirapur Gearcrafter",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "When this creature enters, create a 1/1 colorless Thopter artifact creature token with flying. (A creature with flying can't be blocked except by creatures with flying or reach.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ghirapur Gearcrafter:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Thopter"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "artifactToken": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "The metal must be pure. The hand must be steady. The product must be perfect.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f05cafb6-8812-42bb-ad14-3dde4bcb7034.jpg?1783938329"
     },
     "colorIdentityOverride": [
         "RED"
@@ -2875,6 +3356,48 @@
     ]
 }
 
+// Malakir Cullblade
+{
+    "name": "Malakir Cullblade",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Vampire Warrior",
+    "oracleText": "Whenever a creature an opponent controls dies, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Malakir Cullblade:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:opponent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "flavorText": "Each cut stains his blade with fresh blood that he samples to increase his strength.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/0/70861692-1eb2-4cb1-8d7f-b881386c37d1.jpg?1783938339"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Managorger Hydra
 {
     "name": "Managorger Hydra",
@@ -3202,6 +3725,97 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Pia and Kiran Nalaar
+{
+    "name": "Pia and Kiran Nalaar",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Legendary Creature — Human Artificer",
+    "oracleText": "When Pia and Kiran Nalaar enters, create two 1/1 colorless Thopter artifact creature tokens with flying.\n{2}{R}, Sacrifice an artifact: Pia and Kiran Nalaar deals 2 damage to any target.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pia and Kiran Nalaar:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Thopter"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "artifactToken": true
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Pia and Kiran Nalaar:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{R}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "artifact"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}{R}, Sacrifice an artifact: Pia and Kiran Nalaar deals 2 damage to any target."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "157",
+        "rarity": "RARE",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0dcafa9e-3637-42ca-bdb2-45a2b5da7294.jpg?1783938327"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -3538,6 +4152,102 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Shadows of the Past
+{
+    "name": "Shadows of the Past",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a creature dies, scry 1. (Look at the top card of your library. You may put that card on the bottom.)\n{4}{B}: Each opponent loses 2 life and you gain 2 life. Activate only if there are four or more creature cards in your graveyard.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shadows of the Past:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Shadows of the Past:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Graveyard",
+                                "filter": "creature"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "{4}{B}: Each opponent loses 2 life and you gain 2 life. Activate only if there are four or more creature cards in your graveyard."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Yee",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/02962013-fc5a-46be-9021-8fd40ab3027c.jpg?1783938337",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Once you legally activate the last ability, it doesn't matter how many creature cards are in your graveyard as it resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -4794,6 +5504,82 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Wild Instincts
+{
+    "name": "Wild Instincts",
+    "manaCost": "{3}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature you control gets +2/+2 until end of turn. It fights target creature an opponent controls. (Each deals damage equal to its power to the other.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Fight",
+                    "target1": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "artist": "Igor Kieryluk",
+        "flavorText": "Nissa had only the space of a heartbeat to react, her instincts steering her blade.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/58fafd9d-777f-4d88-ad93-63af6d7ef274.jpg?1783938316",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "You must target both a creature you control and a creature an opponent controls to cast Wild Instincts."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If the creature an opponent controls is an illegal target as Wild Instincts tries to resolve, but the creature you control is still a legal target, the creature you control will get +2/+2, but the creatures won't fight. Neither creature will deal or be dealt damage during the resolution of Wild Instincts."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 

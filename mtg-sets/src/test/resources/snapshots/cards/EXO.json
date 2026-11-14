@@ -568,6 +568,44 @@
     ]
 }
 
+// Reclaim
+{
+    "name": "Reclaim",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Put target card from your graveyard on top of your library.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Library",
+            "placement": "Top"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "artist": "Andrew Robinson",
+        "flavorText": "The wise pay as much attention to what they throw away as to what they keep.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2b47c082-57f6-4f69-87e8-a07cad9ef042.jpg?1783946504"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Reconnaissance
 {
     "name": "Reconnaissance",

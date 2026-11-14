@@ -1,0 +1,202 @@
+{
+  "Aerial Volley": [
+    "removal",
+    "creature-removal"
+  ],
+  "Anchor to the Aether": [
+    "removal",
+    "creature-removal"
+  ],
+  "Blazing Hellhound": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Blightcaster": [
+    "removal",
+    "creature-removal"
+  ],
+  "Caustic Caterpillar": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Celestial Flare": [
+    "removal",
+    "creature-removal"
+  ],
+  "Chandra's Fury": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Chandra, Fire of Kaladesh": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Claustrophobia": [
+    "removal",
+    "creature-removal"
+  ],
+  "Conclave Naturalists": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Cruel Revival": [
+    "removal",
+    "creature-removal"
+  ],
+  "Demolish": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Demonic Pact": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Disperse": [
+    "removal",
+    "creature-removal"
+  ],
+  "Displacement Wave": [
+    "removal",
+    "creature-removal"
+  ],
+  "Divine Verdict": [
+    "removal",
+    "creature-removal"
+  ],
+  "Enlightened Ascetic": [
+    "removal",
+    "enchantment-removal"
+  ],
+  "Exquisite Firecraft": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Eyeblight Massacre": [
+    "removal",
+    "creature-removal"
+  ],
+  "Fiery Conclusion": [
+    "removal",
+    "creature-removal"
+  ],
+  "Fiery Impulse": [
+    "removal",
+    "creature-removal"
+  ],
+  "Flesh to Dust": [
+    "removal",
+    "creature-removal"
+  ],
+  "Fleshbag Marauder": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ghirapur Aether Grid": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Gilt-Leaf Winnower": [
+    "removal",
+    "creature-removal"
+  ],
+  "Harbinger of the Tides": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hixus, Prison Warden": [
+    "removal",
+    "creature-removal"
+  ],
+  "Into the Void": [
+    "removal",
+    "creature-removal"
+  ],
+  "Languish": [
+    "removal",
+    "creature-removal"
+  ],
+  "Lightning Javelin": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Mage-Ring Responder": [
+    "removal",
+    "creature-removal"
+  ],
+  "Meteorite": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Molten Vortex": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Pia and Kiran Nalaar": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Plummet": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ravaging Blaze": [
+    "removal",
+    "creature-removal"
+  ],
+  "Reave Soul": [
+    "removal",
+    "creature-removal"
+  ],
+  "Reclusive Artificer": [
+    "removal",
+    "creature-removal"
+  ],
+  "Separatist Voidmage": [
+    "removal",
+    "creature-removal"
+  ],
+  "Smash to Smithereens": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Suppression Bonds": [
+    "removal",
+    "creature-removal"
+  ],
+  "Throwing Knife": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Tragic Arrogance": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Unholy Hunger": [
+    "removal",
+    "creature-removal"
+  ],
+  "Weight of the Underworld": [
+    "removal",
+    "creature-removal"
+  ],
+  "Wild Instincts": [
+    "removal",
+    "creature-removal"
+  ]
+}
