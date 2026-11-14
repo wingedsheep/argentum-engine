@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.mtg.sets.definitions.plc.cards.ProdigalPyromancer
+import com.wingedsheep.mtg.sets.definitions.tmp.cards.MoggFanatic
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.matchers.shouldBe
@@ -15,7 +16,7 @@ import io.kotest.matchers.shouldBe
  * creature dealt damage by that creature dies this turn, its controller loses 2 life."
  *
  * The rider fires once per creature the pumped creature damaged, even when the pumped creature dies
- * in the same combat; a creature something else killed doesn't count; the dying creature's
+ * in the same combat or is sacrificed to deal the damage; a creature something else killed doesn't count; the dying creature's
  * controller loses the life (2015-06-22 ruling), even when that is the caster; and once the pumped
  * creature leaves and comes back it is a new object, so its later damage doesn't count.
  */
@@ -81,6 +82,34 @@ class TouchOfMoongloveScenarioTest : ScenarioTestBase() {
             game.isInGraveyard(1, "Hill Giant") shouldBe true
             game.getLifeTotal(1) shouldBe 18
             game.getLifeTotal(2) shouldBe 20
+        }
+
+        test("damage the pumped creature deals as it is sacrificed still counts") {
+            val game = scenario()
+                .withPlayers()
+                .withCardInHand(1, "Touch of Moonglove")
+                .withCardOnBattlefield(1, "Mogg Fanatic")
+                .withCardOnBattlefield(2, "Hill Giant")
+                .withLandsOnBattlefield(1, "Swamp", 1)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            val fanatic = game.findPermanent("Mogg Fanatic")!!
+            game.castSpell(1, "Touch of Moonglove", fanatic).error shouldBe null
+            game.resolveStack()
+
+            // Sacrificed as a cost, it deals its damage as it last existed — with deathtouch.
+            game.execute(
+                ActivateAbility(
+                    game.player1Id, fanatic, MoggFanatic.activatedAbilities.single().id,
+                    listOf(ChosenTarget.Permanent(game.findPermanent("Hill Giant")!!))
+                )
+            ).error shouldBe null
+            game.resolveStack()
+
+            game.isInGraveyard(2, "Hill Giant") shouldBe true
+            game.getLifeTotal(2) shouldBe 18
         }
 
         test("once the pumped creature has left and returned, its damage no longer counts") {

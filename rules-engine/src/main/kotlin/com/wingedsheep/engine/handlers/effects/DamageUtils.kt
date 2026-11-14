@@ -1303,7 +1303,8 @@ object DamageUtils {
             sourceCardTypes = sourceSnapshot.typeLine?.cardTypes.orEmpty(),
             sourceName = sourceSnapshot.name.takeUnless { sourceSnapshot.wasFaceDown },
             amount = amount,
-            sourceObject = state.objectRef(sourceId),
+            // The departed source's object as it dealt the damage, never its new one (CR 400.7).
+            sourceObject = sourceSnapshot.objectRef,
         )
         val projected = state.projectedState
         val controllerId = projected.getController(sourceId)

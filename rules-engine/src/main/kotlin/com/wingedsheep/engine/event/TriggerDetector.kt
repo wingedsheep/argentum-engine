@@ -1438,6 +1438,8 @@ class TriggerDetector(
      *  - **Entity-scoped** (`watchedEntityId != null`): the trigger watches one concrete entity —
      *    DealsDamageEvent (scoped on damage source), DamageReceivedEvent (scoped on the damaged
      *    entity) and ZoneChangeEvent ("when *that* creature dies this turn"). The spec's GameObjectFilter is not applied; the watched entity is the scope.
+     *    CreatureDealtDamageBySourceDiesEvent is scoped on the *damaging* creature instead ("whenever a
+     *    creature dealt damage by that creature dies this turn" — Touch of Moonglove).
      *  - **Filter-scoped** (`watchedEntityId == null`): the trigger watches a *group* described by
      *    the spec's GameObjectFilter + TriggerBinding — the attack-declaration events ("when you next
      *    attack this turn"), DamageReceivedEvent ("whenever a creature an opponent controls is dealt
@@ -1555,7 +1557,10 @@ class TriggerDetector(
                 if (event !is ZoneChangeEvent || event.toZone != Zone.GRAVEYARD || !event.isBattlefieldDeparture) return false
                 val watched = watchedEntityId ?: return false
                 val damageSources = event.lastKnown?.damageSources ?: return false
-                damageSources.any { it.dealtBy(watched, watchedObject) } && matcher.matchesZoneChangeTrigger(
+                val sourceFilter = specEvent.sourceFilter
+                damageSources.any {
+                    it.dealtBy(watched, watchedObject) && (sourceFilter == null || it.matches(sourceFilter, controllerId))
+                } && matcher.matchesZoneChangeTrigger(
                     com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent(
                         filter = specEvent.dyingFilter ?: com.wingedsheep.sdk.scripting.GameObjectFilter.Creature,
                         from = Zone.BATTLEFIELD,

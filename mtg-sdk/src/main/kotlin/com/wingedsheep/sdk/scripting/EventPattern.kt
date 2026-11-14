@@ -1750,6 +1750,9 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      *   information from when the damage was dealt (CR 603.10a / 608.2h), so a Spider that died in
      *   the same combat still qualifies. The filter's controller predicate is resolved relative to
      *   the controller of the permanent bearing the trigger.
+     * - As an event-based delayed trigger with a `watchedTarget` → "whenever a creature dealt damage by
+     *   *that creature* dies this turn" (Touch of Moonglove): the watched creature is the damaging
+     *   source, read off the dying creature's last-known damage record; it has no filter-scoped form.
      */
     @SerialName("CreatureDealtDamageBySourceDiesEvent")
     @Serializable
