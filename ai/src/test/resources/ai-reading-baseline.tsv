@@ -996,6 +996,7 @@ Aspect of Manticore
 Aspect of Wolf
 Asphodel Wanderer
 Aspirant's Ascent	polarity: GrantKeywordEffect
+Aspiring Aeronaut
 Assassin's Blade
 Assassin's Ink
 Assassin's Trophy
@@ -2158,6 +2159,7 @@ Bound by Moonsilver
 Bound in Gold
 Boundary Lands Ranger
 Bounding Felidar
+Bounding Krasis
 Bounding Wolf
 Bountiful Landscape
 Bountiful Promenade
@@ -3139,9 +3141,11 @@ Clarion Conqueror
 Clarion Spirit
 Clash of Elements
 Clash of Titans
+Clash of Wills
 Clash of the Eikons	polarity: AddCountersEffect; polarity: RemoveCountersEffect
 Class-F Shuttlecraft
 Clattering Skeletons
+Claustrophobia
 Clavileño, First of the Blessed
 Clawing Torment
 Claws Out
@@ -4153,6 +4157,7 @@ Dead Weight
 Dead-Iron Sledge
 Deadapult
 Deadbridge Goliath
+Deadbridge Shaman
 Deadeye Brawler
 Deadeye Duelist
 Deadeye Harpooner
@@ -4603,6 +4608,7 @@ Disciple of Grace
 Disciple of Law
 Disciple of Malice
 Disciple of Perdition
+Disciple of the Ring
 Disciple of the Vault
 Disciples of Gix
 Disciplined Duelist
@@ -6701,6 +6707,7 @@ Foundry Hornet
 Foundry Inspector
 Foundry Screecher
 Foundry Street Denizen
+Foundry of the Consuls
 Fountain of Renewal
 Fountain of Youth
 Fountainport
@@ -7112,6 +7119,7 @@ Ghastly Remains
 Ghazbán Ogre	intent: GainControlByRankEffect
 Ghen, Arcanum Weaver
 Ghirapur Aether Grid
+Ghirapur Gearcrafter
 Ghirapur Guide	intent: GrantStaticAbilityEffect; polarity: GrantStaticAbilityEffect; timing: GrantStaticAbilityEffect
 Ghirapur Orrery
 Ghirapur Osprey
@@ -10920,6 +10928,7 @@ Malachite Golem
 Malachite Talisman
 Malakir Blood-Priest
 Malakir Bloodwitch
+Malakir Cullblade
 Malakir Familiar
 Malakir Rebirth
 Malakir Soothsayer
@@ -13209,6 +13218,7 @@ Phyrexian Warhorse
 Phytohydra
 Pia Nalaar
 Pia Nalaar, Consul of Revival
+Pia and Kiran Nalaar
 Pia's Revolution
 Pia, Aether Ascetic
 Pia, Determined Rebuilder
@@ -14252,6 +14262,7 @@ Reckless Wurm
 Reckoner Bankbuster
 Reckoner Shakedown
 Reckoner's Bargain
+Reclaim
 Reclaim the Wastes
 Reclaiming Vines
 Reclamation Sage
@@ -15872,6 +15883,7 @@ Shadowed Caravel
 Shadowfax, Lord of Horses
 Shadowfeed
 Shadowmage Infiltrator
+Shadows of the Past
 Shadows' Verdict
 Shadowspear
 Shadowstorm
@@ -20714,6 +20726,7 @@ Wild Growth
 Wild Guess
 Wild Hunger
 Wild Hypothesis
+Wild Instincts
 Wild Jhovall
 Wild Leotau
 Wild Nacatl
