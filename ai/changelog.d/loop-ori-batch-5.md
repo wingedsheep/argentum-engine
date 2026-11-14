@@ -1,2 +1,2 @@
-- #TBD The AI now reads "each player shuffles their permanents into their library" (The Great Aurora, Warp World) as a symmetric board wipe — a sweeper that also hits its own creatures — instead of an effect it has no intent for
-- #TBD The AI now reads "can't be blocked except by creatures with flying/reach" (Orchard Spirit, Elven Riders) as evasion, and a mana ability a creature grants itself (Honored Hierarch once renowned) as a mana source
+- #4674 The AI now reads "each player shuffles their permanents into their library" (The Great Aurora, Warp World) as a symmetric board wipe — a sweeper that also hits its own creatures — instead of an effect it has no intent for
+- #4674 The AI now reads "can't be blocked except by creatures with flying/reach" (Orchard Spirit, Elven Riders) as evasion, and a mana ability a creature grants itself (Honored Hierarch once renowned) as a mana source
