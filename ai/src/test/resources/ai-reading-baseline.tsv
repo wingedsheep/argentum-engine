@@ -108,6 +108,7 @@ Acid Rain
 Aclazotz, Deepest Betrayal
 Acolyte of Aclazotz
 Acolyte of Affliction
+Acolyte of the Inferno
 Acquired Mutation
 Acquisition Octopus	intent: UnattachEquipmentEffect
 Acquisitions Expert
@@ -1124,6 +1125,7 @@ Avacynian Priest
 Avalanche Caller
 Avalanche Tusker
 Avarax
+Avaricious Dragon
 Avatar Aang
 Avatar Destiny
 Avatar Enthusiasts
@@ -2538,6 +2540,7 @@ Call a Surprise Witness
 Call for Unity
 Call of the Conclave
 Call of the Death-Dweller
+Call of the Full Moon
 Call of the Herd
 Call of the Ring
 Call the Bloodline
@@ -2905,6 +2908,7 @@ Chandra's Embercat
 Chandra's Emberling
 Chandra's Firemaw
 Chandra's Flame Wave
+Chandra's Fury
 Chandra's Ignition
 Chandra's Incinerator
 Chandra's Magmutt
@@ -5490,6 +5494,7 @@ Embereth Veteran
 Emberheart Challenger
 Emberhorn Minotaur
 Embermage Goblin
+Embermaw Hellion
 Embermouth Sentinel
 Embersmith
 Emberstrike Duo
@@ -5640,6 +5645,7 @@ Enter the Unknown
 Enterprise NX-01
 Enterprising Scallywag
 Enthralling Hold
+Enthralling Victor
 Enthusiastic Mechanaut
 Enthusiastic Study
 Entish Restoration
@@ -5903,6 +5909,7 @@ Expressive Iteration
 Expunge
 Exquisite Archangel
 Exquisite Blood
+Exquisite Firecraft
 Exsanguinate
 Extended Absence
 Extinction Event
@@ -6300,6 +6307,7 @@ Fiery Fall
 Fiery Finish
 Fiery Gambit
 Fiery Hellhound
+Fiery Impulse
 Fiery Inscription
 Fiery Intervention
 Fiery Islet
@@ -6459,6 +6467,7 @@ Flamekin Spitfire
 Flames of the Firebrand
 Flames of the Raze-Boar
 Flamescroll Celebrant	timing: CantActivateLoyaltyAbilitiesEffect; timing: CantCastSpellsEffect
+Flameshadow Conjuring
 Flameskull	intent: GrantMayPlayFromExileEffect; intent: Pipeline(Entity|TopOfLibrary|exile→exile)
 Flamestick Courier
 Flametongue Kavu
@@ -7512,6 +7521,7 @@ Goblin Gathering
 Goblin General
 Goblin Glasswright
 Goblin Glider
+Goblin Glory Chaser
 Goblin Goliath
 Goblin Goon
 Goblin Grappler	intent: ProvokeEffect; polarity: ProvokeEffect
@@ -9025,6 +9035,7 @@ Infantry Shield
 Infantry Veteran
 Infected Defector
 Infectious Bite
+Infectious Bloodlust
 Infectious Horror
 Infectious Host
 Infectious Inquiry
@@ -10879,6 +10890,7 @@ Mage Hunters' Onslaught
 Mage Tower Referee
 Mage's Attendant
 Mage's Guile
+Mage-Ring Bully
 Magebane Lizard
 Mages' Contest	intent: OpenLifeBidEffect; polarity: OpenLifeBidEffect
 Mageta's Boon
@@ -13557,6 +13569,7 @@ Price of Betrayal
 Price of Fame
 Price of Freedom
 Price of Loyalty
+Prickleboar
 Prickly Marmoset
 Prickly Pair
 Pride Sovereign
@@ -14171,6 +14184,7 @@ Ravaged Highlands
 Ravager Wurm
 Ravager's Mace
 Ravages of War
+Ravaging Blaze
 Ravaging Horde
 Raven Eagle
 Raven Guild Initiate
@@ -15406,6 +15420,7 @@ Say Its Name
 Sazacap's Brew
 Sazh Katzroy
 Sazh's Chocobo
+Scab-Clan Berserker
 Scalding Cauldron
 Scalding Devil
 Scalding Tarn
