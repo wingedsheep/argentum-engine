@@ -16,4 +16,5 @@ val FleshToDustReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/4/f/4fd4b0f6-fc67-48aa-9f17-21a79bd0c3d3.jpg",
     releaseDate = "2015-07-17",
     rarity = Rarity.COMMON,
+    inBooster = false,
 )

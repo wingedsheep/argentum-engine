@@ -1417,6 +1417,33 @@ object SetArchetypes {
                     "Play cheap creatures with value on entering or dying, then sacrifice them to emerge Eldrazi for a fraction of their cost. A ramp-flavoured value deck that cashes every body into a bigger threat."),
             )
         ),
+        "ORI" to SetSynergies(
+            setCode = "ORI",
+            setName = "Magic Origins",
+            archetypes = listOf(
+                Archetype("Fliers", listOf(Color.WHITE, Color.BLUE),
+                    "Take to the air with flying creatures and Thopter tokens, lord them up with Thunderclap Wyvern and hold the ground with defensive bodies. A tempo deck that wins races in the sky."),
+                Archetype("Spell Mastery Control", listOf(Color.BLUE, Color.BLACK),
+                    "Trade off early with removal and card draw until two instants or sorceries in your graveyard switch on spell mastery, and rebuy your best spells and creatures with Possessed Skaab. A grindy control deck that out-values the opponent late."),
+                Archetype("Sacrifice", listOf(Color.BLACK, Color.RED),
+                    "Turn creatures that have done their job into damage with sacrifice outlets like Blazing Hellhound, backed by tokens and cheap removal. An aggressive deck that keeps pressure on while trading every body for value."),
+                Archetype("Lands Ramp", listOf(Color.RED, Color.GREEN),
+                    "Ramp with mana creatures and land search into big green and red bodies, topped by Zendikar Incarnate, whose power is your land count. A stompy midrange deck that overpowers the ground."),
+                Archetype("Renown", listOf(Color.GREEN, Color.WHITE),
+                    "Curve out with renown creatures and use combat tricks to push their damage through, so each one grows after it connects. A midrange attacking deck whose creatures outgrow the opponent's blockers."),
+                Archetype("Enchantments", listOf(Color.WHITE, Color.BLACK),
+                    "Play Auras and removal enchantments so payoffs like Blood-Cursed Knight get bigger and gain lifelink. A midrange deck that turns its removal into a stronger board."),
+                Archetype("Artifacts", listOf(Color.BLUE, Color.RED),
+                    "Build up artifacts and Thopter tokens, then turn your artifact count into damage and value with payoffs like Reclusive Artificer. A tempo deck that flies over blockers and burns what it can't fly past."),
+                Archetype("Elves", listOf(Color.BLACK, Color.GREEN),
+                    "Fill the board with Elves that ramp and pump each other, then make the opponent lose life for each Elf with Shaman of the Pack. A tribal midrange deck that pays off a wide board of Elves.",
+                    creatureTypes = listOf("Elf")),
+                Archetype("Aggro", listOf(Color.RED, Color.WHITE),
+                    "Curve out with efficient attackers, renown and double strike, and use combat tricks and burn to clear blockers. A fast aggro deck that ends the game before the planeswalkers flip."),
+                Archetype("Flash Tempo", listOf(Color.GREEN, Color.BLUE),
+                    "Hold up mana for flash creatures like Bounding Krasis that ambush attackers or tap a blocker, and grow a sturdy board on your own turn. A tempo midrange deck that wins on well-timed plays at instant speed."),
+            )
+        ),
         "BFZ" to SetSynergies(
             setCode = "BFZ",
             setName = "Battle for Zendikar",

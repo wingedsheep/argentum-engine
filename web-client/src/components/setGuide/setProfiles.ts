@@ -512,6 +512,27 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Skulk', inPlay: 'A skulking creature can\'t be blocked by bigger creatures, so small sneaky attackers chip in all game.' },
     ],
   },
+  ORI: {
+    tagline: 'Five heroes discover their sparks: renown creatures grow when they connect, spell mastery rewards a stocked graveyard and legends flip into planeswalkers.',
+    setting: 'The origin stories of the five Gatewatch planeswalkers, each on the plane where their spark first ignited.',
+    gameplay: 'Games are fast and creature-driven, as in a classic core set. Renown creatures grow the first time they deal combat damage to a player, so attacking early and pushing damage through with tricks pays off. Spell mastery turns on extra effects once two instants or sorceries sit in your graveyard, Thopter makers fill the skies with evasive tokens, and menace and prowess keep attackers coming. Five legendary creatures transform into planeswalkers once their condition is met.',
+    tips: [
+      'Attack with renown creatures while the way is clear: the counters stay even after they stop connecting.',
+      'Count your graveyard\'s instants and sorceries before casting a spell mastery card, and sequence cheap spells first.',
+      'Kill a flip-walker legend before it transforms: once it is a planeswalker it takes a dedicated attack to remove.',
+    ],
+    tryIf: 'aggressive creature decks, origin-story planeswalkers and a classic core-set feel',
+    power: 3, speed: 4, complexity: 2,
+    themes: ['aggro', 'flyers', 'artifacts'],
+    mechanics: [
+      { name: 'Renown', inPlay: 'The first time this deals combat damage to a player it gets +1/+1 counters and becomes renowned, so early attacks pay off for the rest of the game.' },
+      { name: 'Spell mastery', inPlay: 'An instant or sorcery gets a bonus if two or more instants and/or sorceries are already in your graveyard, so cheap spells set up bigger ones.' },
+      { name: 'Thopters', inPlay: 'Many cards make 1/1 colourless flying Thopter artifact tokens, giving go-wide and artifact decks evasive chump blockers and attackers.' },
+      { name: 'Menace', inPlay: 'A creature with menace can\'t be blocked except by two or more creatures, so it gets through small boards.' },
+      { name: 'Prowess', inPlay: 'Whenever you cast a noncreature spell, this gets +1/+1 until end of turn, rewarding tricks and burn on the attack.' },
+      { name: 'Transform', inPlay: 'Five legendary creatures flip into planeswalkers when their condition is met, turning a creature into a repeatable source of value.' },
+    ],
+  },
   BFZ: {
     tagline: 'The Eldrazi return to Zendikar: ingest and process exiled cards, awaken your lands into creatures and rally your Allies.',
     setting: 'Zendikar as Ulamog\'s devoid Eldrazi broods consume the plane and its Allies gather to fight back.',

@@ -16,4 +16,5 @@ val AegisAngelReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/2/9/29edd82c-8d47-4417-85fb-c38a02d7e0fa.jpg?1783938300",
     releaseDate = "2015-07-17",
     rarity = Rarity.RARE,
+    inBooster = false,
 )

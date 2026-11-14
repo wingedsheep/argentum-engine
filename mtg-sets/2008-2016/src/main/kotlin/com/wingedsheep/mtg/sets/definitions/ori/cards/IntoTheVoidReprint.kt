@@ -16,4 +16,5 @@ val IntoTheVoidReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/2/3/236fbb72-3aea-4737-bf90-bd4d4e80b527.jpg",
     releaseDate = "2015-07-17",
     rarity = Rarity.UNCOMMON,
+    inBooster = false,
 )

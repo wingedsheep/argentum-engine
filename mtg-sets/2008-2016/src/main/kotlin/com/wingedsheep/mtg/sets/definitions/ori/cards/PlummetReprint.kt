@@ -16,4 +16,5 @@ val PlummetReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/f/a/fa8bee44-410b-46a9-be40-03f000cad9a9.jpg",
     releaseDate = "2015-07-17",
     rarity = Rarity.COMMON,
+    inBooster = false,
 )
