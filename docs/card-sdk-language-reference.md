@@ -3872,7 +3872,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `DirectedAttackRequirements` reads beside the Public Enemy static: the creature is bound only while it could
   attack that defender at no cost (CR 508.1d), and only an attack on that defender — not a named player's
   planeswalker or battle, nor another player — obeys it. If it can't attack that defender (the player left the
-  game; the planeswalker left the battlefield, stopped being a planeswalker or is its own controller's) it is
+  game; the planeswalker left the battlefield, stopped being a planeswalker or is controlled by the creature's controller) it is
   under no requirement at all. Removed during cleanup or when the creature leaves the battlefield; its
   "Must Attack" badge names the defender, and the declare-attackers legal action narrows the creature's
   targets to it.

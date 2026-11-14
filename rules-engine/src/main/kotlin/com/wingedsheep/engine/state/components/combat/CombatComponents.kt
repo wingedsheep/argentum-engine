@@ -298,36 +298,57 @@ data class MustAttackPlayerComponent(
 data object MustAttackThisTurnComponent : Component
 
 /**
+ * The defenders a directed must-attack mark names: players by entity, planeswalkers (or any other
+ * permanent) as the rules object they were when named. A planeswalker that leaves the battlefield
+ * and comes back is a new object (CR 400.7) the mark no longer names, though its entity is reused.
+ */
+@Serializable
+data class NamedAttackDefenders(
+    val playerIds: Set<EntityId> = emptySet(),
+    val permanents: Set<com.wingedsheep.engine.state.ObjectRef> = emptySet()
+) {
+    fun isEmpty(): Boolean = playerIds.isEmpty() && permanents.isEmpty()
+
+    operator fun plus(other: NamedAttackDefenders) =
+        NamedAttackDefenders(playerIds + other.playerIds, permanents + other.permanents)
+
+    /** The defenders still named: every player, and each permanent that is still the same object. */
+    fun current(state: com.wingedsheep.engine.state.GameState): Set<EntityId> =
+        if (permanents.isEmpty()) playerIds
+        else playerIds + permanents.filter(state::isCurrentObject).map { it.entityId }
+}
+
+/**
  * Marks a creature that attacks a **named defender** this turn if able — a player (encore's token
  * copies, "attacks that opponent this turn if able", CR 702.141a) or a planeswalker (Gideon,
  * Battle-Forged, once its controller's next turn begins — see [MustAttackNextTurnComponent]), put
  * there by a [com.wingedsheep.sdk.scripting.effects.MarkMustAttackEffect] with a `defender`.
  *
  * Unlike [MustAttackThisTurnComponent] the requirement is directed: it binds the creature only
- * while it could attack one of [defenderIds] at no cost (CR 508.1d), and then only an attack on
+ * while it could attack one of [defenders] at no cost (CR 508.1d), and then only an attack on
  * that defender — not a named player's planeswalker or battle — obeys it. `DirectedAttackRequirements`
  * reads it alongside the Public Enemy static. Removed at end of turn during cleanup.
  */
 @Serializable
-data class MustAttackDefendersThisTurnComponent(val defenderIds: Set<EntityId>) : Component
+data class MustAttackDefendersThisTurnComponent(val defenders: NamedAttackDefenders) : Component
 
 /**
  * Marks a creature that attacks during its controller's next turn if able —
  * [com.wingedsheep.sdk.scripting.effects.MustAttackWindow.ControllersNextTurn] (Gideon,
  * Battle-Forged). It waits, inert, until a turn begins whose active player controls the creature;
- * `TurnManager` then turns it into this turn's marks — [MustAttackThisTurnComponent] when
- * [anyDefender], [MustAttackDefendersThisTurnComponent] for [defenderIds] — which cleanup removes.
- * Reading the controller only as a turn begins is what makes the requirement follow a change of
- * control to the new controller's next turn, and what makes a mark landing during the controller's
- * own turn wait for the following one.
+ * once that turn's untap step is done (phasing included), `TurnManager` turns it into this turn's
+ * marks — [MustAttackThisTurnComponent] when [anyDefender], [MustAttackDefendersThisTurnComponent]
+ * for [defenders] — which cleanup removes. Reading the controller only then is what makes the
+ * requirement follow a change of control to the new controller's next turn, and what makes a mark
+ * landing during the controller's own turn wait for the following one.
  *
  * @property anyDefender some mark requires the creature to attack, whichever defender.
- * @property defenderIds the players and planeswalkers directed marks name.
+ * @property defenders the players and planeswalkers directed marks name.
  */
 @Serializable
 data class MustAttackNextTurnComponent(
     val anyDefender: Boolean = false,
-    val defenderIds: Set<EntityId> = emptySet()
+    val defenders: NamedAttackDefenders = NamedAttackDefenders()
 ) : Component
 
 /**

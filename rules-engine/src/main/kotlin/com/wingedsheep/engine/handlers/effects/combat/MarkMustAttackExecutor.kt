@@ -8,9 +8,9 @@ import com.wingedsheep.engine.state.components.combat.MustAttackNextCombatCompon
 import com.wingedsheep.engine.state.components.combat.MustAttackNextTurnComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackDefendersThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackThisTurnComponent
+import com.wingedsheep.engine.state.components.combat.NamedAttackDefenders
 import com.wingedsheep.engine.state.components.identity.PlayerComponent
 import com.wingedsheep.sdk.core.Phase
-import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.scripting.effects.MarkMustAttackEffect
@@ -46,23 +46,23 @@ class MarkMustAttackExecutor : EffectExecutor<MarkMustAttackEffect> {
                 if (defender == null) {
                     state.updateEntity(targetId) { it.with(MustAttackThisTurnComponent) }
                 } else {
-                    val defenderId = resolveDefender(state, defender, context)
+                    val named = resolveDefender(state, defender, context)
                         ?: return EffectResult.success(state)
                     state.updateEntity(targetId) { container ->
-                        val existing = container.get<MustAttackDefendersThisTurnComponent>()?.defenderIds.orEmpty()
-                        container.with(MustAttackDefendersThisTurnComponent(existing + defenderId))
+                        val existing = container.get<MustAttackDefendersThisTurnComponent>()?.defenders ?: NamedAttackDefenders()
+                        container.with(MustAttackDefendersThisTurnComponent(existing + named))
                     }
                 }
             }
             MustAttackWindow.ControllersNextTurn -> {
-                val defenderId = effect.defender?.let {
+                val named = effect.defender?.let {
                     resolveDefender(state, it, context) ?: return EffectResult.success(state)
                 }
                 state.updateEntity(targetId) { container ->
                     val existing = container.get<MustAttackNextTurnComponent>() ?: MustAttackNextTurnComponent()
                     container.with(
-                        if (defenderId == null) existing.copy(anyDefender = true)
-                        else existing.copy(defenderIds = existing.defenderIds + defenderId)
+                        if (named == null) existing.copy(anyDefender = true)
+                        else existing.copy(defenders = existing.defenders + named)
                     )
                 }
             }
@@ -82,14 +82,17 @@ class MarkMustAttackExecutor : EffectExecutor<MarkMustAttackEffect> {
 
     /**
      * The defender a directed mark names: a player still in the game ("attacks that opponent",
-     * encore) or a permanent on the battlefield ("attacks Gideon", the ability's own source). One
-     * that is already gone binds nothing — the attack check would find no such defender anyway.
+     * encore) or a permanent on the battlefield ("attacks Gideon", the ability's own source), kept
+     * as the object it is now. One that is already gone binds nothing.
      */
-    private fun resolveDefender(state: GameState, defender: EffectTarget, context: EffectContext): EntityId? {
-        context.resolveTarget(defender, state)
+    private fun resolveDefender(state: GameState, defender: EffectTarget, context: EffectContext): NamedAttackDefenders? {
+        val id = context.resolveTarget(defender, state)
             ?.takeIf { it in state.getBattlefield() || state.getEntity(it)?.has<PlayerComponent>() == true }
-            ?.let { return it }
-        return context.resolvePlayerTarget(defender, state)
-            ?.takeIf { state.getEntity(it)?.has<PlayerComponent>() == true }
+            ?: context.resolvePlayerTarget(defender, state)
+            ?: return null
+        if (state.getEntity(id)?.has<PlayerComponent>() == true) return NamedAttackDefenders(playerIds = setOf(id))
+        if (id !in state.getBattlefield()) return null
+        val ref = state.objectRef(id) ?: return null
+        return NamedAttackDefenders(permanents = setOf(ref))
     }
 }

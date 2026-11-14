@@ -79,7 +79,7 @@ class EncoreTest : FunSpec({
 
     /** Which opponent each token is required to attack. */
     fun GameTestDriver.requiredDefender(token: EntityId): Set<EntityId> =
-        state.getEntity(token)?.get<MustAttackDefendersThisTurnComponent>()?.defenderIds.orEmpty()
+        state.getEntity(token)?.get<MustAttackDefendersThisTurnComponent>()?.defenders?.playerIds.orEmpty()
 
     test("one hasty token copy per opponent under the activator's control; the card is exiled") {
         val (d, p) = driver(4)

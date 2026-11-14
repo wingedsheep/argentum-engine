@@ -285,8 +285,6 @@ class TurnManager(
             }
         }
 
-        newState = activateNextTurnAttackMarks(newState)
-
         val events = mutableListOf<GameEvent>(TurnChangedEvent(newState.turnNumber, playerId))
 
         // Activate a Mindslaver-style *turn*-scoped hijack scheduled on this player. Per Scryfall
@@ -1388,6 +1386,8 @@ class TurnManager(
         // path above so all "until your next turn" semantics share one site.
         val (goadCleanedState, goadEvents) = cleanupPhaseManager.expireGoadedDesignationFor(postUntapState, activePlayer)
         postUntapState = goadCleanedState
+        // After phasing, so a creature that phased in this untap step is seen.
+        postUntapState = activateNextTurnAttackMarks(postUntapState)
 
         // Advance to upkeep (this sets priority to the active player)
         val advanceResult = advanceStep(postUntapState)
@@ -1700,11 +1700,11 @@ class TurnManager(
     ): List<EntityId> = combatManager.legalDefendersFor(state, attackerId, attackingPlayer, candidates)
 
     /**
-     * "Attacks … during its controller's next turn if able" (Gideon, Battle-Forged): as a turn
-     * begins, every waiting [MustAttackNextTurnComponent] on a creature the active player controls
-     * becomes this turn's marks, which cleanup removes. Read only now, so the mark follows a change
-     * of control to the new controller's next turn and a mark placed during its controller's own
-     * turn waits for the next one.
+     * "Attacks … during its controller's next turn if able" (Gideon, Battle-Forged): once the
+     * untap step is done, every waiting [MustAttackNextTurnComponent] on a creature the active
+     * player controls becomes this turn's marks, which cleanup removes. Read only now — after
+     * phasing, before any combat — so the mark follows a change of control to the new controller's
+     * next turn and a mark placed during its controller's own turn waits for the next one.
      */
     private fun activateNextTurnAttackMarks(state: GameState): GameState {
         val marked = state.getBattlefield().filter { state.getEntity(it)?.has<MustAttackNextTurnComponent>() == true }
@@ -1718,9 +1718,9 @@ class TurnManager(
                 val mark = container.get<MustAttackNextTurnComponent>() ?: return@updateEntity container
                 var updated = container.without<MustAttackNextTurnComponent>()
                 if (mark.anyDefender) updated = updated.with(MustAttackThisTurnComponent)
-                if (mark.defenderIds.isNotEmpty()) {
-                    val existing = updated.get<MustAttackDefendersThisTurnComponent>()?.defenderIds.orEmpty()
-                    updated = updated.with(MustAttackDefendersThisTurnComponent(existing + mark.defenderIds))
+                if (!mark.defenders.isEmpty()) {
+                    val existing = updated.get<MustAttackDefendersThisTurnComponent>()?.defenders
+                    updated = updated.with(MustAttackDefendersThisTurnComponent(existing?.plus(mark.defenders) ?: mark.defenders))
                 }
                 updated
             }

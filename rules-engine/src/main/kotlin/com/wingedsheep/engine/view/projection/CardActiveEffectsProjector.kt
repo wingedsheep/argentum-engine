@@ -292,7 +292,6 @@ internal class CardActiveEffectsProjector(
         return summedPump + (others + whileTrue).distinct()
     }
 
-    /** Whether a modification already has a badge that [lasting] can date: its own, or a damage or source shield's. */
     /** "Alice", "Gideon, Battle-Forged" or "Alice or Bob" — the defenders a must-attack mark names. */
     private fun defenderNames(state: GameState, defenderIds: Set<EntityId>): String =
         defenderIds
@@ -300,6 +299,7 @@ internal class CardActiveEffectsProjector(
             .ifEmpty { listOf("a chosen defender") }
             .joinToString(" or ")
 
+    /** Whether a modification already has a badge that [lasting] can date: its own, or a damage or source shield's. */
     private fun hasOwnBadge(state: GameState, modification: SerializableModification): Boolean =
         modificationBadge(state, modification) != null ||
             modification is SerializableModification.PreventNextDamage ||
@@ -695,7 +695,7 @@ internal class CardActiveEffectsProjector(
                 ClientCardEffect(
                     effectId = "must_attack_player_this_turn",
                     name = "Must Attack",
-                    description = "This creature must attack ${defenderNames(state, mark.defenderIds)} this turn if able",
+                    description = "This creature must attack ${defenderNames(state, mark.defenders.current(state))} this turn if able",
                     icon = "must-attack"
                 )
             )
@@ -703,7 +703,8 @@ internal class CardActiveEffectsProjector(
 
         // Waiting for its controller's next turn (Gideon, Battle-Forged).
         state.getEntity(entityId)?.get<MustAttackNextTurnComponent>()?.let { mark ->
-            val whom = if (mark.defenderIds.isEmpty()) "" else " ${defenderNames(state, mark.defenderIds)}"
+            val named = mark.defenders.current(state)
+            val whom = if (named.isEmpty()) "" else " ${defenderNames(state, named)}"
             effects.add(
                 ClientCardEffect(
                     effectId = "must_attack_next_turn",

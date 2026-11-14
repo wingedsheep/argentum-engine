@@ -45,7 +45,7 @@ class DirectedAttackRequirements(
     /** Defenders — players, or planeswalkers a mark names — [creatureId] is told to attack. */
     fun namedDefendersOf(creatureId: EntityId): Set<EntityId> {
         val marked = if (hasMarks) {
-            state.getEntity(creatureId)?.get<MustAttackDefendersThisTurnComponent>()?.defenderIds.orEmpty()
+            state.getEntity(creatureId)?.get<MustAttackDefendersThisTurnComponent>()?.defenders?.current(state).orEmpty()
         } else {
             emptySet()
         }

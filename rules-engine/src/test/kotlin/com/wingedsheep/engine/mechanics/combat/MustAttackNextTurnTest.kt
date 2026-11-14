@@ -3,7 +3,9 @@ package com.wingedsheep.engine.mechanics.combat
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.combat.MarkMustAttackExecutor
+import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.PhasedOutComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackDefendersThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackNextTurnComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -12,6 +14,7 @@ import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
@@ -78,14 +81,14 @@ class MustAttackNextTurnTest : FunSpec({
         val theirs = d.opposingCreature()
         d.activatePlusTwo(pw, theirs)
 
-        d.state.getEntity(theirs)?.get<MustAttackNextTurnComponent>()?.defenderIds shouldBe setOf(pw)
+        d.state.getEntity(theirs)?.get<MustAttackNextTurnComponent>()?.defenders?.current(d.state) shouldBe setOf(pw)
         // Gideon's controller's own combat doesn't use it up.
         d.passPriorityUntil(Step.END)
         d.state.getEntity(theirs)?.get<MustAttackNextTurnComponent>() shouldNotBe null
 
         d.passPriorityUntil(Step.DECLARE_ATTACKERS, d.player2)
         d.state.getEntity(theirs)?.get<MustAttackNextTurnComponent>() shouldBe null
-        d.state.getEntity(theirs)?.get<MustAttackDefendersThisTurnComponent>()?.defenderIds shouldBe setOf(pw)
+        d.state.getEntity(theirs)?.get<MustAttackDefendersThisTurnComponent>()?.defenders?.current(d.state) shouldBe setOf(pw)
         d.declareAttackers(d.player2, emptyMap()).error shouldContain "must attack Test Taunting Walker"
         d.declareAttackers(d.player2, mapOf(theirs to d.player1)).error shouldNotBe null
         d.declareAttackers(d.player2, mapOf(theirs to pw)).error shouldBe null
@@ -143,8 +146,61 @@ class MustAttackNextTurnTest : FunSpec({
         // is no legal defender, so it binds nothing, and the mark is spent with that turn.
         d.passPriorityUntil(Step.DECLARE_ATTACKERS, d.player1)
         d.state.getEntity(theirs)?.get<MustAttackNextTurnComponent>() shouldBe null
-        d.state.getEntity(theirs)?.get<MustAttackDefendersThisTurnComponent>()?.defenderIds shouldBe setOf(pw)
+        d.state.getEntity(theirs)?.get<MustAttackDefendersThisTurnComponent>()?.defenders?.current(d.state) shouldBe setOf(pw)
         d.declareAttackers(d.player1, emptyMap()).error shouldBe null
+    }
+
+    test("a creature phased out as its controller's turn begins phases in during untap and is bound") {
+        val d = newDriver()
+        val pw = d.walkerFor(d.player1)
+        val theirs = d.opposingCreature()
+        d.activatePlusTwo(pw, theirs)
+        d.replaceState(d.state.updateEntity(theirs) { it.with(PhasedOutComponent(d.player2)) })
+
+        d.passPriorityUntil(Step.DECLARE_ATTACKERS, d.player2)
+        d.state.getEntity(theirs)?.get<PhasedOutComponent>() shouldBe null
+        d.declareAttackers(d.player2, emptyMap()).error shouldContain "must attack Test Taunting Walker"
+        d.declareAttackers(d.player2, mapOf(theirs to pw)).error shouldBe null
+    }
+
+    test("the planeswalker coming back as a new object is no longer the one named (CR 400.7)") {
+        val d = newDriver()
+        val pw = d.walkerFor(d.player1)
+        val theirs = d.opposingCreature()
+        d.activatePlusTwo(pw, theirs)
+        val battlefield = ZoneKey(d.player1, Zone.BATTLEFIELD)
+        d.moveToGraveyard(pw)
+        d.replaceState(d.state.removeFromZone(ZoneKey(d.player1, Zone.GRAVEYARD), pw).addToZone(battlefield, pw))
+        d.state.getBattlefield().contains(pw) shouldBe true
+
+        d.passPriorityUntil(Step.DECLARE_ATTACKERS, d.player2)
+        d.declareAttackers(d.player2, emptyMap()).error shouldBe null
+    }
+
+    test("multiplayer: stolen by a third player, it skips the old controller's turn and binds the new one's") {
+        val d = GameTestDriver()
+        d.registerCards(TestCards.all + walker)
+        val (p1, p2, p3) = d.initMultiplayer(List(3) { Deck.of("Plains" to 40) })
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val pw = d.walkerFor(p1)
+        val creature = d.putCreatureOnBattlefield(p2, "Centaur Courser")
+        d.submitSuccess(ActivateAbility(p1, pw, walker.script.activatedAbilities[0].id, listOf(ChosenTarget.Permanent(creature))))
+        var guard = 0
+        while (d.stackSize > 0 && guard++ < 10) d.passPriority(d.priorityPlayer!!)
+        d.state.getEntity(creature)?.get<MustAttackNextTurnComponent>() shouldNotBe null
+
+        d.replaceState(d.state.updateEntity(creature) { it.with(ControllerComponent(p3)) })
+        d.removeSummoningSickness(creature)
+        d.passPriorityUntil(Step.END, p2)
+        d.state.getEntity(creature)?.get<MustAttackNextTurnComponent>() shouldNotBe null
+        d.state.getEntity(creature)?.get<MustAttackDefendersThisTurnComponent>() shouldBe null
+
+        d.passPriorityUntil(Step.DECLARE_ATTACKERS, p3)
+        val declare = d.legalActions(p3).single { it.actionType == "DeclareAttackers" }
+        declare.mandatoryAttackers.orEmpty() shouldContainExactly listOf(creature)
+        declare.attackTargetsByAttacker?.get(creature).orEmpty() shouldContainExactly listOf(pw)
+        d.declareAttackers(p3, mapOf(creature to p2)).error shouldNotBe null
+        d.declareAttackers(p3, mapOf(creature to pw)).error shouldBe null
     }
 
     test("marked during its controller's own turn, it waits for that player's following turn") {

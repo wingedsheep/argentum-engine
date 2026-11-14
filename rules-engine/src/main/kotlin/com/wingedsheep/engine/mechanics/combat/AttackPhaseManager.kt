@@ -1040,9 +1040,10 @@ internal class AttackPhaseManager(
      * planeswalker) — empty in the overwhelmingly common case. A creature is bound to a named
      * defender it could attack at no cost and without breaking its goad ([canAttackFreely]) — the
      * "if able" of CR 508.1d; it is never bound by a player who controls it or a planeswalker they
-     * control, nor by a defender it can't attack (a planeswalker that has left the battlefield). An active Taunt aimed at another player
-     * wins, as it does over Trove of Temptation in [validateOpponentsMustAttackYou]: every creature
-     * attacking the taunter already obeys as many requirements as any declaration can.
+     * control, nor by a defender it can't attack (a planeswalker that has left the battlefield).
+     * An active Taunt aimed at another player wins, as it does over Trove of Temptation in
+     * [validateOpponentsMustAttackYou]: every creature attacking the taunter already obeys as many
+     * requirements as any declaration can.
      */
     fun boundAttackDefenders(
         state: GameState,
@@ -1066,7 +1067,8 @@ internal class AttackPhaseManager(
             val defenders = named.filterTo(mutableSetOf()) { defender ->
                 val player = defenderControllerOf(state, projected, defender)
                 player in opponents && (defender == player || defender in attackTargets) && canAttackFreely(
-                    state, projected, attackingPlayer, attackerId, listOf(defender), player, opponents, validAttackers, goad
+                    state, projected, attackingPlayer, attackerId, listOf(defender), player, opponents,
+                    validAttackers, goad,
                 )
             }
             if (defenders.isNotEmpty()) bound[attackerId] = defenders

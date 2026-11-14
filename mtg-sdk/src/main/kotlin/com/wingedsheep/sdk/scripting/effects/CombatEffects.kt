@@ -728,8 +728,9 @@ data class RemoveFromCombatEffect(
 
 /**
  * Mark a creature as required to attack if able, for the [window] named — "target creature
- * attacks this turn if able" or "that creature attacks during its controller's next combat phase
- * if able" (Sizzling Soloist). It marks only the objects it names; a group requirement that must
+ * attacks this turn if able", "that creature attacks during its controller's next combat phase
+ * if able" (Sizzling Soloist) or "… attacks Gideon during its controller's next turn if able"
+ * (Gideon, Battle-Forged). It marks only the objects it names; a group requirement that must
  * also reach creatures arriving later ("creatures your opponents control attack … if able",
  * CR 611.2c) is [MustAttackGroupEffect].
  *
