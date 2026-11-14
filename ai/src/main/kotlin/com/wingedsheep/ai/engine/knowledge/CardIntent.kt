@@ -403,6 +403,9 @@ enum class IntentTag {
      * graveyard" (Tormod's Crypt, Bojuka Bog), "put target card from a graveyard on the bottom of
      * its owner's library" (Junktroller). It answers recursion, flashback and delirium before they
      * happen, but no permanent on the board: never [REMOVAL], and worth little in Limited on its own.
+     * A granted "if a creature would enter and it wasn't cast, exile it instead" (Mistcaller,
+     * Hallowed Moonlight) is the same answer given as the reanimation happens — and it catches
+     * flickers and creature tokens too.
      */
     GRAVEYARD_HATE,
 

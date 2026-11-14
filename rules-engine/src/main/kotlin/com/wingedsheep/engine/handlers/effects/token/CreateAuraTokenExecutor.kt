@@ -91,6 +91,14 @@ class CreateAuraTokenExecutor(
             zones.predicateEvaluator, staticAbilityHandler, cardRegistry,
         )?.let { return it }
 
+        // A battlefield-entry replacement sends it elsewhere instead — judged before a Role it
+        // would displace is touched, since a Role that never enters displaces nothing.
+        val entryProbe = stateWithId.withEntity(
+            tokenId, ComponentContainer.of(tokenComponent, TokenComponent, ControllerComponent(tokenControllerId))
+        )
+        TokenEntryRedirect.divert(entryProbe, tokenId, state, zones.predicateEvaluator, cardRegistry)
+            ?.let { return EffectResult.success(it.state, listOf(it.event)) }
+
         val events = mutableListOf<GameEvent>()
         var newState = stateWithId
 

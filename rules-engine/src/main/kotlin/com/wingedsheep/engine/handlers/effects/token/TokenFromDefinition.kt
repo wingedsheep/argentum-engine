@@ -90,6 +90,19 @@ object TokenFromDefinition {
         devourCounters: Int? = null,
         predicateEvaluator: PredicateEvaluator
     ): EffectResult {
+        // A battlefield-entry replacement sends the token elsewhere instead (Hallowed Moonlight).
+        // Judged first, on the token as it would enter: a token that never enters asks no
+        // as-enters question (devour) and fires no ETB trigger. Skipped on the devour resume,
+        // which was only reached because the token wasn't diverted.
+        val unplaced = if (devourCounters == null) {
+            buildUnplaced(state, cardDef, controllerId, cardRegistry, staticAbilityHandler, predicateEvaluator)
+        } else null
+        if (unplaced != null) {
+            TokenEntryRedirect.divert(unplaced.second, unplaced.first, state, predicateEvaluator, cardRegistry)?.let { diverted ->
+                return EffectResult.success(diverted.state, listOf(diverted.event))
+            }
+        }
+
         // As-enters: Devour (CR 702.82) and its variants, raised before the token is minted — see
         // [devourCounters]. Skipped when the controller has nothing to sacrifice; devour then just
         // adds no counters, which is also what choosing zero permanents does (CR 702.82a).
@@ -126,32 +139,10 @@ object TokenFromDefinition {
             }
         }
 
-        val (tokenId, stateWithId) = state.newEntity()
-
-        // Token is owned and controlled by the player creating it.
-        var container = CardEntityFactory.create(cardDef, ownerId = controllerId)
-            .with(TokenComponent)
-            .with(SummoningSicknessComponent)
-
-        // CR 707.8a: a token copy of a double-faced card has both faces and can transform.
-        cardDef.backFace?.let { backFace ->
-            container = container.with(
-                DoubleFacedComponent(
-                    frontCardDefinitionId = cardDef.name,
-                    backCardDefinitionId = backFace.name,
-                    currentFace = DoubleFacedComponent.Face.FRONT
-                )
-            )
-        }
-
-        if (staticAbilityHandler != null) {
-            container = staticAbilityHandler.addContinuousEffectComponent(container)
-            container = staticAbilityHandler.addReplacementEffectComponent(container)
-        }
-
-        var newState = stateWithId.withEntity(tokenId, container)
-        newState = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.applyBeforeEntry(newState, tokenId, cardRegistry, predicateEvaluator)
-        newState = BattlefieldEntry.place(newState, controllerId, tokenId)
+        // The devour question didn't pause, so state is unchanged and the token built above stands.
+        val (tokenId, built) = unplaced
+            ?: buildUnplaced(state, cardDef, controllerId, cardRegistry, staticAbilityHandler, predicateEvaluator)
+        var newState = BattlefieldEntry.place(built, controllerId, tokenId)
 
         // As-enters: enters tapped (CR 614). The payLifeCost (shock-land) form is land-only. Read from
         // the identity the token entered with — a granted entry copy replaced the minted definition.
@@ -254,5 +245,45 @@ object TokenFromDefinition {
         return EffectResult.success(
             newState, listOf(event) + counterEvents + sagaEvents + entryCounterEvents
         )
+    }
+
+    /**
+     * The token entity built from [cardDef] — owned and controlled by [controllerId], any granted
+     * entry copy applied — but not yet on the battlefield.
+     */
+    private fun buildUnplaced(
+        state: GameState,
+        cardDef: CardDefinition,
+        controllerId: EntityId,
+        cardRegistry: CardRegistry,
+        staticAbilityHandler: StaticAbilityHandler?,
+        predicateEvaluator: PredicateEvaluator
+    ): Pair<EntityId, GameState> {
+        val (tokenId, stateWithId) = state.newEntity()
+
+        // Token is owned and controlled by the player creating it.
+        var container = CardEntityFactory.create(cardDef, ownerId = controllerId)
+            .with(TokenComponent)
+            .with(SummoningSicknessComponent)
+
+        // CR 707.8a: a token copy of a double-faced card has both faces and can transform.
+        cardDef.backFace?.let { backFace ->
+            container = container.with(
+                DoubleFacedComponent(
+                    frontCardDefinitionId = cardDef.name,
+                    backCardDefinitionId = backFace.name,
+                    currentFace = DoubleFacedComponent.Face.FRONT
+                )
+            )
+        }
+
+        if (staticAbilityHandler != null) {
+            container = staticAbilityHandler.addContinuousEffectComponent(container)
+            container = staticAbilityHandler.addReplacementEffectComponent(container)
+        }
+
+        val withEntity = stateWithId.withEntity(tokenId, container)
+        return tokenId to com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy
+            .applyBeforeEntry(withEntity, tokenId, cardRegistry, predicateEvaluator)
     }
 }

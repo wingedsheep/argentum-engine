@@ -504,6 +504,13 @@ class CreateTokenCopyOfTargetExecutor(
 
             newState = newState.withEntity(tokenId, container)
             if (cardRegistry != null) newState = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.applyBeforeEntry(newState, tokenId, cardRegistry, amountEvaluator.predicates)
+            // A battlefield-entry replacement sends it elsewhere instead (Hallowed Moonlight).
+            val diverted = TokenEntryRedirect.divert(newState, tokenId, state, amountEvaluator.predicates, cardRegistry)
+            if (diverted != null) {
+                newState = diverted.state
+                events.add(diverted.event)
+                continue
+            }
             newState = com.wingedsheep.engine.handlers.effects.BattlefieldEntry
                 .place(newState, controllerId, tokenId)
             // A token copy honors global "[filter] enter tapped" replacements (Authority of the

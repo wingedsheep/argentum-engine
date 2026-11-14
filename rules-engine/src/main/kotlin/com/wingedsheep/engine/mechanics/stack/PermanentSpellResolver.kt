@@ -96,11 +96,21 @@ internal class PermanentSpellResolver(
      * The unpaid half of EntersOnlyIfPaid: the resolving card goes from the stack to its owner's
      * graveyard instead of entering. It resolved — it was not countered — and a graveyard
      * replacement (Rest in Peace) or a stack-exit rider (flashback) still decides where it lands.
+     *
+     * With [entryRedirect] it is instead a battlefield-entry replacement that sent the permanent
+     * elsewhere ("if a creature would enter and it wasn't cast, exile it instead" catching a copy of
+     * a creature spell, which wasn't cast — CR 707.10): it goes to that replacement's zone. A spell
+     * copy that lands there is no token yet and ceases to exist as a copy of a card outside the stack.
      */
-    private fun putIntoGraveyardInsteadOfEntering(state: GameState, spellId: EntityId, ownerId: EntityId): ExecutionResult {
+    private fun putIntoGraveyardInsteadOfEntering(
+        state: GameState,
+        spellId: EntityId,
+        ownerId: EntityId,
+        entryRedirect: com.wingedsheep.engine.handlers.effects.ZoneChangeRedirectResult? = null,
+    ): ExecutionResult {
         val container = state.getEntity(spellId)
             ?: return ExecutionResult.error(state, "Spell entity not found: $spellId")
-        val redirect = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
+        val redirect = entryRedirect ?: com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
             .checkZoneChangeRedirect(state, spellId, Zone.STACK, Zone.GRAVEYARD, predicateEvaluator = predicateEvaluator)
         val destZone = StackExitRider.overrideZone(container) ?: redirect.destinationZone
         // The resolving spell has already been taken off the stack (SpellResolver does that before
@@ -193,6 +203,23 @@ internal class PermanentSpellResolver(
         val controllerId = spellComponent.casterId
         val ownerId = cardComponent?.ownerId ?: controllerId
         val cardDef = cardComponent?.cardDefinitionId?.let { cardRegistry.getCard(it) }
+        // A battlefield-entry replacement that sends it elsewhere instead — Hallowed Moonlight's
+        // "if a creature would enter and it wasn't cast, exile it instead" catching a copy of a
+        // creature spell (a copy put onto the stack wasn't cast, CR 707.10). Judged on the permanent
+        // as it would exist on the battlefield, once any entry copy has settled (CR 614.12), and
+        // before every as-enters question, since a permanent that never enters asks none.
+        val entryRedirect = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.checkZoneChangeRedirect(
+            state, spellId, Zone.STACK, Zone.BATTLEFIELD, predicateEvaluator = predicateEvaluator,
+            entersAsCreature = {
+                com.wingedsheep.engine.handlers.effects.EntryCharacteristics.wouldBeCreature(
+                    state, spellId, controllerId, entryCopy = null, faceDown = spellComponent.castFaceDown,
+                    cardRegistry, predicateEvaluator
+                )
+            }
+        )
+        if (entryRedirect.destinationZone != Zone.BATTLEFIELD) {
+            return putIntoGraveyardInsteadOfEntering(state, spellId, ownerId, entryRedirect)
+        }
         // "If this would enter, you may [pay] instead. If you don't, put it into its owner's
         // graveyard" (EntersOnlyIfPaid). Asked of the permanent as it would exist on the battlefield
         // (CR 614.12) — after any entry copy, so a Clone copying Mox Diamond pays and a Mox Diamond

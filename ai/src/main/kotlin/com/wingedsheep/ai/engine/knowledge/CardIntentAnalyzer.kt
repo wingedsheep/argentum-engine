@@ -2578,6 +2578,10 @@ object CardIntentAnalyzer {
                 if ((replacement.appliesTo as? com.wingedsheep.sdk.scripting.EventPattern.TokenCreationEvent)
                         ?.controller == com.wingedsheep.sdk.scripting.references.Player.EachOpponent
                 ) setOf(IntentTag.TOKEN_THEFT) else emptySet()
+            // "Until end of turn, if a creature would enter and it wasn't cast, exile it instead"
+            // (Hallowed Moonlight, Mistcaller): a reanimation, flicker or token answered as it happens.
+            is RedirectZoneChange ->
+                if (exilesEnteringCreatures(replacement)) setOf(IntentTag.GRAVEYARD_HATE) else emptySet()
             else -> emptySet()
         }
 
@@ -2863,6 +2867,23 @@ object CardIntentAnalyzer {
                 (it is ModifyStatsEffect && it.target == EffectTarget.Self &&
                     it.duration == Duration.EndOfTurn && raises(it.powerModifier))
         }
+    }
+
+    /**
+     * Whether [replacement] is a floating battlefield-entry exile — "if a creature would enter
+     * [and it wasn't cast], exile it instead" (Containment Priest's shape, granted by Mistcaller and
+     * Hallowed Moonlight): a creature reanimated, flickered or made as a token goes to exile instead.
+     * Not one scoped to our own creatures, nor an ability the moving object itself gained
+     * (`selfOnly`), which answer nothing of the opponent's.
+     */
+    internal fun exilesEnteringCreatures(replacement: ReplacementEffect): Boolean {
+        if (replacement !is RedirectZoneChange || replacement.selfOnly || replacement.newDestination != Zone.EXILE) return false
+        val event = replacement.appliesTo as? EventPattern.ZoneChangeEvent ?: return false
+        if (event.to != Zone.BATTLEFIELD) return false
+        val filter = event.filter
+        val ownOnly = filter.controllerPredicate == ControllerPredicate.ControlledByYou ||
+            filter.controllerPredicate == ControllerPredicate.OwnedByYou
+        return !ownOnly && com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature in filter.cardPredicates
     }
 
     /**

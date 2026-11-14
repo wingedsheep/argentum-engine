@@ -893,8 +893,10 @@ object ZoneMovementUtils {
         val enteringIsCreature = entersAsCreature?.takeIf { toZone == Zone.BATTLEFIELD }?.let { lazy(it) }
 
         // A spell cast with flashback, aftermath or jump-start is exiled instead of going anywhere
-        // else as it leaves the stack (CR 702.34a / 702.127a / 702.133a).
-        if (fromZone == Zone.STACK) {
+        // else as it leaves the stack (CR 702.34a / 702.127a / 702.133a). Not on a permanent spell
+        // resolving onto the battlefield: that resolution asks only the entry replacements below
+        // (StackExitRider covers the exits that aren't a resolution).
+        if (fromZone == Zone.STACK && toZone != Zone.BATTLEFIELD) {
             com.wingedsheep.engine.mechanics.stack.StackExitRider.overrideZone(container)
                 ?.takeIf { it != toZone }
                 ?.let { return ZoneChangeRedirectResult(it) }
