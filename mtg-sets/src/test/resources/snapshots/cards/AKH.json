@@ -9763,46 +9763,54 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "ForEach",
-                    "space": {
-                        "type": "IterationSpace.Players",
-                        "players": "ActivePlayerFirst"
-                    },
-                    "body": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "GatherCards",
-                                "source": {
-                                    "type": "FromZone",
-                                    "zone": "Hand"
-                                },
-                                "storeAs": "hand"
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "ActivePlayerFirst"
                             },
-                            {
-                                "type": "SelectFromCollection",
-                                "from": "hand",
-                                "selection": {
-                                    "type": "ChooseExactly",
-                                    "count": {
-                                        "type": "Fixed",
-                                        "amount": 1
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "chosenToDiscard",
+                                        "prompt": "Choose a card to discard"
                                     }
-                                },
-                                "storeSelected": "discarded",
-                                "prompt": "Choose a card to discard"
+                                ]
                             },
-                            {
-                                "type": "MoveCollection",
-                                "from": "discarded",
-                                "destination": {
-                                    "type": "ToZone",
-                                    "zone": "Graveyard"
-                                },
-                                "moveType": "Discard"
+                            "collectCollections": {
+                                "chosenToDiscard": "discarded"
                             }
-                        ]
-                    }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
                 },
                 "descriptionOverride": "When this creature enters, each player discards a card."
             }
@@ -10146,46 +10154,54 @@
                     }
                 },
                 "effect": {
-                    "type": "ForEach",
-                    "space": {
-                        "type": "IterationSpace.Players",
-                        "players": "ActivePlayerFirst"
-                    },
-                    "body": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "GatherCards",
-                                "source": {
-                                    "type": "FromZone",
-                                    "zone": "Hand"
-                                },
-                                "storeAs": "hand"
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "ActivePlayerFirst"
                             },
-                            {
-                                "type": "SelectFromCollection",
-                                "from": "hand",
-                                "selection": {
-                                    "type": "ChooseExactly",
-                                    "count": {
-                                        "type": "Fixed",
-                                        "amount": 1
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "chosenToDiscard",
+                                        "prompt": "Choose a card to discard"
                                     }
-                                },
-                                "storeSelected": "discarded",
-                                "prompt": "Choose a card to discard"
+                                ]
                             },
-                            {
-                                "type": "MoveCollection",
-                                "from": "discarded",
-                                "destination": {
-                                    "type": "ToZone",
-                                    "zone": "Graveyard"
-                                },
-                                "moveType": "Discard"
+                            "collectCollections": {
+                                "chosenToDiscard": "discarded"
                             }
-                        ]
-                    }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
                 },
                 "descriptionOverride": "Whenever Neheb deals combat damage to a player, each player discards a card."
             }

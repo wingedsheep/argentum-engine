@@ -128,31 +128,34 @@ object HandPatterns {
 
     /**
      * "Each player discards N cards" — the symmetric twin of [eachOpponentDiscards], including the
-     * spell's controller. One [ForEachPlayerEffect] iteration per player in **APNAP order**
-     * ([Player.ActivePlayerFirst], per CR 101.4): `Player.You` rebinds to the iterated player, so
-     * each player gathers *their own* hand, chooses their own cards, and moves them to *their own*
-     * graveyard. Rankle's Prank's first mode.
-     *
-     * Deviation to be aware of: the iterations run one after another, so a later player's choice is
-     * made after an earlier player's cards have already hit the graveyard. The rules have every
-     * player choose face-down (CR 101.4a) and then discard simultaneously (CR 101.4). This matches
-     * how every other symmetric hand effect in the engine already behaves.
+     * spell's controller, with the rules' simultaneous hidden choice (CR 101.4 and 101.4a; Liliana
+     * of the Veil's ruling): each player in **APNAP order** ([Player.ActivePlayerFirst]) chooses
+     * cards from *their own* hand without anything moving, and then every chosen card is discarded
+     * at once. A [ForEachPlayerCollectingEffect] gathers each player's choice (`Player.You` rebinds
+     * to the iterated player) into one collection, and a single [MoveType.Discard] move puts each
+     * card into its owner's graveyard — so no later chooser sees an earlier player's discard, and
+     * discard triggers see one simultaneous event. Rankle's Prank's first mode.
      *
      * @param count how many cards each player discards.
      */
     fun eachPlayerDiscards(count: Int): Effect =
-        ForEachPlayerEffect(
-            players = Player.ActivePlayerFirst,
-            effects = listOf(
-                GatherCardsEffect(
-                    source = CardSource.FromZone(Zone.HAND, Player.You),
-                    storeAs = "hand"
-                ),
-                SelectFromCollectionEffect(
-                    from = "hand",
-                    selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(count)),
-                    storeSelected = "discarded",
-                    prompt = "Choose ${if (count == 1) "a card" else "$count cards"} to discard"
+        CompositeEffect(
+            listOf(
+                ForEachPlayerCollectingEffect(
+                    players = Player.ActivePlayerFirst,
+                    effects = listOf(
+                        GatherCardsEffect(
+                            source = CardSource.FromZone(Zone.HAND, Player.You),
+                            storeAs = "hand"
+                        ),
+                        SelectFromCollectionEffect(
+                            from = "hand",
+                            selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(count)),
+                            storeSelected = "chosenToDiscard",
+                            prompt = "Choose ${if (count == 1) "a card" else "$count cards"} to discard"
+                        )
+                    ),
+                    collectCollections = mapOf("chosenToDiscard" to "discarded")
                 ),
                 MoveCollectionEffect(
                     from = "discarded",
@@ -172,10 +175,9 @@ object HandPatterns {
      * [MoveType.Default], not [MoveType.Discard] — a card put on top of a library is not discarded,
      * so nothing here should feed a discard trigger or a madness cast.
      *
-     * The same APNAP deviation [eachPlayerDiscards] documents applies: iterations run one after
-     * another rather than choosing face-down and moving simultaneously. It is visible here only in
-     * that a later player picks knowing an earlier player has already moved a card — the cards
-     * themselves are hidden either way.
+     * Unlike [eachPlayerDiscards], the iterations run one after another rather than choosing
+     * face-down and moving simultaneously. It is visible only in that a later player picks knowing
+     * an earlier player has already moved a card — the cards themselves are hidden either way.
      *
      * @param count how many cards each player puts on top of their library.
      */
