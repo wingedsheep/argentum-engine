@@ -24,9 +24,10 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *   damage-to-you detector binds the damage *source* as the triggering entity ("that creature").
  * - "if Hixus entered this turn" is an intervening if on `SourceEnteredThisTurn` (Kaito
  *   Shizuki's), checked both when the damage is dealt and on resolution.
- * - The exile is Ossification's [Effects.MoveUntilSourceLeaves] on the triggering creature: a
- *   true duration (CR 610.3), so each creature returns the moment Hixus leaves, without using the
- *   stack. It exiles nothing if Hixus has already left when the trigger resolves (ruling).
+ * - The exile is Ossification's [Effects.MoveUntilSourceLeaves] on the triggering creature: the
+ *   second one-shot effect of CR 610.3 returns it the moment Hixus leaves, without a trigger on
+ *   the stack, and (CR 610.3b) it exiles nothing if Hixus has already left when the trigger
+ *   resolves (ruling).
  */
 val HixusPrisonWarden = card("Hixus, Prison Warden") {
     manaCost = "{3}{W}{W}"

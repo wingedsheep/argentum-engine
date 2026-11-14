@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.ori.cards
 
-import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
@@ -37,7 +36,7 @@ val SwiftReckoning = card("Swift Reckoning") {
 
     spell {
         val t = target(TargetFilter.Creature.tapped())
-        effect = Effects.Move(t, Zone.GRAVEYARD, byDestruction = true)
+        effect = Effects.Destroy(t)
     }
 
     metadata {
