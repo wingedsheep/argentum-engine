@@ -1898,6 +1898,71 @@
     ]
 }
 
+// Dreadwaters
+{
+    "name": "Dreadwaters",
+    "manaCost": "{3}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player mills X cards, where X is the number of lands you control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "land"
+                        },
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "isMill": true
+                    },
+                    "storeAs": "milled"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "milled",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "artist": "Cliff Childs",
+        "flavorText": "Stray into the Morkrut and it may rise to claim you.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/88245a41-d4d5-46bf-969f-48d4dd540e2c.jpg?1783940724",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "The number of cards put into the graveyard is based on the number of lands you control when Dreadwaters resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Driver of the Dead
 {
     "name": "Driver of the Dead",

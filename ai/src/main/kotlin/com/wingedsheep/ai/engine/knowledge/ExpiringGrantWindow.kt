@@ -31,6 +31,7 @@ import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.CantAttackEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockGroupEffect
+import com.wingedsheep.sdk.scripting.effects.ChangeColorEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.effects.ChooseOptionEffect
@@ -1365,7 +1366,7 @@ internal object ExpiringGrantWindow {
                 leaf is SetLandTypeEffect && leaf.duration == Duration.EndOfTurn ->
                     payoffs += Payoff(PayoffKind.LAND, leaf.target)
                 // "Until end of turn, target creature loses all abilities and becomes a green Elephant
-                // with base power and toughness 3/3" (Gift of Tusks; Turn to Frog's 1/1 Frog): on a
+                // with base power and toughness 3/3" (Gift of Tusks): on a
                 // creature that already is one, the body is a [PayoffKind.SET_BASE] — a big creature
                 // of theirs made a vanilla 3/3, a small one of ours grown to it — and the strip rides
                 // on it, watching the same creature. Spent in a fight it can still be in, or on an
@@ -1376,6 +1377,15 @@ internal object ExpiringGrantWindow {
                     payoffs += Payoff(PayoffKind.SET_BASE, leaf.target, setToughness = toughness.amount, neutralizes = true)
                 }
                 leaf is RemoveAllAbilitiesEffect && leaf.target in neutralized -> watchRiders += leaf.target
+                // Turn to Frog spells the same vanilla body out leaf by leaf — "loses all abilities
+                // and becomes a blue Frog with base power and toughness 1/1" is the strip, a creature
+                // type, a colour and a base 1/1 ([SetBaseStatsEffect], below, marked neutralizing).
+                // The type and colour change nothing a held card would buy, so they ride on the
+                // strip, watching the same creature the body is set on.
+                leaf is SetCreatureSubtypesEffect && leaf.duration == Duration.EndOfTurn && leaf.target in neutralized ->
+                    watchRiders += leaf.target
+                leaf is ChangeColorEffect && leaf.duration == Duration.EndOfTurn && leaf.target in neutralized ->
+                    watchRiders += leaf.target
                 // "Until end of turn, this land becomes a 2/1": a body that fights this turn or not at all.
                 leaf is BecomeCreatureEffect && leaf.duration == Duration.EndOfTurn ->
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target, animates = true)
@@ -1437,7 +1447,10 @@ internal object ExpiringGrantWindow {
                     // A number, or the leaf decides — the same fail-safe as the shrink above.
                     val toughness = leaf.toughness?.let { it as? DynamicAmount.Fixed ?: return null }
                     if (leaf.power != null && leaf.power !is DynamicAmount.Fixed) return null
-                    payoffs += Payoff(PayoffKind.SET_BASE, leaf.target, setToughness = toughness?.amount)
+                    payoffs += Payoff(
+                        PayoffKind.SET_BASE, leaf.target, setToughness = toughness?.amount,
+                        neutralizes = leaf.target in neutralized,
+                    )
                 }
                 readShrinks && leaf is RemoveKeywordEffect && leaf.duration == Duration.EndOfTurn &&
                     leaf.target != EffectTarget.Self ->

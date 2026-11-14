@@ -1542,6 +1542,102 @@
     ]
 }
 
+// Turn to Frog
+{
+    "name": "Turn to Frog",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Until end of turn, target creature loses all abilities and becomes a blue Frog with base power and toughness 1/1.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RemoveAllAbilities",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "SetCreatureSubtypes",
+                    "subtypes": [
+                        "Frog"
+                    ],
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "ChangeColor",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "colors": [
+                        "BLUE"
+                    ]
+                },
+                {
+                    "type": "SetBaseStats",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "duration": "EndOfTurn"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "UNCOMMON",
+        "artist": "Warren Mahy",
+        "flavorText": "\"Ribbit.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b43d9a1e-0767-4a9b-81b4-4ff2f3dde1d5.jpg?1783941086",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "The creature will lose all other colors and creature types, but it will retain any other card types (such as artifact) or supertypes (such as legendary) it may have."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Turn to Frog overwrites all previous effects that set the creature's base power and toughness to specific values. Any power- or toughness-setting effects that start to apply after Turn to Frog resolves will overwrite this effect."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If the affected creature gains an ability after Turn to Frog resolves, it will keep that ability."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Effects that modify a creature's power and/or toughness, such as the effect of Titanic Growth, will apply to the creature no matter when they started to take effect. The same is true for any counters that change its power and/or toughness and effects that switch its power and toughness."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Warstorm Surge
 {
     "name": "Warstorm Surge",

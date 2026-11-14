@@ -1145,6 +1145,84 @@
     ]
 }
 
+// Calculated Dismissal
+{
+    "name": "Calculated Dismissal",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell unless its controller pays {3}.\nSpell mastery — If there are two or more instant and/or sorcery cards in your graveyard, scry 2. (To scry 2, look at the top two cards of your library, then put any number of them on the bottom and the rest on top in any order.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Counter",
+                    "condition": {
+                        "type": "CounterCondition.UnlessPaysMana",
+                        "cost": "{3}"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Graveyard",
+                                "filter": "instant|sorcery"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Scry",
+                        "count": 2
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "artist": "Karl Kopinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2c42ab35-6050-42b2-9c3c-3252f2e69442.jpg?1783938354",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "If the spell mastery ability applies, you'll scry 2 even if the controller of the spell pays {3}."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "In one unusual situation, you can cast Calculated Dismissal targeting an instant or sorcery spell you control while there is one instant or sorcery card in your graveyard. In this situation, if you decline to pay {3}, the spell will be countered and put into your graveyard. The spell mastery ability will then apply and you'll scry 2."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Check to see if there are two or more instant and/or sorcery cards in your graveyard as the spell resolves to determine whether the spell mastery ability applies. The spell itself won't count because it's still on the stack as you make this check."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Caustic Caterpillar
 {
     "name": "Caustic Caterpillar",
@@ -1669,6 +1747,94 @@
     ]
 }
 
+// Day's Undoing
+{
+    "name": "Day's Undoing",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each player shuffles their hand and graveyard into their library, then draws seven cards. If it's your turn, end the turn. (Exile all spells and abilities from the stack, including this card. Discard down to your maximum hand size. Damage wears off, and \"this turn\" and \"until end of turn\" effects end.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromMultipleZones",
+                                    "zones": [
+                                        "Hand",
+                                        "Graveyard"
+                                    ]
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "placement": "Shuffled"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 7
+                        }
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "IsYourTurn"
+                    },
+                    "then": "EndTheTurn"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "rarity": "MYTHIC",
+        "artist": "Jonas De Ro",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1a11287a-8002-4679-9f69-a7360e7f4d3c.jpg?1783938353",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "If any abilities trigger while players are shuffling cards into their library or drawing seven cards, those abilities cease to exist when the turn ends. They won't be put on the stack."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If both your hand and graveyard are empty as Day's Undoing starts resolving, you'll still shuffle your library before drawing seven cards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Deadbridge Shaman
 {
     "name": "Deadbridge Shaman",
@@ -1747,6 +1913,53 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Deep-Sea Terror
+{
+    "name": "Deep-Sea Terror",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Creature — Serpent",
+    "oracleText": "This creature can't attack unless there are seven or more cards in your graveyard.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "artist": "Marco Nelor",
+        "flavorText": "After stripping the sunken ships, it rises to the surface for another helping.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/007b526c-5387-4ed4-a320-b826d507e014.jpg?1783938352",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Deep-Sea Terror's ability only checks as attackers are declared. After Deep-Sea Terror legally attacks, reducing the number of cards in your graveyard won't cause it to stop attacking."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -2034,6 +2247,68 @@
         "rarity": "MYTHIC",
         "artist": "Clint Cearley",
         "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d344f86-a02d-4de3-82c1-2586dd9ddbfe.jpg?1783938352"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Displacement Wave
+{
+    "name": "Displacement Wave",
+    "manaCost": "{X}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return all nonland permanents with mana value X or less to their owners' hands.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsNonland",
+                                "IsPermanent",
+                                {
+                                    "type": "CompareNumericProperty",
+                                    "property": "MANA_VALUE",
+                                    "operator": "LTE",
+                                    "amount": "XValue"
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "returnAllToHand_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "returnAllToHand_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "rarity": "RARE",
+        "artist": "Seb McKinnon",
+        "flavorText": "The sea respects no boundaries, least of all the coast.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/ad6fef1f-6cc9-4e24-a1be-fc313774f28d.jpg?1783938352",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "If a permanent has an {X} in its mana cost, that X is 0."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "A token has mana value 0 unless it's a copy of something else, in which case it has the mana cost of whatever it's copying."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -3457,6 +3732,65 @@
     ]
 }
 
+// Hydrolash
+{
+    "name": "Hydrolash",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Attacking creatures get -2/-0 until end of turn.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature attacking"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "UNCOMMON",
+        "artist": "Clint Cearley",
+        "flavorText": "\"I don't need your mage-rings or your mana equations. I call, and the sea answers.\"\n—Keyta, rebel hydromancer",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/eeaaa583-bdd3-448a-921e-527df5f7f548.jpg?1783938351",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "You may cast Hydrolash even if there aren't any attacking creatures simply to draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Infernal Scarring
 {
     "name": "Infernal Scarring",
@@ -3618,6 +3952,371 @@
     "colorIdentityOverride": [
         "RED",
         "WHITE"
+    ]
+}
+
+// Jace's Sanctum
+{
+    "name": "Jace's Sanctum",
+    "manaCost": "{3}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Instant and sorcery spells you cast cost {1} less to cast.\nWhenever you cast an instant or sorcery spell, scry 1.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jace's Sanctum:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "instant|sorcery"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "RARE",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6c3fe038-a982-4cbf-a158-c45fdc3d727e.jpg?1783938350",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "The first ability of Jace's Sanctum can't reduce the colored mana requirement of an instant or sorcery spell."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If there are additional costs to cast an instant or sorcery spell, apply those before applying cost reductions."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Jace's Sanctum can reduce alternative costs such as miracle or overload costs."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Jace's Sanctum's scry ability will resolve before the instant or sorcery spell that caused it to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Jace, Vryn's Prodigy
+{
+    "name": "Jace, Vryn's Prodigy",
+    "manaCost": "{1}{U}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "{T}: Draw a card, then discard a card. If there are five or more cards in your graveyard, exile Jace, then return him to the battlefield transformed under his owner's control.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Jace, Vryn's Prodigy:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "Count",
+                                        "player": "You",
+                                        "zone": "Graveyard"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 5
+                                    }
+                                }
+                            },
+                            "then": "ExileAndReturnTransformed"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Draw a card, then discard a card. If there are five or more cards in your graveyard, exile Jace, then return him to the battlefield transformed under his owner's control."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Jace, Telepath Unbound",
+        "manaCost": "",
+        "typeLine": "Legendary Planeswalker — Jace",
+        "oracleText": "+1: Up to one target creature gets -2/-0 until your next turn.\n−3: You may cast target instant or sorcery card from your graveyard this turn. If that spell would be put into your graveyard, exile it instead.\n−9: You get an emblem with \"Whenever you cast a spell, target opponent mills five cards.\"",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Jace, Telepath Unbound:1",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": 1
+                    },
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "duration": "UntilYourNextTurn"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "optional": true,
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Up to one target creature gets -2/-0 until your next turn."
+                },
+                {
+                    "id": "Jace, Telepath Unbound:2",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -3
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": "ChosenTargets",
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "GrantMayPlayFromExile",
+                                "from": "gathered0",
+                                "insteadOfGraveyard": "EXILE"
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "instant|sorcery own:you",
+                                "zone": "Graveyard"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "You may cast target instant or sorcery card from your graveyard this turn. If that spell would be put into your graveyard, exile it instead."
+                },
+                {
+                    "id": "Jace, Telepath Unbound:4",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -9
+                    },
+                    "effect": {
+                        "type": "CreateGlobalTriggeredAbility",
+                        "ability": {
+                            "id": "Jace, Telepath Unbound:3",
+                            "trigger": "SpellCastEvent",
+                            "binding": "ANY",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "TopOfLibrary",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 5
+                                            },
+                                            "player": {
+                                                "type": "BoundVariable",
+                                                "name": "t2"
+                                            },
+                                            "isMill": true
+                                        },
+                                        "storeAs": "milled"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "milled",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard",
+                                            "player": {
+                                                "type": "BoundVariable",
+                                                "name": "t2"
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            "targetRequirement": {
+                                "type": "TargetOpponent",
+                                "id": "t2"
+                            },
+                            "descriptionOverride": "Whenever you cast a spell, target opponent mills five cards."
+                        },
+                        "descriptionOverride": "Whenever you cast a spell, target opponent mills five cards.",
+                        "emblem": true
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "You get an emblem with \"Whenever you cast a spell, target opponent mills five cards.\""
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "60",
+            "rarity": "MYTHIC",
+            "artist": "Jaime Jones",
+            "imageUri": "https://cards.scryfall.io/normal/back/0/2/02d6d693-f1f3-4317-bcc0-c21fa8490d38.jpg?1783938353",
+            "rulings": [
+                {
+                    "date": "2015-06-22",
+                    "text": "If you activate the second ability of Jace, Telepath Unbound, you must follow the timing rules for the card's types. For example, if you target a sorcery card, you may cast it during your main phase when the stack is empty. You pay all the spell's costs."
+                },
+                {
+                    "date": "2015-06-22",
+                    "text": "If you don't cast the card that turn, nothing happens. It remains in your graveyard."
+                },
+                {
+                    "date": "2015-06-22",
+                    "text": "The card is exiled only if it's cast from the graveyard and put back into the graveyard (either by resolving or being countered). If, at any time, the card goes to a hidden zone (such as your hand or your library), the effect loses track of the card. It won't be exiled, even if that card is put into your graveyard later that turn."
+                }
+            ]
+        },
+        "startingLoyalty": 5,
+        "colorIdentityOverride": [
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "rarity": "MYTHIC",
+        "artist": "Jaime Jones",
+        "flavorText": "\"People's thoughts just come to me. Sometimes I don't know if it's them or me thinking.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/02d6d693-f1f3-4317-bcc0-c21fa8490d38.jpg?1783938353",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "You can control two of this permanent, one front-face up and the other back-face up, at the same time."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If you discard a card with madness while resolving the ability of Jace, Vryn's Prodigy, you'll need to already have five other cards in your graveyard to satisfy that ability's condition. You can't choose to put the card directly into your graveyard to satisfy it."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "The activated ability of Jace, Vryn's Prodigy checks to see if there are five or more cards in your graveyard after you discard a card. Putting a fifth card into your graveyard at other times won't cause Jace to be exiled, nor will Jace entering the battlefield while there are five or more cards in your graveyard."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "A Magic Origins planeswalker that enters the battlefield because of the ability of its front face will enter with loyalty counters as normal."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "In some rare cases, a spell or ability may cause one of these five cards to transform while it's a creature (front face up) on the battlefield. If this happens, the resulting planeswalker won't have any loyalty counters on it and will subsequently be put into its owner's graveyard."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "You can activate one of the planeswalker's loyalty abilities the turn it enters the battlefield. However, you may do so only during one of your main phases when the stack is empty. For example, if the planeswalker enters the battlefield during combat, there will be an opportunity for your opponent to remove it before you can activate one of its abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4480,6 +5179,99 @@
     ]
 }
 
+// Mizzium Meddler
+{
+    "name": "Mizzium Meddler",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Vedalken Wizard",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nWhen this creature enters, you may change a target of target spell or ability to this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mizzium Meddler:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "ChangeTarget",
+                        "newTarget": "Self"
+                    },
+                    "descriptionOverride": "When this creature enters, you may change a target of target spell or ability to this creature."
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "anyOf": [
+                                {},
+                                {
+                                    "cardPredicates": [
+                                        "IsActivatedOrTriggeredAbility"
+                                    ]
+                                }
+                            ]
+                        },
+                        "zone": "Stack"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, you may change a target of target spell or ability to this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "RARE",
+        "artist": "Johann Bodin",
+        "flavorText": "Energy surges in Izzet labs are opportunities for experimentation.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/762d568d-a2d6-449b-85c2-a92755efe4c3.jpg?1783938350",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "If changing one target of a spell or ability to Mizzium Meddler would make other targets of that spell or ability illegal, the targets remain unchanged."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If the spell or ability has multiple instances of the word \"target,\" you choose which target you're changing to Mizzium Meddler as Mizzium Meddler's ability resolves."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "The target of the spell or ability won't change unless Mizzium Meddler fulfills all the targeting criteria. If a spell or ability has multiple targets, such as Send to Sleep, you can change only one of the targets to Mizzium Meddler."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a spell or ability has a variable number of targets, you can't change the number of targets."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If Mizzium Meddler leaves the battlefield before its ability resolves, the targets remain unchanged."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Mizzium Meddler's triggered ability can target a spell or ability even if Mizzium Meddler wouldn't be a legal target for that spell or ability. However, the target of that spell or ability will remain unchanged."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If Mizzium Meddler's triggered ability targets a spell or ability with no targets, nothing happens."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Molten Vortex
 {
     "name": "Molten Vortex",
@@ -4819,6 +5611,74 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Possessed Skaab
+{
+    "name": "Possessed Skaab",
+    "manaCost": "{3}{U}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "When this creature enters, return target instant, sorcery, or creature card from your graveyard to your hand.\nIf this creature would die, exile it instead.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Possessed Skaab:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "instant|sorcery|creature own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChange",
+                "newDestination": "Exile",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "215",
+        "rarity": "UNCOMMON",
+        "artist": "John Stanko",
+        "flavorText": "A stitcher's attempt at a skaab with a soul.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6ebc94e5-a595-43ab-929b-426009190669.jpg?1783938313",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Possessed Skaab's last ability will apply no matter what caused it to die (lethal damage, being sacrificed, enough -1/-1 counters, and so on). Possessed Skaab won't go to the graveyard. It will be put from the battlefield into exile. Abilities that trigger whenever a creature dies won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
@@ -5311,6 +6171,94 @@
     ]
 }
 
+// Send to Sleep
+{
+    "name": "Send to Sleep",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Tap up to two target creatures.\nSpell mastery — If there are two or more instant and/or sorcery cards in your graveyard, those creatures don't untap during their controllers' next untap steps.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "Compare",
+                                "left": {
+                                    "type": "Count",
+                                    "player": "You",
+                                    "zone": "Graveyard",
+                                    "filter": "instant|sorcery"
+                                },
+                                "operator": "GTE",
+                                "right": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            }
+                        },
+                        "then": {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "artist": "Cynthia Sheppard",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aa34d648-da0a-4615-8dd8-d2c8b1a1a574.jpg?1783938349",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "If the spell mastery ability applies and a creature affected by Send to Sleep changes controllers before its old controller's next untap step, Send to Sleep will prevent it from becoming untapped during its new controller's next untap step."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Send to Sleep can target tapped creatures. If a targeted creature is already tapped when the spell resolves (and the spell mastery ability applies), that creature remains tapped and doesn't untap during its controller's next untap step."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Check to see if there are two or more instant and/or sorcery cards in your graveyard as the spell resolves to determine whether the spell mastery ability applies. The spell itself won't count because it's still on the stack as you make this check."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Sentinel of the Eternal Watch
 {
     "name": "Sentinel of the Eternal Watch",
@@ -5779,6 +6727,257 @@
     ]
 }
 
+// Sphinx's Tutelage
+{
+    "name": "Sphinx's Tutelage",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you draw a card, target opponent mills two cards. If two nonland cards that share a color were milled this way, repeat this process.\n{5}{U}: Draw a card, then discard a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sphinx's Tutelage:1",
+                "trigger": "DrawEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "RepeatWhile",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "TopOfLibrary",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 2
+                                            },
+                                            "player": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            },
+                                            "isMill": true
+                                        },
+                                        "storeAs": "milled"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "milled",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard",
+                                            "player": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "milled",
+                                "filter": "nonland white",
+                                "storeMatching": "tutelageNonlandWhite"
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "milled",
+                                "filter": "nonland blue",
+                                "storeMatching": "tutelageNonlandBlue"
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "milled",
+                                "filter": "nonland black",
+                                "storeMatching": "tutelageNonlandBlack"
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "milled",
+                                "filter": "nonland red",
+                                "storeMatching": "tutelageNonlandRed"
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "milled",
+                                "filter": "nonland green",
+                                "storeMatching": "tutelageNonlandGreen"
+                            }
+                        ]
+                    },
+                    "repeatCondition": {
+                        "type": "WhileCondition",
+                        "condition": {
+                            "type": "Any",
+                            "conditions": [
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "DistinctEntitiesInCollections",
+                                        "collections": [
+                                            "tutelageNonlandWhite"
+                                        ]
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "DistinctEntitiesInCollections",
+                                        "collections": [
+                                            "tutelageNonlandBlue"
+                                        ]
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "DistinctEntitiesInCollections",
+                                        "collections": [
+                                            "tutelageNonlandBlack"
+                                        ]
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "DistinctEntitiesInCollections",
+                                        "collections": [
+                                            "tutelageNonlandRed"
+                                        ]
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "DistinctEntitiesInCollections",
+                                        "collections": [
+                                            "tutelageNonlandGreen"
+                                        ]
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you draw a card, target opponent mills two cards. If two nonland cards that share a color were milled this way, repeat this process."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Sphinx's Tutelage:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "{5}{U}: Draw a card, then discard a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "flavorText": "\"You've never considered the implications of dealing with another telepath, Jace.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4d90c3b0-f958-4a15-94a1-9bf1b0a9ac2a.jpg?1783938346",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Colorless is not a color, so putting two colorless cards into a graveyard won't cause the process to repeat."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "The process will keep repeating as long as both cards share a color and neither is a land card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Stalwart Aven
 {
     "name": "Stalwart Aven",
@@ -6231,6 +7430,263 @@
         "imageUri": "https://cards.scryfall.io/normal/front/f/3/f3687c36-c0ae-4dba-9379-b420236bf529.jpg?1783938307"
     },
     "colorIdentityOverride": []
+}
+
+// Talent of the Telepath
+{
+    "name": "Talent of the Telepath",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent reveals the top seven cards of their library. You may cast an instant or sorcery spell from among them without paying its mana cost. Then that player puts the rest into their graveyard.\nSpell mastery — If there are two or more instant and/or sorcery cards in your graveyard, you may cast up to two instant and/or sorcery spells from among the revealed cards instead of one.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "instant|sorcery"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "TopOfLibrary",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 7
+                            },
+                            "player": "TargetOpponent"
+                        },
+                        "storeAs": "gathered0",
+                        "revealed": true
+                    },
+                    {
+                        "type": "FilterCollection",
+                        "from": "gathered0",
+                        "filter": {
+                            "statePredicates": [
+                                {
+                                    "type": "InZone",
+                                    "zone": "Library"
+                                }
+                            ]
+                        },
+                        "storeMatching": "matching1"
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "matching1",
+                        "selection": {
+                            "type": "ChooseUpTo",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "filter": "instant|sorcery",
+                        "storeSelected": "selected2",
+                        "prompt": "You may cast an instant or sorcery spell from among the revealed cards without paying its mana cost",
+                        "selectedLabel": "Cast for free",
+                        "remainderLabel": "Put into graveyard",
+                        "showAllCards": true
+                    },
+                    {
+                        "type": "CastFromCollectionWithoutPayingCost",
+                        "from": "selected2"
+                    },
+                    {
+                        "type": "FilterCollection",
+                        "from": "gathered0",
+                        "filter": {
+                            "statePredicates": [
+                                {
+                                    "type": "InZone",
+                                    "zone": "Library"
+                                }
+                            ]
+                        },
+                        "storeMatching": "matching4"
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "matching4",
+                        "selection": {
+                            "type": "ChooseUpTo",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "filter": "instant|sorcery",
+                        "storeSelected": "selected5",
+                        "prompt": "Spell mastery: you may cast another instant or sorcery spell from among the revealed cards without paying its mana cost",
+                        "selectedLabel": "Cast for free",
+                        "remainderLabel": "Put into graveyard",
+                        "showAllCards": true
+                    },
+                    {
+                        "type": "CastFromCollectionWithoutPayingCost",
+                        "from": "selected5"
+                    },
+                    {
+                        "type": "FilterCollection",
+                        "from": "gathered0",
+                        "filter": {
+                            "statePredicates": [
+                                {
+                                    "type": "InZone",
+                                    "zone": "Library"
+                                }
+                            ]
+                        },
+                        "storeMatching": "matching7"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "matching7",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Graveyard",
+                            "player": "TargetOpponent"
+                        }
+                    }
+                ]
+            },
+            "otherwise": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "TopOfLibrary",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 7
+                            },
+                            "player": "TargetOpponent"
+                        },
+                        "storeAs": "gathered0",
+                        "revealed": true
+                    },
+                    {
+                        "type": "FilterCollection",
+                        "from": "gathered0",
+                        "filter": {
+                            "statePredicates": [
+                                {
+                                    "type": "InZone",
+                                    "zone": "Library"
+                                }
+                            ]
+                        },
+                        "storeMatching": "matching1"
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "matching1",
+                        "selection": {
+                            "type": "ChooseUpTo",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "filter": "instant|sorcery",
+                        "storeSelected": "selected2",
+                        "prompt": "You may cast an instant or sorcery spell from among the revealed cards without paying its mana cost",
+                        "selectedLabel": "Cast for free",
+                        "remainderLabel": "Put into graveyard",
+                        "showAllCards": true
+                    },
+                    {
+                        "type": "CastFromCollectionWithoutPayingCost",
+                        "from": "selected2"
+                    },
+                    {
+                        "type": "FilterCollection",
+                        "from": "gathered0",
+                        "filter": {
+                            "statePredicates": [
+                                {
+                                    "type": "InZone",
+                                    "zone": "Library"
+                                }
+                            ]
+                        },
+                        "storeMatching": "matching4"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "matching4",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Graveyard",
+                            "player": "TargetOpponent"
+                        }
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "RARE",
+        "artist": "Peter Mohrbacher",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c5da13a1-8be2-4312-a660-f3e102c552b6.jpg?1783938346",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "If the spell mastery ability applies, you'll cast the two cards in order. The one you cast last will be the one that resolves first."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "You cast the instant and/or sorcery card(s) from your opponent's library as Talent of the Telepath is resolving. Ignore timing restrictions based on the card's type. Other timing restrictions, such as \"Cast [this card] only during combat,\" must be followed."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "The cards will be put into their owner's graveyard after they resolve, not yours."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If you can't cast any instant or sorcery cards (perhaps because there are no legal targets available) or if you choose not to cast one, then Talent of the Telepath finishes resolving. Any of the revealed cards you didn't cast will be put into that player's graveyard."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If you cast a card \"without paying its mana cost,\" you can't pay any alternative costs. You can pay additional costs such as kicker costs. If the card has mandatory additional costs, you must pay those."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If the card has {X} in its mana cost, you must choose 0 as its value."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Check to see if there are two or more instant and/or sorcery cards in your graveyard as the spell resolves to determine whether the spell mastery ability applies. The spell itself won't count because it's still on the stack as you make this check."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Thopter Engineer
@@ -7252,6 +8708,63 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Willbreaker
+{
+    "name": "Willbreaker",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Whenever a creature an opponent controls becomes the target of a spell or ability you control, gain control of that creature for as long as you control this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Willbreaker:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "targetFilter": "creature ctrl:opponent",
+                    "byYou": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainControl",
+                    "target": "TriggeringEntity",
+                    "duration": {
+                        "type": "WhileYouControlSource",
+                        "sourceDescription": "this creature"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "\"Master your mind, or I shall master it for you.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/2465eafc-453c-4e4f-b369-0951b8a4b7bf.jpg?1783938345",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "If Willbreaker leaves the battlefield, you no longer control it, and its control-change effect ends."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If you lose control of Willbreaker before its ability resolves, you won't gain control of the creature at all."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If another player gains control of Willbreaker, its control-change effect ends. Regaining control of Willbreaker won't cause you to regain control of the creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

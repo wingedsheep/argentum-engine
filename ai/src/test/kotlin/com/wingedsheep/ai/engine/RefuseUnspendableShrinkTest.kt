@@ -210,6 +210,40 @@ class RefuseUnspendableShrinkTest : ScenarioTestBase() {
                 .giftVerdict(theirs = "Prodigal Sorcerer") shouldNotBe TimingVerdict.NoWindow
         }
 
+        test("Turn to Frog's vanilla 1/1 waits for a fight the opposing creature can still be in") {
+            // The Gift of Tusks shape spelled leaf by leaf: loses all abilities, becomes a Frog,
+            // becomes blue, base 1/1 — until end of turn.
+            fun frogOn(activePlayer: Int, step: Step, theirs: String = "Serra Angel") = scenario()
+                .withPlayers()
+                .withTurnNumber(8)
+                .withActivePlayer(activePlayer)
+                .withLandsOnBattlefield(1, "Island", 2)
+                .withCardInHand(1, "Turn to Frog")
+                .withCardOnBattlefield(2, theirs)
+                .build()
+                .advanceToPriority(1, step)
+            fun TestGame.frogVerdict(refuseWastedPayoffs: Boolean = true, theirs: String = "Serra Angel"): TimingVerdict {
+                val frog = state.getZone(player1Id, Zone.HAND).first {
+                    state.getEntity(it)?.get<CardComponent>()?.name == "Turn to Frog"
+                }
+                val cast = CastSpell(player1Id, frog, targets = listOf(ChosenTarget.Permanent(findPermanent(theirs)!!)))
+                return HoldPolicy(intents, refuseWastedPayoffs = refuseWastedPayoffs)
+                    .verdictFor(state, player1Id, "Turn to Frog", cast = cast)
+            }
+
+            // After our combat the 4/4 flyer fights nothing before cleanup restores it.
+            val afterCombat = frogOn(activePlayer = 1, step = Step.POSTCOMBAT_MAIN)
+            afterCombat.frogVerdict() shouldBe TimingVerdict.NoWindow
+            afterCombat.frogVerdict(refuseWastedPayoffs = false) shouldNotBe TimingVerdict.NoWindow
+            // With 3 damage marked, base toughness 1 kills it: removal, and the leaf's call.
+            val angel = afterCombat.findPermanent("Serra Angel")!!
+            afterCombat.state = afterCombat.state.updateEntity(angel) { it.with(DamageComponent(3)) }
+            afterCombat.frogVerdict() shouldNotBe TimingVerdict.NoWindow
+            // An ability it could still use this turn (Prodigal Sorcerer's ping) is worth silencing.
+            frogOn(activePlayer = 1, step = Step.POSTCOMBAT_MAIN, theirs = "Prodigal Sorcerer")
+                .frogVerdict(theirs = "Prodigal Sorcerer") shouldNotBe TimingVerdict.NoWindow
+        }
+
         test("before their attack, a creature that can still attack is a fight to shrink") {
             val game = position(activePlayer = 2, step = Step.PRECOMBAT_MAIN)
 

@@ -1,0 +1,1 @@
+- #4669 The AI reads "you may cast target instant or sorcery card from your graveyard this turn" (Jace, Telepath Unbound's −3, Vohar) as recursion, and holds Turn to Frog's until-end-of-turn vanilla 1/1 for a fight or ability the creature can still use instead of wasting it after combat
