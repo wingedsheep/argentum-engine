@@ -8362,6 +8362,7 @@ Hellspur Brute
 Hellspur Posse Boss
 Helm of Chatzuk	intent: GrantKeywordEffect; polarity: GrantKeywordEffect
 Helm of the Ghastlord	polarity: Aura>ConditionalStaticAbility
+Helm of the Gods
 Helm of the Host	intent: CreateTokenCopyOfEquippedCreatureEffect
 Helpful Hunter
 Helping Hand
@@ -10896,6 +10897,8 @@ Mage Tower Referee
 Mage's Attendant
 Mage's Guile
 Mage-Ring Bully
+Mage-Ring Network
+Mage-Ring Responder
 Magebane Lizard
 Mages' Contest	intent: OpenLifeBidEffect; polarity: OpenLifeBidEffect
 Mageta's Boon
@@ -12760,6 +12763,7 @@ Orazca Raptor
 Orazca Relic
 Orb of Dragonkind
 Orbital Plunge
+Orbs of Warding
 Orbweaver Kumo
 Orc General
 Orchard Spirit
@@ -13633,6 +13637,7 @@ Prince Imrahil the Fair
 Princess Lucrezia
 Prishe's Wanderings
 Prism Array
+Prism Ring
 Prismabasher
 Prismari Apprentice
 Prismari Campus
@@ -14327,6 +14332,7 @@ Reclaim
 Reclaim the Wastes
 Reclaiming Vines
 Reclamation Sage
+Reclusive Artificer
 Reclusive Taxidermist
 Reclusive Wight
 Recoil
@@ -16248,6 +16254,7 @@ Sigardian Priest
 Sigardian Savior
 Sight Beyond Sight
 Sigil of Sleep	polarity: Aura>MoveToZoneEffect
+Sigil of Valor
 Sigil of the Empty Throne
 Sigil of the New Dawn
 Sigiled Contender
