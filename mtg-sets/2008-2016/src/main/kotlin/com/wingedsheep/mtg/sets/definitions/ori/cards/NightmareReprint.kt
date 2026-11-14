@@ -16,4 +16,5 @@ val NightmareReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/1/9/192bb40a-3ecd-41eb-acee-819f3138875a.jpg",
     releaseDate = "2015-07-17",
     rarity = Rarity.RARE,
+    inBooster = false,
 )

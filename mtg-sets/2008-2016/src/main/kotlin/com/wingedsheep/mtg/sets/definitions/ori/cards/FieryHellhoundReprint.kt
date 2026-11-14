@@ -16,4 +16,5 @@ val FieryHellhoundReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/8/9/8980efa5-bd21-4980-91a7-5e66528b1011.jpg",
     releaseDate = "2015-07-17",
     rarity = Rarity.COMMON,
+    inBooster = false,
 )

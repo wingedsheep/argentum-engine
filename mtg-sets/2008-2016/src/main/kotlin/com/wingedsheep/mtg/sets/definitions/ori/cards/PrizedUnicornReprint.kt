@@ -16,4 +16,5 @@ val PrizedUnicornReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/5/0/500c1ede-8f4a-4009-8057-c65411550487.jpg?1783938296",
     releaseDate = "2015-07-17",
     rarity = Rarity.UNCOMMON,
+    inBooster = false,
 )

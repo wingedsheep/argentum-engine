@@ -16,4 +16,5 @@ val WeaveFateReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/0/4/04e57fc1-1633-447f-ae32-ad7da25a4177.jpg",
     releaseDate = "2015-07-17",
     rarity = Rarity.COMMON,
+    inBooster = false,
 )

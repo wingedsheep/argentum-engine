@@ -16,4 +16,5 @@ val EagleOfTheWatchReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/8/a/8af7956d-f811-49d3-bef7-07f294dcea3c.jpg",
     releaseDate = "2015-07-17",
     rarity = Rarity.COMMON,
+    inBooster = false,
 )

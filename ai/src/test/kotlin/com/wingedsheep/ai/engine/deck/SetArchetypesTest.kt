@@ -26,6 +26,28 @@ class SetArchetypesTest : StringSpec({
         synergies.archetypes.map { it.colors.toSet() } shouldContainExactly ALL_COLOR_PAIRS.toList()
     }
 
+    "Magic Origins exposes its ten signpost colour-pair archetypes, one of them Elf tribal" {
+        val synergies = requireNotNull(SetArchetypes.getForSet("ori"))
+
+        synergies.setName shouldBe "Magic Origins"
+        synergies.archetypes.map { it.name } shouldContainExactly listOf(
+            "Fliers",
+            "Spell Mastery Control",
+            "Sacrifice",
+            "Lands Ramp",
+            "Renown",
+            "Enchantments",
+            "Artifacts",
+            "Elves",
+            "Aggro",
+            "Flash Tempo",
+        )
+        synergies.archetypes.map { it.colors.toSet() } shouldContainExactly ALL_COLOR_PAIRS.toList()
+        synergies.archetypes.filter { it.creatureTypes.isNotEmpty() }.map { it.name to it.creatureTypes } shouldContainExactly listOf(
+            "Elves" to listOf("Elf"),
+        )
+    }
+
     "Battle for Zendikar exposes its ten signpost colour-pair archetypes, three of them Ally tribal" {
         val synergies = requireNotNull(SetArchetypes.getForSet("bfz"))
 

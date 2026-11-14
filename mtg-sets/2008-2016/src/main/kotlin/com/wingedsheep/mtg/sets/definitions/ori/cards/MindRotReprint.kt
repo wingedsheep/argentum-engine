@@ -16,4 +16,5 @@ val MindRotReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/9/d/9df7f95a-0629-4568-9f0a-9074daa0d743.jpg",
     releaseDate = "2015-07-17",
     rarity = Rarity.COMMON,
+    inBooster = false,
 )
