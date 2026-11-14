@@ -60,7 +60,17 @@ data class DealDamageEffect(
      * nothing was dealt. "You gain life equal to the damage dealt this way" (Creeping Bloodsucker,
      * Syphon Soul).
      */
-    val damageDealtVariable: String? = null
+    val damageDealtVariable: String? = null,
+    /**
+     * When set, the permanents and players this effect actually dealt damage to — every recipient
+     * of at least 1 damage after prevention and replacement, including one a replacement redirected
+     * the damage to — are stored as a pipeline collection under this key. The same axis, with the
+     * same meaning, as [DividedDamageEffect.storeDamagedAs]. Against [Player.EachOpponent] (or any
+     * multi-recipient target) the damage is still one simultaneous event; the collection then reads
+     * "each player dealt damage this way" (Chandra, Roaring Flame's −7: each such player gets an
+     * emblem). A recipient whose damage was wholly prevented is not in it.
+     */
+    val storeDamagedAs: String? = null
 ) : Effect {
     /** Convenience constructor for fixed amounts */
     constructor(amount: Int, target: EffectTarget, cantBePrevented: Boolean = false, damageSource: EffectTarget? = null)

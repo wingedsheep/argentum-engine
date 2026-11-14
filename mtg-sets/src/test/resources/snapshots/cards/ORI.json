@@ -1624,6 +1624,281 @@
     ]
 }
 
+// Chandra, Fire of Kaladesh
+{
+    "name": "Chandra, Fire of Kaladesh",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Legendary Creature — Human Shaman",
+    "oracleText": "Whenever you cast a red spell, untap Chandra, Fire of Kaladesh.\n{T}: Chandra, Fire of Kaladesh deals 1 damage to target player or planeswalker. If Chandra has dealt 3 or more damage this turn, exile her, then return her to the battlefield transformed under her owner's control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Chandra, Fire of Kaladesh:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "HasColor",
+                                "color": "RED"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "Self",
+                    "tap": false
+                },
+                "descriptionOverride": "Whenever you cast a red spell, untap Chandra, Fire of Kaladesh."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Chandra, Fire of Kaladesh:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": "DamageDealtThisTurn"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    }
+                                }
+                            },
+                            "then": "ExileAndReturnTransformed"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayerOrPlaneswalker",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Chandra, Fire of Kaladesh deals 1 damage to target player or planeswalker. If Chandra has dealt 3 or more damage this turn, exile her, then return her to the battlefield transformed under her owner's control."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Chandra, Roaring Flame",
+        "manaCost": "",
+        "typeLine": "Legendary Planeswalker — Chandra",
+        "oracleText": "+1: Chandra, Roaring Flame deals 2 damage to target player or planeswalker.\n−2: Chandra, Roaring Flame deals 2 damage to target creature.\n−7: Chandra, Roaring Flame deals 6 damage to each opponent. Each player dealt damage this way gets an emblem with \"At the beginning of your upkeep, this emblem deals 3 damage to you.\"",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Chandra, Roaring Flame:1",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": 1
+                    },
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayerOrPlaneswalker",
+                            "id": "t0"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Chandra, Roaring Flame deals 2 damage to target player or planeswalker."
+                },
+                {
+                    "id": "Chandra, Roaring Flame:2",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -2
+                    },
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Chandra, Roaring Flame deals 2 damage to target creature."
+                },
+                {
+                    "id": "Chandra, Roaring Flame:4",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -7
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 6
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "EachOpponent"
+                                },
+                                "storeDamagedAs": "stored0"
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Players",
+                                    "players": {
+                                        "type": "InCollection",
+                                        "collection": "stored0"
+                                    }
+                                },
+                                "body": {
+                                    "type": "CreateGlobalTriggeredAbility",
+                                    "ability": {
+                                        "id": "Chandra, Roaring Flame:3",
+                                        "trigger": {
+                                            "type": "StepEvent",
+                                            "step": "UPKEEP"
+                                        },
+                                        "binding": "ANY",
+                                        "effect": {
+                                            "type": "DealDamage",
+                                            "amount": {
+                                                "type": "Fixed",
+                                                "amount": 3
+                                            },
+                                            "target": "Controller"
+                                        },
+                                        "descriptionOverride": "At the beginning of your upkeep, this emblem deals 3 damage to you."
+                                    },
+                                    "descriptionOverride": "At the beginning of your upkeep, this emblem deals 3 damage to you.",
+                                    "emblem": true
+                                }
+                            }
+                        ]
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Chandra, Roaring Flame deals 6 damage to each opponent. Each player dealt damage this way gets an emblem with \"At the beginning of your upkeep, this emblem deals 3 damage to you.\""
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "135",
+            "rarity": "MYTHIC",
+            "artist": "Eric Deschamps",
+            "imageUri": "https://cards.scryfall.io/normal/back/b/0/b0d6caf0-4fa8-4ec5-b7f4-1307474d1b13.jpg?1783938336",
+            "rulings": [
+                {
+                    "date": "2015-06-22",
+                    "text": "The emblem created by Chandra, Roaring Flame is colorless. The damage it deals is from a colorless source."
+                },
+                {
+                    "date": "2015-06-22",
+                    "text": "Only players actually dealt damage by the third ability of Chandra, Roaring Flame will get an emblem. If all of that damage to a player is prevented, that player won't get an emblem. If any of that damage is redirected to Chandra's controller, that player will get an emblem."
+                },
+                {
+                    "date": "2015-06-22",
+                    "text": "Each player who gets Chandra's emblem is the owner of that emblem. In multiplayer games, that emblem will remain in the game as long as its owner does, even if Chandra's owner leaves the game."
+                }
+            ]
+        },
+        "startingLoyalty": 4,
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "rarity": "MYTHIC",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b0d6caf0-4fa8-4ec5-b7f4-1307474d1b13.jpg?1783938336",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "You can control two of this permanent, one front-face up and the other back-face up, at the same time."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Chandra, Fire of Kaladesh's activated ability will count any damage Chandra has dealt during the turn to any permanent or player, including combat damage."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "The last sentence of Chandra, Fire of Kaladesh's activated ability isn't a separate ability. The check happens only as that activated ability resolves. You must activate the ability in order to exile Chandra and return her to the battlefield transformed, even if Chandra has already dealt 3 or more damage during the turn."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "A Magic Origins planeswalker that enters the battlefield because of the ability of its front face will enter with loyalty counters as normal."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "In some rare cases, a spell or ability may cause one of these five cards to transform while it's a creature (front face up) on the battlefield. If this happens, the resulting planeswalker won't have any loyalty counters on it and will subsequently be put into its owner's graveyard."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "You can activate one of the planeswalker's loyalty abilities the turn it enters the battlefield. However, you may do so only during one of your main phases when the stack is empty. For example, if the planeswalker enters the battlefield during combat, there will be an opportunity for your opponent to remove it before you can activate one of its abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Chief of the Foundry
 {
     "name": "Chief of the Foundry",

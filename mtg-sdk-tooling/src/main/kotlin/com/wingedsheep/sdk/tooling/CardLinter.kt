@@ -741,6 +741,7 @@ object CardLinter {
         put("Fight" to "excessDamageVariable", write(Space.NUMBER))
         put("DealDamage" to "excessDamageVariable", write(Space.NUMBER))
         put("DealDamage" to "damageDealtVariable", write(Space.NUMBER))
+        put("DealDamage" to "storeDamagedAs", write(Space.COLLECTION))
         put("DividedDamage" to "storeDamagedAs", write(Space.COLLECTION))
         put("PayCounters" to "storeAmountAs", write(Space.NUMBER))
         put("RemoveCountersFromAmong" to "storeAmountAs", write(Space.NUMBER))
