@@ -3340,7 +3340,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Allies Aggro',
         colors: ['R', 'W'],
         keyCard: 'Resolute Blademaster',
-        description: 'Curve out with cheap Allies and turn each rally trigger into first strike, double strike or a team pump on the attack. A fast aggro deck that ends the game in one big combat.',
+        description: 'Curve out with cheap Allies and turn each rally trigger into first strike, double strike, haste or menace on the attack. A fast aggro deck that ends the game in one big combat.',
         creatureTypes: ['Ally'],
       },
       {

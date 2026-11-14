@@ -1440,7 +1440,7 @@ object SetArchetypes {
                 Archetype("Eldrazi Scion Ramp", listOf(Color.BLACK, Color.GREEN),
                     "Make Eldrazi Scions, sacrifice them to ramp into big Eldrazi, and grind with removal and value creatures. A ramp midrange deck that pays off its expendable tokens."),
                 Archetype("Allies Aggro", listOf(Color.RED, Color.WHITE),
-                    "Curve out with cheap Allies and turn each rally trigger into first strike, double strike or a team pump on the attack. A fast aggro deck that ends the game in one big combat.",
+                    "Curve out with cheap Allies and turn each rally trigger into first strike, double strike, haste or menace on the attack. A fast aggro deck that ends the game in one big combat.",
                     creatureTypes = listOf("Ally")),
                 Archetype("Converge Ramp", listOf(Color.GREEN, Color.BLUE),
                     "Ramp and fix with lands so converge cards like Skyrider Elf get bigger with each color of mana spent. A three- to five-color ramp deck that tops out on oversized threats."),
