@@ -85,6 +85,67 @@
     ]
 }
 
+// Acolyte of the Inferno
+{
+    "name": "Acolyte of the Inferno",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Monk",
+    "oracleText": "Renown 1 (When this creature deals combat damage to a player, if it isn't renowned, put a +1/+1 counter on it and it becomes renowned.)\nWhenever this creature becomes blocked by a creature, it deals 2 damage to that creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "RENOWN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "RENOWN",
+            "n": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Acolyte of the Inferno:1",
+                "trigger": {
+                    "type": "BecomesBlockedEvent",
+                    "filter": "creature"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "TriggeringEntity"
+                },
+                "descriptionOverride": "Whenever this creature becomes blocked by a creature, it deals 2 damage to that creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "UNCOMMON",
+        "artist": "Joseph Meehan",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/186581c7-81a6-4c27-b8a9-ff7f7a4b1d40.jpg?1783938334",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Acolyte of the Inferno's last ability will trigger once for each creature that blocks it. Each of those creatures will be dealt 2 damage."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Acolyte of the Inferno's last ability triggers and resolves before combat damage is dealt. If that causes each creature blocking Acolyte of the Inferno to be destroyed, Acolyte of the Inferno will remain blocked and neither deal nor be dealt combat damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Aerial Volley
 {
     "name": "Aerial Volley",
@@ -820,6 +881,80 @@
     ]
 }
 
+// Avaricious Dragon
+{
+    "name": "Avaricious Dragon",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nAt the beginning of your draw step, draw an additional card.\nAt the beginning of your end step, discard your hand.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Avaricious Dragon:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "DRAW"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            {
+                "id": "Avaricious Dragon:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "discardedHand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discardedHand",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "flavorText": "Waste follows want.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/354255d7-dc29-403b-aa90-9044cde669d0.jpg?1783938333"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Aven Battle Priest
 {
     "name": "Aven Battle Priest",
@@ -1265,6 +1400,79 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Call of the Full Moon
+{
+    "name": "Call of the Full Moon",
+    "manaCost": "{1}{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +3/+2 and has trample. (It can deal excess combat damage to the player or planeswalker it's attacking.)\nAt the beginning of each upkeep, if a player cast two or more spells last turn, sacrifice this Aura.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Call of the Full Moon:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": "SacrificeSelf",
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "GreatestAmongPlayers",
+                        "inner": {
+                            "type": "SpellsCastLastTurn",
+                            "player": "You"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "rarity": "UNCOMMON",
+        "artist": "Nils Hamm",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/369d837a-a19b-457c-8146-cc1766a63ec1.jpg?1783938333",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Call of the Full Moon's last ability will look at the entire previous turn, even if Call of the Moon wasn't on the battlefield for some or all of that turn. For example, if you cast Call of the Full Moon and another spell on the same turn, you'll have to sacrifice Call of the Full Moon at the beginning of the upkeep of the following turn."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "A single player must have cast two or more spells during the previous turn for Call of the Full Moon's last ability to trigger. If multiple players each cast just one spell during that turn, the ability won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -2726,6 +2934,70 @@
     ]
 }
 
+// Embermaw Hellion
+{
+    "name": "Embermaw Hellion",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Hellion",
+    "oracleText": "Trample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)\nIf another red source you control would deal damage to a permanent or player, it deals that much damage plus 1 to that permanent or player instead.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "ModifyDamageAmount",
+                "modifier": 1,
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "source": {
+                        "cardPredicates": [
+                            {
+                                "type": "HasColor",
+                                "color": "RED"
+                            }
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsSource"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "rarity": "RARE",
+        "artist": "James Paick",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/664f60a8-e80a-4fe0-b76c-2d76c728329e.jpg?1783938332",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Embermaw Hellion's last ability doesn't cause Embermaw Hellion to deal damage; it affects the amount of damage dealt by the original red source."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If the player or permanent being dealt damage is also affected by a damage prevention effect, that player or the controller of that permanent can apply that effect and Embermaw Hellion's effect in any order. If all of the damage is prevented, Embermaw Hellion's effect can't apply to it."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Multiple Embermaw Hellions are cumulative. If you control two of them, you'll add 2 to the damage dealt by another red source you control. In this case, you would also add 1 to the damage dealt by either Embermaw Hellion."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Enlightened Ascetic
 {
     "name": "Enlightened Ascetic",
@@ -2859,6 +3131,85 @@
     ]
 }
 
+// Enthralling Victor
+{
+    "name": "Enthralling Victor",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "When this creature enters, gain control of target creature an opponent controls with power 2 or less until end of turn. Untap that creature. It gains haste until end of turn. (It can attack and {T} this turn.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Enthralling Victor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainControl",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "EndOfTurn"
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "tap": false
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature pow<=2 ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "rarity": "UNCOMMON",
+        "artist": "Winona Nelson",
+        "flavorText": "If you stare at the sun for too long, you'll lose your ability to see clearly.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/3607d63b-82ab-44f0-aef5-d9063e17c76f.jpg?1783938331",
+        "rulings": [
+            {
+                "date": "2018-03-16",
+                "text": "Once Enthralling Victor's ability resolves and you gain control of a creature, raising its power above 2 won't cause you to lose control of it. Similarly, it doesn't matter if Enthralling Victor leaves the battlefield or you lose control of Enthralling Victor. You'll keep control of the creature that was the target of the ability until the end of the turn."
+            },
+            {
+                "date": "2018-03-16",
+                "text": "Enthralling Victor's ability can target a creature that's already untapped. You'll still gain control of it and it will gain haste."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Erebos's Titan
 {
     "name": "Erebos's Titan",
@@ -2979,6 +3330,67 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Exquisite Firecraft
+{
+    "name": "Exquisite Firecraft",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exquisite Firecraft deals 4 damage to any target.\nSpell mastery — If there are two or more instant and/or sorcery cards in your graveyard, this spell can't be countered.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 4
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ],
+        "cantBeCounteredIf": {
+            "type": "Compare",
+            "left": {
+                "type": "Count",
+                "player": "You",
+                "zone": "Graveyard",
+                "filter": "instant|sorcery"
+            },
+            "operator": "GTE",
+            "right": {
+                "type": "Fixed",
+                "amount": 2
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "rarity": "RARE",
+        "artist": "Chase Stone",
+        "flavorText": "Chandra's gift set her apart and others aflame.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/42eca98e-a164-4f70-a0b0-7a604863f30b.jpg?1783938330",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "A spell or ability that counters spells can still target Exquisite Firecraft. When that spell or ability resolves, Exquisite Firecraft won't be countered if its spell mastery ability applies, but any additional effects of the countering spell or ability will still happen."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Check to see if there are two or more instant and/or sorcery cards in your graveyard as the spell resolves to determine whether the spell mastery ability applies. The spell itself won't count because it's still on the stack as you make this check."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -3183,6 +3595,82 @@
     ]
 }
 
+// Fiery Impulse
+{
+    "name": "Fiery Impulse",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Fiery Impulse deals 2 damage to target creature.\nSpell mastery — If there are two or more instant and/or sorcery cards in your graveyard, Fiery Impulse deals 3 damage instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "instant|sorcery"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            },
+            "then": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 3
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            },
+            "otherwise": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "artist": "Daarken",
+        "flavorText": "\"Well, this got out of hand.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5b81a589-44bf-4441-9079-1ae66d067519.jpg?1783938330",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Check to see if there are two or more instant and/or sorcery cards in your graveyard as the spell resolves to determine whether the spell mastery ability applies. The spell itself won't count because it's still on the stack as you make this check."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Firefiend Elemental
 {
     "name": "Firefiend Elemental",
@@ -3208,6 +3696,96 @@
         "collectorNumber": "146",
         "artist": "Torstein Nordstrand",
         "imageUri": "https://cards.scryfall.io/normal/front/5/5/55051412-8749-4b65-ac76-c20ef57fd2e3.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Flameshadow Conjuring
+{
+    "name": "Flameshadow Conjuring",
+    "manaCost": "{3}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a nontoken creature you control enters, you may pay {R}. If you do, create a token that's a copy of that creature. That token gains haste. Exile it at the beginning of the next end step.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Flameshadow Conjuring:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{R}"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CreateTokenCopyOfTarget",
+                                "target": "TriggeringEntity",
+                                "exileAtStep": "END"
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Collection",
+                                    "collection": "createdTokens"
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "HASTE",
+                                    "target": "IterationEntity",
+                                    "duration": "Permanent"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever a nontoken creature you control enters, you may pay {R}. If you do, create a token that's a copy of that creature. That token gains haste. Exile it at the beginning of the next end step."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "rarity": "RARE",
+        "artist": "Seb McKinnon",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b473ee0c-b037-4968-9dda-82c2288e54f7.jpg?1783938329",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "The token copies exactly what's printed on the original creature and nothing else (unless that creature is copying something else). It doesn't copy whether that creature is tapped or untapped, whether it has any counters on it or Auras and Equipment attached to it, or any non-copy effects that have changed its power, toughness, types, color, and so on."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Any enters-the-battlefield abilities of the copied creature will trigger when the token enters the battlefield. Any \"as [this permanent] enters the battlefield\" or \"[this permanent] enters the battlefield with\" abilities of the copied creature will also work."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "The token is exiled at the beginning of the next end step regardless of who controls it at that time."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If the ability resolves during a turn's end step, the token will be exiled at the beginning of the next turn's end step."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If the token isn't exiled at the beginning of the next end step (perhaps because the delayed triggered ability is countered), it remains on the battlefield indefinitely. It continues to have haste."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If another creature becomes or enters the battlefield as a copy of the token, that creature won't have haste and it won't be exiled."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED"
@@ -3592,6 +4170,61 @@
     "colorIdentityOverride": [
         "BLACK",
         "GREEN"
+    ]
+}
+
+// Goblin Glory Chaser
+{
+    "name": "Goblin Glory Chaser",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Goblin Warrior",
+    "oracleText": "Renown 1 (When this creature deals combat damage to a player, if it isn't renowned, put a +1/+1 counter on it and it becomes renowned.)\nAs long as this creature is renowned, it has menace. (It can't be blocked except by two or more creatures.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "RENOWN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "RENOWN",
+            "n": 1
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "MENACE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "IsRenowned"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Staples",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e2779415-9e0e-4c61-b590-e15ac089cf30.jpg?1783938329"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -4259,6 +4892,103 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Infectious Bloodlust
+{
+    "name": "Infectious Bloodlust",
+    "manaCost": "{1}{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+1, has haste, and attacks each combat if able.\nWhen enchanted creature dies, you may search your library for a card named Infectious Bloodlust, reveal it, put it into your hand, then shuffle.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Infectious Bloodlust:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "name:Infectious Bloodlust"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a card named Infectious Bloodlust to put into your hand",
+                                "selectedLabel": "Put into your hand"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE"
+            },
+            "MustAttack"
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/ee44df88-45a4-46ef-a8bd-f7fb7b9542b8.jpg?1783938329",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "If, during its controller's declare attackers step, the enchanted creature is tapped or is affected by a spell or ability that says it can't attack, then that creature doesn't attack. If there's a cost associated with having that creature attack, its controller isn't forced to pay that cost. If they don't, the creature doesn't have to attack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -5750,6 +6480,67 @@
     ]
 }
 
+// Mage-Ring Bully
+{
+    "name": "Mage-Ring Bully",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\nThis creature attacks each combat if able.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "PROWESS"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mage-Ring Bully:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            "MustAttack"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "artist": "Karl Kopinski",
+        "flavorText": "\"Don't be rude, Beleren. We just want to enjoy the view with you.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1a129f22-dd7e-4b2c-a514-a2ac55bb5661.jpg?1783938328",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "If, during its controller's declare attackers step, Mage-Ring Bully is tapped or is affected by a spell or ability that says it can't attack, then Mage-Ring Bully doesn't attack. If there's a cost associated with having it attack, its controller isn't forced to pay that cost. If they don't, Mage-Ring Bully doesn't have to attack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Magmatic Insight
 {
     "name": "Magmatic Insight",
@@ -6617,6 +7408,56 @@
     ]
 }
 
+// Prickleboar
+{
+    "name": "Prickleboar",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Boar",
+    "oracleText": "During your turn, this creature gets +2/+0 and has first strike. (It deals combat damage before creatures without first strike.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 0,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "IsYourTurn"
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "artist": "Jesper Ejsing",
+        "flavorText": "\"Canyons in the Phoberos badlands are essentially gates to the Underworld.\"\n—Mirinthes, Akroan captain",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/3191a8fd-2c54-4e47-9d5a-692bb38c811f.jpg?1783938326"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Priest of the Blood Rite
 {
     "name": "Priest of the Blood Rite",
@@ -6993,6 +7834,87 @@
     "colorIdentityOverride": []
 }
 
+// Ravaging Blaze
+{
+    "name": "Ravaging Blaze",
+    "manaCost": "{X}{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Ravaging Blaze deals X damage to target creature.\nSpell mastery — If there are two or more instant and/or sorcery cards in your graveyard, Ravaging Blaze also deals X damage to that creature's controller.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": "XValue",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Graveyard",
+                                "filter": "instant|sorcery"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "DealDamage",
+                        "amount": "XValue",
+                        "target": "TargetController"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "UNCOMMON",
+        "artist": "Aleksi Briclot",
+        "flavorText": "In time, not even the fire monks could keep up with Chandra.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5d9404b2-f0ea-4a31-bc7b-6748574c57d3.jpg?1783938326",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Ravaging Blaze targets only the creature. It doesn't target any player, even if the spell mastery ability applies."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If the creature becomes an illegal target by the time Ravaging Blaze tries to resolve, Ravaging Blaze won't resolve and none of its effects will happen. No damage will be dealt to the creature or its controller."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Check to see if there are two or more instant and/or sorcery cards in your graveyard as the spell resolves to determine whether the spell mastery ability applies. The spell itself won't count because it's still on the stack as you make this check."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Reave Soul
 {
     "name": "Reave Soul",
@@ -7200,6 +8122,75 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Scab-Clan Berserker
+{
+    "name": "Scab-Clan Berserker",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Creature — Human Berserker",
+    "oracleText": "Haste\nRenown 1 (When this creature deals combat damage to a player, if it isn't renowned, put a +1/+1 counter on it and it becomes renowned.)\nWhenever an opponent casts a noncreature spell, if this creature is renowned, this creature deals 2 damage to that player.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE",
+        "RENOWN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "RENOWN",
+            "n": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Scab-Clan Berserker:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    },
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "IsRenowned"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "rarity": "RARE",
+        "artist": "Dave Kendall",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/38d600b0-8649-424a-acad-879f3067b55e.jpg?1783938326"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
