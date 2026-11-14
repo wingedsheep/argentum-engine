@@ -49,6 +49,7 @@ val SigilOfValor = card("Sigil of Valor") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "239"
         artist = "Dan Murayama Scott"
+        flavorText = "With each honor he earns, Gideon paves the path to his redemption."
         imageUri = "https://cards.scryfall.io/normal/front/f/1/f134f242-cbb5-4a3d-bfd4-46e8b8669b4b.jpg?1783938307"
         ruling(
             "2015-06-22",
