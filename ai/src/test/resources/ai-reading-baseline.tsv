@@ -159,6 +159,7 @@ Adversary by Algorithm
 Adverse Conditions
 Advocate of the Beast
 Aegar, the Freezing Flame
+Aegis Angel
 Aegis Automaton
 Aegis Sculptor
 Aegis Turtle
@@ -3181,6 +3182,7 @@ Clergy of the Holy Nimbus	intent: CantBeRegeneratedEffect
 Cleric Class
 Cleric of Chill Depths	intent: GrantKeywordEffect
 Cleric of Life's Bond
+Cleric of the Forward Order
 Cleveland Booker, Empath
 Clever Conjurer
 Clever Impersonator
@@ -3475,6 +3477,7 @@ Constable Odo
 Constricting Tendrils
 Constrictor Sage
 Construct a Cosmic Cube	intent: HijackNextTurnEffect
+Consul's Lieutenant
 Consul's Shieldguard
 Consulate Crackdown
 Consulate Dreadnought
@@ -5614,6 +5617,7 @@ Enraged Ceratok
 Enraged Flamecaster
 Enraged Giant
 Enraged Huorn
+Enshrouding Mist
 Ensign Pavel Chekov	intent: ForEach>GrantMayPlayFromExileEffect; intent: ForEach>Pipeline(TopOfLibrary→exile)
 Enslaved Dwarf
 Ent's Fury
@@ -7210,6 +7214,7 @@ Gideon's Defeat
 Gideon's Intervention
 Gideon's Lawkeeper
 Gideon's Memorial
+Gideon's Phalanx
 Gideon's Reproach
 Gideon's Resolve
 Gideon's Sacrifice	timing: RedirectNextDamageEffect
@@ -7717,6 +7722,7 @@ Grappling Kraken
 Grappling Sundew
 Grasp of Darkness
 Grasp of Phantoms
+Grasp of the Hieromancer
 Grasping Current
 Grasping Dunes
 Grasping Giant
@@ -8237,6 +8243,7 @@ Healer of the Glade
 Healer's Flock
 Healer's Hawk
 Healing Grace
+Healing Hands
 Healing Leaves
 Healing Salve
 Heap Doll
@@ -8498,6 +8505,7 @@ Hive Stirrings
 Hive of the Eye Tyrant	intent: GrantTriggeredAbilityEffect
 Hiveheart Shaman
 Hivespine Wolverine
+Hixus, Prison Warden
 Hoar Shade
 Hoard Hauler
 Hoard Robber
@@ -9972,6 +9980,7 @@ Knight of the Reliquary
 Knight of the Skyward Eye
 Knight of the Stampede
 Knight of the Tusk
+Knight of the White Orchid
 Knight's Pledge
 Knight-Captain of Eos
 Knight-Errant of Eos
@@ -10156,6 +10165,7 @@ Kyoshi Warriors
 Kyren Glider
 Kyren Negotiations
 Kytheon's Irregulars
+Kytheon's Tactics
 Kytheon, Hero of Akros
 Kíli the Resourceful
 L'Rell, Fierce Visionary
@@ -14390,6 +14400,7 @@ Relic Bind
 Relic Golem
 Relic Robber
 Relic Runner
+Relic Seeker
 Relic Sloth
 Relic Vial
 Relic of Legends
@@ -15765,6 +15776,7 @@ Sentinel Sliver
 Sentinel Spider
 Sentinel Totem
 Sentinel of Lost Lore	polarity: MoveToZoneEffect
+Sentinel of the Eternal Watch
 Sentinel of the Nameless City
 Sentinel of the Pearl Trident
 Sentinel's Eyes
@@ -17698,6 +17710,7 @@ Supply Caravan
 Supply Drop
 Support Mission
 Supportive Parents
+Suppression Bonds
 Suppression Field
 Suppression Ray	polarity: AddCountersToCollectionEffect; polarity: PayCountersEffect; polarity: Pipeline(BattlefieldMatching→?); polarity: TapUntapCollectionEffect
 Supreme Inquisitor	polarity: Pipeline(library→exile)
@@ -17794,6 +17807,7 @@ Swelter	polarity: ForEachEffect
 Sweltering Suns
 Swift Justice
 Swift Kick
+Swift Reckoning
 Swift Reconfiguration	polarity: Aura>GrantKeyword; polarity: Aura>TransformPermanent
 Swift Response
 Swift Spinner
@@ -19077,6 +19091,7 @@ Trade the Helm
 Tradewind Rider
 Trading Post
 Tragedy Feaster
+Tragic Arrogance
 Tragic Banshee
 Tragic Lesson
 Tragic Poet
