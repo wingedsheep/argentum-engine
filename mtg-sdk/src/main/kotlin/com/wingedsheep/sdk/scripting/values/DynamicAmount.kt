@@ -83,6 +83,16 @@ enum class TurnTracker {
     PLAYER_ATTACKED,
     /** Distinct opponents directly attacked by declared creatures this turn, across all combats. */
     OPPONENTS_ATTACKED,
+    /**
+     * Creatures the player declared as attackers in the **current combat** (CR 508.1) — the
+     * per-combat sibling of [PLAYER_ATTACKED]. A creature counts once it is declared and keeps
+     * counting after it leaves the battlefield or is removed from combat; a creature put onto the
+     * battlefield attacking was never declared and never counts. Resets when the combat phase ends,
+     * so a second combat in the turn starts from zero. "If ~ and at least two other creatures
+     * attacked this combat" (Kytheon, Hero of Akros) is a [Player.Each] count of at least 3 beside
+     * `StatePredicate.AttackedThisCombat` on the source.
+     */
+    CREATURES_ATTACKED_THIS_COMBAT,
     /** Indicator (0 or 1) that the player was dealt combat damage this turn. */
     DEALT_COMBAT_DAMAGE,
     /**
@@ -415,6 +425,7 @@ enum class TurnTracker {
         LIFE_LOST_LAST_TURN -> "whether ${player.description} lost life last turn"
         PLAYER_ATTACKED -> "whether ${player.description} attacked this turn"
         OPPONENTS_ATTACKED -> "the number of opponents ${player.description} attacked this turn"
+        CREATURES_ATTACKED_THIS_COMBAT -> "the number of creatures ${player.description} attacked with this combat"
         DEALT_COMBAT_DAMAGE -> "whether ${player.description} were dealt combat damage this turn"
         DEALT_NONCOMBAT_DAMAGE -> "whether ${player.description} were dealt noncombat damage this turn"
         DEALT_NONCOMBAT_DAMAGE_LAST_TURN -> "whether ${player.description} were dealt noncombat damage last turn"

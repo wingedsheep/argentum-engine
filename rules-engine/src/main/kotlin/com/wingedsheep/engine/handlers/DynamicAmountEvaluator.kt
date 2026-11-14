@@ -936,6 +936,11 @@ class DynamicAmountEvaluator(
                             ?.get<com.wingedsheep.engine.state.components.combat.PlayerAttackedPlayersThisTurnComponent>()
                             ?.defendingPlayerIds?.size ?: 0
                     }
+                    TurnTracker.CREATURES_ATTACKED_THIS_COMBAT -> playerIds.sumOf { playerId ->
+                        state.getEntity(playerId)
+                            ?.get<com.wingedsheep.engine.state.components.combat.PlayerAttackersThisCombatComponent>()
+                            ?.attackerIds?.size ?: 0
+                    }
                     TurnTracker.DEALT_COMBAT_DAMAGE -> playerIds.count { playerId ->
                         state.getEntity(playerId)
                             ?.has<com.wingedsheep.engine.state.components.player.WasDealtCombatDamageThisTurnComponent>() == true

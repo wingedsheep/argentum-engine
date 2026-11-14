@@ -211,6 +211,7 @@ class CombatManager(
                     .without<com.wingedsheep.engine.state.components.player.BlockerCountLimitThisCombatComponent>()
                     .without<AttackedThisCombatComponent>()
                     .without<BlockedThisCombatComponent>()
+                    .without<com.wingedsheep.engine.state.components.combat.PlayerAttackersThisCombatComponent>()
                     .endingCombatGraveyardArrival()
             }
         )

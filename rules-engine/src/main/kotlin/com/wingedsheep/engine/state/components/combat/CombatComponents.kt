@@ -408,6 +408,21 @@ data class PlayerAttackersThisTurnComponent(
 ) : Component
 
 /**
+ * The creatures this player declared as attackers in the **current combat** (CR 508.1) — the
+ * per-combat slice of [PlayerAttackersThisTurnComponent]. Kept on the player, not the creatures, so
+ * an attacker that has since died, been exiled or been removed from combat still counts (unlike
+ * the per-object [AttackedThisCombatComponent], which leaves with the object). Creatures put onto
+ * the battlefield attacking were never declared and are never added. Stamped by
+ * `AttackPhaseManager` alongside the this-turn record and cleared when the combat phase ends
+ * (`CombatManager.endCombat`). Backs `TurnTracker.CREATURES_ATTACKED_THIS_COMBAT` (Kytheon, Hero of
+ * Akros: "if Kytheon and at least two other creatures attacked this combat").
+ */
+@Serializable
+data class PlayerAttackersThisCombatComponent(
+    val attackerIds: Set<EntityId>
+) : Component
+
+/**
  * The [PlayerAttackersThisTurnComponent] set as it stood at the end of this player's **own most
  * recent turn** — "creatures that attacked during your last turn".
  *

@@ -462,6 +462,12 @@ internal class AttackPhaseManager(
                                 declaredAttackerSnapshots(state, memberAttackers.keys.toList())
                         )
                     )
+                    updated = updated.with(
+                        com.wingedsheep.engine.state.components.combat.PlayerAttackersThisCombatComponent(
+                            container.get<com.wingedsheep.engine.state.components.combat.PlayerAttackersThisCombatComponent>()
+                                ?.attackerIds.orEmpty() + memberAttackers.keys
+                        )
+                    )
                     if (attackedPlayers.isNotEmpty()) {
                         val previousAttackedPlayers = container
                             .get<com.wingedsheep.engine.state.components.combat.PlayerAttackedPlayersThisTurnComponent>()
