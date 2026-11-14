@@ -1,0 +1,1 @@
+- #TBD Reads opponent-only life-gain locks (Tainted Remedy, Archfiend of Despair) as a lifegain hoser, Tainted Remedy also as a drain, and values them in play and in the draft heuristic; reads "each player loses life" (Rabid Bloodsucker) as draining opponents; prices an ability that sacrifices its own source to pay off (Throwing Knife) as one-shot removal, not repeatable

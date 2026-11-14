@@ -4,6 +4,7 @@ import com.wingedsheep.ai.draftsim.DraftsimData
 import com.wingedsheep.ai.engine.knowledge.AmountSign
 import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.DamageAmplifiers
+import com.wingedsheep.ai.engine.knowledge.LifeGainLocks
 import com.wingedsheep.ai.engine.knowledge.VehicleBody
 import com.wingedsheep.ai.engine.knowledge.LossShields
 import com.wingedsheep.ai.engine.knowledge.DiscardShields
@@ -570,6 +571,9 @@ object LimitedCardRater {
         // "If an effect causes you to discard a card, you may put it on top of your library
         // instead" (Library of Leng, Nephalia Academy): undoes discard spells, which are rare.
         DiscardShields.reads(replacement) -> TAG_VALUE.getValue(IntentTag.DISCARD_SHIELD)
+        // "Your opponents can't gain life" (Archfiend of Despair), "if an opponent would gain
+        // life, that player loses that much life instead" (Tainted Remedy): a lifegain hoser.
+        LifeGainLocks.reads(replacement) -> TAG_VALUE.getValue(IntentTag.LIFEGAIN_LOCK)
         else -> DamageAmplifiers.pickValue(replacement)
     }
 
@@ -961,6 +965,9 @@ object LimitedCardRater {
         // A counter lock blanks poison, -1/-1 and +1/+1 plans on both sides — a sideboard hoser
         // against a counters deck, priced like the trigger lock.
         IntentTag.COUNTER_LOCK to 0.1,
+        // Locking out the opponents' life gain blanks a lifegain deck's payoffs and turns a drain
+        // race ours — a sideboard hoser in Limited, priced like the counter lock.
+        IntentTag.LIFEGAIN_LOCK to 0.1,
         IntentTag.TRIBAL_ENABLER to 0.1,
         // Stealing the opponent's tokens for a turn pays off only when they make some — a flash
         // response to a token spell, or a turn they'd have made Treasure or Clues anyway.
