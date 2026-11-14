@@ -1303,6 +1303,8 @@ object DamageUtils {
             sourceCardTypes = sourceSnapshot.typeLine?.cardTypes.orEmpty(),
             sourceName = sourceSnapshot.name.takeUnless { sourceSnapshot.wasFaceDown },
             amount = amount,
+            // The departed source's object as it dealt the damage, never its new one (CR 400.7).
+            sourceObject = sourceSnapshot.objectRef,
         )
         val projected = state.projectedState
         val controllerId = projected.getController(sourceId)
@@ -1330,6 +1332,7 @@ object DamageUtils {
                 ?.takeUnless { it.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>() }
                 ?.let { projected.getName(sourceId) ?: it.get<CardComponent>()?.name },
             amount = amount,
+            sourceObject = state.objectRef(sourceId),
         )
     }
 

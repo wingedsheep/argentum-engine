@@ -1109,7 +1109,19 @@ data class DamageSourceLki(
      * [DamagedBySourcesThisTurnComponent.adding], read by `DynamicAmount.LastKnownDamageDealtToSource`.
      */
     val amount: Int = 0,
+    /**
+     * The rules object [sourceId] was when it dealt the damage (CR 400.7). A creature that left the
+     * battlefield and came back is a new object, so "a creature dealt damage by *that creature*"
+     * (Touch of Moonglove's delayed trigger) counts only the hits this object dealt.
+     */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val sourceObject: com.wingedsheep.engine.state.ObjectRef? = null,
 ) {
+    /** Was this damage dealt by [entityId] — and, when [obj] is known, by that very object? */
+    fun dealtBy(entityId: EntityId, obj: com.wingedsheep.engine.state.ObjectRef?): Boolean =
+        sourceId == entityId && (obj == null || sourceObject == null || sourceObject == obj)
+
     /**
      * Does this source, as it stood when it dealt the damage, match [filter]? "You" is [youId]. The
      * snapshot holds only controller, creature-ness, instant/sorcery-ness, legendary-ness, subtypes and name, so a

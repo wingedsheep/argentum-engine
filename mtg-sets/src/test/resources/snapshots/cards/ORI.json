@@ -5539,6 +5539,85 @@
     ]
 }
 
+// Touch of Moonglove
+{
+    "name": "Touch of Moonglove",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control gets +1/+0 and gains deathtouch until end of turn. Whenever a creature dealt damage by that creature dies this turn, its controller loses 2 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "DEATHTOUCH",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": "ControllerOfTriggeringEntity"
+                    },
+                    "trigger": {
+                        "event": "CreatureDealtDamageBySourceDiesEvent"
+                    },
+                    "watchedTarget": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "artist": "Scott Murphy",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bf659f2f-983c-4a62-a969-4176e5fbe193.jpg?1783938335",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "The controller of the creature dealt damage by the target creature is the one who loses 2 life, not the controller of the target creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Undead Servant
 {
     "name": "Undead Servant",
