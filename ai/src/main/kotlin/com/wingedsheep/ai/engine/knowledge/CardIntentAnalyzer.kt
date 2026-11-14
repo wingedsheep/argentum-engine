@@ -2560,6 +2560,14 @@ object CardIntentAnalyzer {
         // creature your opponents control attacks … if able" (Kardur): an attack the
         // opponent didn't choose. A requirement on our own creatures is a price, not a payoff.
         is MustAttackGroupEffect -> if (opponentsOnly(effect.filter.baseFilter.controllerPredicate)) setOf(IntentTag.FORCED_ATTACK) else emptySet()
+        // "Target creature an opponent controls attacks this turn / during its controller's next turn
+        // if able" (Alluring Siren, Nettling Imp, Gideon, Battle-Forged): the single-creature form —
+        // an attack its controller didn't choose, into our blockers or onto our planeswalker. Only a
+        // chosen target reads; a mark on our own new token (Legion Warboss, encore) is a price. The
+        // group form ("creatures your opponents control attack this turn") reads at the ForEach.
+        is MarkMustAttackEffect ->
+            if (effect.target is EffectTarget.ContextTarget || effect.target is EffectTarget.BoundVariable) setOf(IntentTag.FORCED_ATTACK)
+            else emptySet()
 
         // "Each token that would be created under an opponent's control this turn is created under
         // your control instead" (Crafty Cutpurse): the opponent's tokens become ours for the turn.
@@ -2632,6 +2640,12 @@ object CardIntentAnalyzer {
                 // "untap all creatures that attacked"): our attackers stand back up to block or attack
                 // again — the vigilance a granted keyword gives, read the same way.
                 space is IterationSpace.Group && untapsOurCreatures(space.filter, effect.body) -> inner + IntentTag.COMBAT_ENHANCEMENT
+                // "Creatures your opponents control attack this turn if able" (Bident of Thassa,
+                // Grisly Anglerfish): each of their creatures marked — the forced attack of
+                // [MustAttackGroupEffect], spelled per creature.
+                space is IterationSpace.Group && opponentsOnly(space.filter.baseFilter.controllerPredicate) &&
+                    EffectWalker.payoffLeaves(effect.body).any { it is MarkMustAttackEffect && it.target == EffectTarget.IterationEntity } ->
+                    inner + IntentTag.FORCED_ATTACK
                 else -> inner
             }
         }

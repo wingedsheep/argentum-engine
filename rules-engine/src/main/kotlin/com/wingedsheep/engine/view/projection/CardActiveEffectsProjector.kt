@@ -293,6 +293,13 @@ internal class CardActiveEffectsProjector(
     }
 
     /** Whether a modification already has a badge that [lasting] can date: its own, or a damage or source shield's. */
+    /** "Alice", "Gideon, Battle-Forged" or "Alice or Bob" — the defenders a must-attack mark names. */
+    private fun defenderNames(state: GameState, defenderIds: Set<EntityId>): String =
+        defenderIds
+            .mapNotNull { id -> state.getEntity(id)?.let { it.get<PlayerComponent>()?.name ?: it.get<CardComponent>()?.name } }
+            .ifEmpty { listOf("a chosen defender") }
+            .joinToString(" or ")
+
     private fun hasOwnBadge(state: GameState, modification: SerializableModification): Boolean =
         modificationBadge(state, modification) != null ||
             modification is SerializableModification.PreventNextDamage ||
@@ -682,16 +689,26 @@ internal class CardActiveEffectsProjector(
             )
         }
 
-        // Player-directed mark (encore tokens): "attacks <player> this turn if able".
-        state.getEntity(entityId)?.get<MustAttackPlayerThisTurnComponent>()?.let { mark ->
-            val names = mark.defenderIds
-                .mapNotNull { state.getEntity(it)?.get<PlayerComponent>()?.name }
-                .ifEmpty { listOf("a chosen player") }
+        // Directed mark (encore tokens, Gideon, Battle-Forged): "attacks <defender> this turn if able".
+        state.getEntity(entityId)?.get<MustAttackDefendersThisTurnComponent>()?.let { mark ->
             effects.add(
                 ClientCardEffect(
                     effectId = "must_attack_player_this_turn",
                     name = "Must Attack",
-                    description = "This creature must attack ${names.joinToString(" or ")} this turn if able",
+                    description = "This creature must attack ${defenderNames(state, mark.defenderIds)} this turn if able",
+                    icon = "must-attack"
+                )
+            )
+        }
+
+        // Waiting for its controller's next turn (Gideon, Battle-Forged).
+        state.getEntity(entityId)?.get<MustAttackNextTurnComponent>()?.let { mark ->
+            val whom = if (mark.defenderIds.isEmpty()) "" else " ${defenderNames(state, mark.defenderIds)}"
+            effects.add(
+                ClientCardEffect(
+                    effectId = "must_attack_next_turn",
+                    name = "Must Attack",
+                    description = "This creature must attack$whom during its controller's next turn if able",
                     icon = "must-attack"
                 )
             )

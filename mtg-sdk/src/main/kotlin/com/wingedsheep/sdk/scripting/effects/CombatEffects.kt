@@ -736,17 +736,20 @@ data class RemoveFromCombatEffect(
  * The requirement is on the creature, not on any effect source: it survives the source leaving
  * the battlefield. With no [defender] it doesn't care which defender the creature attacks.
  *
- * [defender] names the **player** the creature must attack — "a token that's a copy of this card
- * that attacks that opponent this turn if able" (encore, CR 702.141a). The creature is then bound
- * only while it could attack that player at no cost (CR 508.1d): attacking that player's
- * planeswalker or battle, or another player, breaks the requirement; if it can't attack that
- * player at all (that player has left the game, or a "can't attack you" effect protects them), it
- * is under no requirement and may attack anyone or not attack. Only [MustAttackWindow.ThisTurn]
- * takes a defender.
+ * [defender] names the **defender** the creature must attack: a player — "a token that's a copy of
+ * this card that attacks that opponent this turn if able" (encore, CR 702.141a) — or a planeswalker —
+ * "target creature an opponent controls attacks Gideon during its controller's next turn if able"
+ * (Gideon, Battle-Forged, usually [EffectTarget.Self]). The creature is then bound only while it
+ * could attack that defender at no cost (CR 508.1d): attacking anything else (a named player's
+ * planeswalker or battle, another player) breaks the requirement; if it can't attack that defender
+ * at all (the player has left the game, the planeswalker has left the battlefield or stopped being
+ * a planeswalker, a "can't attack you" effect protects them), it is under no requirement and may
+ * attack anyone or not attack. [MustAttackWindow.ControllersNextCombat] takes no defender.
  *
  * @property target The creature to mark (typically EffectTarget.IterationEntity within ForEachInGroup)
  * @property window How long the requirement binds — see [MustAttackWindow].
- * @property defender The player it must attack, resolved when the effect resolves; null for any defender.
+ * @property defender The player or planeswalker it must attack, resolved when the effect resolves;
+ *   null for any defender.
  */
 @SerialName("MarkMustAttack")
 @Serializable
@@ -756,8 +759,8 @@ data class MarkMustAttackEffect(
     val defender: EffectTarget? = null
 ) : Effect {
     init {
-        require(defender == null || window == MustAttackWindow.ThisTurn) {
-            "MarkMustAttackEffect names a defender only for MustAttackWindow.ThisTurn"
+        require(defender == null || window != MustAttackWindow.ControllersNextCombat) {
+            "MarkMustAttackEffect names no defender for MustAttackWindow.ControllersNextCombat"
         }
     }
 
@@ -779,7 +782,15 @@ enum class MustAttackWindow(val phrase: String) {
      * attackers haven't been declared in it yet. The requirement ends with that combat phase
      * whether or not the creature could attack, and lasts across turns until it comes.
      */
-    ControllersNextCombat("during its controller's next combat phase")
+    ControllersNextCombat("during its controller's next combat phase"),
+
+    /**
+     * Every combat of the next turn of whoever controls the creature when that turn begins (Gideon,
+     * Battle-Forged). The requirement waits across turns — through a change of control, to the new
+     * controller's next turn — and a mark landing during its controller's own turn waits for that
+     * player's following turn. It ends with that turn's cleanup.
+     */
+    ControllersNextTurn("during its controller's next turn")
 }
 
 /**

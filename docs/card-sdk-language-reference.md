@@ -1656,7 +1656,7 @@ serialized shape; the facade for each is:
 | `LoseLifeEffect` | `Effects.LoseLife` |
 | `MarkExileControllerGraveyardOnDeathEffect` | `Effects.MarkExileControllerGraveyardOnDeath` |
 | `MarkExileOnDeathEffect` | `Effects.MarkExileOnDeath` |
-| `MarkMustAttackEffect` | `Effects.MarkMustAttackThisTurn`, `Effects.MarkMustAttackNextCombat` |
+| `MarkMustAttackEffect` | `Effects.MarkMustAttackThisTurn`, `Effects.MarkMustAttackNextCombat`, `Effects.MarkMustAttackNextTurn` |
 | `MustAttackGroupEffect` | `Effects.MustAttackGroup` |
 | `MarkSpellExileWithCountersEffect` | `Effects.MarkSpellExileWithCounters` |
 | `MarkSpellExileOnResolveEffect` | `Effects.MarkSpellExileOnResolve` |
@@ -3865,18 +3865,30 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   enforced by `AttackPhaseManager` and removed during cleanup. It composes with the token pipeline for “that
   token attacks this combat if able”: create the token, then target
   `PipelineTarget(CREATED_TOKENS, 0)` with this facade.
-- `Effects.MarkMustAttackThisTurn(target, defender)` (`MarkMustAttackEffect.defender`, `ThisTurn` window only) —
+- `Effects.MarkMustAttackThisTurn(target, defender)` (`MarkMustAttackEffect.defender`) —
   "it attacks **that player** this turn if able" (encore's token copies, CR 702.141a). `defender` is resolved
-  to a player when the effect resolves and stored on the creature as `MustAttackPlayerThisTurnComponent`, which
+  when the effect resolves — to a player, or to a permanent on the battlefield (a planeswalker, e.g.
+  `EffectTarget.Self`) — and stored on the creature as `MustAttackDefendersThisTurnComponent`, which
   `DirectedAttackRequirements` reads beside the Public Enemy static: the creature is bound only while it could
-  attack that player at no cost (CR 508.1d), and only an attack on that player — not their planeswalker or
-  battle, nor another player — obeys it. If it can't attack that player it is under no requirement at all.
-  Removed during cleanup or when the creature leaves the battlefield; its "Must Attack" badge names the player.
+  attack that defender at no cost (CR 508.1d), and only an attack on that defender — not a named player's
+  planeswalker or battle, nor another player — obeys it. If it can't attack that defender (the player left the
+  game; the planeswalker left the battlefield, stopped being a planeswalker or is its own controller's) it is
+  under no requirement at all. Removed during cleanup or when the creature leaves the battlefield; its
+  "Must Attack" badge names the defender, and the declare-attackers legal action narrows the creature's
+  targets to it.
 - `Effects.MarkMustAttackNextCombat(target)` (`MarkMustAttackEffect`, window
   `MustAttackWindow.ControllersNextCombat`) — "that creature attacks during its controller's next combat
   phase if able" (Sizzling Soloist). The mark waits across turns for that player's next combat phase, binds
   its declaration, and ends with it whether or not the creature could attack. Landing after that player's
   attackers are already declared this combat, it waits for the following one.
+- `Effects.MarkMustAttackNextTurn(target, defender = null)` (`MarkMustAttackEffect`, window
+  `MustAttackWindow.ControllersNextTurn`) — "[target] attacks [defender] during its controller's next turn if
+  able", every combat of that turn (Gideon, Battle-Forged's +2:
+  `MarkMustAttackNextTurn(creature, EffectTarget.Self)`). The mark (`MustAttackNextTurnComponent`) waits until a
+  turn begins whose active player controls the creature, then becomes that turn's
+  `MarkMustAttackThisTurn` marks (directed or not), so it follows a change of control to the new controller's
+  next turn, and one landing during its controller's own turn waits for the following one. `defender` follows
+  the directed rules above. `ControllersNextCombat` is the only window that takes no `defender`.
 - `Effects.MarkMustBlockThisTurn(target = ContextTarget(0))` (`MarkMustBlockThisTurnEffect`) —
   "target creature blocks this turn if able". Adds a `Layer.ABILITY` floating
   `SerializableModification.SetMustBlock` for `Duration.EndOfTurn`, i.e. the same projected

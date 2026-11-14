@@ -1009,10 +1009,10 @@ internal class AttackPhaseManager(
             container.get<MustAttackNextCombatComponent>()?.waitsOutCurrentCombat == false
 
     /**
-     * Validate requirements naming the player to attack — "All creatures attack enchanted
-     * creature's controller each combat if able" (Public Enemy). A creature bound by one
-     * ([bindingDirectedDefenders]) must attack, and must attack one of the players it names: a
-     * player, not their planeswalker or battle.
+     * Validate requirements naming the defender to attack — "All creatures attack enchanted
+     * creature's controller each combat if able" (Public Enemy), "attacks Gideon during its
+     * controller's next turn if able". A creature bound by one ([boundAttackDefenders]) must attack,
+     * and must attack one of the defenders it names: a named player, not their planeswalker or battle.
      */
     private fun validateDirectedMustAttackRequirements(
         state: GameState,
@@ -1026,19 +1026,21 @@ internal class AttackPhaseManager(
             if (attackers[attackerId] in bound) continue
             if (attackerId !in attackers && attackerId in excused) continue
             val cardName = state.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
-            val playerName = bound.singleOrNull()?.let { state.getEntity(it)?.get<PlayerComponent>()?.name }
-                ?: "the player it's required to attack"
-            return "$cardName must attack $playerName this combat if able"
+            val defenderName = bound.singleOrNull()?.let { id ->
+                state.getEntity(id)?.let { it.get<PlayerComponent>()?.name ?: it.get<CardComponent>()?.name }
+            } ?: "the defender it's required to attack"
+            return "$cardName must attack $defenderName this combat if able"
         }
         return null
     }
 
     /**
      * Each creature [attackingPlayer] could attack with that a directed requirement binds, mapped
-     * to the players it must attack one of (Public Enemy) — empty in the overwhelmingly common
-     * case. A creature is bound to a named opponent it could attack at no cost and without
-     * breaking its goad ([canAttackFreely]) — the "if able" of CR 508.1d; it is never bound by a
-     * player who controls it, nor one it can't attack. An active Taunt aimed at another player
+     * to the defenders it must attack one of (Public Enemy's player, Gideon, Battle-Forged's
+     * planeswalker) — empty in the overwhelmingly common case. A creature is bound to a named
+     * defender it could attack at no cost and without breaking its goad ([canAttackFreely]) — the
+     * "if able" of CR 508.1d; it is never bound by a player who controls it or a planeswalker they
+     * control, nor by a defender it can't attack (a planeswalker that has left the battlefield). An active Taunt aimed at another player
      * wins, as it does over Trove of Temptation in [validateOpponentsMustAttackYou]: every creature
      * attacking the taunter already obeys as many requirements as any declaration can.
      */
@@ -1055,15 +1057,19 @@ internal class AttackPhaseManager(
         val validAttackers = getValidAttackers(state, attackingPlayer)
         val goad = goadRules ?: GoadRules(state, cardRegistry, predicateEvaluator)
         val bound = mutableMapOf<EntityId, Set<EntityId>>()
+        // A named planeswalker binds only while it can be attacked at all: still on the
+        // battlefield, still a planeswalker, controlled by a player this attacker may attack.
+        val attackTargets by lazy { CombatDefenders.attackTargets(state, projected, attackingPlayer).toSet() }
         for (attackerId in validAttackers) {
             val named = directed.namedDefendersOf(attackerId)
             if (named.isEmpty() || (taunted != null && taunted !in named)) continue
-            val players = named.filterTo(mutableSetOf()) { player ->
-                player in opponents && canAttackFreely(
-                    state, projected, attackingPlayer, attackerId, listOf(player), player, opponents, validAttackers, goad
+            val defenders = named.filterTo(mutableSetOf()) { defender ->
+                val player = defenderControllerOf(state, projected, defender)
+                player in opponents && (defender == player || defender in attackTargets) && canAttackFreely(
+                    state, projected, attackingPlayer, attackerId, listOf(defender), player, opponents, validAttackers, goad
                 )
             }
-            if (players.isNotEmpty()) bound[attackerId] = players
+            if (defenders.isNotEmpty()) bound[attackerId] = defenders
         }
         return bound
     }

@@ -20,7 +20,10 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
+import com.wingedsheep.engine.state.components.combat.MustAttackDefendersThisTurnComponent
+import com.wingedsheep.engine.state.components.combat.MustAttackNextTurnComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackPlayerComponent
+import com.wingedsheep.engine.state.components.combat.MustAttackThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.CantCastSpellsComponent
 import com.wingedsheep.engine.state.components.player.PlayerEffectRemoval
@@ -281,6 +284,8 @@ class TurnManager(
                 container.with(mustAttack.copy(activeThisTurn = true))
             }
         }
+
+        newState = activateNextTurnAttackMarks(newState)
 
         val events = mutableListOf<GameEvent>(TurnChangedEvent(newState.turnNumber, playerId))
 
@@ -1693,6 +1698,35 @@ class TurnManager(
         attackingPlayer: EntityId,
         candidates: List<EntityId>,
     ): List<EntityId> = combatManager.legalDefendersFor(state, attackerId, attackingPlayer, candidates)
+
+    /**
+     * "Attacks … during its controller's next turn if able" (Gideon, Battle-Forged): as a turn
+     * begins, every waiting [MustAttackNextTurnComponent] on a creature the active player controls
+     * becomes this turn's marks, which cleanup removes. Read only now, so the mark follows a change
+     * of control to the new controller's next turn and a mark placed during its controller's own
+     * turn waits for the next one.
+     */
+    private fun activateNextTurnAttackMarks(state: GameState): GameState {
+        val marked = state.getBattlefield().filter { state.getEntity(it)?.has<MustAttackNextTurnComponent>() == true }
+        if (marked.isEmpty()) return state
+        val projected = state.projectedState
+        var newState = state
+        for (creatureId in marked) {
+            val controller = projected.getController(creatureId) ?: continue
+            if (!newState.isActiveTurnFor(controller)) continue
+            newState = newState.updateEntity(creatureId) { container ->
+                val mark = container.get<MustAttackNextTurnComponent>() ?: return@updateEntity container
+                var updated = container.without<MustAttackNextTurnComponent>()
+                if (mark.anyDefender) updated = updated.with(MustAttackThisTurnComponent)
+                if (mark.defenderIds.isNotEmpty()) {
+                    val existing = updated.get<MustAttackDefendersThisTurnComponent>()?.defenderIds.orEmpty()
+                    updated = updated.with(MustAttackDefendersThisTurnComponent(existing + mark.defenderIds))
+                }
+                updated
+            }
+        }
+        return newState
+    }
 
     /** See [com.wingedsheep.engine.mechanics.combat.AttackPhaseManager.boundAttackDefenders]. */
     fun boundAttackDefenders(state: GameState, attackingPlayer: EntityId): Map<EntityId, Set<EntityId>> =

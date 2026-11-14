@@ -6642,8 +6642,9 @@ object Effects {
         MarkMustAttackEffect(target)
 
     /**
-     * "[target] attacks [defender] this turn if able" — the requirement names the player to attack
-     * (encore's token copies, CR 702.141a). Bound only while the creature could attack that player.
+     * "[target] attacks [defender] this turn if able" — the requirement names the player or
+     * planeswalker to attack (encore's token copies, CR 702.141a). Bound only while the creature
+     * could attack that defender.
      */
     fun MarkMustAttackThisTurn(target: EffectTarget, defender: EffectTarget): Effect =
         MarkMustAttackEffect(target, MustAttackWindow.ThisTurn, defender)
@@ -6654,6 +6655,15 @@ object Effects {
      */
     fun MarkMustAttackNextCombat(target: EffectTarget): Effect =
         MarkMustAttackEffect(target, MustAttackWindow.ControllersNextCombat)
+
+    /**
+     * "[target] attacks [defender] during its controller's next turn if able" — every combat of
+     * that turn (Gideon, Battle-Forged: `MarkMustAttackNextTurn(ContextTarget(0), EffectTarget.Self)`).
+     * With no [defender] the creature may attack anyone. The mark waits for the next turn of
+     * whoever controls the creature when a turn begins, so it follows a change of control.
+     */
+    fun MarkMustAttackNextTurn(target: EffectTarget, defender: EffectTarget? = null): Effect =
+        MarkMustAttackEffect(target, MustAttackWindow.ControllersNextTurn, defender)
 
     /**
      * Mark a creature as required to block this turn if able ("target creature blocks this turn if
