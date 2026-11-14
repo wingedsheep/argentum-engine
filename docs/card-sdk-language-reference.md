@@ -19702,7 +19702,15 @@ name (Sorcerous Spyglass / Pithing Needle's "choose any card name"). Set
 `lookAtOpponentHand = true` to first reveal an opponent's hand to the controller as the permanent
 enters, immediately before the choice (durable reveal via `RevealedToComponent`, correctly masked to
 show only to the controller; purely informational — it never restricts the name chosen, so an empty
-opposing hand still lets you name any card). Used by Petrified Hamlet ("When this land enters, choose
+opposing hand still lets you name any card). `cardNameSource` says which cards the names come from:
+`CardNameSource.ANY_CARD` (the default — every registered name in the pool) or
+`CardNameSource.OPPONENTS_REVEALED_HANDS` — "each opponent reveals their hand. You choose the name of a
+nonland card revealed this way" (Alhammarret, High Arbiter: `cardNamePool = CardNamePool.NONLAND,
+cardNameSource = CardNameSource.OPPONENTS_REVEALED_HANDS` + `PlayersCantCastSpells(Player.EachOpponent,
+GameObjectFilter.Any.namedFromChosenComponent())`). Each opponent's hand is revealed to every player as
+the permanent enters, and only the pool names among those cards are offered. With cards revealed but
+none in the pool the chooser only acknowledges the reveal ("No nonland card was revealed") and nothing
+is named; an empty hand asks nothing. It never combines with `lookAtOpponentHand`. Used by Petrified Hamlet ("When this land enters, choose
 a land card name", then two statics — `PreventActivatedAbilities(abilities = NON_MANA, anyZone = true)` and
 `GrantActivatedAbility` of a `{T}: Add {C}` mana ability — both filtered by
 `namedFromChosenComponent()`) and Sorcerous Spyglass (`EntersWithChoice(ChoiceType.CARD_NAME,

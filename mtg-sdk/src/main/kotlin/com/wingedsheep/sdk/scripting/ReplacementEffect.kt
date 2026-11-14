@@ -3002,6 +3002,21 @@ enum class CardNamePool {
 }
 
 /**
+ * Where the names an `EntersWithChoice(ChoiceType.CARD_NAME)` offers come from — the axis beside
+ * [CardNamePool], which says *what kind* of name; this says *from which cards*.
+ *
+ * - [ANY_CARD] — every registered card name in the pool ("choose a nonland card name"). The default.
+ * - [OPPONENTS_REVEALED_HANDS] — "each opponent reveals their hand. You choose the name of a nonland
+ *   card revealed this way" (Alhammarret, High Arbiter). As the permanent enters, every opponent
+ *   reveals their hand to all players, and only the names of the revealed cards that are in the pool
+ *   are offered. No such card revealed means no name is chosen.
+ */
+enum class CardNameSource {
+    ANY_CARD,
+    OPPONENTS_REVEALED_HANDS,
+}
+
+/**
  * A single named option in an [EntersWithChoice] of type [ChoiceType.MODE].
  *
  * The [id] is the stable, machine-readable identifier referenced by
@@ -3094,6 +3109,14 @@ data class EntersWithChoice(
      */
     val cardNamePool: CardNamePool = CardNamePool.LAND,
     /**
+     * When [choiceType] is [ChoiceType.CARD_NAME], which cards the offered names are drawn from —
+     * every registered card ([CardNameSource.ANY_CARD], the default), or only the cards each
+     * opponent reveals from their hand as the permanent enters
+     * ([CardNameSource.OPPONENTS_REVEALED_HANDS], Alhammarret, High Arbiter). The reveal is public
+     * and part of the same replacement, so it never combines with [lookAtOpponentHand].
+     */
+    val cardNameSource: CardNameSource = CardNameSource.ANY_CARD,
+    /**
      * When true, the chooser first looks at an opponent's hand as the permanent enters, immediately
      * before making the choice. "Look at" is not a keyword action (a player normally can't see an
      * opponent's hand — CR 402.3); it's modeled here as a durable reveal to the chooser
@@ -3174,6 +3197,9 @@ data class EntersWithChoice(
         require(!chosenOpponentControls || (choiceType == ChoiceType.OPPONENT && chooser == Player.You)) {
             "chosenOpponentControls applies only to ChoiceType.OPPONENT chosen by you"
         }
+        require(cardNameSource == CardNameSource.ANY_CARD || (choiceType == ChoiceType.CARD_NAME && !lookAtOpponentHand)) {
+            "cardNameSource applies only to ChoiceType.CARD_NAME, and never with lookAtOpponentHand"
+        }
     }
 
     override val description: String = choiceDescription() + (then?.let { ". ${it.description}" } ?: "")
@@ -3226,7 +3252,11 @@ data class EntersWithChoice(
         } else {
             "As this permanent enters, choose an opponent"
         }
-        ChoiceType.CARD_NAME -> {
+        ChoiceType.CARD_NAME -> if (cardNameSource == CardNameSource.OPPONENTS_REVEALED_HANDS) {
+            val chooses = if (chooser == Player.AnOpponent) "An opponent chooses" else "You choose"
+            val kind = cardNamePool.nounPhrase.removeSuffix(" name") // "a nonland card name" -> "a nonland card"
+            "As this permanent enters, each opponent reveals their hand. $chooses the name of $kind revealed this way"
+        } else {
             val lookPrefix = if (lookAtOpponentHand) "look at an opponent's hand, then " else ""
             val nameKind = if (cardNamePool == CardNamePool.ANY) "any card name" else cardNamePool.nounPhrase
             val verb = if (chooser == Player.AnOpponent) "an opponent chooses" else "choose"

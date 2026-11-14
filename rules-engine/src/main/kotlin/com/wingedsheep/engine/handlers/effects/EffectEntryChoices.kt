@@ -99,7 +99,7 @@ object EffectEntryChoices {
                 val prompt = PermanentEntryReplacements.entersChoicePrompt(
                     state, id, controller, entering, choice, fromZone = null,
                     cardNameOptions = if (choice.choiceType == ChoiceType.CARD_NAME) {
-                        registry.cardNamesIn(choice.cardNamePool).toList()
+                        PermanentEntryReplacements.cardNameOptions(state, registry, controller, choice)
                     } else emptyList(),
                 )
                 if (prompt == null) {

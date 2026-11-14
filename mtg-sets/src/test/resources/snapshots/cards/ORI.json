@@ -335,6 +335,50 @@
     }
 }
 
+// Alhammarret, High Arbiter
+{
+    "name": "Alhammarret, High Arbiter",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Legendary Creature — Sphinx",
+    "oracleText": "Flying\nAs Alhammarret enters, each opponent reveals their hand. You choose the name of a nonland card revealed this way.\nYour opponents can't cast spells with the chosen name (as long as this creature is on the battlefield).",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "PlayersCantCastSpells",
+                "spellFilter": {
+                    "cardPredicates": [
+                        "NameEqualsChosenComponent"
+                    ]
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CARD_NAME",
+                "cardNamePool": "NONLAND",
+                "cardNameSource": "OPPONENTS_REVEALED_HANDS"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "rarity": "RARE",
+        "artist": "Richard Wright",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/4200b101-19d3-4442-bddd-3eb77d5f99a9.jpg?1783938355"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ampryn Tactician
 {
     "name": "Ampryn Tactician",

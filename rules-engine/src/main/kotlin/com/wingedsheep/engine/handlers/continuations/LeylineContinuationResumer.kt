@@ -202,7 +202,7 @@ class LeylineContinuationResumer(
                 it is ZoneChangeEvent && it.entityId == leylineCardId
             },
             cardNameOptions = if (firstChoice.choiceType == ChoiceType.CARD_NAME) {
-                services.cardRegistry.cardNamesIn(firstChoice.cardNamePool).toList()
+                PermanentEntryReplacements.cardNameOptions(state, services.cardRegistry, playerId, firstChoice)
             } else emptyList(),
         )
     }
