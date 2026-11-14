@@ -98,7 +98,7 @@ object TokenFromDefinition {
             buildUnplaced(state, cardDef, controllerId, cardRegistry, staticAbilityHandler, predicateEvaluator)
         } else null
         if (unplaced != null) {
-            TokenEntryRedirect.divert(unplaced.second, unplaced.first, state, predicateEvaluator)?.let { diverted ->
+            TokenEntryRedirect.divert(unplaced.second, unplaced.first, state, predicateEvaluator, cardRegistry)?.let { diverted ->
                 return EffectResult.success(diverted.state, listOf(diverted.event))
             }
         }

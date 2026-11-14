@@ -218,7 +218,7 @@ class CreatePredefinedTokenExecutor(
 
             newState = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.applyBeforeEntry(newState, tokenId, cardRegistry, amountEvaluator.predicates)
             // A battlefield-entry replacement sends it elsewhere instead (Hallowed Moonlight).
-            TokenEntryRedirect.divert(newState, tokenId, state, amountEvaluator.predicates)?.let { diverted ->
+            TokenEntryRedirect.divert(newState, tokenId, state, amountEvaluator.predicates, cardRegistry)?.let { diverted ->
                 newState = diverted.state
                 createdTokenIds.remove(tokenId)
                 divertedEvents.add(diverted.event)

@@ -6613,7 +6613,11 @@ cast: every token-creating executor asks `TokenEntryRedirect.divert` on the full
 it, and a redirected token is put into that zone instead (a `ZoneChangeEvent` from nowhere to it) and then
 ceases to exist, never entering — no entry tracker, enters-with or as-enters replacements, ETB triggers, or
 `CREATED_TOKENS` membership; a "create those tokens plus …" rider still sees the creation. Drop the
-`nontoken()` and the redirect catches tokens: Hallowed Moonlight's "until end of turn, if a creature would
+`nontoken()` and the redirect catches tokens — the token is judged as it would exist on the
+battlefield (CR 701.7b: March of the Machines' animated Treasure is a creature entering), and creation
+replacements (doublers, "plus an additional token") apply before it. A resolving permanent spell asks the
+same redirect before any as-enters question, so a copy of a creature spell (never cast, CR 707.10) is
+caught too: Hallowed Moonlight's "until end of turn, if a creature would
 enter and it wasn't cast, exile it instead" is `GrantReplacementEffect(RedirectZoneChange(newDestination =
 Zone.EXILE, appliesTo = EventPattern.ZoneChangeEvent(filter = GameObjectFilter.Creature.notCast(), to =
 Zone.BATTLEFIELD)), EffectTarget.Self, Duration.EndOfTurn)` from the resolving instant. Movers skip the entry prompts — Aura host, "as this enters" choices, enters-only-if-paid — of

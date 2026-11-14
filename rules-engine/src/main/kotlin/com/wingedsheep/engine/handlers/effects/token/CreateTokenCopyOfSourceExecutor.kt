@@ -172,7 +172,7 @@ class CreateTokenCopyOfSourceExecutor(
             // Add to battlefield
             newState = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.applyBeforeEntry(newState, tokenId, cardRegistry, predicateEvaluator)
             // A battlefield-entry replacement sends it elsewhere instead (Hallowed Moonlight).
-            val diverted = TokenEntryRedirect.divert(newState, tokenId, state, predicateEvaluator)
+            val diverted = TokenEntryRedirect.divert(newState, tokenId, state, predicateEvaluator, cardRegistry)
             if (diverted != null) {
                 newState = diverted.state
                 events.add(diverted.event)

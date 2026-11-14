@@ -96,7 +96,7 @@ class CreateAuraTokenExecutor(
         val entryProbe = stateWithId.withEntity(
             tokenId, ComponentContainer.of(tokenComponent, TokenComponent, ControllerComponent(tokenControllerId))
         )
-        TokenEntryRedirect.divert(entryProbe, tokenId, state, zones.predicateEvaluator)
+        TokenEntryRedirect.divert(entryProbe, tokenId, state, zones.predicateEvaluator, cardRegistry)
             ?.let { return EffectResult.success(it.state, listOf(it.event)) }
 
         val events = mutableListOf<GameEvent>()

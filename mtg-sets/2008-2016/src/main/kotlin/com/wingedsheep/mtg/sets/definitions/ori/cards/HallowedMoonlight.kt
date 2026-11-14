@@ -19,8 +19,9 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Mistcaller's floating battlefield-entry [RedirectZoneChange] without its `nontoken()` qualifier,
  * granted by the resolving spell (the Malicious Eclipse idiom: anchored to the caster, it outlives
  * the instant). Tokens are never cast, so a creature token that would be created this turn is put
- * into exile instead and then ceases to exist (2015-06-22 ruling); a creature spell resolving off the
- * stack carries its cast origin and enters normally, wherever it was cast from.
+ * into exile instead and then ceases to exist (2015-06-22 ruling). A creature spell that was cast
+ * carries its cast origin and enters normally, wherever it was cast from; a copy of one wasn't cast
+ * (CR 707.10), so it is exiled instead.
  */
 val HallowedMoonlight = card("Hallowed Moonlight") {
     manaCost = "{1}{W}"

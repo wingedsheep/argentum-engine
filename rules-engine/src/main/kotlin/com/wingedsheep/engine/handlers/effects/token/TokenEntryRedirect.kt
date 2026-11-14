@@ -2,7 +2,9 @@ package com.wingedsheep.engine.handlers.effects.token
 
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.handlers.effects.EntryCharacteristics
 import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
@@ -32,6 +34,12 @@ import com.wingedsheep.sdk.model.EntityId
  * [ZoneChangeEvent] from nowhere into the redirect's zone instead of onto the battlefield, and the
  * caller leaves it out of the instruction's created-token collection.
  *
+ * Replacements on the token *being created* (CR 701.7b — doublers, "those tokens plus an additional
+ * Treasure", a controller redirect) apply first, to the would-be creation, so a diverted token still
+ * counts for them; only then is its entry judged. It never reaches the battlefield, though, so it
+ * was not created for a trigger that looks back at a creation ("whenever you create a token" reads
+ * a battlefield arrival, CR 701.7a).
+ *
  * Only the destination is honoured: a token that leaves for a hidden or public zone ceases to
  * exist at the next state-based-action check either way, so the shuffle / reveal / linked-exile
  * riders of a redirect have nothing to act on. No printed battlefield-entry redirect carries an
@@ -55,11 +63,23 @@ internal object TokenEntryRedirect {
         tokenId: EntityId,
         preCreationState: GameState,
         predicateEvaluator: PredicateEvaluator,
+        cardRegistry: CardRegistry?,
     ): Diverted? {
+        // A replacement on a token *entering* the battlefield sees the continuous effects that will
+        // modify it (CR 701.7b): March of the Machines makes an entering Treasure a creature.
+        val entersAsCreature: (() -> Boolean)? = cardRegistry?.let { registry ->
+            {
+                EntryCharacteristics.wouldBeCreature(
+                    state, tokenId, state.getEntity(tokenId)?.get<ControllerComponent>()?.playerId,
+                    entryCopy = null, faceDown = false, registry, predicateEvaluator
+                )
+            }
+        }
         val redirect = ZoneMovementUtils.checkZoneChangeRedirect(
             state, tokenId, fromZone = null, toZone = Zone.BATTLEFIELD,
             battlefieldSourceState = preCreationState,
             predicateEvaluator = predicateEvaluator,
+            entersAsCreature = entersAsCreature,
         )
         val destination = redirect.destinationZone
         if (destination == Zone.BATTLEFIELD) return null

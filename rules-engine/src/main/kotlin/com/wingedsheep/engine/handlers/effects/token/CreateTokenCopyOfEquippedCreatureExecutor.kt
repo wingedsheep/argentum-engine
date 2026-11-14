@@ -136,7 +136,7 @@ class CreateTokenCopyOfEquippedCreatureExecutor(
         // Add to battlefield
         newState = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.applyBeforeEntry(newState, tokenId, cardRegistry, predicateEvaluator)
         // A battlefield-entry replacement sends it elsewhere instead (Hallowed Moonlight).
-        TokenEntryRedirect.divert(newState, tokenId, state, predicateEvaluator)
+        TokenEntryRedirect.divert(newState, tokenId, state, predicateEvaluator, cardRegistry)
             ?.let { return EffectResult.success(it.state, listOf(it.event)) }
         newState = com.wingedsheep.engine.handlers.effects.BattlefieldEntry
             .place(newState, controllerId, tokenId)

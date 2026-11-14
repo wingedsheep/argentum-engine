@@ -361,10 +361,12 @@ object TokenCreationReplacementHelper {
                     newState = newState.withEntity(tokenId, tokenContainer)
                     newState = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.applyBeforeEntry(newState, tokenId, cardRegistry, predicateEvaluator)
                     // A battlefield-entry replacement sends it elsewhere instead (Hallowed Moonlight).
-                    val diverted = TokenEntryRedirect.divert(newState, tokenId, state, predicateEvaluator)
+                    val diverted = TokenEntryRedirect.divert(newState, tokenId, state, predicateEvaluator, cardRegistry)
                     if (diverted != null) {
                         newState = diverted.state
                         events.add(diverted.event)
+                        // Still part of the would-be creation the next rider judges (CR 701.7b).
+                        batch += tokenId
                         return@repeat
                     }
                     newState = com.wingedsheep.engine.handlers.effects.BattlefieldEntry
@@ -876,7 +878,7 @@ object TokenCreationReplacementHelper {
             newState = newState.withEntity(tokenId, container)
             if (cardRegistry != null) newState = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.applyBeforeEntry(newState, tokenId, cardRegistry, predicateEvaluator)
             // A battlefield-entry replacement sends it elsewhere instead (Hallowed Moonlight).
-            val diverted = TokenEntryRedirect.divert(newState, tokenId, state, predicateEvaluator)
+            val diverted = TokenEntryRedirect.divert(newState, tokenId, state, predicateEvaluator, cardRegistry)
             if (diverted != null) {
                 newState = diverted.state
                 events.add(diverted.event)
