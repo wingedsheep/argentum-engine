@@ -4246,6 +4246,62 @@
     }
 }
 
+// Smash to Smithereens
+{
+    "name": "Smash to Smithereens",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target artifact. Smash to Smithereens deals 3 damage to that artifact's controller.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": "TargetController"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "artist": "Pete Venters",
+        "flavorText": "The giant Tarvik dreamed that trinkets and machines caused all the world's woe. When he awoke from his troubled sleep, he took the name Tarvik Relicsmasher.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7eda1524-44dd-4f70-ac21-bac51578860e.jpg?1783942745",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Smash to Smithereens targets only the artifact, not any player. If that artifact becomes an illegal target by the time Smash to Smithereens tries to resolve, Smash to Smithereens won't resolve and none of its effects will happen. No damage will be dealt."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Smolder Initiate
 {
     "name": "Smolder Initiate",

@@ -21,6 +21,17 @@ class SweepsOwnSideTest : FunSpec({
         CardIntentAnalyzer.analyze(card("Winnowing")).tags shouldContain IntentTag.SWEEPER
     }
 
+    test("shuffling every player's permanents into their library reads as a symmetric sweeper") {
+        // The Great Aurora pools hand and battlefield in one gather; Warp World gathers each
+        // player's own permanents inside a per-player loop. Both are the bounce-all into the library.
+        listOf("The Great Aurora", "Warp World").forEach { name ->
+            withClue(name) {
+                CardIntentAnalyzer.analyze(card(name)).tags shouldContain IntentTag.SWEEPER
+                CardIntentAnalyzer.sweepsOwnSide(card(name)) shouldBe true
+            }
+        }
+    }
+
     test("symmetric wipes on a spell or a trigger hit their own side") {
         listOf("Wrath of God", "Pyroclasm", "Bane of the Living", "Unstable Glyphbridge", "Winnowing").forEach { name ->
             withClue(name) { CardIntentAnalyzer.sweepsOwnSide(card(name)) shouldBe true }

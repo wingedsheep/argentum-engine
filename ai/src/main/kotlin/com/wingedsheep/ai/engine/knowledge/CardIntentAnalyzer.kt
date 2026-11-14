@@ -34,6 +34,7 @@ import com.wingedsheep.sdk.scripting.GrantCantLoseGame
 import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.CantBeBlockedBy
 import com.wingedsheep.sdk.scripting.CantBeBlockedByMoreThan
+import com.wingedsheep.sdk.scripting.CantBeBlockedExceptBy
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWith
@@ -1807,7 +1808,7 @@ object CardIntentAnalyzer {
 
     /**
      * "Destroy all creatures" — a gather of the battlefield moved to the graveyard by destruction or
-     * sacrifice, to exile, or to hand — reads as a wrath: [IntentTag.REMOVAL] and [IntentTag.SWEEPER], as the `ForEach`
+     * sacrifice, to exile, to hand, or into the library — reads as a wrath: [IntentTag.REMOVAL] and [IntentTag.SWEEPER], as the `ForEach`
      * spelling of the same card does in [tagsOf]. `Effects.DestroyAll` lowers to this shape.
      *
      * The gathered collection is followed through the steps that split or narrow it, as [digTags]
@@ -1855,6 +1856,11 @@ object CardIntentAnalyzer {
                 // in [tagsOf] — tempo removal, a wrath when it is still a whole group.
                 leaf is MoveCollectionEffect && leaf.from in groups && leaf.faceDown == null &&
                     (leaf.destination as? CardDestination.ToZone)?.zone == Zone.HAND -> leaf.from
+                // "Each player shuffles all permanents they own into their library" (Warp World, The
+                // Great Aurora): the tuck-all — the bounce-all into the library instead of the hand,
+                // a reset the caster reaches for when behind on board.
+                leaf is MoveCollectionEffect && leaf.from in groups && leaf.faceDown == null &&
+                    (leaf.destination as? CardDestination.ToZone)?.zone == Zone.LIBRARY -> leaf.from
                 // "Each opponent blights 1", "target opponent blights 2" (High Perfect Morcant,
                 // Champion of the Weird): a -1/-1 counter on a creature they pick — the edict's
                 // shrinking cousin, the same answer [counterTags] reads in a targeted -1/-1 counter.
@@ -1906,6 +1912,10 @@ object CardIntentAnalyzer {
                 // zone-gathered sweepers/edicts (Sunfall, Flood of Tears, Doomfall): the battlefield
                 // gathered as a zone is the same board, an edict when its player picks.
                 is CardSource.FromZone -> if (source.zone == Zone.BATTLEFIELD) source.player to source.filter else continue
+                // "Each player shuffles all cards from their hand and all permanents they own into
+                // their library" (The Great Aurora): the board pooled with other zones is still the
+                // whole board — the hand half rides along in the same move.
+                is CardSource.FromMultipleZones -> if (Zone.BATTLEFIELD in source.zones) source.player to source.filter else continue
                 else -> continue
             }
             val ownOnly = player == Player.You || filter.controllerPredicate == ControllerPredicate.ControlledByYou
@@ -3422,6 +3432,9 @@ object CardIntentAnalyzer {
         // "Can't be blocked by more than one creature" (Sinuous Predator, Norwood Riders): no gang
         // block can bring it down, so it gets through at its own size — partial evasion too.
         is CantBeBlockedByMoreThan -> setOf(IntentTag.EVASION_GRANT)
+        // "Can't be blocked except by creatures with flying or reach" (Orchard Spirit, Elven Riders):
+        // the inverse spelling of [CantBeBlockedBy] — every creature outside the filter is shut out.
+        is CantBeBlockedExceptBy -> setOf(IntentTag.EVASION_GRANT)
         is ModifyStats -> when {
             // A creature's own printed penalty ("this creature gets -2/-2 as long as …", the Djinn
             // of Invasion) is its drawback, never a pump or an answer.
@@ -3482,7 +3495,10 @@ object CardIntentAnalyzer {
         // ability is a mana source, any other helpful ability is the host's own from then on, read
         // as if printed (a rummage stays card selection). A harmful grant, or any grant beside a curse
         // (skipped by the caller), is the Aura's polarity's to read, and tags nothing here.
+        // A mana ability the permanent grants itself ("as long as this creature is renowned, it has
+        // '{T}: Add one mana of any color'", Honored Hierarch) is its own mana source, as a printed one is.
         is GrantActivatedAbility -> when {
+            static.filter.scope == Scope.Self && static.ability.isManaAbility -> setOf(IntentTag.RAMP)
             static.filter.scope != Scope.AttachedTo -> emptySet()
             static.ability.isManaAbility -> setOf(IntentTag.RAMP)
             TargetPolarityAnalyzer.grantedActivatedPolarity(static.ability) == TargetPolarity.BENEFICIAL ->

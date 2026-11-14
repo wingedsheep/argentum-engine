@@ -339,4 +339,35 @@ class EmptyLibraryLossTest : FunSpec({
         drawFailedEvent shouldNotBe null
         drawFailedEvent!!.reason shouldBe "Library is empty"
     }
+
+    test("a token lingering in a library is never drawn, and a library of only tokens is empty (CR 111.8)") {
+        val driver = GameTestDriver()
+        driver.registerCards(TestCards.all + listOf(Divination))
+        driver.initMirrorMatch(deck = Deck.of("Island" to 20), skipMulligans = true, startingLife = 20)
+
+        val activePlayer = driver.activePlayer!!
+        val opponent = driver.getOpponent(activePlayer)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        driver.emptyLibrary(activePlayer)
+
+        // Library, top to bottom: token, real card, token. Divination draws two: the real card, then
+        // nothing — the tokens can't change zones, so the second draw finds the library empty.
+        val bottomToken = driver.putCardOnTopOfLibrary(activePlayer, "Island")
+        driver.addComponent(bottomToken, com.wingedsheep.engine.state.components.identity.TokenComponent)
+        val realCard = driver.putCardOnTopOfLibrary(activePlayer, "Island")
+        val topToken = driver.putCardOnTopOfLibrary(activePlayer, "Island")
+        driver.addComponent(topToken, com.wingedsheep.engine.state.components.identity.TokenComponent)
+
+        val divination = driver.putCardInHand(activePlayer, "Divination")
+        driver.giveMana(activePlayer, Color.BLUE, 3)
+        driver.castSpell(activePlayer, divination)
+        driver.bothPass()
+
+        val hand = driver.state.getHand(activePlayer)
+        (realCard in hand).shouldBeTrue()
+        (topToken in hand) shouldBe false
+        (bottomToken in hand) shouldBe false
+        driver.state.gameOver.shouldBeTrue()
+        driver.state.winnerId shouldBe opponent
+    }
 })

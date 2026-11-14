@@ -1942,6 +1942,46 @@
     ]
 }
 
+// Prized Unicorn
+{
+    "name": "Prized Unicorn",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Unicorn",
+    "oracleText": "All creatures able to block this creature do so.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "MustBeBlockedStatic",
+                "allCreatures": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "199",
+        "rarity": "UNCOMMON",
+        "artist": "Sam Wood",
+        "flavorText": "\"The desire for its magic horn inspires such bloodthirsty greed that all who see the unicorn will kill to possess it.\"\n—Dionus, elvish archdruid",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cde88869-5202-43e9-b0eb-4e40a50d311e.jpg?1783942359",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "If a creature the defending player controls can't block Prized Unicorn for any reason (such as being tapped), then it doesn't block Prized Unicorn. If there's a cost associated with having a creature block Prized Unicorn, the defending player isn't forced to pay that cost, so it doesn't have to block."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If more than one Prized Unicorn is attacking, creatures that could block must block one Prized Unicorn, but they don't all have to block the same Prized Unicorn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Rise from the Grave
 {
     "name": "Rise from the Grave",
