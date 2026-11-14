@@ -2599,6 +2599,60 @@
     "colorIdentityOverride": []
 }
 
+// Hallowed Moonlight
+{
+    "name": "Hallowed Moonlight",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Until end of turn, if a creature would enter and it wasn't cast, exile it instead.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GrantReplacementEffect",
+                    "replacement": {
+                        "type": "RedirectZoneChange",
+                        "newDestination": "Exile",
+                        "appliesTo": {
+                            "type": "ZoneChangeEvent",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "StateNot",
+                                        "predicate": "WasCast"
+                                    }
+                                ]
+                            },
+                            "to": "Battlefield"
+                        }
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "RARE",
+        "artist": "Mike Bierek",
+        "flavorText": "Creatures of darkness instinctively hide from the light.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/94fd0c0f-4a6a-47cf-9f50-df0bbf19aae4.jpg?1783938362"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Hangarback Walker
 {
     "name": "Hangarback Walker",

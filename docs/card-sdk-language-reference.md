@@ -6608,7 +6608,15 @@ would enter and it wasn't cast, exile it instead" is `replacementEffect(Redirect
 Zone.EXILE, appliesTo = EventPattern.ZoneChangeEvent(filter = GameObjectFilter.Creature.nontoken().notCast(),
 to = Zone.BATTLEFIELD)))`. The zone-transition service asks a battlefield-entry redirect on every
 effect move (single and collection), and land plays (the land drop is still spent) and linked-exile returns
-ask it too. Movers skip the entry prompts — Aura host, "as this enters" choices, enters-only-if-paid — of
+ask it too. So does **token creation** — creating a token puts it onto the battlefield, and tokens are never
+cast: every token-creating executor asks `TokenEntryRedirect.divert` on the fully built token before placing
+it, and a redirected token is put into that zone instead (a `ZoneChangeEvent` from nowhere to it) and then
+ceases to exist, never entering — no entry tracker, enters-with or as-enters replacements, ETB triggers, or
+`CREATED_TOKENS` membership; a "create those tokens plus …" rider still sees the creation. Drop the
+`nontoken()` and the redirect catches tokens: Hallowed Moonlight's "until end of turn, if a creature would
+enter and it wasn't cast, exile it instead" is `GrantReplacementEffect(RedirectZoneChange(newDestination =
+Zone.EXILE, appliesTo = EventPattern.ZoneChangeEvent(filter = GameObjectFilter.Creature.notCast(), to =
+Zone.BATTLEFIELD)), EffectTarget.Self, Duration.EndOfTurn)` from the resolving instant. Movers skip the entry prompts — Aura host, "as this enters" choices, enters-only-if-paid — of
 a card that won't enter, after settling any "enters as a copy" choice first (CR 616.1c). A `Creature` /
 `Noncreature` predicate on such a redirect judges the card as it would exist on the battlefield (CR
 614.12, `EntryCharacteristics.wouldBeCreature`): March of the Machines makes an entering artifact a

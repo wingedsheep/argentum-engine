@@ -45,6 +45,7 @@ import com.wingedsheep.sdk.scripting.effects.GainControlEffect
 import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.GrantEvasionKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
+import com.wingedsheep.sdk.scripting.effects.GrantReplacementEffectEffect
 import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MustBeBlockedEffect
@@ -1558,6 +1559,17 @@ internal object ExpiringGrantWindow {
     fun shieldsFromDestructionThisTurn(effect: Effect): Boolean =
         effect is GrantKeywordEffect && effect.duration == Duration.EndOfTurn &&
             effect.keyword == Keyword.INDESTRUCTIBLE.name
+
+    /**
+     * Whether [effect] grants, until end of turn, a battlefield-entry exile — "if a creature would
+     * enter and it wasn't cast, exile it instead" (Hallowed Moonlight, Mistcaller). Like a prevention
+     * shield it needs no hold: raised before anything enters, it leaves the simulated board as it was,
+     * and raised in response to a reanimation or a token maker, simulating that object's resolution
+     * prices the creature it sends to exile. For the AI card-reading audit.
+     */
+    fun exilesEntriesThisTurn(effect: Effect): Boolean =
+        effect is GrantReplacementEffectEffect && effect.duration == Duration.EndOfTurn &&
+            CardIntentAnalyzer.exilesEnteringCreatures(effect.replacement)
 
     private fun isShield(effect: Effect): Boolean =
         effect is PreventDamageEffect && effect.duration == Duration.EndOfTurn && effect.preventDamage &&

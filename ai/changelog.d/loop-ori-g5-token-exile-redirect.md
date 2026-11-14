@@ -1,0 +1,1 @@
+- #PR Reads a granted "if a creature would enter and it wasn't cast, exile it instead" (Hallowed Moonlight, Mistcaller) as reanimation hate whose turn-long shield needs no hold, instead of an unknown effect.

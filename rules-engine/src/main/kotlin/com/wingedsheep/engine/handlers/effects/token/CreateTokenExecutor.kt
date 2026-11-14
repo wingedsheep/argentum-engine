@@ -303,6 +303,7 @@ class CreateTokenExecutor(
 
         var newState = state
         val createdTokens = mutableListOf<EntityId>()
+        val divertedEvents = mutableListOf<ZoneChangeEvent>()
 
         repeat(count) { indexInBatch ->
             val resolvedImageUri = resolvedImageUris[indexInBatch % resolvedImageUris.size]
@@ -369,13 +370,21 @@ class CreateTokenExecutor(
                 )
             }
             newState = newState.withEntity(tokenId, container)
+            if (cardRegistry != null) newState = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.applyBeforeEntry(newState, tokenId, cardRegistry, amountEvaluator.predicates)
+
+            // A battlefield-entry replacement sends it elsewhere instead (Hallowed Moonlight).
+            TokenEntryRedirect.divert(newState, tokenId, state, amountEvaluator.predicates)?.let { diverted ->
+                newState = diverted.state
+                createdTokens.remove(tokenId)
+                divertedEvents.add(diverted.event)
+                return@repeat
+            }
             // A planeswalker or battle now being attacked is stamped as such (CR 506.4).
             if (defenderId != null) {
                 newState = com.wingedsheep.engine.mechanics.combat.AttackedPermanents.markAttacked(newState, defenderId)
             }
 
             // Add to battlefield
-            if (cardRegistry != null) newState = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.applyBeforeEntry(newState, tokenId, cardRegistry, amountEvaluator.predicates)
             newState = com.wingedsheep.engine.handlers.effects.BattlefieldEntry
                 .place(newState, tokenControllerId, tokenId)
 
@@ -562,7 +571,8 @@ class CreateTokenExecutor(
         // filter, so an added artifact token can't recursively re-trigger.
         val (afterAdditional, additionalEvents) = if (TokenCreationBatch.active(context)) newState to emptyList() else TokenCreationReplacementHelper
             .applyAdditionalTokenReplacements(
-                newState, tokenControllerId, createdTokens, effect.tapped,
+                // Tokens a redirect sent elsewhere were still created (Worldwalker Helm still adds).
+                newState, tokenControllerId, createdTokens + divertedEvents.map { it.entityId }, effect.tapped,
                 cardRegistry, staticAbilityHandler, amountEvaluator.predicates
             )
         newState = afterAdditional
@@ -574,7 +584,7 @@ class CreateTokenExecutor(
         // haste until end of turn").
         return EffectResult(
             state = newState,
-            events = events + counterEvents + additionalEvents,
+            events = divertedEvents + events + counterEvents + additionalEvents,
             updatedCollections = mapOf(CREATED_TOKENS to createdTokens)
         )
     }

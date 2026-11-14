@@ -150,6 +150,7 @@ class CreatePredefinedTokenExecutor(
 
         var newState = state
         val createdTokenIds = mutableListOf<EntityId>()
+        val divertedEvents = mutableListOf<ZoneChangeEvent>()
 
         repeat(tokenCount) { indexInBatch ->
             val resolvedImageUri = resolvedImageUris[indexInBatch % resolvedImageUris.size]
@@ -216,6 +217,13 @@ class CreatePredefinedTokenExecutor(
             newState = newState.withEntity(tokenId, container)
 
             newState = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.applyBeforeEntry(newState, tokenId, cardRegistry, amountEvaluator.predicates)
+            // A battlefield-entry replacement sends it elsewhere instead (Hallowed Moonlight).
+            TokenEntryRedirect.divert(newState, tokenId, state, amountEvaluator.predicates)?.let { diverted ->
+                newState = diverted.state
+                createdTokenIds.remove(tokenId)
+                divertedEvents.add(diverted.event)
+                return@repeat
+            }
             newState = com.wingedsheep.engine.handlers.effects.BattlefieldEntry
                 .place(newState, tokenControllerId, tokenId)
 
@@ -239,13 +247,15 @@ class CreatePredefinedTokenExecutor(
                 newObject = newState.objectRef(tokenId)
             )
         }.toMutableList<com.wingedsheep.engine.core.GameEvent>()
+        events.addAll(0, divertedEvents)
 
         // Apply "create those tokens plus an additional X token" replacements (Worldwalker
         // Helm) once for this batch. Only the original tokens are matched against the filter,
         // so the added token can't recursively re-trigger.
         val (afterAdditional, additionalEvents) = if (TokenCreationBatch.active(context)) newState to emptyList() else TokenCreationReplacementHelper
             .applyAdditionalTokenReplacements(
-                newState, tokenControllerId, createdTokenIds, effect.tapped,
+                // Tokens a redirect sent elsewhere were still created (Worldwalker Helm still adds).
+                newState, tokenControllerId, createdTokenIds + divertedEvents.map { it.entityId }, effect.tapped,
                 cardRegistry, staticAbilityHandler, amountEvaluator.predicates
             )
         newState = afterAdditional

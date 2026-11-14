@@ -413,6 +413,8 @@ object AiReadingAudit {
                             // the damage, simulation through that damage prices it. Its other leaves
                             // (a counter, an untap) keep their own timing findings.
                             leaf is PreventDamageEffect ||
+                            // An entry-exile shield the same way (Hallowed Moonlight).
+                            ExpiringGrantWindow.exilesEntriesThisTurn(leaf) ||
                             // The same shield on each player in turn (Commencement of Festivities'
                             // "prevent all combat damage that would be dealt to players this turn"):
                             // a ForEach over players whose body is only that shield.
@@ -485,7 +487,9 @@ object AiReadingAudit {
                 // window (ExpiringGrantWindow.restrictionHasNoWindow), not leaf by leaf.
                 val restriction = ExpiringGrantWindow.readsRestriction(ability.effect)
                 timing(ability.effect, sink) {
-                    restriction || ExpiringGrantWindow.hasExpiringReading(it, creatureGrants = true, source = card)
+                    restriction || ExpiringGrantWindow.hasExpiringReading(it, creatureGrants = true, source = card) ||
+                        // An entry-exile shield needs no hold (Mistcaller) — see exilesEntriesThisTurn.
+                        ExpiringGrantWindow.exilesEntriesThisTurn(it)
                 }
             }
             modal(ability.effect, sink)
@@ -847,7 +851,7 @@ object AiReadingAudit {
         IntentTag.PERMANENT_COPY -> "turns a permanent into a copy of another"
         IntentTag.SPELL_REDIRECT -> "changes the target of a spell or ability"
         IntentTag.SPELL_COPY -> "copies a spell or ability"
-        IntentTag.GRAVEYARD_HATE -> "exiles cards from a graveyard"
+        IntentTag.GRAVEYARD_HATE -> "exiles cards from a graveyard or creatures that would enter uncast"
         IntentTag.SACRIFICE_OUTLET -> "sacrifice outlet"
         IntentTag.LIFEGAIN -> "life gain"
         IntentTag.TAPPER -> "taps things"
