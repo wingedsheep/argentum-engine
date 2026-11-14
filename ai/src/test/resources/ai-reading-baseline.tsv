@@ -2046,6 +2046,7 @@ Bond of Flourishing
 Bond of Insight
 Bond of Passion
 Bond of Revival
+Bonded Construct
 Bonded Herdbeast
 Bonded Horncrest
 Bonders' Enclave
@@ -3465,6 +3466,7 @@ Conscripted Infantry
 Consecrate // Consume
 Consecrate Land
 Consecrated Sphinx
+Consecrated by Blood
 Conservator
 Consider
 Consider the Prime Directive
@@ -4029,6 +4031,7 @@ Dark Banishing
 Dark Bargain
 Dark Betrayal
 Dark Confidant
+Dark Dabbling
 Dark Deal
 Dark Deed
 Dark Endurance
@@ -4473,6 +4476,7 @@ Desperate Ritual
 Desperate Sentry
 Despise
 Despoil
+Despoiler of Souls
 Destined // Lead
 Destined Confrontation
 Destiny Spinner
@@ -5673,6 +5677,7 @@ Erase
 Erdwal Illuminator
 Erebor Flamesmith
 Erebos's Intervention
+Erebos's Titan
 Erebos, Bleak-Hearted
 Erg Raiders
 Erhnam Djinn
@@ -7432,6 +7437,7 @@ Gnarled Professor
 Gnarled Sage
 Gnarlid Colony
 Gnarlroot Pallbearer
+Gnarlroot Trapper
 Gnarlwood Dryad
 Gnashing of Teeth
 Gnaw to the Bone
@@ -12129,6 +12135,7 @@ Necrogen Rotpriest
 Necrogen Scudder
 Necrogen Spellbomb
 Necromancer's Stockpile
+Necromantic Summons
 Necromantic Thirst	polarity: Aura>MoveToZoneEffect
 Necromaster Dragon
 Necromentia
@@ -12289,6 +12296,7 @@ Nightscape Master
 Nightshade Dryad
 Nightshade Harvester
 Nightshade Stinger
+Nightsnare
 Nightsquad Commando
 Nightstalker Engine
 Nightveil Predator
@@ -13916,6 +13924,7 @@ Rabbit Response
 Rabble Rousing	intent: Pipeline(TopOfLibrary→exile|library)
 Rabid Attack	timing: ForEach>ModifyStatsEffect
 Rabid Bite
+Rabid Bloodsucker
 Rabid Gnaw
 Rabid Wombat
 Raccoon Rallier
@@ -14088,6 +14097,7 @@ Rampant Growth
 Rampart Crawler
 Rampart Hunter
 Rampart Smasher
+Ramroller
 Ramses Overdark
 Ramunap Excavator
 Ramunap Hydra
@@ -17945,6 +17955,7 @@ Tainted Indulgence
 Tainted Isle
 Tainted Observer
 Tainted Peak
+Tainted Remedy
 Tainted Treats
 Tainted Well	polarity: Aura>DrawCardsEffect; polarity: Aura>SetEnchantedLandType
 Tainted Wood
@@ -18659,6 +18670,7 @@ Thorn Thallid
 Thorn of Amethyst
 Thorn-Thrash Viashino
 Thornado
+Thornbow Archer
 Thorned Moloch
 Thornfist Striker
 Thornglint Bridge
@@ -18781,6 +18793,7 @@ Throttle
 Through the Breach
 Through the Forest Gate
 Throw from the Saddle
+Throwing Knife
 Thrull Champion
 Thrull Retainer
 Thrull Wizard	intent: PayOrSufferEffect; polarity: PayOrSufferEffect
@@ -19037,6 +19050,7 @@ Torment of Scarabs
 Torment of Venom
 Tormented Angel
 Tormented Soul
+Tormented Thoughts
 Tormenting Voice
 Tormentor's Helm
 Tormod's Crypt
@@ -19597,6 +19611,7 @@ Unhinge
 Unholy Annex // Ritual Chamber
 Unholy Citadel
 Unholy Grotto
+Unholy Hunger
 Unholy Indenture	polarity: Aura>MoveToZoneEffect
 Unholy Officiant
 Unholy Strength
