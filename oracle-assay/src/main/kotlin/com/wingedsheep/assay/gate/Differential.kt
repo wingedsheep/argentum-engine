@@ -743,7 +743,7 @@ internal object Folds {
         "storeAs", "storeSelected", "storeRemainder", "storeMatching", "storeNonMatching", "storeMatch",
         "storeRevealed", "storeChosenAs", "storeOtherAs", "storeMovedAs", "countVariable", "storeCastTo",
         "storeCountAs", "excessDamageVariable", "damageDealtVariable", "storeHeadsAs", "storeGuessedRightAs", "storeWinsAs",
-        "storeDestroyedAs", "storeExiledAs", "storeDiscoveredAs",
+        "storeDestroyedAs", "storeExiledAs", "storeDiscoveredAs", "storeDamagedAs",
     )
     private val OPTIONAL_WRITERS = setOf("storeRemainder", "storeNonMatching", "storeMovedAs")
     private val PIPELINE_READERS = setOf(

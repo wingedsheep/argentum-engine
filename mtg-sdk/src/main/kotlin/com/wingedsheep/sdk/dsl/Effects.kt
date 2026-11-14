@@ -277,6 +277,8 @@ object Effects {
      * @param cantBePrevented "This damage can't be prevented" (Arrow Storm's raid rider).
      * @param damageDealtVariable stores the total damage actually dealt ("the damage dealt this
      *   way"); bind it with `runStoringNumber { DealDamage(..., damageDealtVariable = it) }`.
+     * @param storeDamagedAs stores the permanents and players actually dealt damage ("each player
+     *   dealt damage this way"); bind it with `runStoringCollection { DealDamage(..., storeDamagedAs = it) }`.
      */
     fun DealDamage(
         amount: Int,
@@ -284,10 +286,12 @@ object Effects {
         damageSource: EffectTarget? = null,
         cantBePrevented: Boolean = false,
         excessDamageVariable: String? = null,
-        damageDealtVariable: String? = null
+        damageDealtVariable: String? = null,
+        storeDamagedAs: String? = null
     ): Effect = DealDamageEffect(
         DynamicAmount.Fixed(amount), target, cantBePrevented = cantBePrevented, damageSource = damageSource,
-        excessDamageVariable = excessDamageVariable, damageDealtVariable = damageDealtVariable
+        excessDamageVariable = excessDamageVariable, damageDealtVariable = damageDealtVariable,
+        storeDamagedAs = storeDamagedAs
     )
 
     /**
@@ -300,10 +304,12 @@ object Effects {
         damageSource: EffectTarget? = null,
         cantBePrevented: Boolean = false,
         excessDamageVariable: String? = null,
-        damageDealtVariable: String? = null
+        damageDealtVariable: String? = null,
+        storeDamagedAs: String? = null
     ): Effect = DealDamageEffect(
         amount, target, cantBePrevented = cantBePrevented, damageSource = damageSource,
-        excessDamageVariable = excessDamageVariable, damageDealtVariable = damageDealtVariable
+        excessDamageVariable = excessDamageVariable, damageDealtVariable = damageDealtVariable,
+        storeDamagedAs = storeDamagedAs
     )
 
     /**

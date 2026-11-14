@@ -1721,7 +1721,7 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
 
 ### Damage
 
-- `DealDamage(amount, target, damageSource = null, cantBePrevented = false, excessDamageVariable = null, damageDealtVariable = null)`
+- `DealDamage(amount, target, damageSource = null, cantBePrevented = false, excessDamageVariable = null, damageDealtVariable = null, storeDamagedAs = null)`
   — deal fixed/dynamic damage; `damageSource` names the object dealing it when that isn't the
   resolving source, `cantBePrevented` is "this damage can't be prevented". A non-targeted
   `damageSource` (`TriggeringEntity`, `Self`, `IterationEntity`) that has left the battlefield still
@@ -1743,6 +1743,15 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   `val dealt = runStoringNumber { Effects.DealDamage(1, EffectTarget.PlayerRef(Player.EachOpponent), damageDealtVariable = it) }`
   then `run(Effects.GainLife(dealt.amount))` (Creeping Bloodsucker, Syphon Soul) — never a fixed
   `GainLife(n)`, which ignores prevention and the opponent count.
+  `storeDamagedAs` stores **who** was dealt damage — the permanents and players that received at least
+  1 damage from the instruction, read off the committed `DamageDealtEvent`s — as a pipeline collection
+  (written on every exit, possibly empty). A recipient whose damage was wholly prevented is left out; a
+  player a replacement redirected the damage to is in it. It is the same axis, with the same meaning, as
+  `DividedDamage(storeDamagedAs)`, and works on the atomic `ForEach*` forms below too. "Each player
+  dealt damage this way gets an emblem" (Chandra, Roaring Flame's −7) is
+  `val damaged = runStoringCollection { Effects.DealDamage(6, EffectTarget.PlayerRef(Player.EachOpponent), storeDamagedAs = it) }`
+  then `run(Effects.ForEachPlayer(damaged.asPlayers, Effects.CreateGlobalTriggeredAbility(…, emblem = true)))`
+  — the damage to every opponent is still one simultaneous event.
 - `DamageCantBePreventedThisTurn(target)` — the per-recipient form of the turn-wide shutoff (Whippoorwill).
 - `RedirectNextDamage(protectedTargets, redirectTo, amount?, scope, protectedFilter?, optional, fromSource?, duration = EndOfTurn)`,
   `RedirectCombatDamageToController(target = Self)`,
@@ -1751,7 +1760,8 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   `ForEachInCollection` deals one simultaneous damage instruction. The engine resolves every source,
   recipient and dynamic amount from the same pre-damage state, then lets affected players order
   replacements and allocate shared prevention over the complete instruction. Paused choices replay
-  the whole batch; `damageDealtVariable` and `excessDamageVariable` aggregate its actual damage/excess.
+  the whole batch; `damageDealtVariable` and `excessDamageVariable` aggregate its actual damage/excess,
+  and `storeDamagedAs` collects every recipient it dealt damage to.
   A composite loop body remains a per-item sequence (for example, reveal a card, deal damage, then
   move that card). No additional damage effect type is needed.
 - Harsh Justice composes `CreateDelayedTrigger` with a combat-damage observer and `DealDamage` from

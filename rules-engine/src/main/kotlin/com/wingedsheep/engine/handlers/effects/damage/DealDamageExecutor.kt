@@ -58,7 +58,12 @@ class DealDamageExecutor(
             val recipients = (if (aggregateExcess) instances else instances.take(1)).map { it.targetId }.toSet()
             numbers = numbers + (name to damage.filter { it.targetId in recipients }.sumOf { it.excessAmount })
         }
-        return result.copy(updatedStoredNumbers = numbers)
+        // "Each player / creature dealt damage this way": every recipient of at least 1 damage from
+        // this instruction, read off the committed events so prevention and redirection count.
+        val collections = effect.storeDamagedAs?.let { key ->
+            result.updatedCollections + (key to damage.filter { it.amount > 0 }.map { it.targetId }.distinct())
+        } ?: result.updatedCollections
+        return result.copy(updatedStoredNumbers = numbers, updatedCollections = collections)
     }
 
     private fun prepare(
