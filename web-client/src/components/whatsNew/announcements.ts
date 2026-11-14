@@ -30,6 +30,15 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-ori',
+    date: '2026-11-14',
+    kind: 'set',
+    setCode: 'ORI',
+    title: 'Magic Origins is complete',
+    body: "Five legendary heroes flip into the first Gatewatch planeswalkers on the worlds where their sparks ignited. Renown creatures grow after they connect, spell mastery rewards a graveyard with two instants or sorceries, Thopter makers fill the skies, and prowess and menace keep attackers coming in a fast, creature-first core set.",
+    tryIf: 'aggressive creature decks, origin-story planeswalkers and a classic core-set feel',
+  },
+  {
     id: 'set-bfz',
     date: '2026-11-14',
     kind: 'set',
