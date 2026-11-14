@@ -3973,6 +3973,121 @@
     ]
 }
 
+// Psychic Rebuttal
+{
+    "name": "Psychic Rebuttal",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target instant or sorcery spell that targets you.\nSpell mastery — If there are two or more instant and/or sorcery cards in your graveyard, you may copy the spell countered this way. You may choose new targets for the copy.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Counter",
+                    "storeCounteredAs": "stored0"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "All",
+                            "conditions": [
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "Count",
+                                        "player": "You",
+                                        "zone": "Graveyard",
+                                        "filter": "instant|sorcery"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "stored0"
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "CopyTargetSpell",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "stored0"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            },
+                            {
+                                "type": "TargetsPlayer",
+                                "player": "You"
+                            }
+                        ]
+                    },
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "UNCOMMON",
+        "artist": "Todd Lockwood",
+        "flavorText": "\"I know what you're thinking,\" Jace whispered in the mage's mind. \"It's not going to work.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/67a105f8-0c01-4c09-a3bf-8c912b6dc741.jpg?1783938349",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "The target instant or sorcery spell can have other targets as long as one of them is you."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If the spell mastery ability applies, you'll create a copy of the instant or sorcery spell only if Psychic Rebuttal counters that spell. If that spell can't be countered by spells or abilities, you won't get a copy."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If Psychic Rebuttal creates a copy of the spell, you control the copy. That copy is created on the stack, so it's not \"cast.\" Abilities that trigger when a player casts a spell won't trigger. The copy will then resolve like a normal spell, after players get a chance to cast spells and activate abilities."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "The copy will have the same targets as the spell it's copying unless you choose new ones. You may change any number of the targets, including all of them or none of them. If, for one of the targets, you can't choose a new legal target, then it remains unchanged (even if the current target is illegal)."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Check to see if there are two or more instant and/or sorcery cards in your graveyard as the spell resolves to determine whether the spell mastery ability applies. The spell itself won't count because it's still on the stack as you make this check."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Pyromancer's Goggles
 {
     "name": "Pyromancer's Goggles",

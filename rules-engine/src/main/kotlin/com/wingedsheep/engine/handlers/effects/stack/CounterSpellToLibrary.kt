@@ -28,7 +28,8 @@ internal fun counterSpellToLibrary(
     spellId: EntityId,
     destination: CounterDestination.Library,
     countererId: EntityId,
-    sourceId: EntityId?
+    sourceId: EntityId?,
+    storeCounteredAs: String? = null
 ): ExecutionResult {
     val positions = destination.positions
     if (positions.size == 1 || !counterer.wouldReachCounterDestination(state, spellId, countererId)) {
@@ -54,7 +55,8 @@ internal fun counterSpellToLibrary(
         spellId = spellId,
         countererId = countererId,
         sourceId = sourceId,
-        positions = positions
+        positions = positions,
+        storeCounteredAs = storeCounteredAs
     )
     return state.suspendForDecision(decision, continuation)
 }

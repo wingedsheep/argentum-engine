@@ -45,6 +45,12 @@ data class CounterUnlessPaysContinuation(
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
     val resolvingTriggeredAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null,
     val deferCounter: Boolean = false,
+    /**
+     * The counter's "countered this way" collection
+     * ([com.wingedsheep.sdk.scripting.effects.CounterEffect.storeCounteredAs]): published to the
+     * frame beneath when the unpaid spell is countered; left unset when the cost is paid.
+     */
+    val storeCounteredAs: String? = null,
 ) : AnswerContinuation
 
 /**
@@ -247,6 +253,8 @@ data class CounterUnlessPaysManaSelectionContinuation(
     val resolvingTriggeredAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null,
     /** See [CounterUnlessPaysContinuation.deferCounter]. */
     val deferCounter: Boolean = false,
+    /** See [CounterUnlessPaysContinuation.storeCounteredAs]. */
+    val storeCounteredAs: String? = null,
 ) : AnswerContinuation
 
 /**

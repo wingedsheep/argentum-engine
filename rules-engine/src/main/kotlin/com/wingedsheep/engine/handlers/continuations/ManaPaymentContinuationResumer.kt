@@ -29,6 +29,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.CounterDestination
 import com.wingedsheep.engine.handlers.effects.stack.counterSpellToLibrary
+import com.wingedsheep.engine.handlers.effects.stack.counteredThisWay
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.effects.composite.payManaCostFromPool
 
@@ -239,7 +240,8 @@ class ManaPaymentContinuationResumer(
                 resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
                 sourceId = continuation.sourceId,
                 objectReferences = continuation.objectReferences,
-                deferCounter = continuation.deferCounter
+                deferCounter = continuation.deferCounter,
+                storeCounteredAs = continuation.storeCounteredAs
             )
 
             return state.suspendForDecision(
@@ -252,7 +254,8 @@ class ManaPaymentContinuationResumer(
             if (continuation.deferCounter) return deferUnpaidToBatch(state, continuation.spellEntityId, checkForMore)
             return counterForUnpaidCost(
                 state, continuation.spellEntityId, continuation.counterDestination,
-                continuation.controllerId ?: continuation.payingPlayerId, checkForMore
+                continuation.controllerId ?: continuation.payingPlayerId, checkForMore,
+                storeCounteredAs = continuation.storeCounteredAs
             )
         }
     }
@@ -704,7 +707,8 @@ class ManaPaymentContinuationResumer(
         destination: CounterDestination,
         controllerId: EntityId,
         checkForMore: CheckForMore,
-        precedingEvents: List<GameEvent> = emptyList()
+        precedingEvents: List<GameEvent> = emptyList(),
+        storeCounteredAs: String? = null
     ): ExecutionResult {
         val result = when (destination) {
             is CounterDestination.Exile -> services.stackResolver.counterSpellToExile(
@@ -715,13 +719,17 @@ class ManaPaymentContinuationResumer(
             CounterDestination.Graveyard ->
                 services.stackResolver.counterSpellOrAbility(state, spellEntityId, countererId = controllerId)
             is CounterDestination.Library -> counterSpellToLibrary(
-                state, services.spellCounterer, spellEntityId, destination, controllerId, sourceId = null
+                state, services.spellCounterer, spellEntityId, destination, controllerId, sourceId = null,
+                storeCounteredAs = storeCounteredAs
             )
         }
         // A destination that needs the counterer's choice (Hinder's top or bottom) pauses; its
-        // resumer finishes the counter and the settle.
+        // resumer finishes the counter, publishes what it countered, and settles.
         if (result.outcome is Outcome.Paused) return ExecutionResult.propagatePause(result.newState, precedingEvents + result.events)
-        return checkForMore(result.newState, precedingEvents + result.events)
+        val published = storeCounteredAs?.let { key ->
+            exposeCollectionsToNextFrame(result.newState, mapOf(key to counteredThisWay(result.events, spellEntityId)))
+        } ?: result.newState
+        return checkForMore(published, precedingEvents + result.events)
     }
 
     /**
@@ -769,7 +777,8 @@ class ManaPaymentContinuationResumer(
             if (continuation.deferCounter) return deferUnpaidToBatch(state, continuation.spellEntityId, checkForMore)
             return counterForUnpaidCost(
                 state, continuation.spellEntityId, continuation.counterDestination,
-                continuation.controllerId ?: continuation.payingPlayerId, checkForMore
+                continuation.controllerId ?: continuation.payingPlayerId, checkForMore,
+                storeCounteredAs = continuation.storeCounteredAs
             )
         }
 
@@ -856,7 +865,8 @@ class ManaPaymentContinuationResumer(
             if (continuation.deferCounter) return deferUnpaidToBatch(state, continuation.spellEntityId, checkForMore)
             return counterForUnpaidCost(
                 state, continuation.spellEntityId, continuation.counterDestination,
-                continuation.controllerId ?: continuation.payingPlayerId, checkForMore
+                continuation.controllerId ?: continuation.payingPlayerId, checkForMore,
+                storeCounteredAs = continuation.storeCounteredAs
             )
         }
 

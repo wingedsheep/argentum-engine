@@ -71,7 +71,9 @@ class CounterAllOnStackExecutor(
 
             currentState = result.newState
             allEvents.addAll(result.events)
-            countered.add(entityId)
+            // Only what was actually countered: a can't-be-countered spell stays on the stack and
+            // is no part of "for each spell … countered this way" (Glen Elendra's Answer).
+            countered.addAll(counteredThisWay(result.events, entityId))
         }
 
         return maybeStoreCount(EffectResult.success(currentState, allEvents), effect, countered)

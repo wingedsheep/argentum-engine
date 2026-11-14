@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers.effects.stack
 import com.wingedsheep.engine.core.CounterEachUnlessPaysContinuation
 import com.wingedsheep.engine.core.CounterUnlessPaysContinuation
 import com.wingedsheep.engine.core.EffectResult
+import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
@@ -161,12 +162,15 @@ class CounterEffectExecutor(
         entityId: EntityId,
         context: EffectContext
     ): EffectResult {
-        return EffectResult.from(
-            counterStackObject(
-                state, counterer, effect.target, effect.counterDestination,
-                entityId, context.controllerId, context.sourceId
-            )
+        val result = counterStackObject(
+            state, counterer, effect.target, effect.counterDestination,
+            entityId, context.controllerId, context.sourceId, effect.storeCounteredAs
         )
+        val key = effect.storeCounteredAs
+        // A paused counter (Hinder's top-or-bottom) publishes from its resumer, once it lands.
+        if (key == null || result.outcome is Outcome.Paused) return EffectResult.from(result)
+        val counted = EffectResult.from(result)
+        return counted.copy(updatedCollections = counted.updatedCollections + (key to counteredThisWay(result.events, entityId)))
     }
 
     private fun handleUnlessPaysMana(
@@ -237,7 +241,8 @@ class CounterEffectExecutor(
             sourceName = sourceName,
             counterDestination = effect.counterDestination,
             controllerId = context.controllerId,
-            onPaid = onPaid
+            onPaid = onPaid,
+            storeCounteredAs = effect.storeCounteredAs
         )
 
         val decisionResult = decisionHandler.createYesNoDecision(
