@@ -39,6 +39,76 @@
     "colorIdentityOverride": []
 }
 
+// Aegis Angel
+{
+    "name": "Aegis Angel",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying (This creature can't be blocked except by creatures with flying or reach.)\nWhen this creature enters, another target permanent gains indestructible for as long as you control this creature. (Effects that say \"destroy\" don't destroy it. A creature with indestructible can't be destroyed by damage.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aegis Angel:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": {
+                        "type": "WhileYouControlSource",
+                        "sourceDescription": "Aegis Angel"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, another target permanent gains indestructible for as long as you control this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "RARE",
+        "artist": "Aleksi Briclot",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4cdc19da-21af-45e7-ad1f-fcacd84a8d89.jpg?1783941107",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "If another player gains control of Aegis Angel, the permanent will no longer have indestructible, even if you regain control of Aegis Angel."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "If Aegis Angel leaves the battlefield, you no longer control it."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "If Aegis Angel and the permanent would be destroyed simultaneously, only Aegis Angel will be destroyed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Alabaster Mage
 {
     "name": "Alabaster Mage",

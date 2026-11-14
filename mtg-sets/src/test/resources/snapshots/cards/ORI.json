@@ -1396,6 +1396,64 @@
     ]
 }
 
+// Cleric of the Forward Order
+{
+    "name": "Cleric of the Forward Order",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "When this creature enters, you gain 2 life for each creature you control named Cleric of the Forward Order.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cleric of the Forward Order:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NameEquals",
+                                        "name": "Cleric of the Forward Order"
+                                    }
+                                ]
+                            }
+                        },
+                        "multiplier": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "artist": "Chris Rallis",
+        "flavorText": "\"War after war, a healer's enemy is always the same—death itself.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/f/cfcea783-e9f0-4d44-ac74-5aee9a07aa69.jpg?1783938363",
+        "rulings": [
+            {
+                "date": "2022-12-08",
+                "text": "Count the number of creatures named Cleric of the Forward Order you control as the ability resolves to determine how much life you gain. If the Cleric of the Forward Order with the ability that triggered is still on the battlefield, it will count itself."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Conclave Naturalists
 {
     "name": "Conclave Naturalists",
@@ -1446,6 +1504,77 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Consul's Lieutenant
+{
+    "name": "Consul's Lieutenant",
+    "manaCost": "{W}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "First strike\nRenown 1 (When this creature deals combat damage to a player, if it isn't renowned, put a +1/+1 counter on it and it becomes renowned.)\nWhenever this creature attacks, if it's renowned, other attacking creatures you control get +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FIRST_STRIKE",
+        "RENOWN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "RENOWN",
+            "n": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Consul's Lieutenant:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature attacking ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "IsRenowned"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/301a1b68-2890-4702-a90e-bad8d309c40d.jpg?1783938363"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -2104,6 +2233,87 @@
     ]
 }
 
+// Enshrouding Mist
+{
+    "name": "Enshrouding Mist",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +1/+1 until end of turn. Prevent all damage that would be dealt to it this turn. If it's renowned, untap it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "PreventDamageShield",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": {
+                                "statePredicates": [
+                                    "IsRenowned"
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "tap": false
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "artist": "Howard Lyon",
+        "flavorText": "True faith is letting the blade fall without parry. True cunning is using that moment to strike a deadly blow.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b059bd3e-451c-445a-b299-544c82fc0eb9.jpg?1783938362"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Eyeblight Assassin
 {
     "name": "Eyeblight Assassin",
@@ -2497,6 +2707,93 @@
     ]
 }
 
+// Gideon's Phalanx
+{
+    "name": "Gideon's Phalanx",
+    "manaCost": "{5}{W}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Create four 2/2 white Knight creature tokens with vigilance.\nSpell mastery — If there are two or more instant and/or sorcery cards in your graveyard, creatures you control gain indestructible until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Knight"
+                    ],
+                    "keywords": [
+                        "VIGILANCE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/b/1bc2969b-2176-4471-b316-9c80443866dd.jpg?1783938295"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Graveyard",
+                                "filter": "instant|sorcery"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "GrantKeyword",
+                            "keyword": "INDESTRUCTIBLE",
+                            "target": "IterationEntity"
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "RARE",
+        "artist": "James Ryman",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/30142729-de9a-4a0b-b060-8f68e1ef234d.jpg?1783938363",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "If the spell mastery ability applies, the four Knight tokens will also gain indestructible until end of turn."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Check to see if there are two or more instant and/or sorcery cards in your graveyard as the spell resolves to determine whether the spell mastery ability applies. The spell itself won't count because it's still on the stack as you make this check."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Gilt-Leaf Winnower
 {
     "name": "Gilt-Leaf Winnower",
@@ -2549,6 +2846,80 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Grasp of the Hieromancer
+{
+    "name": "Grasp of the Hieromancer",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +1/+1 and has \"Whenever this creature attacks, tap target creature defending player controls.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Grasp of the Hieromancer:1",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "controllerPredicate": {
+                                    "type": "ControlledByReferencedPlayer",
+                                    "target": {
+                                        "type": "PlayerRef",
+                                        "player": "DefendingPlayer"
+                                    }
+                                }
+                            }
+                        },
+                        "id": "t0"
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"There is power in abandon, but far more in control.\"\n—Warden Hixus, to Kytheon",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6a8740d2-7fcf-4bdf-afea-0c28c025370c.jpg?1783938362",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "The triggered ability granted to the enchanted creature will tap the creature before blockers are declared."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "The enchanted creature is the source of the triggered ability it gains, not Grasp of the Hieromancer. If the enchanted creature isn't white, that ability can target a creature with protection from white, for example."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -2844,6 +3215,54 @@
     ]
 }
 
+// Healing Hands
+{
+    "name": "Healing Hands",
+    "manaCost": "{2}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player gains 4 life.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "artist": "Josu Hernaiz",
+        "flavorText": "The ethereal touch brings relief. The physical touch brings peace.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/a/9a26559c-0ac5-42a7-b6ac-b39938c31026.jpg?1783938362"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Heavy Infantry
 {
     "name": "Heavy Infantry",
@@ -2969,6 +3388,72 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Hixus, Prison Warden
+{
+    "name": "Hixus, Prison Warden",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nWhenever a creature deals combat damage to you, if Hixus entered this turn, exile that creature until Hixus leaves the battlefield. (That creature returns under its owner's control.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hixus, Prison Warden:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "You"
+                    },
+                    "sourceFilter": "creature"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveUntilSourceLeaves",
+                    "target": "TriggeringEntity",
+                    "destination": "Exile"
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "EnteredThisTurn"
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever a creature deals combat damage to you, if Hixus entered this turn, exile that creature until Hixus leaves the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "RARE",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d0c21a35-4b70-4de4-93ff-c0ccabdc39e0.jpg?1783938361",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "If Hixus leaves the battlefield before its triggered ability resolves, the creature that dealt combat damage to you won't be exiled."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a creature token is exiled, it ceases to exist. It won't be returned to the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -3414,6 +3899,90 @@
         "artist": "Mark Winters",
         "flavorText": "Kytheon and his irregulars worked outside the law to bring justice to the streets of Akros.",
         "imageUri": "https://cards.scryfall.io/normal/front/4/4/440f9dbb-6d31-4c03-9c6d-c4910adc5497.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Kytheon's Tactics
+{
+    "name": "Kytheon's Tactics",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Creatures you control get +2/+1 until end of turn.\nSpell mastery — If there are two or more instant and/or sorcery cards in your graveyard, those creatures also gain vigilance until end of turn. (Attacking doesn't cause them to tap.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Graveyard",
+                                "filter": "instant|sorcery"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "GrantKeyword",
+                            "keyword": "VIGILANCE",
+                            "target": "IterationEntity"
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b0521669-206e-4909-be6f-a74603203a70.jpg?1783938359",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Check to see if there are two or more instant and/or sorcery cards in your graveyard as the spell resolves to determine whether the spell mastery ability applies. The spell itself won't count because it's still on the stack as you make this check."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -4569,6 +5138,95 @@
     ]
 }
 
+// Relic Seeker
+{
+    "name": "Relic Seeker",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Renown 1 (When this creature deals combat damage to a player, if it isn't renowned, put a +1/+1 counter on it and it becomes renowned.)\nWhen this creature becomes renowned, you may search your library for an Equipment card, reveal it, put it into your hand, then shuffle.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "RENOWN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "RENOWN",
+            "n": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Relic Seeker:1",
+                "trigger": "BecameRenownedEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "artifact Equipment"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for an Equipment artifact card to put into your hand",
+                                "selectedLabel": "Put into your hand"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "RARE",
+        "artist": "Volkan Baǵa",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/60a4b00c-5bd5-4931-be05-121f09a3fae4.jpg?1783938359",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "If a renown ability triggers, but the creature leaves the battlefield before that ability resolves, the creature doesn't become renowned. Any ability that triggers \"whenever a creature becomes renowned\" won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Rhox Maulers
 {
     "name": "Rhox Maulers",
@@ -4650,6 +5308,58 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Sentinel of the Eternal Watch
+{
+    "name": "Sentinel of the Eternal Watch",
+    "manaCost": "{5}{W}",
+    "typeLine": "Creature — Giant Soldier",
+    "oracleText": "Vigilance (Attacking doesn't cause this creature to tap.)\nAt the beginning of combat on each opponent's turn, tap target creature that player controls.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 6
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sentinel of the Eternal Watch:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:triggering-player"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "UNCOMMON",
+        "artist": "Bastien L. Deharme",
+        "flavorText": "The portcullis is superfluous.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a7b01ce-2729-4b70-ae0a-b9a1007be78f.jpg?1783938358"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -5287,6 +5997,135 @@
     ]
 }
 
+// Suppression Bonds
+{
+    "name": "Suppression Bonds",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant nonland permanent\nEnchanted permanent can't attack or block, and its activated abilities can't be activated.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "PreventActivatedAbilities",
+                "filter": {
+                    "cardPredicates": [
+                        "IsPermanent"
+                    ],
+                    "statePredicates": [
+                        "IsAttachedToBySource"
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "nonland permanent"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "artist": "Chris Rallis",
+        "flavorText": "\"A master of hieromancy can see the advantage in any scenario.\"\n—Warden Hixus, to Kytheon",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/3/d34c717b-224b-4289-826d-f5b1f7c3dbfb.jpg?1783938357"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Swift Reckoning
+{
+    "name": "Swift Reckoning",
+    "manaCost": "{1}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Spell mastery — If there are two or more instant and/or sorcery cards in your graveyard, you may cast this spell as though it had flash. (You may cast it any time you could cast an instant.)\nDestroy target tapped creature.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature tapped"
+                },
+                "id": "t0"
+            }
+        ],
+        "conditionalFlash": {
+            "type": "Compare",
+            "left": {
+                "type": "Count",
+                "player": "You",
+                "zone": "Graveyard",
+                "filter": {
+                    "cardPredicates": [
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                "IsInstant",
+                                "IsSorcery"
+                            ]
+                        }
+                    ],
+                    "statePredicates": [
+                        {
+                            "type": "StateNot",
+                            "predicate": "IsSource"
+                        }
+                    ]
+                }
+            },
+            "operator": "GTE",
+            "right": {
+                "type": "Fixed",
+                "amount": 2
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/904cb2f5-eb62-4416-8236-d2fbeadf1dc4.jpg?1783938357",
+        "rulings": [
+            {
+                "date": "2018-12-07",
+                "text": "The number of instant and/or sorcery cards in your graveyard matters only as you begin to cast Swift Reckoning. Once it's cast, that number doesn't matter and will have no effect on Swift Reckoning resolving."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "If an effect allows you to cast Swift Reckoning from your graveyard, you need two other instant and/or sorcery cards in your graveyard to cast it as though it had flash."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Sword of the Animist
 {
     "name": "Sword of the Animist",
@@ -5659,6 +6498,211 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Tragic Arrogance
+{
+    "name": "Tragic Arrogance",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "For each player, you choose from among the permanents that player controls an artifact, a creature, an enchantment, and a planeswalker. Then each player sacrifices all other nonland permanents they control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachStartingWithYou"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "ControlledPermanents",
+                                    "filter": "permanent"
+                                },
+                                "storeAs": "gathered1"
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "gathered1",
+                                "filter": "artifact",
+                                "storeMatching": "matching2"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "matching2",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "chooser": "SourceController",
+                                "storeSelected": "selected3",
+                                "prompt": "Choose an artifact this player keeps. Their other nonland permanents are sacrificed.",
+                                "selectedLabel": "Keep",
+                                "remainderLabel": "Sacrifice",
+                                "useTargetingUI": true
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "gathered1",
+                                "filter": "creature",
+                                "storeMatching": "matching4"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "matching4",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "chooser": "SourceController",
+                                "storeSelected": "selected5",
+                                "prompt": "Choose a creature this player keeps. Their other nonland permanents are sacrificed.",
+                                "selectedLabel": "Keep",
+                                "remainderLabel": "Sacrifice",
+                                "useTargetingUI": true
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "gathered1",
+                                "filter": "enchantment",
+                                "storeMatching": "matching6"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "matching6",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "chooser": "SourceController",
+                                "storeSelected": "selected7",
+                                "prompt": "Choose an enchantment this player keeps. Their other nonland permanents are sacrificed.",
+                                "selectedLabel": "Keep",
+                                "remainderLabel": "Sacrifice",
+                                "useTargetingUI": true
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "gathered1",
+                                "filter": "planeswalker",
+                                "storeMatching": "matching8"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "matching8",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "chooser": "SourceController",
+                                "storeSelected": "selected9",
+                                "prompt": "Choose a planeswalker this player keeps. Their other nonland permanents are sacrificed.",
+                                "selectedLabel": "Keep",
+                                "remainderLabel": "Sacrifice",
+                                "useTargetingUI": true
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "gathered1",
+                                "filter": "nonland permanent",
+                                "storeMatching": "matching10"
+                            }
+                        ]
+                    },
+                    "collectCollections": {
+                        "matching10": "collected11",
+                        "selected3": "collected12",
+                        "selected5": "collected13",
+                        "selected7": "collected14",
+                        "selected9": "collected15"
+                    }
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "collected11",
+                    "collectionFilter": {
+                        "type": "ExcludeOtherCollection",
+                        "otherCollectionName": "collected12"
+                    },
+                    "storeMatching": "matching16"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "matching16",
+                    "collectionFilter": {
+                        "type": "ExcludeOtherCollection",
+                        "otherCollectionName": "collected13"
+                    },
+                    "storeMatching": "matching17"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "matching17",
+                    "collectionFilter": {
+                        "type": "ExcludeOtherCollection",
+                        "otherCollectionName": "collected14"
+                    },
+                    "storeMatching": "matching18"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "matching18",
+                    "collectionFilter": {
+                        "type": "ExcludeOtherCollection",
+                        "otherCollectionName": "collected15"
+                    },
+                    "storeMatching": "matching19"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "matching19",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Sacrifice"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "RARE",
+        "artist": "Winona Nelson",
+        "flavorText": "The spear thrown by Kytheon's own hand was the weapon that felled his friends.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/16acf619-0f45-4985-a8ec-074a4ec33fa7.jpg?1783938356",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "None of the chosen permanents are targets of Tragic Arrogance."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a permanent has more than one of the affected types, it can count for any of them. For example, you could choose an artifact creature as the artifact you're sparing, another creature as the creature, and an enchantment creature as the enchantment. Similarly, you could choose an enchantment creature as both the creature and the enchantment that you're sparing, even if the player controls another creature and/or another enchantment."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
