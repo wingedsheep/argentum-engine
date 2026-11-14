@@ -1065,6 +1065,45 @@
     ]
 }
 
+// Gaea's Revenge
+{
+    "name": "Gaea's Revenge",
+    "manaCost": "{5}{G}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "This spell can't be countered.\nHaste\nThis creature can't be the target of nongreen spells or abilities from nongreen sources.",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 5
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeTargetedBy",
+                "quality": {
+                    "type": "UntargetableBy.SourcesOfColor",
+                    "scope": {
+                        "type": "ProtectionScope.NonColor",
+                        "color": "GREEN"
+                    }
+                }
+            }
+        ],
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "174",
+        "rarity": "MYTHIC",
+        "artist": "Kekai Kotaki",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/68f610a9-73b0-4ef8-b725-f3eee1b78fad.jpg?1783941799"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Gargoyle Sentinel
 {
     "name": "Gargoyle Sentinel",

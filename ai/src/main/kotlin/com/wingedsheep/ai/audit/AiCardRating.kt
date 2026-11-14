@@ -1,5 +1,7 @@
 package com.wingedsheep.ai.audit
 
+import com.wingedsheep.engine.mechanics.targeting.UntargetableByRules
+import com.wingedsheep.sdk.scripting.CantBeTargetedBy
 import com.wingedsheep.ai.draftsim.DraftsimData
 import com.wingedsheep.ai.engine.AiProfile
 import com.wingedsheep.ai.engine.LimitedCardRater
@@ -186,6 +188,12 @@ object AiCardRating {
                 for (flag in card.flags.sortedBy { it.name }) {
                     val v = body(power, toughness, setOf(flag.name)) - base
                     if (v != 0.0) add(Part(flag.displayName, v))
+                }
+                // So does its own untargetability ("can't be the target of nongreen spells …").
+                for (static in card.script.staticAbilities.filterIsInstance<CantBeTargetedBy>()) {
+                    if (static.filter.scope != Scope.Self) continue
+                    val v = body(power, toughness, setOf(UntargetableByRules.keyword(static.quality))) - base
+                    if (v != 0.0) add(Part("Can't be targeted by ${static.quality.description}", v))
                 }
             }
             return Board(

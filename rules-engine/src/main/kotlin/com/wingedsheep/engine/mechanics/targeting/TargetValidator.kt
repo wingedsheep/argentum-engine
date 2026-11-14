@@ -512,7 +512,8 @@ class TargetValidator(
         // CantBeTargetedBy (Tetsuo Umezawa) — read against the face being cast.
         if (target is ChosenTarget.Permanent) {
             UntargetableByRules.targetingError(
-                state, target.entityId, sourceId, targetingSourceType, requirement, sourceSubtypes.ifEmpty { null }
+                state, target.entityId, sourceId, targetingSourceType, requirement, sourceSubtypes.ifEmpty { null },
+                sourceColors.mapTo(mutableSetOf()) { it.name }
             )?.let { return it }
         }
 

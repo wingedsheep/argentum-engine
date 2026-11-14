@@ -619,6 +619,46 @@ sealed interface UntargetableBy {
             return if (new == subtype) this else copy(subtype = new)
         }
     }
+
+    /**
+     * Spells of a colour quality and abilities from sources of that quality — "can't be the target
+     * of nongreen spells or abilities from nongreen sources" (Gaea's Revenge), "… of white spells or
+     * abilities from white sources" (Rebel Informer). [scope] is a [ProtectionScope.Color] or
+     * [ProtectionScope.NonColor]; "non<color>" includes colorless sources (CR 105.2c).
+     *
+     * This is the targeting half of protection from that quality (it doesn't stop damage, blocking
+     * or attaching), and the twin of hexproof from it that isn't controller-gated — it binds the
+     * permanent's own controller too, which hexproof never does.
+     */
+    @SerialName("UntargetableBy.SourcesOfColor")
+    @Serializable
+    data class SourcesOfColor(val scope: ProtectionScope) : UntargetableBy {
+        init {
+            require(scope is ProtectionScope.Color || scope is ProtectionScope.NonColor) {
+                "UntargetableBy.SourcesOfColor.scope must be ProtectionScope.Color or ProtectionScope.NonColor, was $scope"
+            }
+        }
+
+        private val quality: String
+            get() = when (scope) {
+                is ProtectionScope.Color -> scope.color.displayName.lowercase()
+                is ProtectionScope.NonColor -> "non${scope.color.displayName.lowercase()}"
+                else -> error("unreachable")
+            }
+
+        override val description: String
+            get() = "$quality spells or abilities from $quality sources"
+
+        override fun applyTextReplacement(replacer: TextReplacer): UntargetableBy = when (scope) {
+            is ProtectionScope.Color -> replacer.replaceColor(scope.color).let {
+                if (it == scope.color) this else copy(scope = ProtectionScope.Color(it))
+            }
+            is ProtectionScope.NonColor -> replacer.replaceColor(scope.color).let {
+                if (it == scope.color) this else copy(scope = ProtectionScope.NonColor(it))
+            }
+            else -> this
+        }
+    }
 }
 
 /**

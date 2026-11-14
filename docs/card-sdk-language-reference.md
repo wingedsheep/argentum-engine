@@ -11377,7 +11377,8 @@ staticAbility {
   `CANT_BE_TARGETED_BY_OPPONENT_CARDTYPE_<TYPE>_SOURCE_ABILITIES`. Unlike hexproof from artifacts (CR 702.11d),
   it doesn't stop artifact *spells*. Only `Player.Each` (default) and `Player.EachOpponent` are accepted.
 - `CantBeTargetedBy(quality: UntargetableBy, filter = source())` — "[filter] can't be the target of
-  [quality]" for a *kind* of spell or ability that isn't a color, card type or controller. Qualities:
+  [quality]" for a *kind* of spell or ability, binding every controller (hexproof-from only binds
+  opponents). Qualities:
   - `UntargetableBy.SpellsWithSubtype(Subtype("Aura"))` — "can't be the target of Aura spells" (Tetsuo
     Umezawa). Spells only: an Aura's *ability* may target it, and an Aura put onto the battlefield without
     being cast doesn't target, so it may still be attached.
@@ -11386,6 +11387,13 @@ staticAbility {
     target requirement being used must structurally demand the subtype (a top-level `HasSubtype` in a
     plain object requirement, or one shared by every `anyOf` branch — "target Wall", "enchant Wall"); "target
     creature" or "target Wall or player" can reach a non-Wall and doesn't count.
+  - `UntargetableBy.SourcesOfColor(ProtectionScope.NonColor(Color.GREEN))` — "can't be the target of
+    nongreen spells or abilities from nongreen sources" (Gaea's Revenge); `ProtectionScope.Color(Color.WHITE)`
+    is "… of white spells or abilities from white sources" (Rebel Informer). Only `ProtectionScope.Color` /
+    `NonColor` are accepted. Covers spells and abilities alike, read off the source's projected colours (a
+    colorless source is nongreen, a green-white one isn't); an unknown source never trips it. The targeting
+    half of protection from that quality — it doesn't stop damage, blocking or attaching — and the
+    not-controller-gated twin of hexproof from it.
 
   Not controller-gated (binds its own controller's spells and abilities too). Projected as one keyword per
   quality; enforced at legal-target enumeration, cast/activation validation and the resolution re-check by

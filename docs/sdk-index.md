@@ -2096,6 +2096,7 @@ Families:
 
 ## UntargetableBy
 
+- `UntargetableBy.SourcesOfColor(scope: ProtectionScope)` — Spells of a colour quality and abilities from sources of that quality — "can't be the target of nongreen spells or abilities from nongreen sources" (Gaea's Revenge), "… of white spells or abilities…
 - `UntargetableBy.SpellsWithSubtype(subtype: Subtype)` — Spells with subtype — "can't be the target of Aura spells" (Tetsuo Umezawa, Bartel Runeaxe).
 - `UntargetableBy.TargetingOnly(subtype: Subtype)` — Spells and abilities that can target only objects with subtype — "spells that can target only Walls or … abilities that can target only Walls" (Wall of Shadows).
 

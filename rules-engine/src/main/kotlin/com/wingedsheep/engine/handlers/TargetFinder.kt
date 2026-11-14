@@ -152,7 +152,9 @@ class TargetFinder(
             sourceColorNames(state, projected, id)
         }
         // CantBeTargetedBy: keyed on the source and this requirement, so computed once.
-        val untargetableKeywords = UntargetableByRules.blockingKeywords(state, sourceId, targetingSourceType, requirement)
+        val untargetableKeywords = UntargetableByRules.blockingKeywords(
+            state, sourceId, targetingSourceType, requirement, sourceColors = sourceColors
+        )
         // CardsInZonesCantBeTargeted (Ground Seal; Tomik): read once, on the first non-player candidate.
         val zoneLocks by lazy(LazyThreadSafetyMode.NONE) { UntargetableByRules.zoneLocks(state) }
         return candidates.filter { id ->

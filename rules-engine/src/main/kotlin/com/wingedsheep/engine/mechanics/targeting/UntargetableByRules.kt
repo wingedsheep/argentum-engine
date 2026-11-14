@@ -3,6 +3,7 @@ package com.wingedsheep.engine.mechanics.targeting
 import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.mechanics.ControllerGrants
@@ -10,6 +11,7 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CardsInZonesCantBeTargeted
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.ProtectionScope
 import com.wingedsheep.sdk.scripting.UntargetableBy
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
@@ -20,7 +22,8 @@ import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 /**
  * The one reading of [com.wingedsheep.sdk.scripting.CantBeTargetedBy] — "can't be the target of
  * Aura spells" (Tetsuo Umezawa), "… of spells that can target only Walls or of abilities that can
- * target only Walls" (Wall of Shadows) — shared by every targeting site: legal-target enumeration
+ * target only Walls" (Wall of Shadows), "… of nongreen spells or abilities from nongreen sources"
+ * (Gaea's Revenge) — shared by every targeting site: legal-target enumeration
  * (`TargetFinder`, `TargetEnumerationUtils`), cast/activation validation (`TargetValidator`) and
  * the resolution re-check (`ResolutionTargetValidator`), so the four can't drift apart.
  *
@@ -44,30 +47,64 @@ object UntargetableByRules {
             "CANT_BE_TARGETED_BY_SUBTYPE_SPELLS_${quality.subtype.value.uppercase()}"
         is UntargetableBy.TargetingOnly ->
             "CANT_BE_TARGETED_BY_TARGETING_ONLY_${quality.subtype.value.uppercase()}"
+        is UntargetableBy.SourcesOfColor -> when (val scope = quality.scope) {
+            is ProtectionScope.Color -> colorKeywords.getValue(scope.color)
+            is ProtectionScope.NonColor -> nonColorKeywords.getValue(scope.color)
+            else -> error("UntargetableBy.SourcesOfColor rejects $scope at construction")
+        }
     }
+
+    private val colorKeywords: Map<Color, String> =
+        Color.entries.associateWith { "CANT_BE_TARGETED_BY_COLOR_${it.name}_SOURCES" }
+    private val nonColorKeywords: Map<Color, String> =
+        Color.entries.associateWith { "CANT_BE_TARGETED_BY_NON_${it.name}_SOURCES" }
+
+    /** Every "… of <color> spells or abilities from <color> sources" keyword (Rebel Informer). */
+    val COLOR_SOURCE_KEYWORDS: Set<String> = colorKeywords.values.toSet()
+
+    /** Every "… of non<color> spells or abilities from non<color> sources" keyword (Gaea's Revenge). */
+    val NON_COLOR_SOURCE_KEYWORDS: Set<String> = nonColorKeywords.values.toSet()
+
+    /**
+     * The [UntargetableBy.SourcesOfColor] keywords a source with [colorNames] trips: for each
+     * colour, "<color> sources" when it has it, else "non<color> sources" — a colorless source is
+     * non-every-colour (CR 105.2c), a green-white one is neither nongreen nor nonwhite.
+     */
+    private fun sourceColorKeywords(colorNames: Set<String>): List<String> =
+        Color.entries.map { if (it.name in colorNames) colorKeywords.getValue(it) else nonColorKeywords.getValue(it) }
 
     /**
      * The keywords that bar a target from a spell or ability from [sourceId] choosing it for
-     * [requirement]. Empty — the common case — when nothing could apply, so callers skip the
+     * [requirement]. Empty when nothing could apply (an unknown source), so callers skip the
      * per-candidate check. An ANY-typed caller is resolved to "spell" only when the source is a
      * spell on the stack; otherwise the restriction is never applied on a guess.
      *
      * [spellSubtypes] is the face actually being cast, when the caller knows it — a disturb card
      * cast as its Aura back (Lanterns' Lift) is still its front face on the entity. Null falls back
      * to the source's projected or printed subtypes.
+     *
+     * The colour qualities ([UntargetableBy.SourcesOfColor]) cover spells and abilities alike, so
+     * they apply whatever the source kind, but only to a source that is known: [sourceColors] when
+     * the caller passes the cast face's colours (non-empty), else the source's projected colours
+     * (printed off the battlefield). An unknown source trips none — "colorless" can't be told from
+     * "no information".
      */
     fun blockingKeywords(
         state: GameState,
         sourceId: EntityId?,
         targetingSourceType: TargetingSourceType,
         requirement: TargetRequirement?,
-        spellSubtypes: Set<String>? = null
+        spellSubtypes: Set<String>? = null,
+        sourceColors: Set<String>? = null
     ): List<String> {
+        val colorNames = sourceColors?.takeIf { it.isNotEmpty() }
+            ?: sourceId?.takeIf { state.hasEntity(it) }?.let { state.projectedState.colorsOf(it) }
+        val colorKeywords = colorNames?.let(::sourceColorKeywords).orEmpty()
         val isSpell = when (targetingSourceType) {
             TargetingSourceType.SPELL -> true
             TargetingSourceType.ACTIVATED_ABILITY, TargetingSourceType.TRIGGERED_ABILITY -> false
             TargetingSourceType.ANY ->
-                if (sourceId != null && SourceKindProtection.isSpell(state, sourceId)) true else return emptyList()
+                if (sourceId != null && SourceKindProtection.isSpell(state, sourceId)) true else return colorKeywords
         }
         val required = requirement?.let(::soleTargetFilter)?.let(::requiredSubtypes).orEmpty()
         val subtypes = when {
@@ -76,8 +113,8 @@ object UntargetableByRules {
             sourceId != null -> sourceSubtypes(state, sourceId)
             else -> emptySet()
         }
-        if (required.isEmpty() && subtypes.isEmpty()) return emptyList()
-        return subtypes.map { keyword(UntargetableBy.SpellsWithSubtype(Subtype(it))) } +
+        if (required.isEmpty() && subtypes.isEmpty()) return colorKeywords
+        return colorKeywords + subtypes.map { keyword(UntargetableBy.SpellsWithSubtype(Subtype(it))) } +
             required.map { keyword(UntargetableBy.TargetingOnly(it)) }
     }
 
@@ -98,9 +135,10 @@ object UntargetableByRules {
         sourceId: EntityId?,
         targetingSourceType: TargetingSourceType,
         requirement: TargetRequirement?,
-        spellSubtypes: Set<String>? = null
+        spellSubtypes: Set<String>? = null,
+        sourceColors: Set<String>? = null
     ): String? {
-        val keywords = blockingKeywords(state, sourceId, targetingSourceType, requirement, spellSubtypes)
+        val keywords = blockingKeywords(state, sourceId, targetingSourceType, requirement, spellSubtypes, sourceColors)
         if (!isBlocked(state, targetId, keywords)) return null
         val name = state.getEntity(targetId)?.get<CardComponent>()?.name ?: "That permanent"
         return "$name can't be the target of this ${if (targetingSourceType == TargetingSourceType.SPELL) "spell" else "ability"}"
