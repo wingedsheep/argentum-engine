@@ -3322,6 +3322,254 @@
     ]
 }
 
+// Kytheon, Hero of Akros
+{
+    "name": "Kytheon, Hero of Akros",
+    "manaCost": "{W}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "At end of combat, if Kytheon and at least two other creatures attacked this combat, exile Kytheon, then return him to the battlefield transformed under his owner's control.\n{2}{W}: Kytheon gains indestructible until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kytheon, Hero of Akros:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END_COMBAT",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": "ExileAndReturnTransformed",
+                "interveningIf": {
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "AttackedThisCombat"
+                                ]
+                            }
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "TurnTracking",
+                                "player": "Each",
+                                "tracker": "CREATURES_ATTACKED_THIS_COMBAT"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At end of combat, if Kytheon and at least two other creatures attacked this combat, exile Kytheon, then return him to the battlefield transformed under his owner's control."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Kytheon, Hero of Akros:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "target": "Self"
+                },
+                "descriptionOverride": "Kytheon gains indestructible until end of turn."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Gideon, Battle-Forged",
+        "manaCost": "",
+        "typeLine": "Legendary Planeswalker — Gideon",
+        "oracleText": "+2: Up to one target creature an opponent controls attacks Gideon during its controller's next turn if able.\n+1: Until your next turn, target creature gains indestructible. Untap that creature.\n0: Until end of turn, Gideon becomes a 4/4 Human Soldier creature with indestructible that's still a planeswalker. Prevent all damage that would be dealt to him this turn.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Gideon, Battle-Forged:1",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": 2
+                    },
+                    "effect": {
+                        "type": "MarkMustAttack",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "window": "ControllersNextTurn",
+                        "defender": "Self"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "optional": true,
+                            "filter": {
+                                "baseFilter": "creature ctrl:opponent"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Up to one target creature an opponent controls attacks Gideon during its controller's next turn if able."
+                },
+                {
+                    "id": "Gideon, Battle-Forged:2",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": 1
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "INDESTRUCTIBLE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "duration": "UntilYourNextTurn"
+                            },
+                            {
+                                "type": "TapUntap",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "tap": false
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Until your next turn, target creature gains indestructible. Untap that creature."
+                },
+                {
+                    "id": "Gideon, Battle-Forged:3",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": 0
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "BecomeCreature",
+                                "power": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "toughness": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "keywords": [
+                                    "INDESTRUCTIBLE"
+                                ],
+                                "creatureTypes": [
+                                    "Human",
+                                    "Soldier"
+                                ]
+                            },
+                            {
+                                "type": "PreventDamageShield",
+                                "target": "Self"
+                            }
+                        ]
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Until end of turn, Gideon becomes a 4/4 Human Soldier creature with indestructible that's still a planeswalker. Prevent all damage that would be dealt to him this turn."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "23",
+            "rarity": "MYTHIC",
+            "artist": "Willian Murai",
+            "imageUri": "https://cards.scryfall.io/normal/back/5/8/58c39df6-b237-40d1-bdcb-2fe5d05392a9.jpg?1783938364",
+            "rulings": [
+                {
+                    "date": "2015-06-22",
+                    "text": "Gideon's first ability causes a creature to attack him if able. If, during its controller's declare attackers step, that creature is tapped, is affected by a spell or ability that says it can't attack, or hasn't been under its controller's control continuously since that player's turn began, then that creature doesn't attack. If there's a cost associated with having that creature attack, its controller isn't forced to pay that cost. If they don't, the creature doesn't have to attack."
+                },
+                {
+                    "date": "2015-06-22",
+                    "text": "If the creature targeted by Gideon's first ability changes controllers before it has the chance to attack Gideon, the ability will apply to it during its new controller's next turn."
+                },
+                {
+                    "date": "2015-06-22",
+                    "text": "If Gideon can't be attacked, perhaps because he has left the battlefield before the creature's controller's next combat, the creature targeted by Gideon's first ability can attack you or another planeswalker you control, or its controller can choose to have it not attack at all."
+                },
+                {
+                    "date": "2015-06-22",
+                    "text": "If you activate Gideon's third ability and then damage is dealt to him that can't be prevented, that damage has all applicable results: specifically, the damage is marked on Gideon (since he's a creature) and that damage causes that many loyalty counters to be removed from him (since he's a planeswalker). If Gideon has no loyalty counters on him, he's put into his owner's graveyard as a state-based action. (As long as he still has indestructible, the marked damage won't cause him to be destroyed.)"
+                }
+            ]
+        },
+        "startingLoyalty": 3,
+        "colorIdentityOverride": [
+            "WHITE"
+        ],
+        "colorIndicator": [
+            "WHITE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "MYTHIC",
+        "artist": "Willian Murai",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/58c39df6-b237-40d1-bdcb-2fe5d05392a9.jpg?1783938364",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Kytheon's first ability will count creatures that attacked but are no longer on the battlefield (perhaps because they didn't survive combat damage being dealt). It will not count any creatures that were put onto the battlefield attacking, as those creatures were never declared as attackers."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "A Magic Origins planeswalker that enters the battlefield because of the ability of its front face will enter with loyalty counters as normal."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "In some rare cases, a spell or ability may cause one of these five cards to transform while it's a creature (front face up) on the battlefield. If this happens, the resulting planeswalker won't have any loyalty counters on it and will subsequently be put into its owner's graveyard."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "You can activate one of the planeswalker's loyalty abilities the turn it enters the battlefield. However, you may do so only during one of your main phases when the stack is empty. For example, if the planeswalker enters the battlefield during combat, there will be an opportunity for your opponent to remove it before you can activate one of its abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Languish
 {
     "name": "Languish",

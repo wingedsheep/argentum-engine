@@ -946,6 +946,14 @@ object DynamicAmounts {
     fun opponentsAttackedThisTurn(player: Player = Player.You): DynamicAmount =
         DynamicAmount.TurnTracking(player, TurnTracker.OPPONENTS_ATTACKED)
 
+    /**
+     * Creatures declared as attackers in the current combat, including ones that have since left
+     * the battlefield. Defaults to [Player.Each] — "at least two other creatures attacked this
+     * combat" counts every attacker, whoever controls it (Kytheon, Hero of Akros).
+     */
+    fun creaturesAttackedThisCombat(player: Player = Player.Each): DynamicAmount =
+        DynamicAmount.TurnTracking(player, TurnTracker.CREATURES_ATTACKED_THIS_COMBAT)
+
     fun opponentsWhoLostLifeThisTurn(): DynamicAmount =
         DynamicAmount.TurnTracking(Player.You, TurnTracker.OPPONENTS_WHO_LOST_LIFE)
 

@@ -19104,6 +19104,12 @@ of `AddMana`, `AddColorlessMana` and `AddDynamicMana` / `AddManaInAnyCombination
   creatures and repeated combats count each opponent once; planeswalker/battle attacks and
   creatures entering attacking do not count. In shared-team declarations each player is credited
   only for creatures they controlled at declaration. History survives departures and resets at cleanup.
+- `CREATURES_ATTACKED_THIS_COMBAT` — creatures declared as attackers in the *current combat*
+  (`PlayerAttackersThisCombatComponent`, stamped at declaration, cleared when the combat phase ends).
+  Counts attackers that have since died, been exiled or been removed from combat; creatures put onto
+  the battlefield attacking never count. Facade `DynamicAmounts.creaturesAttackedThisCombat(player =
+  Player.Each)`. Kytheon, Hero of Akros: "if Kytheon and at least two other creatures attacked this
+  combat" is `All(SourceMatches(AttackedThisCombat), Compare(creaturesAttackedThisCombat(), GTE, 3))`.
 - `DEALT_COMBAT_DAMAGE` — combat damage dealt.
 - "Dealt combat damage *by* a kind of source" is not a tracker — it is
   `DynamicAmount.CombatDamageSourcesThisTurn(player, sourceFilter)`, below.
