@@ -355,6 +355,50 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         boosterGenerator.getBasicLands("KHM").keys shouldBe setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
     }
 
+    test("Battle for Zendikar draft pack is 10 commons, 3 uncommons and one rare or mythic") {
+        // Draft Booster (mtg.wtf/pack/bfz): 10 commons, 3 uncommons, a rare or mythic (rares 2/121, mythics
+        // 1/121) and a full-art basic (supplied at deck building). The foil replacing a common is cosmetic.
+        val bfz = boosterGenerator.availableSets["BFZ"].shouldNotBeNull()
+        bfz.fullyImplemented shouldBe true
+        bfz.boosterStrategy shouldBe StandardBooster(commons = 10, mythicChance = 15.0 / 121)
+        val eligible = bfz.cards.filter { it.metadata.inBooster && !it.typeLine.isFreelyAddedBasicLand }
+        // Scryfall `set:bfz is:booster -t:basic` (101 / 80 / 53 / 15): every nonbasic card opens.
+        eligible.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 101, Rarity.UNCOMMON to 80, Rarity.RARE to 53, Rarity.MYTHIC to 15,
+        )
+        val eligibleNames = eligible.mapTo(hashSetOf()) { it.name }
+        var mythics = 0
+        val packs = 4000
+        repeat(packs) {
+            val pack = boosterGenerator.generateBooster("BFZ")
+            withClue("pack ${pack.map { it.name }}") {
+                pack.size shouldBe 14
+                pack.map { it.name }.toSet().size shouldBe 14
+                pack.all { it.name in eligibleNames } shouldBe true
+                pack.count { it.metadata.rarity == Rarity.COMMON } shouldBe 10
+                pack.count { it.metadata.rarity == Rarity.UNCOMMON } shouldBe 3
+                pack.none { it.typeLine.isFreelyAddedBasicLand } shouldBe true
+            }
+            mythics += pack.count { it.metadata.rarity == Rarity.MYTHIC }
+        }
+        // 53 rares printed twice and 15 mythics once.
+        (mythics.toDouble() / packs) shouldBe ((15.0 / 121) plusOrMinus 0.02)
+        // Deck building hands out the set's own full-art basics.
+        boosterGenerator.getBasicLands("BFZ").keys shouldBe setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
+        boosterGenerator.getBasicLands("BFZ").values.all { it.setCode == "BFZ" } shouldBe true
+
+        // A host ban leaves the banned commons' slots to other commons.
+        val banned = eligible.filter { it.metadata.rarity == Rarity.COMMON }.take(5).mapTo(hashSetOf()) { it.name }
+        repeat(200) {
+            val pack = boosterGenerator.generateBooster("BFZ", bannedCardNames = banned)
+            withClue("pack ${pack.map { it.name }}") {
+                pack.size shouldBe 14
+                pack.none { it.name in banned } shouldBe true
+                pack.count { it.metadata.rarity == Rarity.COMMON } shouldBe 10
+            }
+        }
+    }
+
     test("Oath of the Gatewatch's two Wastes printings are common pack cards, not land-station basics") {
         // Wastes is a pack-only basic: in Limited a player plays only the Wastes they open or draft,
         // and the set prints two at common, so the name opens twice as often as any other common.
