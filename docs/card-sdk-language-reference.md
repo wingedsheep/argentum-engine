@@ -10950,6 +10950,14 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
     PlayerRef(Player.DefendingPlayer)`; the spell filter still applies, and the spell stays the
     triggering entity, its caster `Player.TriggeringPlayer`); the spec's `GameObjectFilter` is *not* applied — the
     watched entity is the whole scope.
+    `CreatureDealtDamageBySourceDiesEvent` (`Triggers.self.damagedCreatureDies(dying)`) is scoped on
+    the **damaging** creature: "whenever a creature dealt damage by **that creature** dies this turn,
+    its controller loses 2 life" (**Touch of Moonglove**: `trigger = Triggers.self.damagedCreatureDies(),
+    watchedTarget = creature`). The dying creature's last-known damage record is read, so a victim that
+    dies in the same combat as the watched creature still counts; only hits dealt by the watched
+    *object* count (a creature that left and returned is a new one); the dying creature is the
+    triggering entity (`EffectTarget.ControllerOfTriggeringEntity` = its controller); and `dying`
+    narrows it, defaulting to any creature. It has no filter-scoped delayed form.
     An object watched target follows that **object** (CR 400.7): a `ZoneChangeEvent` matches only the
     departure of the object captured at creation, so the same card back on the battlefield later
     ("reanimated, bounced, recast") is a new object the trigger ignores, and the cleanup step drops

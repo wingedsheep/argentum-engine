@@ -1371,10 +1371,13 @@ class TriggerDetector(
 
                 // A cast watcher scopes the caster, not the triggering object: the spell stays the
                 // triggering entity (and the caster the triggering player) of a player-watched cast.
+                // Likewise a damaged-creature-dies watcher scopes the damaging source: the dying
+                // creature stays the triggering entity ("its controller loses 2 life").
                 val watchedTriggering = delayed.watchedEntityId
                     .takeUnless {
                         specEvent is com.wingedsheep.sdk.scripting.EventPattern.SpellCastEvent ||
-                            specEvent is com.wingedsheep.sdk.scripting.EventPattern.NthSpellCastEvent
+                            specEvent is com.wingedsheep.sdk.scripting.EventPattern.NthSpellCastEvent ||
+                            specEvent is com.wingedsheep.sdk.scripting.EventPattern.CreatureDealtDamageBySourceDiesEvent
                     }
                 // Match the battlefield observer's binding: a source-filtered damage trigger's
                 // "it" is the damage source, while the recipient remains a separate trigger fact.
@@ -1539,6 +1542,27 @@ class TriggerDetector(
             // delayed trigger is linked to, matched by the linkId echoed on the event.
             is com.wingedsheep.sdk.scripting.EventPattern.CardPlayedFromPermissionEvent -> {
                 event is com.wingedsheep.engine.core.CardPlayedFromPermissionEvent && event.linkId == delayedId
+            }
+            // "Whenever a creature dealt damage by *that creature* dies this turn, …" (Touch of
+            // Moonglove): a spell-made watcher of a death, scoped by who damaged the dying creature.
+            // The damaging source is the watched object, read off the dying creature's
+            // last-known damage record, so a watched creature that dies in the same combat as its
+            // victim still counts (CR 603.10a look-back) and a watched creature that has since
+            // become a new object counts only the hits its old object dealt (CR 400.7). Only the
+            // entity-scoped form exists as a delayed trigger. The dying object must have been a
+            // creature, read with `dyingFilter` off its LKI.
+            is com.wingedsheep.sdk.scripting.EventPattern.CreatureDealtDamageBySourceDiesEvent -> {
+                if (event !is ZoneChangeEvent || event.toZone != Zone.GRAVEYARD || !event.isBattlefieldDeparture) return false
+                val watched = watchedEntityId ?: return false
+                val damageSources = event.lastKnown?.damageSources ?: return false
+                damageSources.any { it.dealtBy(watched, watchedObject) } && matcher.matchesZoneChangeTrigger(
+                    com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent(
+                        filter = specEvent.dyingFilter ?: com.wingedsheep.sdk.scripting.GameObjectFilter.Creature,
+                        from = Zone.BATTLEFIELD,
+                        to = Zone.GRAVEYARD
+                    ),
+                    com.wingedsheep.sdk.scripting.TriggerBinding.ANY, event, sourceId, controllerId, state
+                )
             }
             is com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent -> {
                 if (event !is ZoneChangeEvent) return false
