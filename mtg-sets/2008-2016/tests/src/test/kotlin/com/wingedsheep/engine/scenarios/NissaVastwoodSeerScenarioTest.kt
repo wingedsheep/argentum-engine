@@ -3,6 +3,7 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -13,8 +14,15 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.CardDestination
+import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.references.Player
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
@@ -34,9 +42,21 @@ class NissaVastwoodSeerScenarioTest : FunSpec({
     val minusTwoId = back.activatedAbilities[1].id
     val minusSevenId = back.activatedAbilities[2].id
 
+    /** Test-only: puts every land card in your hand onto the battlefield at once. */
+    val twinPlanting = card("Twin Planting") {
+        manaCost = "{G}"
+        typeLine = "Sorcery"
+        spell {
+            effect = Effects.Pipeline {
+                val lands = gather(CardSource.FromZone(Zone.HAND, Player.You, GameObjectFilter.Land))
+                move(lands, CardDestination.ToZone(Zone.BATTLEFIELD))
+            }
+        }
+    }
+
     fun driver(): GameTestDriver {
         val d = GameTestDriver()
-        d.registerCards(TestCards.all + NissaVastwoodSeer)
+        d.registerCards(TestCards.all + NissaVastwoodSeer + twinPlanting)
         d.initMirrorMatch(deck = Deck.of("Forest" to 40), skipMulligans = true)
         d.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return d
@@ -163,5 +183,38 @@ class NissaVastwoodSeerScenarioTest : FunSpec({
         withClue("no \"until end of turn\": the lands are still 6/6 creatures on the next turn") {
             assertAnimated()
         }
+    }
+
+    test("two lands entering at once with six out flip her once, into a 3-loyalty Nissa, Sage Animist") {
+        val d = driver()
+        val me = d.activePlayer!!
+        d.putCreatureOnBattlefield(me, "Nissa, Vastwood Seer")
+        repeat(6) { d.putLandOnBattlefield(me, "Forest") }
+        var s = d.state
+        for (id in s.getZone(ZoneKey(me, Zone.HAND))) {
+            s = s.removeFromZone(ZoneKey(me, Zone.HAND), id).addToZone(ZoneKey(me, Zone.EXILE), id)
+        }
+        d.replaceState(s)
+        val pair = List(2) { d.putCardInHand(me, "Forest") }
+        val planting = d.putCardInHand(me, "Twin Planting")
+        d.giveMana(me, Color.GREEN, 1)
+
+        d.castSpell(me, planting).error shouldBe null
+        d.drain()
+
+        withClue("both Forests entered together, leaving eight lands") {
+            pair.forEach { d.state.getBattlefield() shouldContain it }
+            d.getLands(me).size shouldBe 8
+        }
+        withClue("the first trigger flipped her; the second found its source a new object and did nothing") {
+            d.state.stack.shouldBeEmpty()
+            d.findPermanent(me, "Nissa, Vastwood Seer") shouldBe null
+            d.state.getBattlefield().count {
+                d.state.getEntity(it)?.get<CardComponent>()?.name == "Nissa, Sage Animist"
+            } shouldBe 1
+        }
+        val animist = d.findPermanent(me, "Nissa, Sage Animist").shouldNotBeNull()
+        d.loyalty(animist) shouldBe 3
+        d.state.projectedState.isCreature(animist) shouldBe false
     }
 })

@@ -9,6 +9,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.state.components.player.CardsDrawnThisTurnComponent
 import com.wingedsheep.engine.state.components.player.AttemptedDrawFromEmptyLibraryComponent
 import com.wingedsheep.sdk.core.Zone
@@ -81,9 +82,14 @@ class DrawCardPrimitive(
     ): Result {
         val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
         val handZone = ZoneKey(playerId, Zone.HAND)
-        val library = state.getZone(libraryZone)
+        // A token that left the battlefield can't change zones (CR 111.8) and is no card in the
+        // library — it only lingers until the next SBA check removes it (CR 704.5d). A draw passes
+        // over it: "shuffle permanents into your library, then draw that many" (The Great Aurora)
+        // counts tokens but must never draw one, and a library of only tokens is empty for drawing.
+        val cardId = state.getZone(libraryZone)
+            .firstOrNull { state.getEntity(it)?.has<TokenComponent>() != true }
 
-        if (library.isEmpty()) {
+        if (cardId == null) {
             // CR 121.4: a player who attempts to draw from an empty library loses the game the
             // next time a player would receive priority — a state-based action (CR 704.5b), not
             // part of the draw. Record the attempt; EmptyLibraryDrawLossCheck turns it into the
@@ -102,7 +108,6 @@ class DrawCardPrimitive(
         }
 
         // Move top card from library → hand.
-        val cardId = library.first()
         var newState = state.removeFromZone(libraryZone, cardId)
         newState = newState.addToZone(handZone, cardId)
 

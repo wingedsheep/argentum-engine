@@ -10901,15 +10901,8 @@
                     "storeAs": "gathered0"
                 },
                 {
-                    "type": "FilterCollection",
-                    "from": "gathered0",
-                    "filter": "token",
-                    "storeMatching": "matching1",
-                    "storeNonMatching": "rest1"
-                },
-                {
                     "type": "MoveCollection",
-                    "from": "rest1",
+                    "from": "gathered0",
                     "destination": {
                         "type": "ToZone",
                         "zone": "Library",
@@ -10925,15 +10918,6 @@
                     "body": "ShuffleLibrary"
                 },
                 {
-                    "type": "MoveCollection",
-                    "from": "matching1",
-                    "destination": {
-                        "type": "ToZone",
-                        "zone": "Library",
-                        "placement": "Bottom"
-                    }
-                },
-                {
                     "type": "FilterCollection",
                     "from": "gathered0",
                     "filter": {
@@ -10944,25 +10928,25 @@
                             }
                         ]
                     },
-                    "storeMatching": "matching5"
+                    "storeMatching": "matching3"
                 },
                 {
                     "type": "CaptureControllers",
-                    "from": "matching5",
-                    "storeAs": "controllers6"
+                    "from": "matching3",
+                    "storeAs": "controllers4"
                 },
                 {
                     "type": "ForEachCapturedController",
-                    "collection": "matching5",
-                    "originalCollection": "matching5",
-                    "controllerSnapshot": "controllers6",
-                    "countVariable": "count7",
+                    "collection": "matching3",
+                    "originalCollection": "matching3",
+                    "controllerSnapshot": "controllers4",
+                    "countVariable": "count5",
                     "effects": [
                         {
                             "type": "DrawCards",
                             "count": {
                                 "type": "VariableReference",
-                                "variableName": "count7"
+                                "variableName": "count5"
                             }
                         }
                     ]
@@ -10983,25 +10967,25 @@
                                     "zone": "Hand",
                                     "filter": "land"
                                 },
-                                "storeAs": "gathered10"
+                                "storeAs": "gathered8"
                             },
                             {
                                 "type": "SelectFromCollection",
-                                "from": "gathered10",
+                                "from": "gathered8",
                                 "selection": "ChooseAnyNumber",
-                                "storeSelected": "selected11",
+                                "storeSelected": "selected9",
                                 "prompt": "Choose any number of land cards to put onto the battlefield",
                                 "selectedLabel": "Put onto the battlefield"
                             }
                         ]
                     },
                     "collectCollections": {
-                        "selected11": "collected12"
+                        "selected9": "collected10"
                     }
                 },
                 {
                     "type": "MoveCollection",
-                    "from": "collected12",
+                    "from": "collected10",
                     "destination": {
                         "type": "ToZone",
                         "zone": "Battlefield"

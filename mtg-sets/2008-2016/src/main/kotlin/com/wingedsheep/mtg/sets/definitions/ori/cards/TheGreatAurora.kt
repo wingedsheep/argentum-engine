@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
-import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
@@ -24,9 +23,11 @@ import com.wingedsheep.sdk.scripting.references.Player
  * 1. Every hand and every permanent (each permanent is owned by some player) leaves in one move,
  *    each card into its *owner's* library (CR 400.3) — a permanent you control but don't own goes
  *    to its owner, and counts for them. Then each player shuffles, including a player who put
- *    nothing in (the Timetwister ruling). Tokens follow on the bottom, under the shuffled pile, so
- *    the draws can't pick up a token that is about to cease to exist (CR 111.7); they still count
- *    toward "that many" (the ruling) — the Warp World shape.
+ *    nothing in (the Timetwister ruling). Tokens are shuffled in too and count toward "that many"
+ *    (the ruling), but they are no cards to draw: a token that left the battlefield can't change
+ *    zones again (CR 111.8), so the draw passes over it, and a library left with only tokens is
+ *    empty — its player fails to draw and loses at the next state-based action check (CR 704.5b).
+ *    The tokens themselves cease to exist at that same check (CR 704.5d).
  * 2. "That many" is per player: whatever is now in a library, tallied by owner. Off the battlefield
  *    a card has no controller, so `captureControllers` reads each card's owner here, and
  *    `forEachCaptured` has each owner draw their own tally in turn order. A card a replacement
@@ -53,10 +54,8 @@ val TheGreatAurora = card("The Great Aurora") {
                     player = Player.Each,
                 )
             )
-            val (tokens, cards) = filterSplit(gone, GameObjectFilter.Any.token())
-            move(cards, CardDestination.ToZone(Zone.LIBRARY, Player.You, ZonePlacement.Bottom))
+            move(gone, CardDestination.ToZone(Zone.LIBRARY, Player.You, ZonePlacement.Bottom))
             run(Effects.ForEachPlayer(Player.Each, Effects.ShuffleLibrary()))
-            toLibraryBottom(tokens, order = CardOrder.Preserve)
 
             val shuffledIn = filter(gone, GameObjectFilter.Any.currentlyIn(Zone.LIBRARY))
             val owners = captureControllers(shuffledIn)

@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.DrawFailedEvent
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -137,5 +138,33 @@ class TheGreatAuroraScenarioTest : FunSpec({
         d.state.getLibrary(d.player1).shouldBeEmpty()
         d.state.getLibrary(d.player2).shouldBeEmpty()
         d.state.getBattlefield().shouldBeEmpty()
+    }
+
+    test("tokens count toward that many but can't be drawn, so a player of only tokens draws from an empty library and loses") {
+        val d = driver()
+        val mountain = d.putLandOnBattlefield(d.player1, "Mountain")
+        val tokens = List(2) { d.putCreatureOnBattlefield(d.player2, "Savannah Lions") }
+        tokens.forEach { d.addComponent(it, TokenComponent) }
+
+        d.castAurora()
+
+        var guard = 0
+        while (d.pendingDecision is SelectCardsDecision && guard++ < 4) {
+            val decision = d.pendingDecision as SelectCardsDecision
+            d.submitCardSelection(decision.playerId, emptyList()).error shouldBe null
+        }
+
+        withClue("the opponent's two tokens counted, but the draws found no card and drew nothing") {
+            d.getHand(d.player2).shouldBeEmpty()
+            d.events.filterIsInstance<DrawFailedEvent>().map { it.playerId } shouldContain d.player2
+        }
+        withClue("having drawn from an empty library, the opponent lost at the next SBA check") {
+            d.state.gameOver shouldBe true
+            d.state.winnerId shouldBe d.player1
+        }
+        d.getHand(d.player1) shouldContainExactly listOf(mountain)
+        withClue("the tokens ceased to exist") {
+            tokens.forEach { d.state.getEntity(it) shouldBe null }
+        }
     }
 })
