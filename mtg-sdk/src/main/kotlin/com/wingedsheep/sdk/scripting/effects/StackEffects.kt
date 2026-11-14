@@ -201,6 +201,16 @@ sealed interface CounterCondition {
  * - "Counter that spell" → CounterEffect(targetSource = TriggeringEntity)
  * - "Counter and exile" → CounterEffect(counterDestination = Exile())
  * - "Counter target ability" → CounterEffect(target = Ability)
+ * - "Counter target spell. … the spell countered this way" →
+ *   CounterEffect(storeCounteredAs = key), then read the `key` pipeline collection
+ *
+ * @property storeCounteredAs Pipeline collection that receives the object this effect *actually*
+ *   countered — the handle for "if that spell is countered this way" / "the spell countered this
+ *   way" riders that aren't a destination change (Psychic Rebuttal copies it). It holds nothing when
+ *   nothing was countered (the key may be left unwritten, which every reader treats as empty): the spell can't be countered, its controller paid, or it left the stack
+ *   first. A countered spell keeps its entity id in its new zone, and the copy path reads it as it
+ *   last existed on the stack (CR 608.2h), so `EffectTarget.PipelineTarget(key)` names it. The
+ *   stack-wide [CounterAllOnStackEffect.storeCountAs] is the batch sibling.
  */
 @SerialName("Counter")
 @Serializable
@@ -209,10 +219,14 @@ data class CounterEffect(
     val targetSource: CounterTargetSource = CounterTargetSource.Chosen,
     val counterDestination: CounterDestination = CounterDestination.Graveyard,
     val condition: CounterCondition = CounterCondition.Always,
-    val filter: TargetFilter? = null
+    val filter: TargetFilter? = null,
+    val storeCounteredAs: String? = null
 ) : Effect {
     init {
         if (targetSource is CounterTargetSource.EachOnStack) {
+            require(storeCounteredAs == null) {
+                "CounterTargetSource.EachOnStack records nothing; a stack-wide 'countered this way' is CounterAllOnStackEffect.storeCountAs"
+            }
             require(condition !is CounterCondition.Always) {
                 "Unconditional stack-wide counters are CounterAllOnStackEffect; EachOnStack is the unless-pays shape"
             }

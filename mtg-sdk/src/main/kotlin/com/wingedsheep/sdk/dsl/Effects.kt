@@ -5702,9 +5702,14 @@ object Effects {
 
     /**
      * Counter target spell.
+     *
+     * [storeCounteredAs] records the spell into that pipeline collection only if it is actually
+     * countered — "you may copy the spell countered this way" (Psychic Rebuttal):
+     * `runStoringCollection { Effects.CounterSpell(storeCounteredAs = it) }`, then gate on
+     * `Conditions.CollectionContainsMatch(slot)` and name the spell as `slot.asTarget`.
      */
-    fun CounterSpell(): Effect =
-        CounterEffect()
+    fun CounterSpell(storeCounteredAs: String? = null): Effect =
+        CounterEffect(storeCounteredAs = storeCounteredAs)
 
     /**
      * Counter target spell. If countered, exile it instead of putting it into

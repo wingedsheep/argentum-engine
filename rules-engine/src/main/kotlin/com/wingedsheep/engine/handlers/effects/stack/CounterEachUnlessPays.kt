@@ -3,8 +3,10 @@ package com.wingedsheep.engine.handlers.effects.stack
 import com.wingedsheep.engine.core.CounterEachUnlessPaysContinuation
 import com.wingedsheep.engine.core.CounterUnlessPaysContinuation
 import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.AbilityCounteredEvent
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.Outcome
+import com.wingedsheep.engine.core.SpellCounteredEvent
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
@@ -29,7 +31,8 @@ internal fun counterStackObject(
     destination: CounterDestination,
     entityId: EntityId,
     countererId: EntityId,
-    sourceId: EntityId?
+    sourceId: EntityId?,
+    storeCounteredAs: String? = null
 ): ExecutionResult {
     val asSpell = when (target) {
         CounterTarget.Spell -> true
@@ -41,9 +44,23 @@ internal fun counterStackObject(
         CounterDestination.Graveyard -> counterer.counterSpell(state, entityId, countererId)
         is CounterDestination.Exile -> counterer.counterSpellToExile(state, entityId, destination.grantFreeCast, countererId)
         CounterDestination.Hand -> counterer.counterSpellToHand(state, entityId, countererId)
-        is CounterDestination.Library -> counterSpellToLibrary(state, counterer, entityId, destination, countererId, sourceId)
+        is CounterDestination.Library ->
+            counterSpellToLibrary(state, counterer, entityId, destination, countererId, sourceId, storeCounteredAs)
     }
 }
+
+/**
+ * "The spell (or ability) countered this way": [entityId] when [events] show it was actually
+ * countered — a [SpellCounteredEvent] or [AbilityCounteredEvent] naming it — else nothing. A spell
+ * that can't be countered, a counter replaced by an exile (Guile), or an object that already left
+ * the stack emits neither, so a "countered this way" rider never sees it.
+ */
+internal fun counteredThisWay(events: List<GameEvent>, entityId: EntityId): List<EntityId> =
+    if (events.any {
+            (it is SpellCounteredEvent && it.spellEntityId == entityId) ||
+                (it is AbilityCounteredEvent && it.abilityEntityId == entityId)
+        }
+    ) listOf(entityId) else emptyList()
 
 /**
  * Drives a [CounterEachUnlessPaysContinuation]: asks each remaining object's controller whether to

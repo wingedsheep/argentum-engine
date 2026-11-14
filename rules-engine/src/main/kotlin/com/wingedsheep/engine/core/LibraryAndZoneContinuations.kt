@@ -321,6 +321,9 @@ data class PutOnTopOrBottomContinuation(
  * @property countererId The controller of the countering spell or ability — the one choosing
  * @property sourceId The countering spell or ability
  * @property positions The offered positions, one per option index
+ * @property storeCounteredAs The counter's "countered this way" collection
+ *   ([com.wingedsheep.sdk.scripting.effects.CounterEffect.storeCounteredAs]), published to the frame
+ *   beneath once the spell is countered
  */
 @Serializable
 data class CounterToLibraryPositionContinuation(
@@ -328,6 +331,7 @@ data class CounterToLibraryPositionContinuation(
     val countererId: EntityId,
     val sourceId: EntityId?,
     val positions: List<com.wingedsheep.sdk.scripting.effects.LibraryChoicePosition>,
+    val storeCounteredAs: String? = null,
 ) : AnswerContinuation
 
 /**

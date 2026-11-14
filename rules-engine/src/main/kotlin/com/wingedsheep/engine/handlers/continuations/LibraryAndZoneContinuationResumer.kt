@@ -827,7 +827,13 @@ class LibraryAndZoneContinuationResumer(
         val result = services.spellCounterer.counterSpellToLibrary(
             state, continuation.spellId, position, continuation.countererId
         )
-        return checkForMore(result.newState, result.events)
+        val published = continuation.storeCounteredAs?.let { key ->
+            exposeCollectionsToNextFrame(
+                result.newState,
+                mapOf(key to com.wingedsheep.engine.handlers.effects.stack.counteredThisWay(result.events, continuation.spellId))
+            )
+        } ?: result.newState
+        return checkForMore(published, result.events)
     }
 
     /**
