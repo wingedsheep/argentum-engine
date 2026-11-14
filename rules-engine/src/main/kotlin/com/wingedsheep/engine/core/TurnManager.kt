@@ -20,7 +20,10 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
+import com.wingedsheep.engine.state.components.combat.MustAttackDefendersThisTurnComponent
+import com.wingedsheep.engine.state.components.combat.MustAttackNextTurnComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackPlayerComponent
+import com.wingedsheep.engine.state.components.combat.MustAttackThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.CantCastSpellsComponent
 import com.wingedsheep.engine.state.components.player.PlayerEffectRemoval
@@ -1383,6 +1386,8 @@ class TurnManager(
         // path above so all "until your next turn" semantics share one site.
         val (goadCleanedState, goadEvents) = cleanupPhaseManager.expireGoadedDesignationFor(postUntapState, activePlayer)
         postUntapState = goadCleanedState
+        // After phasing, so a creature that phased in this untap step is seen.
+        postUntapState = activateNextTurnAttackMarks(postUntapState)
 
         // Advance to upkeep (this sets priority to the active player)
         val advanceResult = advanceStep(postUntapState)
@@ -1693,6 +1698,35 @@ class TurnManager(
         attackingPlayer: EntityId,
         candidates: List<EntityId>,
     ): List<EntityId> = combatManager.legalDefendersFor(state, attackerId, attackingPlayer, candidates)
+
+    /**
+     * "Attacks … during its controller's next turn if able" (Gideon, Battle-Forged): once the
+     * untap step is done, every waiting [MustAttackNextTurnComponent] on a creature the active
+     * player controls becomes this turn's marks, which cleanup removes. Read only now — after
+     * phasing, before any combat — so the mark follows a change of control to the new controller's
+     * next turn and a mark placed during its controller's own turn waits for the next one.
+     */
+    private fun activateNextTurnAttackMarks(state: GameState): GameState {
+        val marked = state.getBattlefield().filter { state.getEntity(it)?.has<MustAttackNextTurnComponent>() == true }
+        if (marked.isEmpty()) return state
+        val projected = state.projectedState
+        var newState = state
+        for (creatureId in marked) {
+            val controller = projected.getController(creatureId) ?: continue
+            if (!newState.isActiveTurnFor(controller)) continue
+            newState = newState.updateEntity(creatureId) { container ->
+                val mark = container.get<MustAttackNextTurnComponent>() ?: return@updateEntity container
+                var updated = container.without<MustAttackNextTurnComponent>()
+                if (mark.anyDefender) updated = updated.with(MustAttackThisTurnComponent)
+                if (!mark.defenders.isEmpty()) {
+                    val existing = updated.get<MustAttackDefendersThisTurnComponent>()?.defenders
+                    updated = updated.with(MustAttackDefendersThisTurnComponent(existing?.plus(mark.defenders) ?: mark.defenders))
+                }
+                updated
+            }
+        }
+        return newState
+    }
 
     /** See [com.wingedsheep.engine.mechanics.combat.AttackPhaseManager.boundAttackDefenders]. */
     fun boundAttackDefenders(state: GameState, attackingPlayer: EntityId): Map<EntityId, Set<EntityId>> =
