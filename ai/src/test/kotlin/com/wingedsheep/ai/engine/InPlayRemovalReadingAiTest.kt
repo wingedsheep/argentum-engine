@@ -71,6 +71,31 @@ class InPlayRemovalReadingAiTest : ScenarioTestBase() {
             value("Throwing Knife") shouldBeLessThan value("Icy Manipulator")
         }
 
+        test("a sacrifice-to-pay removal permanent is one-shot removal, granted or printed") {
+            CardIntentAnalyzer.analyzeInPlay(card("Seal of Doom")).staticPriorValue shouldBe 1.0
+            // The Torch's equip and evasion grant still price it like any Equipment (1.5) — below removal's 3.5.
+            val torch = CardIntentAnalyzer.analyzeInPlay(card("Blazing Torch"))
+            torch.spentTags shouldContain IntentTag.REMOVAL
+            torch.repeatableTags shouldNotContain IntentTag.REMOVAL
+            torch.staticPriorValue shouldBeLessThan 3.5
+        }
+
+        test("repeatable removal stays repeatable: a granted ping, and a trigger read through its captured stand-in") {
+            for (name in listOf("Viridian Longbow", "Godsend")) {
+                withClue(name) { CardIntentAnalyzer.analyzeInPlay(card(name)).staticPriorValue shouldBe 4.0 }
+            }
+        }
+
+        test("a sacrifice behind a condition doesn't make the trigger single-use") {
+            for (name in listOf("Ordeal of Nylea", "Decree of Silence")) {
+                val intent = CardIntentAnalyzer.analyzeInPlay(card(name))
+                withClue(name) {
+                    intent.repeatable shouldBe true
+                    intent.spentTags shouldBe emptySet()
+                }
+            }
+        }
+
         test("an ability activated only from the hand gives a permanent in play no removal prior") {
             val memorial = CardIntentAnalyzer.analyzeInPlay(card("Gideon's Memorial"))
             memorial.repeatable shouldBe false

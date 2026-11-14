@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.DamageDealtEvent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
@@ -45,6 +46,7 @@ class ThrowingKnifeScenarioTest : ScenarioTestBase() {
             test("sacrificing the Knife deals 2 damage to the target chosen when it triggered") {
                 val game = game()
                 val bears = game.findPermanent("Grizzly Bears")!!
+                val knife = game.findPermanent("Throwing Knife")!!
                 val opponentLife = game.getLifeTotal(2)
 
                 game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
@@ -56,12 +58,16 @@ class ThrowingKnifeScenarioTest : ScenarioTestBase() {
                 game.selectTargets(listOf(game.player2Id)).error shouldBe null
                 game.resolveStack()
 
-                game.answerYesNo(true).error shouldBe null
-                game.resolveStack()
+                val answer = game.answerYesNo(true)
+                answer.error shouldBe null
+                val events = answer.events + game.resolveStack().flatMap { it.events }
 
                 withClue("the Knife was sacrificed and, as the source, dealt 2 damage") {
                     game.isInGraveyard(1, "Throwing Knife") shouldBe true
                     game.getLifeTotal(2) shouldBe opponentLife - 2
+                    val damage = events.filterIsInstance<DamageDealtEvent>().single { it.targetId == game.player2Id }
+                    damage.sourceId shouldBe knife
+                    damage.amount shouldBe 2
                 }
                 withClue("the Bears lose the +2/+0 once the Knife is gone") {
                     game.state.projectedState.getPower(bears) shouldBe 2

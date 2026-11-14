@@ -3770,57 +3770,88 @@ object CardIntentAnalyzer {
      * [CardIntent.repeatableTags]: what the abilities that pass [activatesRepeatedly] and
      * [triggersRepeatedly] do — so a repeatable equip beside a one-shot "you may sacrifice this
      * Equipment. If you do, it deals 2 damage" (Throwing Knife) is not read as repeatable removal.
+     * An Equipment's or Aura's helpful granted ability counts as its own (Viridian Longbow's ping).
      */
     private fun repeatableTagsOf(
         card: CardDefinition,
         scripts: List<CardScript>,
         ownPile: Boolean,
         pileCast: Set<IntentTag>,
-    ): Set<IntentTag> {
-        if (!card.typeLine.isPermanent) return emptySet()
-        return scripts.flatMapTo(HashSet()) { script ->
-            script.activatedAbilities.filter(::activatesRepeatedly).flatMap {
-                effectTags(it.effect, it.targetRequirements, ownPile, pileCast)
-            } + script.triggeredAbilities.filter { triggersRepeatedly(it, isAura = script.auraTarget != null) }.flatMap {
-                effectTags(it.effect, it.allTargetRequirements, ownPile, pileCast)
-            }
-        }
-    }
+    ): Set<IntentTag> = abilityTagsBySpend(card, scripts, ownPile, pileCast, spent = false)
 
     /**
      * [CardIntent.spentTags]: what the battlefield abilities that use up their own source do —
      * "sacrifice this: …" (Pyrite Spellbomb), "you may sacrifice this Equipment. If you do, …"
-     * (Throwing Knife). Each pays off once.
+     * (Throwing Knife), an equipped creature's "{T}, Sacrifice Blazing Torch: …". Each pays off once.
      */
     private fun spentTagsOf(
         card: CardDefinition,
         scripts: List<CardScript>,
         ownPile: Boolean,
         pileCast: Set<IntentTag>,
+    ): Set<IntentTag> = abilityTagsBySpend(card, scripts, ownPile, pileCast, spent = true)
+
+    /**
+     * The tags of a permanent's battlefield abilities that recur (`spent = false`) or use up their
+     * source (`spent = true`). Triggers read through [EffectWalker.readableEffect], as [tags] does;
+     * a granted ability is read by [tagsOf] (its scope and polarity), its spend by the granter cost.
+     */
+    private fun abilityTagsBySpend(
+        card: CardDefinition,
+        scripts: List<CardScript>,
+        ownPile: Boolean,
+        pileCast: Set<IntentTag>,
+        spent: Boolean,
     ): Set<IntentTag> {
         if (!card.typeLine.isPermanent) return emptySet()
         return scripts.flatMapTo(HashSet()) { script ->
-            script.activatedAbilities.filter {
-                it.activateFromZone == Zone.BATTLEFIELD && !it.isManaAbility &&
+            val isAura = script.auraTarget != null
+            val activated = script.activatedAbilities.filter {
+                if (spent) it.activateFromZone == Zone.BATTLEFIELD && !it.isManaAbility &&
                     (consumesSource(it.cost) || sacrificesOwnSource(it.effect))
-            }.flatMap { effectTags(it.effect, it.targetRequirements, ownPile, pileCast) } +
-                script.triggeredAbilities.filter { sacrificesOwnSource(it.effect) }.flatMap {
-                    effectTags(it.effect, it.allTargetRequirements, ownPile, pileCast)
+                else activatesRepeatedly(it)
+            }.flatMap { effectTags(it.effect, it.targetRequirements, ownPile, pileCast) }
+            val triggered = script.triggeredAbilities.filter {
+                if (spent) sacrificesOwnSource(EffectWalker.readableEffect(it)) else triggersRepeatedly(it, isAura)
+            }.flatMap { effectTags(EffectWalker.readableEffect(it), it.allTargetRequirements, ownPile, pileCast) }
+            val granted = script.staticAbilities.filter {
+                when (it) {
+                    is GrantActivatedAbility -> !it.ability.isManaAbility && spendsGranter(it.ability.cost) == spent
+                    is GrantTriggeredAbility -> !spent
+                    else -> false
                 }
+            }.flatMap { tagsOf(it) }
+            activated + triggered + granted
         }
     }
 
+    /** A granted activation whose cost sacrifices or exiles the permanent granting it (Blazing Torch). */
+    private fun spendsGranter(cost: AbilityCost): Boolean = when (cost) {
+        AbilityCost.SacrificeGrantingPermanent, AbilityCost.ExileGrantingPermanent -> true
+        is AbilityCost.Composite -> cost.costs.any { spendsGranter(it) }
+        else -> false
+    }
+
     /**
-     * Whether resolving [effect] sacrifices the ability's own source — "you may sacrifice this
-     * Equipment. If you do, …" (Throwing Knife's [Gate.MayPay] or [Gate.DoAction] price), or a bare
-     * "sacrifice this" among its steps. Such an ability pays off once, whatever its trigger or cost.
+     * Whether resolving [effect] always sacrifices the ability's own source — "you may sacrifice
+     * this Equipment. If you do, …" (Throwing Knife's [Gate.MayPay] or [Gate.DoAction] price), a
+     * "you may sacrifice this", or a bare "sacrifice this" among its steps. Such an ability pays off
+     * once, whatever its trigger or cost. A sacrifice behind a condition — an Ordeal's "then if it
+     * has three or more +1/+1 counters on it, sacrifice this" — is the payoff's end, not every
+     * firing's price, so it doesn't count.
      */
-    private fun sacrificesOwnSource(effect: Effect): Boolean = EffectWalker.leaves(effect).any { leaf ->
-        isSelfSacrifice(leaf) || (leaf is GatedEffect && leaf.decisionMaker == null && when (val gate = leaf.gate) {
-            is Gate.MayPay -> EffectWalker.leaves(gate.cost).any(::isSelfSacrifice)
-            is Gate.DoAction -> EffectWalker.leaves(gate.action).any(::isSelfSacrifice)
-            else -> false
-        })
+    private fun sacrificesOwnSource(effect: Effect): Boolean = EffectWalker.fold(effect, SpendsSource)
+
+    private object SpendsSource : EffectWalker.Fold<Boolean> {
+        override fun leaf(effect: Effect): Boolean =
+            isSelfSacrifice(effect) || (effect is GatedEffect && effect.decisionMaker == null && when (val gate = effect.gate) {
+                is Gate.MayPay -> EffectWalker.leaves(gate.cost).any(::isSelfSacrifice)
+                is Gate.DoAction -> EffectWalker.leaves(gate.action).any(::isSelfSacrifice)
+                else -> false
+            })
+        override fun composite(parts: List<Boolean>): Boolean = parts.any { it }
+        override fun conditional(thenValue: Boolean, elseValue: Boolean?): Boolean = false
+        override fun may(thenValue: Boolean): Boolean = thenValue
     }
 
     private fun isSelfSacrifice(leaf: Effect): Boolean =
@@ -3994,7 +4025,7 @@ object CardIntentAnalyzer {
             // non-creature permanent does.
             // The removal itself must recur: a one-shot "sacrifice this: deal 2 damage" beside a
             // repeatable equip is removal once ([CardIntent.repeatableTags]).
-            if (repeatable && (IntentTag.REMOVAL in intent.repeatableTags || IntentTag.EXILE_REMOVAL in intent.repeatableTags)) {
+            if (IntentTag.REMOVAL in intent.repeatableTags || IntentTag.EXILE_REMOVAL in intent.repeatableTags) {
                 add(PriorRung("repeatable removal", 4.0))
             }
             // A repeatable tapper answers the same permanent every turn, and an O-Ring answers one

@@ -20,8 +20,9 @@ class LifeGainLockReadingAiTest : ScenarioTestBase() {
     private fun card(name: String) = cardRegistry.getCard(name)!!
 
     init {
+        // Grievous Wound's "enchanted player can't gain life": a curse, cast on an opponent.
         test("an opponents-only life-gain lock reads as a lifegain lock") {
-            listOf("Tainted Remedy", "Archfiend of Despair").forEach { name ->
+            listOf("Tainted Remedy", "Archfiend of Despair", "Grievous Wound").forEach { name ->
                 withClue(name) { CardIntentAnalyzer.analyze(card(name)).tags shouldContain IntentTag.LIFEGAIN_LOCK }
             }
         }
