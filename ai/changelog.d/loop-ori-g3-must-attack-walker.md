@@ -1,1 +1,1 @@
-- #TBD Reads "target creature attacks … if able" marks (Nettling Imp, Bident of Thassa, Gideon, Battle-Forged) as a forced attack aimed at an opponent's creature, not an unknown-polarity target
+- #4662 Reads "target creature attacks … if able" marks (Nettling Imp, Bident of Thassa, Gideon, Battle-Forged) as a forced attack aimed at an opponent's creature, not an unknown-polarity target
