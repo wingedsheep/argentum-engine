@@ -206,8 +206,8 @@ sealed interface CounterCondition {
  *
  * @property storeCounteredAs Pipeline collection that receives the object this effect *actually*
  *   countered — the handle for "if that spell is countered this way" / "the spell countered this
- *   way" riders that aren't a destination change (Psychic Rebuttal copies it). It stays empty when
- *   nothing was countered: the spell can't be countered, its controller paid, or it left the stack
+ *   way" riders that aren't a destination change (Psychic Rebuttal copies it). It holds nothing when
+ *   nothing was countered (the key may be left unwritten, which every reader treats as empty): the spell can't be countered, its controller paid, or it left the stack
  *   first. A countered spell keeps its entity id in its new zone, and the copy path reads it as it
  *   last existed on the stack (CR 608.2h), so `EffectTarget.PipelineTarget(key)` names it. The
  *   stack-wide [CounterAllOnStackEffect.storeCountAs] is the batch sibling.

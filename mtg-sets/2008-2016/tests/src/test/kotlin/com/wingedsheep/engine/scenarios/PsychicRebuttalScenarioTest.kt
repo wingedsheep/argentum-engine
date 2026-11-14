@@ -106,6 +106,19 @@ class PsychicRebuttalScenarioTest : FunSpec({
         d.getLifeTotal(d.player1) shouldBe 20
     }
 
+    test("one instant or sorcery in your graveyard is not spell mastery; Psychic Rebuttal doesn't count itself") {
+        val d = driver()
+        d.putCardInGraveyard(d.player1, "Lightning Bolt")
+        val bolt = d.opponentCasts("Lightning Bolt", ChosenTarget.Player(d.player1))
+        d.rebut(bolt)
+
+        withClue("no copy offer with only one instant in the graveyard while Rebuttal resolves") {
+            d.pendingDecision shouldBe null
+        }
+        d.copiesOnStack().size shouldBe 0
+        d.getLifeTotal(d.player1) shouldBe 20
+    }
+
     test("declining the copy just counters the spell") {
         val d = driver()
         d.spellMastery()
