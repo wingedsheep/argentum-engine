@@ -26,11 +26,18 @@ import io.kotest.matchers.shouldNotBe
 class DiscipleOfTheRingScenarioTest : ScenarioTestBase() {
 
     private val abilityId = DiscipleOfTheRing.activatedAbilities.single().id
+    private val counterMode = 0
     private val pumpMode = 1
     private val tapMode = 2
 
-    private fun TestGame.activate(mode: Int, exiled: List<EntityId>, target: EntityId? = null): ExecutionResult {
-        val targets = listOfNotNull(target).map { ChosenTarget.Permanent(it) }
+    private fun TestGame.activate(
+        mode: Int,
+        exiled: List<EntityId>,
+        target: EntityId? = null,
+        spellTarget: EntityId? = null,
+    ): ExecutionResult {
+        val targets = listOfNotNull(target).map { ChosenTarget.Permanent(it) } +
+            listOfNotNull(spellTarget).map { ChosenTarget.Spell(it) }
         return execute(
             ActivateAbility(
                 playerId = player1Id,
@@ -86,6 +93,53 @@ class DiscipleOfTheRingScenarioTest : ScenarioTestBase() {
                 withClue("Hill Giant is tapped") {
                     game.state.getEntity(giant)!!.has<TappedComponent>() shouldBe true
                 }
+            }
+
+            test("the counter mode counters a noncreature spell whose controller can't pay {2}") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Disciple of the Ring")
+                    .withLandsOnBattlefield(1, "Island", 1)
+                    .withCardInGraveyard(1, "Lightning Bolt")
+                    .withCardInHand(2, "Lightning Bolt")
+                    .withLandsOnBattlefield(2, "Mountain", 1)
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                game.castSpellTargetingPlayer(2, "Lightning Bolt", 1).error shouldBe null
+                game.passPriority().error shouldBe null
+                val theirBolt = game.state.stack.single()
+                val myBolt = game.findCardsInGraveyard(1, "Lightning Bolt").single()
+
+                val result = game.activate(counterMode, listOf(myBolt), spellTarget = theirBolt)
+                withClue("activation should succeed: ${result.error}") { result.error shouldBe null }
+                game.resolveStack()
+
+                withClue("the opponent's Bolt was countered with no mana left to pay {2}") {
+                    game.state.stack shouldBe emptyList()
+                    game.isInGraveyard(2, "Lightning Bolt") shouldBe true
+                    game.getLifeTotal(1) shouldBe 20
+                }
+            }
+
+            test("the counter mode can't target a creature spell") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Disciple of the Ring")
+                    .withLandsOnBattlefield(1, "Island", 1)
+                    .withCardInGraveyard(1, "Lightning Bolt")
+                    .withCardInHand(2, "Grizzly Bears")
+                    .withLandsOnBattlefield(2, "Forest", 2)
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                game.castSpell(2, "Grizzly Bears").error shouldBe null
+                game.passPriority().error shouldBe null
+                val bears = game.state.stack.single()
+                val myBolt = game.findCardsInGraveyard(1, "Lightning Bolt").single()
+
+                val result = game.activate(counterMode, listOf(myBolt), spellTarget = bears)
+                withClue("Grizzly Bears is a creature spell") { result.error shouldNotBe null }
             }
 
             test("can't be activated without an instant or sorcery card in your graveyard") {

@@ -31,7 +31,7 @@ val DeadbridgeShaman = card("Deadbridge Shaman") {
         rarity = Rarity.COMMON
         collectorNumber = "91"
         artist = "Nils Hamm"
-        flavorText = "\"Ending her life won't end the infestation.\""
+        flavorText = "Ending her life won't end the infestation."
         imageUri = "https://cards.scryfall.io/normal/front/2/b/2b62a4c2-e66d-4fc3-8703-a90b84f567bf.jpg?1783938343"
     }
 }
