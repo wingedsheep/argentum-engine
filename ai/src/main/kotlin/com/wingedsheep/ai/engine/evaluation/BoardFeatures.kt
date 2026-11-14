@@ -1,5 +1,6 @@
 package com.wingedsheep.ai.engine.evaluation
 
+import com.wingedsheep.engine.mechanics.targeting.UntargetableByRules
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.ai.engine.OpponentAggregate
 import com.wingedsheep.ai.engine.PlaneswalkerThreat
@@ -866,6 +867,11 @@ object BoardPresence : BoardFeature {
         if (Keyword.HEXPROOF.name in keywords) value += 1.5
         if (Keyword.SHROUD.name in keywords) value += 1.2
         if (Keyword.PROTECTION.name in keywords) value += 1.0
+        // "Can't be the target of non<color> spells or abilities from non<color> sources" (Gaea's
+        // Revenge): shroud against every colour but one, colorless included; "… of <color> spells
+        // …" (Rebel Informer) shuts out a single colour's removal.
+        if (keywords.any { it in UntargetableByRules.NON_COLOR_SOURCE_KEYWORDS }) value += 1.2
+        else if (keywords.any { it in UntargetableByRules.COLOR_SOURCE_KEYWORDS }) value += 0.3
 
         // ── Drawbacks ──
         if (Keyword.DEFENDER.name in keywords) value -= power * 0.8 // can't attack, power mostly wasted

@@ -370,7 +370,8 @@ internal class ResolutionTargetValidator(
 
         // CantBeTargetedBy (Tetsuo Umezawa) — read against the face on the stack.
         if (UntargetableByRules.targetingError(
-                state, target.entityId, sourceId, targetingSourceType, requirement, sourceSubtypes.ifEmpty { null }
+                state, target.entityId, sourceId, targetingSourceType, requirement, sourceSubtypes.ifEmpty { null },
+                sourceColors.mapTo(mutableSetOf()) { it.name }
             ) != null
         ) {
             return false

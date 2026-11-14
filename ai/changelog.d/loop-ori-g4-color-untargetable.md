@@ -1,0 +1,1 @@
+- #4664 The AI now prices a creature that can't be the target of non<color> (or <color>) spells and abilities (Gaea's Revenge) as nearly-shrouded in play, and reads the static as part of its body instead of an unrecognised ability

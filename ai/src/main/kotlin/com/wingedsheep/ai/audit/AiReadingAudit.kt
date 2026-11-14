@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
+import com.wingedsheep.sdk.scripting.CantBeTargetedBy
 import com.wingedsheep.sdk.scripting.AlternativeCrewCost
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.CompositeStaticAbility
@@ -285,6 +286,10 @@ object AiReadingAudit {
         // crew cost" (Heart of Kiran): another way to pay its crew, offered as its own crew action
         // and read by VehicleBody as the Vehicle being crewable — part of the Vehicle's body.
         is AlternativeCrewCost -> true
+        // "This creature can't be the target of nongreen spells or abilities from nongreen
+        // sources" (Gaea's Revenge): untargetability on itself, part of its body like hexproof —
+        // projected as a keyword the board evaluator prices.
+        is CantBeTargetedBy -> static.filter.scope == Scope.Self
         is ConditionalStaticAbility -> isBodyStatic(static.ability)
         is CompositeStaticAbility -> static.abilities.isNotEmpty() && static.abilities.all(::isBodyStatic)
         else -> false
