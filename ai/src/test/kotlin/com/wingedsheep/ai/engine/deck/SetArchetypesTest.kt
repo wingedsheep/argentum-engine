@@ -26,6 +26,30 @@ class SetArchetypesTest : StringSpec({
         synergies.archetypes.map { it.colors.toSet() } shouldContainExactly ALL_COLOR_PAIRS.toList()
     }
 
+    "Battle for Zendikar exposes its ten signpost colour-pair archetypes, three of them Ally tribal" {
+        val synergies = requireNotNull(SetArchetypes.getForSet("bfz"))
+
+        synergies.setName shouldBe "Battle for Zendikar"
+        synergies.archetypes.map { it.name } shouldContainExactly listOf(
+            "Awaken Control",
+            "Ingest Processors",
+            "Colorless Aggro",
+            "Landfall",
+            "Allies Go-Wide",
+            "Allies Drain",
+            "Devoid Spells",
+            "Eldrazi Scion Ramp",
+            "Allies Aggro",
+            "Converge Ramp",
+        )
+        synergies.archetypes.map { it.colors.toSet() } shouldContainExactly ALL_COLOR_PAIRS.toList()
+        synergies.archetypes.filter { it.creatureTypes.isNotEmpty() }.map { it.name to it.creatureTypes } shouldContainExactly listOf(
+            "Allies Go-Wide" to listOf("Ally"),
+            "Allies Drain" to listOf("Ally"),
+            "Allies Aggro" to listOf("Ally"),
+        )
+    }
+
     "Amonkhet exposes its ten signpost colour-pair archetypes" {
         val synergies = requireNotNull(SetArchetypes.getForSet("akh"))
 
