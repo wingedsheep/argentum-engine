@@ -5150,6 +5150,73 @@
     ]
 }
 
+// Helm of the Gods
+{
+    "name": "Helm of the Gods",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+1 for each enchantment you control.\nEquip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Helm of the Gods:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "enchantment"
+                },
+                "toughnessBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "enchantment"
+                }
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "RARE",
+        "artist": "Anthony Palumbo",
+        "flavorText": "Its blessings are as numerous as the stars of Nyx.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1ba006c8-0ffc-4e68-9a55-c7b842d3add9.jpg?1783938309"
+    }
+}
+
 // Herald of the Pantheon
 {
     "name": "Herald of the Pantheon",
@@ -7084,6 +7151,162 @@
     ]
 }
 
+// Mage-Ring Network
+{
+    "name": "Mage-Ring Network",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{1}, {T}: Put a storage counter on this land.\n{T}, Remove any number of storage counters from this land: Add {C} for each storage counter removed this way.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mage-Ring Network:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Mage-Ring Network:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "STORAGE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "{1}, {T}: Put a storage counter on this land."
+            },
+            {
+                "id": "Mage-Ring Network:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "STORAGE",
+                                "count": "XValue",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": "XValue"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}, Remove any number of storage counters from this land: Add {C} for each storage counter removed this way."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "249",
+        "rarity": "UNCOMMON",
+        "artist": "Jung Park",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/4988180b-a374-43fd-b299-fb61c781df2e.jpg?1783938306"
+    }
+}
+
+// Mage-Ring Responder
+{
+    "name": "Mage-Ring Responder",
+    "manaCost": "{7}",
+    "typeLine": "Artifact Creature — Golem",
+    "oracleText": "This creature doesn't untap during your untap step.\n{7}: Untap this creature.\nWhenever this creature attacks, it deals 7 damage to target creature defending player controls.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "flags": [
+        "DOESNT_UNTAP"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mage-Ring Responder:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 7
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "controllerPredicate": {
+                                "type": "ControlledByReferencedPlayer",
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "DefendingPlayer"
+                                }
+                            }
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Mage-Ring Responder:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{7}"
+                    }
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "Self",
+                    "tap": false
+                },
+                "descriptionOverride": "{7}: Untap this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "232",
+        "rarity": "RARE",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c60473d-5065-4e63-bfc2-a041a8ca48ed.jpg?1783938309"
+    },
+    "colorIdentityOverride": []
+}
+
 // Magmatic Insight
 {
     "name": "Magmatic Insight",
@@ -8179,6 +8402,50 @@
     ]
 }
 
+// Orbs of Warding
+{
+    "name": "Orbs of Warding",
+    "manaCost": "{5}",
+    "typeLine": "Artifact",
+    "oracleText": "You have hexproof. (You can't be the target of spells or abilities your opponents control.)\nIf a creature would deal damage to you, prevent 1 of that damage.",
+    "script": {
+        "staticAbilities": [
+            "GrantHexproofToController"
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "amount": 1,
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "You"
+                    },
+                    "source": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "234",
+        "rarity": "RARE",
+        "artist": "Johann Bodin",
+        "flavorText": "One orb to guard the body, one to protect the mind, and one to shield the soul.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c33ba4e5-217f-47e3-a6ce-f935a70c7566.jpg?1783938309",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "The damage prevention effects of multiple Orbs of Warding are cumulative."
+            }
+        ]
+    }
+}
+
 // Outland Colossus
 {
     "name": "Outland Colossus",
@@ -8585,6 +8852,51 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Prism Ring
+{
+    "name": "Prism Ring",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "As this artifact enters, choose a color.\nWhenever you cast a spell of the chosen color, you gain 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Prism Ring:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "SharesChosenColorWithSource"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Whenever you cast a spell of the chosen color, you gain 1 life."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "COLOR"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "235",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "Wear it on your dominant hand and it will follow your lead.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/403f99de-493a-4f0f-81e4-fcd29d6e9340.jpg?1783938308"
+    }
 }
 
 // Psychic Rebuttal
@@ -9012,6 +9324,75 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Reclusive Artificer
+{
+    "name": "Reclusive Artificer",
+    "manaCost": "{2}{U}{R}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "Haste (This creature can attack and {T} as soon as it comes under your control.)\nWhen this creature enters, you may have it deal damage to target creature equal to the number of artifacts you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Reclusive Artificer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "artifact"
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "216",
+        "rarity": "UNCOMMON",
+        "artist": "Cynthia Sheppard",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/5299a549-06cf-47e8-b6cd-7e44d9f1efb8.jpg?1783938313",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Count the number of artifacts you control as Reclusive Artificer's triggered ability resolves to determine how much damage it deals."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If you are the only player who controls a creature when Reclusive Artificer's second ability triggers, you must choose one of those creatures as the target, although you can choose to not deal it damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
     ]
 }
 
@@ -9678,6 +10059,98 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Sigil of Valor
+{
+    "name": "Sigil of Valor",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Whenever equipped creature attacks alone, it gets +1/+1 until end of turn for each other creature you control.\nEquip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sigil of Valor:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        "AttacksAlone"
+                    ]
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeTriggeringEntity": true
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "TriggeringEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever equipped creature attacks alone, it gets +1/+1 until end of turn for each other creature you control."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Sigil of Valor:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "239",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f134f242-cbb5-4a3d-bfd4-46e8b8669b4b.jpg?1783938307",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Count the number of creatures you control other than the equipped creature as Sigil of Valor's ability resolves to determine the amount of the bonus. Once the ability resolves, the bonus won't change, even if the number of creatures you control does."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "A creature attacks alone if it's the only creature declared as an attacker during the declare attackers step (including creatures controlled by your teammates, if applicable). For example, Sigil of Valor's ability won't trigger if you attack with multiple creatures and all but one of them are removed from combat."
+            }
+        ]
+    }
 }
 
 // Skyraker Giant
