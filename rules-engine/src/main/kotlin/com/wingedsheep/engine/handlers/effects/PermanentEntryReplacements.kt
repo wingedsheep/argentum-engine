@@ -537,7 +537,7 @@ object PermanentEntryReplacements {
         when (question.choiceType) {
             ChoiceType.CREATURE_ON_BATTLEFIELD -> (response as? CardsSelectedResponse)?.selectedCards?.isEmpty() == true
             // A revealed-hands name choice with nothing to name only asked to acknowledge.
-            ChoiceType.CARD_NAME -> question.cardNames.isEmpty() && response is OptionChosenResponse
+            ChoiceType.CARD_NAME -> question.cardNames.isEmpty() && (response as? OptionChosenResponse)?.optionIndex == 0
             else -> false
         }
 

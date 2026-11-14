@@ -105,6 +105,20 @@ class AlhammarretHighArbiterScenarioTest : ScenarioTestBase() {
                 game.state.getEntity(game.alhammarret())?.chosenCardName() shouldBe null
             }
             game.state.pendingDecision shouldBe null
+
+        }
+
+        test("with no name chosen, an opponent's spells are not stopped") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardOnBattlefield(1, "Alhammarret, High Arbiter")
+                .withCardInHand(2, "Lightning Bolt")
+                .withLandsOnBattlefield(2, "Mountain", 1)
+                .withActivePlayer(2)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            game.state.getEntity(game.alhammarret())?.chosenCardName() shouldBe null
+            game.castSpellTargetingPlayer(2, "Lightning Bolt", 1).error shouldBe null
         }
 
         test("an empty opposing hand reveals nothing and asks nothing") {

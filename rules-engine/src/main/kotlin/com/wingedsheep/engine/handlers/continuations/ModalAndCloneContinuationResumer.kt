@@ -953,7 +953,12 @@ class ModalAndCloneContinuationResumer(
                     return ExecutionResult.error(state, "Expected option chosen response for card name choice")
                 }
                 // A revealed-hands choice with nothing to name only asked to acknowledge the reveal.
-                if (continuation.cardNames.isEmpty()) state else {
+                if (continuation.cardNames.isEmpty()) {
+                    if (response.optionIndex != 0) {
+                        return ExecutionResult.error(state, "Invalid acknowledgement index: ${response.optionIndex}")
+                    }
+                    state
+                } else {
                     val chosenName = continuation.cardNames.getOrNull(response.optionIndex)
                         ?: return ExecutionResult.error(state, "Invalid card name index: ${response.optionIndex}")
                     state.updateEntity(spellId) { c ->
