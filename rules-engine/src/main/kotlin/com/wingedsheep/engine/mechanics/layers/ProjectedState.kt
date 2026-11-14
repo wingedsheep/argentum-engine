@@ -308,6 +308,18 @@ class ProjectedState(
             .toSet()
     }
 
+    /**
+     * Every `CANT_BE_TARGETED_BY_*` keyword some permanent has — the projected form of
+     * `CantBeTargetedBy` qualities, among others. Empty in virtually every game; computed once per
+     * projection so a targeting attempt can skip its per-candidate check when nothing could block it.
+     */
+    val cantBeTargetedByKeywordsInPlay: Set<String> by lazy {
+        projectedValues.values.asSequence()
+            .flatMap { it.keywords.asSequence() }
+            .filter { it.startsWith("CANT_BE_TARGETED_BY_") }
+            .toSet()
+    }
+
     fun hasKeyword(entityId: EntityId, keyword: String): Boolean =
         getKeywords(entityId).contains(keyword)
 

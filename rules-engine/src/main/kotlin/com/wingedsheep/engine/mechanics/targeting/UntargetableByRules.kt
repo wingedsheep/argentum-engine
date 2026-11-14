@@ -75,9 +75,10 @@ object UntargetableByRules {
 
     /**
      * The keywords that bar a target from a spell or ability from [sourceId] choosing it for
-     * [requirement]. Empty when nothing could apply (an unknown source), so callers skip the
-     * per-candidate check. An ANY-typed caller is resolved to "spell" only when the source is a
-     * spell on the stack; otherwise the restriction is never applied on a guess.
+     * [requirement], narrowed to those some permanent actually has. Empty — the common case — when
+     * nothing could apply, so callers skip the per-candidate check. An ANY-typed caller is resolved
+     * to "spell" only when the source is a spell on the stack; otherwise a spell-only restriction is
+     * never applied on a guess.
      *
      * [spellSubtypes] is the face actually being cast, when the caller knows it — a disturb card
      * cast as its Aura back (Lanterns' Lift) is still its front face on the entity. Null falls back
@@ -96,6 +97,21 @@ object UntargetableByRules {
         requirement: TargetRequirement?,
         spellSubtypes: Set<String>? = null,
         sourceColors: Set<String>? = null
+    ): List<String> {
+        // Nothing in play carries a CantBeTargetedBy quality — the common case — so nothing blocks.
+        val inPlay = state.projectedState.cantBeTargetedByKeywordsInPlay
+        if (inPlay.isEmpty()) return emptyList()
+        return candidateKeywords(state, sourceId, targetingSourceType, requirement, spellSubtypes, sourceColors)
+            .filter { it in inPlay }
+    }
+
+    private fun candidateKeywords(
+        state: GameState,
+        sourceId: EntityId?,
+        targetingSourceType: TargetingSourceType,
+        requirement: TargetRequirement?,
+        spellSubtypes: Set<String>?,
+        sourceColors: Set<String>?
     ): List<String> {
         val colorNames = sourceColors?.takeIf { it.isNotEmpty() }
             ?: sourceId?.takeIf { state.hasEntity(it) }?.let { state.projectedState.colorsOf(it) }
