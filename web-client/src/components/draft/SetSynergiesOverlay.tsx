@@ -3308,7 +3308,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Lands Ramp',
         colors: ['R', 'G'],
         keyCard: 'Zendikar Incarnate',
-        description: 'Ramp with mana creatures and land search into big green and red bodies whose size scales with your lands, like Zendikar Incarnate. A stompy midrange deck that overpowers the ground.',
+        description: 'Ramp with mana creatures and land search into big green and red bodies, topped by Zendikar Incarnate, whose power is your land count. A stompy midrange deck that overpowers the ground.',
       },
       {
         name: 'Renown',
@@ -3326,13 +3326,13 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Artifacts',
         colors: ['U', 'R'],
         keyCard: 'Reclusive Artificer',
-        description: 'Build up artifacts and Thopter tokens, then cash them in for damage and value with payoffs like Reclusive Artificer. A tempo deck that flies over blockers and burns what it can\'t fly past.',
+        description: 'Build up artifacts and Thopter tokens, then turn your artifact count into damage and value with payoffs like Reclusive Artificer. A tempo deck that flies over blockers and burns what it can\'t fly past.',
       },
       {
         name: 'Elves',
         colors: ['B', 'G'],
         keyCard: 'Shaman of the Pack',
-        description: 'Fill the board with Elves that ramp and pump each other, then drain the opponent for each Elf with Shaman of the Pack. A tribal midrange deck that pays off a wide board of Elves.',
+        description: 'Fill the board with Elves that ramp and pump each other, then make the opponent lose life for each Elf with Shaman of the Pack. A tribal midrange deck that pays off a wide board of Elves.',
         creatureTypes: ['Elf'],
       },
       {
