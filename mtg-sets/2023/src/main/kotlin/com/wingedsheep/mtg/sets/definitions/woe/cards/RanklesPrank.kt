@@ -23,9 +23,9 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * may be chosen even when it will do nothing to anyone (2023-09-01 ruling).
  *
  * Chosen modes resolve in printed order (CR 608.2c), so a player who discards their hand to the
- * first mode has nothing left when the third mode asks for creatures. Both the discard and the
- * edict make their choices per player in turn order rather than fully simultaneously — see
- * [com.wingedsheep.sdk.dsl.HandPatterns.eachPlayerDiscards] for that deviation.
+ * first mode has nothing left when the third mode asks for creatures. The discard mode has every
+ * player choose in turn order before the chosen cards are discarded at the same time, as the
+ * 2023-09-01 ruling describes ([com.wingedsheep.sdk.dsl.HandPatterns.eachPlayerDiscards]).
  */
 val RanklesPrank = card("Rankle's Prank") {
     manaCost = "{2}{B}{B}"

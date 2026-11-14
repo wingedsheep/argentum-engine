@@ -155,10 +155,10 @@ object HandPatterns {
                             prompt = "Choose ${if (count == 1) "a card" else "$count cards"} to discard"
                         )
                     ),
-                    collectCollections = mapOf("chosenToDiscard" to "discarded")
+                    collectCollections = mapOf("chosenToDiscard" to "discarded_by_each_player")
                 ),
                 MoveCollectionEffect(
-                    from = "discarded",
+                    from = "discarded_by_each_player",
                     destination = CardDestination.ToZone(Zone.GRAVEYARD),
                     moveType = MoveType.Discard
                 )
@@ -167,9 +167,8 @@ object HandPatterns {
 
     /**
      * "Each player puts a card from their hand on top of their library" — Sadistic Augermage's dies
-     * trigger. The same [ForEachPlayerEffect] shape as [eachPlayerDiscards] in **APNAP order**
-     * (CR 101.4), with the destination swapped from the graveyard to the top of the iterated
-     * player's own library: `Player.You` rebinds per iteration, so each player gathers *their own*
+     * trigger. A [ForEachPlayerEffect] in **APNAP order** (CR 101.4), gathering, choosing and
+     * moving within each iteration, the card going to the top of the iterated player's own library: `Player.You` rebinds per iteration, so each player gathers *their own*
      * hand, chooses their own card, and it lands on top of *their own* library.
      *
      * [MoveType.Default], not [MoveType.Discard] — a card put on top of a library is not discarded,

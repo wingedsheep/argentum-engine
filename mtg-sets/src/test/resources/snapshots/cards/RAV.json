@@ -9846,12 +9846,12 @@
                                         ]
                                     },
                                     "collectCollections": {
-                                        "chosenToDiscard": "discarded"
+                                        "chosenToDiscard": "discarded_by_each_player"
                                     }
                                 },
                                 {
                                     "type": "MoveCollection",
-                                    "from": "discarded",
+                                    "from": "discarded_by_each_player",
                                     "destination": {
                                         "type": "ToZone",
                                         "zone": "Graveyard"
