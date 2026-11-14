@@ -2969,6 +2969,8 @@ enum class ChoiceType {
  *   an artifact card name").
  * - [NONARTIFACT_NONLAND] — every registered card name that is neither an artifact nor a land (Lost
  *   Legacy: "choose a nonartifact, nonland card name").
+ * - [CREATURE] — every registered card name whose type line includes Creature (Infinite
+ *   Obliteration: "choose a creature card name").
  * - [ANY] — every registered card name (Sorcerous Spyglass / Pithing Needle: "choose any card
  *   name"). The chosen name is still stored under [com.wingedsheep.sdk.scripting.ChoiceSlot.CARD_NAME]
  *   and read the same way; only the offered option set differs.
@@ -2979,6 +2981,7 @@ enum class CardNamePool {
     NONBASIC_LAND,
     ARTIFACT,
     NONARTIFACT_NONLAND,
+    CREATURE,
     ANY;
 
     /** The Oracle noun phrase for a name from this pool — "a nonbasic land card name". */
@@ -2989,6 +2992,7 @@ enum class CardNamePool {
             NONBASIC_LAND -> "a nonbasic land card name"
             ARTIFACT -> "an artifact card name"
             NONARTIFACT_NONLAND -> "a nonartifact, nonland card name"
+            CREATURE -> "a creature card name"
             ANY -> "a card name"
         }
 

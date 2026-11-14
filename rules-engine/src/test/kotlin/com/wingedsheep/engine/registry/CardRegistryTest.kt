@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.scripting.CardNamePool
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CharacteristicValue
+import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.ScryfallMetadata
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactly
@@ -41,6 +42,13 @@ class CardRegistryTest : FunSpec({
         name = name,
         manaCost = ManaCost.ZERO,
         typeLine = TypeLine.parse(typeLine),
+    )
+
+    fun typedCreature(name: String, typeLine: String) = CardDefinition(
+        name = name,
+        manaCost = ManaCost.ZERO,
+        typeLine = TypeLine.parse(typeLine),
+        creatureStats = CreatureStats(1, 1),
     )
 
     fun power(card: CardDefinition?) = card?.creatureStats?.power
@@ -136,5 +144,15 @@ class CardRegistryTest : FunSpec({
 
         live.cardNamesIn(CardNamePool.NONARTIFACT_NONLAND) shouldContainExactly listOf("Grizzly Bears")
         overlay.cardNamesIn(CardNamePool.NONARTIFACT_NONLAND) shouldContainExactlyInAnyOrder listOf("Grizzly Bears", "Hill Giant")
+    }
+
+    test("the creature pool offers creature names, artifact creatures included, across both layers") {
+        val live = CardRegistry().apply {
+            register(listOf(forest(), land("Darksteel Relic", "Artifact"), typedCreature("Dryad Arbor", "Land Creature — Forest Dryad"), bear("Grizzly Bears", 2)))
+        }
+        val overlay = CardRegistry(parent = live).apply { register(typedCreature("Ornithopter", "Artifact Creature — Thopter")) }
+
+        live.cardNamesIn(CardNamePool.CREATURE) shouldContainExactlyInAnyOrder listOf("Grizzly Bears", "Dryad Arbor")
+        overlay.cardNamesIn(CardNamePool.CREATURE) shouldContainExactlyInAnyOrder listOf("Grizzly Bears", "Dryad Arbor", "Ornithopter")
     }
 })
