@@ -17,6 +17,11 @@ import com.wingedsheep.sdk.model.EntityId
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
+/**
+ * Chandra's Fury — "Chandra's Fury deals 4 damage to target player or planeswalker and 1 damage to each
+ * creature that player or that planeswalker's controller controls." Only the player or planeswalker is
+ * targeted, so hexproof creatures still take the 1 damage.
+ */
 class ChandrasFuryScenarioTest : FunSpec({
     val hexproofBear = card("Fury Test Hexproof Bear") {
         manaCost = "{1}{G}"

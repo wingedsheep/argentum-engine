@@ -30,7 +30,7 @@ class EmbermawHellionScenarioTest : ScenarioTestBase() {
     private fun combat(vararg attackers: String, secondHellion: Boolean = false) = scenario()
         .withPlayers("Player", "Opponent")
         .withCardOnBattlefield(1, "Embermaw Hellion", summoningSickness = false)
-        .apply { if (secondHellion) withCardOnBattlefield(1, "Embermaw Hellion") }
+        .apply { if (secondHellion) withCardOnBattlefield(1, "Embermaw Hellion", summoningSickness = false) }
         .apply { attackers.forEach { withCardOnBattlefield(1, it, summoningSickness = false) } }
         .withCardInLibrary(1, "Mountain")
         .withCardInLibrary(2, "Mountain")
