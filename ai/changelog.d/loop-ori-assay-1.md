@@ -1,1 +1,1 @@
-- #TBD Drafts and builds Magic Origins decks from a first-party pick-rating and removal table instead of guessing every ORI card from the effect heuristic
+- #4659 Drafts and builds Magic Origins decks from a first-party pick-rating and removal table instead of guessing every ORI card from the effect heuristic
