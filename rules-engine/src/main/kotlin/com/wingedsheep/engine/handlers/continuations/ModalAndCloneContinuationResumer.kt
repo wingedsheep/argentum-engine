@@ -189,7 +189,7 @@ class ModalAndCloneContinuationResumer(
         val decoded = com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
             .decodeEntersChoice(state, continuation.question, response)
         if (decoded == null && !com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
-                .isDeclinedEntersChoice(continuation.question.choiceType, response)
+                .isDeclinedEntersChoice(continuation.question, response)
         ) {
             return ExecutionResult.error(state, "Unexpected response for ${continuation.question.choiceType} choice")
         }
@@ -834,7 +834,7 @@ class ModalAndCloneContinuationResumer(
                     continuation.fromZone,
                     carryEvents = outEvents,
                     cardNameOptions = if (choice.choiceType == com.wingedsheep.sdk.scripting.ChoiceType.CARD_NAME) {
-                        services.cardRegistry.cardNamesIn(choice.cardNamePool).toList()
+                        com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements.cardNameOptions(newState, services.cardRegistry, continuation.controllerId, choice)
                     } else emptyList(),
                     entryOldObject = continuation.entryOldObject, entryNewObject = continuation.entryNewObject,
                     copyOfOriginalName = copyOfOriginalName,
@@ -952,10 +952,13 @@ class ModalAndCloneContinuationResumer(
                 if (response !is OptionChosenResponse) {
                     return ExecutionResult.error(state, "Expected option chosen response for card name choice")
                 }
-                val chosenName = continuation.cardNames.getOrNull(response.optionIndex)
-                    ?: return ExecutionResult.error(state, "Invalid card name index: ${response.optionIndex}")
-                state.updateEntity(spellId) { c ->
-                    c.withCastChoice(ChoiceSlot.CARD_NAME, ChoiceValue.TextChoice(chosenName))
+                // A revealed-hands choice with nothing to name only asked to acknowledge the reveal.
+                if (continuation.cardNames.isEmpty()) state else {
+                    val chosenName = continuation.cardNames.getOrNull(response.optionIndex)
+                        ?: return ExecutionResult.error(state, "Invalid card name index: ${response.optionIndex}")
+                    state.updateEntity(spellId) { c ->
+                        c.withCastChoice(ChoiceSlot.CARD_NAME, ChoiceValue.TextChoice(chosenName))
+                    }
                 }
             }
             com.wingedsheep.sdk.scripting.ChoiceType.NUMBER -> {
@@ -1110,7 +1113,7 @@ class ModalAndCloneContinuationResumer(
         val decoded = com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
             .decodeEntersChoice(state, continuation, response)
         if (decoded == null && !com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
-                .isDeclinedEntersChoice(continuation.choiceType, response)
+                .isDeclinedEntersChoice(continuation, response)
         ) {
             return ExecutionResult.error(state, "Unexpected response for ${continuation.choiceType} choice")
         }
@@ -1177,7 +1180,7 @@ class ModalAndCloneContinuationResumer(
             com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements.pauseForEntersWithChoice(
                 newState, entityId, continuation.controllerId, cardComponent!!, nextChoice, continuation.fromZone,
                 cardNameOptions = if (nextChoice.choiceType == com.wingedsheep.sdk.scripting.ChoiceType.CARD_NAME) {
-                    services.cardRegistry.cardNamesIn(nextChoice.cardNamePool).toList()
+                    com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements.cardNameOptions(newState, services.cardRegistry, continuation.controllerId, nextChoice)
                 } else emptyList(),
                 entryOldObject = continuation.entryOldObject, entryNewObject = continuation.entryNewObject,
                 copyOfOriginalName = continuation.copyOfOriginalName,

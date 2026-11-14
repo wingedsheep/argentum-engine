@@ -724,7 +724,7 @@ class PlayLandHandler(
                         entryNewObject = enteredObject,
                         carryEvents = events,
                         cardNameOptions = if (firstChoice.choiceType == ChoiceType.CARD_NAME) {
-                            cardRegistry.cardNamesIn(firstChoice.cardNamePool).toList()
+                            com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements.cardNameOptions(newState, cardRegistry, action.playerId, firstChoice)
                         } else emptyList(),
                         syntheticRiot = firstChoice === syntheticRiotChoice,
                         syntheticRiotRemaining = if (firstChoice === syntheticRiotChoice) grantedRiotCount - 1 else 0,

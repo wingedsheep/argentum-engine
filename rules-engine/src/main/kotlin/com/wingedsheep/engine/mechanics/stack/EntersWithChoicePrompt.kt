@@ -347,15 +347,14 @@ internal class EntersWithChoicePrompt(
         // (Sorcerous Spyglass / Pithing Needle) as the permanent spell resolves. The pool
         // is land names or every registered card name per [EntersWithChoice.cardNamePool];
         // the chosen name is stored durably under [ChoiceSlot.CARD_NAME] by the resumer.
-        val cardNames = cardRegistry.cardNamesIn(choice.cardNamePool).sorted()
-        if (cardNames.isEmpty()) return null
-        // "As this enters, look at an opponent's hand, then …": reveal the opponent's hand
-        // to the controller before presenting the name choice.
-        val (baseState, lookEvents) = if (choice.lookAtOpponentHand) {
-            com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
-                .revealOpponentHandForEntersChoice(state, controllerId)
-        } else state to emptyList()
-        val prompt = choice.cardNamePool.prompt
+        val entry = com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
+        val cardNames = entry.cardNameOptions(state, cardRegistry, controllerId, choice).sorted()
+        val nothingToName = cardNames.isEmpty() && entry.revealedNothingToName(state, controllerId, choice)
+        if (cardNames.isEmpty() && !nothingToName) return null
+        // "Look at an opponent's hand, then …" / "each opponent reveals their hand": reveal
+        // before presenting the name choice.
+        val (baseState, lookEvents) = entry.revealForCardNameChoice(state, controllerId, choice)
+        val prompt = if (nothingToName) entry.nothingToNamePrompt(choice.cardNamePool) else choice.cardNamePool.prompt
         val continuation = EntersWithChoiceSpellContinuation(
             spellId = spellId,
             controllerId = controllerId,
@@ -374,7 +373,7 @@ internal class EntersWithChoicePrompt(
                         sourceName = cardComponent.name,
                         phase = DecisionPhase.RESOLUTION
                     ),
-                    options = cardNames
+                    options = if (nothingToName) listOf(entry.NOTHING_TO_NAME_OPTION) else cardNames
                 )
             },
             answer = continuation,
