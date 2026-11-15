@@ -1598,6 +1598,7 @@ serialized shape; the facade for each is:
 | `AttachEquipmentEffect` | `Effects.AttachEquipment` |
 | `AttachToChosenHostEffect` | `Effects.AttachToChosenHost` |
 | `BecomeArtifactEffect` | `Effects.BecomeArtifact` |
+| `BecomeAuraEffect` | `Effects.BecomeAura(enchant, attachTo)` |
 | `BecomeCreatureEffect` | `Effects.BecomeCreature` |
 | `BecomeCreatureTypeEffect` | `Effects.BecomeCreatureType` |
 | `BudgetModalEffect` | `Effects.BudgetModal` |
@@ -4559,6 +4560,19 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   run(CreateDelayedTrigger(trigger = Triggers.self.leaves(), watchedTarget = Self, fireOnce = true,
   expiry = Never, carryCollections = [returned.key], effect = SacrificeTarget(returned.asTarget,
   sacrificedByItsController = true))) } }` + `staticAbility { ModifyStats(-1, 0) }`.
+- `BecomeAuraEffect(enchant, attachTo)` — facade `Effects.BecomeAura(enchant, attachTo)`. "It becomes an
+  Aura with enchant creature. … attach this enchantment to it": the **source permanent**, already on the
+  battlefield, becomes an Enchantment — Aura for as long as it stays there (layer 4 sets its card types and
+  subtypes) whose whole enchant ability is `enchant`, keeping its own abilities — so its printed
+  "Enchanted creature has …" static starts working once it is attached. It is then attached (untargeted) to
+  `attachTo` if it can legally enchant it (`AttachmentMover.canAttach`: the new enchant ability, protection,
+  "can't be enchanted"); otherwise it stays an unattached Aura and the CR 704.5m SBA puts it into the
+  graveyard. A no-op once the source has left the battlefield — the rest of the ability still happens.
+  Unlike `EnchantPutOntoBattlefield` the source needn't already be an Aura and its new enchant ability names
+  no particular object; unlike `PutOntoBattlefieldAsAura` nothing changes zones. **Cloudform** (the FRF
+  "Form" cycle): `triggeredAbility { trigger = Triggers.self.enters(); effect = Patterns.Library.manifest()
+  then Effects.BecomeAura(GameObjectFilter.Creature, attachTo = EffectTarget.PipelineTarget("manifested")) }`
+  + `staticAbility { GrantKeyword(Keyword.FLYING) }`.
 - `UnattachEquipmentEffect(target = Self)` — facade `Effects.UnattachEquipment(target)`. The inverse of
   the attach effects: **unattach** an Aura/Equipment from its host *without moving zones* (CR 701.3d) —
   clears the attachment's `AttachedToComponent` and drops it from the host's attachment list, emitting

@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.StaticAbility
+import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.serialization.CardSerialization
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -122,6 +123,9 @@ object CardLinter {
     }
 
     /** Serial names of the effects that put mana into a pool (CR 605.1a's "could add mana"). */
+    /** Serial name of the effect that turns its source permanent into an Aura (`BecomeAuraEffect`). */
+    private val BECOMES_AURA = setOf("BecomeAura")
+
     private val MANA_ADDING_EFFECTS = setOf(
         "AddMana",
         "AddColorlessMana",
@@ -400,7 +404,8 @@ object CardLinter {
      * Attachability is judged across the whole physical card — either side of a DFC and any
      * [com.wingedsheep.sdk.model.CardFace] counts — so a creature that transforms into an Aura is
      * not flagged for the attach-scope abilities on its other face. Bestow also permits attachment
-     * despite the printed creature type: its alternative cast makes the card an Aura.
+     * despite the printed creature type: its alternative cast makes the card an Aura — and so does
+     * an ability of the card's own that makes it one (`BecomeAuraEffect`, the Fate Reforged Forms).
      */
     private fun checkAttachedScope(
         card: CardDefinition,
@@ -478,7 +483,13 @@ object CardLinter {
             typeLine.isAura || typeLine.isEquipment || typeLine.isFortification ||
                 // A card can carry the target/cost without the subtype; CardValidator reports that
                 // mismatch on its own, and this check has no business double-reporting it.
-                script.auraTarget != null
+                script.auraTarget != null ||
+                // "When this enchantment enters, it becomes an Aura with enchant creature" (the Fate
+                // Reforged Forms): an ability of its own makes the card an Aura, so its printed
+                // "enchanted creature has …" statics apply once that ability attaches it.
+                (script.triggeredAbilities.map { it.effect } + script.activatedAbilities.map { it.effect }).any {
+                    ownEffectContains(lintJson.encodeToJsonElement(Effect.serializer(), it), BECOMES_AURA)
+                }
 
         if (attaches(card.typeLine, card.script) || card.equipCost != null ||
             card.keywordAbilities.any { it is KeywordAbility.Bestow }) return true

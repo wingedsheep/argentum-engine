@@ -27,6 +27,7 @@ import com.wingedsheep.engine.handlers.effects.permanent.attachments.AttachEquip
 import com.wingedsheep.engine.handlers.effects.permanent.attachments.AttachTargetEquipmentToCreatureExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.attachments.AttachToChosenHostExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.attachments.UnattachEquipmentExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.attachments.BecomeAuraExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.attachments.EnchantPutOntoBattlefieldExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.attachments.GrantExileOnLeaveExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.control.ExchangeControlExecutor
@@ -224,6 +225,7 @@ class PermanentExecutors(
         AttachTargetEquipmentToCreatureExecutor(zones.predicateEvaluator, cardRegistry),
         AttachToChosenHostExecutor(zones.predicateEvaluator, cardRegistry),
         EnchantPutOntoBattlefieldExecutor(zones.predicateEvaluator, cardRegistry),
+        BecomeAuraExecutor(zones.predicateEvaluator, cardRegistry),
         UnattachEquipmentExecutor(),
         GrantExileOnLeaveExecutor(),
         // stats

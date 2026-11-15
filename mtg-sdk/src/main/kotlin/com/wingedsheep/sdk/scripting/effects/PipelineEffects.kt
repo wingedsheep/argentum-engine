@@ -1554,6 +1554,8 @@ data class MoveCollectionEffect(
         // `from` is an internal pipeline-collection key — never surface it to players.
         append(if ((destination as? CardDestination.ToZone)?.zone == Zone.BATTLEFIELD) "onto " else "into ")
         append(destination.description)
+        // Manifest / cloak: the card arrives as a face-down 2/2, which is the whole point of the move.
+        if (faceDown != null) append(" face down")
         // "under its owner's control" is a printed clause on every card that sets this flag
         // (Safe Haven, Oblivion Ring's cousins). Dropping it from the generated text loses the
         // one detail that distinguishes it from a plain return to the battlefield.

@@ -7497,6 +7497,17 @@ object Effects {
     ): Effect = com.wingedsheep.sdk.scripting.effects.EnchantPutOntoBattlefieldEffect(from.key, filter)
 
     /**
+     * "It becomes an Aura with enchant [enchant] … attach it to [attachTo]" — the source permanent
+     * becomes an Aura (keeping its other abilities) and attaches to [attachTo] if it legally can;
+     * otherwise it is left an unattached Aura for the state-based action (the Fate Reforged "Form"
+     * cycle). See [com.wingedsheep.sdk.scripting.effects.BecomeAuraEffect].
+     */
+    fun BecomeAura(
+        enchant: GameObjectFilter,
+        attachTo: EffectTarget
+    ): Effect = com.wingedsheep.sdk.scripting.effects.BecomeAuraEffect(enchant, attachTo)
+
+    /**
      * Unattach an Aura/Equipment from its host without moving zones (CR 701.3d). No-op if [target]
      * isn't currently attached. Inverse of [AttachEquipment] — e.g. Stolen Uniform's "unattach it".
      */

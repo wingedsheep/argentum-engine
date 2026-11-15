@@ -557,7 +557,15 @@ object SynergyAxes {
                 leaf.moveType == com.wingedsheep.sdk.scripting.effects.MoveType.Discard ||
                     (leaf.moveType == com.wingedsheep.sdk.scripting.effects.MoveType.Default && destination.zone == Zone.GRAVEYARD)
                 )
-            if (binsOwnCards) setOf(SynergyAxis.GRAVEYARD) else emptySet()
+            // Manifest / manifest dread / cloak: a card put onto our battlefield face down is a 2/2
+            // creature whatever it is — a body that enters and a body to sacrifice, though no token.
+            val manifestsOurBody = leaf.faceDown != null &&
+                destination?.zone == Zone.BATTLEFIELD && destination.player == Player.You
+            when {
+                manifestsOurBody -> setOf(SynergyAxis.CREATURES_ENTER, SynergyAxis.DEATH)
+                binsOwnCards -> setOf(SynergyAxis.GRAVEYARD)
+                else -> emptySet()
+            }
         }
         is GatherCardsEffect -> {
             val source = leaf.source

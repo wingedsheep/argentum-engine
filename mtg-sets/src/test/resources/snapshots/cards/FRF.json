@@ -611,6 +611,95 @@
     ]
 }
 
+// Cloudform
+{
+    "name": "Cloudform",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, it becomes an Aura with enchant creature. Manifest the top card of your library and attach this enchantment to it. (To manifest a card, put it onto the battlefield face down as a 2/2 creature. Turn it face up any time for its mana cost if it's a creature card.)\nEnchanted creature has flying and hexproof.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cloudform:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "manifested"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "manifested",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "faceDown": "MANIFEST"
+                        },
+                        {
+                            "type": "BecomeAura",
+                            "enchant": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ]
+                            },
+                            "attachTo": {
+                                "type": "PipelineTarget",
+                                "collectionName": "manifested"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "HEXPROOF"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "rarity": "UNCOMMON",
+        "artist": "Noah Bradley",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a7bb0f87-a0b3-4389-9580-63db449a2241.jpg?1783938707",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "You'll still manifest the top card of your library even if the \"Form\" isn't on the battlefield as its enters-the-battlefield ability resolves."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "If you have no cards in your library as the ability resolves, the \"Form\" will be put into its owner's graveyard as a state-based action."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "If the enchanted creature is turned face up, the \"Form\" will continue to enchant it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Collateral Damage
 {
     "name": "Collateral Damage",
@@ -2434,6 +2523,91 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Rageform
+{
+    "name": "Rageform",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, it becomes an Aura with enchant creature. Manifest the top card of your library and attach this enchantment to it. (To manifest a card, put it onto the battlefield face down as a 2/2 creature. Turn it face up any time for its mana cost if it's a creature card.)\nEnchanted creature has double strike. (It deals both first-strike and regular combat damage.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rageform:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "manifested"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "manifested",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "faceDown": "MANIFEST"
+                        },
+                        {
+                            "type": "BecomeAura",
+                            "enchant": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ]
+                            },
+                            "attachTo": {
+                                "type": "PipelineTarget",
+                                "collectionName": "manifested"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOUBLE_STRIKE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "UNCOMMON",
+        "artist": "Richard Wright",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/038ed726-bde8-46b0-bdf5-f88e2f074434.jpg?1783938685",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "You'll still manifest the top card of your library even if the \"Form\" isn't on the battlefield as its enters-the-battlefield ability resolves."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "If you have no cards in your library as the ability resolves, the \"Form\" will be put into its owner's graveyard as a state-based action."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "If the enchanted creature is turned face up, the \"Form\" will continue to enchant it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
