@@ -4222,6 +4222,38 @@
     ]
 }
 
+// Wardscale Dragon
+{
+    "name": "Wardscale Dragon",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nAs long as this creature is attacking, defending player can't cast spells.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "PlayersCantCastSpells",
+                "affected": "DefendingPlayer"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d4290215-3aec-40b8-aac5-e5c39c035cfe.jpg?1783938709"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Whisk Away
 {
     "name": "Whisk Away",

@@ -1218,7 +1218,8 @@ data class MayCastWithoutPayingManaCost(
  *
  *  - **who** — [affected], a [Player] reference interpreted *relative to this permanent's
  *    controller*: `EachOpponent` / `Opponent` (your opponents), `You` (the controller), `Each`
- *    (everyone).
+ *    (everyone), `EnchantedPlayer` (the player this Aura enchants), `DefendingPlayer` (the player
+ *    this creature is attacking — nobody while it isn't attacking; Wardscale Dragon).
  *  - **which** — [spellFilter], matched against the card being cast (card predicates work in any
  *    zone). Defaults to every spell.
  *  - **when** — [condition], evaluated in the controller's context, so `IsYourTurn` reads as
