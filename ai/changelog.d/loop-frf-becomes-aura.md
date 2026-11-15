@@ -1,1 +1,1 @@
-- #TBD The AI reads manifest and manifest dread as putting a creature body onto its battlefield, and the Fate Reforged Forms (Cloudform, Rageform) as that body enchanted
+- #4679 The AI reads manifest and manifest dread as putting a creature body onto its battlefield, and the Fate Reforged Forms (Cloudform, Rageform) as that body enchanted
