@@ -39,6 +39,13 @@ class ManifestReadingAiTest : ScenarioTestBase() {
             feeds shouldNotContain SynergyAxis.TOKENS
         }
 
+        test("manifesting a shuffled face-down pile still reads as making creature bodies of ours") {
+            // Jeskai Infiltrator: gather it and our top card, exile both face down, shufflePile, then
+            // manifest the pile — the pile carries the gathered cards on to the manifest.
+            tagsOf("Jeskai Infiltrator") shouldContain IntentTag.TOKEN_MAKER
+            SynergyAxes.of(cardRegistry.requireCard("Jeskai Infiltrator")).feeds shouldContain SynergyAxis.CREATURES_ENTER
+        }
+
         test("a manifest handed to the exiled creature's controller is no body of ours") {
             tagsOf("Reality Shift") shouldNotContain IntentTag.TOKEN_MAKER
         }

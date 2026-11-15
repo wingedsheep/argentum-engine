@@ -1091,6 +1091,7 @@ Families:
 - `SetLandTypeEffect(landType: String, target: EffectTarget, duration: Duration, fromChosenValueKey: String?)` — Set a target land's basic land subtype, replacing all of its existing land subtypes (Rule 305.7).
 - `SetLifeTotalEffect(amount: DynamicAmount, target: EffectTarget)` — Set a player's life total to a specific amount.
 - `ShuffleLibraryEffect(target: EffectTarget)` — Shuffle a player's library.
+- `ShufflePileEffect(from: List<String>, storeAs: String)` — "Exile it and the top card of your library **in a face-down pile, shuffle that pile**, then manifest those cards" (Jeskai Infiltrator): put the cards of every collection in from together into one p…
 - `SkipCombatPhasesEffect(target: EffectTarget)` — Target player skips their combat phases during their next turn.
 - `SkipNextTurnEffect(target: EffectTarget, count: DynamicAmount)` — Target player skips their next count turns.
 - `SkipStepOrPhaseEffect(part: TurnPart, duration: SkipDuration, target: EffectTarget)` — target skips part for duration: their next one (SkipDuration.NEXT) or every one left this turn (SkipDuration.THIS_TURN).

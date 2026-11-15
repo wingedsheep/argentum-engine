@@ -2,6 +2,7 @@ package com.wingedsheep.engine.view
 
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.ReidentifiedFromComponent
 import com.wingedsheep.engine.state.faceDownDisplayName
 import com.wingedsheep.sdk.model.EntityId
 import kotlinx.serialization.json.Json
@@ -22,7 +23,8 @@ import kotlinx.serialization.json.JsonPrimitive
  * [Visibility.cardNameFor] gives the viewer.
  *
  * It reads the state *after* the events. An object still face down there is still hidden; one
- * that left the battlefield was revealed as it went (CR 708.9), so its name may be shown.
+ * that left the battlefield was revealed as it went (CR 708.9), so its name may be shown. A card a
+ * face-down shuffle gave a fresh id ([ReidentifiedFromComponent]) is masked under its old ids too.
  */
 internal class FaceDownEventMasker(private val visibility: Visibility) {
 
@@ -37,11 +39,15 @@ internal class FaceDownEventMasker(private val visibility: Visibility) {
         state.entities.keys
             .filter { faceDownDisplayName(state, it) != null }
             .filter { visibility.isCardIdentityHiddenFrom(state, it, viewingPlayerId) }
-            .mapNotNull { id ->
-                val name = state.getEntity(id)?.get<CardComponent>()?.name ?: return@mapNotNull null
-                val label = visibility.cardNameFor(state, id, viewingPlayerId) ?: return@mapNotNull null
-                if (name == label) return@mapNotNull null
-                id.value to (wholeName(name) to label)
+            .flatMap { id ->
+                val entity = state.getEntity(id) ?: return@flatMap emptyList()
+                val name = entity.get<CardComponent>()?.name ?: return@flatMap emptyList()
+                val label = visibility.cardNameFor(state, id, viewingPlayerId) ?: return@flatMap emptyList()
+                if (name == label) return@flatMap emptyList()
+                // A card renamed by a face-down shuffle is still named by its old ids in the
+                // events of the action that shuffled it.
+                val ids = listOf(id) + entity.get<ReidentifiedFromComponent>()?.previousIds.orEmpty()
+                ids.map { it.value to (wholeName(name) to label) }
             }
             .toMap()
 

@@ -1,0 +1,1 @@
+- #PR Reads a manifest through a shuffled face-down pile (Jeskai Infiltrator) as making creature bodies of its own, so it feeds creatures-enter and death payoffs.

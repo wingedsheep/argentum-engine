@@ -16,6 +16,17 @@ import kotlinx.serialization.Serializable
 data object FaceDownComponent : Component
 
 /**
+ * The ids a hidden card carried before [com.wingedsheep.engine.state.GameState.reidentify] gave it
+ * a fresh one (a shuffled face-down pile — Jeskai Infiltrator). Server-side only: the events of the
+ * same action still name the old ids, and the face-down event masker reads this to hide the card's
+ * name in them too. Never sent to a client.
+ */
+@Serializable
+data class ReidentifiedFromComponent(
+    val previousIds: List<com.wingedsheep.sdk.model.EntityId>
+) : Component
+
+/**
  * One way a face-down permanent can be turned face up — a cost plus the mechanic whose rule
  * defines the procedure (CR 116.2b special action).
  *
