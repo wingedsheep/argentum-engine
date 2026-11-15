@@ -332,7 +332,7 @@ object AiCardRating {
         IntentTag.SPELL_TAX to "Taxes opponents' spells",
         IntentTag.OWN_SPELL_TAX to "Taxes its controller's own spells",
         IntentTag.COMBAT_RESTRICTION to "Combat restriction",
-        IntentTag.EXTRA_BLOCKING to "Blocks additional creatures",
+        IntentTag.EXTRA_BLOCKING to "Blocks more attackers",
     )
 
     private val SPEED_LABEL = mapOf(

@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.mechanics.combat.rules.BlockAsThoughReach
 import com.wingedsheep.engine.mechanics.combat.rules.LandwalkSuppression
 import com.wingedsheep.sdk.scripting.CantBeBlockedBy
 import com.wingedsheep.sdk.scripting.CantBlockCreaturesWithGreaterPower
@@ -50,9 +51,13 @@ object CombatMath {
         // Unblockable
         if (AbilityFlag.CANT_BE_BLOCKED.name in aKeywords) return false
 
-        // Flying: only blocked by flying or reach
+        // Flying: only blocked by flying or reach — or "as though it had reach" against this
+        // attacker (Dragon Hunter), read by the same helper the engine's FlyingRule uses.
         if (Keyword.FLYING.name in aKeywords) {
-            if (Keyword.FLYING.name !in bKeywords && Keyword.REACH.name !in bKeywords) return false
+            if (Keyword.FLYING.name !in bKeywords && Keyword.REACH.name !in bKeywords &&
+                (cardRegistry == null ||
+                    !BlockAsThoughReach.hasReachAgainst(state, blocker, attacker, cardRegistry, PredicateEvaluator(cardRegistry)))
+            ) return false
         }
 
         // Shadow: only blocked by shadow
@@ -231,9 +236,10 @@ object CombatMath {
         state: GameState,
         projected: ProjectedState,
         attacker: EntityId,
-        opponentBlockers: List<EntityId>
+        opponentBlockers: List<EntityId>,
+        cardRegistry: CardRegistry? = null,
     ): List<EntityId> {
-        return opponentBlockers.filter { canBeBlockedBy(state, projected, attacker, it) }
+        return opponentBlockers.filter { canBeBlockedBy(state, projected, attacker, it, cardRegistry) }
     }
 
     /**
@@ -243,11 +249,12 @@ object CombatMath {
         state: GameState,
         projected: ProjectedState,
         attacker: EntityId,
-        opponentBlockers: List<EntityId>
+        opponentBlockers: List<EntityId>,
+        cardRegistry: CardRegistry? = null,
     ): Boolean {
         // Menace creatures need 2+ blockers, treat as evasive if opponent has ≤1 valid blocker
         val aKeywords = projected.getKeywords(attacker)
-        val validBlockers = getValidBlockersFor(state, projected, attacker, opponentBlockers)
+        val validBlockers = getValidBlockersFor(state, projected, attacker, opponentBlockers, cardRegistry)
         if (Keyword.MENACE.name in aKeywords) return validBlockers.size <= 1
         return validBlockers.isEmpty()
     }
@@ -445,10 +452,11 @@ object CombatMath {
         state: GameState,
         projected: ProjectedState,
         attackers: List<EntityId>,
-        opponentBlockers: List<EntityId>
+        opponentBlockers: List<EntityId>,
+        cardRegistry: CardRegistry? = null,
     ): Int {
         return attackers
-            .filter { isEvasive(state, projected, it, opponentBlockers) }
+            .filter { isEvasive(state, projected, it, opponentBlockers, cardRegistry) }
             .sumOf { (projected.getPower(it) ?: 0).coerceAtLeast(0) }
     }
 
@@ -477,6 +485,8 @@ object CombatMath {
          * telling a chip attack from staying home (game `39e8aac6` turn 29).
          */
         stackOnTramplers: Boolean = false,
+        /** Reads the blocking statics only the registry knows (Dragon Hunter's reach permission). */
+        cardRegistry: CardRegistry? = null,
     ): Int {
         var totalDamage = 0
         val usedBlockers = mutableSetOf<EntityId>()
@@ -487,7 +497,7 @@ object CombatMath {
         val blockable = mutableListOf<EntityId>()
 
         for (attacker in attackers) {
-            if (isEvasive(state, projected, attacker, opponentBlockers)) {
+            if (isEvasive(state, projected, attacker, opponentBlockers, cardRegistry)) {
                 evasive.add(attacker)
             } else {
                 blockable.add(attacker)
@@ -510,7 +520,7 @@ object CombatMath {
 
             // Find best blocker: for tramplers, use highest-toughness blocker to absorb most damage
             // For non-tramplers, any valid blocker prevents all damage — use cheapest
-            val validBlockers = getValidBlockersFor(state, projected, attacker, opponentBlockers)
+            val validBlockers = getValidBlockersFor(state, projected, attacker, opponentBlockers, cardRegistry)
                 .filter { it !in usedBlockers }
                 .filter { chumpBlocks || isWorthwhileBlock(state, projected, attacker, it) }
 
@@ -550,7 +560,7 @@ object CombatMath {
                 val target = trampleBlocks.entries
                     .filter { (attacker, blockers) ->
                         trampleOverflow(projected, attacker, blockers) > 0 &&
-                            blocker in getValidBlockersFor(state, projected, attacker, listOf(blocker)) &&
+                            blocker in getValidBlockersFor(state, projected, attacker, listOf(blocker), cardRegistry) &&
                             (chumpBlocks || isWorthwhileBlock(state, projected, attacker, blocker))
                     }
                     .maxByOrNull { (attacker, blockers) -> trampleOverflow(projected, attacker, blockers) }
@@ -824,10 +834,11 @@ object CombatMath {
         myBlockers: List<EntityId>,
         chumpBlocks: Boolean = true,
         stackOnTramplers: Boolean = false,
+        cardRegistry: CardRegistry? = null,
     ): Int {
         val opponentAttackers = nextTurnAttackers(state, projected, opponentId)
         if (opponentAttackers.isEmpty()) return 0
-        return calculateDamageThroughOptimalBlocking(state, projected, opponentAttackers, myBlockers, chumpBlocks, stackOnTramplers)
+        return calculateDamageThroughOptimalBlocking(state, projected, opponentAttackers, myBlockers, chumpBlocks, stackOnTramplers, cardRegistry)
     }
 
     /**
@@ -897,18 +908,19 @@ object CombatMath {
         projected: ProjectedState,
         attackers: List<EntityId>,
         opponentBlockers: List<EntityId>,
-        opponentLife: Int
+        opponentLife: Int,
+        cardRegistry: CardRegistry? = null,
     ): Boolean {
         val totalPower = attackers.sumOf { (projected.getPower(it) ?: 0).coerceAtLeast(0) }
         if (totalPower < opponentLife) return false
 
         // Guaranteed evasive damage
-        val evasiveDamage = calculateEvasiveDamage(state, projected, attackers, opponentBlockers)
+        val evasiveDamage = calculateEvasiveDamage(state, projected, attackers, opponentBlockers, cardRegistry)
         if (evasiveDamage >= opponentLife) return true
 
         // Full simulation of optimal blocking
         val damageThrough = calculateDamageThroughOptimalBlocking(
-            state, projected, attackers, opponentBlockers
+            state, projected, attackers, opponentBlockers, cardRegistry = cardRegistry
         )
         return damageThrough >= opponentLife
     }

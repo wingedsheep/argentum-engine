@@ -1865,6 +1865,7 @@ Families:
 - `CanAttackDespiteDefender(condition: Condition?, filter: GroupFilter)` — Creatures matching filter can attack as though they didn't have defender, as long as condition holds (always, when it is null).
 - `CanBlockAdditionalForCreatureGroup(count: Int, filter: GroupFilter)` — Grants "can block an additional N creatures" to a group of creatures.
 - `CanBlockAnyNumber(filter: GroupFilter)` — This creature can block any number of creatures.
+- `CanBlockAsThoughHadReach(attackers: GameObjectFilter, filter: GroupFilter)` — Creatures matching filter can block attackers matching attackers as though they had reach — "This creature can block Dragons as though it had reach" (Dragon Hunter): `CanBlockAsThoughHadReach(GameO…
 - `CanBlockAsThoughUntapped(filter: GroupFilter)` — Creatures matching filter can block as though they were untapped — lifting the "untapped creature" requirement of CR 509.1a for them and nothing else.
 - `CanOnlyAttackAlone(filter: GroupFilter)` — "This creature can only attack alone" (Master of Cruelties): a declaration that has this creature attacking along with any other creature is illegal (CR 508.1c).
 - `CanOnlyBlockCreaturesWith(blockerFilter: GameObjectFilter, filter: GroupFilter)` — This creature can only block creatures matching a filter.

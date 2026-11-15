@@ -39,6 +39,7 @@ import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWith
 import com.wingedsheep.sdk.scripting.CanBlockAdditionalForCreatureGroup
+import com.wingedsheep.sdk.scripting.CanBlockAsThoughHadReach
 import com.wingedsheep.sdk.scripting.CantAttackUnless
 import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
 import com.wingedsheep.sdk.scripting.CantBlockUnless
@@ -3462,6 +3463,9 @@ object CardIntentAnalyzer {
         is GrantCantLoseGame, is GrantOpponentsCantWinGame -> setOf(IntentTag.PROTECTION)
         is CanBlockAdditionalForCreatureGroup ->
             if (static.count > 0) setOf(IntentTag.EXTRA_BLOCKING) else emptySet()
+        // "This creature can block Dragons as though it had reach" (Dragon Hunter): attackers it
+        // otherwise couldn't block become blockable — more blocks open to it, as an extra block is.
+        is CanBlockAsThoughHadReach -> setOf(IntentTag.EXTRA_BLOCKING)
         is CantBeBlocked -> setOf(IntentTag.EVASION_GRANT)
         // "Your opponents can't untap more than two permanents during their untap steps" (Dovin
         // Baan's emblem): keeps the opponents' permanents tapped — the tapper's payoff, as a

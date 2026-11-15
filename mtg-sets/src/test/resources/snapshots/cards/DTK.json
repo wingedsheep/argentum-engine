@@ -1382,6 +1382,52 @@
     ]
 }
 
+// Dragon Hunter
+{
+    "name": "Dragon Hunter",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Protection from Dragons\nThis creature can block Dragons as though it had reach.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Subtype",
+                "subtype": "Dragon"
+            }
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanBlockAsThoughHadReach",
+                "attackers": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "HasSubtype",
+                            "subtype": "Dragon"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "UNCOMMON",
+        "artist": "Johannes Voss",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/e/ae8a0362-b973-445a-a355-5a2f3dc67f16.jpg?1783938619"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Dragon Tempest
 {
     "name": "Dragon Tempest",
