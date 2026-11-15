@@ -1557,6 +1557,7 @@ Bellowing Crier
 Bellowing Saddlebrute
 Bellowing Tanglewurm
 Bellows Lizard
+Belltoll Dragon
 Belltower Sphinx
 Beloved Beggar
 Beloved Princess
@@ -1780,6 +1781,7 @@ Blessed Defiance
 Blessed Ghoul
 Blessed Light
 Blessed Orator
+Blessed Reincarnation
 Blessed Reversal
 Blessed Sanctuary
 Blessed Spirits
@@ -3186,7 +3188,7 @@ Cleanup Crew
 Clear
 Clear Shot
 Clear a Path
-Clear the Mind	polarity: Pipeline(graveyard→library)
+Clear the Mind
 Clear the Stage
 Clearwater Pathway
 Cleaver Skaab
@@ -3240,6 +3242,7 @@ Clockwork Vorrac
 Cloister Gargoyle
 Cloistered Telepath
 Clone
+Clone Legion
 Close Encounter
 Close Quarters
 Closing Statement
@@ -3541,6 +3544,7 @@ Contortionist Troupe
 Contraband Kingpin
 Contract Killing
 Contract from Below
+Contradict
 Control Magic
 Control of the Court
 Convalescent Care
@@ -3686,7 +3690,7 @@ Cragplate Baloth
 Cragsmasher Yeti
 Craig Boone, Novac Guard
 Cram Session
-Cranial Archive	polarity: DrawCardsEffect; polarity: Pipeline(graveyard→library)
+Cranial Archive
 Cranial Extraction
 Cranial Ram
 Crash Through
@@ -4628,6 +4632,7 @@ Diresight
 Dirge Bat
 Dirge of Dread
 Dirgur Island Dragon
+Dirgur Nemesis
 Dirtwater Wraith
 Disallow
 Disappearing Act
@@ -5445,6 +5450,7 @@ Elspeth, Undaunted Hero
 Elturgard Ranger
 Eluge, the Shoreless Sea	intent: AddCountersEffect; polarity: AddCountersEffect
 Elusive Otter
+Elusive Spellfist
 Elusive Tormentor
 Elven Ambush
 Elven Bow
@@ -5583,6 +5589,7 @@ Emrakul, the World Anew	intent: Pipeline(BattlefieldMatching→graveyard)
 Emry, Lurker of the Loch
 Enatu Golem
 Encampment Keeper
+Encase in Ice
 Enchanted Being
 Enchanted Carriage
 Enchanted River's Grasp
@@ -8019,6 +8026,7 @@ Guardian of the Halls
 Guardians of Koilos
 Guardians of Meletis
 Guardians of Oboro
+Gudul Lurker
 Guerrilla Gorilla
 Guidance Failure
 Guide of Souls
@@ -8884,6 +8892,7 @@ Iceberg
 Icebind Pillar
 Icebreaker Kraken
 Icecave Crasher
+Icefall Regent
 Icefeather Aven
 Icehide Troll
 Iceridge Serpent
@@ -8942,6 +8951,7 @@ Illusionary Mask
 Illusionist's Gambit	timing: ForEach>GrantStaticAbilityEffect
 Illusionist's Stratagem
 Illusory Ambusher
+Illusory Gains
 Illusory Wrappings
 Illustrious Historian
 Illvoi Galeblade
@@ -10371,6 +10381,7 @@ Leap of Faith
 Leapfrog
 Leaping Ambush
 Leaping Master
+Learn from the Past
 Leashling
 Leather Armor
 Leatherback Baloth
@@ -11799,6 +11810,7 @@ Momo, Friendly Flier
 Momo, Playful Pet
 Mona Lisa, Science Geek
 Monastery Flock
+Monastery Loremaster
 Monastery Mentor
 Monastery Messenger
 Monastery Siege
@@ -12655,6 +12667,7 @@ Ojer Kaslem, Deepest Growth
 Ojer Pakpatiq, Deepest Epoch
 Ojer Taq, Deepest Foundation
 Ojutai Exemplars
+Ojutai Interceptor
 Ojutai's Breath
 Ojutai's Command
 Ojutai's Summons
@@ -13651,7 +13664,7 @@ Primal Adversary
 Primal Amulet
 Primal Boost
 Primal Clay
-Primal Command	polarity: Pipeline(graveyard→library)
+Primal Command
 Primal Druid
 Primal Empathy
 Primal Frenzy
@@ -14427,6 +14440,7 @@ Redshift, Rocketeer Chief
 Redtooth Genealogist
 Redtooth Vanguard
 Reduce // Rubble
+Reduce in Stature
 Reduce to Ashes
 Reduce to Memory
 Redwood Treefolk
@@ -14515,7 +14529,7 @@ Reluctant Dounguard
 Reluctant Role Model
 Rem Karolus, Stalwart Slayer
 Remand
-Reminisce	intent: Pipeline(graveyard→library); polarity: Pipeline(graveyard→library)
+Reminisce	intent: Pipeline(graveyard→library)
 Remnant Elemental
 Remorseful Cleric
 Remorseless Punishment
@@ -18052,6 +18066,7 @@ Tah-Crop Elite
 Tah-Crop Skirmisher
 Taiga
 Taigam's Scheming
+Taigam's Strike
 Taigam, Master Opportunist
 Taii Wakeen, Perfect Shot	intent: AmplifyDamageThisTurnEffect
 Tail Swipe
