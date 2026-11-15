@@ -324,13 +324,29 @@ sealed interface ManaRestriction {
     /**
      * "Spend this mana only to turn permanents face up."
      *
-     * Satisfied by the turn-face-up special action (disguise/morph face-up, CR 707.9 / 702.37e),
-     * not by spell casts or ability activations. Used by Overgrown Zealot and Creeping Peeper.
+     * Satisfied by the turn-face-up special action (CR 116.2b), not by spell casts or ability
+     * activations. [procedures] narrows it to the turn-up procedures being paid for — the
+     * mechanic whose rule the chosen procedure follows ([FaceDownMode.MORPH], CR 702.37e;
+     * [FaceDownMode.DISGUISE], 702.168d; [FaceDownMode.MANIFEST], 701.40b; [FaceDownMode.CLOAK],
+     * 701.58b). `null` admits every turn-up (Overgrown Zealot, Creeping Peeper).
+     *
+     * The procedure, not how the permanent went face down, is what a narrowed clause names: a
+     * manifested card that prints morph may be turned up for its morph cost (CR 701.40c), and that
+     * is "paying a morph cost". Qarsi Deceiver's "pay a mana cost to turn a manifested creature
+     * face up, or pay a morph cost" is `procedures = setOf(MANIFEST, MORPH)` — "a mana cost" is the
+     * card's mana cost (701.40b), so a manifested disguise card turned up for its disguise cost
+     * doesn't qualify. Megamorph is morph.
      */
     @SerialName("TurnPermanentsFaceUpOnly")
     @Serializable
-    data object TurnPermanentsFaceUpOnly : ManaRestriction {
-        override val description: String = "Spend this mana only to turn permanents face up"
+    data class TurnPermanentsFaceUpOnly(
+        val procedures: Set<FaceDownMode>? = null,
+    ) : ManaRestriction {
+        override val description: String = when (procedures) {
+            null -> "Spend this mana only to turn permanents face up"
+            else -> "Spend this mana only to turn permanents face up by " +
+                procedures.joinToString(" or ") { it.name.lowercase() }
+        }
     }
 
     /**
@@ -657,3 +673,4 @@ sealed interface ManaRestriction {
         }
     }
 }
+

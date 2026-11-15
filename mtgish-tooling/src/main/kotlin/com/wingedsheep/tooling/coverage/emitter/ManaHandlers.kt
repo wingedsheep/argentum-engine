@@ -94,7 +94,7 @@ private fun manaUseModifierRestriction(modifiers: List<JsonElement>): String? {
 private fun singleManaUseModifierRestriction(modifier: JsonObject): String? =
     when (modifier.strField("_ManaUseModifier")) {
         // "Spend this mana only to turn a permanent face up." (Overgrown Zealot / Creeping Peeper)
-        "CanOnlySpendToTurnAPermanentFaceUp" -> "ManaRestriction.TurnPermanentsFaceUpOnly"
+        "CanOnlySpendToTurnAPermanentFaceUp" -> "ManaRestriction.TurnPermanentsFaceUpOnly()"
         // "Spend this mana only to unlock a door." (Creeping Peeper)
         "CanOnlySpendToUnlockDoors" -> "ManaRestriction.UnlockDoorOnly"
         "CanOnlySpendOnSpells" -> (modifier["args"] as? JsonObject)?.let { spellSpendRestriction(it) }

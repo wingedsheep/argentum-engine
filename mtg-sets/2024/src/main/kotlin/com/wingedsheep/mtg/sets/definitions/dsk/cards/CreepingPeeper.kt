@@ -43,7 +43,7 @@ val CreepingPeeper = card("Creeping Peeper") {
                         allowAbilities = false,
                     ),
                     ManaRestriction.UnlockDoorOnly,
-                    ManaRestriction.TurnPermanentsFaceUpOnly,
+                    ManaRestriction.TurnPermanentsFaceUpOnly(),
                 ),
             ),
         )

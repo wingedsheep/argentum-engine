@@ -109,6 +109,13 @@ data class SpellPaymentContext(
      */
     val isTurnFaceUpAction: Boolean = false,
     /**
+     * For a turn-face-up payment, the mechanic whose turn-up procedure is being paid for
+     * ([com.wingedsheep.engine.state.components.identity.TurnUpProcedure.mechanic]) — `MORPH` is
+     * "pay a morph cost". Read by [ManaRestriction.TurnPermanentsFaceUpOnly.procedures]; `null`
+     * outside a turn-up, so a narrowed restriction refuses any other payment.
+     */
+    val turnFaceUpProcedure: com.wingedsheep.sdk.scripting.effects.FaceDownMode? = null,
+    /**
      * True when the payment is for the unlock-a-door special action (CR 709.5e). Lets
      * [ManaRestriction.UnlockDoorOnly] recognize "spend this mana only to ... unlock a door"
      * (Creeping Peeper).
@@ -178,6 +185,14 @@ data class SpellPaymentContext(
     }
 
     companion object {
+        /**
+         * The payment context for the turn-face-up special action (CR 116.2b), carrying which
+         * [procedure] is being paid for so restrictions narrowed to "a morph cost" or "a mana cost
+         * to turn a manifested creature face up" (Qarsi Deceiver) can tell the routes apart.
+         */
+        fun turnFaceUp(procedure: com.wingedsheep.sdk.scripting.effects.FaceDownMode): SpellPaymentContext =
+            SpellPaymentContext(isTurnFaceUpAction = true, turnFaceUpProcedure = procedure)
+
         /**
          * The payment context for a face-down cast (morph / disguise). CR 708.2: the spell has no
          * name, no mana cost, no color, and no card types or subtypes other than creature, with
@@ -281,7 +296,8 @@ fun ManaRestriction.isSatisfiedBy(context: SpellPaymentContext): Boolean = when 
     is ManaRestriction.CastFromGraveyardOnly -> !context.isAbilityActivation && context.isFromGraveyard
     is ManaRestriction.DisturbCostOnly -> !context.isAbilityActivation && context.isDisturbCast
     is ManaRestriction.CastFromNonHandOnly -> !context.isAbilityActivation && !context.isFromHand
-    is ManaRestriction.TurnPermanentsFaceUpOnly -> context.isTurnFaceUpAction
+    is ManaRestriction.TurnPermanentsFaceUpOnly -> context.isTurnFaceUpAction &&
+        procedures.let { it == null || context.turnFaceUpProcedure in it }
     is ManaRestriction.FaceDownSpellsOnly -> !context.isAbilityActivation && context.isFaceDownCast
     is ManaRestriction.UnlockDoorOnly -> context.isUnlockDoorAction
     is ManaRestriction.ForetellOnly -> context.isForetellAction

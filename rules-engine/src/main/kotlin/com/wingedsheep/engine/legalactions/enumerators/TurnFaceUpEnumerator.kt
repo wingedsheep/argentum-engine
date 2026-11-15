@@ -32,10 +32,6 @@ class TurnFaceUpEnumerator(
     private val predicateEvaluator: PredicateEvaluator
 ) : ActionEnumerator {
 
-    // Lets restricted mana tagged "spend only to turn permanents face up" count toward
-    // affordability of the turn-face-up special action (Overgrown Zealot, Creeping Peeper).
-    private val faceUpContext = SpellPaymentContext(isTurnFaceUpAction = true)
-
     override fun enumerate(context: EnumerationContext): List<LegalAction> {
         val result = mutableListOf<LegalAction>()
         val state = context.state
@@ -54,6 +50,10 @@ class TurnFaceUpEnumerator(
             val morphData = container.get<MorphDataComponent>() ?: continue
 
             morphData.procedures.forEachIndexed { procedureIndex, procedure ->
+                // Lets restricted mana tagged "spend only to turn permanents face up" (Overgrown
+                // Zealot) — or only for one route, "a morph cost" (Qarsi Deceiver) — count toward
+                // affordability of this procedure.
+                val faceUpContext = SpellPaymentContext.turnFaceUp(procedure.mechanic)
                 val cost = procedure.cost
                 val manaMorph = (cost as? PayCost.Atom)?.atom as? CostAtom.Mana
                 // Global increases (Exiled Doomsayer) and the procedure's own reduction (Fugitive

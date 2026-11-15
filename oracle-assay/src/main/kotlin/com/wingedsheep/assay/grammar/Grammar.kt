@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.EntersWithRevealCounters
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.TriggeredAbility
+import com.wingedsheep.sdk.scripting.effects.GatedEffect
 import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
@@ -424,7 +425,10 @@ object Grammar {
             build { fragmentFor(it.value("effect")) }
             match { fragment ->
                 val ability = fragment.script.triggeredAbilities.singleOrNull() ?: return@match null
-                val reflexive = ability.effect as? ReflexiveTriggerEffect ?: return@match null
+                // The payoff-bearing reflexive sits in the `then` of the exploiter-still-on-the-
+                // battlefield gate the lowering wraps it in (DTK ruling); fragmentFor re-checks the rest.
+                val reflexive = (ability.effect as? GatedEffect)?.then as? ReflexiveTriggerEffect
+                    ?: return@match null
                 val payoff = CardScript(
                     spellEffect = reflexive.reflexiveEffect,
                     targetRequirements = reflexive.reflexiveTargetRequirements,

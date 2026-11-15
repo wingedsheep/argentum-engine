@@ -34,7 +34,7 @@ val OvergrownZealot = card("Overgrown Zealot") {
 
     activatedAbility {
         cost = Costs.Tap
-        effect = Effects.AddAnyColorMana(2, restriction = ManaRestriction.TurnPermanentsFaceUpOnly)
+        effect = Effects.AddAnyColorMana(2, restriction = ManaRestriction.TurnPermanentsFaceUpOnly())
         manaAbility = true
         timing = TimingRule.ManaAbility
         description = "{T}: Add two mana of any one color. Spend this mana only to turn permanents face up."

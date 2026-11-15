@@ -39,7 +39,7 @@ class TinStreetGossipScenarioTest : FunSpec({
     val gossipRestriction = ManaRestriction.AnyOf(
         listOf(
             ManaRestriction.FaceDownSpellsOnly,
-            ManaRestriction.TurnPermanentsFaceUpOnly,
+            ManaRestriction.TurnPermanentsFaceUpOnly(),
         )
     )
 
