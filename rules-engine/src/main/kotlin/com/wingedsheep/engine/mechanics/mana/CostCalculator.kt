@@ -47,13 +47,13 @@ import com.wingedsheep.engine.mechanics.layers.ZoneStaticEffectsComponent
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.SpellCostTarget
-import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.toEntityId
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.references.Player
@@ -467,7 +467,7 @@ class CostCalculator(
                 namedPlayerOf(state, sourceId, target.player) == casterId &&
                     matchesCardDefinition(cardDef, target.filter, sourceId, state, state.projectedState, manaValue, spellColors)
             is SpellCostTarget.OpponentsCastTargeting ->
-                opponentsCastTargetingMatches(state, casterId, sourceId, target.targetFilter, chosenTargets)
+                opponentsCastTargetingMatches(state, casterId, sourceId, target, chosenTargets)
             is SpellCostTarget.OpponentsCastFromZones -> {
                 // Source must be controlled by an opponent of the caster, the spell must be cast
                 // from one of the named zones, and the card must match the filter.
@@ -529,21 +529,28 @@ class CostCalculator(
 
     /**
      * True iff the source is controlled by an opponent of the caster, and at least
-     * one of the caster's chosen targets matches [targetFilter] relative to the
-     * source. Implements the matching half of [SpellCostTarget.OpponentsCastTargeting]
-     * (e.g. Terror of the Peaks' "this creature", Kopala's "Merfolk you control").
+     * one of the caster's chosen targets matches [target]'s group relative to the
+     * source — or is the player its `targetPlayer` names. Implements the matching half of
+     * [SpellCostTarget.OpponentsCastTargeting] (e.g. Terror of the Peaks' "this creature",
+     * Kopala's "Merfolk you control", Monastery Siege's "you or a permanent you control").
      */
     private fun opponentsCastTargetingMatches(
         state: GameState,
         casterId: EntityId,
         sourceId: EntityId,
-        targetFilter: GroupFilter,
+        target: SpellCostTarget.OpponentsCastTargeting,
         chosenTargets: List<EntityId>,
     ): Boolean {
         if (chosenTargets.isEmpty()) return false
         val sourceController = modifierController(state, sourceId) ?: return false
         if (sourceController == casterId) return false
-        return anyTargetInGroup(state, predicateEvaluator, sourceId, sourceController, targetFilter, chosenTargets)
+        val protectedPlayer = when (val player = target.targetPlayer) {
+            null -> null
+            Player.You -> sourceController
+            else -> namedPlayerOf(state, sourceId, player)
+        }
+        if (protectedPlayer != null && protectedPlayer in chosenTargets) return true
+        return anyTargetInGroup(state, predicateEvaluator, sourceId, sourceController, target.targetFilter, chosenTargets)
     }
 
     /**
@@ -2514,13 +2521,13 @@ class CostCalculator(
         targets: List<ChosenTarget>
     ): Int {
         if (targets.isEmpty()) return 0
-        val targetEntityIds = targets.mapNotNull { (it as? ChosenTarget.Permanent)?.entityId }
-        if (targetEntityIds.isEmpty()) return 0
+        // Player targets too: a `targetPlayer` life tax counts a spell that targets that player.
+        val targetEntityIds = targets.map { it.toEntityId() }
         var total = 0
         for ((sourceId, ability) in scanModifySpellCost(state)) {
             val target = ability.target as? SpellCostTarget.OpponentsCastTargeting ?: continue
             val modification = ability.modification as? CostModification.IncreaseLife ?: continue
-            if (!opponentsCastTargetingMatches(state, casterId, sourceId, target.targetFilter, targetEntityIds)) continue
+            if (!opponentsCastTargetingMatches(state, casterId, sourceId, target, targetEntityIds)) continue
             total += modification.amount
         }
         return total

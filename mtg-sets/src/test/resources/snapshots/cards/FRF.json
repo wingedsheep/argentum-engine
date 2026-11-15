@@ -2232,6 +2232,129 @@
     ]
 }
 
+// Monastery Siege
+{
+    "name": "Monastery Siege",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "As this enchantment enters, choose Khans or Dragons.\n• Khans — At the beginning of your draw step, draw an additional card, then discard a card.\n• Dragons — Spells your opponents cast that target you or a permanent you control cost {2} more to cast.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Monastery Siege:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "DRAW"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "triggerRestriction": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "khans"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "OpponentsCastTargeting",
+                    "targetFilter": {
+                        "baseFilter": "permanent ctrl:you"
+                    },
+                    "targetPlayer": "You"
+                },
+                "modification": {
+                    "type": "IncreaseGeneric",
+                    "amount": 2
+                },
+                "gating": {
+                    "type": "OnlyIf",
+                    "condition": {
+                        "type": "SourceChosenModeIs",
+                        "modeId": "dragons"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "khans",
+                        "label": "Khans",
+                        "description": "At the beginning of your draw step, draw an additional card, then discard a card.",
+                        "iconKey": "khans"
+                    },
+                    {
+                        "id": "dragons",
+                        "label": "Dragons",
+                        "description": "Spells your opponents cast that target you or a permanent you control cost {2} more.",
+                        "iconKey": "dragons"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "rarity": "RARE",
+        "artist": "Mark Winters",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/eef398b5-38f7-4a11-8fcf-d4e0d27267cf.jpg?1783938706"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Noxious Dragon
 {
     "name": "Noxious Dragon",

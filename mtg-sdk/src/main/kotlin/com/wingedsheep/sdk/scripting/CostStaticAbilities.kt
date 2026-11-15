@@ -56,7 +56,7 @@ data class ModifySpellCost(
             is SpellCostTarget.OpponentsCast -> "${filterAdjective(target.filter)}$noun your opponents cast"
             is SpellCostTarget.PlayerCasts -> "${filterAdjective(target.filter)}$noun ${target.player.description} casts"
             is SpellCostTarget.OpponentsCastTargeting ->
-                "Spells your opponents cast that target ${target.targetFilter.description}"
+                "Spells your opponents cast that target " + describeTargeting(target)
             is SpellCostTarget.OpponentsCastFromZones ->
                 "Spells your opponents cast from ${describeZones(target.zones)}"
             is SpellCostTarget.YouCastFromZones ->
@@ -120,6 +120,18 @@ data class ModifySpellCost(
                     .replace("your ", "its controller's ")
             else -> sourceDescription
         }
+
+    // "that target you or a permanent you control": with a player alongside, a battlefield group
+    // reads as one member ("a permanent you control"), as Oracle prints it.
+    private fun describeTargeting(target: SpellCostTarget.OpponentsCastTargeting): String {
+        val player = target.targetPlayer ?: return target.targetFilter.description
+        val group = target.targetFilter
+        val member = if (group.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Battlefield) {
+            val noun = group.baseFilter.singularPermanentDescription
+            (if (noun.first().lowercaseChar() in "aeiou") "an " else "a ") + noun
+        } else group.description
+        return "${player.description} or $member"
+    }
 
     // A filter that narrows nothing (e.g. GameObjectFilter.Any) describes itself as "card", which
     // reads wrong as an adjective ("the second card spell you cast"). Emit no adjective in that case
@@ -257,13 +269,23 @@ sealed interface SpellCostTarget {
      *   - `GroupFilter(GameObjectFilter.Creature.youControl().withKeyword(Keyword.FLYING))`
      *     — "flying creatures you control" (Jubilant Skybonder)
      *
+     * [targetPlayer] widens the match to a player target: "spells your opponents cast that target
+     * **you** or a permanent you control" (Monastery Siege) is `targetPlayer = Player.You` over
+     * `GroupFilter.AllPermanentsYouControl`. It is read relative to the source — [Player.You] is the
+     * source's controller, [Player.EnchantedPlayer] / [Player.ChosenPlayer] / [Player.ChosenOpponent]
+     * the player the source names. Still once per spell, however many matching targets it has.
+     * `null` (default) matches permanents only.
+     *
      * Pair with [CostModification.IncreaseGeneric] for "{N} more" cards (Sphinx of New Prahv,
      * Boreal Elemental, Charix, ...) or [CostModification.IncreaseLife] for "N life to cast"
      * (Terror of the Peaks).
      */
     @SerialName("OpponentsCastTargeting")
     @Serializable
-    data class OpponentsCastTargeting(val targetFilter: GroupFilter) : SpellCostTarget {
+    data class OpponentsCastTargeting(
+        val targetFilter: GroupFilter,
+        val targetPlayer: Player? = null,
+    ) : SpellCostTarget {
         override fun applyTextReplacement(replacer: TextReplacer): SpellCostTarget {
             val newFilter = targetFilter.applyTextReplacement(replacer)
             return if (newFilter !== targetFilter) copy(targetFilter = newFilter) else this
