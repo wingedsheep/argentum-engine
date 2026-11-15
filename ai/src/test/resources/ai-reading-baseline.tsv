@@ -37,7 +37,7 @@ Abbot of Keral Keep
 Aberrant Manawurm
 Aberrant Mind Sorcerer
 Aberrant Researcher
-Abhorrent Oculus	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
+Abhorrent Oculus
 Abigale, Eloquent First-Year
 Abigale, Poet Laureate
 Abnormal Endurance
@@ -1405,7 +1405,7 @@ Basalt Ravager
 Base Camp
 Baseball Bat
 Bash to Bits
-Bashful Beastie	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
+Bashful Beastie
 Basic Conjuration
 Basilica Bell-Haunt
 Basilica Shepherd
@@ -3257,6 +3257,7 @@ Cloudbound Moogle
 Cloudchaser Eagle
 Cloudcrest Lake
 Cloudcrown Oak
+Cloudform
 Cloudgoat Ranger
 Cloudheath Drake
 Cloudkin Seer
@@ -3449,7 +3450,7 @@ Concordant Crossroads
 Concordia Pegasus
 Condescend
 Conduct Electricity
-Conductive Machete	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
+Conductive Machete
 Conductor of Cacophony
 Conduit Goblin
 Conduit Pylons
@@ -3834,7 +3835,7 @@ Cryptbreaker
 Cryptcaller Chariot
 Cryptex
 Cryptic Caves
-Cryptic Coat	intent: Pipeline(TopOfLibrary→battlefield)
+Cryptic Coat
 Cryptic Command
 Cryptic Cruiser
 Cryptic Gateway
@@ -3926,7 +3927,7 @@ Cursed Rack
 Cursed Recording
 Cursed Ronin
 Cursed Totem
-Cursed Windbreaker	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
+Cursed Windbreaker
 Cursed Wombat
 Custodian of the Trove
 Custody Battle	polarity: Aura>GrantTriggeredAbility
@@ -4350,7 +4351,7 @@ Defiant Ogre
 Defiant Salvager
 Defiant Stand
 Defiant Strike
-Defiant Survivor	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
+Defiant Survivor
 Defibrillating Current
 Defile
 Defiled Crypt // Cadaver Lab
@@ -4684,7 +4685,7 @@ Disruptor Flute
 Disruptor Wanderglyph
 Disruptor of Currents
 Dissection Practice
-Dissection Tools	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
+Dissection Tools
 Dissension in the Ranks
 Dissenter's Deliverance
 Dissipate
@@ -4701,7 +4702,7 @@ District Guide
 District Mascot
 Disturbed Slumber
 Disturbing Conversion
-Disturbing Mirth	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
+Disturbing Mirth
 Dive Bomber
 Dive Down
 Divebomber Griffin
@@ -7946,7 +7947,7 @@ Grove Rumbler
 Grovetender Druids
 Grow Extra Arms
 Grow from the Ashes
-Growing Dread	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
+Growing Dread
 Growing Rites of Itlimoc
 Growth Curve
 Growth Cycle
@@ -7997,7 +7998,7 @@ Guardian of Pilgrims
 Guardian of Solitude
 Guardian of Tazeem
 Guardian of Vitu-Ghazi
-Guardian of the Forgotten	intent: Pipeline(TopOfLibrary→battlefield)
+Guardian of the Forgotten
 Guardian of the Great Conduit
 Guardian of the Great Door
 Guardian of the Halls
@@ -8237,7 +8238,7 @@ Haunted Screen
 Haunting Figment
 Haunting Voyage
 Haunting Wind
-Hauntwoods Shrieker	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard); intent: RevealFaceDownPermanentEffect; intent: TurnFaceUpEffect; polarity: RevealFaceDownPermanentEffect; polarity: TurnFaceUpEffect
+Hauntwoods Shrieker	intent: RevealFaceDownPermanentEffect; intent: TurnFaceUpEffect; polarity: RevealFaceDownPermanentEffect; polarity: TurnFaceUpEffect
 Haven of the Spirit Dragon
 Havengul Runebinder
 Havenwood Battleground
@@ -8472,7 +8473,7 @@ Hidden Nursery
 Hidden Path
 Hidden Stockpile
 Hidden Volcano
-Hide in Plain Sight	intent: Pipeline(TopOfLibrary→battlefield|library)
+Hide in Plain Sight
 Hide on the Ceiling
 Hideous Laughter
 Hidetsugu Consumes All
@@ -9129,7 +9130,7 @@ Innkeeper's Talent
 Innocence Kami
 Innocent Bystander
 Innocent Traveler	intent: AnyPlayerMayPayEffect
-Innocuous Rat	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
+Innocuous Rat
 Innovative Commons
 Inordinate Rage
 Inquisition
@@ -9900,7 +9901,7 @@ Kiku, Night's Flower
 Kill Shot
 Kill-Zone Acrobat
 Killer Bees
-Killer's Mask	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
+Killer's Mask
 Killian's Confidence
 Killian, Ink Duelist
 Killing Glare
@@ -11057,7 +11058,7 @@ Manhole Missile
 Maniacal Rage	polarity: Aura>CantBlock; polarity: Aura>ModifyStats
 Manic Scribe
 Manic Vandal
-Manifest Dread	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
+Manifest Dread
 Manifestation Sage
 Manifold Key
 Manifold Mouse
@@ -11734,7 +11735,7 @@ Mold Adder
 Mold Demon
 Molder Slug
 Molderhulk
-Moldering Gym // Weight Room	intent: AddCountersToCollectionEffect; intent: EmitManifestedDreadEventEffect; intent: Pipeline(EnteredViaThisResolution|TopOfLibrary→battlefield|graveyard)
+Moldering Gym // Weight Room
 Moldering Karok
 Moldervine Cloak
 Moldervine Reclamation
@@ -14023,6 +14024,7 @@ Rage into the Valley
 Rage-Scarred Berserker
 Ragefire
 Ragefire Hellkite
+Rageform
 Ragged Playmate
 Ragged Recluse
 Ragged Short Spear
@@ -18825,7 +18827,7 @@ Thrasios, Triton Hero
 Thraxodemon
 Threadbind Clique
 Threaten
-Threats Around Every Corner	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
+Threats Around Every Corner
 Threats Undetected
 Three Blind Mice
 Three Bowls of Porridge
@@ -18930,7 +18932,7 @@ Tiana, Ship's Caretaker
 Tibalt's Rager
 Tibalt's Trickery
 Tibalt, Rakish Instigator
-Ticket Booth // Tunnel of Hate	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
+Ticket Booth // Tunnel of Hate
 Ticket Tortoise
 Tidal Flats	intent: ForEach>PayOrSufferEffect
 Tidal Influence
@@ -19483,7 +19485,7 @@ Twinning Staff
 Twins of Maurer Estate
 Twinscroll Shaman
 Twinshot Sniper
-Twist Reality	intent: ModalEffect
+Twist Reality
 Twisted Abomination
 Twisted Embrace
 Twisted Experiment
@@ -19689,7 +19691,7 @@ Unholy Hunger
 Unholy Indenture	polarity: Aura>MoveToZoneEffect
 Unholy Officiant
 Unholy Strength
-Unidentified Hovership	intent: ForEach>EmitManifestedDreadEventEffect; intent: ForEach>Pipeline(TopOfLibrary→battlefield|graveyard)
+Unidentified Hovership
 Unified Front
 Unified Strike
 Uninvited Geist
@@ -19732,7 +19734,7 @@ Unscrupulous Agent
 Unscrupulous Contractor
 Unseal the Necropolis
 Unseen Walker
-Unsettling Twins	intent: EmitManifestedDreadEventEffect; intent: Pipeline(TopOfLibrary→battlefield|graveyard)
+Unsettling Twins
 Unsparing Boltcaster
 Unspeakable Symbol
 Unstable Amulet
@@ -19860,7 +19862,7 @@ Valeron Outlander
 Valeron Wardens
 Valgavoth's Faithful
 Valgavoth's Lair
-Valgavoth's Onslaught	intent: AddCountersToCollectionEffect; intent: EmitManifestedDreadEventEffect; intent: Pipeline(EnteredViaThisResolution|TopOfLibrary→battlefield|graveyard)
+Valgavoth's Onslaught
 Valgavoth, Harrower of Souls
 Valgavoth, Terror Eater
 Valiant Guard
