@@ -1,1 +1,1 @@
-- #TBD The AI reads "exile X / one or more cards from your graveyard" activation costs (Corpseweft, Winter, Cursed Rider, Necropolis Fiend) as graveyard payoffs, valuing self-mill and surveil beside them in draft and deckbuilding
+- #4695 The AI reads "exile X / one or more cards from your graveyard" activation costs (Corpseweft, Winter, Cursed Rider, Necropolis Fiend) as graveyard payoffs, valuing self-mill and surveil beside them in draft and deckbuilding
