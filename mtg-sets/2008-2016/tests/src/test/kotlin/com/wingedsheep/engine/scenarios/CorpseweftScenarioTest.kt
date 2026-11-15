@@ -127,7 +127,7 @@ class CorpseweftScenarioTest : ScenarioTestBase() {
                 game.state.projectedState.getToughness(token) shouldBe 2
             }
 
-            test("a submitted empty exile selection with X = 0 is rejected") {
+            test("a pre-filled exile pile without its X is rejected rather than paying X = 0") {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")
                     .withCardOnBattlefield(1, "Corpseweft")
@@ -137,15 +137,16 @@ class CorpseweftScenarioTest : ScenarioTestBase() {
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
 
+                val before = game.state.getBattlefield().toSet()
                 val result = game.execute(
                     ActivateAbility(
                         playerId = game.player1Id, sourceId = game.findPermanent("Corpseweft")!!, abilityId = abilityId,
-                        xValue = 0,
-                        costPayment = AdditionalCostPayment(exiledCards = emptyList()),
+                        costPayment = AdditionalCostPayment(exiledCards = game.findCardsInGraveyard(1, "Grizzly Bears")),
                     )
                 )
-                result.error shouldNotBe null
+                withClue("xValue must equal the pile's size") { result.error shouldNotBe null }
                 game.isInGraveyard(1, "Grizzly Bears") shouldBe true
+                game.newTokens(before).size shouldBe 0
             }
         }
     }

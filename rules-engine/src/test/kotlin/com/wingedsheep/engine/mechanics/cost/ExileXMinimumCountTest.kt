@@ -98,6 +98,25 @@ class ExileXMinimumCountTest : FunSpec({
         d.state.getZone(ZoneKey(p, Zone.GRAVEYARD)).containsAll(bears) shouldBe true
     }
 
+    test("a pre-filled pile must carry X equal to its size, with or without a floor") {
+        listOf(floored, free).forEach { engineCard ->
+            val d = driver(); val p = d.activePlayer!!
+            val source = d.putPermanentOnBattlefield(p, engineCard.name)
+            val bears = List(3) { d.putCardInGraveyard(p, "Grizzly Bears") }
+            val life = d.getLifeTotal(p)
+            listOf(null, 2).forEach { x ->
+                d.submit(
+                    ActivateAbility(
+                        playerId = p, sourceId = source, abilityId = d.abilityOf(engineCard.name),
+                        xValue = x, costPayment = AdditionalCostPayment(exiledCards = bears),
+                    )
+                ).error shouldNotBe null
+            }
+            d.state.getZone(ZoneKey(p, Zone.GRAVEYARD)).containsAll(bears) shouldBe true
+            d.getLifeTotal(p) shouldBe life
+        }
+    }
+
     test("no floor keeps any-number: empty graveyard still activates for X = 0") {
         val d = driver(); val p = d.activePlayer!!
         val source = d.putPermanentOnBattlefield(p, free.name)

@@ -709,19 +709,6 @@ class CostEnumerationUtils(
     }
 
     /**
-     * Calculate max affordable X for activated abilities, considering various X cost types.
-     */
-    /**
-     * Does this cost make the player choose an X that is *not* paid in mana — "remove any number
-     * of counters from ~" ([CostAtom.RemoveCounters] with an [DynamicAmount.XValue] count) or
-     * "tap X permanents"?
-     *
-     * Shared by every enumerator that builds a `LegalAction`, because the answer decides whether
-     * the client opens its X picker at all. An enumerator that forgets to ask hands the player an
-     * activation with no choice, which then pays X = 0 — the storage lands (Bottomless Vault and
-     * its cycle) removing zero counters for zero mana was exactly that.
-     */
-    /**
      * How many cards in [playerId]'s graveyard an [AbilityCost.ExileXFromGraveyard] cost could
      * exile, honouring its filter. It is the upper bound on X (see [calculateMaxAffordableX]) and,
      * for an ability whose X can't be 0 ("Exile one or more creature cards from your graveyard",
@@ -740,6 +727,16 @@ class CostEnumerationUtils(
         }
     }
 
+    /**
+     * Does this cost make the player choose an X that is *not* paid in mana — "remove any number
+     * of counters from ~" ([CostAtom.RemoveCounters] with an [DynamicAmount.XValue] count) or
+     * "tap X permanents"?
+     *
+     * Shared by every enumerator that builds a `LegalAction`, because the answer decides whether
+     * the client opens its X picker at all. An enumerator that forgets to ask hands the player an
+     * activation with no choice, which then pays X = 0 — the storage lands (Bottomless Vault and
+     * its cycle) removing zero counters for zero mana was exactly that.
+     */
     fun hasPlayerChosenNonManaX(abilityCost: AbilityCost): Boolean {
         fun isXCounterRemoval(cost: AbilityCost): Boolean =
             cost is AbilityCost.Atom &&
@@ -754,6 +751,9 @@ class CostEnumerationUtils(
         }
     }
 
+    /**
+     * Calculate max affordable X for activated abilities, considering various X cost types.
+     */
     fun calculateMaxAffordableX(
         state: GameState,
         playerId: EntityId,

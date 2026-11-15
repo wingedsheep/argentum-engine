@@ -729,8 +729,9 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   count first and the selection is pinned to exactly that many. Selecting nothing is legal and
   settles as X = 0 — unless the ability sets `minimumXValue`: "Exile **one or more** creature cards
   from your graveyard" (**Corpseweft**) is this cost under `minimumXValue = 1`, which floors the
-  selection, hides the ability while fewer matching cards are in the graveyard, and rejects a smaller
-  submitted selection. `linkToSource = true` puts the exiled cards in the source permanent's linked-exile
+  selection and marks the ability unpayable while fewer matching cards are in the graveyard (greyed
+  out; omitted when the exile is the whole cost). A pre-filled pile must arrive with `xValue` equal to
+  its size. `linkToSource = true` puts the exiled cards in the source permanent's linked-exile
   pile so another ability printed on it can name "the cards exiled with it" (CR 607.2a) — Ludevic,
   Necrogenius's `{X}{U}{U}{B}{B}, Exile X creature cards from your graveyard: Transform Ludevic` feeds
   Olag's `BecomesCopyAsTransforms`.
