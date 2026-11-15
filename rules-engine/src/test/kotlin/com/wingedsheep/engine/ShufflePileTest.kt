@@ -4,6 +4,8 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.permissions.MayPlayPermission
+import com.wingedsheep.engine.state.permissions.addMayPlayPermission
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.engine.view.ClientEventTransformer
@@ -56,6 +58,19 @@ class ShufflePileTest : FunSpec({
         }
     }
 
+    // Three cards exiled face down and shuffled where they lie.
+    val ExiledPile = card("Exiled Pile Test") {
+        manaCost = "{U}"
+        typeLine = "Sorcery"
+        spell {
+            effect = Effects.Pipeline {
+                val top = gather(CardSource.TopOfLibrary(DynamicAmount.Fixed(3)))
+                exile(top, faceDown = FaceDownMode.HIDDEN)
+                shufflePile(listOf(top))
+            }
+        }
+    }
+
     // The same pile exiled face up: nothing is hidden, so nothing is renamed.
     val FaceUpPile = card("Face-Up Pile Test") {
         manaCost = "{U}"
@@ -71,7 +86,7 @@ class ShufflePileTest : FunSpec({
     }
 
     fun newDriver(): GameTestDriver = GameTestDriver().apply {
-        registerCards(TestCards.all + listOf(FaceDownPile, FaceUpPile))
+        registerCards(TestCards.all + listOf(FaceDownPile, FaceUpPile, ExiledPile))
         initMirrorMatch(deck = Deck.of("Island" to 40), skipMulligans = true)
         passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -107,6 +122,20 @@ class ShufflePileTest : FunSpec({
         d.state.logicalZone(exiled) shouldBe ZoneKey(d.player1, Zone.EXILE)
     }
 
+    test("a pile left in exile is dealt back in the shuffled order, so positions don't match old ids to new") {
+        val d = newDriver()
+        val old = listOf("Centaur Courser", "Grizzly Bears", "Savannah Lions").map { d.putCardOnTopOfLibrary(d.player1, it) }
+
+        d.cast("Exiled Pile Test")
+
+        val exile = d.state.getZone(ZoneKey(d.player1, Zone.EXILE))
+        exile.size shouldBe 3
+        exile shouldNotContainAnyOf old
+        // The fresh ids were minted in the shuffled order and the slots refilled in that same order.
+        exile shouldBe exile.sortedBy { it.value.removePrefix("e").toLong() }
+        exile.map { d.name(it) } shouldContainExactlyInAnyOrder listOf("Centaur Courser", "Grizzly Bears", "Savannah Lions")
+    }
+
     test("the log never names a card that stays hidden, though its events were emitted under its old id") {
         val d = newDriver()
         d.putCardOnTopOfLibrary(d.player1, "Centaur Courser")
@@ -126,6 +155,8 @@ class ShufflePileTest : FunSpec({
         val source = d.putPermanentOnBattlefield(d.player1, "Centaur Courser")
         val exiled = d.putCardInExile(d.player1, "Grizzly Bears")
         val before = d.state.updateEntity(source) { it.with(LinkedExileComponent(listOf(exiled))) }
+            .copy(departedLinkedExile = mapOf(7L to listOf(exiled)))
+            .let { s -> s.newEntity().let { (permId, s2) -> s2.addMayPlayPermission(MayPlayPermission(permId, setOf(exiled), d.player1, sourceId = source, timestamp = s2.timestamp)) } }
         val generation = before.objectRef(exiled)!!.generation
 
         val (newId, after) = before.reidentify(exiled)
@@ -136,6 +167,8 @@ class ShufflePileTest : FunSpec({
         after.getZone(ZoneKey(d.player1, Zone.EXILE)) shouldBe listOf(newId)
         after.objectRef(newId)!!.generation shouldBe generation
         after.getEntity(source)!!.get<LinkedExileComponent>()!!.exiledIds shouldBe listOf(newId)
+        after.departedLinkedExile shouldBe mapOf(7L to listOf(newId))
+        after.mayPlayPermissions.single().cardIds shouldBe setOf(newId)
         // A permanent is never renamed: too much points at it.
         before.reidentify(source) shouldBe (source to before)
     }

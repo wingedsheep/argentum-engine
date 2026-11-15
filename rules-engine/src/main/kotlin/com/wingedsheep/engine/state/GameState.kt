@@ -981,10 +981,12 @@ data class GameState(
 
     /**
      * Give [entityId] a freshly minted [EntityId], keeping everything else about it — its
-     * components, its place in its zone, its object identity, the exile pile it was linked into and
-     * any "you may play it" grant over it. Used when a face-down pile is shuffled
+     * components, its place in its zone, its object identity, the exile pile it was linked into (and
+     * a source's chosen card from that pile) and any "you may play it" grant over it. Used when a face-down pile is shuffled
      * ([com.wingedsheep.sdk.scripting.effects.ShufflePileEffect]): ids are minted per card, so a
      * card that kept its id could be followed through the shuffle by anyone who saw it go in.
+     *
+     * ([sourceObjectRecords] only ever records battlefield objects, which are never renamed.)
      *
      * Not a zone change and not a new object: no event is emitted, nothing triggers, and the object
      * generation is carried over. The old id is recorded on the card
@@ -1016,9 +1018,15 @@ data class GameState(
             },
         )
         for ((sourceId, source) in minted.entities) {
-            val linked = source.get<LinkedExileComponent>() ?: continue
-            if (entityId in linked.exiledIds) {
+            val linked = source.get<LinkedExileComponent>()
+            if (linked != null && entityId in linked.exiledIds) {
                 result = result.updateEntity(sourceId) { it.with(LinkedExileComponent(linked.exiledIds.map(::rename))) }
+            }
+            val chosen = source.get<com.wingedsheep.engine.state.components.battlefield.ChosenLinkedExileComponent>()
+            if (chosen?.chosenId == entityId) {
+                result = result.updateEntity(sourceId) {
+                    it.with(com.wingedsheep.engine.state.components.battlefield.ChosenLinkedExileComponent(newId))
+                }
             }
         }
         return newId to result

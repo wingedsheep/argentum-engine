@@ -16,8 +16,10 @@ import kotlin.reflect.KClass
  *
  * Every card of the pile that is face down outside the library is re-identified
  * ([GameState.reidentify]) in the shuffled order, so the fresh ids — minted in sequence — say
- * nothing about which card went in where. The old ids are also rewritten in every other stored
- * collection, so a later step reading one of the source collections still finds its cards.
+ * nothing about which card went in where, and the pile's cards are dealt back into the zone slots
+ * they occupy in that shuffled order, so their positions say nothing either. The old ids are also
+ * rewritten in every other stored collection of the same pipeline block, so a later step of that
+ * block reading one of the source collections still finds its cards.
  */
 class ShufflePileExecutor : EffectExecutor<ShufflePileEffect> {
 
@@ -43,10 +45,27 @@ class ShufflePileExecutor : EffectExecutor<ShufflePileEffect> {
             newId
         }
 
+        // Renaming keeps each card in its slot, so a pile left where it is (say, in exile) would still
+        // line up old ids with new ones by position: deal the shuffled pile back into those slots.
+        for ((zone, members) in result.groupBy { current.logicalZone(it) }) {
+            if (zone == null || zone.zoneType in UNSHUFFLED_ZONES || members.size < 2) continue
+            val contents = current.getZone(zone)
+            val slots = contents.indices.filter { contents[it] in members }
+            if (slots.size != members.size) continue
+            val reordered = contents.toMutableList()
+            slots.forEachIndexed { i, slot -> reordered[slot] = members[i] }
+            current = current.reorderZone(zone, reordered)
+        }
+
         val rewritten = if (renamed.isEmpty()) emptyMap() else stored
             .filterValues { ids -> ids.any { it in renamed } }
             .mapValues { (_, ids) -> ids.map { renamed[it] ?: it } }
         return EffectResult(state = current, updatedCollections = rewritten + (effect.storeAs to result))
+    }
+
+    private companion object {
+        /** A library keeps its own order; permanents and spells keep their places (and their ids). */
+        val UNSHUFFLED_ZONES = setOf(Zone.LIBRARY, Zone.BATTLEFIELD, Zone.STACK)
     }
 
     private fun isHiddenFaceDown(state: GameState, cardId: EntityId): Boolean {
