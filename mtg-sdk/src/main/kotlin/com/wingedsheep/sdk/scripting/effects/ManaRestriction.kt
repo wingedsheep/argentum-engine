@@ -324,13 +324,42 @@ sealed interface ManaRestriction {
     /**
      * "Spend this mana only to turn permanents face up."
      *
-     * Satisfied by the turn-face-up special action (disguise/morph face-up, CR 707.9 / 702.37e),
-     * not by spell casts or ability activations. Used by Overgrown Zealot and Creeping Peeper.
+     * Satisfied by the turn-face-up special action (CR 116.2b — morph's 702.37e, disguise's
+     * 702.168d, manifest's 701.40b, cloak's 701.58b), not by spell casts or ability activations.
+     * With both axes left `null` any turn-up qualifies (Overgrown Zealot, Creeping Peeper). The two
+     * axes narrow it, and both must hold when both are set:
+     *
+     * - [procedures] — which mechanic's turn-up procedure is being paid for
+     *   (`setOf(`[FaceDownMode.MORPH]`)` is "pay a morph cost", megamorph included).
+     *   A manifested card that prints morph can be turned up by either procedure (CR 701.40c), so
+     *   this reads the procedure chosen, not how the permanent went face down.
+     * - [faceDownAs] — how the permanent being turned up went face down ("turn a manifested
+     *   creature face up" is `setOf(MANIFEST)`; manifest dread manifests too, cloak does not).
+     *
+     * Qarsi Deceiver's "pay a mana cost to turn a manifested creature face up, or pay a morph cost"
+     * is `AnyOf(TurnPermanentsFaceUpOnly(faceDownAs = setOf(MANIFEST)),
+     * TurnPermanentsFaceUpOnly(procedures = setOf(MORPH)))` — the axes ride this atom rather than a
+     * sibling because "which turn-up" is a narrowing of the same spend context.
      */
     @SerialName("TurnPermanentsFaceUpOnly")
     @Serializable
-    data object TurnPermanentsFaceUpOnly : ManaRestriction {
-        override val description: String = "Spend this mana only to turn permanents face up"
+    data class TurnPermanentsFaceUpOnly(
+        val procedures: Set<FaceDownMode>? = null,
+        val faceDownAs: Set<FaceDownMode>? = null,
+    ) : ManaRestriction {
+        override val description: String = buildString {
+            append("Spend this mana only to ")
+            when {
+                procedures == setOf(FaceDownMode.MORPH) && faceDownAs == null -> append("pay a morph cost")
+                faceDownAs != null && procedures == null ->
+                    append("turn a ${faceDownAs.joinToString(" or ") { it.participle }} creature face up")
+                procedures == null && faceDownAs == null -> append("turn permanents face up")
+                else -> append("turn permanents face up").also {
+                    procedures?.let { p -> append(" by ${p.joinToString(" or ") { it.name.lowercase() }}") }
+                    faceDownAs?.let { f -> append(" that were ${f.joinToString(" or ") { it.participle }}") }
+                }
+            }
+        }
     }
 
     /**
@@ -657,3 +686,13 @@ sealed interface ManaRestriction {
         }
     }
 }
+
+/** "manifested", "cloaked", … — the past participle Oracle uses for a permanent put face down this way. */
+private val FaceDownMode.participle: String
+    get() = when (this) {
+        FaceDownMode.MORPH -> "morphed"
+        FaceDownMode.MANIFEST -> "manifested"
+        FaceDownMode.DISGUISE -> "disguised"
+        FaceDownMode.CLOAK -> "cloaked"
+        FaceDownMode.HIDDEN -> "face-down"
+    }

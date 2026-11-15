@@ -8,6 +8,7 @@ import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.mechanics.cost.CostPaymentService
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownModeComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
@@ -32,10 +33,6 @@ class TurnFaceUpEnumerator(
     private val predicateEvaluator: PredicateEvaluator
 ) : ActionEnumerator {
 
-    // Lets restricted mana tagged "spend only to turn permanents face up" count toward
-    // affordability of the turn-face-up special action (Overgrown Zealot, Creeping Peeper).
-    private val faceUpContext = SpellPaymentContext(isTurnFaceUpAction = true)
-
     override fun enumerate(context: EnumerationContext): List<LegalAction> {
         val result = mutableListOf<LegalAction>()
         val state = context.state
@@ -53,7 +50,12 @@ class TurnFaceUpEnumerator(
             // Must have turn-up data (to get the cost)
             val morphData = container.get<MorphDataComponent>() ?: continue
 
+            val faceDownAs = container.get<FaceDownModeComponent>()?.mode
             morphData.procedures.forEachIndexed { procedureIndex, procedure ->
+                // Lets restricted mana tagged "spend only to turn permanents face up" (Overgrown
+                // Zealot) — or only for one route, "a morph cost" (Qarsi Deceiver) — count toward
+                // affordability of this procedure.
+                val faceUpContext = SpellPaymentContext.turnFaceUp(procedure.mechanic, faceDownAs)
                 val cost = procedure.cost
                 val manaMorph = (cost as? PayCost.Atom)?.atom as? CostAtom.Mana
                 // Global increases (Exiled Doomsayer) and the procedure's own reduction (Fugitive

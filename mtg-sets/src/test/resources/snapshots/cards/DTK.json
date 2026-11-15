@@ -4152,6 +4152,77 @@
     ]
 }
 
+// Qarsi Deceiver
+{
+    "name": "Qarsi Deceiver",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Snake Wizard",
+    "oracleText": "{T}: Add {C}. Spend this mana only to cast a face-down creature spell, pay a mana cost to turn a manifested creature face up, or pay a morph cost. (A megamorph cost is a morph cost.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Qarsi Deceiver:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "restriction": {
+                        "type": "AnyOf",
+                        "restrictions": [
+                            "FaceDownSpellsOnly",
+                            {
+                                "type": "TurnPermanentsFaceUpOnly",
+                                "faceDownAs": [
+                                    "MANIFEST"
+                                ]
+                            },
+                            {
+                                "type": "TurnPermanentsFaceUpOnly",
+                                "procedures": [
+                                    "MORPH"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add {C}. Spend this mana only to cast a face-down creature spell, pay a mana cost to turn a manifested creature face up, or pay a morph cost."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "UNCOMMON",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/64d64264-895f-4d4d-8e5c-ab1d0d6e340b.jpg?1783938604",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "The mana produced by Qarsi Deceiver can't be used to cast a spell that instructs you to manifest cards."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Turning a face-down creature with megamorph face up and putting a +1/+1 counter on it is a special action. It doesn't use the stack and can't be responded to."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If a face-down creature with megamorph is turned face up some other way (for example, if you manifest a card with megamorph and then pay its mana cost to turn it face up), you won't put a +1/+1 counter on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Qarsi Sadist
 {
     "name": "Qarsi Sadist",

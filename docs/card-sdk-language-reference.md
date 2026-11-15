@@ -19097,10 +19097,22 @@ restriction matches the spell context.
   would also pay the other activated abilities a Class's levels grant. Sorcerer Class's "Spend this
   mana only to cast an instant or sorcery spell or to gain a Class level" is
   `AnyOf(InstantOrSorceryOnly, ClassLevelUpOnly)`.
-- `ManaRestriction.TurnPermanentsFaceUpOnly` — only the turn-face-up special action (disguise/
-  morph face-up). Satisfied by `SpellPaymentContext.isTurnFaceUpAction`; the turn-face-up handler/
-  enumerator pass that context so restricted mana in the pool is consumed. Overgrown Zealot,
-  Creeping Peeper.
+- `ManaRestriction.TurnPermanentsFaceUpOnly(procedures = null, faceDownAs = null)` — only the
+  turn-face-up special action. With both axes `null` any turn-up qualifies (Overgrown Zealot,
+  Creeping Peeper: `TurnPermanentsFaceUpOnly()`). The axes narrow it, and both must hold when both
+  are set:
+  - `procedures: Set<FaceDownMode>?` — which mechanic's turn-up procedure is being paid for
+    (`TurnUpProcedure.mechanic`): `setOf(MORPH)` is "pay a morph cost" (megamorph included), even on
+    a manifested card that prints morph (CR 701.40c).
+  - `faceDownAs: Set<FaceDownMode>?` — how the permanent went face down (`FaceDownModeComponent`):
+    `setOf(MANIFEST)` is "turn a manifested creature face up" (manifest dread manifests; cloak
+    doesn't).
+
+  Satisfied by `SpellPaymentContext.turnFaceUp(procedure, faceDownAs)`, which the turn-face-up
+  handler and enumerator build per procedure so restricted mana in the pool is consumed. Qarsi
+  Deceiver's "cast a face-down creature spell, pay a mana cost to turn a manifested creature face up,
+  or pay a morph cost" is `AnyOf(FaceDownSpellsOnly, TurnPermanentsFaceUpOnly(faceDownAs =
+  setOf(MANIFEST)), TurnPermanentsFaceUpOnly(procedures = setOf(MORPH)))`.
 - `ManaRestriction.UnlockDoorOnly` — only the unlock-a-door special action (CR 709.5e).
   Satisfied by `SpellPaymentContext.isUnlockDoorAction`; the unlock-room handler/enumerator pass
   that context. Creeping Peeper (inside `AnyOf`).
@@ -19122,7 +19134,7 @@ restriction matches the spell context.
   cover cloak or manifest: nothing there is cast. The turn-face-up half of "cast face-down spells
   or turn creatures face up" is the separate `TurnPermanentsFaceUpOnly` atom (a face-down permanent
   is always a creature, so "permanents" and "creatures" coincide). Tin Street Gossip:
-  `AnyOf(FaceDownSpellsOnly, TurnPermanentsFaceUpOnly)`.
+  `AnyOf(FaceDownSpellsOnly, TurnPermanentsFaceUpOnly())`.
 - `ManaRestriction.CannotCastSpellsOtherThan(cardTypes)` — the family's only **negative**
   restriction: "This mana can't be spent to cast a non[type] spell" (Hydraulic Helper —
   `CannotCastSpellsOtherThan(setOf(CardType.ARTIFACT))`). Every other variant is a whitelist
@@ -19151,7 +19163,7 @@ restriction matches the spell context.
 - `ManaRestriction.AnyOf(restrictions)` — disjunction; the mana is spendable in any context that
   satisfies *any* listed restriction. Compose atomic restrictions for multi-option mana — e.g.
   Creeping Peeper's "cast an enchantment spell, unlock a door, or turn a permanent face up" is
-  `AnyOf(CardTypeSpellsOrAbilitiesOnly(ENCHANTMENT), UnlockDoorOnly, TurnPermanentsFaceUpOnly)`.
+  `AnyOf(CardTypeSpellsOrAbilitiesOnly(ENCHANTMENT), UnlockDoorOnly, TurnPermanentsFaceUpOnly())`.
 
 ### `ManaSpellRider`<a id="manaspellrider"></a>
 

@@ -36,7 +36,7 @@ class CreepingPeeperScenarioTest : FunSpec({
                 allowAbilities = false,
             ),
             ManaRestriction.UnlockDoorOnly,
-            ManaRestriction.TurnPermanentsFaceUpOnly,
+            ManaRestriction.TurnPermanentsFaceUpOnly(),
         ),
     )
 

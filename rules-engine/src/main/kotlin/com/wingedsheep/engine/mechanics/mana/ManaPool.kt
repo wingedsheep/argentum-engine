@@ -109,6 +109,19 @@ data class SpellPaymentContext(
      */
     val isTurnFaceUpAction: Boolean = false,
     /**
+     * For a turn-face-up payment, the mechanic whose turn-up procedure is being paid for
+     * ([com.wingedsheep.engine.state.components.identity.TurnUpProcedure.mechanic]) — `MORPH` is
+     * "pay a morph cost". Read by [ManaRestriction.TurnPermanentsFaceUpOnly.procedures]; `null`
+     * outside a turn-up, so a narrowed restriction refuses any other payment.
+     */
+    val turnFaceUpProcedure: com.wingedsheep.sdk.scripting.effects.FaceDownMode? = null,
+    /**
+     * For a turn-face-up payment, how the permanent went face down
+     * ([com.wingedsheep.engine.state.components.identity.FaceDownModeComponent.mode]) — `MANIFEST`
+     * is "a manifested creature". Read by [ManaRestriction.TurnPermanentsFaceUpOnly.faceDownAs].
+     */
+    val turnFaceUpFaceDownAs: com.wingedsheep.sdk.scripting.effects.FaceDownMode? = null,
+    /**
      * True when the payment is for the unlock-a-door special action (CR 709.5e). Lets
      * [ManaRestriction.UnlockDoorOnly] recognize "spend this mana only to ... unlock a door"
      * (Creeping Peeper).
@@ -186,6 +199,21 @@ data class SpellPaymentContext(
          * spells with mana value 4 or greater") pay for a cast that, as far as the rules are
          * concerned, has none of them.
          */
+        /**
+         * The payment context for the turn-face-up special action (CR 116.2b): which [procedure]
+         * is being paid for and how the permanent went face down ([faceDownAs], `null` when the
+         * permanent carries no mode marker), so restrictions narrowed to "a morph cost" or "a
+         * manifested creature" (Qarsi Deceiver) can tell the routes apart.
+         */
+        fun turnFaceUp(
+            procedure: com.wingedsheep.sdk.scripting.effects.FaceDownMode,
+            faceDownAs: com.wingedsheep.sdk.scripting.effects.FaceDownMode?,
+        ): SpellPaymentContext = SpellPaymentContext(
+            isTurnFaceUpAction = true,
+            turnFaceUpProcedure = procedure,
+            turnFaceUpFaceDownAs = faceDownAs,
+        )
+
         fun faceDownCast(isFromHand: Boolean = true): SpellPaymentContext = SpellPaymentContext(
             isCreature = true,
             manaValue = 0,
@@ -281,7 +309,9 @@ fun ManaRestriction.isSatisfiedBy(context: SpellPaymentContext): Boolean = when 
     is ManaRestriction.CastFromGraveyardOnly -> !context.isAbilityActivation && context.isFromGraveyard
     is ManaRestriction.DisturbCostOnly -> !context.isAbilityActivation && context.isDisturbCast
     is ManaRestriction.CastFromNonHandOnly -> !context.isAbilityActivation && !context.isFromHand
-    is ManaRestriction.TurnPermanentsFaceUpOnly -> context.isTurnFaceUpAction
+    is ManaRestriction.TurnPermanentsFaceUpOnly -> context.isTurnFaceUpAction &&
+        procedures.let { it == null || context.turnFaceUpProcedure in it } &&
+        faceDownAs.let { it == null || context.turnFaceUpFaceDownAs in it }
     is ManaRestriction.FaceDownSpellsOnly -> !context.isAbilityActivation && context.isFaceDownCast
     is ManaRestriction.UnlockDoorOnly -> context.isUnlockDoorAction
     is ManaRestriction.ForetellOnly -> context.isForetellAction

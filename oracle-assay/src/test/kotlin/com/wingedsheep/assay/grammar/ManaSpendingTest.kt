@@ -230,7 +230,7 @@ class ManaSpendingTest : StringSpec({
             listOf(
                 ManaRestriction.CardTypeSpellsOrAbilitiesOnly(CardType.ENCHANTMENT, allowSpells = true),
                 ManaRestriction.UnlockDoorOnly,
-                ManaRestriction.TurnPermanentsFaceUpOnly,
+                ManaRestriction.TurnPermanentsFaceUpOnly(),
             )
         )
         restrictionOf(

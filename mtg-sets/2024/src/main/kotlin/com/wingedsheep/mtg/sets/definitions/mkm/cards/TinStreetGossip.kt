@@ -48,7 +48,7 @@ val TinStreetGossip = card("Tin Street Gossip") {
     val faceDownMana = ManaRestriction.AnyOf(
         listOf(
             ManaRestriction.FaceDownSpellsOnly,
-            ManaRestriction.TurnPermanentsFaceUpOnly
+            ManaRestriction.TurnPermanentsFaceUpOnly()
         )
     )
 

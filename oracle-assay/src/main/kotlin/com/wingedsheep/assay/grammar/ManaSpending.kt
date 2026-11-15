@@ -366,7 +366,7 @@ object ManaSpending {
         ),
         atom(
             "turn permanents face up",
-            ManaRestriction.TurnPermanentsFaceUpOnly,
+            ManaRestriction.TurnPermanentsFaceUpOnly(),
             "turn a permanent face up",
         ),
         atom(

@@ -64,9 +64,9 @@ class OvergrownZealotScenarioTest : FunSpec({
         val unlock = SpellPaymentContext(isUnlockDoorAction = true)
         val creatureSpell = SpellPaymentContext(isCreature = true, cardTypes = setOf(CardType.CREATURE))
 
-        ManaRestriction.TurnPermanentsFaceUpOnly.isSatisfiedBy(faceUp) shouldBe true
-        ManaRestriction.TurnPermanentsFaceUpOnly.isSatisfiedBy(unlock) shouldBe false
-        ManaRestriction.TurnPermanentsFaceUpOnly.isSatisfiedBy(creatureSpell) shouldBe false
+        ManaRestriction.TurnPermanentsFaceUpOnly().isSatisfiedBy(faceUp) shouldBe true
+        ManaRestriction.TurnPermanentsFaceUpOnly().isSatisfiedBy(unlock) shouldBe false
+        ManaRestriction.TurnPermanentsFaceUpOnly().isSatisfiedBy(creatureSpell) shouldBe false
     }
 
     test("restricted face-up mana in the pool pays a face-down creature's morph cost") {
@@ -78,8 +78,8 @@ class OvergrownZealotScenarioTest : FunSpec({
 
         // Morph cost is {2}{B}. Give exactly that as turn-face-up-only mana.
         val cutthroat = driver.putFaceDownCreature(player, "Mana Morph Tester")
-        driver.giveRestrictedMana(player, Color.BLACK, 1, ManaRestriction.TurnPermanentsFaceUpOnly)
-        driver.giveRestrictedMana(player, null, 2, ManaRestriction.TurnPermanentsFaceUpOnly)
+        driver.giveRestrictedMana(player, Color.BLACK, 1, ManaRestriction.TurnPermanentsFaceUpOnly())
+        driver.giveRestrictedMana(player, null, 2, ManaRestriction.TurnPermanentsFaceUpOnly())
 
         val result = driver.submit(
             TurnFaceUp(playerId = player, sourceId = cutthroat, paymentStrategy = PaymentStrategy.FromPool)
