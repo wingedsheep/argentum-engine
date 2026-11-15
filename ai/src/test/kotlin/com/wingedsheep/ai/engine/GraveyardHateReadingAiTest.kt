@@ -1,5 +1,6 @@
 package com.wingedsheep.ai.engine
 
+import com.wingedsheep.ai.audit.AiReadingAudit
 import com.wingedsheep.ai.engine.knowledge.CardIntent
 import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.IntentCatalog
@@ -7,8 +8,10 @@ import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.ai.engine.knowledge.TargetPolarity
 import com.wingedsheep.ai.puzzles.advanceToPriority
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.toEntityId
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
@@ -85,6 +88,42 @@ class GraveyardHateReadingAiTest : ScenarioTestBase() {
             withClue("Feldon's Cane shuffles only its controller's graveyard back: a refill, not hate") {
                 intent("Feldon's Cane").tags shouldNotContain IntentTag.GRAVEYARD_HATE
             }
+        }
+
+        test("a target player's graveyard shuffled into their library is a refill aimed at ourselves") {
+            listOf("Learn from the Past", "Clear the Mind").forEach { name ->
+                withClue(name) {
+                    val card = cardRegistry.getCard(name)!!
+                    intents.effectTargetPolarities(card.script.spellEffect!!, card.script.targetRequirements) shouldBe
+                        listOf(TargetPolarity.BENEFICIAL)
+                    AiReadingAudit.read(card).readFully shouldBe true
+                }
+            }
+        }
+
+        test("Learn from the Past shuffles our own milled graveyard back, not the opponent's") {
+            val game = scenario()
+                .withPlayers()
+                .withActivePlayer(1)
+                .withCardInHand(1, "Learn from the Past")
+                .withLandsOnBattlefield(1, "Island", 4)
+                .withCardInGraveyard(1, "Serra Angel")
+                .withCardInGraveyard(1, "Grizzly Bears")
+                .withCardInGraveyard(2, "Raging Goblin")
+                .withCardInLibrary(1, "Island")
+                .withCardInLibrary(2, "Island")
+                .build()
+                .advanceToPriority(1, Step.PRECOMBAT_MAIN)
+            val spell = game.state.getHand(game.player1Id).single()
+            val cast = GameSimulator(cardRegistry).getLegalActions(game.state, game.player1Id)
+                .first { (it.action as? CastSpell)?.cardId == spell }
+
+            val filled = TargetSelection.fillHeuristically(
+                game.state, cast, game.player1Id, fillPartialRequirements = true,
+                intents = intents, polarityFromEffect = true,
+            ) as CastSpell
+
+            (filled.targets.single() as ChosenTarget.Player).playerId shouldBe game.player1Id
         }
 
         test("our own graveyard's creature cards exiled to become token copies are recursion, aimed at our best") {

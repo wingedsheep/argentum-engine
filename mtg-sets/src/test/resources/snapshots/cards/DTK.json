@@ -628,6 +628,80 @@
     ]
 }
 
+// Belltoll Dragon
+{
+    "name": "Belltoll Dragon",
+    "manaCost": "{5}{U}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying, hexproof\nMegamorph {5}{U}{U} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)\nWhen this creature is turned face up, put a +1/+1 counter on each other Dragon creature you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "HEXPROOF"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{5}{U}{U}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Belltoll Dragon:1",
+                "trigger": "TurnFaceUpEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature Dragon ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "When this creature is turned face up, put a +1/+1 counter on each other Dragon creature you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "UNCOMMON",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/97e8fba0-fcb4-440c-9442-92278e21c5e9.jpg?1783938610",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If a face-down creature with megamorph is turned face up some other way (for example, if you manifest a card with megamorph and then pay its mana cost to turn it face up), you won't put a +1/+1 counter on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Berserkers' Onslaught
 {
     "name": "Berserkers' Onslaught",
@@ -653,6 +727,92 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Blessed Reincarnation
+{
+    "name": "Blessed Reincarnation",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target creature an opponent controls. That player reveals cards from the top of their library until a creature card is revealed. The player puts that card onto the battlefield, then shuffles the rest into their library.\nRebound (If you cast this spell from your hand, exile it as it resolves. At the beginning of your next upkeep, you may cast this card from exile without paying its mana cost.)",
+    "keywords": [
+        "REBOUND"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "GatherUntilMatch",
+                    "player": {
+                        "type": "ControllerOf",
+                        "targetDescription": "target creature"
+                    },
+                    "filter": "creature",
+                    "storeMatch": "matched1",
+                    "storeRevealed": "revealed1"
+                },
+                {
+                    "type": "RevealCollection",
+                    "from": "revealed1",
+                    "fromZone": "Library",
+                    "toZone": "Battlefield"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "matched1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "player": {
+                            "type": "ControllerOf",
+                            "targetDescription": "target creature"
+                        }
+                    }
+                },
+                {
+                    "type": "ShuffleLibrary",
+                    "target": "TargetController"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/401cd79d-638e-43b4-8d0c-d7af05c55a1a.jpg?1783938610",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If there are no creature cards in the library, it will be revealed and shuffled. The target creature will remain exiled."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Casting the card again due to the delayed triggered ability is optional. If you choose not to cast the card, or if you can't (perhaps because there are no legal targets available), the card will stay exiled. You won't get another chance to cast it on a future turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -888,6 +1048,90 @@
     ]
 }
 
+// Clone Legion
+{
+    "name": "Clone Legion",
+    "manaCost": "{7}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "For each creature target player controls, create a token that's a copy of that creature.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControlledByReferencedPlayer",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    }
+                }
+            },
+            "body": {
+                "type": "CreateTokenCopyOfTarget",
+                "target": "IterationEntity"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "MYTHIC",
+        "artist": "Svetlin Velinov",
+        "flavorText": "Their lust for battle was so great that they didn't care their enemies wore their own faces.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/45c6a201-1d4d-4ae5-a84e-098e094eaf61.jpg?1783938609",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "Any enters-the-battlefield abilities of the copied creature will trigger when the token enters the battlefield. Any \"as [this permanent] enters the battlefield\" or \"[this permanent] enters the battlefield with\" abilities of the copied creature will also work."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "The token creatures all enter the battlefield at the same time."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "A token that enters the battlefield as a copy of a face-down creature is a face-up colorless 2/2 creature with no name, abilities, or creature types."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If the copied creature is a token, the token created by Clone Legion copies the original characteristics of that token as stated by the effect that put the token onto the battlefield."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If the copied creature is copying something else, then the token enters the battlefield as whatever that creature copied."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If the copied creature has {X} in its mana cost, X is considered to be zero."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Each token copies exactly what was printed on the original creature and nothing else (unless that permanent is copying something else or is a token; see below). It doesn't copy whether that creature is tapped or untapped, whether it has any counters on it or Auras and Equipment attached to it, or any non-copy effects that have changed its power, toughness, types, color, and so on."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Remember that if you control more than one legendary permanent with the same name, you'll choose one to remain on the battlefield and put the rest into their owners' graveyards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Coat with Venom
 {
     "name": "Coat with Venom",
@@ -1105,6 +1349,58 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Contradict
+{
+    "name": "Contradict",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                "Counter",
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "artist": "Steve Prescott",
+        "flavorText": "Those who question Ojutai may not like the answers they receive.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0b3d4ff-09d1-4d9f-8c83-cdfbd7bb1079.jpg?1783938611",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If the spell becomes an illegal target (because it’s left the stack, for example) when Contradict tries to resolve, Contradict won’t resolve and none of its effects will happen. You won’t draw a card."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "A spell that can’t be countered by spells and abilities is a legal target for Contradict. The spell won’t be countered when Contradict resolves, but you’ll draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -1443,6 +1739,47 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Dirgur Nemesis
+{
+    "name": "Dirgur Nemesis",
+    "manaCost": "{5}{U}",
+    "typeLine": "Creature — Serpent",
+    "oracleText": "Defender\nMegamorph {6}{U} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{6}{U}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "51",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/54c388de-c2c9-4975-9eac-86a8030a9884.jpg?1783938609"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -2333,6 +2670,129 @@
     ]
 }
 
+// Elusive Spellfist
+{
+    "name": "Elusive Spellfist",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Monk",
+    "oracleText": "Whenever you cast a noncreature spell, this creature gets +1/+0 until end of turn and can't be blocked this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Elusive Spellfist:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "CANT_BE_BLOCKED",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you cast a noncreature spell, this creature gets +1/+0 until end of turn and can't be blocked this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "artist": "Viktor Titov",
+        "flavorText": "\"Learn to see an obstacle from a new perspective. Underneath, for example.\"\n—Chanyi, Ojutai monk",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/af13b8c2-9d7d-44d8-8934-16458e7267dc.jpg?1783938608",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "Once Elusive Spellfist has been blocked, causing its ability to trigger won't change or undo that block."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Encase in Ice
+{
+    "name": "Encase in Ice",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nEnchant red or green creature\nWhen this Aura enters, tap enchanted creature.\nEnchanted creature doesn't untap during its controller's untap step.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Encase in Ice:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "EnchantedCreature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature red|green"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bcad5bd9-3236-48d4-920f-c3ed12d5f329.jpg?1783938608",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If the enchanted creature stops being red or green, or if it stops being a creature, Encase in Ice will be put into its owner's graveyard."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "The creature can still be untapped by other spells and abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Enduring Victory
 {
     "name": "Enduring Victory",
@@ -2972,6 +3432,49 @@
     ]
 }
 
+// Gudul Lurker
+{
+    "name": "Gudul Lurker",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Salamander",
+    "oracleText": "This creature can't be blocked.\nMegamorph {U} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "flags": [
+        "CANT_BE_BLOCKED"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{U}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "UNCOMMON",
+        "artist": "Christopher Burdett",
+        "flavorText": "The small are mostly ignored by dragons.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c84d5344-2d15-43da-b536-27e0d308606b.jpg?1783938608"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Gurmag Drowner
 {
     "name": "Gurmag Drowner",
@@ -3349,6 +3852,216 @@
     ]
 }
 
+// Icefall Regent
+{
+    "name": "Icefall Regent",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nWhen this creature enters, tap target creature an opponent controls. That creature doesn't untap during its controller's untap step for as long as you control this creature.\nSpells your opponents cast that target this creature cost {2} more to cast.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Icefall Regent:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": {
+                                "type": "WhileYouControlSource",
+                                "sourceDescription": "Icefall Regent"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "OpponentsCastTargeting",
+                    "targetFilter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "modification": {
+                    "type": "IncreaseGeneric",
+                    "amount": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "rarity": "RARE",
+        "artist": "David Gaillet",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2cbbd377-4617-4285-b367-98418a588dab.jpg?1783938607",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "Icefall Regent's triggered ability can target any creature controlled by an opponent, including one that is already tapped. In that case, the creature stays tapped and won't untap during its controller's untap step."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If another player gains control of Icefall Regent, the creature will no longer be affected by the ability stopping it from untapping, even if you later regain control of Icefall Regent."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "The ability stopping the creature from untapping will continue to apply to it even if the creature changes controllers."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Icefall Regent's last ability affects all spells cast by your opponents that target it, including Aura spells and spells with multiple targets. It doesn't affect abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Illusory Gains
+{
+    "name": "Illusory Gains",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nYou control enchanted creature.\nWhenever a creature an opponent controls enters, attach this Aura to that creature.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Illusory Gains:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:opponent",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "statePredicates": [
+                                        "IsTriggeringEntity"
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "gathered0",
+                            "ifNotEmpty": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "EntityMatches",
+                                        "entity": "Self",
+                                        "filter": {
+                                            "cardPredicates": [
+                                                {
+                                                    "type": "Not",
+                                                    "predicate": "IsCreature"
+                                                },
+                                                {
+                                                    "type": "CouldAttachTo",
+                                                    "reference": "TriggeringEntity"
+                                                }
+                                            ],
+                                            "statePredicates": [
+                                                "IsOnBattlefield"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "type": "AttachEquipment",
+                                    "target": {
+                                        "type": "PipelineTarget",
+                                        "collectionName": "gathered0"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            "ControlEnchantedPermanent"
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/747dfb21-a00c-46ba-9da3-739f570e1246.jpg?1783938607",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "Illusory Gains's last ability is mandatory. You can't choose to have Illusory Gains not move."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If Illusory Gains can't legally enchant the creature that enters the battlefield (perhaps because it has protection from blue), it remains where it is. You retain control of the creature it's currently enchanting."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "The last ability of Illusory Gains doesn't target the new creature. It will become attached to that creature even if that creature has hexproof or shroud."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If multiple creatures enter the battlefield under an opponent's control at the same time, Illusory Gains will trigger for each of them. You may put these abilities on the stack in any order. As each resolves, you'll briefly gain control of the associated creature. The last one to resolve determines which one you'll ultimately control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Impact Tremors
 {
     "name": "Impact Tremors",
@@ -3656,6 +4369,75 @@
     ]
 }
 
+// Learn from the Past
+{
+    "name": "Learn from the Past",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Target player shuffles their graveyard into their library.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "graveyardCards"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "graveyardCards",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "placement": "Shuffled"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "rarity": "UNCOMMON",
+        "artist": "Chase Stone",
+        "flavorText": "\"I've been told my whole life that the great Ojutai holds all knowledge, but I wonder what our forebears knew.\"\n—Narset",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/4/347c6e76-dba4-4448-a4f4-d9591d4539c7.jpg?1783938607",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If the player's graveyard is empty, the player will shuffle their library, then you'll draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Lightning Berserker
 {
     "name": "Lightning Berserker",
@@ -3942,6 +4724,75 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Monastery Loremaster
+{
+    "name": "Monastery Loremaster",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Djinn Wizard",
+    "oracleText": "Megamorph {5}{U} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)\nWhen this creature is turned face up, return target noncreature, nonland card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{5}{U}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Monastery Loremaster:1",
+                "trigger": "TurnFaceUpEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "noncreature nonland own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature is turned face up, return target noncreature, nonland card from your graveyard to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "artist": "Ryan Alexander Lee",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19b9d8de-5746-4af0-9353-a19fa977df41.jpg?1783938606",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If a face-down creature with megamorph is turned face up some other way (for example, if you manifest a card with megamorph and then pay its mana cost to turn it face up), you won't put a +1/+1 counter on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4408,6 +5259,48 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Ojutai Interceptor
+{
+    "name": "Ojutai Interceptor",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Bird Soldier",
+    "oracleText": "Flying\nMegamorph {3}{U} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{3}{U}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "66",
+        "artist": "Johann Bodin",
+        "flavorText": "\"Though I may soar, I could never fly as high as the dragons.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/59a84666-ad2b-494c-b52b-ecee14788ef2.jpg?1783938605"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -5246,6 +6139,48 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Reduce in Stature
+{
+    "name": "Reduce in Stature",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature has base power and toughness 0/2.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "SetBasePowerToughnessStatic",
+                "power": 0,
+                "toughness": 2
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "A dragon learns humility only in the moments before its death.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8bad1d13-c4f6-4440-9988-e1db40039f02.jpg?1783938606",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "Reduce in Stature overrides all previous effects that set the creature's power or toughness to specific values. However, effects that set its power or toughness to specific values that start to apply after Reduce in Stature becomes attached to the creature will override this effect."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Effects that modify the power or toughness of the creature, such as the effects of Giant Growth or Honor of the Pure, will apply to it no matter when they started to take effect. The same is true for counters that change the creature's power or toughness (such as +1/+1 counters) and effects that switch its power and toughness."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -7734,6 +8669,64 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Taigam's Strike
+{
+    "name": "Taigam's Strike",
+    "manaCost": "{3}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature gets +2/+0 until end of turn and can't be blocked this turn.\nRebound (If you cast this spell from your hand, exile it as it resolves. At the beginning of your next upkeep, you may cast this card from exile without paying its mana cost.)",
+    "keywords": [
+        "REBOUND"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "CANT_BE_BLOCKED",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "artist": "David Gaillet",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2ef5e279-14c4-4f91-b24d-c7098140efcd.jpg?1783938602"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

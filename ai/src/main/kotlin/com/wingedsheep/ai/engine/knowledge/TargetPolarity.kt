@@ -799,6 +799,9 @@ object TargetPolarityAnalyzer {
         for (slot in lossSlots(leaves, requirements)) {
             if (TargetPolarity.BENEFICIAL !in perSlot[slot]) perSlot[slot] += TargetPolarity.HARMFUL
         }
+        for (slot in refillSlots(leaves, requirements)) {
+            if (perSlot[slot].isEmpty()) perSlot[slot] += TargetPolarity.BENEFICIAL
+        }
         for (slot in largeBaseSlots(leaves, requirements)) {
             val alone = perSlot[slot].isEmpty() &&
                 leaves.none { it !is SetBaseStatsEffect && touchesOtherwise(it, requirements[slot], slot, definitions, source) }
@@ -1151,6 +1154,30 @@ object TargetPolarityAnalyzer {
         is DealDamageEffect -> leaf.damageSource?.takeIf { it.isSlot() }?.let { ownSideSlot(it, requirements) }
         is FightEffect -> ownSideSlot(leaf.target1, requirements)
         else -> null
+    }
+
+    /**
+     * The player slots whose **whole graveyard** a pipeline shuffles back into their own library —
+     * "target player shuffles their graveyard into their library" (Clear the Mind, Learn from the
+     * Past). It is the refill [lossSlots] leaves out, Feldon's Cane's and Elixir of Immortality's
+     * own-graveyard shuffle given a target: spent cards to draw again and a deck-out staved off,
+     * so the slot reads beneficial and our own graveyard is the one to name. Every-player shuffles
+     * (Survive) name no slot and stay the graveyard hate the intent reader calls them. Only when
+     * nothing else reads the slot.
+     */
+    private fun refillSlots(leaves: List<Effect>, requirements: List<TargetRequirement>): Set<Int> {
+        val graveyardOf = HashMap<String, Player>()
+        for (leaf in leaves) {
+            val source = (leaf as? GatherCardsEffect)?.source as? CardSource.FromZone ?: continue
+            if (source.zone == Zone.GRAVEYARD && source.filter == GameObjectFilter.Any) graveyardOf[leaf.storeAs] = source.player
+        }
+        if (graveyardOf.isEmpty()) return emptySet()
+        return leaves.mapNotNullTo(HashSet()) { leaf ->
+            val move = leaf as? MoveCollectionEffect ?: return@mapNotNullTo null
+            val player = graveyardOf[move.from] ?: return@mapNotNullTo null
+            val to = move.destination as? CardDestination.ToZone ?: return@mapNotNullTo null
+            if (to.zone == Zone.LIBRARY && to.player == player) playerSlotOf(player, requirements) else null
+        }
     }
 
     /**
@@ -2551,7 +2578,7 @@ object TargetPolarityAnalyzer {
         is PlayersCantCastSpells -> if (static.affected == Player.EnchantedPlayer) TargetPolarity.HARMFUL else null
         is LoseAllAbilities -> if (static.filter.reachesEnchantedPlayer()) TargetPolarity.HARMFUL else null
         is SetBasePowerToughnessStatic ->
-            if (static.filter.reachesEnchantedPlayer() && static.shrinksToAtMostOneOne()) TargetPolarity.HARMFUL else null
+            if (static.filter.reachesEnchantedPlayer() && static.shrinksToSmallBase()) TargetPolarity.HARMFUL else null
         else -> null
     }
 
