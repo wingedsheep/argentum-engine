@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.combat
 
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.handlers.CapturedObjectBinding
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.suspendForDecision
 import com.wingedsheep.engine.core.DecisionContext
@@ -346,8 +348,8 @@ class PreventDamageExecutor(
                     onPreventedNamedTargets = if (effect.onPrevented != null) context.pipeline.namedTargets else emptyMap(),
                     onPreventedBound = if (effect.onPrevented == null) emptyList() else
                         (context.targets + context.pipeline.namedTargets.values).mapNotNull { t ->
-                            (t as? com.wingedsheep.engine.state.components.stack.ChosenTarget.Permanent)?.entityId?.takeIf { it in state.getBattlefield() }
-                        }.distinct().map { com.wingedsheep.engine.handlers.CapturedObjectBinding(it, state.objectRef(it)) },
+                            (t as? ChosenTarget.Permanent)?.entityId?.takeIf { it in state.getBattlefield() }
+                        }.distinct().map { CapturedObjectBinding(it, state.objectRef(it)) },
                 )
             }
 

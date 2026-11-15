@@ -123,9 +123,45 @@ class ChannelHarmScenarioTest : FunSpec({
         s.d.moveToGraveyard(force)
 
         s.opponentBolts(s.me)
-        if (s.d.pendingDecision is YesNoDecision) s.d.submitYesNo(s.me, true).error shouldBe null
+        withClue("the choice is still offered, but there is nothing left for it to hit") {
+            s.d.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
+        }
+        s.d.submitYesNo(s.me, true).error shouldBe null
 
         s.d.getLifeTotal(s.me) shouldBe 20
         s.d.getGraveyard(s.opp).contains(force) shouldBe true
+        s.d.pendingDecision shouldBe null
+    }
+
+    test("combat damage from two attackers: each prevented instance offers its own payoff, and combat goes on") {
+        val s = setUp()
+        val force = s.d.putCreatureOnBattlefield(s.opp, "Force of Nature")
+        val courser = s.d.putCreatureOnBattlefield(s.opp, "Centaur Courser")
+        val lions = s.d.putCreatureOnBattlefield(s.opp, "Savannah Lions")
+        s.d.removeSummoningSickness(courser)
+        s.d.removeSummoningSickness(lions)
+
+        s.d.passPriorityUntil(Step.DECLARE_ATTACKERS, activePlayer = s.opp)
+        s.d.declareAttackers(s.opp, listOf(courser, lions), s.me).error shouldBe null
+        s.d.passPriority(s.opp)
+        val harm = s.d.putCardInHand(s.me, "Channel Harm")
+        s.d.giveMana(s.me, Color.WHITE, 6)
+        s.d.castSpell(s.me, harm, listOf(force)).error shouldBe null
+        resolveAll(s.d)
+
+        s.d.passPriorityUntil(Step.DECLARE_BLOCKERS)
+        s.d.declareNoBlockers(s.me).error shouldBe null
+        var prompts = 0
+        var guard = 0
+        while (s.d.pendingDecision !is YesNoDecision && guard++ < 10) s.d.bothPass()
+        while (s.d.pendingDecision is YesNoDecision) {
+            prompts++
+            s.d.submitYesNo(s.me, true).error shouldBe null
+        }
+
+        withClue("one payoff per prevented attacker") { prompts shouldBe 2 }
+        s.d.getLifeTotal(s.me) shouldBe 20
+        withClue("3 + 1 prevented (a 3/3 and a 1/1), all of it dealt to the Force") { s.damageOn(force) shouldBe 4 }
+        s.d.pendingDecision shouldBe null
     }
 })

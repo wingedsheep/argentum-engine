@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.layers
 
+import com.wingedsheep.engine.handlers.CapturedObjectBinding
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PipelineState
 import com.wingedsheep.engine.state.GameState
@@ -761,9 +762,9 @@ sealed interface SerializableModification {
         val includesController: Boolean = false,
         val sourceFilter: GameObjectFilter? = null,
         val onPrevented: com.wingedsheep.sdk.scripting.effects.Effect? = null,
-        val onPreventedTargets: List<com.wingedsheep.engine.state.components.stack.ChosenTarget> = emptyList(),
-        val onPreventedNamedTargets: Map<String, com.wingedsheep.engine.state.components.stack.ChosenTarget> = emptyMap(),
-        val onPreventedBound: List<com.wingedsheep.engine.handlers.CapturedObjectBinding> = emptyList(),
+        val onPreventedTargets: List<ChosenTarget> = emptyList(),
+        val onPreventedNamedTargets: Map<String, ChosenTarget> = emptyMap(),
+        val onPreventedBound: List<CapturedObjectBinding> = emptyList(),
     ) : SerializableModification
 
     /**

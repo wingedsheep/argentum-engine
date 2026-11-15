@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.damage
 
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.handlers.CapturedObjectBinding
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
@@ -546,9 +548,9 @@ object DamageReplacementChain {
                 out += Candidate(key, "$hostName — $label", floating.sourceId, commute) { Step(state, listOf(d.copy(amount = next.coerceAtLeast(0)))) }
             }
             fun preventAll(label: String = "prevent all damage", gainTo: EntityId? = null, consume: Boolean = false, onPrevented: Effect? = null,
-                           riderTargets: List<com.wingedsheep.engine.state.components.stack.ChosenTarget> = emptyList(),
-                           riderNamedTargets: Map<String, com.wingedsheep.engine.state.components.stack.ChosenTarget> = emptyMap(),
-                           riderBound: List<com.wingedsheep.engine.handlers.CapturedObjectBinding> = emptyList()) {
+                           riderTargets: List<ChosenTarget> = emptyList(),
+                           riderNamedTargets: Map<String, ChosenTarget> = emptyMap(),
+                           riderBound: List<CapturedObjectBinding> = emptyList()) {
                 if (disabled) {
                     // CR 615.12: the prevention is still applied to unpreventable damage — it prevents
                     // nothing, but its additional effects take place ("for each 1 damage prevented").

@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.replacement
 
+import com.wingedsheep.engine.handlers.CapturedObjectBinding
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.Outcome
@@ -67,7 +68,7 @@ data class PendingReplacementRider(
     val chooseEnteringAttackTarget: Boolean = false,
     val targets: List<ChosenTarget> = emptyList(),
     val namedTargets: Map<String, ChosenTarget> = emptyMap(),
-    val boundObjects: List<com.wingedsheep.engine.handlers.CapturedObjectBinding> = emptyList(),
+    val boundObjects: List<CapturedObjectBinding> = emptyList(),
 ) {
     init {
         require((effect == null) == chooseEnteringAttackTarget) {
@@ -160,6 +161,8 @@ object ReplacementRiders {
     private fun live(state: GameState, rider: PendingReplacementRider, target: ChosenTarget): ChosenTarget? {
         val id = (target as? ChosenTarget.Permanent)?.entityId
         val binding = id?.let { i -> rider.boundObjects.firstOrNull { it.entityId == i } }
+        // Only battlefield targets are bound, and every battlefield object has an identity, so a
+        // binding without one names an object that was already gone: nothing to name.
         return if (binding != null && (binding.objectRef == null || !state.isCurrentObject(binding.objectRef))) null else target
     }
 }

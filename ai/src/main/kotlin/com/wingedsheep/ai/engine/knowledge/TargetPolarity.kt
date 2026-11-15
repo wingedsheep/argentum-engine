@@ -1628,9 +1628,10 @@ object TargetPolarityAnalyzer {
         // "If damage is prevented this way, you may have Channel Harm deal that much damage to
         // target creature": the shield's reaction can name the spell's own targets, read as the
         // reaction's leaves are anywhere else — a damage reaction aims at their side.
-        if (leaf is PreventDamageEffect && leaf.onPrevented != null) {
+        val reaction = (leaf as? PreventDamageEffect)?.onPrevented
+        if (leaf is PreventDamageEffect && reaction != null) {
             return classify(leaf.copy(onPrevented = null), definitions, source) +
-                EffectWalker.leaves(leaf.onPrevented!!).flatMap { classify(it, definitions, source) }
+                EffectWalker.leaves(reaction).flatMap { classify(it, definitions, source) }
         }
         val tapChoices = tapOrUntapTargets(leaf)
         if (tapChoices.isNotEmpty()) return tapChoices.map { it to TargetPolarity.FLEXIBLE }
