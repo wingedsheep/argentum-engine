@@ -1,3 +1,3 @@
-- #TBD The AI reads "you control enchanted creature" Auras (Control Magic, Illusory Gains) as removal-grade steals, and an attach that moves such an Aura onto a new creature as stealing it
+- #TBD The AI reads "you control enchanted creature" Auras (Control Magic, Illusory Gains) as removal-grade steals
 - #TBD The AI reads a toothless "base power and toughness 0/2" Aura (Reduce in Stature, Illusory Wrappings) as neutralising its host, like Pacifism
 - #TBD The AI aims "target player shuffles their graveyard into their library" (Learn from the Past, Clear the Mind) at itself, as a refill

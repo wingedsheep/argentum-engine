@@ -17,8 +17,8 @@ import io.kotest.matchers.shouldNotBe
  *   When this Aura enters, tap enchanted creature.
  *   Enchanted creature doesn't untap during its controller's untap step.
  *
- * The first Aura whose enchant restriction is a colour: it can only target a red or green creature,
- * and it is put into the graveyard once the enchanted creature stops being red or green.
+ * Pins the colour-gated enchant restriction: it can only target a red or green creature, and it is put
+ * into the graveyard once the enchanted creature stops being red or green.
  */
 class EncaseInIceScenarioTest : ScenarioTestBase() {
 

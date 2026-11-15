@@ -16,7 +16,7 @@ import io.kotest.matchers.shouldBe
  *
  * Alice's Illusory Gains starts on Bob's Hill Giant, so Alice controls the Giant. Bob then casts a
  * creature. Pinned here: the Aura moves with no decision, Alice gains the newcomer and the Giant goes
- * back to Bob; and a newcomer it can't legally enchant (protection from blue) leaves the Aura where it
+ * back to Bob; hexproof doesn't stop the untargeted move; and a newcomer it can't legally enchant (protection from blue) leaves the Aura where it
  * is, with Alice keeping the Giant (2015-02-25 ruling, CR 701.3b).
  */
 class IllusoryGainsScenarioTest : ScenarioTestBase() {
@@ -59,6 +59,23 @@ class IllusoryGainsScenarioTest : ScenarioTestBase() {
                 }
                 withClue("the creature it left returns to Bob") {
                     game.state.projectedState.getController(giant) shouldBe game.player2Id
+                }
+            }
+
+            test("hexproof doesn't stop the move: it doesn't target") {
+                val game = setup("Gladecover Scout")
+                val gains = game.findPermanent("Illusory Gains")!!
+
+                game.castSpell(2, "Gladecover Scout").error shouldBe null
+                game.resolveStack()
+                game.checkStateBasedActions()
+
+                val scout = game.findPermanent("Gladecover Scout")!!
+                withClue("Illusory Gains moves onto the hexproof newcomer") {
+                    game.state.getEntity(gains)!!.get<AttachedToComponent>()!!.targetId shouldBe scout
+                }
+                withClue("Alice gains control of it") {
+                    game.state.projectedState.getController(scout) shouldBe game.player1Id
                 }
             }
 
