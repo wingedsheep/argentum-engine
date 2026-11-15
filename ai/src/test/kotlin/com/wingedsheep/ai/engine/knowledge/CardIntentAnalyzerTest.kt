@@ -41,6 +41,26 @@ class CardIntentAnalyzerTest : ScenarioTestBase() {
     )
 
     init {
+        test("a control Aura steals its host, and moving it steals the new one") {
+            listOf("Control Magic", "Illusory Gains").forEach { name ->
+                withClue(name) { intentOf(name).tags shouldContain IntentTag.REMOVAL }
+            }
+            withClue("Illusory Gains' attach-to-the-newcomer trigger takes the opponent's creature") {
+                val gains = cardRegistry.requireCard("Illusory Gains")
+                val trigger = gains.script.triggeredAbilities.single()
+                CardIntentAnalyzer.analyzeEffect(trigger.effect, source = gains).tags shouldContain IntentTag.REMOVAL
+                withClue("without the control static the same attach is no steal") {
+                    CardIntentAnalyzer.analyzeEffect(trigger.effect).tags shouldNotContain IntentTag.REMOVAL
+                }
+            }
+        }
+
+        test("a toothless 0/2 base Aura neutralizes its host") {
+            listOf("Reduce in Stature", "Illusory Wrappings").forEach { name ->
+                withClue(name) { intentOf(name).tags shouldContain IntentTag.NEUTRALIZE }
+            }
+        }
+
         test("a death shield's rider over opponents' creatures reads as what it does each time") {
             withClue("Kalitas: instead exile that card and create a 2/2 Zombie") {
                 intentOf("Kalitas, Traitor of Ghet").tags shouldContain IntentTag.TOKEN_MAKER

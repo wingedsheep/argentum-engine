@@ -29,6 +29,7 @@ import com.wingedsheep.sdk.scripting.ReplaceLifeGainWith
 import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
+import com.wingedsheep.sdk.scripting.ControlEnchantedPermanent
 import com.wingedsheep.sdk.scripting.GrantOpponentsCantWinGame
 import com.wingedsheep.sdk.scripting.GrantCantLoseGame
 import com.wingedsheep.sdk.scripting.CantBeBlocked
@@ -292,10 +293,19 @@ object CardIntentAnalyzer {
             // single-creature can't-block ([CantBlockEffect]'s evasion grant); "becomes a Warrior"
             // is the evasion itself ([GrantEvasionKeywordEffect]'s).
             if (leaf is SetCreatureSubtypesEffect && TypeEvasion.of(source, leaf) != null) tags += IntentTag.EVASION_GRANT
+            if (leaf is AttachEquipmentEffect && stealsItsHost(source)) tags += IntentTag.REMOVAL
             reachOf(leaf)?.let { removalReach = maxOf(removalReach ?: 0, it) }
         }
         return CardIntent.UNKNOWN.copy(tags = tags, removalReach = removalReach)
     }
+
+    /**
+     * Whether [source] takes control of whatever it is attached to ([ControlEnchantedPermanent]):
+     * attaching it elsewhere — "whenever a creature an opponent controls enters, attach this Aura
+     * to that creature" (Illusory Gains) — steals the new host, as the static's own reading does.
+     */
+    private fun stealsItsHost(source: CardDefinition?): Boolean =
+        source?.script?.staticAbilities?.contains(ControlEnchantedPermanent) == true
 
     /**
      * What casting [card] with the modes at [modeIndices] does — the reading a *cast* of a modal
@@ -3701,10 +3711,14 @@ object CardIntentAnalyzer {
         is MayCastSelfFromZones -> setOf(IntentTag.RECURSION)
         // "Enchanted creature loses all abilities" (Lignify) and "creatures enchanted player
         // controls lose all abilities and have base power and toughness 1/1" (Overwhelming
-        // Splendor) leave the creatures on the battlefield, no longer threats worth the name.
+        // Splendor) leave the creatures on the battlefield, no longer threats worth the name, and so
+        // does a toothless "has base power and toughness 0/2" (Illusory Wrappings, Reduce in Stature).
         is LoseAllAbilities -> neutralizeTags(static.filter)
+        // "You control enchanted creature" (Control Magic, Illusory Gains): the host changes sides,
+        // taken as [GainControlEffect] takes it — a steal, priced as removal.
+        ControlEnchantedPermanent -> setOf(IntentTag.REMOVAL)
         is SetBasePowerToughnessStatic ->
-            if (static.shrinksToAtMostOneOne()) neutralizeTags(static.filter) else emptySet()
+            if (static.shrinksToSmallBase()) neutralizeTags(static.filter) else emptySet()
         // A composite static is each of its parts (a conditional one is read above, by the
         // ability it gates).
         is CompositeStaticAbility -> static.abilities.flatMapTo(HashSet()) { tagsOf(it) }
