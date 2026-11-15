@@ -17805,6 +17805,26 @@ Other gates available in both contexts:
   }
   ```
 
+  A **permanent** card declares the capture at card level (no `spell { }` block): the engine carries the
+  frozen values from the spell onto the permanent it becomes (`CastChoicesComponent.castTimeValues`), so
+  the permanent's enters trigger (`interveningIf`) or enters-with replacement reads the same facade.
+  Orator of Ojutai — "When this creature enters, if you revealed a Dragon card or controlled a Dragon as
+  you cast this spell, draw a card" — pairs it with the optional reveal cost's `AdditionalCostWasPaid`:
+
+  ```kotlin
+  keywordAbility(KeywordAbility.optionalAdditionalCost(
+      Costs.additional.RevealFromHand(GameObjectFilter.Any.withSubtype(Subtype.DRAGON))))
+  captureAtCast("controlledDragon", Conditions.YouControl(GameObjectFilter.Permanent.withSubtype(Subtype.DRAGON)))
+  triggeredAbility {
+      trigger = Triggers.self.enters()
+      interveningIf = Conditions.Any(Conditions.AdditionalCostWasPaid, Conditions.CapturedAtCast("controlledDragon"))
+      effect = Effects.DrawCards(1)
+  }
+  ```
+
+  The capture belongs to the spell that was cast: a permanent put onto the battlefield without being
+  cast reads 0, and the bag is dropped when the permanent leaves the battlefield (CR 400.7).
+
 **Cast-choice slots (`ChoiceSlot`).** The choices an object locks in *as it is cast / as it enters*
 (CR 601.2b) — color, creature type, land type, mode, chosen creature, kicked-ness, bargained-ness,
 blight amount, `CHOSEN_NUMBER` — all ride one durable `CastChoicesComponent` on the stable entity (the immutable-ECS

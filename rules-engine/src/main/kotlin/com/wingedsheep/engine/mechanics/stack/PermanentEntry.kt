@@ -506,7 +506,13 @@ internal class PermanentEntry(
                 )
             )
         }
-        if (bag.x != null || bag.chosen.isNotEmpty()) {
+        // "As you cast this spell" captures (CR 601.2i) — "if you controlled a Dragon as you cast
+        // this spell" — frozen on the spell as it was cast, carried onto the permanent it becomes so
+        // its enters trigger / enters-with replacement reads them via DynamicAmount.CapturedAtCast.
+        if (spellComponent.castTimeValues.isNotEmpty()) {
+            bag = bag.copy(castTimeValues = spellComponent.castTimeValues)
+        }
+        if (bag.x != null || bag.chosen.isNotEmpty() || bag.castTimeValues.isNotEmpty()) {
             updated = updated.with(bag)
         }
         return updated

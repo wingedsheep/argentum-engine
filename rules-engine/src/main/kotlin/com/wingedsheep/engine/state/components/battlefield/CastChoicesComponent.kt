@@ -95,7 +95,15 @@ data class CastChoicesComponent(
     /** The value chosen for `{X}` as this object was cast. Only present for spells cast with `{X}`. */
     val x: Int? = null,
     /** The per-[ChoiceSlot] values locked in for this object. */
-    val chosen: Map<ChoiceSlot, ChoiceValue> = emptyMap()
+    val chosen: Map<ChoiceSlot, ChoiceValue> = emptyMap(),
+    /**
+     * The spell's "as you cast this spell" captures (CR 601.2i), by name, carried over from
+     * `SpellOnStackComponent.castTimeValues` as the spell resolved into this permanent, so its
+     * enters trigger or enters-with replacement can read "if you controlled a Dragon as you cast
+     * this spell" (Orator of Ojutai, Scaleguard Sentinels) via
+     * [com.wingedsheep.sdk.scripting.values.DynamicAmount.CapturedAtCast].
+     */
+    val castTimeValues: Map<String, Int> = emptyMap()
 ) : Component {
     /** Return a copy with [slot] set to [value], replacing any prior value for that slot. */
     fun withChoice(slot: ChoiceSlot, value: ChoiceValue): CastChoicesComponent =

@@ -3178,6 +3178,121 @@
     ]
 }
 
+// Orator of Ojutai
+{
+    "name": "Orator of Ojutai",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Bird Monk",
+    "oracleText": "As an additional cost to cast this spell, you may reveal a Dragon card from your hand.\nDefender, flying\nWhen this creature enters, if you revealed a Dragon card or controlled a Dragon as you cast this spell, draw a card.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEFENDER",
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomRevealFromHand",
+                    "filter": "Dragon"
+                }
+            },
+            "displayPrefix": "Additional cost",
+            "declaredSlot": "ADDITIONAL_COST_PAID"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Orator of Ojutai:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "interveningIf": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "CastChoiceMade",
+                            "slot": "ADDITIONAL_COST_PAID"
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "CapturedAtCast",
+                                "captureName": "controlledDragon"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 0
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, if you revealed a Dragon card or controlled a Dragon as you cast this spell, draw a card."
+            }
+        ],
+        "castTimeCaptures": [
+            {
+                "captureName": "controlledDragon",
+                "value": {
+                    "type": "Conditional",
+                    "condition": {
+                        "type": "Exists",
+                        "player": "You",
+                        "zone": "Battlefield",
+                        "filter": "permanent Dragon"
+                    },
+                    "ifTrue": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "ifFalse": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "rarity": "UNCOMMON",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fc68c7d8-60fa-4e55-92c1-43fcf5e9abf1.jpg?1783938616",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If one of these spells is copied, the controller of the copy will get the “Dragon bonus” only if a Dragon card was revealed as an additional cost. The copy wasn’t cast, so whether you controlled a Dragon won’t matter."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "You can’t reveal more than one Dragon card to multiply the bonus. There is also no additional benefit for both revealing a Dragon card as an additional cost and controlling a Dragon as you cast the spell."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If you don’t reveal a Dragon card from your hand, you must control a Dragon as you are finished casting the spell to get the bonus. For example, if you lose control of your only Dragon while casting the spell (because, for example, you sacrificed it to activate a mana ability), you won’t get the bonus."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Palace Familiar
 {
     "name": "Palace Familiar",
@@ -4078,6 +4193,107 @@
     },
     "colorIdentityOverride": [
         "RED",
+        "GREEN"
+    ]
+}
+
+// Scaleguard Sentinels
+{
+    "name": "Scaleguard Sentinels",
+    "manaCost": "{G}{G}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "As an additional cost to cast this spell, you may reveal a Dragon card from your hand.\nThis creature enters with a +1/+1 counter on it if you revealed a Dragon card or controlled a Dragon as you cast this spell.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomRevealFromHand",
+                    "filter": "Dragon"
+                }
+            },
+            "displayPrefix": "Additional cost",
+            "declaredSlot": "ADDITIONAL_COST_PAID"
+        }
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "CastChoiceMade",
+                            "slot": "ADDITIONAL_COST_PAID"
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "CapturedAtCast",
+                                "captureName": "controlledDragon"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 0
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "castTimeCaptures": [
+            {
+                "captureName": "controlledDragon",
+                "value": {
+                    "type": "Conditional",
+                    "condition": {
+                        "type": "Exists",
+                        "player": "You",
+                        "zone": "Battlefield",
+                        "filter": "permanent Dragon"
+                    },
+                    "ifTrue": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "ifFalse": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/0/701da01c-0f27-4cb2-8bfa-407239778982.jpg?1783938577",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If one of these spells is copied, the controller of the copy will get the \"Dragon bonus\" only if a Dragon card was revealed as an additional cost. The copy wasn't cast, so whether you controlled a Dragon won't matter."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "You can't reveal more than one Dragon card to multiply the bonus. There is also no additional benefit for both revealing a Dragon card as an additional cost and controlling a Dragon as you cast the spell."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If you don't reveal a Dragon card from your hand, you must control a Dragon as you are finished casting the spell to get the bonus. For example, if you lose control of your only Dragon while casting the spell (because, for example, you sacrificed it to activate a mana ability), you won't get the bonus."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
         "GREEN"
     ]
 }
