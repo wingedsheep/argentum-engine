@@ -127,6 +127,12 @@ object GraveyardSynergy {
             // "Exile X / one or more creature cards from your graveyard" (Corpseweft, Winter, Cursed
             // Rider, Necropolis Fiend): the variable-count twin, always the payer's own graveyard.
             if (node is com.wingedsheep.sdk.scripting.AbilityCost.ExileXFromGraveyard) return true
+            // A self-zone permission's price change ("if you pay {1} more to cast it for each other
+            // creature card in your graveyard", Risen Executioner) taxes a stocked graveyard; it never
+            // cashes one in, so the permission is read without it.
+            if (node is com.wingedsheep.sdk.scripting.MayCastSelfFromZones && node.costModification != null) {
+                return visitFields(node.copy(costModification = null))
+            }
             // A destination fills a graveyard; it never consumes that resource.
             if (node is com.wingedsheep.sdk.scripting.effects.CardDestination) return false
             if (node is ChooseActionEffect && isTutorWithGraveyardFallback(node)) return false

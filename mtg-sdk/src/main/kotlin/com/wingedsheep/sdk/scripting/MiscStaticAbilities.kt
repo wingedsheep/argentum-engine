@@ -973,6 +973,20 @@ data object PlayersPlayWithHandsRevealed : StaticAbility {
  * It is armed only when the cast goes through this permission, and catches a countered or
  * fizzled spell as well as a resolved one.
  *
+ * When [costModification] is non-null, a cast through this permission is priced with that cost
+ * change on top of its mana cost — the "if you pay {1} more to cast it for each other creature card
+ * in your graveyard" of Risen Executioner is
+ * `costModification = CostModification.IncreaseGenericBy(CostReductionSource.Dynamic(DynamicAmounts.count(Player.You, Zone.GRAVEYARD, GameObjectFilter.Creature.notSourceItself())))`.
+ * It is a cost increase (CR 601.2f), not an additional cost, so reductions apply after it and it is
+ * owed only by a cast this permission authorizes: a hand cast never pays it. The amount is read with
+ * the card itself as the source, so `notSourceItself()` excludes it ("other") even though it still
+ * sits in the graveyard while the cast is priced. It is the permission-scoped sibling of a
+ * [ModifySpellCost] on [SpellCostTarget.SelfCast], which every cast of the card pays; it reuses
+ * that type's [CostModification] vocabulary rather than adding a second one. A cast another
+ * permission also authorizes (a graveyard-cast grant, Muldrotha) goes through that one untaxed —
+ * each permission is its own authorization, and the caster picks one. Exclusive with [alternativeManaCost] (a
+ * priced permission names its whole price) and [castUsing]; never [CostModification.IncreaseLife].
+ *
  * @property zones The zones from which this card may be cast.
  * @property condition Optional gate; null = always available.
  * @property additionalCost Optional additional cost required alongside the card's mana cost (or
@@ -983,6 +997,8 @@ data object PlayersPlayWithHandsRevealed : StaticAbility {
  *   this permission; null = the card's own mana cost.
  * @property exileCastThisWay Where an instant or sorcery cast through this permission goes instead
  *   of its owner's graveyard; [CastThisWayExile.NONE] = no rider.
+ * @property costModification The cost change a cast through this permission is priced with; null =
+ *   none.
  */
 @SerialName("MayCastSelfFromZones")
 @Serializable
@@ -992,11 +1008,21 @@ data class MayCastSelfFromZones(
     val additionalCost: AdditionalCost? = null,
     val castUsing: Keyword? = null,
     val alternativeManaCost: ManaCost? = null,
-    val exileCastThisWay: CastThisWayExile = CastThisWayExile.NONE
+    val exileCastThisWay: CastThisWayExile = CastThisWayExile.NONE,
+    val costModification: CostModification? = null,
 ) : StaticAbility {
     init {
         require(castUsing == null || alternativeManaCost == null) {
             "MayCastSelfFromZones: castUsing names its own price; it can't also carry an alternativeManaCost"
+        }
+        require(costModification == null || alternativeManaCost == null) {
+            "MayCastSelfFromZones: an alternativeManaCost names the whole price; it can't also carry a costModification"
+        }
+        require(costModification == null || castUsing == null) {
+            "MayCastSelfFromZones: a castUsing cast is priced by its keyword's cost; it can't also carry a costModification"
+        }
+        require(costModification !is CostModification.IncreaseLife) {
+            "MayCastSelfFromZones: costModification prices mana; a life payment belongs in additionalCost"
         }
     }
 
@@ -1010,6 +1036,7 @@ data class MayCastSelfFromZones(
             append(" rather than paying its mana cost")
         } else if (additionalCost != null) append(" by ${additionalCost.description.lowercase()} in addition to paying its other costs")
         if (condition != null && alternativeManaCost == null) append(" ${condition.description}")
+        if (costModification != null) append(" if you pay ${describeCostChange(costModification)} to cast it")
         append(".")
         when (exileCastThisWay) {
             CastThisWayExile.NONE -> {}
@@ -1023,9 +1050,30 @@ data class MayCastSelfFromZones(
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newCondition = condition?.applyTextReplacement(replacer)
         val newAdditionalCost = additionalCost?.applyTextReplacement(replacer)
-        return if (newCondition !== condition || newAdditionalCost !== additionalCost) {
-            copy(condition = newCondition, additionalCost = newAdditionalCost)
+        val newCostModification = costModification?.applyTextReplacement(replacer)
+        return if (newCondition !== condition || newAdditionalCost !== additionalCost ||
+            newCostModification !== costModification
+        ) {
+            copy(condition = newCondition, additionalCost = newAdditionalCost, costModification = newCostModification)
         } else this
+    }
+
+    private fun describeCostChange(m: CostModification): String = when (m) {
+        is CostModification.IncreaseGeneric -> "{${m.amount}} more"
+        is CostModification.IncreaseGenericBy -> "{X} more, where X is ${m.source.description},"
+        is CostModification.IncreaseColored -> "${m.symbols} more"
+        is CostModification.IncreaseColoredPerUnit -> "${m.symbols} more for each ${m.countSource.description}"
+        is CostModification.IncreaseGenericPerOtherSpellThisTurn ->
+            "{${m.amountPerSpell}} more for each other spell you've cast this turn"
+        is CostModification.IncreaseGenericIfAnyTargetMatches ->
+            "{${m.amount}} more if it targets ${m.filter.description}"
+        is CostModification.ReduceGeneric -> "{${m.amount}} less"
+        is CostModification.ReduceGenericBy -> "{X} less, where X is ${m.source.description},"
+        is CostModification.ReduceColored -> "${m.symbols} less"
+        is CostModification.ReduceColoredPerUnit -> "${m.symbols} less for each ${m.countSource.description}"
+        is CostModification.ReduceColoredIfAnyTargetMatches ->
+            "${m.symbols} less if it targets ${m.filter.description}"
+        is CostModification.IncreaseLife -> "${m.amount} life"
     }
 }
 

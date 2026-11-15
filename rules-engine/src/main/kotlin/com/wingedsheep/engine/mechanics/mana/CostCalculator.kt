@@ -156,6 +156,10 @@ class CostCalculator(
         // alternative cost with no keyword) — "dash costs you pay cost {2} less" modifies only a
         // dash cast ([ModifySpellCost.castUsing]).
         castUsing: Keyword? = null,
+        // The cost change of the card's own cast-from-zone permission this cast goes through
+        // (`MayCastSelfFromZones.costModification`, Risen Executioner's "if you pay {1} more …"),
+        // or null. Only the caller knows the cast's route, so it hands the change in.
+        zonePermissionModification: CostModification? = null,
     ): ManaCost {
         val manaValue = spellManaValue(cardDef, announcedX)
         val spellColors = spellColorsFor(state, cardDef, casterId)
@@ -181,6 +185,21 @@ class CostCalculator(
                 addColoredReduction = { coloredReductionSymbols += it },
                 addColoredReductionWithOverflow = { coloredReductionWithOverflow += it },
                 addColoredIncrease = { coloredIncreaseSymbols += it },
+            )
+        }
+
+        // The cast-from-zone permission's own price change. Its amount reads the card as its
+        // source, so "each *other* creature card in your graveyard" (`notSourceItself()`) skips the
+        // card while it still sits there being priced.
+        if (zonePermissionModification != null) {
+            applyToSpellCast(
+                state, cardDef, casterId, zonePermissionModification, chosenTargets, sourceId = spellId,
+                addGenericReduction = { totalReduction += it },
+                addGenericIncrease = { totalIncrease += it },
+                addColoredReduction = { coloredReductionSymbols += it },
+                addColoredReductionWithOverflow = { coloredReductionWithOverflow += it },
+                addColoredIncrease = { coloredIncreaseSymbols += it },
+                abilitySourceId = spellId,
             )
         }
 
@@ -1158,6 +1177,7 @@ class CostCalculator(
         declaredCostSlot: ChoiceSlot? = null,
         announcedX: Int? = null,
         castUsing: Keyword? = null,
+        zonePermissionModification: CostModification? = null,
     ): TargetPricedCost {
         val modifiers = scanModifySpellCost(state, spellId)
         val countsTargets = targetCountDirections(
@@ -1170,14 +1190,14 @@ class CostCalculator(
                 priceByTargets(
                     state, cardDef, casterId, spellId, baseCost, selection.flatMap { modal.modes[it].targetRequirements },
                     withTable = false, fromZone = fromZone, card = card, declaredCostSlot = declaredCostSlot,
-                    announcedX = announcedX, castUsing = castUsing,
+                    announcedX = announcedX, castUsing = castUsing, zonePermissionModification = zonePermissionModification,
                 ).min
             }.minBy { it.cmc }
             return TargetPricedCost(cheapest, null)
         }
         val pricing = TargetPricing(
             state, cardDef, casterId, spellId, baseCost, declared, modifiers, fromZone, card, declaredCostSlot, announcedX,
-            castUsing,
+            castUsing, zonePermissionModification,
         )
         if (!countsTargets) return TargetPricedCost(pricing.priced(pricing.optimisticTargets), null)
         val range = pricing.countRange()
@@ -1223,6 +1243,7 @@ class CostCalculator(
         private val declaredCostSlot: ChoiceSlot?,
         private val announcedX: Int?,
         private val castUsing: Keyword?,
+        private val zonePermissionModification: CostModification?,
     ) {
         private val legalByRequirement: List<List<EntityId>> by lazy {
             requirements.map { targetFinder.findLegalTargets(state, it, casterId, sourceId = spellId).distinct() }
@@ -1281,6 +1302,7 @@ class CostCalculator(
             calculateEffectiveCost(
                 state, cardDef, casterId, targets, fromZone, declaredCostSlot, baseCost = baseCost, card = card,
                 spellId = spellId, modifiers = modifiers, announcedX = announcedX, castUsing = castUsing,
+                zonePermissionModification = zonePermissionModification,
             )
 
         /** Priced with [count] different targets, the discount-earning ones first. */
