@@ -3,9 +3,11 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.engine.legalactions.LegalActionEnumerator
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
@@ -35,6 +37,12 @@ class DefendingPlayerCantCastSpellsTest : FunSpec({
         staticAbility { ability = PlayersCantCastSpells(affected = Player.DefendingPlayer) }
     }
     val instant = card("Hush Test Glint") { manaCost = "{G}"; typeLine = "Instant"; oracleText = "" }
+    val walker = card("Hush Test Walker") {
+        manaCost = "{3}"
+        typeLine = "Legendary Planeswalker — Test"
+        startingLoyalty = 3
+        oracleText = ""
+    }
 
     fun GameTestDriver.castActionsFor(playerId: EntityId, cardId: EntityId): List<CastSpell> =
         LegalActionEnumerator.create(cardRegistry)
@@ -44,7 +52,7 @@ class DefendingPlayerCantCastSpellsTest : FunSpec({
 
     fun threePlayer(): Pair<GameTestDriver, List<EntityId>> {
         val d = GameTestDriver()
-        d.registerCards(TestCards.all + listOf(warden, instant))
+        d.registerCards(TestCards.all + listOf(warden, instant, walker))
         val players = d.initMultiplayer(List(3) { Deck.of("Forest" to 40) })
         d.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return d to players
@@ -81,6 +89,31 @@ class DefendingPlayerCantCastSpellsTest : FunSpec({
         d.state.priorityPlayerId shouldBe bystander
         withClue("an opponent the creature isn't attacking can still cast spells") {
             d.castActionsFor(bystander, freeSpell) shouldHaveSize 1
+        }
+    }
+
+    test("attacking a planeswalker locks that planeswalker's controller, not the other opponent") {
+        val (d, players) = threePlayer()
+        val (attacker, other, walkerController) = players
+        val drake = d.putCreatureOnBattlefield(attacker, "Defender-Hushing Drake")
+        d.removeSummoningSickness(drake)
+        val pw = d.putPermanentOnBattlefield(walkerController, "Hush Test Walker")
+        d.replaceState(d.state.updateEntity(pw) { it.with(CountersComponent().withAdded(CounterType.LOYALTY, 3)) })
+        val otherSpell = d.putCardInHand(other, "Hush Test Glint")
+        val lockedSpell = d.putCardInHand(walkerController, "Hush Test Glint")
+
+        d.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        d.declareAttackers(attacker, mapOf(drake to pw)).error shouldBe null
+        players.forEach { d.giveMana(it, Color.GREEN, 1) }
+        d.passPriority(attacker)
+
+        d.state.priorityPlayerId shouldBe other
+        withClue("the player not being attacked can cast") { d.castActionsFor(other, otherSpell) shouldHaveSize 1 }
+        d.passPriority(other)
+
+        d.state.priorityPlayerId shouldBe walkerController
+        withClue("the planeswalker's controller is the defending player") {
+            d.castActionsFor(walkerController, lockedSpell) shouldHaveSize 0
         }
     }
 

@@ -1718,7 +1718,8 @@ data class PlayersCantCastSpells(
  *    abilities = NON_MANA_NON_LOYALTY, anyZone = true)` ("Enchanted player can't activate
  *    abilities that aren't mana abilities or loyalty abilities.")
  *
- * [Player.EnchantedPlayer] resolves to the player this Aura is attached to.
+ * [Player.EnchantedPlayer] resolves to the player this Aura is attached to, and
+ * [Player.DefendingPlayer] to the player this creature is attacking (nobody while it isn't).
  *
  * @property affected Who is forbidden, relative to the source's controller.
  * @property permanentFilter Which permanents' abilities are forbidden (matched against the source).
