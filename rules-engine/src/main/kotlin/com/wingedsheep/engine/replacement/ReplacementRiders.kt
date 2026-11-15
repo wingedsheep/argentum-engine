@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.replacement
 
+import com.wingedsheep.engine.handlers.CapturedObjectBinding
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.Outcome
@@ -8,6 +9,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PipelineState
 import com.wingedsheep.engine.handlers.effects.EnteringAttackChoice
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ExileCounteredSpellInstead
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -44,6 +46,11 @@ import kotlinx.serialization.Serializable
  * @property chooseEnteringAttackTarget the rest is CR 508.4's choice of what [subjectId], a creature
  *   that just entered tapped and attacking through a global replacement, is attacking
  *   ([com.wingedsheep.engine.handlers.effects.EnteringAttackChoice]); asked of [controllerId]
+ * @property targets what the spell or ability that created the replacement targeted, for a rest
+ *   that names them ("deal that much damage to target creature" — Channel Harm); empty elsewhere
+ * @property namedTargets the same targets by the name the card bound them to (`target(...)`)
+ * @property boundObjects the battlefield objects among [targets] and [namedTargets] with the identity they had when
+ *   the replacement was created: one that has since become a new object names nothing (CR 400.7)
  */
 @Serializable
 data class PendingReplacementRider(
@@ -59,6 +66,9 @@ data class PendingReplacementRider(
     val sourceChoiceMade: Boolean = false,
     val replacementChain: Set<ReplacementEffectIdentity>? = null,
     val chooseEnteringAttackTarget: Boolean = false,
+    val targets: List<ChosenTarget> = emptyList(),
+    val namedTargets: Map<String, ChosenTarget> = emptyMap(),
+    val boundObjects: List<CapturedObjectBinding> = emptyList(),
 ) {
     init {
         require((effect == null) == chooseEnteringAttackTarget) {
@@ -118,6 +128,7 @@ object ReplacementRiders {
 
     private fun contextFor(state: GameState, rider: PendingReplacementRider): EffectContext {
         val subjectIsPlayer = rider.subjectId in state.turnOrder
+        val aligned = liveTargets(state, rider)
         return EffectContext(
             sourceId = rider.hostId,
             controllerId = rider.controllerId,
@@ -130,9 +141,28 @@ object ReplacementRiders {
                 counterCount = rider.countersRemoved.takeIf { it > 0 }
             ),
             pipeline = PipelineState(
-                storedCollections = mapOf(ExileCounteredSpellInstead.EXILED_CARD to listOf(rider.subjectId))
+                storedCollections = mapOf(ExileCounteredSpellInstead.EXILED_CARD to listOf(rider.subjectId)),
+                namedTargets = rider.namedTargets.mapNotNull { (name, target) -> live(state, rider, target)?.let { name to it } }.toMap(),
             ),
             programOrigin = com.wingedsheep.engine.handlers.effects.composite.EffectProgramInterpreter.startedBy(ReplacementRiders::class),
+            targets = aligned.filterNotNull(),
+            alignedTargets = aligned,
         )
+    }
+
+    /**
+     * [PendingReplacementRider.targets] in their printed positions (and, by [live], its named ones), with a battlefield target that
+     * has become a new object since the replacement was created left empty (CR 400.7): "target
+     * creature" then names nothing, so the rest does nothing to it.
+     */
+    private fun liveTargets(state: GameState, rider: PendingReplacementRider): List<ChosenTarget?> =
+        rider.targets.map { live(state, rider, it) }
+
+    private fun live(state: GameState, rider: PendingReplacementRider, target: ChosenTarget): ChosenTarget? {
+        val id = (target as? ChosenTarget.Permanent)?.entityId
+        val binding = id?.let { i -> rider.boundObjects.firstOrNull { it.entityId == i } }
+        // Only battlefield targets are bound, and every battlefield object has an identity, so a
+        // binding without one names an object that was already gone: nothing to name.
+        return if (binding != null && (binding.objectRef == null || !state.isCurrentObject(binding.objectRef))) null else target
     }
 }

@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.damage
 
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.handlers.CapturedObjectBinding
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
@@ -545,13 +547,17 @@ object DamageReplacementChain {
             fun amount(label: String, next: Int, commute: String? = null) {
                 out += Candidate(key, "$hostName — $label", floating.sourceId, commute) { Step(state, listOf(d.copy(amount = next.coerceAtLeast(0)))) }
             }
-            fun preventAll(label: String = "prevent all damage", gainTo: EntityId? = null, consume: Boolean = false, onPrevented: Effect? = null) {
+            fun preventAll(label: String = "prevent all damage", gainTo: EntityId? = null, consume: Boolean = false, onPrevented: Effect? = null,
+                           riderTargets: List<ChosenTarget> = emptyList(),
+                           riderNamedTargets: Map<String, ChosenTarget> = emptyMap(),
+                           riderBound: List<CapturedObjectBinding> = emptyList()) {
                 if (disabled) {
                     // CR 615.12: the prevention is still applied to unpreventable damage — it prevents
                     // nothing, but its additional effects take place ("for each 1 damage prevented").
                     if (onPrevented != null) out += Candidate(key, "$hostName — damage can't be prevented", floating.sourceId) {
                         Step(state.copy(pendingReplacementRiders = state.pendingReplacementRiders +
-                            PendingReplacementRider(onPrevented, floating.sourceId ?: floating.controllerId, floating.controllerId, d.targetId, amount = 0)),
+                            PendingReplacementRider(onPrevented, floating.sourceId ?: floating.controllerId, floating.controllerId, d.targetId, amount = 0,
+                                targets = riderTargets, namedTargets = riderNamedTargets, boundObjects = riderBound)),
                             listOf(d))
                     }
                     return
@@ -562,7 +568,8 @@ object DamageReplacementChain {
                     // The rest of the shield ("for each 1 damage prevented this way …") is owed once
                     // per application, with what that application prevented.
                     val next = if (onPrevented == null || d.amount <= 0) base else base.copy(pendingReplacementRiders = base.pendingReplacementRiders +
-                        PendingReplacementRider(onPrevented, floating.sourceId ?: floating.controllerId, floating.controllerId, d.targetId, amount = d.amount))
+                        PendingReplacementRider(onPrevented, floating.sourceId ?: floating.controllerId, floating.controllerId, d.targetId, amount = d.amount,
+                            targets = riderTargets, namedTargets = riderNamedTargets, boundObjects = riderBound))
                     Step(next, emptyList(), gains = if (gainTo == null) emptyMap() else mapOf(gainTo to d.amount))
                 }
             }
@@ -599,7 +606,9 @@ object DamageReplacementChain {
                 is SerializableModification.PreventAllDamageToGroup -> if ((!mod.combatOnly || d.isCombatDamage) &&
                     (mod.includesController && d.targetId == floating.controllerId || mod.filter != null && d.targetId in state.getBattlefield() &&
                         evaluator.matches(viewState, projected, d.targetId, mod.filter!!, PredicateContext(controllerId = floating.controllerId))) &&
-                    (mod.sourceFilter == null || sourceMatches(floating, mod.sourceFilter!!))) preventAll(onPrevented = mod.onPrevented)
+                    (mod.sourceFilter == null || sourceMatches(floating, mod.sourceFilter!!))) preventAll(onPrevented = mod.onPrevented,
+                        riderTargets = mod.onPreventedTargets,
+                        riderNamedTargets = mod.onPreventedNamedTargets, riderBound = mod.onPreventedBound)
                 is SerializableModification.PreventNextDamageFromMatching -> if (targetMatches && sourceMatches(floating, mod.filter)) preventAll(consume = true)
                 is SerializableModification.PreventAllDamageFromSource -> if (targetMatches && d.sourceId == mod.damageSourceId) {
                     val gains = d.sourceId != null && (d.sourceSnapshot?.colors ?: if (d.sourceSnapshot == null) projected.colorsOf(d.sourceId) else emptySet()).any { it in mod.gainLifeFromColors }

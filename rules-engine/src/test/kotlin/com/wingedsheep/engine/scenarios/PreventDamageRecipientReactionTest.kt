@@ -15,8 +15,10 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
 import com.wingedsheep.sdk.scripting.effects.PreventionDirection
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -110,6 +112,64 @@ class PreventDamageRecipientReactionTest : FunSpec({
         setup.ping(ChosenTarget.Player(setup.opponent))
         setup.driver.assertLifeTotal(setup.opponent, 18)
         setup.driver.assertLifeTotal(setup.caster, 20)
+    }
+
+    // "Prevent all damage that would be dealt to you this turn. If damage is prevented this way,
+    // ~ deals that much damage to target creature." — the reaction names a target chosen at cast.
+    val targetedWard = card("Test Targeted Ward") {
+        manaCost = "{W}"
+        typeLine = "Instant"
+        spell {
+            val creature = target(TargetFilter.Creature)
+            effect = Effects.PreventDamage(
+                alsoToYou = true,
+                onPrevented = Effects.DealDamage(DynamicAmounts.preventedDamage(), creature),
+            )
+        }
+    }
+
+    fun targetedSetUp(): Pair<Setup, com.wingedsheep.sdk.model.EntityId> {
+        val driver = GameTestDriver()
+        driver.registerCards(TestCards.all + listOf(targetedWard, pinger, wall))
+        driver.initMirrorMatch(deck = Deck.of("Plains" to 40), startingLife = 20)
+        val caster = driver.activePlayer!!
+        val opponent = driver.getOpponent(caster)
+        val wallId = driver.putCreatureOnBattlefield(opponent, "Test Wall")
+        val ward = driver.putCardInHand(caster, "Test Targeted Ward")
+        driver.putLandOnBattlefield(caster, "Plains")
+        val pingerId = driver.putCreatureOnBattlefield(opponent, "Test Pinger")
+        driver.removeSummoningSickness(pingerId)
+        driver.castSpell(caster, ward, listOf(wallId)).error shouldBe null
+        driver.bothPass()
+        return Setup(driver, caster, opponent, pingerId) to wallId
+    }
+
+    test("the reaction names the target its spell chose as it was cast") {
+        val (setup, wallId) = targetedSetUp()
+        val shield = setup.driver.state.floatingEffects.single {
+            it.effect.modification is SerializableModification.PreventAllDamageToGroup
+        }.effect.modification as SerializableModification.PreventAllDamageToGroup
+        shield.onPreventedTargets shouldBe listOf(ChosenTarget.Permanent(wallId))
+
+        setup.ping(ChosenTarget.Player(setup.caster))
+        setup.driver.assertLifeTotal(setup.caster, 20)
+        setup.driver.state.getEntity(wallId)?.get<DamageComponent>()?.amount shouldBe 2
+    }
+
+    test("a target that has become a new object since the shield was made takes nothing (CR 400.7)") {
+        val (setup, wallId) = targetedSetUp()
+        // The wall left and came back under the same id: its identity generation moved on.
+        val driver = setup.driver
+        driver.replaceState(driver.state.copy(floatingEffects = driver.state.floatingEffects.map { f ->
+            val mod = f.effect.modification as? SerializableModification.PreventAllDamageToGroup ?: return@map f
+            f.copy(effect = f.effect.copy(modification = mod.copy(onPreventedBound = mod.onPreventedBound.map {
+                it.copy(objectRef = it.objectRef!!.copy(generation = it.objectRef.generation + 1))
+            })))
+        }))
+
+        setup.ping(ChosenTarget.Player(setup.caster))
+        withClue("the damage is still prevented") { driver.assertLifeTotal(setup.caster, 20) }
+        driver.state.getEntity(wallId)?.get<DamageComponent>()?.amount shouldBe null
     }
 
     test("a shield shape that can't carry the reaction fails instead of dropping it") {
