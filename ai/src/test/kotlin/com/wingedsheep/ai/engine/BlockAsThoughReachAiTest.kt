@@ -41,6 +41,28 @@ class BlockAsThoughReachAiTest : ScenarioTestBase() {
             CombatMath.canBeBlockedBy(game.state, projected, game.findPermanent("Wind Drake")!!, hunter, cardRegistry) shouldBe false
         }
 
+        test("the attack-side estimate sees Dragon Hunter wall the Dragon, not the other flyer") {
+            val game = scenario()
+                .withPlayers("Attacker", "AI")
+                .withCardOnBattlefield(1, "Shivan Dragon")
+                .withCardOnBattlefield(1, "Wind Drake")
+                .withCardOnBattlefield(2, "Dragon Hunter")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val projected = game.state.projectedState
+            val hunter = listOf(game.findPermanent("Dragon Hunter")!!)
+            val dragon = game.findPermanent("Shivan Dragon")!!
+            val drake = game.findPermanent("Wind Drake")!!
+            CombatMath.isEvasive(game.state, projected, dragon, hunter, cardRegistry) shouldBe false
+            CombatMath.isEvasive(game.state, projected, drake, hunter, cardRegistry) shouldBe true
+            withClue("the Hunter blocks the 5/5 Dragon, so only the Drake's 2 gets through") {
+                CombatMath.calculateDamageThroughOptimalBlocking(
+                    game.state, projected, listOf(dragon, drake), hunter, cardRegistry = cardRegistry
+                ) shouldBe 2
+            }
+        }
+
         test("facing lethal from a flying Dragon, the defending AI blocks it with Dragon Hunter") {
             val game = scenario()
                 .withPlayers("Attacker", "AI")

@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.text.TextReplacer
+import com.wingedsheep.sdk.scripting.util.pluralNounPhrase
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -123,11 +124,11 @@ data class CanOnlyBlockCreaturesWith(
  *
  * A rule permission scoped by the *attacker*, so it is not [GrantKeyword] of reach (which reaches
  * every flyer) and not [CanOnlyBlockCreaturesWith] (a restriction on the blocker, the opposite
- * polarity). It answers exactly the reach questions of CR 702.9b / 702.17b — a flying attacker
- * matching [attackers] can be blocked by a covered creature, and so can a matching attacker that
- * "can't be blocked except by creatures with flying" — and nothing else: the creature doesn't gain
- * reach (it doesn't count for "creatures with reach"), and every other blocking restriction still
- * applies.
+ * polarity). It answers exactly the reach question of CR 702.9b / 702.17b — a flying attacker
+ * matching [attackers] can be blocked by a covered creature — and nothing else: the creature doesn't
+ * gain reach (it doesn't count for "creatures with reach"), it still can't block a creature that
+ * "can't be blocked except by creatures with flying" (reach doesn't satisfy that — Treetop Rangers'
+ * ruling), and every other blocking restriction still applies.
  *
  * Read at block declaration through `CombatStaticScan` by `BlockAsThoughReach` (engine
  * `FlyingRule` and the AI's `CombatMath`), never through projection. [attackers] is matched with
@@ -142,9 +143,10 @@ data class CanBlockAsThoughHadReach(
 ) : StaticAbility {
     override val description: String =
         if (filter.scope is Scope.Self) {
-            "can block ${attackers.description} as though it had reach"
+            "can block ${pluralNounPhrase(attackers.description)} as though it had reach"
         } else {
-            "${filter.description} can block ${attackers.description} as though they had reach"
+            "${pluralNounPhrase(filter.description).replaceFirstChar { it.uppercase() }} can block " +
+                "${pluralNounPhrase(attackers.description)} as though they had reach"
         }
 
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {

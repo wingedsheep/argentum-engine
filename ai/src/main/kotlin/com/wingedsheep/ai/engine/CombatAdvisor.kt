@@ -1496,7 +1496,7 @@ class CombatAdvisor(
         val counterAttackBonus = scored.getOpponents(playerId).maxOfOrNull { opponentId ->
             val opponentBlockers = CombatMath.getOpponentUntappedCreatures(scored, postProjected, opponentId)
             val ourDamageThrough = if (myAttackers.isNotEmpty()) {
-                CombatMath.calculateDamageThroughOptimalBlocking(scored, postProjected, myAttackers, opponentBlockers)
+                CombatMath.calculateDamageThroughOptimalBlocking(scored, postProjected, myAttackers, opponentBlockers, cardRegistry = cardRegistry)
             } else 0
             val opponentLife = scored.lifeTotal(opponentId)
 
@@ -1614,7 +1614,7 @@ class CombatAdvisor(
         // attacking with one (Aesthir Glider) look like it opened the crack-back it never closed.
         val blockers = myBlockers.filterNot { projected.cantBlock(it) }
         return sides.opponents.maxOf { team ->
-            val damage = team.sumOf { CombatMath.estimateNextTurnDamage(state, projected, it, blockers, chumpBlocks, stackOnTramplers) }
+            val damage = team.sumOf { CombatMath.estimateNextTurnDamage(state, projected, it, blockers, chumpBlocks, stackOnTramplers, cardRegistry) }
             val commanderLethal = team.any { opponent ->
                 CombatMath.commanderDamageLethal(
                     state, projected, CombatMath.nextTurnAttackers(state, projected, opponent), playerId, blockers,
@@ -1779,7 +1779,7 @@ class CombatAdvisor(
         if (ourAttackers.isEmpty()) return false
         val theirBlockers = CombatMath.getOpponentUntappedCreatures(state, projected, opponent)
             .filter { it !in deadAttackers && it !in attackers }
-        return CombatMath.isLethalAttack(state, projected, ourAttackers, theirBlockers, state.lifeTotal(opponent))
+        return CombatMath.isLethalAttack(state, projected, ourAttackers, theirBlockers, state.lifeTotal(opponent), cardRegistry)
     }
 
     /**
@@ -2313,7 +2313,7 @@ class CombatAdvisor(
             val blockers = projected.getBattlefieldControlledBy(opponent).filter {
                 projected.isCreature(it) && !projected.cantBlock(it) && untapsInTime(state, projected, it)
             }
-            val through = CombatMath.calculateDamageThroughOptimalBlocking(state, projected, ourAttackers, blockers)
+            val through = CombatMath.calculateDamageThroughOptimalBlocking(state, projected, ourAttackers, blockers, cardRegistry = cardRegistry)
             if (through <= 0) 0.0 else 1.0 / ((life + through - 1) / through)
         } ?: 0.0
         return ThreatAssessment.raceLeadValue(urgency) * raceWeight

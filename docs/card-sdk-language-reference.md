@@ -12152,13 +12152,14 @@ in the declare-blockers step, even before the turn-based block action has comple
   can block attackers matching `attackers` as though they had reach. Dragon Hunter's "This creature can
   block Dragons as though it had reach" is
   `CanBlockAsThoughHadReach(GameObjectFilter.Creature.withSubtype("Dragon"))`. It answers only the
-  reach questions of CR 702.9b / 702.17b for those attackers — a flying one, or one that "can't be
-  blocked except by creatures with flying" — and the creature never gains reach (it doesn't count for
-  "creatures with reach"); every other blocking restriction still applies. Both filters are read with
+  reach question of CR 702.9b / 702.17b — a flying attacker matching `attackers` — and the creature
+  never gains reach (it doesn't count for "creatures with reach"). Like reach itself, it doesn't let
+  the creature block one that "can't be blocked except by creatures with flying" (Treetop Rangers'
+  ruling), and every other blocking restriction still applies. Both filters are read with
   the holder as predicate source (`youControl()` is the holder's controller). The until-end-of-turn
   form is `Effects.GrantStaticAbility(CanBlockAsThoughHadReach(attackers), target)`. Read at block
-  declaration by `BlockAsThoughReach` over `CombatStaticScan` — shared by the engine's `FlyingRule` /
-  `CantBeBlockedExceptByRule` and the AI's `CombatMath` — never through projection.
+  declaration by `BlockAsThoughReach` over `CombatStaticScan` — shared by the engine's `FlyingRule` and
+  the AI's `CombatMath` — never through projection.
 - `SuppressLandwalkForGroup(landwalks, filter = GroupFilter.AllCreatures)` — creatures matching
   `filter` can be blocked as though they didn't have the `landwalks` (members of `Keyword.LANDWALK`:
   Swampwalk … Desertwalk, Nonbasic landwalk, Legendary landwalk; anything else is rejected at construction). A

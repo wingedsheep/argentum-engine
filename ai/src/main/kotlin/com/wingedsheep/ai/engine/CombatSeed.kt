@@ -105,11 +105,11 @@ object CombatSeed {
             val lone = legalAction.loneAttackers.orEmpty()
             if (reach.size > 1) reach.filter { it !in lone }.ifEmpty { reach.take(1) } else reach
         }
-        if (CombatMath.isLethalAttack(state, projected, reachPrimary, opponentCreatures, opponentLife)) {
+        if (CombatMath.isLethalAttack(state, projected, reachPrimary, opponentCreatures, opponentLife, cardRegistry)) {
             // In 1v1 the game ends, so everything attacks. In a pod the kill only needs enough to
             // finish the dying seat; the rest stays home for the opponents still at the table.
             val alphaStrike = if (minimalLethalInPods && state.getOpponents(playerId).size > 1) {
-                minimalLethal(state, projected, reachPrimary, opponentCreatures, opponentLife, mandatory.toSet())
+                minimalLethal(state, projected, reachPrimary, opponentCreatures, opponentLife, mandatory.toSet(), cardRegistry)
                     .associateWith { defenderOf.getValue(it) }
             } else {
                 defenderOf
@@ -140,7 +140,7 @@ object CombatSeed {
 
             val toughness = projected.getToughness(entityId) ?: 0
             val keywords = projected.getKeywords(entityId)
-            val isEvasive = CombatMath.isEvasive(state, projected, entityId, facing(entityId))
+            val isEvasive = CombatMath.isEvasive(state, projected, entityId, facing(entityId), cardRegistry)
 
             // Always attack: no risk
             if (Keyword.VIGILANCE.name in keywords ||
@@ -165,7 +165,7 @@ object CombatSeed {
             // Attack if trample and we'd deal significant damage through
             if (Keyword.TRAMPLE.name in keywords) {
                 val bestBlockerToughness = facing(entityId)
-                    .filter { CombatMath.canBeBlockedBy(state, projected, entityId, it) }
+                    .filter { CombatMath.canBeBlockedBy(state, projected, entityId, it, cardRegistry) }
                     .maxOfOrNull { projected.getToughness(it) ?: 0 } ?: 0
                 val damageThrough = (power - bestBlockerToughness).coerceAtLeast(0)
                 if (damageThrough > 0 &&
@@ -209,7 +209,7 @@ object CombatSeed {
                 val myPotentialBlockers = validAttackers.filter { it !in seedMap && !projected.cantBlock(it) }
                 val crackBackDamage = if (allOpponentAttackers.isNotEmpty()) {
                     CombatMath.calculateDamageThroughOptimalBlocking(
-                        state, projected, allOpponentAttackers, myPotentialBlockers
+                        state, projected, allOpponentAttackers, myPotentialBlockers, cardRegistry = cardRegistry
                     )
                 } else 0
 
@@ -268,8 +268,9 @@ object CombatSeed {
         blockers: List<EntityId>,
         life: Int,
         mandatory: Set<EntityId>,
+        cardRegistry: CardRegistry? = null,
     ): List<EntityId> {
-        fun isLethal(attack: List<EntityId>) = CombatMath.isLethalAttack(state, projected, attack, blockers, life)
+        fun isLethal(attack: List<EntityId>) = CombatMath.isLethalAttack(state, projected, attack, blockers, life, cardRegistry)
         fun survivesOneAnswer(attack: List<EntityId>) =
             attack.isNotEmpty() && attack.all { answered -> isLethal(attack - answered) }
         val stillKills: (List<EntityId>) -> Boolean =
@@ -282,7 +283,7 @@ object CombatSeed {
                     Keyword.VIGILANCE.name !in projected.getKeywords(it)
             }
             .sortedWith(
-                compareBy<EntityId> { CombatMath.isEvasive(state, projected, it, blockers) }
+                compareBy<EntityId> { CombatMath.isEvasive(state, projected, it, blockers, cardRegistry) }
                     .thenByDescending { projected.getToughness(it) ?: 0 }
                     .thenByDescending { projected.getPower(it) ?: 0 }
             )
@@ -336,7 +337,7 @@ object CombatSeed {
         fun blockersOf(seat: EntityId) =
             blockersBySeat.getOrPut(seat) { CombatMath.getOpponentUntappedCreatures(state, projected, seat) }
         fun connects(attacker: EntityId, defender: EntityId) =
-            CombatMath.isEvasive(state, projected, attacker, blockersOf(CombatDefenders.defendingPlayerOf(state, defender)))
+            CombatMath.isEvasive(state, projected, attacker, blockersOf(CombatDefenders.defendingPlayerOf(state, defender)), cardRegistry)
 
         val candidates = plan.entries
             .filter { (attacker, defender) ->

@@ -21,7 +21,6 @@ import com.wingedsheep.sdk.scripting.CantBeBlockedUnlessDefenderSharesCreatureTy
 import com.wingedsheep.sdk.scripting.CantBeBlockedWhilePropertyAtMost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
-import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
 import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
@@ -410,20 +409,12 @@ class CantBeBlockedExceptByRule(
                 )
             ) continue
 
-            // Per MTG rules, reach allows blocking creatures with "can't be blocked except by flying"
-            if (filterRequiresFlying(filter) &&
-                BlockAsThoughReach.hasReachAgainst(ctx.state, ctx.blockerId, ctx.attackerId, ctx.cardRegistry, predicateEvaluator)
-            ) continue
 
             val attackerName = ctx.publicName(ctx.attackerId)
             val blockerName = ctx.publicName(ctx.blockerId)
             return "$blockerName cannot block $attackerName (can't be blocked except by ${filter.description})"
         }
         return null
-    }
-
-    private fun filterRequiresFlying(filter: GameObjectFilter): Boolean {
-        return filter.cardPredicates.any { it is CardPredicate.HasKeyword && it.keyword == Keyword.FLYING }
     }
 }
 

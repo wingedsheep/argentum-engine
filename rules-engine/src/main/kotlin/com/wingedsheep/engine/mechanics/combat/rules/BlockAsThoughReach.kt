@@ -22,7 +22,7 @@ import com.wingedsheep.sdk.scripting.CanBlockAsThoughHadReach
  * static's group filter and the attacker by its `attackers` filter, both with the holder as
  * predicate source.
  *
- * Read by the engine's [FlyingRule] and [CantBeBlockedExceptByRule] and by the AI's combat math,
+ * Read by the engine's [FlyingRule] and by the AI's combat math,
  * so the blockers the AI predicts agree with the ones the engine allows.
  */
 object BlockAsThoughReach {

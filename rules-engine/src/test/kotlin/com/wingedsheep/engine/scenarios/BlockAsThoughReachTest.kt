@@ -66,14 +66,31 @@ class BlockAsThoughReachTest : FunSpec({
         keywords(Keyword.FLYING)
     }
 
-    // "Can't be blocked except by creatures with flying" — reach answers it (CR 702.17b's ruling
-    // shape), so blocking it "as though it had reach" does too.
+    // "Can't be blocked except by creatures with flying" — reach doesn't answer it (Treetop
+    // Rangers' ruling: creatures with reach don't actually have flying), so neither does this.
     val skyDragon = card("Test Sky-Only Dragon") {
         manaCost = "{2}{U}"
         typeLine = "Creature — Dragon"
         power = 2
         toughness = 2
         staticAbility { ability = CantBeBlockedExceptBy(GameObjectFilter.Creature.withKeyword(Keyword.FLYING)) }
+    }
+
+    val reachSpider = card("Test Reach Spider") {
+        manaCost = "{3}{G}"
+        typeLine = "Creature — Spider"
+        power = 2
+        toughness = 4
+        keywords(Keyword.REACH)
+    }
+
+    // A changeling is every creature type — a Dragon only through its characteristics.
+    val flyingChangeling = card("Test Flying Changeling") {
+        manaCost = "{3}{U}"
+        typeLine = "Creature — Shapeshifter"
+        power = 2
+        toughness = 2
+        keywords(Keyword.CHANGELING, Keyword.FLYING)
     }
 
     val mute = card("Test Mute") {
@@ -96,7 +113,7 @@ class BlockAsThoughReachTest : FunSpec({
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(TestCards.all)
-        listOf(dragonHunter, dragonNets, flyingDragon, flyingBird, skyDragon, mute, dragonSight)
+        listOf(dragonHunter, dragonNets, flyingDragon, flyingBird, skyDragon, flyingChangeling, reachSpider, mute, dragonSight)
             .forEach(driver::registerCard)
         driver.initMirrorMatch(
             deck = Deck.of("Forest" to 20, "Island" to 10, "Grizzly Bears" to 10),
@@ -151,9 +168,22 @@ class BlockAsThoughReachTest : FunSpec({
         result.error shouldContainIgnoringCase "flying"
     }
 
-    test("it can block a Dragon that can't be blocked except by creatures with flying") {
+    test("it can't block a Dragon that can't be blocked except by creatures with flying") {
         val driver = createDriver()
-        driver.attackAndBlock("Test Sky-Only Dragon", "Test Dragon Hunter").error shouldBe null
+        val result = driver.attackAndBlock("Test Sky-Only Dragon", "Test Dragon Hunter")
+        result.outcome shouldNotBe Outcome.Done
+        result.error shouldContainIgnoringCase "can't be blocked except by"
+    }
+
+    test("a creature with reach can't block one that can't be blocked except by creatures with flying") {
+        val driver = createDriver()
+        val result = driver.attackAndBlock("Test Sky-Only Dragon", "Test Reach Spider")
+        result.outcome shouldNotBe Outcome.Done
+    }
+
+    test("it can block a flying changeling — a Dragon through its characteristics") {
+        val driver = createDriver()
+        driver.attackAndBlock("Test Flying Changeling", "Test Dragon Hunter").error shouldBe null
     }
 
     test("it doesn't gain reach") {
