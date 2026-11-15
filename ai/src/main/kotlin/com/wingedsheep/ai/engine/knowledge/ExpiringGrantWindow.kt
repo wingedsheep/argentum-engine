@@ -44,8 +44,11 @@ import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
 import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityEffect
+import com.wingedsheep.sdk.scripting.effects.GrantCantBeBlockedByChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.GrantEvasionKeywordEffect
+import com.wingedsheep.sdk.scripting.effects.GrantHexproofFromChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
+import com.wingedsheep.sdk.scripting.effects.GrantProtectionFromChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.GrantReplacementEffectEffect
 import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
@@ -1405,6 +1408,20 @@ internal object ExpiringGrantWindow {
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target, leaf.keyword)
                 leaf is GrantEvasionKeywordEffect && leaf.duration == Duration.EndOfTurn ->
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target)
+                // "Target creature can't be blocked by creatures of the color of your choice this turn"
+                // (Sungold Sentinel, Skrelv): the same evasion, its color picked on resolution.
+                leaf is GrantCantBeBlockedByChosenColorEffect && leaf.duration == Duration.EndOfTurn ->
+                    payoffs += Payoff(PayoffKind.CREATURE, leaf.target)
+                // "Target creature gains protection from the color of your choice until end of turn"
+                // (Mother of Runes, Center Soul): a protection grant whose color is picked on
+                // resolution — it changes the fight the way a `PROTECTION_FROM_<X>` keyword does, and
+                // it answers removal on the stack, which releases this floor on its own.
+                leaf is GrantProtectionFromChosenColorEffect && leaf.duration == Duration.EndOfTurn ->
+                    payoffs += Payoff(PayoffKind.CREATURE, leaf.target)
+                // Its hexproof form changes no fight: like hexproof, it is spent only against
+                // something that targets the creature, so it reads as that keyword.
+                leaf is GrantHexproofFromChosenColorEffect && leaf.duration == Duration.EndOfTurn ->
+                    payoffs += Payoff(PayoffKind.CREATURE, leaf.target, Keyword.HEXPROOF.name)
                 // "Until end of turn, target creature gains 'when this creature dies, return it'"
                 // (Feign Death, Verdant Rebirth): a shield against dying rather than damage — it
                 // buys something only while the creature can still die this turn, in a fight or to
@@ -1496,6 +1513,9 @@ internal object ExpiringGrantWindow {
             when (leaf) {
                 is GrantKeywordEffect -> leaf.duration == Duration.EndOfTurn
                 is GrantEvasionKeywordEffect -> leaf.duration == Duration.EndOfTurn
+                is GrantCantBeBlockedByChosenColorEffect -> leaf.duration == Duration.EndOfTurn
+                is GrantProtectionFromChosenColorEffect -> leaf.duration == Duration.EndOfTurn
+                is GrantHexproofFromChosenColorEffect -> leaf.duration == Duration.EndOfTurn
                 is ModifyStatsEffect ->
                     leaf.duration == Duration.EndOfTurn && isPump(leaf)
                 is PreventDamageEffect -> isShield(leaf)

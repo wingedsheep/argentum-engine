@@ -46,6 +46,7 @@ import com.wingedsheep.sdk.scripting.effects.ChoosePileEffect
 import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
+import com.wingedsheep.sdk.scripting.effects.GrantCantBeBlockedByChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
@@ -1761,6 +1762,7 @@ object TargetPolarityAnalyzer {
             }
             is GrantKeywordEffect -> leaf.target to keywordPolarity(leaf.keyword)
             is GrantEvasionKeywordEffect -> leaf.target to TargetPolarity.BENEFICIAL
+            is GrantCantBeBlockedByChosenColorEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is GrantProtectionFromChosenColorEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is GrantHexproofFromChosenColorEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is AddCountersEffect -> leaf.target to counterPolarity(leaf.counterType)

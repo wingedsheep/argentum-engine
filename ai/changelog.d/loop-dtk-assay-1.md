@@ -1,0 +1,1 @@
+- #TBD Reads "choose a color, then …" through to what it does: chosen-color protection/hexproof (Center Soul, Gods Willing, Mother of Runes, Feat of Resistance) is a shield held for removal or a fight, chosen-color unblockability (Sungold Sentinel) an evasion grant; and drafts Dragons of Tarkir from a first-party rating table instead of the effect heuristic

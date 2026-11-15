@@ -1,0 +1,230 @@
+{
+  "Ainok Survivalist": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Atarka Efreet": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Blessed Reincarnation": [
+    "removal",
+    "creature-removal"
+  ],
+  "Crater Elemental": [
+    "removal",
+    "creature-removal"
+  ],
+  "Death Wind": [
+    "removal",
+    "creature-removal"
+  ],
+  "Defeat": [
+    "removal",
+    "creature-removal"
+  ],
+  "Descent of the Dragons": [
+    "removal",
+    "creature-removal"
+  ],
+  "Display of Dominance": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Draconic Roar": [
+    "removal",
+    "creature-removal"
+  ],
+  "Dragon Tempest": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Dragonlord Atarka": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Dragonlord Silumgar": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Dromoka's Command": [
+    "removal",
+    "creature-removal",
+    "enchantment-removal"
+  ],
+  "Encase in Ice": [
+    "removal",
+    "creature-removal"
+  ],
+  "Enduring Victory": [
+    "removal",
+    "creature-removal"
+  ],
+  "Epic Confrontation": [
+    "removal",
+    "creature-removal"
+  ],
+  "Fate Forgotten": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Flatten": [
+    "removal",
+    "creature-removal"
+  ],
+  "Foe-Razer Regent": [
+    "removal",
+    "creature-removal"
+  ],
+  "Foul Renewal": [
+    "removal",
+    "creature-removal"
+  ],
+  "Foul-Tongue Invocation": [
+    "removal",
+    "creature-removal"
+  ],
+  "Harbinger of the Hunt": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hidden Dragonslayer": [
+    "removal",
+    "creature-removal"
+  ],
+  "Icefall Regent": [
+    "removal",
+    "creature-removal"
+  ],
+  "Illusory Gains": [
+    "removal",
+    "creature-removal"
+  ],
+  "Kolaghan's Command": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "planeswalker-removal"
+  ],
+  "Minister of Pain": [
+    "removal",
+    "creature-removal"
+  ],
+  "Naturalize": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Pacifism": [
+    "removal",
+    "creature-removal"
+  ],
+  "Pinion Feast": [
+    "removal",
+    "creature-removal"
+  ],
+  "Profaner of the Dead": [
+    "removal",
+    "creature-removal"
+  ],
+  "Radiant Purge": [
+    "removal",
+    "creature-removal",
+    "enchantment-removal"
+  ],
+  "Reduce in Stature": [
+    "removal",
+    "creature-removal"
+  ],
+  "Rending Volley": [
+    "removal",
+    "creature-removal"
+  ],
+  "Roast": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ruthless Deathfang": [
+    "removal",
+    "creature-removal"
+  ],
+  "Sarkhan's Rage": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Seismic Rupture": [
+    "removal",
+    "creature-removal"
+  ],
+  "Self-Inflicted Wound": [
+    "removal",
+    "creature-removal"
+  ],
+  "Shambling Goblin": [
+    "removal",
+    "creature-removal"
+  ],
+  "Sidisi's Faithful": [
+    "removal",
+    "creature-removal"
+  ],
+  "Silkwrap": [
+    "removal",
+    "creature-removal"
+  ],
+  "Silumgar Assassin": [
+    "removal",
+    "creature-removal"
+  ],
+  "Silumgar Butcher": [
+    "removal",
+    "creature-removal"
+  ],
+  "Silumgar's Command": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Surge of Righteousness": [
+    "removal",
+    "creature-removal"
+  ],
+  "Tail Slash": [
+    "removal",
+    "creature-removal"
+  ],
+  "Twin Bolt": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Ultimate Price": [
+    "removal",
+    "creature-removal"
+  ],
+  "Vandalize": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Vial of Dragonfire": [
+    "removal",
+    "creature-removal"
+  ],
+  "Void Squall": [
+    "removal",
+    "creature-removal"
+  ],
+  "Volcanic Vision": [
+    "removal",
+    "creature-removal"
+  ]
+}

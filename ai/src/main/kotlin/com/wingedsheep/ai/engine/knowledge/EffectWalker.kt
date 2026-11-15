@@ -23,6 +23,7 @@ import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.ChooseColorThenEffect
 import com.wingedsheep.sdk.scripting.effects.ConniveEffect
 import com.wingedsheep.sdk.scripting.effects.LearnEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -56,6 +57,9 @@ import com.wingedsheep.sdk.scripting.targets.TargetRequirement
  *    would hide the pipeline's `DrawCardsEffect` from every conniving or learning card and silently
  *    move their ratings and intent tags — the wrapper was introduced after this walk existed, and
  *    descending is what keeps the numbers identical to the pre-wrapper composite.
+ *  - **A choice made at resolution that only parameterises its body.** [ChooseColorThenEffect]
+ *    ("choose a color, then …") picks the color and runs `then` with it; what the card does is the
+ *    body (Center Soul's protection grant), so the walk reads `then`.
  *  - **Everything else is a leaf**, including [ConditionalOnCollectionEffect] (which
  *    [payoffLeaves] and the rater's fold open onto both branches), [com.wingedsheep.sdk.scripting.effects.ModalEffect]
  *    modes, `ForEach` bodies and pipeline stages. Each consumer opens those in its own leaf instead:
@@ -133,6 +137,7 @@ object EffectWalker {
         if (effect is CreateTokenBatchEffect) return f.composite(effect.groups.map { fold(it, f) })
         if (effect is ConniveEffect) return fold(effect.body, f)
         if (effect is LearnEffect) return fold(effect.body, f)
+        if (effect is ChooseColorThenEffect) return fold(effect.then, f)
         return f.leaf(effect)
     }
 
