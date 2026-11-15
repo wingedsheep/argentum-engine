@@ -78,6 +78,8 @@ data class GainKeywordsOfCards(
                 append("As long as a creature card with $first is in a graveyard, ")
             KeywordCardPool.CARDS_EXILED_WITH_SOURCE ->
                 append("As long as a card exiled with this permanent has $first, ")
+            KeywordCardPool.CREATURE_CARDS_EXILED_WITH_DELVE ->
+                append("If a creature card with $first was exiled with this permanent's delve ability, ")
         }
         append("${filter.description} has ${names.firstOrNull() ?: "it"}")
         if (names.size > 1) {
@@ -103,7 +105,16 @@ enum class KeywordCardPool {
      * The source's linked-exile pile (CR 607 — "cards exiled with this permanent"), only the ones
      * still in exile; a new object after a zone change starts with an empty pile (Eater of Virtue).
      */
-    CARDS_EXILED_WITH_SOURCE
+    CARDS_EXILED_WITH_SOURCE,
+
+    /**
+     * The creature cards exiled to pay the source's **delve** as it was cast (CR 702.66a, recorded
+     * under [ChoiceSlot.DELVED_CARDS]) — "if a creature card with flying was exiled with this
+     * creature's delve ability" (Soulflayer). A record of the payment, not a live pile: a delved card
+     * that later leaves exile still counts, and a permanent that wasn't cast (or was cast without
+     * delving, or re-entered the battlefield since — CR 400.7) has an empty pool.
+     */
+    CREATURE_CARDS_EXILED_WITH_DELVE
 }
 
 /** A printed word naming every keyword of a family, qualities and all — see [GainKeywordsOfCards]. */

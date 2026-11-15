@@ -255,6 +255,21 @@ enum class ChoiceSlot {
     CONVOKED_CREATURES,
 
     /**
+     * The cards exiled from the graveyard to pay the spell's **delve** (CR 702.66a — each exiled
+     * card pays for one generic mana in the spell's total cost), recorded as the delve
+     * payment is made and carried onto the resolving permanent, each with the object generation it
+     * had in exile. Absent when delve paid nothing. A permanent that leaves the battlefield and
+     * returns is a new object (CR 400.7) with no record.
+     *
+     * Read by [com.wingedsheep.sdk.scripting.GainKeywordsOfCards] with
+     * [com.wingedsheep.sdk.scripting.KeywordCardPool.CREATURE_CARDS_EXILED_WITH_DELVE] — "if a
+     * creature card with flying was exiled with this creature's delve ability, this creature has
+     * flying" (Soulflayer) — and counted by [com.wingedsheep.sdk.scripting.values.DynamicAmount.CastChoice]
+     * as "the number of cards exiled with its delve ability".
+     */
+    DELVED_CARDS,
+
+    /**
      * Whether the spell's optional **waterbend** additional cost was paid when cast (Avatar: The
      * Last Airbender, e.g. Ruinous Waterbending / Spirit Water Revival). A present value means
      * "you may waterbend {N}" was paid. Read back through

@@ -3795,6 +3795,67 @@
     ]
 }
 
+// Soulflayer
+{
+    "name": "Soulflayer",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "Delve (Each card you exile from your graveyard while casting this spell pays for {1}.)\nIf a creature card with flying was exiled with this creature's delve ability, this creature has flying. The same is true for first strike, double strike, deathtouch, haste, hexproof, indestructible, lifelink, reach, trample, and vigilance.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "DELVE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GainKeywordsOfCards",
+                "keywords": [
+                    "FLYING",
+                    "FIRST_STRIKE",
+                    "DOUBLE_STRIKE",
+                    "DEATHTOUCH",
+                    "HASTE",
+                    "INDESTRUCTIBLE",
+                    "LIFELINK",
+                    "REACH",
+                    "TRAMPLE",
+                    "VIGILANCE"
+                ],
+                "families": [
+                    "HEXPROOF"
+                ],
+                "cards": "CREATURE_CARDS_EXILED_WITH_DELVE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "RARE",
+        "artist": "Seb McKinnon",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/5084c8ff-1296-4d8e-bd06-93b1a3401661.jpg?1783938694",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If one of those creature cards has one or more variants of the listed keywords (for example, hexproof from white), this creature gains those specific variants."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "Creature cards that have abilities that grant the listed keyword abilities to themselves won't count. For example, exiling a Battle Brawler (a creature with \"As long as you control a red or white permanent, Battle Brawler gets +1/+0 and has first strike\") with Soulflayer's delve ability won't cause Soulflayer to have first strike, even if you control a red or white permanent."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "You can't exile more cards from your graveyard than you'd need to pay Soulflayer's generic mana requirement. In most situations, this means you can't exile more than four cards, even if you want to exile more to give it extra abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Sultai Skullkeeper
 {
     "name": "Sultai Skullkeeper",

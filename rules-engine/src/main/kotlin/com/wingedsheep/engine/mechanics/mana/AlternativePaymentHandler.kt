@@ -35,7 +35,12 @@ data class AlternativePaymentResult(
      * The creatures actually tapped for convoke (CR 702.51c — they "convoked" the spell), each with
      * its battlefield-entry stamp, in tap order. Empty when convoke paid nothing.
      */
-    val convokedCreatures: Map<EntityId, Long> = emptyMap()
+    val convokedCreatures: Map<EntityId, Long> = emptyMap(),
+    /**
+     * The cards actually exiled for delve (CR 702.66a), each with the object generation it had in
+     * exile, in exile order. Empty when delve paid nothing.
+     */
+    val delvedCards: Map<EntityId, Long> = emptyMap()
 )
 
 /**
@@ -231,6 +236,7 @@ class AlternativePaymentHandler(
         var reducedCost = cost
         val events = mutableListOf<GameEvent>()
         var convoked: Map<EntityId, Long> = emptyMap()
+        var delved: Map<EntityId, Long> = emptyMap()
 
         // Handle Delve
         if (payment.delvedCards.isNotEmpty()) {
@@ -240,6 +246,7 @@ class AlternativePaymentHandler(
                 currentState = delveResult.newState
                 reducedCost = delveResult.reducedCost
                 events.addAll(delveResult.events)
+                delved = delveResult.delvedCards
             }
         }
 
@@ -264,7 +271,7 @@ class AlternativePaymentHandler(
             events.addAll(harmonizeResult.events)
         }
 
-        return AlternativePaymentResult(reducedCost, currentState, events, convoked)
+        return AlternativePaymentResult(reducedCost, currentState, events, convoked, delved)
     }
 
     /**
@@ -279,6 +286,7 @@ class AlternativePaymentHandler(
         var currentState = state
         val events = mutableListOf<GameEvent>()
         var genericReduction = 0
+        val delved = linkedMapOf<EntityId, Long>()
 
         val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
         val exileZone = ZoneKey(playerId, Zone.EXILE)
@@ -296,6 +304,8 @@ class AlternativePaymentHandler(
             currentState = currentState.removeFromZone(graveyardZone, cardId)
             val oldObjectRef = currentState.objectRef(cardId)
             currentState = currentState.addToZone(exileZone, cardId)
+            val newObjectRef = currentState.objectRef(cardId)
+            newObjectRef?.let { delved[cardId] = it.generation }
 
             events.add(
                 ZoneChangeEvent(
@@ -305,7 +315,7 @@ class AlternativePaymentHandler(
                     toZone = Zone.EXILE,
                     ownerId = playerId,
                     oldObject = oldObjectRef,
-                    newObject = currentState.objectRef(cardId)
+                    newObject = newObjectRef
                 )
             )
 
@@ -313,7 +323,7 @@ class AlternativePaymentHandler(
         }
 
         val reducedCost = reduceGenericCost(cost, genericReduction)
-        return AlternativePaymentResult(reducedCost, currentState, events)
+        return AlternativePaymentResult(reducedCost, currentState, events, delvedCards = delved)
     }
 
     /**

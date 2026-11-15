@@ -499,6 +499,16 @@ internal class PermanentEntry(
                 )
             )
         }
+        // Delve (CR 702.66a): the cards exiled to pay it, for "if a creature card with flying was
+        // exiled with this creature's delve ability" (Soulflayer) for the permanent's whole life.
+        if (spellComponent.delvedCards.isNotEmpty()) {
+            bag = bag.withChoice(
+                com.wingedsheep.sdk.scripting.ChoiceSlot.DELVED_CARDS,
+                com.wingedsheep.engine.state.components.battlefield.ChoiceValue.EntitiesChoice(
+                    spellComponent.delvedCards
+                )
+            )
+        }
         if (spellComponent.additionalCostBlightAmount > 0) {
             bag = bag.withChoice(
                 com.wingedsheep.sdk.scripting.ChoiceSlot.BLIGHT_AMOUNT,

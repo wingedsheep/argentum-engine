@@ -53,6 +53,19 @@ class CardIntentAnalyzerTest : ScenarioTestBase() {
             }
         }
 
+        test("keywords borrowed from a pool of cards read as the grants they may become") {
+            withClue("Soulflayer: flying, trample, … and hexproof from its delved creature cards") {
+                val tags = intentOf("Soulflayer").tags
+                tags shouldContain IntentTag.EVASION_GRANT
+                tags shouldContain IntentTag.PROTECTION
+            }
+            withClue("Cairn Wanderer: landwalk is evasion, protection a shield") {
+                val tags = intentOf("Cairn Wanderer").tags
+                tags shouldContain IntentTag.EVASION_GRANT
+                tags shouldContain IntentTag.PROTECTION
+            }
+        }
+
         test("an emblem with \"you can't lose the game and your opponents can't win\" reads as protection") {
             val emblem = cardRegistry.requireCard("Gideon of the Trials").script.activatedAbilities[2]
             CardIntentAnalyzer.analyzeEffect(emblem.effect).tags shouldContain IntentTag.PROTECTION

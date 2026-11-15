@@ -3523,6 +3523,18 @@ object CardIntentAnalyzer {
         }
 
         is GrantKeyword -> keywordTags(static.keyword)
+        // "As long as a creature card with flying is in a graveyard, this creature has flying. The same
+        // is true for …" (Cairn Wanderer, Eater of Virtue, Soulflayer's delved cards): each listed
+        // keyword reads as the grant it may become; a "landwalk" family is evasion, a "protection" or
+        // "hexproof" family a shield.
+        is com.wingedsheep.sdk.scripting.GainKeywordsOfCards ->
+            static.keywords.flatMapTo(mutableSetOf()) { keywordTags(it.name) } +
+                static.families.map {
+                    when (it) {
+                        com.wingedsheep.sdk.scripting.KeywordFamily.LANDWALK -> IntentTag.EVASION_GRANT
+                        com.wingedsheep.sdk.scripting.KeywordFamily.PROTECTION, com.wingedsheep.sdk.scripting.KeywordFamily.HEXPROOF -> IntentTag.PROTECTION
+                    }
+                }
         // "Whenever you tap a land for mana, add one mana of any type that land produced" (Zendikar
         // Resurgent, Mirari's Wake, Mana Flare): every tap of a matching source makes extra mana — a
         // mana engine, [IntentTag.RAMP]. One that pumps only an opponent's lands is theirs.
