@@ -1314,6 +1314,7 @@ class CastFromZoneEnumerator(
                     val pricing = context.costCalculator.priceByTargets(
                         state, cardDef, playerId, cardId, baseCost = zoneCastAbility.alternativeManaCost ?: cardDef.manaCost,
                         withTable = !context.skipAutoTapPreview, fromZone = zone,
+                        zonePermissionModification = zoneCastAbility.costModification,
                     )
                     val effectiveCost = pricing.min
                     val costString = effectiveCost.toString()

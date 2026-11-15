@@ -411,6 +411,12 @@ internal class CastCostTotaller(
                     // CR 202.3e: the spell is on the stack as its cost is determined, so a filter on
                     // its mana value ("mana value 5 or greater", Spectacle Mage) counts the X.
                     announcedX = action.xValue,
+                    // A cast its own cast-from-zone permission authorizes pays that permission's
+                    // price change (Risen Executioner's "if you pay {1} more …"). A hand cast never
+                    // finds one: no permission names the hand.
+                    zonePermissionModification = if (castingFromCommandZone) null else
+                        zoneResolver.findMayCastSelfFromZoneAbility(state, action.playerId, action.cardId, action)
+                            ?.costModification,
                 )
             }
             else -> cardComponent.manaCost

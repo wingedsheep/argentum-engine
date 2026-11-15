@@ -13948,7 +13948,7 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   The legal-action enumerator walks a sideboard only while a stored permission or such a static grant
   could play from it, and the client's existing "outside the game" affordance (the one Wishes use)
   shows the offers.
-- `MayCastSelfFromZones(zones, condition = null, additionalCost = null, castUsing = null, alternativeManaCost = null, exileCastThisWay = CastThisWayExile.NONE)` — intrinsic *self*
+- `MayCastSelfFromZones(zones, condition = null, additionalCost = null, castUsing = null, alternativeManaCost = null, exileCastThisWay = CastThisWayExile.NONE, costModification = null)` — intrinsic *self*
   permission: this card may be cast from any of `zones` (graveyard/exile) following normal timing
   and for its normal mana cost. Squee, the Immortal = `MayCastSelfFromZones(listOf(GRAVEYARD,
   EXILE))`; Eternal Scourge (EMN) = `MayCastSelfFromZones(listOf(EXILE))`. A card **exiled face
@@ -13994,6 +13994,19 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   "As long as you control a Giant, you may cast this card from your graveyard by paying {U} rather than
   paying its mana cost. If you cast this card this way and it would be put into your graveyard, exile it
   instead." — a hand cast of the same card goes to the graveyard as usual.
+  When `costModification` (a `CostModification`, the same vocabulary as `ModifySpellCost`) is
+  non-null, a cast through this permission is priced with that change on top of its mana cost — a
+  cost increase or reduction (CR 601.2f: increases first, then reductions), not an additional cost,
+  owed only by a cast the permission authorizes, so a hand cast never pays it. Its amount reads the
+  card itself as the source, so `notSourceItself()` excludes the card although it still sits in the
+  zone while the cast is priced. Risen Executioner (DTK) = `MayCastSelfFromZones(listOf(GRAVEYARD),
+  costModification = CostModification.IncreaseGenericBy(CostReductionSource.Dynamic(DynamicAmounts.count(Player.You,
+  Zone.GRAVEYARD, GameObjectFilter.Creature.notSourceItself()))))` for "You may cast this creature from your
+  graveyard if you pay {1} more to cast it for each other creature card in your graveyard." Priced by
+  `CastFromZoneEnumerator.enumerateIntrinsicZoneCast` and charged by `CastCostTotaller` (both pass it to
+  `CostCalculator.calculateEffectiveCost(zonePermissionModification = …)`). Exclusive with
+  `alternativeManaCost`. Use a `ModifySpellCost(SpellCostTarget.SelfCast, …)` instead when *every* cast
+  of the card pays the change.
   Wired through `CastZoneResolver.findMayCastSelfFromZoneAbility` (returns the applicable
   ability so callers can read its `additionalCost`), validated/collected in `CastSpellHandler`
   alongside the other additional-cost sources, and surfaced to legal-action enumeration in
