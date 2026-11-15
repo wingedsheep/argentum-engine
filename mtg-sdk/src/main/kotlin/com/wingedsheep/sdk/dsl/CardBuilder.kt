@@ -350,34 +350,6 @@ class CardBuilder(private val name: String) {
      */
     var castTimeCreatureTypeChoice: CastTimeCreatureTypeSource? = null
 
-    // Card-level "as you cast this spell" captures, for a *permanent* card with no `spell { }` block.
-    private val permanentCastTimeCaptures: MutableList<CastTimeCapture> = mutableListOf()
-
-    /**
-     * Capture, *as this permanent spell is cast* (CR 601.2i), whether [condition] holds, storing
-     * the answer under [flag]. The engine carries the frozen answer onto the permanent the spell
-     * becomes, so its enters trigger (an `interveningIf`) or its enters-with replacement reads it
-     * via `Conditions.CapturedAtCast(flag)` even though the board has changed since: Orator of
-     * Ojutai's "if you revealed a Dragon card or controlled a Dragon as you cast this spell".
-     * An instant or sorcery declares the same capture inside its `spell { }` block instead.
-     */
-    fun captureAtCast(flag: String, condition: Condition) {
-        permanentCastTimeCaptures.add(
-            CastTimeCapture(
-                flag,
-                DynamicAmount.Conditional(condition, DynamicAmount.Fixed(1), DynamicAmount.Fixed(0))
-            )
-        )
-    }
-
-    /**
-     * Numeric sibling of [captureAtCast] for a permanent card: freeze [amount] under [name] as the
-     * spell is cast, read back on the permanent via `DynamicAmounts.capturedAtCast(name)`.
-     */
-    fun captureAtCast(name: String, amount: DynamicAmount) {
-        permanentCastTimeCaptures.add(CastTimeCapture(name, amount))
-    }
-
     /**
      * Whether this spell can't be countered by spells or abilities.
      */
@@ -1042,7 +1014,7 @@ class CardBuilder(private val name: String) {
             xMaximum = spellBuilder?.xMaximum,
             beginOnBattlefield = beginOnBattlefield,
             openingHandReveal = openingHandReveal,
-            castTimeCaptures = (spellBuilder?.castTimeCaptures ?: emptyList()) + permanentCastTimeCaptures
+            castTimeCaptures = spellBuilder?.castTimeCaptures ?: emptyList()
         )
 
         // Build metadata

@@ -19,11 +19,12 @@ import kotlinx.serialization.Serializable
  *
  * A *permanent* spell's captures ride onto the permanent it becomes, so its enters trigger or
  * enters-with replacement reads them the same way (Orator of Ojutai's "if you revealed a Dragon card
- * or controlled a Dragon as you cast this spell"); declared at card level for a permanent card.
+ * or controlled a Dragon as you cast this spell"); a permanent card declares it in a `spell { }` block too.
+ * A copy of a permanent spell wasn't cast, so its token gets none.
  *
  * This is the cast-time sibling of the player-choice [ChoiceSlot] bag: those record what the player
  * *chose* as they cast; this records what the *game state* was as they cast. Declared with the
- * `captureAtCast(name, amount)` / `captureAtCast(flag, condition)` DSL on a spell (or a permanent card).
+ * `captureAtCast(name, amount)` / `captureAtCast(flag, condition)` DSL in a card's `spell { }` block.
  *
  * @property captureName The capture name; the same name is read back by `CapturedAtCast`.
  * @property value The amount to evaluate at cast time (e.g. "the number of modified creatures you control").

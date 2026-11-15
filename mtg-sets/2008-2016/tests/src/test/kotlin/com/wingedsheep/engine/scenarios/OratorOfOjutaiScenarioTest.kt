@@ -22,7 +22,8 @@ import io.kotest.matchers.shouldBe
  *
  * Proves the "as you cast this spell" capture (CR 601.2i) reaches the permanent the spell becomes:
  * the controlled-Dragon answer is frozen at cast, so a Dragon destroyed while Orator is on the stack
- * still earns the card, and a later cast of the same card is judged afresh.
+ * still earns the card, while a blinked Orator and the token a copy of the spell becomes were never
+ * cast and earn nothing.
  */
 class OratorOfOjutaiScenarioTest : ScenarioTestBase() {
 
@@ -50,6 +51,7 @@ class OratorOfOjutaiScenarioTest : ScenarioTestBase() {
             .withLandsOnBattlefield(1, "Plains", 4)
             .withLandsOnBattlefield(1, "Island", 1)
             .withLandsOnBattlefield(1, "Swamp", 2)
+            .withLandsOnBattlefield(1, "Forest", 1)
             .withCardInLibrary(1, "Plains")
             .withCardInLibrary(1, "Plains")
             .withCardInLibrary(1, "Plains")
@@ -113,24 +115,54 @@ class OratorOfOjutaiScenarioTest : ScenarioTestBase() {
             game.handSize(1) shouldBe before - 1
         }
 
-        test("a later cast of the same card is judged afresh") {
-            val game = board(dragonOnBattlefield = true, casterExtras = listOf("Unsummon", "Go for the Throat"))
+        test("bounced in response to its trigger: still draws — how it was cast is fixed (CR 603.4)") {
+            val game = board(dragonOnBattlefield = true, casterExtras = listOf("Unsummon"))
+            val before = game.handSize(1)
+
+            game.castSpell(1, "Orator of Ojutai").error shouldBe null
+            game.passPriority()
+            game.passPriority()
+            val orator = game.findPermanent("Orator of Ojutai").shouldNotBeNull()
+            withClue("the enters trigger is waiting on the stack") { game.state.stack.size shouldBe 1 }
+            game.castSpell(1, "Unsummon", orator).error shouldBe null
+            game.resolveStack()
+
+            game.isInHand(1, "Orator of Ojutai") shouldBe true
+            withClue("Orator and Unsummon left, Orator came back, the trigger drew one") {
+                game.handSize(1) shouldBe before
+            }
+        }
+
+        test("blinked later, it enters without having been cast: no card (CR 400.7)") {
+            val game = board(dragonOnBattlefield = true, casterExtras = listOf("Go for the Throat", "Cloudshift"))
             val shivan = game.findPermanent("Shivan Dragon").shouldNotBeNull()
 
             game.castSpell(1, "Orator of Ojutai").error shouldBe null
-            game.resolveStack()
-            val orator = game.findPermanent("Orator of Ojutai").shouldNotBeNull()
-            game.castSpell(1, "Unsummon", orator).error shouldBe null
             game.resolveStack()
             game.castSpell(1, "Go for the Throat", shivan).error shouldBe null
             game.resolveStack()
             val before = game.handSize(1)
 
-            game.castSpell(1, "Orator of Ojutai").error shouldBe null
+            val orator = game.findPermanent("Orator of Ojutai").shouldNotBeNull()
+            game.castSpell(1, "Cloudshift", orator).error shouldBe null
             game.resolveStack()
 
             game.isOnBattlefield("Orator of Ojutai") shouldBe true
-            withClue("no Dragon this time: the first cast's capture is gone (CR 400.7)") {
+            withClue("only Cloudshift left the hand; the returned Orator has no cast-time capture") {
+                game.handSize(1) shouldBe before - 1
+            }
+        }
+
+        test("a copy of the spell wasn't cast: only the original earns the controlled-Dragon card") {
+            val game = board(dragonOnBattlefield = true, casterExtras = listOf("Double Major"))
+            val before = game.handSize(1)
+
+            game.castSpell(1, "Orator of Ojutai").error shouldBe null
+            game.castSpellTargetingStackSpell(1, "Double Major", "Orator of Ojutai").error shouldBe null
+            game.resolveStack()
+
+            game.findAllPermanents("Orator of Ojutai").size shouldBe 2
+            withClue("Orator and Double Major left the hand; one card drawn, by the original") {
                 game.handSize(1) shouldBe before - 1
             }
         }

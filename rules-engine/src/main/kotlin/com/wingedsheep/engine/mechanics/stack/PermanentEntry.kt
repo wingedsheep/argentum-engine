@@ -308,7 +308,7 @@ internal class PermanentEntry(
         updated = updated.with(EnteredThisTurnComponent)
 
         updated = withCastOriginMarkers(updated, spellComponent)
-        updated = withCastChoices(updated, spellComponent)
+        updated = withCastChoices(updated, spellComponent, resolvingAsSpellCopy)
         updated = withAlternativeCostMarkers(updated, spellComponent, cardDef)
         updated = withRoomDoors(updated, spellComponent, cardDef)
         updated = withCastRecord(updated, spellComponent)
@@ -376,7 +376,8 @@ internal class PermanentEntry(
 
     private fun withCastChoices(
         container: ComponentContainer,
-        spellComponent: SpellOnStackComponent
+        spellComponent: SpellOnStackComponent,
+        resolvingAsSpellCopy: Boolean,
     ): ComponentContainer {
         var updated = container
         // Carry the cast-time choices durably onto the permanent (CR 601.2b choices ride the
@@ -509,7 +510,9 @@ internal class PermanentEntry(
         // "As you cast this spell" captures (CR 601.2i) — "if you controlled a Dragon as you cast
         // this spell" — frozen on the spell as it was cast, carried onto the permanent it becomes so
         // its enters trigger / enters-with replacement reads them via DynamicAmount.CapturedAtCast.
-        if (spellComponent.castTimeValues.isNotEmpty()) {
+        // A copy of a permanent spell wasn't cast (CR 707.10f makes it a token), so its token gets
+        // none: per the DTK rulings only a revealed Dragon, never a controlled one, earns its bonus.
+        if (!resolvingAsSpellCopy && spellComponent.castTimeValues.isNotEmpty()) {
             bag = bag.copy(castTimeValues = spellComponent.castTimeValues)
         }
         if (bag.x != null || bag.chosen.isNotEmpty() || bag.castTimeValues.isNotEmpty()) {

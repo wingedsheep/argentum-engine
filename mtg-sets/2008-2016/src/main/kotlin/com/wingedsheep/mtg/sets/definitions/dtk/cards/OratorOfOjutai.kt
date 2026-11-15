@@ -21,8 +21,8 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
  * spell, draw a card.
  *
  * The reveal is the unnamed optional additional cost (read back by `AdditionalCostWasPaid`);
- * "controlled a Dragon as you cast this spell" is a card-level `captureAtCast`, frozen as the spell
- * finishes being cast and carried onto the permanent, so a Dragon lost before the trigger resolves
+ * "controlled a Dragon as you cast this spell" is a `spell { captureAtCast }`, frozen as the spell
+ * finishes being cast and carried onto the permanent (and into its enters trigger), so a Dragon lost before the trigger resolves
  * still counts and one lost mid-cast (sacrificed for mana) doesn't (per the rulings).
  */
 val OratorOfOjutai = card("Orator of Ojutai") {
@@ -41,7 +41,9 @@ val OratorOfOjutai = card("Orator of Ojutai") {
             Costs.additional.RevealFromHand(GameObjectFilter.Any.withSubtype(Subtype.DRAGON))
         )
     )
-    captureAtCast("controlledDragon", Conditions.YouControl(GameObjectFilter.Permanent.withSubtype(Subtype.DRAGON)))
+    spell {
+        captureAtCast("controlledDragon", Conditions.YouControl(GameObjectFilter.Permanent.withSubtype(Subtype.DRAGON)))
+    }
 
     keywords(Keyword.DEFENDER, Keyword.FLYING)
 

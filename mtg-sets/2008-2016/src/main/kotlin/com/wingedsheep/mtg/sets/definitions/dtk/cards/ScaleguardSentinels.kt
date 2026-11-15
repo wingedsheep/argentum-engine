@@ -18,7 +18,7 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
  * Dragon as you cast this spell.
  *
  * Orator of Ojutai's shape with an enters-with replacement in place of the enters trigger: the
- * reveal is the optional additional cost, the controlled Dragon a card-level `captureAtCast` the
+ * reveal is the optional additional cost, the controlled Dragon a `spell { captureAtCast }` the
  * permanent reads as it enters.
  */
 val ScaleguardSentinels = card("Scaleguard Sentinels") {
@@ -36,7 +36,9 @@ val ScaleguardSentinels = card("Scaleguard Sentinels") {
             Costs.additional.RevealFromHand(GameObjectFilter.Any.withSubtype(Subtype.DRAGON))
         )
     )
-    captureAtCast("controlledDragon", Conditions.YouControl(GameObjectFilter.Permanent.withSubtype(Subtype.DRAGON)))
+    spell {
+        captureAtCast("controlledDragon", Conditions.YouControl(GameObjectFilter.Permanent.withSubtype(Subtype.DRAGON)))
+    }
 
     replacementEffect(
         EntersWithCounters(

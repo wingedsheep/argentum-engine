@@ -328,9 +328,13 @@ class DynamicAmountEvaluator(
             // across hand→stack→battlefield, so the sourceId locates it: the permanent a permanent
             // spell became reads it off its durable cast-choices bag (its enters trigger or
             // enters-with replacement), the spell still on the stack off SpellOnStackComponent.
+            // The source's own enters trigger reads the snapshot frozen when it triggered first, so
+            // the source leaving in response doesn't lose it.
             is DynamicAmount.CapturedAtCast -> {
                 val source = context.sourceId?.let { state.getEntity(it) }
-                source?.get<CastChoicesComponent>()?.castTimeValues?.get(amount.captureName)
+                context.triggerContext?.takeIf { it.triggeringEntityId == context.sourceId }
+                    ?.selfCastTimeValues?.get(amount.captureName)
+                    ?: source?.get<CastChoicesComponent>()?.castTimeValues?.get(amount.captureName)
                     ?: source?.get<SpellOnStackComponent>()?.castTimeValues?.get(amount.captureName)
                     ?: 0
             }
