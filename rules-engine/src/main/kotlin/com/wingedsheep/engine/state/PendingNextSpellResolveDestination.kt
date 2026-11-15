@@ -13,8 +13,7 @@ import kotlinx.serialization.Serializable
  * Master).
  *
  * Sibling of [PendingUncounterableSpell]: when [controllerId] next casts a matching spell from one of
- * [fromZones], [com.wingedsheep.engine.handlers.actions.spell.CastSpellHandler] consumes every
- * matching entry and stamps that spell with an
+ * [fromZones], `CastTriggers.consumeResolveDestinationRiders` consumes every matching entry and stamps that spell with an
  * [com.wingedsheep.engine.state.components.identity.AfterResolveDestinationComponent] that applies
  * only if it resolves. Cleared at every turn boundary by
  * [com.wingedsheep.engine.core.TurnManager.startTurn].

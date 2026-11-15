@@ -1412,8 +1412,10 @@ data class GrantNextSpellResolveDestinationEffect(
 
     override val description: String = buildString {
         append("The next time you cast ")
-        append(spellFilter.description.let { if (it.first().lowercaseChar() in "aeiou") "an $it" else "a $it" })
-        append(" spell")
+        append(
+            if (spellFilter == GameObjectFilter.Any) "a spell"
+            else "${spellFilter.indefiniteArticle} ${spellFilter.description} spell"
+        )
         fromZones?.let { zones -> append(" from your " + zones.joinToString(" or ") { it.name.lowercase() }) }
         append(" this turn, ")
         append(

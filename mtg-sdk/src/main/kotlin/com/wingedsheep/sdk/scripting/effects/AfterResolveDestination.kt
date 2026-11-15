@@ -10,9 +10,8 @@ import kotlinx.serialization.Serializable
  * from somewhere it normally couldn't be cast from often also redirects where the spell ends up,
  * so the same card can't simply be recast next turn. Those riders print "exile it instead"
  * (Jetsam, Daring Waverider) and "put it on the bottom of its owner's library instead" (Kylox's
- * Voltstrider). The third member, "put that card into your hand instead", is the reward rider of
- * [GrantNextSpellResolveDestinationEffect] (Soulfire Grand Master), which only ever applies on
- * resolution.
+ * Voltstrider). The third member, "put that card into your hand instead", is printed as the
+ * reward rider of [GrantNextSpellResolveDestinationEffect] (Soulfire Grand Master).
  *
  * It is deliberately *not* a general zone-change replacement. `RedirectZoneChange` is that, and it
  * applies to any card heading to a graveyard from anywhere; this rider is scoped to one spell the

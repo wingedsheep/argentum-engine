@@ -6233,9 +6233,9 @@ object Effects {
      * fromZones = setOf(Zone.HAND))`.
      */
     fun GrantNextSpellResolveDestination(
-        destination: com.wingedsheep.sdk.scripting.effects.AfterResolveDestination,
+        destination: AfterResolveDestination,
         spellFilter: GameObjectFilter = GameObjectFilter.InstantOrSorcery,
-        fromZones: Set<com.wingedsheep.sdk.core.Zone>? = null
+        fromZones: Set<Zone>? = null
     ): Effect = com.wingedsheep.sdk.scripting.effects.GrantNextSpellResolveDestinationEffect(
         destination, spellFilter, fromZones
     )

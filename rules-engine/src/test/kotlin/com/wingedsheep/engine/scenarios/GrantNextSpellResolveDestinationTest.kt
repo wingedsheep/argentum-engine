@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
@@ -52,6 +53,18 @@ class GrantNextSpellResolveDestinationTest : FunSpec({
         }
     }
 
+    /** The same rider, sending the card to the bottom of the library (Kylox's Voltstrider's spelling). */
+    val bottomer = card("Test Bottomer") {
+        manaCost = "{1}"
+        typeLine = "Creature — Human Monk"
+        power = 1
+        toughness = 1
+        activatedAbility {
+            cost = Costs.Mana("{1}")
+            effect = Effects.GrantNextSpellResolveDestination(destination = AfterResolveDestination.BOTTOM_OF_LIBRARY)
+        }
+    }
+
     val fleetingShock = card("Fleeting Shock") {
         manaCost = "{R}"
         typeLine = "Instant"
@@ -72,7 +85,7 @@ class GrantNextSpellResolveDestinationTest : FunSpec({
 
     fun setUp(): Triple<GameTestDriver, EntityId, EntityId> {
         val d = GameTestDriver()
-        d.registerCards(TestCards.all + listOf(recaller, fleetingShock, flashbackShock))
+        d.registerCards(TestCards.all + listOf(recaller, bottomer, fleetingShock, flashbackShock))
         d.initMirrorMatch(deck = Deck.of("Mountain" to 40), skipMulligans = true)
         d.passPriorityUntil(Step.PRECOMBAT_MAIN)
         val me = d.activePlayer!!
@@ -188,6 +201,21 @@ class GrantNextSpellResolveDestinationTest : FunSpec({
 
         d.getExile(me).contains(shock) shouldBe true
         d.getHand(me).contains(shock) shouldBe false
+    }
+
+    test("a bottom-of-library rider doesn't redirect a spell that exiles itself either") {
+        val (d, me, _) = setUp()
+        val source = d.putCreatureOnBattlefield(me, "Test Bottomer")
+        d.giveMana(me, Color.RED, 1)
+        d.submitSuccess(ActivateAbility(me, source, bottomer.activatedAbilities.first().id))
+        resolveAll(d)
+        val shock = d.putCardInHand(me, "Fleeting Shock")
+        d.giveMana(me, Color.RED, 1)
+        d.castSpell(me, shock).error shouldBe null
+        resolveAll(d)
+
+        d.getExile(me).contains(shock) shouldBe true
+        d.state.getZone(ZoneKey(me, Zone.LIBRARY)).contains(shock) shouldBe false
     }
 
     test("the rider ends with the turn") {

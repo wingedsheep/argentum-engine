@@ -578,7 +578,9 @@ internal class NonPermanentSpellResolver(
             // on the bottom of its owner's library instead", Soulfire Grand Master — "into your hand
             // instead"). The guard is the graveyard wording: a spell whose own instructions exile it
             // or put it into its library was never headed for a graveyard (Soulfire ruling on
-            // Temporal Trespass), so the rider has nothing to replace.
+            // Temporal Trespass), so the rider has nothing to replace. Against another
+            // graveyard-worded replacement (an Adventure's exile, rebound) CR 616.1 lets the
+            // controller choose; like buyback above, the engine doesn't ask and applies the rider.
             exileAfterResolveComp != null && !selfToLibrary && !selfExile -> exileAfterResolveComp.zone
             // Flashback (CR 702.34a) / harmonize (CR 702.180a) — "anywhere else". Above the printed
             // clause, below the rider, which leaves the pre-existing rider-vs-flashback precedence
