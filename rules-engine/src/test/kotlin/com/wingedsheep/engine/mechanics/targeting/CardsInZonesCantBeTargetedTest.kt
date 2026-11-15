@@ -16,6 +16,7 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CardsInZonesCantBeTargeted
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.LoseAllAbilities
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -127,6 +128,15 @@ class CardsInZonesCantBeTargetedTest : FunSpec({
             effect = Effects.Destroy(t)
         }
     }
+    val blueFlashbackMurder = card("Test Blue Flashback Murder") {
+        manaCost = "{U}"
+        typeLine = "Instant"
+        keywordAbility(KeywordAbility.flashback("{U}"))
+        spell {
+            val t = target(TargetFilter.Creature)
+            effect = Effects.Destroy(t)
+        }
+    }
     val pinger = card("Test Blue Pinger") {
         manaCost = "{U}"
         typeLine = "Artifact"
@@ -153,7 +163,7 @@ class CardsInZonesCantBeTargetedTest : FunSpec({
         it.registerCards(
             TestCards.all + listOf(
                 seal, creatureSeal, exileSeal, silencer, raise, crypt, murder, landWard, stoneRain,
-                shield, blueMurder, pinger, spellWard
+                shield, blueMurder, blueFlashbackMurder, pinger, spellWard
             )
         )
         it.initMirrorMatch(Deck.of("Forest" to 40), skipMulligans = true, startingPlayer = 0)
@@ -234,9 +244,41 @@ class CardsInZonesCantBeTargetedTest : FunSpec({
         val pingerId = d.putPermanentOnBattlefield(d.player2, pinger.name)
         d.giveMana(d.player2, Color.BLUE, 1)
         d.giveColorlessMana(d.player2, 2)
+        d.offeredTargets(d.player2) { it is CastSpell && it.cardId == colourless }.contains(lateBear) shouldBe true
+        withClue("the blue spell is never offered the shielded creature") {
+            d.legalActions(d.player2).filter { (it.action as? CastSpell)?.cardId == blue }.none { la ->
+                (la.targetRequirements?.firstOrNull()?.validTargets ?: la.validTargets.orEmpty()).contains(lateBear)
+            } shouldBe true
+        }
         d.castSpell(d.player2, blue, listOf(lateBear)).error shouldNotBe null
         d.offeredTargets(d.player2) { (it as? ActivateAbility)?.sourceId == pingerId }.contains(lateBear) shouldBe true
         d.castSpell(d.player2, colourless, listOf(lateBear)).error shouldBe null
+    }
+
+    test("player-held grant: a blue spell cast from the graveyard isn't offered the shielded creature") {
+        val d = driver()
+        val bear = d.putCreatureOnBattlefield(d.player1, "Grizzly Bears")
+        val theirBear = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
+        d.raiseShield(d.player1)
+        d.passPriority(d.player1)
+
+        val flashback = d.putCardInGraveyard(d.player2, blueFlashbackMurder.name)
+        d.giveMana(d.player2, Color.BLUE, 1)
+        val offered = d.offeredTargets(d.player2) { it is CastSpell && it.cardId == flashback }
+        offered.contains(bear) shouldBe false
+        offered.contains(theirBear) shouldBe true
+    }
+
+    test("player-held grant is a rule, not an ability: the holder's creatures losing all abilities stay shielded") {
+        val d = driver()
+        val bear = d.putCreatureOnBattlefield(d.player1, "Grizzly Bears")
+        d.putPermanentOnBattlefield(d.player1, silencer.name)
+        d.raiseShield(d.player1)
+        d.passPriority(d.player1)
+
+        val blue = d.putCardInHand(d.player2, blueMurder.name)
+        d.giveMana(d.player2, Color.BLUE, 1)
+        d.castSpell(d.player2, blue, listOf(bear)).error shouldNotBe null
     }
 
     test("player-held grant makes an earlier blue spell's target illegal on resolution, and expires at end of turn") {

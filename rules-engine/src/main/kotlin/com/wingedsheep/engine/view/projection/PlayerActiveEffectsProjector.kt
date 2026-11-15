@@ -25,6 +25,7 @@ import com.wingedsheep.engine.view.ClientPlayerEffect
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.engine.mechanics.durations.GrantDurationGate
 import com.wingedsheep.sdk.scripting.AttackTax
 import com.wingedsheep.sdk.scripting.CardsInZonesCantBeTargeted
 import com.wingedsheep.sdk.scripting.Duration
@@ -762,7 +763,10 @@ internal class PlayerActiveEffectsProjector(
      * Dominance). The player holds it, so it shows on them rather than on any one permanent.
      */
     private fun targetLockGrants(state: GameState, playerId: EntityId): List<ClientPlayerEffect> =
-        state.grantedStaticAbilities.filter { it.entityId == playerId && it.ability is CardsInZonesCantBeTargeted }
+        state.grantedStaticAbilities.filter {
+            it.entityId == playerId && it.ability is CardsInZonesCantBeTargeted &&
+                GrantDurationGate.holds(state, it.entityId, it.sourceId, it.duration)
+        }
             .mapIndexed { index, grant ->
                 val lock = grant.ability as CardsInZonesCantBeTargeted
                 val description = if (grant.duration is Duration.Permanent) {

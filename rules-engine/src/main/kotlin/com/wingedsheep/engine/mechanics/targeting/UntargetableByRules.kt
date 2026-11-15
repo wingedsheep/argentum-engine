@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.mechanics.ControllerGrants
+import com.wingedsheep.engine.mechanics.durations.GrantDurationGate
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CardsInZonesCantBeTargeted
@@ -194,7 +195,9 @@ object UntargetableByRules {
         }
         for (grant in state.grantedStaticAbilities) {
             val ability = grant.ability
-            if (ability is CardsInZonesCantBeTargeted && grant.entityId in state.turnOrder) {
+            if (ability is CardsInZonesCantBeTargeted && grant.entityId in state.turnOrder &&
+                GrantDurationGate.holds(state, grant.entityId, grant.sourceId, grant.duration)
+            ) {
                 (locks ?: mutableListOf<ZoneLock>().also { locks = it })
                     .add(ZoneLock(grant.entityId, grant.entityId, ability))
             }

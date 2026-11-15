@@ -178,12 +178,13 @@ class DisplayOfDominanceScenarioTest : ScenarioTestBase() {
             }
         }
 
-        test("the first mode destroys a blue or black noncreature permanent, not a creature") {
+        test("the first mode destroys a blue or black noncreature permanent — not a creature, not another colour") {
             val game = scenario()
                 .withPlayers("Dominator", "Opponent")
                 .withCardInHand(1, "Display of Dominance")
                 .withLandsOnBattlefield(1, "Forest", 2)
                 .withCardOnBattlefield(2, "Propaganda")
+                .withCardOnBattlefield(2, "Glorious Anthem")
                 .withCardOnBattlefield(2, "Prodigal Sorcerer")
                 .withActivePlayer(1)
                 .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
@@ -191,7 +192,12 @@ class DisplayOfDominanceScenarioTest : ScenarioTestBase() {
             val propaganda = game.findPermanent("Propaganda")!!
             val sorcerer = game.findPermanent("Prodigal Sorcerer")!!
 
+            val anthem = game.findPermanent("Glorious Anthem")!!
+
             game.castSpellWithMode(1, "Display of Dominance", 0, sorcerer).error shouldNotBe null
+            withClue("a white enchantment is neither blue nor black") {
+                game.castSpellWithMode(1, "Display of Dominance", 0, anthem).error shouldNotBe null
+            }
             game.castSpellWithMode(1, "Display of Dominance", 0, propaganda).error shouldBe null
             game.resolveStack()
             game.isOnBattlefield("Propaganda") shouldBe false
