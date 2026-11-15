@@ -17828,7 +17828,13 @@ Other gates available in both contexts:
 
   The capture belongs to the spell that was cast: a permanent put onto the battlefield without being
   cast — including the token a copy of the spell becomes — reads 0, and the bag is dropped when the
-  permanent leaves the battlefield (CR 400.7).
+  permanent leaves the battlefield (CR 400.7). A **copy of an instant or sorcery** wasn't cast either
+  (CR 707.10), so it reads every capture as 0 — the DTK Dragon-bonus ruling: "the copy wasn't cast, so
+  whether you controlled a Dragon won't matter" (a copy of Draconic Roar still gets the bonus when a
+  Dragon was *revealed*, because `AdditionalCostWasPaid` reads a copied cost decision). The one
+  exception is a capture that is the pool of a division announced at cast (Monstrous Onslaught,
+  Undercity Upheaval): the copy inherits the division, and with it the amount divided
+  (`AnnouncedDivision.poolCaptures`).
 
 **Cast-choice slots (`ChoiceSlot`).** The choices an object locks in *as it is cast / as it enters*
 (CR 601.2b) — color, creature type, land type, mode, chosen creature, kicked-ness, bargained-ness,

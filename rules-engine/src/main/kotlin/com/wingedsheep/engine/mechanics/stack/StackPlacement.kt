@@ -175,6 +175,16 @@ internal object StackPlacement {
             // Counters owed to the original aren't copied either (CR 707.2) — neither a cast
             // trigger's nor Chorus of the Conclave's bought ones: a copy isn't cast (CR 707.10).
             additionalEntryCounters = emptyList(),
+            // "As you cast this spell" captures (CR 601.2i) describe the cast, and a copy wasn't
+            // cast (CR 707.10): the DTK Dragon-bonus ruling — "the copy wasn't cast, so whether you
+            // controlled a Dragon won't matter" — so a copy reads them as absent (0). The one
+            // exception is the pool of a division announced at cast (Monstrous Onslaught's "X
+            // damage divided …"): the division is a decision the copy inherits, and so is what it
+            // divides.
+            castTimeValues = if (sourceSpell.castTimeValues.isEmpty()) emptyMap() else {
+                val pool = com.wingedsheep.engine.handlers.effects.AnnouncedDivision.poolCaptures(sourceCard.spellEffect)
+                sourceSpell.castTimeValues.filterKeys { it in pool }
+            },
             manaSpentWhite = 0,
             manaSpentBlue = 0,
             manaSpentBlack = 0,

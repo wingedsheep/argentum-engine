@@ -20,7 +20,11 @@ import kotlinx.serialization.Serializable
  * A *permanent* spell's captures ride onto the permanent it becomes, so its enters trigger or
  * enters-with replacement reads them the same way (Orator of Ojutai's "if you revealed a Dragon card
  * or controlled a Dragon as you cast this spell"); a permanent card declares it in a `spell { }` block too.
- * A copy of a permanent spell wasn't cast, so its token gets none.
+ * A copy of a spell wasn't cast (CR 707.10), so it reads every capture as absent (0) — the DTK
+ * Dragon-bonus ruling: "the copy wasn't cast, so whether you controlled a Dragon won't matter" — and
+ * a copied permanent spell's token gets none. The one exception is a capture that is the pool of a
+ * division announced at cast (Monstrous Onslaught's "X damage divided as you choose"): the division
+ * is a decision the copy inherits, and so is the amount it divides.
  *
  * This is the cast-time sibling of the player-choice [ChoiceSlot] bag: those record what the player
  * *chose* as they cast; this records what the *game state* was as they cast. Declared with the

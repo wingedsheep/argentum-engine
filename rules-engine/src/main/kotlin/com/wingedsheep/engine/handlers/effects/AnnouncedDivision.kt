@@ -128,6 +128,26 @@ object AnnouncedDivision {
         }.coerceAtLeast(0)
     }
 
+    /**
+     * The "as you cast this spell" captures (CR 601.2i) the pool of the division [spellEffect]
+     * announces at cast is read from — Undercity Upheaval's "x", Monstrous Onslaught's "x". Only a
+     * total that *is* a capture counts, exactly the reading [total] makes.
+     *
+     * A copy of the spell keeps these and only these (see
+     * [com.wingedsheep.engine.mechanics.stack.StackPlacement.putSpellCopy]): the division is a decision
+     * the copy inherits (CR 707.10), so the pool it divides travels with it, while every other capture
+     * describes a cast the copy never had.
+     */
+    fun poolCaptures(spellEffect: Effect?): Set<String> {
+        val division = ofSpell(spellEffect) ?: return emptySet()
+        val pool = when (division) {
+            is DividedDamageEffect -> division.dynamicTotal
+            is DistributeCountersAmongTargetsEffect -> division.totalCounters
+            else -> null
+        }
+        return setOfNotNull((pool as? DynamicAmount.CapturedAtCast)?.captureName)
+    }
+
     /** The least each chosen target may be assigned — 1 for damage (CR 601.2d), the effect's own floor for counters. */
     fun minPerTarget(division: Effect): Int = when (division) {
         is DistributeCountersAmongTargetsEffect -> division.minPerTarget
