@@ -462,6 +462,10 @@ class CastPermissionUtils(
             is Player.EachOpponent -> castingPlayerId != controllerId
             is Player.EnchantedPlayer ->
                 TargetResolutionUtils.enchantedPlayer(sourcePermanentId, state) == castingPlayerId
+            // The player the source creature is attacking (a planeswalker's controller, a battle's
+            // protector) — Wardscale Dragon. A source that isn't attacking has no defending player.
+            is Player.DefendingPlayer ->
+                TargetResolutionUtils.defendingPlayerOfAttacker(state, sourcePermanentId) == castingPlayerId
             is Player.Each, is Player.Any, is Player.ActivePlayerFirst, is Player.EachStartingWithYou,
             is Player.EachStartingWithNextOpponent -> true
             // Target-bound references (TargetPlayer, …) have no meaning for a continuous static.

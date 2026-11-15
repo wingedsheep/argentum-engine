@@ -1218,7 +1218,8 @@ data class MayCastWithoutPayingManaCost(
  *
  *  - **who** — [affected], a [Player] reference interpreted *relative to this permanent's
  *    controller*: `EachOpponent` / `Opponent` (your opponents), `You` (the controller), `Each`
- *    (everyone).
+ *    (everyone), `EnchantedPlayer` (the player this Aura enchants), `DefendingPlayer` (the player
+ *    this creature is attacking — nobody while it isn't attacking; Wardscale Dragon).
  *  - **which** — [spellFilter], matched against the card being cast (card predicates work in any
  *    zone). Defaults to every spell.
  *  - **when** — [condition], evaluated in the controller's context, so `IsYourTurn` reads as
@@ -1717,7 +1718,8 @@ data class PlayersCantCastSpells(
  *    abilities = NON_MANA_NON_LOYALTY, anyZone = true)` ("Enchanted player can't activate
  *    abilities that aren't mana abilities or loyalty abilities.")
  *
- * [Player.EnchantedPlayer] resolves to the player this Aura is attached to.
+ * [Player.EnchantedPlayer] resolves to the player this Aura is attached to, and
+ * [Player.DefendingPlayer] to the player this creature is attacking (nobody while it isn't).
  *
  * @property affected Who is forbidden, relative to the source's controller.
  * @property permanentFilter Which permanents' abilities are forbidden (matched against the source).

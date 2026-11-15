@@ -13195,7 +13195,11 @@ staticAbility {
 - `PlayersCantCastSpells(affected = Player.EachOpponent, spellFilter = GameObjectFilter.Any, condition = null, conditionFromCaster = false, fromZones = null)`
   — continuous cast *prohibition* parameterized along independent axes, each a reused
   primitive: **who** (`affected`, a `Player` reference *relative to the source's controller* —
-  `EachOpponent`/`Opponent`, `You`, `Each`), **which** (`spellFilter`, matched against the spell *as
+  `EachOpponent`/`Opponent`, `You`, `Each`, `EnchantedPlayer`, or `DefendingPlayer`: the player the
+  source creature is attacking, read live from combat, so nobody while it isn't attacking and only
+  the attacked player in multiplayer — Wardscale Dragon's "As long as this creature is attacking,
+  defending player can't cast spells" = `PlayersCantCastSpells(Player.DefendingPlayer)`; the same
+  who-axis serves `PlayersCantActivateAbilities`), **which** (`spellFilter`, matched against the spell *as
   proposed* — the face or alternative cost chosen for it, CR 601.2e — so "you can't cast permanent
   spells" (Codie, Vociferous Codex = `PlayersCantCastSpells(Player.You, GameObjectFilter.Permanent)`)
   still lets an Adventure's instant half, a modal card's instant face or a face-down creature through
