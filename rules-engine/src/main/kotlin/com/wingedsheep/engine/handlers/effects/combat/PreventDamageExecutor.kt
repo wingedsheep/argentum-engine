@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.combat
 
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.handlers.CapturedObjectBinding
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.suspendForDecision
 import com.wingedsheep.engine.core.DecisionContext
@@ -339,7 +341,15 @@ class PreventDamageExecutor(
                     // damage sources.
                     sourceFilter = sourceFilter,
                     // "For each 1 damage prevented this way, …" (Inkshield).
-                    onPrevented = effect.onPrevented
+                    onPrevented = effect.onPrevented,
+                    // "… you may have Channel Harm deal that much damage to target creature": the
+                    // rest names targets chosen as the spell was cast, so they ride the shield.
+                    onPreventedTargets = if (effect.onPrevented != null) context.targets else emptyList(),
+                    onPreventedNamedTargets = if (effect.onPrevented != null) context.pipeline.namedTargets else emptyMap(),
+                    onPreventedBound = if (effect.onPrevented == null) emptyList() else
+                        (context.targets + context.pipeline.namedTargets.values).mapNotNull { t ->
+                            (t as? ChosenTarget.Permanent)?.entityId?.takeIf { it in state.getBattlefield() }
+                        }.distinct().map { CapturedObjectBinding(it, state.objectRef(it)) },
                 )
             }
 
