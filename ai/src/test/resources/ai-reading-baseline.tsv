@@ -132,7 +132,7 @@ Adarkar Sentinel
 Adarkar Wastes
 Adder-Staff Boggart
 Additive Evolution
-Addle	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
+Addle
 Adelbert Steiner
 Adeline, Resplendent Cathar
 Adeliz, the Cinder Wind
@@ -361,7 +361,7 @@ Akroan Crusader
 Akroan Jailer
 Akroan Sergeant
 Akroan Skyguard
-Akroma's Blessing	intent: ChooseColorThenEffect
+Akroma's Blessing
 Akroma's Devoted
 Akroma's Vengeance
 Akroma's Will
@@ -402,7 +402,7 @@ Alchemist's Greeting
 Alchemist's Retrieval
 Alchemist's Talent
 Alchemist's Vial
-Alchor's Tomb	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
+Alchor's Tomb	intent: ChangeColorToChosenEffect; polarity: ChangeColorToChosenEffect
 Alela, Artful Provocateur
 Alela, Cunning Conqueror	intent: GoadEffect; polarity: GoadEffect
 Alert Heedbonder
@@ -462,7 +462,7 @@ Alpine Watchdog
 Alquist Proft, Master Sleuth
 Alrund's Epiphany
 Alrund, God of the Cosmos
-Alseid of Life's Bounty	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
+Alseid of Life's Bounty
 Altanak, the Thrice-Called
 Altar of Bone
 Altar of Dementia
@@ -742,6 +742,7 @@ Aragorn, King of Gondor	intent: TakeDesignationEffect
 Aragorn, the Uniter
 Arahbo, the First Fang
 Arashin Cleric
+Arashin Foremost
 Arashin Sunshield
 Arasta of the Endless Web
 Araña, Heart of the Spider
@@ -892,7 +893,7 @@ Armored Armadillo
 Armored Cancrix
 Armored Galleon
 Armored Griffin
-Armored Guardian	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
+Armored Guardian
 Armored Kincaller
 Armored Pegasus
 Armored Scrapgorger
@@ -1002,7 +1003,7 @@ Aspect of Lamprey
 Aspect of Manticore
 Aspect of Wolf
 Asphodel Wanderer
-Aspirant's Ascent	polarity: GrantKeywordEffect
+Aspirant's Ascent
 Aspiring Aeronaut
 Assassin's Blade
 Assassin's Ink
@@ -1151,7 +1152,7 @@ Aven Gagglemaster
 Aven Heartstabber
 Aven Initiate
 Aven Interrupter	intent: ExileTargetSpellEffect
-Aven Liberator	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
+Aven Liberator
 Aven Mindcensor
 Aven Redeemer
 Aven Reedstalker
@@ -1428,7 +1429,7 @@ Bat Colony
 Bat Whisperer
 Bat'leth
 Bathe in Dragonfire
-Bathe in Light	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
+Bathe in Light
 Baton of Morale	intent: GrantKeywordEffect; polarity: GrantKeywordEffect
 Battalion Foot Soldier
 Batterhorn
@@ -1772,7 +1773,7 @@ Bleed Dry
 Bleeding Edge
 Bleeding Woods
 Blessed Alliance
-Blessed Breath	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
+Blessed Breath
 Blessed Defiance
 Blessed Ghoul
 Blessed Light
@@ -1810,7 +1811,7 @@ Blightstep Pathway
 Blind Creeper
 Blind Obedience
 Blind Phantasm
-Blind Seer	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
+Blind Seer	intent: ChangeColorToChosenEffect; polarity: ChangeColorToChosenEffect
 Blind with Anger
 Blind-Spot Giant
 Blindblast
@@ -2841,6 +2842,7 @@ Centaur Peacemaker
 Centaur Safeguard
 Centaur Veteran
 Centaur's Herald
+Center Soul
 Central Elevator // Promising Stairs
 Cephalid Broker
 Cephalid Coliseum
@@ -3748,7 +3750,7 @@ Crop Rotation
 Crop Sigil
 Crosis's Attendant
 Crosis's Charm
-Crosis, the Purger	intent: ChooseColorThenEffect
+Crosis, the Purger
 Crossbones, Malicious Mercenary
 Crossbow Infantry
 Crossroads Candleguide
@@ -4024,7 +4026,7 @@ Daredevil, Man Without Fear
 Daretti, Rocketeer Engineer
 Darigaaz Reincarnated
 Darigaaz's Attendant
-Darigaaz, the Igniter	intent: ChooseColorThenEffect
+Darigaaz, the Igniter
 Daring Apprentice
 Daring Archaeologist
 Daring Buccaneer
@@ -4975,7 +4977,7 @@ Dreadwing Scavenger
 Dreadwurm
 Dream Beavers
 Dream Chisel
-Dream Coat	intent: ChooseColorThenEffect; polarity: Aura>ChooseColorThenEffect
+Dream Coat	intent: ChangeColorToChosenEffect; polarity: Aura>ChangeColorToChosenEffect
 Dream Devourer
 Dream Eater
 Dream Harvest
@@ -5030,7 +5032,7 @@ Drogskol Shieldmate
 Dromad Purebred
 Dromar's Attendant
 Dromar's Charm
-Dromar, the Banisher	intent: ChooseColorThenEffect
+Dromar, the Banisher
 Dromoka Dunecaster
 Dromoka Warrior
 Drooling Groodion
@@ -7617,7 +7619,7 @@ God-Pharaoh's Statue
 Goddric, Cloaked Reveler
 Godless Shrine
 Godo, Bandit Warlord	intent: AddCombatPhaseEffect
-Gods Willing	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
+Gods Willing
 Gods' Hall Guardian
 Godsend
 Godtoucher
@@ -8027,6 +8029,7 @@ Gundabad Opportunist
 Gunner Conscript
 Gurgling Anointer
 Gurmag Angler
+Gurmag Drowner
 Gurmag Nightwatch
 Gurmag Rakshasa
 Gurmag Swiftwing
@@ -9475,7 +9478,7 @@ Jandor's Ring
 Jandor's Saddlebags
 Janjeet Sentry
 Jarad, Golgari Lich Lord
-Jareth, Leonine Titan	intent: ChooseColorThenEffect
+Jareth, Leonine Titan
 Jarl of the Forsaken
 Jasmine Boreal
 Jasmine Dragon Tea Shop
@@ -9701,7 +9704,7 @@ Kami of Twisted Reflection
 Kami of Whispered Hopes
 Kami of the Crescent Moon
 Kami of the Hunt
-Kami of the Painted Road	intent: ChooseColorThenEffect
+Kami of the Painted Road
 Kami of the Palace Fields
 Kami of the Waning Moon
 Kami's Flare
@@ -9769,7 +9772,7 @@ Kavaron Skywarden
 Kavaron Turbodrone
 Kavaron, Memorial World
 Kavu Aggressor
-Kavu Chameleon	intent: ChangeColorToChosenEffect; timing: ChangeColorToChosenEffect
+Kavu Chameleon	intent: ChangeColorToChosenEffect
 Kavu Climber
 Kavu Glider
 Kavu Lair
@@ -11557,6 +11560,7 @@ Minimus Containment
 Minion of the Mighty
 Minion's Return	polarity: Aura>MoveToZoneEffect
 Minister of Inquiries
+Minister of Pain
 Ministrant of Obligation
 Minor Misstep
 Minotaur Abomination
@@ -11780,7 +11784,7 @@ Monastery Flock
 Monastery Mentor
 Monastery Messenger
 Monastery Swiftspear
-Mondo Gecko	intent: ChooseColorThenEffect
+Mondo Gecko
 Mondrak, Glory Dominus
 Mongoose Lizard
 Monica Rambeau
@@ -11897,7 +11901,7 @@ Most Decrepit Old Bird
 Most Valuable Slayer
 Most Wanted
 Mothdust Changeling
-Mother of Runes	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
+Mother of Runes
 Mothrider Patrol
 Mothrider Samurai
 Mount Doom
@@ -12738,7 +12742,7 @@ Onyx Goblet
 Onyx Talisman
 Oona's Gatewarden
 Oona's Prowler
-Oona, Queen of the Fae	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
+Oona, Queen of the Fae
 Ooze Patrol
 Ooze Spill
 Opaline Unicorn
@@ -13881,6 +13885,7 @@ Q Continuum
 Q, Stacking the Deck	intent: GatherUntilMatchEffect; intent: GrantActivatedAbilityEffect; intent: Pipeline(?→exile)
 Qala, Ajani's Pridemate
 Qarsi Revenant
+Qarsi Sadist
 Qasali Slingers
 Qiqirn Merchant
 Qo'noS
@@ -13930,7 +13935,7 @@ Quick Study
 Quick-Draw Dagger
 Quick-Draw Katana
 Quickbeam, Upstart Ent
-Quickchange	polarity: ChooseColorThenEffect
+Quickchange	polarity: ChangeColorToChosenEffect
 Quicksand
 Quicksand Whirlpool
 Quicksilver Dragon	intent: ChangeSpellTargetEffect; polarity: ChangeSpellTargetEffect
@@ -14056,7 +14061,7 @@ Rain of Riches
 Rain of Salt
 Rain of Tears
 Rain of Thorns
-Rainbow Crow	intent: ChangeColorToChosenEffect; timing: ChangeColorToChosenEffect
+Rainbow Crow	intent: ChangeColorToChosenEffect
 Rainbow Vale
 Rainveil Rejuvenator
 Raise Dead
@@ -14087,6 +14092,7 @@ Rakish Revelers
 Rakish Scoundrel
 Rakka Mar
 Rakshasa Deathdealer
+Rakshasa Gravecaller
 Rakshasa Vizier
 Rakshasa's Bargain
 Rakshasa's Secret
@@ -14832,7 +14838,7 @@ Rite of the Serpent
 Rites of Flourishing
 Rith's Attendant
 Rith, Liberated Primeval
-Rith, the Awakener	intent: ChooseColorThenEffect
+Rith, the Awakener
 Ritual Guardian
 Ritual of Hope
 Ritual of Rejuvenation
@@ -15631,7 +15637,7 @@ Scurry of Squirrels
 Scute Mob
 Scute Swarm
 Scuttlegator
-Scuttlemutt	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
+Scuttlemutt	intent: ChangeColorToChosenEffect; polarity: ChangeColorToChosenEffect
 Scuttling Butler
 Scuttling Death
 Scuttling Doom Engine
@@ -15692,7 +15698,7 @@ Searing Barrage
 Searing Flesh
 Searing Light
 Searing Meditation
-Searing Rays	intent: ChooseColorThenEffect
+Searing Rays
 Searing Spear
 Searing Spear Askari
 Searing Wind
@@ -15799,7 +15805,7 @@ Seize the Spoils
 Seize the Storm
 Seized from Slumber
 Sejiri Refuge
-Sejiri Shelter	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
+Sejiri Shelter
 Sela, Tal Shiar Paradox
 Select for Inspection
 Selective Snare
@@ -16241,9 +16247,11 @@ Sidequest: Raise a Chocobo
 Sideswipe
 Sidewinder Naga
 Sidewinder Sliver
+Sidisi's Faithful
 Sidisi's Pet
 Sidisi, Brood Tyrant
 Sidisi, Regent of the Mire
+Sidisi, Undead Vizier
 Siege Mastodon
 Siege Modification
 Siege Rhino
@@ -16274,6 +16282,7 @@ Sigardian Paladin
 Sigardian Priest
 Sigardian Savior
 Sight Beyond Sight
+Sight of the Scalelords
 Sigil of Sleep	polarity: Aura>MoveToZoneEffect
 Sigil of Valor
 Sigil of the Empty Throne
@@ -16312,7 +16321,11 @@ Silkbind Faerie
 Silken Strength	intent: TapUntapEffect
 Silklash Spider
 Silkweaver Elite
+Silkwrap
 Silt Crawler
+Silumgar Butcher
+Silumgar Sorcerer
+Silumgar's Command
 Silumgar, the Drifting Death
 Silundi Vision
 Silvan Reveler
@@ -16468,7 +16481,7 @@ Skola Grovedancer
 Skophos Maze-Warden
 Skophos Warleader
 Skrelv's Hive
-Skrelv, Defector Mite	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
+Skrelv, Defector Mite	combat: GrantCantBeBlockedByChosenColorEffect
 Skulduggery
 Skulking Ghost
 Skulking Killer
@@ -17171,6 +17184,7 @@ Springleaf Parade
 Springmane Cervin
 Springmantle Cleric
 Springsage Ritual
+Sprinting Warbrute
 Sprite Dragon
 Sprite Noble
 Sprout
@@ -17516,7 +17530,7 @@ Stormplain Detainment
 Stormrider Spirit
 Stormscale Scion
 Stormscape Apprentice
-Stormscape Master	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
+Stormscape Master
 Stormshriek Feral
 Stormsplitter
 Stormwatch Eagle
@@ -17727,7 +17741,7 @@ Sunfire Torch
 Sunforger
 Sunglasses of Urza
 Sungold Barrage
-Sungold Sentinel	intent: ChooseColorThenEffect
+Sungold Sentinel	combat: GrantCantBeBlockedByChosenColorEffect
 Sungrace Pegasus
 Sungrass Egg
 Sungrass Prairie
@@ -17876,7 +17890,7 @@ Swashbuckling
 Swat
 Swat Away
 Swathcutter Giant
-Sway of Illusion	polarity: ChooseColorThenEffect
+Sway of Illusion	polarity: ForEachEffect
 Sweatworks Brawler
 Sweep Away
 Sweet Oblivion
@@ -17921,7 +17935,7 @@ Swordwise Centaur
 Sworn Companions
 Sworn Guardian
 Sygg's Command
-Sygg, River Guide	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
+Sygg, River Guide
 Sygg, Wanderwine Wisdom
 Sylvan Advocate
 Sylvan Anthem
@@ -18738,7 +18752,7 @@ Thornling
 Thornmantle Striker
 Thornplate Intimidator
 Thornscape Apprentice
-Thornscape Master	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
+Thornscape Master
 Thornspire Verge
 Thorntooth Witch
 Thornvault Forager
@@ -18923,7 +18937,7 @@ Tidal Influence
 Tidal Kraken
 Tidal Surge
 Tidal Terror
-Tidal Visionary	intent: ChooseColorThenEffect; polarity: ChooseColorThenEffect
+Tidal Visionary	intent: ChangeColorToChosenEffect; polarity: ChangeColorToChosenEffect
 Tide Drifter
 Tide Skimmer
 Tide of War	intent: FlipCoinEffect
@@ -19298,7 +19312,7 @@ Trespasser il-Vec
 Trespasser's Curse
 Trestle Troll
 Treva's Attendant
-Treva, the Renewer	intent: ChooseColorThenEffect
+Treva, the Renewer
 Trial of Agony	polarity: DealDamageEffect; polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→?)
 Trial of Ambition
 Trial of Knowledge
@@ -20389,6 +20403,7 @@ Vulshok Sorcerer
 Vulshok Splitter
 Vulshok War Boar
 Vulture, Scheming Scavenger
+Vulturous Aven
 Vulturous Zombie
 Wail of War
 Wail of the Forgotten
@@ -20582,7 +20597,7 @@ Wary Okapi
 Wary Thespian
 Wary Watchdog
 Wash Away
-Wash Out	intent: ChooseColorThenEffect
+Wash Out
 Wasp Lancer
 Wasp of the Bitter End
 Waste Not

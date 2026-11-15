@@ -33,13 +33,16 @@ import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.costs.CostAtom
+import com.wingedsheep.sdk.scripting.effects.ChangeColorToChosenEffect
 import com.wingedsheep.sdk.scripting.effects.DamageCantBePreventedThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.MarkSpellExileWithCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AdaptEffect
 import com.wingedsheep.sdk.scripting.effects.ChangeColorEffect
 import com.wingedsheep.sdk.scripting.effects.AddCardTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
+import com.wingedsheep.sdk.scripting.effects.GrantHexproofFromChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
+import com.wingedsheep.sdk.scripting.effects.GrantProtectionFromChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
 import com.wingedsheep.sdk.scripting.effects.DoubleCountersEffect
@@ -784,7 +787,7 @@ object AiReadingAudit {
             // slips, a colour-matters payoff that now counts it — is on the board the moment it
             // resolves, where the cast's simulation prices it; no later window buys it more. When
             // to cast it is the question of what it rides beside, which that leaf's reading answers.
-            val colourOnly = expiring is ChangeColorEffect
+            val colourOnly = expiring is ChangeColorEffect || expiring is ChangeColorToChosenEffect
             if (isRead(leaf) || ridesOnRemoval || ridesOnCopy || spentWithCast || colourOnly) {
                 sink += Finding(
                     Check.TIMING, read = true, reason = "knows when to spend this until-end-of-turn effect",
@@ -1244,8 +1247,11 @@ object AiReadingAudit {
      * does something lasting — a leaf with an intent reading that does not end this turn.
      */
     private fun protectionBesideLastingPayoff(spell: Effect, leaf: Effect): Boolean {
-        fun protective(l: Effect) = l is GrantKeywordEffect && endsThisTurn(l) &&
-            IntentTag.PROTECTION in CardIntentAnalyzer.analyzeEffect(l).tags
+        // A keyword grant, or its chosen-color form (Feat of Resistance's "protection from the color
+        // of your choice" beside its +1/+1 counter).
+        fun protective(l: Effect) =
+            (l is GrantKeywordEffect || l is GrantProtectionFromChosenColorEffect || l is GrantHexproofFromChosenColorEffect) &&
+                endsThisTurn(l) && IntentTag.PROTECTION in CardIntentAnalyzer.analyzeEffect(l).tags
         val grant = if (leaf is ForEachEffect) {
             EffectWalker.leaves(leaf.body).filter(::endsThisTurn).let { it.isNotEmpty() && it.all(::protective) }
         } else {

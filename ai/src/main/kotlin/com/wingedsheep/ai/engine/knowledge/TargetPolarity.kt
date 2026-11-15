@@ -46,6 +46,7 @@ import com.wingedsheep.sdk.scripting.effects.ChoosePileEffect
 import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
+import com.wingedsheep.sdk.scripting.effects.GrantCantBeBlockedByChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
@@ -1761,6 +1762,7 @@ object TargetPolarityAnalyzer {
             }
             is GrantKeywordEffect -> leaf.target to keywordPolarity(leaf.keyword)
             is GrantEvasionKeywordEffect -> leaf.target to TargetPolarity.BENEFICIAL
+            is GrantCantBeBlockedByChosenColorEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is GrantProtectionFromChosenColorEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is GrantHexproofFromChosenColorEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is AddCountersEffect -> leaf.target to counterPolarity(leaf.counterType)
@@ -2085,6 +2087,9 @@ object TargetPolarityAnalyzer {
         // "Gains protection from red" (Crimson Acolyte) is granted as `PROTECTION_FROM_RED`, the
         // scoped form of [Keyword.PROTECTION] — the same gift.
         if (name.uppercase().startsWith("PROTECTION_FROM_")) return TargetPolarity.BENEFICIAL
+        // "Gains toxic 1" (Skrelv, Defector Mite) is granted as `TOXIC_<n>`, the counted form of
+        // [Keyword.TOXIC]: its combat damage also poisons — good for the attacker holding it.
+        if (name.uppercase().startsWith("TOXIC_")) return TargetPolarity.BENEFICIAL
         runCatching { Keyword.valueOf(name.uppercase()) }.getOrNull()?.let { keyword ->
             return when (keyword) {
                 in BENEFICIAL_KEYWORDS -> TargetPolarity.BENEFICIAL

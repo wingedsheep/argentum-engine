@@ -2538,7 +2538,11 @@ object CardIntentAnalyzer {
                 (effect.target is EffectTarget.BoundVariable || effect.target is EffectTarget.ContextTarget)
             ) setOf(IntentTag.TAPPER)
             else keywordTags(effect.keyword)
-        is GrantEvasionKeywordEffect -> setOf(IntentTag.EVASION_GRANT)
+        is GrantEvasionKeywordEffect, is GrantCantBeBlockedByChosenColorEffect -> setOf(IntentTag.EVASION_GRANT)
+        // "Target creature you control gains protection from (hexproof from) the color of your
+        // choice" (Center Soul, Gods Willing, Mother of Runes): the chosen-color form of the
+        // `PROTECTION_FROM_<X>` grant [keywordTags] reads — the same shield.
+        is GrantProtectionFromChosenColorEffect, is GrantHexproofFromChosenColorEffect -> setOf(IntentTag.PROTECTION)
         // "Target creature must be blocked this turn if able" / "all creatures able to block it do
         // so" (Magitek Scythe, Lure effects): the attacker picks its fight, or drags every blocker
         // off the rest of the team. Read for our attacker; nobody lures their opponent's creature.
@@ -3262,10 +3266,15 @@ object CardIntentAnalyzer {
      * A protective keyword granted until end of turn — "target creature gains indestructible until
      * end of turn". Like [isExpiringPump] it buys something only before cleanup, so an instant
      * carrying one is held for a fight or a response ([IntentTag.COMBAT_TRICK]), with no toughness.
+     * The chosen-color shields ("protection from the color of your choice until end of turn",
+     * Center Soul, Gods Willing) are the same trick: the color is picked against the threat.
      */
-    private fun isExpiringProtection(effect: Effect): Boolean =
-        effect is GrantKeywordEffect && effect.duration == Duration.EndOfTurn &&
-            IntentTag.PROTECTION in keywordTags(effect.keyword)
+    private fun isExpiringProtection(effect: Effect): Boolean = when (effect) {
+        is GrantKeywordEffect -> effect.duration == Duration.EndOfTurn && IntentTag.PROTECTION in keywordTags(effect.keyword)
+        is GrantProtectionFromChosenColorEffect -> effect.duration == Duration.EndOfTurn
+        is GrantHexproofFromChosenColorEffect -> effect.duration == Duration.EndOfTurn
+        else -> false
+    }
 
     /**
      * An ability whose payoff ends at cleanup: an [isExpiringProtection] grant (one creature's or,
@@ -3277,7 +3286,7 @@ object CardIntentAnalyzer {
     private fun isExpiringProtectionTrick(root: Effect): Boolean {
         val leaves = readingLeaves(root).flatMap { if (it is ForEachEffect) readingLeaves(it.body) else listOf(it) }
         return leaves.any(::isExpiringProtection) && leaves.all { leaf ->
-            isExpiringPump(leaf) ||
+            isExpiringPump(leaf) || isExpiringProtection(leaf) ||
                 (leaf is GrantKeywordEffect && leaf.duration == Duration.EndOfTurn) ||
                 tagsOf(leaf).let { it.isNotEmpty() && it.all { tag -> tag in SPENT_ON_RESOLUTION } }
         }
