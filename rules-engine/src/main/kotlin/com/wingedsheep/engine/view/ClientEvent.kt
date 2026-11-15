@@ -1944,6 +1944,9 @@ is PermanentsSacrificedEvent -> {
             // triggers; the draw, the discard and the +1/+1 counter are already surfaced by their
             // own events, so no separate client event.
             is PermanentConnivedEvent,
+            // Internal signal that fires "whenever a creature you control fights" watcher triggers;
+            // the fight's damage is already surfaced by its own DamageDealtEvents.
+            is CreatureFoughtEvent,
             // Internal signal that fires "exploits a creature" watcher triggers (Skull Skaab); the
             // sacrifice is already surfaced by PermanentsSacrificedEvent and the payoff by the
             // exploiting creature's own triggered/reflexive ability, so no separate client event.

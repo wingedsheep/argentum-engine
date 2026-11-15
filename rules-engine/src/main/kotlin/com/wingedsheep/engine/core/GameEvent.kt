@@ -744,6 +744,29 @@ data class PermanentConnivedEvent(
 ) : GameEvent
 
 /**
+ * A creature just fought (CR 701.14). Emitted by the fight executor once per creature that fights —
+ * twice per fight, or once when a creature fights itself (CR 701.14c) — and only when the fight
+ * actually happens (CR 701.14b: no event when a fighter is gone, no longer a creature, or an illegal
+ * target). Damage dealt is irrelevant: a 0-power or fully prevented fight still fought. Drives
+ * [com.wingedsheep.sdk.scripting.EventPattern.FoughtEvent] triggers ("whenever a creature you
+ * control fights").
+ *
+ * Internal-only: dropped from the client log (`ClientEventTransformer`) — the fight's damage is
+ * surfaced by its own [DamageDealtEvent]s.
+ *
+ * @property creatureId The creature that fought (the trigger's subject and triggering entity).
+ * @property opponentId The creature it fought (itself when it fought itself).
+ * @property controllerId The fighter's controller as it fought.
+ */
+@Serializable
+@SerialName("CreatureFoughtEvent")
+data class CreatureFoughtEvent(
+    val creatureId: EntityId,
+    val opponentId: EntityId,
+    val controllerId: EntityId
+) : GameEvent
+
+/**
  * A player just performed one of the four elemental bending keyword actions (CR 701.65b Airbend /
  * 701.66b Earthbend / 701.67c Waterbend / 702.189b Firebending). Fires once per bend so
  * [com.wingedsheep.sdk.scripting.EventPattern.BendPerformedEvent] triggers

@@ -971,6 +971,32 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
+     * Whenever a creature matching [filter] fights (CR 701.14) — "whenever a creature you control
+     * fights" (Foe-Razer Regent). Fires once for **each** creature that fights, so a fight between
+     * two of your creatures triggers a "creature you control" observer twice; the fighter is the
+     * triggering entity ("put two +1/+1 counters on **it**"). A fight that doesn't happen (CR
+     * 701.14b — a fighter left the battlefield, stopped being a creature, or became an illegal
+     * target) fires nothing; one that deals no damage (0 power, prevention) still fires — the
+     * creatures fought.
+     *
+     * Binding SELF = "whenever this creature fights"; ANY = "whenever a [filter] fights"; OTHER
+     * excludes the source. Fighters stay on the battlefield until state-based actions, so this
+     * matches in the regular battlefield trigger loop against the live fighter.
+     */
+    @SerialName("FoughtEvent")
+    @Serializable
+    data class FoughtEvent(
+        val filter: GameObjectFilter = GameObjectFilter.Any
+    ) : EventPattern {
+        override val description: String = "${describeObjectForEvent(filter)} fights"
+
+        override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
+
+    /**
      * Whenever a permanent matching [filter] connives (CR 701.50). The conniving permanent is the
      * event subject, so "a creature you control connives" is
      * `filter = GameObjectFilter.Creature.youControl()`, resolving "you" to the observing ability's

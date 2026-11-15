@@ -566,6 +566,11 @@ data class TriggerContext(
                     triggeringEntityId = event.entityId,
                     triggeringPlayerId = event.controllerId
                 )
+                // Fight (CR 701.14): the fighter is "it" and its controller the triggering player.
+                is com.wingedsheep.engine.core.CreatureFoughtEvent -> TriggerContext(
+                    triggeringEntityId = event.creatureId,
+                    triggeringPlayerId = event.controllerId
+                )
                 // Monstrosity (CR 701.37b): same shape as renown.
                 is com.wingedsheep.engine.core.BecameMonstrousEvent -> TriggerContext(
                     triggeringEntityId = event.entityId,

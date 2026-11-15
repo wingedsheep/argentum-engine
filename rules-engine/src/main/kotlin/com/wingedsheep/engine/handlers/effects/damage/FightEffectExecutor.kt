@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.damage
 
+import com.wingedsheep.engine.core.CreatureFoughtEvent
 import com.wingedsheep.engine.core.DamageDealtEvent
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent
@@ -48,10 +49,20 @@ class FightEffectExecutor(private val zones: ZoneTransitionService) : EffectExec
         val power1 = projected.getPower(target1Id) ?: 0
         val power2 = projected.getPower(target2Id) ?: 0
 
-        val result = DamageReplacementChain.deal(zones, state, listOf(
+        // The fight happens (CR 701.14a), whatever damage it ends up dealing: each fighter fights —
+        // once, when a creature fights itself (CR 701.14c). Emitted up front so a fight whose damage
+        // pauses for a replacement choice still reports it.
+        val foughtEvents = listOf(target1Id to target2Id, target2Id to target1Id)
+            .distinctBy { it.first }
+            .mapNotNull { (fighter, opponent) ->
+                projected.getController(fighter)?.let { CreatureFoughtEvent(fighter, opponent, it) }
+            }
+
+        val dealt = DamageReplacementChain.deal(zones, state, listOf(
             DamageReplacementChain.Instance(target1Id, target2Id, power1),
             DamageReplacementChain.Instance(target2Id, target1Id, power2)
         ), effect, context)
+        val result = dealt.copy(events = foughtEvents + dealt.events)
         if (result.outcome is com.wingedsheep.engine.core.Outcome.Paused) return result
         val excess = result.events.filterIsInstance<DamageDealtEvent>()
             .filter { it.sourceId == target1Id && it.targetId == target2Id }.sumOf { it.excessAmount }
