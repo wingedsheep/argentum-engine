@@ -45,6 +45,7 @@ import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.GrantProtectionFromChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
+import com.wingedsheep.sdk.scripting.effects.BecomeAuraEffect
 import com.wingedsheep.sdk.scripting.effects.DoubleCountersEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
@@ -942,6 +943,10 @@ object AiReadingAudit {
         // what the Equipment is *for* is the card's reading of its "equipped creature" statics
         // (CardIntentAnalyzer tags those), and which creature gets it is the polarity check.
         if (leaf is AttachEquipmentEffect) return true
+        // "It becomes an Aura with enchant creature … attach this enchantment to it" (the Fate
+        // Reforged "Form" cycle) is the same untargeted move onto a host: what the Aura is for is
+        // the card's reading of its "enchanted creature" statics.
+        if (leaf is BecomeAuraEffect) return true
         // "Target creature gains all creature types" (Oko, Lorwyn Liege's +2, Amoeboid Changeling) —
         // Changeling granted: its payoff is whatever typal effects then see the creature, which the
         // simulation prices on the board; which creature gets it is the polarity check's (a gift).

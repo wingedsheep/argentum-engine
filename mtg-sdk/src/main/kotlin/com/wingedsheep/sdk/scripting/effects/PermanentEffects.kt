@@ -573,6 +573,53 @@ data class EnchantPutOntoBattlefieldEffect(
 }
 
 /**
+ * The source permanent turns itself into an Aura and attaches to an object its ability names: "it
+ * becomes an Aura with enchant creature. Manifest the top card of your library and attach this
+ * enchantment to it." (the Fate Reforged "Form" cycle).
+ *
+ * "Becomes an Aura" changes only its enchantment types for as long as it stays on the battlefield
+ * (layer 4: Aura replaces any other enchantment type, CR 205.1a; its card types, other subtypes,
+ * name and colors are untouched), and its whole enchant ability becomes [enchant]. It keeps its
+ * other abilities, so a printed "Enchanted creature has …" static starts applying once it is
+ * attached. It is then attached to [attachTo] if it can legally enchant that object (its new
+ * enchant ability, protection from it, "can't be enchanted" — CR 701.3a); the attachment isn't
+ * targeted. With nothing to attach to (an empty library manifested nothing) it doesn't move
+ * (CR 701.3b): it stays an unattached Aura and the CR 704.5m state-based action puts it into its
+ * owner's graveyard, as the Form rulings say — as it does an animated one, a creature Aura (CR
+ * 303.4d). A no-op when the source has left the battlefield, even if it came back as a new object
+ * (the rest of the ability — the manifest — still happens).
+ *
+ * Neither neighbour takes the axis: [EnchantPutOntoBattlefieldEffect] rebinds a source that is
+ * already an Aura to the particular objects its ability returned, and [PutOntoBattlefieldAsAuraEffect]
+ * moves a card from another zone onto the battlefield as an Aura that (by default) loses its other
+ * abilities. This one changes a permanent already on the battlefield, abilities intact.
+ *
+ * Compose after the step that makes the host: `Patterns.Library.manifest() then
+ * Effects.BecomeAura(GameObjectFilter.Creature, EffectTarget.PipelineTarget("manifested"))`.
+ *
+ * @property enchant The Aura's new enchant ability ("enchant **creature**").
+ * @property attachTo The object to attach it to — a pipeline object the ability just made, or a target.
+ */
+@SerialName("BecomeAura")
+@Serializable
+data class BecomeAuraEffect(
+    val enchant: GameObjectFilter,
+    val attachTo: EffectTarget
+) : Effect {
+    override val description: String = buildString {
+        val host = enchant.description.lowercase()
+        append("It becomes an Aura with enchant $host. Attach it to ")
+        // A pipeline object is the one the same ability just made ("that creature"), not a target.
+        append(if (attachTo is EffectTarget.PipelineTarget) "that $host" else attachTo.description)
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newEnchant = enchant.applyTextReplacement(replacer)
+        return if (newEnchant != enchant) copy(enchant = newEnchant) else this
+    }
+}
+
+/**
  * Unattach an Aura/Equipment from its host without moving it to another zone (CR 701.3d). Removes
  * the [target] attachment's `AttachedToComponent` and drops it from the host's attachment list; a
  * no-op if [target] isn't currently attached to anything. The inverse of [AttachEquipmentEffect] /

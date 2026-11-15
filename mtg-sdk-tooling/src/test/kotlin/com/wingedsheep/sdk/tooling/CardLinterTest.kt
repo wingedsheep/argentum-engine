@@ -925,6 +925,29 @@ class CardLinterTest : DescribeSpec({
             findings(aura).shouldBeEmpty()
         }
 
+        // The Fate Reforged Forms: a plain Enchantment whose enters trigger makes it an Aura and
+        // attaches it, so its printed "enchanted creature has flying" is live once attached.
+        it("accepts attached stats on an enchantment whose own trigger makes it an Aura") {
+            fun form(effect: com.wingedsheep.sdk.scripting.effects.Effect) = CardDefinition(
+                name = "Becomes Aura",
+                manaCost = ManaCost.parse("{1}{U}{U}"),
+                typeLine = TypeLine.enchantment(),
+                script = CardScript(
+                    triggeredAbilities = listOf(
+                        TriggeredAbility.create(
+                            id = AbilityId("CardLinterTest_form"),
+                            trigger = EventPattern.ZoneChangeEvent(to = Zone.BATTLEFIELD),
+                            effect = effect,
+                        ),
+                    ),
+                    staticAbilities = listOf(ModifyStats(1, 1)),
+                ),
+            )
+            findings(form(Effects.BecomeAura(GameObjectFilter.Creature, EffectTarget.PipelineTarget("manifested"))))
+                .shouldBeEmpty()
+            findings(form(Effects.GainLife(1))).shouldHaveSize(1)
+        }
+
         it("accepts the same grant on an Equipment") {
             val boots = CardDefinition(
                 name = "Warding Boots",

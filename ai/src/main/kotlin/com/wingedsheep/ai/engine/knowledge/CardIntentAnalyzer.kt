@@ -1263,6 +1263,7 @@ object CardIntentAnalyzer {
         addAll(libraryExileTags(root))
         addAll(revealUntilMillTags(root))
         addAll(handToBattlefieldTags(root))
+        addAll(manifestTags(root))
         if (selectsOwnLibraryTop(readingLeaves(root))) add(IntentTag.CARD_SELECTION)
         if (EffectWalker.blinkMoves(root).isNotEmpty()) add(IntentTag.PROTECTION)
         // "Exile up to two target creatures you control, then return those cards to the battlefield"
@@ -1556,6 +1557,32 @@ object CardIntentAnalyzer {
             if (move.faceDown != null || to.zone != Zone.BATTLEFIELD || to.player != Player.You) emptySet()
             else setOf(if (landOnly) IntentTag.RAMP else IntentTag.FREE_SPELL)
         }
+    }
+
+    /**
+     * "Manifest the top card of your library" (Soul Summons, the Fate Reforged "Form" cycle),
+     * "manifest dread" (Duskmourn) — a gather from **our own library's top** whose cards, or the one
+     * picked from among them, move onto our battlefield **face down**: each is a 2/2 creature body
+     * whatever card it is, the payoff [IntentTag.TOKEN_MAKER] names for a token. Neither leaf says it
+     * (the gather alone is a mill's start, the move alone a cheat's). A manifest under another
+     * player's control (Reality Shift's "its controller manifests") is that player's gift, not ours.
+     */
+    private fun manifestTags(root: Effect): Set<IntentTag> {
+        val leaves = readingLeaves(root)
+        val seed = leaves.mapNotNullTo(HashSet()) { leaf ->
+            val source = (leaf as? GatherCardsEffect)?.source as? CardSource.TopOfLibrary ?: return@mapNotNullTo null
+            leaf.storeAs.takeIf { source.player == Player.You && !source.isScry && !source.isSurveil }
+        }
+        if (seed.isEmpty()) return emptySet()
+        do {
+            val before = seed.size
+            for (leaf in leaves) seed += derivedCollections(leaf, seed)
+        } while (seed.size != before)
+        val manifests = leaves.any { leaf ->
+            leaf is MoveCollectionEffect && leaf.from in seed && leaf.faceDown != null &&
+                (leaf.destination as? CardDestination.ToZone)?.let { it.zone == Zone.BATTLEFIELD && it.player == Player.You } == true
+        }
+        return if (manifests) setOf(IntentTag.TOKEN_MAKER) else emptySet()
     }
 
     private fun isLandOnly(filter: GameObjectFilter): Boolean =
