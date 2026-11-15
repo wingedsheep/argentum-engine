@@ -37,6 +37,7 @@ import com.wingedsheep.engine.state.components.battlefield.TimestampComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.EmblemActivatedAbilityComponent
+import com.wingedsheep.engine.state.components.identity.EmblemStaticAbilityComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.player.CantCastSpellsComponent
 import com.wingedsheep.engine.state.components.player.bindingCastBans
@@ -377,7 +378,7 @@ class CastPermissionUtils(
                 .any { it.second.spellFilter == GameObjectFilter.Any }
 
     /**
-     * Cheap guard: does any battlefield permanent carry a per-spell cast restriction
+     * Cheap guard: does any battlefield permanent (or emblem) carry a per-spell cast restriction
      * ([CantCastSpellsSharingColorWithLastCast], [PlayersCantCastSpells], a filtered
      * [RestrictSpellsCastPerTurn])? Lets enumeration skip
      * the per-card [spellSpecificallyRestricted] scan entirely in the common case where none is in
@@ -390,11 +391,15 @@ class CastPermissionUtils(
                 it is CantCastSpellsSharingColorWithLastCast || it is PlayersCantCastSpells ||
                     (it is RestrictSpellsCastPerTurn && it.spellFilter != GameObjectFilter.Any)
             } == true
+        } || state.emblemStaticHolders.any { emblemId ->
+            state.getEntity(emblemId)?.get<EmblemStaticAbilityComponent>()
+                ?.abilities?.any { it is PlayersCantCastSpells } == true
         }
 
     /**
      * The [PlayersCantCastSpells] statics that apply to [castingPlayerId] casting [spellCardId],
-     * paired with the permanent granting each — every battlefield permanent's ability whose
+     * paired with the permanent (or emblem) granting each — every battlefield permanent's or
+     * emblem's ability whose
      * [affected][PlayersCantCastSpells.affected] group (relative to the granter's controller)
      * includes the caster, whose [condition][PlayersCantCastSpells.condition] holds in the
      * controller's context (the caster's, with [conditionFromCaster][PlayersCantCastSpells.conditionFromCaster]),
@@ -410,6 +415,28 @@ class CastPermissionUtils(
     ): List<Pair<EntityId, PlayersCantCastSpells>> {
         val projected = state.projectedState
         var applicable: MutableList<Pair<EntityId, PlayersCantCastSpells>>? = null
+        fun consider(sourceId: EntityId, sa: PlayersCantCastSpells, controller: EntityId) {
+            if (!affectedPlayerMatches(sa.affected, controller, castingPlayerId, state, sourceId)) return
+            // The "where" axis (Soulless Jailer's "from graveyards or exile"): the card is read
+            // in the zone it is being cast from — this check runs before it moves to the stack.
+            val fromZones = sa.fromZones
+            if (fromZones != null) {
+                val castFrom = state.zones.entries.firstOrNull { spellCardId in it.value }?.key?.zoneType
+                if (castFrom !in fromZones) return
+            }
+            val condition = sa.condition
+            if (condition != null) {
+                // A caster-relative gate (Dosan's "during their own turns") reads the
+                // condition from the restricted player's seat, not the granter's.
+                val ctx = EffectContext(
+                    sourceId = sourceId,
+                    controllerId = if (sa.conditionFromCaster) castingPlayerId else controller,
+                )
+                if (!conditionEvaluator.evaluate(state, condition, ctx)) return
+            }
+            (applicable ?: mutableListOf<Pair<EntityId, PlayersCantCastSpells>>().also { applicable = it })
+                .add(sourceId to sa)
+        }
         for (permanentId in state.getBattlefield()) {
             val container = state.getEntity(permanentId) ?: continue
             if (container.has<FaceDownComponent>()) continue
@@ -420,26 +447,19 @@ class CastPermissionUtils(
                 val controller = projected.getController(permanentId)
                     ?: container.get<ControllerComponent>()?.playerId
                     ?: continue
-                if (!affectedPlayerMatches(sa.affected, controller, castingPlayerId, state, permanentId)) continue
-                // The "where" axis (Soulless Jailer's "from graveyards or exile"): the card is read
-                // in the zone it is being cast from — this check runs before it moves to the stack.
-                val fromZones = sa.fromZones
-                if (fromZones != null) {
-                    val castFrom = state.zones.entries.firstOrNull { spellCardId in it.value }?.key?.zoneType
-                    if (castFrom !in fromZones) continue
-                }
-                val condition = sa.condition
-                if (condition != null) {
-                    // A caster-relative gate (Dosan's "during their own turns") reads the
-                    // condition from the restricted player's seat, not the granter's.
-                    val ctx = EffectContext(
-                        sourceId = permanentId,
-                        controllerId = if (sa.conditionFromCaster) castingPlayerId else controller,
-                    )
-                    if (!conditionEvaluator.evaluate(state, condition, ctx)) continue
-                }
-                (applicable ?: mutableListOf<Pair<EntityId, PlayersCantCastSpells>>().also { applicable = it })
-                    .add(permanentId to sa)
+                consider(permanentId, sa, controller)
+            }
+        }
+        // An emblem's own static (Narset Transcendent's "Your opponents can't cast noncreature
+        // spells") reads exactly like one printed on a permanent its controller controls (CR 114.4:
+        // emblem abilities function in the command zone). Emblems sit in no zone, so the
+        // battlefield walk above never reaches them.
+        for (emblemId in state.emblemStaticHolders) {
+            val container = state.getEntity(emblemId) ?: continue
+            val statics = container.get<EmblemStaticAbilityComponent>() ?: continue
+            val controller = container.get<ControllerComponent>()?.playerId ?: continue
+            for (sa in statics.abilities) {
+                if (sa is PlayersCantCastSpells) consider(emblemId, sa, controller)
             }
         }
         return applicable ?: emptyList()
