@@ -324,12 +324,20 @@ class DynamicAmountEvaluator(
                     ?: 0
             }
 
-            // A number frozen as the source spell was cast (CR 601.2i), read off the spell on the
-            // stack — the spell entity keeps its id across the hand→stack boundary, so the
-            // resolving effect's sourceId locates it.
-            is DynamicAmount.CapturedAtCast ->
-                context.sourceId?.let { state.getEntity(it) }
-                    ?.get<SpellOnStackComponent>()?.castTimeValues?.get(amount.captureName) ?: 0
+            // A number frozen as the source spell was cast (CR 601.2i). The entity keeps its id
+            // across hand→stack→battlefield, so the sourceId locates it: the permanent a permanent
+            // spell became reads it off its durable cast-choices bag (its enters trigger or
+            // enters-with replacement), the spell still on the stack off SpellOnStackComponent.
+            // The source's own enters trigger reads the snapshot frozen when it triggered first, so
+            // the source leaving in response doesn't lose it.
+            is DynamicAmount.CapturedAtCast -> {
+                val source = context.sourceId?.let { state.getEntity(it) }
+                context.triggerContext?.takeIf { it.triggeringEntityId == context.sourceId }
+                    ?.selfCastTimeValues?.get(amount.captureName)
+                    ?: source?.get<CastChoicesComponent>()?.castTimeValues?.get(amount.captureName)
+                    ?: source?.get<SpellOnStackComponent>()?.castTimeValues?.get(amount.captureName)
+                    ?: 0
+            }
 
             // A numeric value locked in for a ChoiceSlot, read off the durable cast-choices bag on
             // the source, falling back to the resolution context so an instant/sorcery that never

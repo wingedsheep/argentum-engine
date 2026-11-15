@@ -70,6 +70,13 @@ data class TriggerContext(
     val selfCastCostChoices: Map<com.wingedsheep.sdk.scripting.ChoiceSlot, Boolean>? = null,
     /** Named cost branches and repeated optional-payment counts, frozen for the source's own cast/entry triggers. */
     val selfCastAdditionalCostChoices: Map<com.wingedsheep.sdk.scripting.ChoiceSlot, Int>? = null,
+    /**
+     * The "as you cast this spell" captures (CR 601.2i) of this trigger's own source, frozen as its
+     * enters trigger is detected. The permanent's cast-choices bag is stripped if it leaves in
+     * response (CR 400.7), but the intervening "if" is rechecked on resolution (CR 603.4) and how
+     * the spell was cast is fixed — Orator of Ojutai bounced in response still draws.
+     */
+    val selfCastTimeValues: Map<String, Int>? = null,
     /** Actual payment of this trigger's own source spell; zero payment is distinct from no snapshot. */
     val selfCastManaSpent: com.wingedsheep.engine.state.components.battlefield.CastRecordComponent? = null,
     /** Last known +1/+1 counter count when the source left the battlefield */

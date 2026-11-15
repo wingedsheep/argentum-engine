@@ -323,7 +323,8 @@ class TriggerDetector(
                         // mana spent to cast her"): a blink in response returns a new object with
                         // no cast record, and this trigger belongs to the cast one.
                         val paid = ctx.copy(
-                            selfCastManaSpent = com.wingedsheep.engine.handlers.ManaSpentReader.snapshot(state, pending.sourceId)
+                            selfCastManaSpent = com.wingedsheep.engine.handlers.ManaSpentReader.snapshot(state, pending.sourceId),
+                            selfCastTimeValues = source.get<CastChoicesComponent>()?.castTimeValues?.takeIf { it.isNotEmpty() },
                         )
                         val definitionId = source.get<CardComponent>()?.cardDefinitionId ?: return@let paid
                         val chosen = source.get<CastChoicesComponent>()?.chosen.orEmpty()
