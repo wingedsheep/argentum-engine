@@ -2087,6 +2087,9 @@ object TargetPolarityAnalyzer {
         // "Gains protection from red" (Crimson Acolyte) is granted as `PROTECTION_FROM_RED`, the
         // scoped form of [Keyword.PROTECTION] — the same gift.
         if (name.uppercase().startsWith("PROTECTION_FROM_")) return TargetPolarity.BENEFICIAL
+        // "Gains toxic 1" (Skrelv, Defector Mite) is granted as `TOXIC_<n>`, the counted form of
+        // [Keyword.TOXIC]: its combat damage also poisons — good for the attacker holding it.
+        if (name.uppercase().startsWith("TOXIC_")) return TargetPolarity.BENEFICIAL
         runCatching { Keyword.valueOf(name.uppercase()) }.getOrNull()?.let { keyword ->
             return when (keyword) {
                 in BENEFICIAL_KEYWORDS -> TargetPolarity.BENEFICIAL

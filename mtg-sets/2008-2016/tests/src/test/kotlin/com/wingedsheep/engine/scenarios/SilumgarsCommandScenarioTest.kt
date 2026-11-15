@@ -16,7 +16,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.string.shouldContain
 
 /**
  * Silumgar's Command (DTK #232) — {3}{U}{B} Instant.
@@ -142,6 +142,7 @@ class SilumgarsCommandScenarioTest : FunSpec({
                 listOf(ChosenTarget.Spell(bearsSpell)),
                 listOf(ChosenTarget.Permanent(theirs)),
             ),
-        ).error shouldNotBe null
+        ).error.shouldNotBeNull().lowercase() shouldContain "target"
+        driver.getTopOfStack() shouldBe bearsSpell
     }
 })

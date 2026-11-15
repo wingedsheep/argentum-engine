@@ -21,8 +21,8 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  * "Exploit. When Sidisi exploits a creature, you may search your library for a card, put it into
  * your hand, then shuffle."
  *
- * Pins that exploiting offers the whole library and the chosen card lands in hand, and that the
- * tutor is optional ("you may") even after the sacrifice.
+ * Pins that exploiting offers the whole library and the chosen card lands in hand, that she can
+ * exploit herself and still tutor, and that the tutor is optional ("you may") even after the sacrifice.
  */
 class SidisiUndeadVizierScenarioTest : FunSpec({
 
@@ -74,6 +74,26 @@ class SidisiUndeadVizierScenarioTest : FunSpec({
         driver.getHand(me) shouldContain wanted
         driver.getHand(me).size shouldBe handBefore + 1
         driver.state.getLibrary(me).size shouldBe library.size - 1
+    }
+
+    test("Sidisi can exploit herself and still tutor") {
+        val driver = createDriver()
+        val me = driver.activePlayer!!
+        val sidisi = castSidisi(driver, me)
+        val library = driver.state.getLibrary(me)
+
+        driver.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
+        driver.submitYesNo(me, true) // Sidisi is my only creature -> sacrifices herself
+        driver.bothPass() // resolve the reflexive payoff -> "you may search"
+
+        driver.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
+        driver.submitYesNo(me, true)
+        driver.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>()
+        val wanted = library.last()
+        driver.submitCardSelection(me, listOf(wanted))
+
+        driver.getGraveyard(me) shouldContain sidisi
+        driver.getHand(me) shouldContain wanted
     }
 
     test("the search is optional even after exploiting") {
