@@ -1,1 +1,1 @@
-- #TBD Reads bolster ("put +1/+1 counters on a creature you control with the least toughness": Dromoka Captain, Sandcrafter Mage, Echoes of the Kin Tree) as a lasting pump instead of an unrecognised ability
+- #4698 Reads bolster ("put +1/+1 counters on a creature you control with the least toughness": Dromoka Captain, Sandcrafter Mage, Echoes of the Kin Tree) as a lasting pump instead of an unrecognised ability
