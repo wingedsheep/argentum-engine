@@ -337,6 +337,13 @@ enum class Keyword(val displayName: String) {
      * `MayCastSelfFromZones` permission to it (`castUsing = Keyword.BLITZ`).
      */
     BLITZ("Blitz"),
+    /**
+     * Dash [cost] (CR 702.109) — see [com.wingedsheep.sdk.scripting.KeywordAbility.Dash]. Named here
+     * so "dash costs you pay cost {N} less" can scope a cost modifier to the dash cast
+     * (`ModifySpellCost(castUsing = Keyword.DASH)`, Warbringer), and derived into the keyword set of
+     * every card with dash, so a filter can ask for "a card with dash".
+     */
+    DASH("Dash"),
     /** Mutate (CR 702.140) — see [com.wingedsheep.sdk.scripting.KeywordAbility.Mutate]. */
     MUTATE("Mutate"),
     /** Prototype (CR 702.160) — see [com.wingedsheep.sdk.scripting.KeywordAbility.Prototype]. */

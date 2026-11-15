@@ -97,6 +97,9 @@
         "power": 3,
         "toughness": 3
     },
+    "keywords": [
+        "DASH"
+    ],
     "keywordAbilities": [
         {
             "type": "Dash",
@@ -1479,6 +1482,9 @@
         "power": 3,
         "toughness": 2
     },
+    "keywords": [
+        "DASH"
+    ],
     "keywordAbilities": [
         {
             "type": "Dash",
@@ -1963,6 +1969,9 @@
         "power": 3,
         "toughness": 1
     },
+    "keywords": [
+        "DASH"
+    ],
     "keywordAbilities": [
         {
             "type": "Dash",
@@ -1990,6 +1999,9 @@
         "power": 1,
         "toughness": 1
     },
+    "keywords": [
+        "DASH"
+    ],
     "keywordAbilities": [
         {
             "type": "Dash",
@@ -2036,6 +2048,9 @@
         "power": 3,
         "toughness": 2
     },
+    "keywords": [
+        "DASH"
+    ],
     "keywordAbilities": [
         {
             "type": "Dash",
@@ -4207,6 +4222,9 @@
         "power": 4,
         "toughness": 2
     },
+    "keywords": [
+        "DASH"
+    ],
     "keywordAbilities": [
         {
             "type": "Dash",

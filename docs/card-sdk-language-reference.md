@@ -12624,6 +12624,16 @@ staticAbility {
     move — so the offered `maxAffordableX` reaches the discounted X, and stops where a "mana value
     N or less" discount ends. Nothing extra to author.
   - `PlayerCasts(player, filter = Any)` — spells matching `filter` cast by the **one player the source names**: `Player.EnchantedPlayer` (the player an "enchant player" Aura is attached to), `Player.ChosenOpponent` or `Player.ChosenPlayer` (recorded as the source entered). Any other reference is rejected at construction — "you" / "your opponents" are `YouCast` / `OpponentsCast` — and a source that names no player right now taxes nobody. Curse of Silence: `PlayerCasts(Player.EnchantedPlayer, GameObjectFilter.Any.namedFromChosenComponent())` + `IncreaseGeneric(2)` = "Spells with the chosen name enchanted player casts cost {2} more to cast."
+- `castUsing: Keyword? = null` — scopes the modifier to casts that pay that keyword's alternative
+  cost (CR 118.9): "Dash costs you pay cost {2} less (as long as this creature is on the
+  battlefield)" is `YouCast(Any)` + `ReduceGeneric(2)` + `castUsing = Keyword.DASH` (Warbringer). The
+  same spell cast for its mana cost, or for another alternative cost, is untouched, and both the
+  offer the player sees and the charged cost honour it. Accepted keywords are
+  `ModifySpellCost.CAST_USING_KEYWORDS` — `DASH`, `BLITZ`, `FLASHBACK` (Catalyst Stone's "Flashback
+  costs you pay cost {2} less"); widen that set together with the engine's
+  `AlternativeCostType.castUsing` mapping. Rejected on `FaceDownYouCast` / `MorphActivation`.
+  Composes with any `gating`. Battlefield statics function only on the battlefield, which is
+  Warbringer's parenthetical — nothing extra to author.
 - `optionalLifePayment: Int? = null` — an optional additional life cost declared once per source
   instance while casting. Paying it enables this modifier; declining leaves the cost unchanged.
   `YouCast(Permanent.withColor(BLUE))` + `ReduceColored("{U}")` + `optionalLifePayment = 2`

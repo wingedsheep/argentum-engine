@@ -22,6 +22,13 @@ import kotlinx.serialization.Serializable
  * @property target Which spells/costs the modifier applies to.
  * @property modification How the cost is changed (reduce/increase, generic/colored, fixed/dynamic).
  * @property gating Optional extra restriction (e.g. only the first matching spell each turn).
+ * @property castUsing Scopes the modifier to casts that pay this keyword's alternative cost
+ *   (CR 118.9) — "Dash costs you pay cost {2} less" is `castUsing = Keyword.DASH` (Warbringer).
+ *   The modifier then never touches the same spell cast for its mana cost or another alternative
+ *   cost. `null` (default) applies whichever cost the cast pays. Honoured for [Keyword.DASH],
+ *   [Keyword.BLITZ] and [Keyword.FLASHBACK]; it's an axis rather than a [CostGating] because a
+ *   gate decides *whether* a matching spell is discounted from game state, while this names which
+ *   of the spell's costs the text modifies — so it composes with any gate.
  *
  * A [ProjectedStaticAbility], so a [GrantStaticAbility] can hand it to other permanents — Jubilant
  * Skybonder's "creatures you control with flying have 'Spells your opponents cast that target this
@@ -36,12 +43,34 @@ data class ModifySpellCost(
     val gating: CostGating = CostGating.None,
     /** Optional additional life payment elected once per instance while announcing the spell. */
     val optionalLifePayment: Int? = null,
+    val castUsing: com.wingedsheep.sdk.core.Keyword? = null,
 ) : ProjectedStaticAbility {
-    init { require(optionalLifePayment == null || optionalLifePayment > 0) }
+    init {
+        require(optionalLifePayment == null || optionalLifePayment > 0)
+        require(castUsing == null || castUsing in CAST_USING_KEYWORDS) {
+            "castUsing must be one of $CAST_USING_KEYWORDS, was $castUsing"
+        }
+        require(castUsing == null || target !is SpellCostTarget.FaceDownYouCast && target != SpellCostTarget.MorphActivation) {
+            "castUsing scopes a spell's alternative cost; face-down and morph costs have none"
+        }
+        require(castUsing == null || optionalLifePayment == null && modification !is CostModification.IncreaseLife) {
+            "castUsing scopes the mana of an alternative cost; life payments aren't priced per cast mode"
+        }
+    }
+
+    companion object {
+        /** The alternative-cost keywords the engine prices a [castUsing] modifier against. */
+        val CAST_USING_KEYWORDS: Set<com.wingedsheep.sdk.core.Keyword> = setOf(
+            com.wingedsheep.sdk.core.Keyword.DASH,
+            com.wingedsheep.sdk.core.Keyword.BLITZ,
+            com.wingedsheep.sdk.core.Keyword.FLASHBACK,
+        )
+    }
 
     override val description: String = buildDescription()
 
     private fun buildDescription(): String {
+        castUsing?.let { return describeCastUsing(it) }
         // Only the Nth-of-type gate rephrases the subject as a single spell ("The second spell ...").
         // A conditional (OnlyIf) gate leaves the subject plural and tacks the condition on at the end.
         val nthGating = gating as? CostGating.NthOfTypePerTurn
@@ -120,6 +149,28 @@ data class ModifySpellCost(
                     .replace("your ", "its controller's ")
             else -> sourceDescription
         }
+
+    // "Dash costs you pay cost {2} less" — the alternative cost is the subject, paid by the caster.
+    private fun describeCastUsing(keyword: com.wingedsheep.sdk.core.Keyword): String {
+        val payer = when (target) {
+            SpellCostTarget.SelfCast, is SpellCostTarget.YouCast, is SpellCostTarget.YouCastFromZones -> "you pay"
+            is SpellCostTarget.OpponentsCast, is SpellCostTarget.OpponentsCastTargeting,
+            is SpellCostTarget.OpponentsCastFromZones -> "your opponents pay"
+            is SpellCostTarget.PlayerCasts -> "${target.player.description} pays"
+            else -> "players pay"
+        }
+        val change = when (val m = modification) {
+            is CostModification.ReduceGeneric -> "{${m.amount}} less"
+            is CostModification.IncreaseGeneric -> "{${m.amount}} more"
+            is CostModification.ReduceColored -> "${m.symbols} less"
+            is CostModification.IncreaseColored -> "${m.symbols} more"
+            is CostModification.ReduceGenericBy -> "{X} less, where X is ${m.source.description}"
+            is CostModification.IncreaseGenericBy -> "{X} more, where X is ${m.source.description}"
+            else -> "a modified amount"
+        }
+        val conditionSuffix = (gating as? CostGating.OnlyIf)?.let { " ${it.condition.description}" } ?: ""
+        return "${keyword.displayName} costs $payer cost $change$conditionSuffix"
+    }
 
     // "that target you or a permanent you control": with a player alongside, a battlefield group
     // reads as one member ("a permanent you control"), as Oracle prints it.

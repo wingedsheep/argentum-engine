@@ -3975,6 +3975,9 @@
         "power": 2,
         "toughness": 1
     },
+    "keywords": [
+        "DASH"
+    ],
     "keywordAbilities": [
         {
             "type": "Dash",

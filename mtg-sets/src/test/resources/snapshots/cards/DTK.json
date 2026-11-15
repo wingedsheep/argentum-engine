@@ -2551,7 +2551,8 @@
         "toughness": 3
     },
     "keywords": [
-        "TRAMPLE"
+        "TRAMPLE",
+        "DASH"
     ],
     "keywordAbilities": [
         {
@@ -2580,6 +2581,9 @@
         "power": 2,
         "toughness": 2
     },
+    "keywords": [
+        "DASH"
+    ],
     "keywordAbilities": [
         {
             "type": "Dash",
@@ -2748,6 +2752,9 @@
         "power": 1,
         "toughness": 1
     },
+    "keywords": [
+        "DASH"
+    ],
     "keywordAbilities": [
         {
             "type": "Dash",
@@ -3521,6 +3528,9 @@
         "power": 5,
         "toughness": 3
     },
+    "keywords": [
+        "DASH"
+    ],
     "keywordAbilities": [
         {
             "type": "Dash",
@@ -3881,7 +3891,8 @@
         "toughness": 2
     },
     "keywords": [
-        "FLYING"
+        "FLYING",
+        "DASH"
     ],
     "keywordAbilities": [
         {
@@ -4506,6 +4517,9 @@
         "power": 2,
         "toughness": 3
     },
+    "keywords": [
+        "DASH"
+    ],
     "keywordAbilities": [
         {
             "type": "Dash",
@@ -5759,6 +5773,9 @@
         "power": 5,
         "toughness": 4
     },
+    "keywords": [
+        "DASH"
+    ],
     "keywordAbilities": [
         {
             "type": "Dash",
@@ -6550,6 +6567,52 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Warbringer
+{
+    "name": "Warbringer",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Orc Berserker",
+    "oracleText": "Dash costs you pay cost {2} less (as long as this creature is on the battlefield).\nDash {2}{R} (You may cast this spell for its dash cost. If you do, it gains haste, and it's returned from the battlefield to its owner's hand at the beginning of the next end step.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DASH"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Dash",
+            "cost": "{2}{R}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": {}
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 2
+                },
+                "castUsing": "DASH"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "rarity": "UNCOMMON",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/ed4951ef-2519-4511-b952-c835cd81def7.jpg?1783938583"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

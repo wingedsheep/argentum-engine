@@ -1585,7 +1585,7 @@ class CastFromZoneEnumerator(
             // Calculate effective flashback cost (applying cost reductions/increases)
             val pricing = context.costCalculator.priceByTargets(
                 state, cardDef, playerId, cardId, baseCost = flashback.cost, withTable = !context.skipAutoTapPreview,
-                fromZone = Zone.GRAVEYARD,
+                fromZone = Zone.GRAVEYARD, castUsing = Keyword.FLASHBACK,
             )
             val effectiveCost = pricing.min
             val costString = effectiveCost.toString()
@@ -2641,7 +2641,7 @@ class CastFromZoneEnumerator(
         val pricing = context.costCalculator.priceByTargets(
 
             state, cardDef, playerId, cardId, baseCost = alternativeCost, withTable = !context.skipAutoTapPreview,
-            fromZone = zone,
+            fromZone = zone, castUsing = alternativeCostType.castUsing,
 
         )
 

@@ -20,6 +20,7 @@ import com.wingedsheep.engine.state.components.player.CreaturesDiedThisTurnCompo
 import com.wingedsheep.engine.state.components.identity.CommanderComponent
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.core.ManaSymbol
@@ -151,6 +152,10 @@ class CostCalculator(
         // Pre-scanned modifiers, so a caller that already scanned doesn't twice.
         modifiers: List<Pair<EntityId, ModifySpellCost>> = scanModifySpellCost(state, spellId),
         announcedX: Int? = null,
+        // The alternative cost the cast pays, named by its keyword (null: the mana cost or an
+        // alternative cost with no keyword) — "dash costs you pay cost {2} less" modifies only a
+        // dash cast ([ModifySpellCost.castUsing]).
+        castUsing: Keyword? = null,
     ): ManaCost {
         val manaValue = spellManaValue(cardDef, announcedX)
         val spellColors = spellColorsFor(state, cardDef, casterId)
@@ -165,6 +170,7 @@ class CostCalculator(
             if (ability !is ModifySpellCost) continue
             if (ability.optionalLifePayment != null) continue
             if (ability.target != SpellCostTarget.SelfCast) continue
+            if (!modifiesCastCost(ability, castUsing)) continue
             if (!gatingApplies(state, casterId, cardDef, ability, declaredCostSlot, sourceId = null)) continue
             applyToSpellCast(
                 // A self-cast modifier has no source *permanent*: the card is the spell being cast,
@@ -213,6 +219,7 @@ class CostCalculator(
         // function from their zone (eminence).
         for ((sourceId, ability) in modifiers) {
             if (ability.optionalLifePayment != null) continue
+            if (!modifiesCastCost(ability, castUsing)) continue
             if (!targetMatchesSpell(ability.target, cardDef, casterId, sourceId, state, chosenTargets, fromZone, manaValue, spellColors)) continue
             if (!gatingApplies(state, casterId, cardDef, ability, declaredCostSlot, sourceId)) continue
             applyToSpellCast(
@@ -600,6 +607,14 @@ class CostCalculator(
             }
         }
     }
+
+    /**
+     * Whether [ability] modifies the cost this cast pays: a [ModifySpellCost.castUsing] modifier
+     * ("dash costs you pay cost {2} less") touches only a cast paying that keyword's alternative
+     * cost (CR 118.9), never the mana cost or another alternative cost of the same spell.
+     */
+    private fun modifiesCastCost(ability: ModifySpellCost, castUsing: Keyword?): Boolean =
+        ability.castUsing == null || ability.castUsing == castUsing
 
     private fun filterForGating(target: SpellCostTarget) = when (target) {
         is SpellCostTarget.YouCast -> target.filter
@@ -1142,6 +1157,7 @@ class CostCalculator(
         card: CardDefinition = cardDef,
         declaredCostSlot: ChoiceSlot? = null,
         announcedX: Int? = null,
+        castUsing: Keyword? = null,
     ): TargetPricedCost {
         val modifiers = scanModifySpellCost(state, spellId)
         val countsTargets = targetCountDirections(
@@ -1154,13 +1170,14 @@ class CostCalculator(
                 priceByTargets(
                     state, cardDef, casterId, spellId, baseCost, selection.flatMap { modal.modes[it].targetRequirements },
                     withTable = false, fromZone = fromZone, card = card, declaredCostSlot = declaredCostSlot,
-                    announcedX = announcedX,
+                    announcedX = announcedX, castUsing = castUsing,
                 ).min
             }.minBy { it.cmc }
             return TargetPricedCost(cheapest, null)
         }
         val pricing = TargetPricing(
             state, cardDef, casterId, spellId, baseCost, declared, modifiers, fromZone, card, declaredCostSlot, announcedX,
+            castUsing,
         )
         if (!countsTargets) return TargetPricedCost(pricing.priced(pricing.optimisticTargets), null)
         val range = pricing.countRange()
@@ -1205,6 +1222,7 @@ class CostCalculator(
         private val card: CardDefinition,
         private val declaredCostSlot: ChoiceSlot?,
         private val announcedX: Int?,
+        private val castUsing: Keyword?,
     ) {
         private val legalByRequirement: List<List<EntityId>> by lazy {
             requirements.map { targetFinder.findLegalTargets(state, it, casterId, sourceId = spellId).distinct() }
@@ -1262,7 +1280,7 @@ class CostCalculator(
         fun priced(targets: List<EntityId>): ManaCost =
             calculateEffectiveCost(
                 state, cardDef, casterId, targets, fromZone, declaredCostSlot, baseCost = baseCost, card = card,
-                spellId = spellId, modifiers = modifiers, announcedX = announcedX,
+                spellId = spellId, modifiers = modifiers, announcedX = announcedX, castUsing = castUsing,
             )
 
         /** Priced with [count] different targets, the discount-earning ones first. */
@@ -2480,9 +2498,10 @@ class CostCalculator(
         fromZone: Zone? = null,
         announcedX: Int? = null,
         spellId: EntityId? = null,
+        castUsing: Keyword? = null,
     ): ManaCost = calculateEffectiveCost(
         state, cardDef, casterId, chosenTargets, fromZone, baseCost = alternativeCost, spellId = spellId,
-        announcedX = announcedX,
+        announcedX = announcedX, castUsing = castUsing,
     )
 
     /**

@@ -385,7 +385,7 @@ internal class CastCostTotaller(
                 )
             action.useAlternativeCost && cardDef != null ->
                 alternativeBases.firstNotNullOfOrNull { (type, base) ->
-                    if (action.altAllows(type)) base(AlternativeBaseQuery(state, action, cardDef)) else null
+                    if (action.altAllows(type)) base(AlternativeBaseQuery(state, action, cardDef, type)) else null
                 }
             // CR 708.4 — a face-down spell costs {3} (morph / disguise), before modifiers.
             action.castFaceDown -> costCalculator.calculateFaceDownCost(state, action.playerId)
@@ -443,10 +443,16 @@ internal class CastCostTotaller(
         if (action.useWithoutPayingManaCost || zoneResolver.hasPlayWithoutPayingCost(state, action.playerId, action.cardId)) return null
         action.alternativeCostType?.let { return it }
         if (cardDef == null) return null
-        return alternativeBases.firstOrNull { (_, base) -> base(AlternativeBaseQuery(state, action, cardDef)) != null }?.first
+        return alternativeBases.firstOrNull { (type, base) -> base(AlternativeBaseQuery(state, action, cardDef, type)) != null }?.first
     }
 
-    private class AlternativeBaseQuery(val state: GameState, val action: CastSpell, val cardDef: CardDefinition) {
+    private class AlternativeBaseQuery(
+        val state: GameState,
+        val action: CastSpell,
+        val cardDef: CardDefinition,
+        /** The alternative cost being priced, so a `castUsing` modifier lands on its cast only. */
+        val type: AlternativeCostType,
+    ) {
         val playerId: EntityId get() = action.playerId
         val cardId: EntityId get() = action.cardId
     }
@@ -460,6 +466,7 @@ internal class CastCostTotaller(
                 else castSourceZone(state, cardId),
             announcedX = action.xValue,
             spellId = cardId,
+            castUsing = type.castUsing,
         )
 
     /**

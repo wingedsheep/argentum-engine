@@ -57,6 +57,16 @@ class CardAsksTest : FunSpec({
         answers("New Perspectives", "Grizzly Bears") shouldBe false
     }
 
+    test("a discount scoped to one alternative cost asks for the cards that have that cost") {
+        // Warbringer: "Dash costs you pay cost {2} less" cheapens only dash cards, so the deck's
+        // dash cards feed it and a card without dash doesn't — not every spell, as an unscoped
+        // "spells you cast cost {2} less" would read.
+        read("Warbringer").asks shouldHaveSize 1
+        answers("Warbringer", "Screamreach Brawler") shouldBe true
+        answers("Warbringer", "Warbringer") shouldBe true
+        answers("Warbringer", "Grizzly Bears") shouldBe false
+    }
+
     test("an ask every deck answers is no ask") {
         // "Creatures you control get +1/+1": every limited deck feeds it.
         read("Glorious Anthem").asks.shouldBeEmpty()
