@@ -980,6 +980,59 @@ data class GameState(
     }
 
     /**
+     * Give [entityId] a freshly minted [EntityId], keeping everything else about it — its
+     * components, its place in its zone, its object identity, the exile pile it was linked into (and
+     * a source's chosen card from that pile) and any "you may play it" grant over it. Used when a face-down pile is shuffled
+     * ([com.wingedsheep.sdk.scripting.effects.ShufflePileEffect]): ids are minted per card, so a
+     * card that kept its id could be followed through the shuffle by anyone who saw it go in.
+     *
+     * ([sourceObjectRecords] only ever records battlefield objects, which are never renamed.)
+     *
+     * Not a zone change and not a new object: no event is emitted, nothing triggers, and the object
+     * generation is carried over. The old id is recorded on the card
+     * ([com.wingedsheep.engine.state.components.identity.ReidentifiedFromComponent]) so the events
+     * already emitted under it are still masked for players who may not see the card. Only cards outside the battlefield and the stack may be renamed —
+     * a permanent or spell is referenced from too many places (combat, attachments, targets).
+     * Returns the id unchanged when [entityId] is missing or isn't such a card.
+     */
+    fun reidentify(entityId: EntityId): Pair<EntityId, GameState> {
+        val zone = logicalZone(entityId) ?: return entityId to this
+        if (zone.zoneType == Zone.BATTLEFIELD || zone.zoneType == Zone.STACK) return entityId to this
+        val container = entities[entityId] ?: return entityId to this
+        if (entityId !in getZone(zone)) return entityId to this
+        val (newId, minted) = newEntity()
+        fun rename(id: EntityId) = if (id == entityId) newId else id
+        val previous = container.get<com.wingedsheep.engine.state.components.identity.ReidentifiedFromComponent>()
+            ?.previousIds.orEmpty()
+        val renamed = container.with(
+            com.wingedsheep.engine.state.components.identity.ReidentifiedFromComponent(previous + entityId)
+        )
+        var result = minted.copy(
+            entities = minted.entities - entityId + (newId to renamed),
+            zones = minted.zones + (zone to minted.getZone(zone).map(::rename)),
+            objectIdentities = minted.objectIdentities - entityId + (newId to minted.objectIdentities.getValue(entityId)),
+            departedLinkedExile = minted.departedLinkedExile.mapValues { (_, ids) -> ids.map(::rename) },
+            mayPlayPermissions = minted.mayPlayPermissions.map { permission ->
+                if (entityId in permission.cardIds) permission.copy(cardIds = permission.cardIds.mapTo(LinkedHashSet(), ::rename))
+                else permission
+            },
+        )
+        for ((sourceId, source) in minted.entities) {
+            val linked = source.get<LinkedExileComponent>()
+            if (linked != null && entityId in linked.exiledIds) {
+                result = result.updateEntity(sourceId) { it.with(LinkedExileComponent(linked.exiledIds.map(::rename))) }
+            }
+            val chosen = source.get<com.wingedsheep.engine.state.components.battlefield.ChosenLinkedExileComponent>()
+            if (chosen?.chosenId == entityId) {
+                result = result.updateEntity(sourceId) {
+                    it.with(com.wingedsheep.engine.state.components.battlefield.ChosenLinkedExileComponent(newId))
+                }
+            }
+        }
+        return newId to result
+    }
+
+    /**
      * Move an entity between zones (returns new state).
      */
     fun moveToZone(entityId: EntityId, from: ZoneKey, to: ZoneKey): GameState {

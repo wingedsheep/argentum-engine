@@ -2578,6 +2578,33 @@ data class StoreCardNameEffect(
     override val description: String = "Note the name of that card"
 }
 
+/**
+ * "Exile it and the top card of your library **in a face-down pile, shuffle that pile**, then
+ * manifest those cards" (Jeskai Infiltrator): put the cards of every collection in [from] together
+ * into one pile, in a random order, stored under [storeAs].
+ *
+ * The shuffle is what hides which card is which, so every card of the pile that is face down
+ * outside the library (CR 406.3 — a card exiled face down) is given a fresh object identity as the
+ * pile is shuffled: an opponent who watched one of them go into the pile can't follow it out. Face-up
+ * cards keep theirs, since anyone can tell them apart anyway. Duplicates across [from] count once.
+ *
+ * Closest types: [MoveCollectionEffect] with `order = CardOrder.Random` orders cards as it moves
+ * them, but reads one collection and keeps each card's identity, so a face-down pile it builds is
+ * still traceable; [FilterCollectionEffect] / `CollectionFilter.ExcludeOtherCollection` narrow or
+ * subtract collections but never join them.
+ *
+ * @property from The collections making up the pile, in any order.
+ * @property storeAs Key under which the shuffled pile is stored.
+ */
+@SerialName("ShufflePile")
+@Serializable
+data class ShufflePileEffect(
+    val from: List<String>,
+    val storeAs: String
+) : Effect {
+    override val description: String = "Shuffle those cards together into a pile"
+}
+
 /** Append the current battlefield objects in a pipeline collection to a source-local history slot. */
 @SerialName("RecordSourceObjects")
 @Serializable

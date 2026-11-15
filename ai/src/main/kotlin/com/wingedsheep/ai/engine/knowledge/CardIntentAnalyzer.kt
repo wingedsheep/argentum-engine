@@ -2088,6 +2088,7 @@ object CardIntentAnalyzer {
         is ChoosePileEffect -> listOf(leaf.pileA, leaf.pileB)
         is ChooseOnePerCategoryEffect -> listOf(leaf.from)
         is MoveCollectionEffect -> listOf(leaf.from)
+        is ShufflePileEffect -> leaf.from
         else -> emptyList()
     }
 
@@ -2254,6 +2255,8 @@ object CardIntentAnalyzer {
         is ChoosePileEffect -> if (leaf.pileA in sources || leaf.pileB in sources) listOf(leaf.storeChosenAs, leaf.storeOtherAs) else emptyList()
         is ChooseOnePerCategoryEffect -> if (leaf.from in sources) listOf(leaf.storeAs) else emptyList()
         is MoveCollectionEffect -> if (leaf.from in sources) listOfNotNull(leaf.storeMovedAs) else emptyList()
+        // A shuffled pile is the same cards as the collections it joins (Jeskai Infiltrator).
+        is ShufflePileEffect -> if (leaf.from.any { it in sources }) listOf(leaf.storeAs) else emptyList()
         // A later step re-gathering a stored collection by name ("an opponent chooses one of them"
         // after the reveal, Extrapolate the Impossible) carries the same cards on.
         is GatherCardsEffect -> {

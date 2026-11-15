@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.conditions.CollectionContainsMatch
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.effects.CaptureControllersEffect
+import com.wingedsheep.sdk.scripting.effects.ShufflePileEffect
 import com.wingedsheep.sdk.scripting.effects.CategoryPickPurpose
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
@@ -802,6 +803,19 @@ class PipelineBuilder private constructor(private val shared: Shared) {
      */
     fun exclude(from: CollectionSlot, minus: CollectionSlot, name: String? = null): CollectionSlot =
         filter(from, CollectionFilter.ExcludeOtherCollection(minus.key), name = name)
+
+    /**
+     * Put the cards of every collection in [from] together into one pile and shuffle it
+     * ([ShufflePileEffect]) — "exile it and the top card of your library in a face-down pile,
+     * shuffle that pile". Face-down cards in the pile get fresh identities, so nobody can tell
+     * afterwards which one went in where.
+     */
+    fun shufflePile(from: List<CollectionSlot>, name: String? = null): CollectionSlot {
+        require(from.isNotEmpty()) { "shufflePile needs at least one collection" }
+        val slot = CollectionSlot(slotKey("pile", nextIndex(), name))
+        steps += ShufflePileEffect(from = from.map { it.key }, storeAs = slot.key)
+        return slot
+    }
 
     // =========================================================================
     // Capture / store

@@ -93,6 +93,7 @@ class LibraryExecutors(
         StoreNumberExecutor(amountEvaluator = zones.predicateEvaluator.amounts),
         StorePlayerExecutor(),
         StoreCardNameExecutor(),
+        ShufflePileExecutor(),
         EmitScriedEventExecutor(),
         EmitClashedEventExecutor(),
         EmitSurveiledEventExecutor(),
