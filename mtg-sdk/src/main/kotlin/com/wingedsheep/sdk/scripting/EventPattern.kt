@@ -980,8 +980,8 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * creatures fought.
      *
      * Binding SELF = "whenever this creature fights"; ANY = "whenever a [filter] fights"; OTHER
-     * excludes the source. Fighters stay on the battlefield until state-based actions, so this
-     * matches in the regular battlefield trigger loop against the live fighter.
+     * excludes the source. Triggers are detected before state-based actions, so a fighter the
+     * fight's own damage kills is still matched live in the regular battlefield trigger loop.
      */
     @SerialName("FoughtEvent")
     @Serializable

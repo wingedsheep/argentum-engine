@@ -831,8 +831,9 @@ class TriggerMatcher(
                 )
             }
             is EventPattern.FoughtEvent -> {
-                // The fighter is still on the battlefield here (fight damage is lethal only once
-                // state-based actions run, after detection), so the filter reads the live object.
+                // Detection runs before state-based actions, so a fighter the fight's damage kills is
+                // still on the battlefield here and the filter reads the live object. One that a later
+                // step of the same resolution moved away ("fights, then …") is read off the battlefield.
                 if (event !is com.wingedsheep.engine.core.CreatureFoughtEvent) return false
                 if (binding == TriggerBinding.SELF && event.creatureId != sourceId) return false
                 if (binding == TriggerBinding.OTHER && event.creatureId == sourceId) return false

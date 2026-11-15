@@ -41,9 +41,28 @@ class FoeRazerRegentScenarioTest : FunSpec({
         }
     }
 
+    /** "Target creature fights another target creature." — so two of your creatures can fight. */
+    val AnyBrawl = card("Foe-Razer Test Any Brawl") {
+        manaCost = "{G}"
+        typeLine = "Sorcery"
+        spell {
+            val a = target(TargetFilter.Creature)
+            val b = target(TargetFilter.Creature)
+            effect = Effects.Fight(a, b)
+        }
+    }
+
+    /** A sturdy 1/6, so both sides of a fight survive it. */
+    val Wall = card("Foe-Razer Test Wall") {
+        manaCost = "{1}"
+        typeLine = "Creature — Wall"
+        power = 1
+        toughness = 6
+    }
+
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(FoeRazerRegent, PreyUpon, InstantBrawl))
+        driver.registerCards(TestCards.all + listOf(FoeRazerRegent, PreyUpon, InstantBrawl, AnyBrawl, Wall))
         driver.initMirrorMatch(deck = Deck.of("Forest" to 40), startingLife = 20)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
@@ -149,6 +168,44 @@ class FoeRazerRegentScenarioTest : FunSpec({
         driver.plusOnes(regent) shouldBe 0
         driver.plusOnes(force) shouldBe 0
         (lions in driver.getGraveyard(me)) shouldBe true
+        withClue("the dead fighter's card is a new object; the delayed trigger doesn't touch it") {
+            driver.plusOnes(lions) shouldBe 0
+        }
+    }
+
+    test("two of your creatures fighting each other both grow") {
+        val driver = createDriver()
+        val me = driver.activePlayer!!
+        driver.putCreatureOnBattlefield(me, "Foe-Razer Regent")
+        val courser = driver.putCreatureOnBattlefield(me, "Centaur Courser") // 3/3
+        val wall = driver.putCreatureOnBattlefield(me, "Foe-Razer Test Wall") // 1/6
+
+        val spell = driver.putCardInHand(me, "Foe-Razer Test Any Brawl")
+        driver.giveMana(me, Color.GREEN, 1)
+        driver.castSpell(me, spell, listOf(courser, wall))
+        driver.drain()
+
+        driver.resolveEndStep()
+        driver.plusOnes(courser) shouldBe 2
+        driver.plusOnes(wall) shouldBe 2
+    }
+
+    test("an opponent's creature that survives the fight gets no counters") {
+        val driver = createDriver()
+        val me = driver.activePlayer!!
+        val opponent = driver.getOpponent(me)
+        driver.putCreatureOnBattlefield(me, "Foe-Razer Regent")
+        val courser = driver.putCreatureOnBattlefield(me, "Centaur Courser") // 3/3
+        val wall = driver.putCreatureOnBattlefield(opponent, "Foe-Razer Test Wall") // 1/6
+
+        val spell = driver.putCardInHand(me, "Prey Upon")
+        driver.giveMana(me, Color.GREEN, 1)
+        driver.castSpell(me, spell, listOf(courser, wall))
+        driver.drain()
+
+        driver.resolveEndStep()
+        driver.plusOnes(courser) shouldBe 2
+        driver.plusOnes(wall) shouldBe 0
     }
 
     test("a fight during the end step waits for the following end step") {
