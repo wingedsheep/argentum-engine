@@ -362,6 +362,11 @@ class DynamicAmountEvaluator(
                         source?.entitiesChoice(amount.slot)?.entityIds?.size
                             ?: source?.get<SpellOnStackComponent>()?.convokedCreatures?.size
                             ?: 0
+                    // "The number of cards exiled with its delve ability" (CR 702.66a).
+                    com.wingedsheep.sdk.scripting.ChoiceSlot.DELVED_CARDS ->
+                        source?.entitiesChoice(amount.slot)?.entityIds?.size
+                            ?: source?.get<SpellOnStackComponent>()?.delvedCards?.size
+                            ?: 0
                     // Any other numeric slot (e.g. CHOSEN_NUMBER for Shapeshifter) is read
                     // generically off the durable cast-choices bag as a NumberChoice — or, once an
                     // ability's source has left the battlefield, off its last-known snapshot

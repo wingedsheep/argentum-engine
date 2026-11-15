@@ -1,0 +1,1 @@
+- #PR Soulflayer, Cairn Wanderer and Eater of Virtue's borrowed keywords (`GainKeywordsOfCards`) now read as evasion/protection grants instead of unrecognised abilities

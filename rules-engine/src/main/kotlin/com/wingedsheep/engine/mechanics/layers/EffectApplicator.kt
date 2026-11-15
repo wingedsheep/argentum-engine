@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.layers
 
+import com.wingedsheep.engine.state.components.battlefield.entitiesChoice
 import com.wingedsheep.engine.state.components.battlefield.chosenLandType
 import com.wingedsheep.engine.state.components.battlefield.chosenColor
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
@@ -416,6 +417,14 @@ internal class EffectApplicator(
                         }
                         KeywordCardPool.CARDS_EXILED_WITH_SOURCE ->
                             LinkedExileLookup.exiledCards(state, effect.sourceId)
+                        // Soulflayer: the payment record, wherever those cards are now ("was
+                        // exiled" is history). "Creature card" is the card's own type line.
+                        KeywordCardPool.CREATURE_CARDS_EXILED_WITH_DELVE ->
+                            state.getEntity(effect.sourceId)
+                                ?.entitiesChoice(com.wingedsheep.sdk.scripting.ChoiceSlot.DELVED_CARDS)
+                                ?.entityIds
+                                ?.filter { state.getEntity(it)?.get<CardComponent>()?.typeLine?.isCreature == true }
+                                .orEmpty()
                     }
                     val landwalk = KeywordFamily.LANDWALK in mod.families
                     val hexproof = KeywordFamily.HEXPROOF in mod.families

@@ -148,6 +148,13 @@ data class SpellOnStackComponent(
      */
     val convokedCreatures: Map<EntityId, Long> = emptyMap(),
     /**
+     * The cards exiled from the graveyard to pay this spell's delve (CR 702.66a), each with the
+     * object generation it had in exile, in exile order. Carried onto the resolving permanent's
+     * cast-choices bag under [ChoiceSlot.DELVED_CARDS] — "a creature card with flying was exiled
+     * with this creature's delve ability" (Soulflayer). Empty when delve paid nothing.
+     */
+    val delvedCards: Map<EntityId, Long> = emptyMap(),
+    /**
      * Last-known information (CR 113.7a) for each convoker in [convokedCreatures] that has left the
      * battlefield since it convoked this spell, stamped by `ZoneTransitionService` at the moment it
      * left. "Each creature that convoked this spell connives" (Lethal Scheme) still has a departed
