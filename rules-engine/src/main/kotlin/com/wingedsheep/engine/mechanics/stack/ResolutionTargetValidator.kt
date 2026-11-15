@@ -115,7 +115,8 @@ internal class ResolutionTargetValidator(
                     )
 
                     is ChosenTarget.Card -> isCardTargetLegal(
-                        state, projected, index, target, targets, targetRequirements, controllerId, predicateContext
+                        state, projected, index, target, targets, targetRequirements, controllerId,
+                        sourceId, targetingSourceType, predicateContext
                     )
 
                     is ChosenTarget.Spell -> {
@@ -330,7 +331,9 @@ internal class ResolutionTargetValidator(
         }
 
         // CardsInZonesCantBeTargeted over the battlefield (Tomik) arriving after targeting (CR 608.2b).
-        if (UntargetableByRules.zoneLockError(state, target.entityId, controllerId, predicateEvaluator) != null) return false
+        if (UntargetableByRules.zoneLockError(
+                state, target.entityId, controllerId, predicateEvaluator, sourceId, targetingSourceType
+            ) != null) return false
 
         val entityController = projected.getController(target.entityId)
             ?: state.getEntity(target.entityId)?.get<ControllerComponent>()?.playerId
@@ -500,11 +503,15 @@ internal class ResolutionTargetValidator(
         targets: List<ChosenTarget>,
         targetRequirements: List<TargetRequirement>,
         controllerId: EntityId,
+        sourceId: EntityId?,
+        targetingSourceType: TargetingSourceType,
         predicateContext: PredicateContext
     ): Boolean {
         if (target.cardId !in state.getZone(ZoneKey(target.ownerId, target.zone))) return false
         // CardsInZonesCantBeTargeted (Ground Seal) entering after the target was chosen (CR 608.2b).
-        if (UntargetableByRules.zoneLockError(state, target.cardId, controllerId, predicateEvaluator) != null) return false
+        if (UntargetableByRules.zoneLockError(
+                state, target.cardId, controllerId, predicateEvaluator, sourceId, targetingSourceType
+            ) != null) return false
         val filter = extractTargetFilter(getRequirementForTargetIndex(index, targetRequirements)) ?: return true
         val cardContext = predicateContext.copy(
             ownerId = target.ownerId,

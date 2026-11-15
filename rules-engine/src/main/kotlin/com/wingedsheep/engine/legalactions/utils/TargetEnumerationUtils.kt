@@ -57,7 +57,9 @@ class TargetEnumerationUtils(
         // CardsInZonesCantBeTargeted (Ground Seal; Tomik, Distinguished Advokist).
         val zoneLocks = UntargetableByRules.zoneLocks(state)
         return if (zoneLocks.isEmpty()) unblocked
-        else unblocked.filterNot { UntargetableByRules.isZoneLocked(state, it, playerId, zoneLocks, predicateEvaluator) }
+        else unblocked.filterNot { UntargetableByRules.isZoneLocked(
+            state, it, playerId, zoneLocks, predicateEvaluator, sourceId, targetingSourceType
+        ) }
     }
 
     private fun findCandidateTargets(

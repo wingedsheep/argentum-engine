@@ -405,8 +405,19 @@ data class GrantStaticAbilityEffect(
     val duration: Duration = Duration.EndOfTurn
 ) : Effect, SelfReferentialDescription {
     override val descriptionTemplate: String = buildString {
-        append("${target.selfNounToken} gains \"${ability.description}\"")
-        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+        if (target == EffectTarget.Controller) {
+            // Handed to the caster, the static is a rule about the game (High Tide, Display of
+            // Dominance): print the rule itself, not "you gains \"…\"".
+            if (duration.description.isNotEmpty()) {
+                append("${duration.description.replaceFirstChar { it.uppercase() }}, ")
+                append(ability.description.replaceFirstChar { it.lowercase() })
+            } else {
+                append(ability.description)
+            }
+        } else {
+            append("${target.selfNounToken} gains \"${ability.description}\"")
+            if (duration.description.isNotEmpty()) append(" ${duration.description}")
+        }
     }
     override val description: String get() = defaultResolvedDescription
 

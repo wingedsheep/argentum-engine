@@ -161,70 +161,121 @@ object UntargetableByRules {
     }
 
     /**
-     * The zone locks in force — every [CardsInZonesCantBeTargeted] ("Cards in graveyards can't be
-     * the targets of spells or abilities") among the battlefield's projected static abilities,
-     * with the permanent that holds it. Read off projection, so a printed lock, a granted one and
-     * ability loss are all handled the way projection handles them. Empty in the common case;
-     * callers compute it once per targeting attempt and consult it for every non-player candidate.
+     * One [CardsInZonesCantBeTargeted] in force: the [lock], the object that holds it ([holderId] —
+     * a permanent printing or granted it, or a player a resolving spell granted it to for a turn)
+     * and the player it belongs to ([controllerId]), whom its "you" and "your opponents" mean.
      */
-    fun zoneLocks(state: GameState): List<Pair<EntityId, CardsInZonesCantBeTargeted>> {
+    data class ZoneLock(
+        val holderId: EntityId,
+        val controllerId: EntityId,
+        val lock: CardsInZonesCantBeTargeted
+    )
+
+    /**
+     * The zone locks in force — every [CardsInZonesCantBeTargeted] ("Cards in graveyards can't be
+     * the targets of spells or abilities") among the battlefield's projected static abilities, plus
+     * those a resolving spell granted to a player for a duration ("permanents you control can't be
+     * the targets of blue or black spells your opponents control this turn" — Display of Dominance).
+     * Read off projection, so a printed lock, a granted one and ability loss are all handled the way
+     * projection handles them; a player-held lock is a rule about the game and lasts out its
+     * duration. Empty in the common case; callers compute it once per targeting attempt and consult
+     * it for every non-player candidate.
+     */
+    fun zoneLocks(state: GameState): List<ZoneLock> {
         val projected = state.projectedState
-        var locks: MutableList<Pair<EntityId, CardsInZonesCantBeTargeted>>? = null
+        var locks: MutableList<ZoneLock>? = null
         for (id in state.getBattlefield()) {
             for (ability in projected.getStaticAbilities(id)) {
                 if (ability is CardsInZonesCantBeTargeted) {
-                    (locks ?: mutableListOf<Pair<EntityId, CardsInZonesCantBeTargeted>>().also { locks = it })
-                        .add(id to ability)
+                    val controller = ControllerGrants.granterController(state, id) ?: continue
+                    (locks ?: mutableListOf<ZoneLock>().also { locks = it }).add(ZoneLock(id, controller, ability))
                 }
+            }
+        }
+        for (grant in state.grantedStaticAbilities) {
+            val ability = grant.ability
+            if (ability is CardsInZonesCantBeTargeted && grant.entityId in state.turnOrder) {
+                (locks ?: mutableListOf<ZoneLock>().also { locks = it })
+                    .add(ZoneLock(grant.entityId, grant.entityId, ability))
             }
         }
         return locks ?: emptyList()
     }
 
     /**
-     * True when one of [locks] (from [zoneLocks]) forbids a spell or ability controlled by
-     * [targetingController] from targeting [objectId] where it is now — a card in a locked zone, or a
-     * permanent when a lock covers [Zone.BATTLEFIELD]. A lock scoped to "your opponents"
-     * ([CardsInZonesCantBeTargeted.sourceController] = [Player.EachOpponent]) binds only a
-     * [targetingController] who is an opponent of the lock's controller; with no known targeting
-     * controller it never binds. Players and spells are never in a locked zone.
+     * True when one of [locks] (from [zoneLocks]) forbids a spell or ability from [sourceId],
+     * controlled by [targetingController], from targeting [objectId] where it is now — a card in a
+     * locked zone, or a permanent when a lock covers [Zone.BATTLEFIELD]. A lock scoped to "your
+     * opponents" ([CardsInZonesCantBeTargeted.sourceController] = [Player.EachOpponent]) binds only
+     * a [targetingController] who is an opponent of the lock's controller; with no known targeting
+     * controller it never binds. A spell-only lock ([CardsInZonesCantBeTargeted.spellFilter]) binds
+     * only a source known to be a spell matching it — an ANY-typed caller counts as a spell only
+     * when the source is a spell on the stack, as in [blockingKeywords]. Players and spells are
+     * never in a locked zone.
      */
     fun isZoneLocked(
         state: GameState,
         objectId: EntityId,
         targetingController: EntityId?,
-        locks: List<Pair<EntityId, CardsInZonesCantBeTargeted>>,
-        predicateEvaluator: PredicateEvaluator
+        locks: List<ZoneLock>,
+        predicateEvaluator: PredicateEvaluator,
+        sourceId: EntityId?,
+        targetingSourceType: TargetingSourceType
     ): Boolean {
         if (locks.isEmpty()) return false
         val zone = state.logicalZone(objectId)?.zoneType ?: return false
-        return locks.any { (holderId, lock) ->
+        return locks.any { (holderId, controller, lock) ->
             if (zone !in lock.zones) return@any false
-            val controller = ControllerGrants.granterController(state, holderId) ?: return@any false
             if (lock.sourceController == Player.EachOpponent &&
                 (targetingController == null || targetingController !in state.getOpponents(controller))
             ) return@any false
+            val context = PredicateContext(controllerId = controller, sourceId = holderId)
+            val spellFilter = lock.spellFilter
+            if (spellFilter != null &&
+                !isMatchingSpell(state, sourceId, targetingSourceType, spellFilter, context, predicateEvaluator)
+            ) return@any false
             if (lock.filter == GameObjectFilter.Any) return@any true
-            predicateEvaluator.matches(
-                state, state.projectedState, objectId, lock.filter,
-                PredicateContext(controllerId = controller, sourceId = holderId)
-            )
+            predicateEvaluator.matches(state, state.projectedState, objectId, lock.filter, context)
         }
     }
 
+    private fun isMatchingSpell(
+        state: GameState,
+        sourceId: EntityId?,
+        targetingSourceType: TargetingSourceType,
+        spellFilter: GameObjectFilter,
+        context: PredicateContext,
+        predicateEvaluator: PredicateEvaluator
+    ): Boolean {
+        if (sourceId == null || !state.hasEntity(sourceId)) return false
+        val isSpell = when (targetingSourceType) {
+            TargetingSourceType.SPELL -> true
+            TargetingSourceType.ACTIVATED_ABILITY, TargetingSourceType.TRIGGERED_ABILITY -> false
+            TargetingSourceType.ANY -> SourceKindProtection.isSpell(state, sourceId)
+        }
+        if (!isSpell) return false
+        return spellFilter == GameObjectFilter.Any ||
+            predicateEvaluator.matches(state, state.projectedState, sourceId, spellFilter, context)
+    }
+
     /**
-     * Why [objectId] can't be targeted by a spell or ability [targetingController] controls where it
-     * is, or null — [zoneLocks] and [isZoneLocked] in one.
+     * Why [objectId] can't be targeted by a spell or ability from [sourceId] that
+     * [targetingController] controls where it is, or null — [zoneLocks] and [isZoneLocked] in one.
      */
     fun zoneLockError(
         state: GameState,
         objectId: EntityId,
         targetingController: EntityId?,
-        predicateEvaluator: PredicateEvaluator
+        predicateEvaluator: PredicateEvaluator,
+        sourceId: EntityId?,
+        targetingSourceType: TargetingSourceType
     ): String? {
-        if (!isZoneLocked(state, objectId, targetingController, zoneLocks(state), predicateEvaluator)) return null
+        val locks = zoneLocks(state)
+        if (!isZoneLocked(state, objectId, targetingController, locks, predicateEvaluator, sourceId, targetingSourceType)) {
+            return null
+        }
         val name = state.getEntity(objectId)?.get<CardComponent>()?.name ?: "That card"
-        return "$name can't be the target of spells or abilities where it is"
+        return "$name can't be the target of this ${if (targetingSourceType == TargetingSourceType.SPELL) "spell" else "spell or ability"} where it is"
     }
 
     /**

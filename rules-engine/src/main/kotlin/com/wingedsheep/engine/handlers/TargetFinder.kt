@@ -165,7 +165,9 @@ class TargetFinder(
             } else {
                 (sourceColors == null || !ColorProtection.isProtected(projected, id, sourceColors)) &&
                     !UntargetableByRules.isBlocked(state, id, untargetableKeywords) &&
-                    !UntargetableByRules.isZoneLocked(state, id, controllerId, zoneLocks, predicateEvaluator)
+                    !UntargetableByRules.isZoneLocked(
+                        state, id, controllerId, zoneLocks, predicateEvaluator, sourceId, targetingSourceType
+                    )
             }
         }
     }

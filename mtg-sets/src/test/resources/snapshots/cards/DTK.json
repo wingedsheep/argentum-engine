@@ -1253,6 +1253,97 @@
     ]
 }
 
+// Display of Dominance
+{
+    "name": "Display of Dominance",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Destroy target blue or black noncreature permanent.\n• Permanents you control can't be the targets of blue or black spells your opponents control this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "noncreature permanent blue|black"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Destroy target blue or black noncreature permanent"
+                },
+                {
+                    "effect": {
+                        "type": "GrantStaticAbility",
+                        "ability": {
+                            "type": "CardsInZonesCantBeTargeted",
+                            "zones": [
+                                "Battlefield"
+                            ],
+                            "filter": "permanent ctrl:you",
+                            "sourceController": "EachOpponent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            {
+                                                "type": "HasColor",
+                                                "color": "BLUE"
+                                            },
+                                            {
+                                                "type": "HasColor",
+                                                "color": "BLACK"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "target": "Controller"
+                    },
+                    "description": "Permanents you control can't be the targets of blue or black spells your opponents control this turn"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "182",
+        "rarity": "UNCOMMON",
+        "artist": "Tomasz Jedruszek",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/65572ff2-281f-431d-b776-e8231f24d2c6.jpg?1783938581",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If you choose the second mode, and if a permanent you control is being targeted by a spell when Display of Dominance resolves, nothing happens right away. When that spell would resolve, its color is checked. If it's blue or black, that permanent will be an illegal target for that spell and won't be affected by it. If all that spell's targets have become illegal by the time it would resolve, it's countered."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If you choose the second mode, Display of Dominance will affect any permanent you happen to control at any point during the rest of the turn, not just permanents you control as it resolves. That's because it doesn't grant an ability to those permanents; rather, it affects the game rules and states something that's now true about those permanents."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Permanents you control may be the targets of abilities from blue or black sources controlled by your opponents."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Draconic Roar
 {
     "name": "Draconic Roar",
