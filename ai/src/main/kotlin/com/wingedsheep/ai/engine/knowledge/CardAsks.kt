@@ -322,8 +322,11 @@ internal object CardAsks {
 
     /** The spells a static makes cheaper or faster for you. */
     private fun spellFilter(ability: StaticAbility): GameObjectFilter? = when (ability) {
+        // A discount scoped to one alternative cost ("dash costs you pay cost {2} less",
+        // Warbringer) cheapens only the spells that have that cost, so it asks for those.
         is ModifySpellCost -> (ability.target as? SpellCostTarget.YouCast)?.filter
             ?.takeIf { reduces(ability.modification) }
+            ?.let { filter -> ability.castUsing?.let(filter::withKeyword) ?: filter }
         is GrantFlashToSpellType -> ability.filter
         // Improvise granted asks for the artifacts that pay ([payersOf]), not for the spells.
         is GrantKeywordToOwnSpells -> ability.spellFilter.takeIf { payersOf(ability.keyword) == null }

@@ -3,6 +3,7 @@ package com.wingedsheep.engine.core
 import com.wingedsheep.engine.state.components.identity.RoomFaceId
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.AdditionalCost
@@ -421,7 +422,21 @@ enum class AlternativeCostType {
      * (hand, not graveyard), in where the cost comes from, and in mana value — CR 712.8f gives a
      * modal back face its *own* mana value, where CR 712.8e would keep the front's.
      */
-    MODAL_BACK_FACE
+    MODAL_BACK_FACE;
+
+    /**
+     * The keyword naming this alternative cost, as a `ModifySpellCost.castUsing` scopes a cost
+     * modifier to it ("dash costs you pay cost {2} less", Warbringer), or null for a cost no such
+     * modifier can name. Only the keywords in `ModifySpellCost.CAST_USING_KEYWORDS` are mapped —
+     * widen both together.
+     */
+    val castUsing: Keyword?
+        get() = when (this) {
+            FLASHBACK -> Keyword.FLASHBACK
+            DASH -> Keyword.DASH
+            BLITZ -> Keyword.BLITZ
+            else -> null
+        }
 }
 
 /**

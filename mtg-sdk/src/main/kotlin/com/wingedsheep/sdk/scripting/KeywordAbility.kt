@@ -932,6 +932,7 @@ sealed interface KeywordAbility {
     @SerialName("Dash")
     @Serializable
     data class Dash(val cost: ManaCost) : KeywordAbility {
+        override val keyword: Keyword = Keyword.DASH
         override val description: String = "Dash $cost"
     }
 
