@@ -1,1 +1,1 @@
-- #TBD The AI no longer reads a self-zone cast permission's graveyard tax (Risen Executioner's "{1} more for each other creature card in your graveyard") as a graveyard payoff when drafting and building around graveyard decks
+- #4696 The AI no longer reads a self-zone cast permission's graveyard tax (Risen Executioner's "{1} more for each other creature card in your graveyard") as a graveyard payoff when drafting and building around graveyard decks
