@@ -41,6 +41,7 @@ import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
+import com.wingedsheep.sdk.scripting.effects.GrantKeywordToSpellEffect
 import com.wingedsheep.sdk.scripting.effects.CreateGlobalTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
@@ -683,6 +684,15 @@ object SynergyAxes {
         if (leaves.any {
                 (it is CopyNextSpellCastEffect && rewardsSpells(it.spellFilter)) ||
                     (it is CopyEachSpellCastEffect && rewardsSpells(it.spellFilter))
+            }
+        ) return true
+        // "When you next cast an instant or sorcery spell this turn, it gains rebound" (Narset
+        // Transcendent's −2): the spell is cast a second time from exile, a copier's second helping.
+        if (leaves.any { leaf ->
+                leaf is CreateDelayedTriggerEffect &&
+                    (leaf.trigger?.event as? EventPattern.SpellCastEvent)
+                        ?.let { it.player == Player.You && rewardsSpells(it.spellFilter) } == true &&
+                    EffectWalker.leaves(leaf.effect).any { it is GrantKeywordToSpellEffect && it.keyword == Keyword.REBOUND.name }
             }
         ) return true
         val copiesTarget = leaves.any {

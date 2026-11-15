@@ -69,6 +69,16 @@ class SpellCopyReadingAiTest : ScenarioTestBase() {
             }
         }
 
+        test("granting an instant or sorcery rebound reads as a spell copy and rewards spells") {
+            withClue("Narset Transcendent's −2 is a delayed rebound grant") {
+                tags("Narset Transcendent") shouldContain IntentTag.SPELL_COPY
+                SynergyAxes.of(cardRegistry.requireCard("Narset Transcendent")).rewards shouldContain SynergyAxis.SPELLS
+            }
+            withClue("Ojer Pakpatiq's cast trigger grants rebound too") {
+                tags("Ojer Pakpatiq, Deepest Epoch") shouldContain IntentTag.SPELL_COPY
+            }
+        }
+
         test("an instant-or-sorcery copier rewards spells; a creature-spell copier doesn't") {
             for (card in listOf("Fork", "Lithoform Engine")) {
                 withClue(card) { SynergyAxes.of(cardRegistry.requireCard(card)).rewards shouldContain SynergyAxis.SPELLS }

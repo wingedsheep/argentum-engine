@@ -2575,6 +2575,10 @@ object CardIntentAnalyzer {
                 (effect.target is EffectTarget.BoundVariable || effect.target is EffectTarget.ContextTarget)
             ) setOf(IntentTag.TAPPER)
             else keywordTags(effect.keyword)
+        // "It gains rebound" / "that spell gains lifelink" (Narset Transcendent's −2, Ojer Pakpatiq):
+        // a keyword handed to one of our spells on the stack, read for what it does to the spell.
+        is GrantKeywordToSpellEffect ->
+            runCatching { Keyword.valueOf(effect.keyword) }.getOrNull()?.let(::ownSpellKeywordTags) ?: emptySet()
         is GrantEvasionKeywordEffect, is GrantCantBeBlockedByChosenColorEffect -> setOf(IntentTag.EVASION_GRANT)
         // "Target creature you control gains protection from (hexproof from) the color of your
         // choice" (Center Soul, Gods Willing, Mother of Runes): the chosen-color form of the
@@ -3694,14 +3698,14 @@ object CardIntentAnalyzer {
      * A keyword our own spells are granted ("creature spells you cast have convoke", "instant and
      * sorcery spells you control have split second") read for what it does to the spell:
      * - convoke, improvise and delve pay for the spell with something other than mana — a discount;
-     * - storm, casualty and conspire copy the spell — a second helping of it;
+     * - storm, casualty and conspire copy the spell, and rebound casts it again — a second helping of it;
      * - split second stops the opponent answering it — protection for the spell on the stack;
      * - lifelink gains life off the spell's damage.
      * Anything else (a spell's deathtouch, cascade) is left unread.
      */
     private fun ownSpellKeywordTags(keyword: Keyword): Set<IntentTag> = when (keyword) {
         Keyword.CONVOKE, Keyword.IMPROVISE, Keyword.DELVE -> setOf(IntentTag.COST_REDUCER)
-        Keyword.STORM, Keyword.CASUALTY, Keyword.CONSPIRE -> setOf(IntentTag.SPELL_COPY)
+        Keyword.STORM, Keyword.CASUALTY, Keyword.CONSPIRE, Keyword.REBOUND -> setOf(IntentTag.SPELL_COPY)
         Keyword.SPLIT_SECOND -> setOf(IntentTag.PROTECTION)
         Keyword.LIFELINK -> setOf(IntentTag.LIFEGAIN)
         else -> emptySet()

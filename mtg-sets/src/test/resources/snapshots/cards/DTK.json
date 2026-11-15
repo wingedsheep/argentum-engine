@@ -3238,6 +3238,160 @@
     ]
 }
 
+// Narset Transcendent
+{
+    "name": "Narset Transcendent",
+    "manaCost": "{2}{W}{U}",
+    "typeLine": "Legendary Planeswalker — Narset",
+    "oracleText": "+1: Look at the top card of your library. If it's a noncreature, nonland card, you may reveal it and put it into your hand.\n−2: When you next cast an instant or sorcery spell from your hand this turn, it gains rebound. (Exile the spell as it resolves. At the beginning of your next upkeep, you may cast that card from exile without paying its mana cost.)\n−9: You get an emblem with \"Your opponents can't cast noncreature spells.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Narset Transcendent:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "noncreature nonland",
+                            "storeMatching": "matching1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matching1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "selectedLabel": "Reveal and put into your hand",
+                            "remainderLabel": "Leave on top of your library"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true,
+                            "revealToSelf": false
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Look at the top card of your library. If it's a noncreature, nonland card, you may reveal it and put it into your hand."
+            },
+            {
+                "id": "Narset Transcendent:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "GrantKeywordToSpell",
+                        "keyword": "REBOUND"
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "requires": [
+                                {
+                                    "type": "SpellCastFromZone",
+                                    "zone": "Hand"
+                                }
+                            ]
+                        },
+                        "binding": "ANY"
+                    },
+                    "fireOnce": true
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "When you next cast an instant or sorcery spell from your hand this turn, it gains rebound."
+            },
+            {
+                "id": "Narset Transcendent:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -9
+                },
+                "effect": {
+                    "type": "CreatePermanentEmblem",
+                    "ownedStaticAbilities": [
+                        {
+                            "type": "PlayersCantCastSpells",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    "IsNoncreature"
+                                ]
+                            }
+                        }
+                    ],
+                    "emblemDescription": "Your opponents can't cast noncreature spells."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You get an emblem with \"Your opponents can't cast noncreature spells.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "225",
+        "rarity": "MYTHIC",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/8/4816d092-e34b-4397-8599-43d8e85a8f39.jpg?1783938571",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "When resolving Narset's first ability, if the top card of your library is a creature or a land card, or if you don't wish to put it into your hand, it isn't revealed."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If a spell that exiles itself as part of its own resolution, such as Volcanic Vision, gains rebound, the ability that lets you cast the spell again won't be created. The spell will simply be exiled."
+            }
+        ]
+    },
+    "startingLoyalty": 6,
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Necromaster Dragon
 {
     "name": "Necromaster Dragon",

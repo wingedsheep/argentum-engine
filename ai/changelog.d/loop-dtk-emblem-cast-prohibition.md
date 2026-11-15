@@ -1,0 +1,1 @@
+- #4694 Reads a granted rebound (Narset Transcendent's −2, Ojer Pakpatiq) as a second cast of the spell — a spell copy that rewards instants and sorceries — instead of an unread effect
