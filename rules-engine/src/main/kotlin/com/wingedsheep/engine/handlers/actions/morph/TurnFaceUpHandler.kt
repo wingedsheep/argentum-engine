@@ -27,8 +27,6 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownModeComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
-import com.wingedsheep.engine.state.components.identity.TurnUpProcedure
-import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.TurnedPermanentFaceUpThisTurnComponent
 import com.wingedsheep.sdk.core.Color
@@ -78,14 +76,6 @@ class TurnFaceUpHandler(
         return if (xMana > 0) withoutX + ManaCost(listOf(ManaSymbol.generic(xMana))) else withoutX
     }
 
-    /**
-     * Lets restricted mana tagged "spend only to turn permanents face up" (Overgrown Zealot,
-     * Creeping Peeper) — or only for one route, "a morph cost" / "a manifested creature" (Qarsi
-     * Deceiver) — be recognized when paying for [procedure] on this permanent.
-     */
-    private fun faceUpContext(container: ComponentContainer, procedure: TurnUpProcedure): SpellPaymentContext =
-        SpellPaymentContext.turnFaceUp(procedure.mechanic, container.get<FaceDownModeComponent>()?.mode)
-
     override fun validate(state: GameState, action: TurnFaceUp): String? {
         if (!state.hasPriority(action.playerId)) {
             return "You don't have priority"
@@ -120,7 +110,9 @@ class TurnFaceUpHandler(
         // client-supplied, so bounds-check it here rather than trusting it.
         val procedure = morphData.procedures.getOrNull(action.procedureIndex)
             ?: return "No such turn-up procedure: ${action.procedureIndex}"
-        val faceUpContext = faceUpContext(container, procedure)
+        // Lets restricted mana tagged "spend only to turn permanents face up" (Overgrown Zealot) — or
+        // only for some procedures, "a morph cost" (Qarsi Deceiver) — pay for this procedure.
+        val faceUpContext = SpellPaymentContext.turnFaceUp(procedure.mechanic)
 
         // Validate cost payment based on morph cost type.
         val morphCost = procedure.cost
@@ -209,7 +201,9 @@ class TurnFaceUpHandler(
 
         val procedure = morphData.procedures.getOrNull(action.procedureIndex)
             ?: return ExecutionResult.error(state, "No such turn-up procedure: ${action.procedureIndex}")
-        val faceUpContext = faceUpContext(container, procedure)
+        // Lets restricted mana tagged "spend only to turn permanents face up" (Overgrown Zealot) — or
+        // only for some procedures, "a morph cost" (Qarsi Deceiver) — pay for this procedure.
+        val faceUpContext = SpellPaymentContext.turnFaceUp(procedure.mechanic)
 
         val cardComponent = container.get<CardComponent>()
         val cardDef = cardRegistry.getCard(morphData.originalCardDefinitionId)

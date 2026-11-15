@@ -9,6 +9,7 @@ import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
 import com.wingedsheep.engine.mechanics.mana.isSatisfiedBy
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownModeComponent
+import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -37,7 +38,8 @@ class QarsiDeceiverScenarioTest : FunSpec({
 
     val restriction = (QarsiDeceiver.activatedAbilities.single().effect as AddColorlessManaEffect).restriction!!
 
-    // Each tester turns up for exactly {1}, so only the spend restriction decides the outcome.
+    // Each tester turns up for {1} by its keyword (the disguise tester manifests for {2}), so only the
+    // spend restriction decides the outcome.
     val morphTester = card("Qarsi Morph Tester") {
         manaCost = "{3}{U}"
         typeLine = "Creature — Snake"
@@ -52,7 +54,7 @@ class QarsiDeceiverScenarioTest : FunSpec({
         toughness = 1
     }
     val disguiseTester = card("Qarsi Disguise Tester") {
-        manaCost = "{3}{U}"
+        manaCost = "{2}"
         typeLine = "Creature — Snake"
         power = 3
         toughness = 3
@@ -94,18 +96,15 @@ class QarsiDeceiverScenarioTest : FunSpec({
         (state.getEntity(playerId)?.get<ManaPoolComponent>() ?: ManaPoolComponent()).restrictedMana.size
 
     test("the clause admits each printed route and nothing else") {
-        val face = SpellPaymentContext::turnFaceUp
+        val up = SpellPaymentContext::turnFaceUp
         restriction.isSatisfiedBy(SpellPaymentContext.faceDownCast()) shouldBe true
-        restriction.isSatisfiedBy(face(FaceDownMode.MORPH, FaceDownMode.MORPH)) shouldBe true
-        restriction.isSatisfiedBy(face(FaceDownMode.MANIFEST, FaceDownMode.MANIFEST)) shouldBe true
-        withClue("a manifested card that prints morph, turned up for its morph cost") {
-            restriction.isSatisfiedBy(face(FaceDownMode.MORPH, FaceDownMode.MANIFEST)) shouldBe true
+        restriction.isSatisfiedBy(up(FaceDownMode.MORPH)) shouldBe true
+        restriction.isSatisfiedBy(up(FaceDownMode.MANIFEST)) shouldBe true
+        withClue("cloak's procedure is not manifest's") {
+            restriction.isSatisfiedBy(up(FaceDownMode.CLOAK)) shouldBe false
         }
-        withClue("a cloaked creature is not a manifested one") {
-            restriction.isSatisfiedBy(face(FaceDownMode.CLOAK, FaceDownMode.CLOAK)) shouldBe false
-        }
-        withClue("a disguise cost is not a morph cost") {
-            restriction.isSatisfiedBy(face(FaceDownMode.DISGUISE, FaceDownMode.DISGUISE)) shouldBe false
+        withClue("a disguise cost is neither a mana cost nor a morph cost") {
+            restriction.isSatisfiedBy(up(FaceDownMode.DISGUISE)) shouldBe false
         }
         restriction.isSatisfiedBy(SpellPaymentContext(isCreature = true, cardTypes = setOf(CardType.CREATURE))) shouldBe false
         restriction.isSatisfiedBy(SpellPaymentContext(isAbilityActivation = true)) shouldBe false
@@ -155,6 +154,41 @@ class QarsiDeceiverScenarioTest : FunSpec({
         driver.legalActions(player).any { (it.action as? TurnFaceUp)?.sourceId == hidden } shouldBe false
         driver.submit(TurnFaceUp(player, hidden, paymentStrategy = PaymentStrategy.FromPool)).error shouldNotBe null
         driver.state.getEntity(hidden)?.get<FaceDownComponent>() shouldNotBe null
+    }
+
+    test("on a manifested morph card the mana pays its morph cost (CR 701.40c)") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+        val hidden = driver.putFaceDown(player, "Qarsi Morph Tester", FaceDownMode.MANIFEST)
+        val morphIndex = driver.state.getEntity(hidden)!!.get<MorphDataComponent>()!!.procedures
+            .indexOfFirst { it.mechanic == FaceDownMode.MORPH }
+        driver.giveRestrictedMana(player, null, 1, restriction)
+
+        driver.submit(
+            TurnFaceUp(player, hidden, paymentStrategy = PaymentStrategy.FromPool, procedureIndex = morphIndex)
+        ).error shouldBe null
+        driver.state.getEntity(hidden)?.get<FaceDownComponent>() shouldBe null
+    }
+
+    test("on a manifested disguise card the mana pays its mana cost but not its disguise cost") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+        val hidden = driver.putFaceDown(player, "Qarsi Disguise Tester", FaceDownMode.MANIFEST)
+        val procedures = driver.state.getEntity(hidden)!!.get<MorphDataComponent>()!!.procedures
+        val manifestIndex = procedures.indexOfFirst { it.mechanic == FaceDownMode.MANIFEST }
+        val disguiseIndex = procedures.indexOfFirst { it.mechanic == FaceDownMode.DISGUISE }
+        driver.giveRestrictedMana(player, null, 2, restriction)
+
+        withClue("disguise {1} paid with Qarsi mana") {
+            driver.submit(
+                TurnFaceUp(player, hidden, paymentStrategy = PaymentStrategy.FromPool, procedureIndex = disguiseIndex)
+            ).error shouldNotBe null
+            driver.state.getEntity(hidden)?.get<FaceDownComponent>() shouldNotBe null
+        }
+        driver.submit(
+            TurnFaceUp(player, hidden, paymentStrategy = PaymentStrategy.FromPool, procedureIndex = manifestIndex)
+        ).error shouldBe null
+        driver.state.getEntity(hidden)?.get<FaceDownComponent>() shouldBe null
     }
 
     test("the mana casts a morph card face down but not a creature spell face up") {

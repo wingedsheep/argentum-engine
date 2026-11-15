@@ -4179,13 +4179,8 @@
                             "FaceDownSpellsOnly",
                             {
                                 "type": "TurnPermanentsFaceUpOnly",
-                                "faceDownAs": [
-                                    "MANIFEST"
-                                ]
-                            },
-                            {
-                                "type": "TurnPermanentsFaceUpOnly",
                                 "procedures": [
+                                    "MANIFEST",
                                     "MORPH"
                                 ]
                             }

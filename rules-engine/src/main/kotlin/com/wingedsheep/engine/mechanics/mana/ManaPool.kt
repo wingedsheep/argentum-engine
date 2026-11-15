@@ -116,12 +116,6 @@ data class SpellPaymentContext(
      */
     val turnFaceUpProcedure: com.wingedsheep.sdk.scripting.effects.FaceDownMode? = null,
     /**
-     * For a turn-face-up payment, how the permanent went face down
-     * ([com.wingedsheep.engine.state.components.identity.FaceDownModeComponent.mode]) — `MANIFEST`
-     * is "a manifested creature". Read by [ManaRestriction.TurnPermanentsFaceUpOnly.faceDownAs].
-     */
-    val turnFaceUpFaceDownAs: com.wingedsheep.sdk.scripting.effects.FaceDownMode? = null,
-    /**
      * True when the payment is for the unlock-a-door special action (CR 709.5e). Lets
      * [ManaRestriction.UnlockDoorOnly] recognize "spend this mana only to ... unlock a door"
      * (Creeping Peeper).
@@ -192,6 +186,14 @@ data class SpellPaymentContext(
 
     companion object {
         /**
+         * The payment context for the turn-face-up special action (CR 116.2b), carrying which
+         * [procedure] is being paid for so restrictions narrowed to "a morph cost" or "a mana cost
+         * to turn a manifested creature face up" (Qarsi Deceiver) can tell the routes apart.
+         */
+        fun turnFaceUp(procedure: com.wingedsheep.sdk.scripting.effects.FaceDownMode): SpellPaymentContext =
+            SpellPaymentContext(isTurnFaceUpAction = true, turnFaceUpProcedure = procedure)
+
+        /**
          * The payment context for a face-down cast (morph / disguise). CR 708.2: the spell has no
          * name, no mana cost, no color, and no card types or subtypes other than creature, with
          * power and toughness 2/2. Building it from the *printed* card would let restricted mana
@@ -199,21 +201,6 @@ data class SpellPaymentContext(
          * spells with mana value 4 or greater") pay for a cast that, as far as the rules are
          * concerned, has none of them.
          */
-        /**
-         * The payment context for the turn-face-up special action (CR 116.2b): which [procedure]
-         * is being paid for and how the permanent went face down ([faceDownAs], `null` when the
-         * permanent carries no mode marker), so restrictions narrowed to "a morph cost" or "a
-         * manifested creature" (Qarsi Deceiver) can tell the routes apart.
-         */
-        fun turnFaceUp(
-            procedure: com.wingedsheep.sdk.scripting.effects.FaceDownMode,
-            faceDownAs: com.wingedsheep.sdk.scripting.effects.FaceDownMode?,
-        ): SpellPaymentContext = SpellPaymentContext(
-            isTurnFaceUpAction = true,
-            turnFaceUpProcedure = procedure,
-            turnFaceUpFaceDownAs = faceDownAs,
-        )
-
         fun faceDownCast(isFromHand: Boolean = true): SpellPaymentContext = SpellPaymentContext(
             isCreature = true,
             manaValue = 0,
@@ -310,8 +297,7 @@ fun ManaRestriction.isSatisfiedBy(context: SpellPaymentContext): Boolean = when 
     is ManaRestriction.DisturbCostOnly -> !context.isAbilityActivation && context.isDisturbCast
     is ManaRestriction.CastFromNonHandOnly -> !context.isAbilityActivation && !context.isFromHand
     is ManaRestriction.TurnPermanentsFaceUpOnly -> context.isTurnFaceUpAction &&
-        procedures.let { it == null || context.turnFaceUpProcedure in it } &&
-        faceDownAs.let { it == null || context.turnFaceUpFaceDownAs in it }
+        procedures.let { it == null || context.turnFaceUpProcedure in it }
     is ManaRestriction.FaceDownSpellsOnly -> !context.isAbilityActivation && context.isFaceDownCast
     is ManaRestriction.UnlockDoorOnly -> context.isUnlockDoorAction
     is ManaRestriction.ForetellOnly -> context.isForetellAction

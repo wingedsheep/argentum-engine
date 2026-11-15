@@ -15,11 +15,12 @@ import com.wingedsheep.sdk.scripting.effects.ManaRestriction
  * {T}: Add {C}. Spend this mana only to cast a face-down creature spell, pay a mana cost to turn a
  * manifested creature face up, or pay a morph cost. (A megamorph cost is a morph cost.)
  *
- * The spend clause is three [ManaRestriction.AnyOf] atoms: [ManaRestriction.FaceDownSpellsOnly]
+ * The spend clause is two [ManaRestriction.AnyOf] atoms: [ManaRestriction.FaceDownSpellsOnly]
  * (a morph or disguise card cast face down — not a spell that tells you to manifest, per the
- * ruling), [ManaRestriction.TurnPermanentsFaceUpOnly] narrowed to permanents that went face down
- * by manifest (manifest dread included; cloak is not manifest), and the same atom narrowed to the
- * morph turn-up procedure — which a manifested card that prints morph may also use (CR 701.40c).
+ * ruling) and [ManaRestriction.TurnPermanentsFaceUpOnly] narrowed to the manifest procedure ("pay
+ * its mana cost", CR 701.40b — manifest dread manifests too; cloak's procedure is its own) and the
+ * morph procedure, which a manifested card that prints morph may also use (CR 701.40c). A
+ * manifested disguise card turned up for its disguise cost isn't paying a mana cost or a morph cost.
  */
 val QarsiDeceiver = card("Qarsi Deceiver") {
     manaCost = "{1}{U}"
@@ -37,8 +38,9 @@ val QarsiDeceiver = card("Qarsi Deceiver") {
             restriction = ManaRestriction.AnyOf(
                 listOf(
                     ManaRestriction.FaceDownSpellsOnly,
-                    ManaRestriction.TurnPermanentsFaceUpOnly(faceDownAs = setOf(FaceDownMode.MANIFEST)),
-                    ManaRestriction.TurnPermanentsFaceUpOnly(procedures = setOf(FaceDownMode.MORPH)),
+                    ManaRestriction.TurnPermanentsFaceUpOnly(
+                        procedures = setOf(FaceDownMode.MANIFEST, FaceDownMode.MORPH)
+                    ),
                 )
             )
         )

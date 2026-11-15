@@ -324,41 +324,28 @@ sealed interface ManaRestriction {
     /**
      * "Spend this mana only to turn permanents face up."
      *
-     * Satisfied by the turn-face-up special action (CR 116.2b — morph's 702.37e, disguise's
-     * 702.168d, manifest's 701.40b, cloak's 701.58b), not by spell casts or ability activations.
-     * With both axes left `null` any turn-up qualifies (Overgrown Zealot, Creeping Peeper). The two
-     * axes narrow it, and both must hold when both are set:
+     * Satisfied by the turn-face-up special action (CR 116.2b), not by spell casts or ability
+     * activations. [procedures] narrows it to the turn-up procedures being paid for — the
+     * mechanic whose rule the chosen procedure follows ([FaceDownMode.MORPH], CR 702.37e;
+     * [FaceDownMode.DISGUISE], 702.168d; [FaceDownMode.MANIFEST], 701.40b; [FaceDownMode.CLOAK],
+     * 701.58b). `null` admits every turn-up (Overgrown Zealot, Creeping Peeper).
      *
-     * - [procedures] — which mechanic's turn-up procedure is being paid for
-     *   (`setOf(`[FaceDownMode.MORPH]`)` is "pay a morph cost", megamorph included).
-     *   A manifested card that prints morph can be turned up by either procedure (CR 701.40c), so
-     *   this reads the procedure chosen, not how the permanent went face down.
-     * - [faceDownAs] — how the permanent being turned up went face down ("turn a manifested
-     *   creature face up" is `setOf(MANIFEST)`; manifest dread manifests too, cloak does not).
-     *
-     * Qarsi Deceiver's "pay a mana cost to turn a manifested creature face up, or pay a morph cost"
-     * is `AnyOf(TurnPermanentsFaceUpOnly(faceDownAs = setOf(MANIFEST)),
-     * TurnPermanentsFaceUpOnly(procedures = setOf(MORPH)))` — the axes ride this atom rather than a
-     * sibling because "which turn-up" is a narrowing of the same spend context.
+     * The procedure, not how the permanent went face down, is what a narrowed clause names: a
+     * manifested card that prints morph may be turned up for its morph cost (CR 701.40c), and that
+     * is "paying a morph cost". Qarsi Deceiver's "pay a mana cost to turn a manifested creature
+     * face up, or pay a morph cost" is `procedures = setOf(MANIFEST, MORPH)` — "a mana cost" is the
+     * card's mana cost (701.40b), so a manifested disguise card turned up for its disguise cost
+     * doesn't qualify. Megamorph is morph.
      */
     @SerialName("TurnPermanentsFaceUpOnly")
     @Serializable
     data class TurnPermanentsFaceUpOnly(
         val procedures: Set<FaceDownMode>? = null,
-        val faceDownAs: Set<FaceDownMode>? = null,
     ) : ManaRestriction {
-        override val description: String = buildString {
-            append("Spend this mana only to ")
-            when {
-                procedures == setOf(FaceDownMode.MORPH) && faceDownAs == null -> append("pay a morph cost")
-                faceDownAs != null && procedures == null ->
-                    append("turn a ${faceDownAs.joinToString(" or ") { it.participle }} creature face up")
-                procedures == null && faceDownAs == null -> append("turn permanents face up")
-                else -> append("turn permanents face up").also {
-                    procedures?.let { p -> append(" by ${p.joinToString(" or ") { it.name.lowercase() }}") }
-                    faceDownAs?.let { f -> append(" that were ${f.joinToString(" or ") { it.participle }}") }
-                }
-            }
+        override val description: String = when (procedures) {
+            null -> "Spend this mana only to turn permanents face up"
+            else -> "Spend this mana only to turn permanents face up by " +
+                procedures.joinToString(" or ") { it.name.lowercase() }
         }
     }
 
@@ -687,12 +674,3 @@ sealed interface ManaRestriction {
     }
 }
 
-/** "manifested", "cloaked", … — the past participle Oracle uses for a permanent put face down this way. */
-private val FaceDownMode.participle: String
-    get() = when (this) {
-        FaceDownMode.MORPH -> "morphed"
-        FaceDownMode.MANIFEST -> "manifested"
-        FaceDownMode.DISGUISE -> "disguised"
-        FaceDownMode.CLOAK -> "cloaked"
-        FaceDownMode.HIDDEN -> "face-down"
-    }

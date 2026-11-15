@@ -19097,22 +19097,16 @@ restriction matches the spell context.
   would also pay the other activated abilities a Class's levels grant. Sorcerer Class's "Spend this
   mana only to cast an instant or sorcery spell or to gain a Class level" is
   `AnyOf(InstantOrSorceryOnly, ClassLevelUpOnly)`.
-- `ManaRestriction.TurnPermanentsFaceUpOnly(procedures = null, faceDownAs = null)` — only the
-  turn-face-up special action. With both axes `null` any turn-up qualifies (Overgrown Zealot,
-  Creeping Peeper: `TurnPermanentsFaceUpOnly()`). The axes narrow it, and both must hold when both
-  are set:
-  - `procedures: Set<FaceDownMode>?` — which mechanic's turn-up procedure is being paid for
-    (`TurnUpProcedure.mechanic`): `setOf(MORPH)` is "pay a morph cost" (megamorph included), even on
-    a manifested card that prints morph (CR 701.40c).
-  - `faceDownAs: Set<FaceDownMode>?` — how the permanent went face down (`FaceDownModeComponent`):
-    `setOf(MANIFEST)` is "turn a manifested creature face up" (manifest dread manifests; cloak
-    doesn't).
-
-  Satisfied by `SpellPaymentContext.turnFaceUp(procedure, faceDownAs)`, which the turn-face-up
-  handler and enumerator build per procedure so restricted mana in the pool is consumed. Qarsi
-  Deceiver's "cast a face-down creature spell, pay a mana cost to turn a manifested creature face up,
-  or pay a morph cost" is `AnyOf(FaceDownSpellsOnly, TurnPermanentsFaceUpOnly(faceDownAs =
-  setOf(MANIFEST)), TurnPermanentsFaceUpOnly(procedures = setOf(MORPH)))`.
+- `ManaRestriction.TurnPermanentsFaceUpOnly(procedures = null)` — only the turn-face-up special
+  action. `procedures: Set<FaceDownMode>?` narrows it to the turn-up procedures being paid for
+  (`TurnUpProcedure.mechanic`); `null` admits every turn-up (Overgrown Zealot, Creeping Peeper:
+  `TurnPermanentsFaceUpOnly()`). It reads the procedure, not how the permanent went face down: a
+  manifested card that prints morph turned up for its morph cost is paying a morph cost (CR
+  701.40c). Satisfied by `SpellPaymentContext.turnFaceUp(procedure)`, which the turn-face-up handler
+  and enumerator build per procedure so restricted mana in the pool is consumed. Qarsi Deceiver's
+  "cast a face-down creature spell, pay a mana cost to turn a manifested creature face up, or pay a
+  morph cost" is `AnyOf(FaceDownSpellsOnly, TurnPermanentsFaceUpOnly(setOf(MANIFEST, MORPH)))` —
+  "a mana cost" is the card's mana cost (CR 701.40b), so a disguise cost doesn't qualify.
 - `ManaRestriction.UnlockDoorOnly` — only the unlock-a-door special action (CR 709.5e).
   Satisfied by `SpellPaymentContext.isUnlockDoorAction`; the unlock-room handler/enumerator pass
   that context. Creeping Peeper (inside `AnyOf`).
