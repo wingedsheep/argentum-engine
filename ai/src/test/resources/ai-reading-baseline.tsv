@@ -408,6 +408,7 @@ Alela, Cunning Conqueror	intent: GoadEffect; polarity: GoadEffect
 Alert Heedbonder
 Alert Shu Infantry
 Alesha's Legacy
+Alesha's Vanguard
 Alesha, Who Laughs at Fate
 Alexi's Cloak
 Alhammarret's Archive
@@ -532,6 +533,7 @@ Ancestral Recall
 Ancestral Reminiscence
 Ancestral Statue
 Ancestral Tribute
+Ancestral Vengeance
 Ancestral Vision
 Anchor to Reality
 Anchor to the Aether
@@ -739,6 +741,7 @@ Aragorn, Hornburg Hero
 Aragorn, King of Gondor	intent: TakeDesignationEffect
 Aragorn, the Uniter
 Arahbo, the First Fang
+Arashin Cleric
 Arashin Sunshield
 Arasta of the Endless Web
 Araña, Heart of the Spider
@@ -796,6 +799,7 @@ Archangel of Wrath
 Archdemon of Unx
 Archdruid's Charm
 Archenemy's Charm
+Archers of Qarsi
 Archers' Parapet
 Archfiend of Depravity
 Archfiend of Despair
@@ -1153,8 +1157,10 @@ Aven Redeemer
 Aven Reedstalker
 Aven Riftwatcher
 Aven Sentry
+Aven Skirmisher
 Aven Smokeweaver
 Aven Soulgazer	intent: LookAtFaceDownEffect; polarity: LookAtFaceDownEffect
+Aven Surveyor
 Aven Tactician	intent: AddCountersToCollectionEffect; intent: Pipeline(ControlledPermanents→?)
 Aven Trailblazer
 Aven Trooper
@@ -4338,6 +4344,7 @@ Defiant Elf
 Defiant Falcon
 Defiant Greatmaw
 Defiant Khenra
+Defiant Ogre
 Defiant Salvager
 Defiant Stand
 Defiant Strike
@@ -4488,6 +4495,7 @@ Destiny Spinner
 Destroy Evil
 Destructive Digger
 Destructive Tampering
+Destructor Dragon
 Desynchronize
 Detection Tower	intent: GrantStaticAbilityEffect; timing: GrantStaticAbilityEffect
 Detective's Phoenix
@@ -5615,6 +5623,7 @@ Engineered Might
 Engulf the Shore
 Engulfing Eruption
 Engulfing Slagwurm
+Enhanced Awareness
 Enhanced Surveillance	intent: Pipeline(graveyard→library)
 Enigma Drake
 Enigmatic Incarnation
@@ -7490,6 +7499,7 @@ Goblin Bird-Grabber
 Goblin Blast-Runner
 Goblin Boarders
 Goblin Bombardment
+Goblin Boom Keg
 Goblin Brigand
 Goblin Bully
 Goblin Burrows
@@ -7529,6 +7539,7 @@ Goblin Goliath
 Goblin Goon
 Goblin Grappler	intent: ProvokeEffect; polarity: ProvokeEffect
 Goblin Grenade
+Goblin Heelcutter
 Goblin Hero
 Goblin Instigator
 Goblin Javelineer
@@ -8015,6 +8026,7 @@ Gumdrop Poisoner
 Gundabad Opportunist
 Gunner Conscript
 Gurgling Anointer
+Gurmag Angler
 Gurmag Nightwatch
 Gurmag Rakshasa
 Gurmag Swiftwing
@@ -9499,6 +9511,7 @@ Jeska's Will	polarity: AddManaEffect
 Jeska, Warrior Adept
 Jeskai Ascendancy
 Jeskai Banner
+Jeskai Barricade
 Jeskai Brushmaster
 Jeskai Charm
 Jeskai Devotee
@@ -11100,6 +11113,8 @@ Mardu Heart-Piercer
 Mardu Hordechief
 Mardu Monument
 Mardu Roughrider
+Mardu Scout
+Mardu Shadowspear
 Mardu Siegebreaker
 Mardu Skullhunter
 Mardu Strike Leader
@@ -11646,6 +11661,7 @@ Mister Fantastic, Reed Richards
 Mister Gutsy
 Mister Hyde, Monster Within
 Mister Negative
+Mistfire Adept
 Mistfire Weaver
 Mistford River Turtle
 Mistform Dreamer	intent: BecomeCreatureTypeEffect; timing: BecomeCreatureTypeEffect
@@ -12766,6 +12782,7 @@ Orbital Plunge
 Orbs of Warding
 Orbweaver Kumo
 Orc General
+Orc Sureshot
 Orchard Spirit
 Orchard Strider
 Orcish Artillery
@@ -13304,6 +13321,7 @@ Pilfer
 Pilfering Hawk
 Pilfering Imp
 Pilgrim of the Ages
+Pilgrim of the Fires
 Pilgrim's Eye
 Pili-Pala
 Pillage
@@ -14618,6 +14636,7 @@ Return the Favor
 Return to Action	polarity: GrantTriggeredAbilityEffect
 Return to Battle
 Return to Nature
+Return to the Earth
 Return to the Light Realms
 Return to the Sewers
 Returned Centaur
@@ -16203,11 +16222,13 @@ Shu Foot Soldiers
 Shu General
 Shu Grain Caravan
 Shu Soldier-Farmers
+Shu Yun, the Silent Tempest
 Shuri, Wakandan Inventor
 Shuttle Ace
 Sibling Rivalry
 Sibsig Appraiser
 Sibsig Icebreakers
+Sibsig Muckdraggers
 Sickbay
 Sicken
 Sickle Ripper
@@ -17626,6 +17647,7 @@ Sultai Devotee
 Sultai Flayer
 Sultai Monument
 Sultai Scavenger
+Sultai Skullkeeper
 Sultai Soothsayer
 Sulu, Space Swashbuckler
 Sumala Sentry
@@ -18112,6 +18134,7 @@ Tarrian's Journal	intent: GrantStaticAbilityEffect; timing: GrantStaticAbilityEf
 Tarrian's Soulcleaver
 Tasha Yar, Out of Time
 Tasha's Hideous Laughter	intent: ExileLibraryUntilManaValueEffect
+Tasigur's Cruelty
 Task Force
 Taskmaster, Mercenary Mimic
 Tasseled Dromedary
@@ -19925,6 +19948,7 @@ Vault of Champions
 Vault of Whispers
 Vault of the Archangel
 Vaultborn Tyrant
+Vaultbreaker
 Vaultguard Trooper
 Vayne's Treachery
 Vectis Silencers
@@ -20755,12 +20779,14 @@ Whirlwind Adept
 Whirlwind Denial
 Whirlwind of Thought
 Whirlwing Stormbrood
+Whisk Away
 Whiskerquill Scribe
 Whiskervale Forerunner
 Whisper Agent
 Whisper Squad
 Whisper of the Dross
 Whisper, Blood Liturgist
+Whisperer of the Wilds
 Whispering Madness
 Whispering Shade
 Whispering Snitch
