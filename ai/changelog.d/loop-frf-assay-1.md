@@ -1,1 +1,1 @@
-- #PR Drafts and builds Fate Reforged decks from a first-party pick-rating and removal table instead of guessing every FRF card from the effect heuristic
+- #4677 Drafts and builds Fate Reforged decks from a first-party pick-rating and removal table instead of guessing every FRF card from the effect heuristic
