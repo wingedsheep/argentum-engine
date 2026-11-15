@@ -180,6 +180,18 @@ class CardIntentAnalyzerTest : ScenarioTestBase() {
             }
         }
 
+        test("bolster — a +1/+1 counter on our own least-toughness creature — is a lasting pump") {
+            // The pick is made on resolution (gather our creatures → least toughness → choose one →
+            // counter), so no target slot says whose creature grows; the gather of our own does.
+            for (name in listOf("Dromoka Captain", "Sandcrafter Mage", "Echoes of the Kin Tree")) {
+                withClue(name) {
+                    val intent = intentOf(name)
+                    intent.tags shouldContain IntentTag.PUMP
+                    intent.tags shouldNotContain IntentTag.COMBAT_TRICK
+                }
+            }
+        }
+
         test("a permanent pump is not a combat trick and buys no trick toughness") {
             val intent = intentOf("Unholy Strength")
             intent.tags shouldContain IntentTag.PUMP

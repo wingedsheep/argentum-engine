@@ -87,6 +87,80 @@
     ]
 }
 
+// Anafenza, Kin-Tree Spirit
+{
+    "name": "Anafenza, Kin-Tree Spirit",
+    "manaCost": "{W}{W}",
+    "typeLine": "Legendary Creature — Spirit Soldier",
+    "oracleText": "Whenever another nontoken creature you control enters, bolster 1. (Choose a creature with the least toughness among creatures you control and put a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Anafenza, Kin-Tree Spirit:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "ControlledPermanents",
+                                "filter": "creature"
+                            },
+                            "storeAs": "bolsterCreatures"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "bolsterCreatures",
+                            "collectionFilter": "LeastToughness",
+                            "storeMatching": "bolsterLeastToughness"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "bolsterLeastToughness",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "bolstered",
+                            "prompt": "Bolster 1 — choose a creature with the least toughness",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "AddCountersToCollection",
+                            "collectionName": "bolstered",
+                            "counterType": "PLUS_ONE_PLUS_ONE"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever another nontoken creature you control enters, bolster 1."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "RARE",
+        "artist": "Ryan Yee",
+        "flavorText": "Martyred for worshipping her ancestors, she now walks among them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/55611f05-10cf-42d0-b93e-7f0c0c852a06.jpg?1783938622"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ancestral Statue
 {
     "name": "Ancestral Statue",
@@ -436,6 +510,49 @@
     "colorIdentityOverride": [
         "RED",
         "GREEN"
+    ]
+}
+
+// Aven Sunstriker
+{
+    "name": "Aven Sunstriker",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Creature — Bird Warrior",
+    "oracleText": "Flying\nDouble strike (This creature deals both first-strike and regular combat damage.)\nMegamorph {4}{W} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING",
+        "DOUBLE_STRIKE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{4}{W}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "5",
+        "rarity": "UNCOMMON",
+        "artist": "John Severin Brassell",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4a54b36b-5a8d-41a1-9371-1a59d81c2733.jpg?1783938620"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -1992,6 +2109,76 @@
     ]
 }
 
+// Dromoka Captain
+{
+    "name": "Dromoka Captain",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "First strike\nWhenever this creature attacks, bolster 1. (Choose a creature with the least toughness among creatures you control and put a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dromoka Captain:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "ControlledPermanents",
+                                "filter": "creature"
+                            },
+                            "storeAs": "bolsterCreatures"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "bolsterCreatures",
+                            "collectionFilter": "LeastToughness",
+                            "storeMatching": "bolsterLeastToughness"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "bolsterLeastToughness",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "bolstered",
+                            "prompt": "Bolster 1 — choose a creature with the least toughness",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "AddCountersToCollection",
+                            "collectionName": "bolstered",
+                            "counterType": "PLUS_ONE_PLUS_ONE"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2d11837c-613f-4e36-b5dd-99baf8b38532.jpg?1783938619"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Dromoka Dunecaster
 {
     "name": "Dromoka Dunecaster",
@@ -2071,6 +2258,168 @@
         "artist": "Zack Stella",
         "flavorText": "Dromoka has regard for the humans who serve under her. In return for her protection, they obey with steadfast loyalty, acting as weapons for her and her scalelords against the other clans.",
         "imageUri": "https://cards.scryfall.io/normal/front/1/3/13ae001b-556f-4576-8cf4-0b8902997bb1.jpg?1562782782"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Echoes of the Kin Tree
+{
+    "name": "Echoes of the Kin Tree",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "{2}{W}: Bolster 1. (Choose a creature with the least toughness among creatures you control and put a +1/+1 counter on it.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Echoes of the Kin Tree:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "ControlledPermanents",
+                                "filter": "creature"
+                            },
+                            "storeAs": "bolsterCreatures"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "bolsterCreatures",
+                            "collectionFilter": "LeastToughness",
+                            "storeMatching": "bolsterLeastToughness"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "bolsterLeastToughness",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "bolstered",
+                            "prompt": "Bolster 1 — choose a creature with the least toughness",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "AddCountersToCollection",
+                            "collectionName": "bolstered",
+                            "counterType": "PLUS_ONE_PLUS_ONE"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Alexander Lee",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/531414e6-ea72-4934-b05e-e1782249fd1f.jpg?1783938618"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Enduring Victory
+{
+    "name": "Enduring Victory",
+    "manaCost": "{4}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target attacking or blocking creature. Bolster 1. (Choose a creature with the least toughness among creatures you control and put a +1/+1 counter on it.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "ControlledPermanents",
+                                "filter": "creature"
+                            },
+                            "storeAs": "bolsterCreatures"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "bolsterCreatures",
+                            "collectionFilter": "LeastToughness",
+                            "storeMatching": "bolsterLeastToughness"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "bolsterLeastToughness",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "bolstered",
+                            "prompt": "Bolster 1 — choose a creature with the least toughness",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "AddCountersToCollection",
+                            "collectionName": "bolstered",
+                            "counterType": "PLUS_ONE_PLUS_ONE"
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "StateOr",
+                                "predicates": [
+                                    "IsAttacking",
+                                    "IsBlocking"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "artist": "Mike Sass",
+        "flavorText": "\"My dragonlord is immortal. Most dragons are not.\"\n—Kadri, Dromoka warrior",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/54fef763-7ee2-4341-9c67-546e4b6710b7.jpg?1783938617"
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -2356,6 +2705,117 @@
     ]
 }
 
+// Gleam of Authority
+{
+    "name": "Gleam of Authority",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +1/+1 for each +1/+1 counter on other creatures you control.\nEnchanted creature has vigilance and \"{W}, {T}: Bolster 1.\" (To bolster 1, choose a creature with the least toughness among creatures you control and put a +1/+1 counter on it.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "creature",
+                    "aggregation": "SUM",
+                    "excludeSelf": true,
+                    "counterType": "PLUS_ONE_PLUS_ONE"
+                },
+                "toughnessBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "creature",
+                    "aggregation": "SUM",
+                    "excludeSelf": true,
+                    "counterType": "PLUS_ONE_PLUS_ONE"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE"
+            },
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Gleam of Authority:1",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{W}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "ControlledPermanents",
+                                    "filter": "creature"
+                                },
+                                "storeAs": "bolsterCreatures"
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "bolsterCreatures",
+                                "collectionFilter": "LeastToughness",
+                                "storeMatching": "bolsterLeastToughness"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "bolsterLeastToughness",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "bolstered",
+                                "prompt": "Bolster 1 — choose a creature with the least toughness",
+                                "useTargetingUI": true
+                            },
+                            {
+                                "type": "AddCountersToCollection",
+                                "collectionName": "bolstered",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "RARE",
+        "artist": "Jakub Kasper",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/96847438-eb09-4e3f-8ebf-f064b88f70c9.jpg?1783938617"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Glint
 {
     "name": "Glint",
@@ -2409,6 +2869,63 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Graceblade Artisan
+{
+    "name": "Graceblade Artisan",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Monk",
+    "oracleText": "This creature gets +2/+2 for each Aura attached to it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "AttachmentCount",
+                            "kind": "AURA"
+                        }
+                    },
+                    "multiplier": 2
+                },
+                "toughnessBonus": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "AttachmentCount",
+                            "kind": "AURA"
+                        }
+                    },
+                    "multiplier": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "rarity": "UNCOMMON",
+        "artist": "Magali Villeneuve",
+        "flavorText": "\"Can you catch a snowflake on the edge of your blade? Her sword has snagged an entire blizzard.\"\n—Zogye, Ojutai mystic",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9eedcf6c-5796-4843-b6b8-df78e11e72c2.jpg?1783938616"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -2754,6 +3271,78 @@
         "artist": "Zack Stella",
         "flavorText": "The trumpeters of Arashin are ever alert in their watch over the Great Aerie.",
         "imageUri": "https://cards.scryfall.io/normal/front/8/9/8987b2af-66d6-4271-a139-37e544cdec62.jpg?1783938615"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Hidden Dragonslayer
+{
+    "name": "Hidden Dragonslayer",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Lifelink\nMegamorph {2}{W} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)\nWhen this creature is turned face up, destroy target creature with power 4 or greater an opponent controls.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{2}{W}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hidden Dragonslayer:1",
+                "trigger": "TurnFaceUpEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature pow>=4 ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "RARE",
+        "artist": "Anastasia Ovchinnikova",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/87c760a8-e051-4584-ae1b-178164b84427.jpg?1783938615",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If a face-down creature with megamorph is turned face up some other way (for example, if you manifest a card with megamorph and then pay its mana cost to turn it face up), you won't put a +1/+1 counter on it."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -3311,6 +3900,158 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Misthoof Kirin
+{
+    "name": "Misthoof Kirin",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Kirin",
+    "oracleText": "Flying, vigilance\nMegamorph {1}{W} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{1}{W}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "25",
+        "artist": "Ryan Barger",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/ccef8595-96e8-4df3-aa5a-9fc8c5fa9a3d.jpg?1783938615"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Myth Realized
+{
+    "name": "Myth Realized",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you cast a noncreature spell, put a lore counter on this enchantment.\n{2}{W}: Put a lore counter on this enchantment.\n{W}: Until end of turn, this enchantment becomes a Monk Avatar creature in addition to its other types and gains \"This creature's power and toughness are each equal to the number of lore counters on it.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Myth Realized:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "LORE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Myth Realized:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "LORE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "{2}{W}: Put a lore counter on this enchantment."
+            },
+            {
+                "id": "Myth Realized:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{W}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "creatureTypes": [
+                        "Monk",
+                        "Avatar"
+                    ],
+                    "dynamicPower": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "LORE"
+                        }
+                    },
+                    "dynamicToughness": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "LORE"
+                        }
+                    }
+                },
+                "descriptionOverride": "{W}: Until end of turn, this enchantment becomes a Monk Avatar creature with power and toughness each equal to the number of lore counters on it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "RARE",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/37bd9f67-32a7-4022-bb53-5bfc671520c7.jpg?1783938617",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "Myth Realized can't attack the turn it enters the battlefield."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Activating the ability that turns Myth Realized into a creature while it's already a creature will override any effects that set its power or toughness to a specific value. Effects that modify power or toughness without directly setting them to a specific value will continue to apply."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -4328,6 +5069,54 @@
     ]
 }
 
+// Radiant Purge
+{
+    "name": "Radiant Purge",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target multicolored creature or multicolored enchantment.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Exile"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsCreature",
+                                    "IsEnchantment"
+                                ]
+                            },
+                            "IsMulticolored"
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "RARE",
+        "artist": "Igor Kieryluk",
+        "flavorText": "The Shifting Wastes are Dromoka's domain. She will not tolerate intruders.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c34d94f4-c504-4cf1-9bc7-d318fbee54d7.jpg?1783938614"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Rakshasa Gravecaller
 {
     "name": "Rakshasa Gravecaller",
@@ -4457,6 +5246,44 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Resupply
+{
+    "name": "Resupply",
+    "manaCost": "{5}{W}",
+    "typeLine": "Instant",
+    "oracleText": "You gain 6 life.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 6
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "artist": "Filip Burburan",
+        "flavorText": "\"If the scalelords are the brains of Dromoka's army, the supply caravans are its beating heart.\"\n—Baihir, Dromoka mage",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ecf47c52-4065-4b81-acdc-878e74767bba.jpg?1783938613"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -4702,6 +5529,115 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Sandcrafter Mage
+{
+    "name": "Sandcrafter Mage",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "When this creature enters, bolster 1. (Choose a creature with the least toughness among creatures you control and put a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sandcrafter Mage:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "ControlledPermanents",
+                                "filter": "creature"
+                            },
+                            "storeAs": "bolsterCreatures"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "bolsterCreatures",
+                            "collectionFilter": "LeastToughness",
+                            "storeMatching": "bolsterLeastToughness"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "bolsterLeastToughness",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "bolstered",
+                            "prompt": "Bolster 1 — choose a creature with the least toughness",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "AddCountersToCollection",
+                            "collectionName": "bolstered",
+                            "counterType": "PLUS_ONE_PLUS_ONE"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "artist": "Willian Murai",
+        "flavorText": "With heat, sand can form a delicate work of art; with pressure, an impenetrable bulwark.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/8998b4a5-d94b-45b3-b619-bd850e240ce0.jpg?1783938613"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Sandstorm Charger
+{
+    "name": "Sandstorm Charger",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Megamorph {4}{W} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{4}{W}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "34",
+        "artist": "Dave Kendall",
+        "flavorText": "\"May our foes choke upon its horns!\"\n—Urdnan, Dromoka warrior",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/9757be26-4480-43b7-a38a-8e4bde4e2d50.jpg?1783938612"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -4998,6 +5934,96 @@
     "colorIdentityOverride": [
         "RED",
         "GREEN"
+    ]
+}
+
+// Scale Blessing
+{
+    "name": "Scale Blessing",
+    "manaCost": "{3}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Bolster 1, then put a +1/+1 counter on each creature you control with a +1/+1 counter on it. (To bolster 1, choose a creature with the least toughness among creatures you control and put a +1/+1 counter on it.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "ControlledPermanents",
+                        "filter": "creature"
+                    },
+                    "storeAs": "bolsterCreatures"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "bolsterCreatures",
+                    "collectionFilter": "LeastToughness",
+                    "storeMatching": "bolsterLeastToughness"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "bolsterLeastToughness",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "bolstered",
+                    "prompt": "Bolster 1 — choose a creature with the least toughness",
+                    "useTargetingUI": true
+                },
+                {
+                    "type": "AddCountersToCollection",
+                    "collectionName": "bolstered",
+                    "counterType": "PLUS_ONE_PLUS_ONE"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "PLUS_ONE_PLUS_ONE"
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "flavorText": "\"Your bravery honors us all.\"\n—Dromoka, translated from Draconic",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a76515a0-31eb-4bba-bf07-1f9fde423e24.jpg?1783938613",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "You determine which creature to put counters on as the spell or ability that instructs you to bolster resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -5394,6 +6420,80 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Shieldhide Dragon
+{
+    "name": "Shieldhide Dragon",
+    "manaCost": "{5}{W}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying, lifelink\nMegamorph {5}{W}{W} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)\nWhen this creature is turned face up, put a +1/+1 counter on each other Dragon creature you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "LIFELINK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{5}{W}{W}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shieldhide Dragon:1",
+                "trigger": "TurnFaceUpEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature Dragon ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "When this creature is turned face up, put a +1/+1 counter on each other Dragon creature you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fcfd0af4-44e1-424b-8e55-87f84a42d40a.jpg?1783938612",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If a face-down creature with megamorph is turned face up some other way (for example, if you manifest a card with megamorph and then pay its mana cost to turn it face up), you won't put a +1/+1 counter on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

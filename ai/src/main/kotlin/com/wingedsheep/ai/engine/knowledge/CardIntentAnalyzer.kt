@@ -1265,6 +1265,7 @@ object CardIntentAnalyzer {
         addAll(revealUntilMillTags(root))
         addAll(handToBattlefieldTags(root))
         addAll(manifestTags(root))
+        addAll(ownBoardCounterTags(root))
         if (selectsOwnLibraryTop(readingLeaves(root))) add(IntentTag.CARD_SELECTION)
         if (EffectWalker.blinkMoves(root).isNotEmpty()) add(IntentTag.PROTECTION)
         // "Exile up to two target creatures you control, then return those cards to the battlefield"
@@ -1558,6 +1559,33 @@ object CardIntentAnalyzer {
             if (move.faceDown != null || to.zone != Zone.BATTLEFIELD || to.player != Player.You) emptySet()
             else setOf(if (landOnly) IntentTag.RAMP else IntentTag.FREE_SPELL)
         }
+    }
+
+    /**
+     * "Bolster 1" (Dromoka Captain, Sandcrafter Mage), "put a +1/+1 counter on a creature you
+     * control with the least toughness" — a gather of **our own** creatures, narrowed or picked,
+     * then a stat-raising counter on what is left: the lasting [IntentTag.PUMP] a targeted +1/+1
+     * counter on our creature reads as in [counterTags], spelled as a pipeline because the pick is
+     * made on resolution. Our own permanents only, and outside a loop over players, where "you"
+     * would be each player in turn.
+     */
+    private fun ownBoardCounterTags(root: Effect): Set<IntentTag> {
+        val leaves = readingLeaves(root)
+        val ours = HashSet<String>()
+        for (leaf in leaves) {
+            val source = (leaf as? GatherCardsEffect)?.source as? CardSource.ControlledPermanents ?: continue
+            if (source.player == Player.You && SynergyAxes.couldBeCreature(source.filter)) ours += leaf.storeAs
+        }
+        if (ours.isEmpty()) return emptySet()
+        do {
+            val before = ours.size
+            for (leaf in leaves) if (sourcesOf(leaf).any { it in ours }) ours += derivedCollections(leaf, ours)
+        } while (ours.size != before)
+        val pumps = leaves.any { leaf ->
+            leaf is AddCountersToCollectionEffect && leaf.collectionName in ours &&
+                leaf.counterType.ptDelta?.let { (power, toughness) -> power >= 0 && toughness >= 0 && power + toughness > 0 } == true
+        }
+        return if (pumps) setOf(IntentTag.PUMP) else emptySet()
     }
 
     /**
