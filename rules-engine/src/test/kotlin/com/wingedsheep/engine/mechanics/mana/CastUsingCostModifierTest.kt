@@ -95,14 +95,21 @@ class CastUsingCostModifierTest : FunSpec({
         val spell = driver.putCardInGraveyard(me, "Discount Flashback Draw")
         val creature = driver.putCardInHand(me, "Discount Dasher")
         repeat(2) { driver.putLandOnBattlefield(me, "Mountain") }
+        fun flashback() = driver.submit(
+            CastSpell(me, spell, useAlternativeCost = true, alternativeCostType = AlternativeCostType.FLASHBACK)
+        )
 
         driver.offer(me, spell, "CastWithFlashback").shouldNotBeNull().manaCostString shouldBe "{3}{R}"
+        // Two Mountains pay {1}{R} — a dash discount leaking onto flashback would make this cast legal.
+        flashback().outcome shouldNotBe Outcome.Done
         driver.putPermanentOnBattlefield(me, "Flashback Discounter")
         driver.offer(me, spell, "CastWithFlashback").shouldNotBeNull().manaCostString shouldBe "{1}{R}"
         driver.offer(me, creature, "CastWithDash").shouldNotBeNull().manaCostString shouldBe "{R}"
-        driver.submit(
-            CastSpell(me, spell, useAlternativeCost = true, alternativeCostType = AlternativeCostType.FLASHBACK)
-        ).outcome shouldBe Outcome.Done
+        flashback().outcome shouldBe Outcome.Done
+    }
+
+    test("every keyword the SDK accepts is one the engine prices, and no other") {
+        AlternativeCostType.entries.mapNotNull { it.castUsing }.toSet() shouldBe ModifySpellCost.CAST_USING_KEYWORDS
     }
 
     test("an opponent's dash discount doesn't reduce your dash cost") {
@@ -123,6 +130,12 @@ class CastUsingCostModifierTest : FunSpec({
         shouldThrow<IllegalArgumentException> {
             ModifySpellCost(
                 SpellCostTarget.YouCast(GameObjectFilter.Any), CostModification.ReduceGeneric(1), castUsing = Keyword.FLYING,
+            )
+        }
+        shouldThrow<IllegalArgumentException> {
+            ModifySpellCost(
+                SpellCostTarget.YouCast(GameObjectFilter.Any), CostModification.ReduceGeneric(1),
+                optionalLifePayment = 2, castUsing = Keyword.DASH,
             )
         }
     }

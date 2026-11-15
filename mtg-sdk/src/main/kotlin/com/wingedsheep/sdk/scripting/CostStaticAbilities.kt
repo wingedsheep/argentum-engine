@@ -53,6 +53,9 @@ data class ModifySpellCost(
         require(castUsing == null || target !is SpellCostTarget.FaceDownYouCast && target != SpellCostTarget.MorphActivation) {
             "castUsing scopes a spell's alternative cost; face-down and morph costs have none"
         }
+        require(castUsing == null || optionalLifePayment == null && modification !is CostModification.IncreaseLife) {
+            "castUsing scopes the mana of an alternative cost; life payments aren't priced per cast mode"
+        }
     }
 
     companion object {

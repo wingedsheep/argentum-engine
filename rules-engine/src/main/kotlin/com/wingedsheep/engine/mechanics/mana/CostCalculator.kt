@@ -1112,10 +1112,7 @@ class CostCalculator(
         spellId: EntityId,
         baseCost: ManaCost = cardDef.manaCost,
         announcedX: Int? = null,
-        castUsing: Keyword? = null,
-    ): ManaCost = priceByTargets(
-        state, cardDef, casterId, spellId, baseCost, withTable = false, announcedX = announcedX, castUsing = castUsing,
-    ).min
+    ): ManaCost = priceByTargets(state, cardDef, casterId, spellId, baseCost, withTable = false, announcedX = announcedX).min
 
     /** Whether any modifier that applies to [cardDef] cast by [casterId] is priced per target. */
     fun pricedPerTarget(state: GameState, cardDef: CardDefinition, casterId: EntityId): Boolean =
