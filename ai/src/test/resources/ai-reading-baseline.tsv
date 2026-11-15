@@ -514,6 +514,7 @@ Ana Disciple
 Anaba Bodyguard
 Anaba Shaman
 Anaconda
+Anafenza, Kin-Tree Spirit
 Anafenza, Unyielding Lineage
 Anafenza, the Foremost
 Analyze the Pollen
@@ -1161,8 +1162,9 @@ Aven Sentry
 Aven Skirmisher
 Aven Smokeweaver
 Aven Soulgazer	intent: LookAtFaceDownEffect; polarity: LookAtFaceDownEffect
+Aven Sunstriker
 Aven Surveyor
-Aven Tactician	intent: AddCountersToCollectionEffect; intent: Pipeline(ControlledPermanents→?)
+Aven Tactician
 Aven Trailblazer
 Aven Trooper
 Aven Warhawk
@@ -5040,6 +5042,7 @@ Dromad Purebred
 Dromar's Attendant
 Dromar's Charm
 Dromar, the Banisher
+Dromoka Captain
 Dromoka Dunecaster
 Dromoka Warrior
 Drooling Groodion
@@ -5276,6 +5279,7 @@ Echo of Eons
 Echo, Perceptive Prodigy
 Echocasting Symposium	polarity: CreateTokenCopyOfTargetEffect
 Echoes of Eternity
+Echoes of the Kin Tree
 Echoing Assault
 Echoing Courage	polarity: ForEachEffect
 Echoing Decay	polarity: ForEachEffect
@@ -5616,6 +5620,7 @@ Enduring Courage
 Enduring Curiosity
 Enduring Innocence
 Enduring Tenacity
+Enduring Victory
 Enduring Vitality
 Enemy of Enlightenment
 Energize
@@ -7363,6 +7368,7 @@ Glasspool Mimic
 Glasswing Grace
 Glassworks // Shattered Yard
 Glaze Fiend
+Gleam of Authority
 Gleaming Barrier
 Gleaming Bastion
 Gleaming Geardrake
@@ -7730,6 +7736,7 @@ Graaz, Unstoppable Juggernaut
 Grab the Prize
 Grab the Reins
 Grabby Giant
+Graceblade Artisan
 Graceful Adept
 Graceful Cat
 Graceful Takedown
@@ -8471,6 +8478,7 @@ Hexing Squelcher
 Hexplate Golem
 Hidden Cataract
 Hidden Courtyard
+Hidden Dragonslayer
 Hidden Grotto
 Hidden Herbalists
 Hidden Horror
@@ -11689,6 +11697,7 @@ Mistform Ultimus
 Mistform Wakecaster	intent: BecomeCreatureTypeEffect; intent: ChooseOptionEffect; intent: ForEach>SetCreatureSubtypesEffect; timing: BecomeCreatureTypeEffect; timing: ForEach>SetCreatureSubtypesEffect
 Mistform Wall	intent: BecomeCreatureTypeEffect; timing: BecomeCreatureTypeEffect
 Mistform Warchief	intent: BecomeCreatureTypeEffect; timing: BecomeCreatureTypeEffect
+Misthoof Kirin
 Mistmeadow Council
 Mistral Singer
 Mistrise Village	intent: MakeNextSpellUncounterableEffect
@@ -12066,6 +12075,7 @@ Mystical Dispute
 Mystical Teachings
 Mystical Tether
 Mystical Tutor
+Myth Realized
 Mythic Proportions
 Mythos of Brokkos
 Mythos of Illuna
@@ -14009,6 +14019,7 @@ Radiant Fountain
 Radiant Grace
 Radiant Grove
 Radiant Lotus	polarity: AddManaOfChoiceEffect
+Radiant Purge
 Radiant Scrollwielder	intent: GrantMayPlayFromExileEffect
 Radiant Strike
 Radiant's Judgment
@@ -14629,6 +14640,7 @@ Restorative Technique
 Restore with Empathy
 Restrain
 Restricted Office // Lecture Hall
+Resupply
 Resurgent Belief
 Resurrected Cultist
 Resurrection
@@ -15347,6 +15359,7 @@ Sandbar Serpent
 Sandbender Scavengers
 Sandbenders' Storm
 Sandblast
+Sandcrafter Mage
 Sandman's Quicksand
 Sandman, Shifting Scoundrel
 Sandskin	polarity: Aura>(nothing on the host)
@@ -15358,6 +15371,7 @@ Sandsteppe Outcast
 Sandstone Bridge
 Sandstone Warrior
 Sandstorm
+Sandstorm Charger
 Sandstorm Crasher
 Sandstorm Salvager
 Sandstorm Verge
@@ -15482,6 +15496,7 @@ Scalding Devil
 Scalding Tarn
 Scalding Viper
 Scaldkin
+Scale Blessing
 Scale of Chiss-Goria
 Scale the Heights
 Scaled Behemoth
@@ -16121,6 +16136,7 @@ Shield of the Ages
 Shield of the Realm
 Shield-Wall Sentinel
 Shielded Aether Thief
+Shieldhide Dragon
 Shieldmage Elder
 Shieldmate's Blessing
 Shields Up!
