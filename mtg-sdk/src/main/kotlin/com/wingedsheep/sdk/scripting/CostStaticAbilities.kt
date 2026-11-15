@@ -261,7 +261,7 @@ sealed interface SpellCostTarget {
 
     /**
      * Spells opponents of the source's controller cast that target one or more
-     * permanents matching [targetFilter] relative to the source.
+     * permanents matching [targetFilter] relative to the source, or the player [targetPlayer] names.
      *
      * The filter is a [GroupFilter] so callers can express:
      *   - `GroupFilter.source()` — "this permanent" (Terror of the Peaks, Sphinx of New Prahv, ...)
