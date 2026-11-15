@@ -7463,7 +7463,10 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   is keyed by owner (the zone's cards), on it by control; face-down cards (foretold, face-down exile)
   have no name and never match. Frostpyre Arcanist: `Patterns.Library.searchLibrary(filter =
   GameObjectFilter.InstantOrSorcery.sharingNameWithCardInYour(Zone.GRAVEYARD), destination = HAND, reveal = true)`. Same
-  evaluation contexts as the battlefield form.
+  evaluation contexts as the battlefield form. In a cast trigger's spell filter (`Triggers.<player>.casts(spell)`)
+  the evaluating player is the **caster**, so "your" reads as "their": Dragonlord Kolaghan's "whenever an
+  opponent casts a creature or planeswalker spell with the same name as a card in their graveyard" is
+  `Triggers.anOpponent.casts(GameObjectFilter.CreatureOrPlaneswalker.sharingNameWithCardInYour(Zone.GRAVEYARD))`.
 - `.notSharingCreatureTypeWithPermanentYouControl(filter)` —
   `CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl`: shares **no** (projected) creature
   type with any permanent the evaluating player controls matching `filter`. Negative analogue of

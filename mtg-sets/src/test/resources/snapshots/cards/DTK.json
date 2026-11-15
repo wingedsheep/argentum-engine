@@ -1794,6 +1794,92 @@
     ]
 }
 
+// Dragonlord Kolaghan
+{
+    "name": "Dragonlord Kolaghan",
+    "manaCost": "{4}{B}{R}",
+    "typeLine": "Legendary Creature — Elder Dragon",
+    "oracleText": "Flying, haste\nOther creatures you control have haste.\nWhenever an opponent casts a creature or planeswalker spell with the same name as a card in their graveyard, that player loses 10 life.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dragonlord Kolaghan:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsCreature",
+                                    "IsPlaneswalker"
+                                ]
+                            },
+                            {
+                                "type": "SharesNameWithYourCard",
+                                "filter": {},
+                                "zone": "Graveyard"
+                            }
+                        ]
+                    },
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 10
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "descriptionOverride": "Whenever an opponent casts a creature or planeswalker spell with the same name as a card in their graveyard, that player loses 10 life."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE",
+                "filter": {
+                    "baseFilter": "creature ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "218",
+        "rarity": "MYTHIC",
+        "artist": "Jaime Jones",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1cbf8933-32a1-4892-9bdc-89464ed9ce1b.jpg?1783938573",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "Casting a spell face down won’t cause Dragonlord Kolaghan’s last ability to trigger. A spell with no name can’t have the same name as any other card."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If an opponent casts a creature spell with delve and exiles all cards from their graveyard with the same name to help pay its cost, Dragonlord Kolaghan’s ability won’t trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Dragonlord's Servant
 {
     "name": "Dragonlord's Servant",
