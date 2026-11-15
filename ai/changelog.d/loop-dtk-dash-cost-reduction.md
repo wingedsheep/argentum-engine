@@ -1,1 +1,1 @@
-- #PR The AI now reads a cost discount scoped to one alternative cost (Warbringer's "dash costs you pay cost {2} less") as wanting the cards with that cost — its dash cards — instead of every spell, so it builds and drafts around it
+- #4688 The AI now reads a cost discount scoped to one alternative cost (Warbringer's "dash costs you pay cost {2} less") as wanting the cards with that cost — its dash cards — instead of every spell, so it builds and drafts around it
