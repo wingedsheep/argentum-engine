@@ -1806,6 +1806,8 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   If either fighter is no longer a creature on the battlefield when the fight happens, neither deals
   damage (CR 701.14b) and the excess variable is 0 — this covers a `Self` fighter ("it fights"), which
   no target re-check removes.
+  A fight that happens emits one `CreatureFoughtEvent` per fighter, which "whenever a creature fights"
+  triggers watch — see "Fight (CR 701.14)" under triggers.
 - `Effects.DividedDamage(total, minTargets, maxTargets, dynamicTotal?, among?, storeDamagedAs?)` — "N damage divided as you
   choose among target ..." The targets come from the ability's target requirement; pair with
   `TargetObject(filter = TargetFilter.Creature, count = count, minCount = minCount)` (Forked Lightning, Skirk Volcanist) or, for "any number of target",
@@ -10488,6 +10490,25 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
     replaced.
   - Doubles as the `appliesTo` pattern for `ModifyKeywordAction` ("if a creature you control would
     connive, instead …" — Leader, Super-Genius).
+
+### Fight (CR 701.14)
+
+- `Triggers.a(GameObjectFilter.Creature.youControl()).fights()` — "Whenever a creature you control
+  fights" (Foe-Razer Regent); `Triggers.self.fights()` — "whenever this creature fights";
+  `Triggers.another(filter).fights()` excludes the source. Backed by `EventPattern.FoughtEvent(filter)`;
+  emitted by the `Fight` executor as `CreatureFoughtEvent`, once **per fighter** — so two of your
+  creatures fighting each other trigger a "creature you control" watcher twice, and a creature that
+  fights itself (CR 701.14c) fires once. The fighter is the triggering entity
+  (`EffectTarget.TriggeringEntity` — "put two +1/+1 counters on **it**") and its controller the
+  triggering player.
+  - Fires whenever the fight happens, whatever damage it deals (a 0-power fighter, prevented damage).
+    Fires nothing when it doesn't (CR 701.14b — a fighter left the battlefield, stopped being a
+    creature, or is an illegal target), so a declined or fizzled "you may have it fight" never
+    triggers it.
+  - Detected before state-based actions, so a fighter killed by the fight still fought.
+  - Foe-Razer Regent's payoff is `Effects.CreateDelayedTrigger(step = Step.END, effect =
+    Effects.AddCounters(PLUS_ONE_PLUS_ONE, 2, EffectTarget.TriggeringEntity))` — the delayed trigger
+    binds the fighter's identity, so one that left the battlefield by the end step gets nothing.
 
 ### Library search (CR 701.23)
 

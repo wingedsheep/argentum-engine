@@ -1255,6 +1255,7 @@ Families:
 - `EventPattern.ExtraTurnEvent(player: Player)` — When a player would begin an extra turn (a turn created by a spell or ability, CR 500.7).
 - `EventPattern.ForagedEvent(player: Player)` — Whenever player forages — CR 701.59a, "Exile three cards from your graveyard or sacrifice a Food." The sibling of EvidenceCollectedEvent in every respect that matters, and modelled on it deliberately.
 - `EventPattern.ForetoldEvent(player: Player)` — Whenever player foretells a card — takes the foretell special action, paying {2} and exiling a card from their hand face down (CR 702.143a, 702.143c).
+- `EventPattern.FoughtEvent(filter: GameObjectFilter)` — Whenever a creature matching filter fights (CR 701.14) — "whenever a creature you control fights" (Foe-Razer Regent).
 - `EventPattern.GiftGivenEvent(player: Player)` — When a player gives a gift (Bloomburrow gift mechanic).
 - `EventPattern.InvestigatedEvent(player: Player, firstTimeEachTurn: Boolean)` — Whenever player investigates — CR 701.16a, "create a Clue token".
 - `EventPattern.LandPlayedEvent(fromZoneOtherThan: Zone?, player: Player, fromZone: Zone?)` — Whenever player plays a land (CR 305.1 — the special land-play action).

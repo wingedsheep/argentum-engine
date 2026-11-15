@@ -640,8 +640,11 @@ class CreateDelayedTriggerExecutor(
                 val resolvedId = boundObjectId(effect.target, context, state, bound, lateBoundTriggering)
                 if (resolvedId != null) effect.copy(target = EffectTarget.SpecificEntity(resolvedId)) else effect
             }
+            // "Put two +1/+1 counters on it at the beginning of the next end step" (Foe-Razer
+            // Regent): bound like the effects above, so a creature that left the battlefield (died,
+            // flickered) by the time the trigger fires gets nothing (CR 400.7).
             is AddCountersEffect -> {
-                val resolvedId = bakedId(effect.target, context)
+                val resolvedId = boundObjectId(effect.target, context, state, bound, lateBoundTriggering)
                 if (resolvedId != null) effect.copy(target = EffectTarget.SpecificEntity(resolvedId)) else effect
             }
             // Same as AddCountersEffect, plus: the count is context-derived, and the context that
@@ -649,7 +652,7 @@ class CreateDelayedTriggerExecutor(
             // "return it with one fewer revival counter" from its *dies* trigger — the last-known
             // counter snapshot lives on that trigger's context only — so snapshot the amount NOW.
             is AddDynamicCountersEffect -> {
-                val resolvedId = bakedId(effect.target, context)
+                val resolvedId = boundObjectId(effect.target, context, state, bound, lateBoundTriggering)
                 effect.copy(
                     target = if (resolvedId != null) EffectTarget.SpecificEntity(resolvedId) else effect.target,
                     amount = snapshotAmount(effect.amount, context, state)

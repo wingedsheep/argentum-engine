@@ -830,6 +830,18 @@ class TriggerMatcher(
                     PredicateContext(controllerId = controllerId, sourceId = sourceId)
                 )
             }
+            is EventPattern.FoughtEvent -> {
+                // Detection runs before state-based actions, so a fighter the fight's damage kills is
+                // still on the battlefield here and the filter reads the live object. One that a later
+                // step of the same resolution moved away ("fights, then …") is read off the battlefield.
+                if (event !is com.wingedsheep.engine.core.CreatureFoughtEvent) return false
+                if (binding == TriggerBinding.SELF && event.creatureId != sourceId) return false
+                if (binding == TriggerBinding.OTHER && event.creatureId == sourceId) return false
+                trigger.filter == GameObjectFilter.Any || predicateEvaluator.matches(
+                    state, state.projectedState, event.creatureId, trigger.filter,
+                    com.wingedsheep.engine.handlers.PredicateContext(controllerId = controllerId, sourceId = sourceId)
+                )
+            }
             is EventPattern.ExploitedEvent -> {
                 if (event !is com.wingedsheep.engine.core.ExploitedEvent) return false
                 // SELF: the exploiter is this permanent (a creature's own "when it exploits" payoff —

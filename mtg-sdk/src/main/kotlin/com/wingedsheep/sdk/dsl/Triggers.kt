@@ -630,6 +630,9 @@ class ObjectTriggerSubject internal constructor(
     /** "connives" (CR 701.50) — a real connive only, not the Teo looting shape. */
     fun connives(): TriggerSpec = spec(ConnivedEvent(filter = filter))
 
+    /** "fights" (CR 701.14) — once per creature that fights; the fighter is the triggering entity. */
+    fun fights(): TriggerSpec = spec(FoughtEvent(filter = filterOrAny))
+
     /**
      * The subject (an Aura or Equipment) "becomes attached to" a permanent matching [to] (CR 603.2f).
      * [controller] is who must control the attachment ("an Aura you control"). The host is

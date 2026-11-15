@@ -96,6 +96,7 @@ enum class TriggerCategory {
     DAY_NIGHT_CHANGED,
     EXPLORED,
     CONNIVED,
+    FOUGHT,
     EXPLOITED,
     TRAINED,
     EVOLVED,
@@ -343,6 +344,7 @@ class TriggerIndex(
                 is SdkGameEvent.DayNightChangedEvent -> DAY_NIGHT_CHANGED_LIST
                 is SdkGameEvent.ExploredEvent -> EXPLORED_LIST
                 is SdkGameEvent.ConnivedEvent -> CONNIVED_LIST
+                is SdkGameEvent.FoughtEvent -> FOUGHT_LIST
                 is SdkGameEvent.ExploitedEvent -> EXPLOITED_LIST
                 is SdkGameEvent.DieRolledEvent -> DIE_ROLLED_LIST
                 is SdkGameEvent.TrainedEvent -> TRAINED_LIST
@@ -456,6 +458,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.DayNightChangedEvent -> DAY_NIGHT_CHANGED_LIST
             is com.wingedsheep.engine.core.PermanentExploredEvent -> EXPLORED_LIST
             is com.wingedsheep.engine.core.PermanentConnivedEvent -> CONNIVED_LIST
+            is com.wingedsheep.engine.core.CreatureFoughtEvent -> FOUGHT_LIST
             is com.wingedsheep.engine.core.ExploitedEvent -> EXPLOITED_LIST
             is com.wingedsheep.engine.core.DieRolledEvent -> DIE_ROLLED_LIST
             is com.wingedsheep.engine.core.DiceRolledEvent -> DIE_ROLLED_LIST
@@ -624,6 +627,7 @@ class TriggerIndex(
         private val SCRIED_OR_SURVEILED_LIST = listOf(TriggerCategory.SCRIED, TriggerCategory.SURVEILED)
         private val EXPLORED_LIST = listOf(TriggerCategory.EXPLORED)
         private val CONNIVED_LIST = listOf(TriggerCategory.CONNIVED)
+        private val FOUGHT_LIST = listOf(TriggerCategory.FOUGHT)
         private val EXPLOITED_LIST = listOf(TriggerCategory.EXPLOITED)
         private val DIE_ROLLED_LIST = listOf(TriggerCategory.DIE_ROLLED)
         private val TRAINED_LIST = listOf(TriggerCategory.TRAINED)
