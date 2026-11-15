@@ -5927,33 +5927,64 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "ReflexiveTrigger",
-                    "action": {
-                        "type": "Composite",
-                        "effects": [
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "SourceInZone",
+                            "zones": [
+                                "Battlefield"
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "Sacrifice",
+                                    "filter": "creature"
+                                },
+                                "EmitExploitedEvent"
+                            ]
+                        },
+                        "reflexiveEffect": {
+                            "type": "PutOnLibraryPositionOfChoice",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "reflexiveTargetRequirements": [
                             {
-                                "type": "Sacrifice",
-                                "filter": "creature"
-                            },
-                            "EmitExploitedEvent"
-                        ]
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": "creature"
+                                },
+                                "id": "t0"
+                            }
+                        ],
+                        "descriptionOverride": "You may sacrifice a creature"
                     },
-                    "reflexiveEffect": {
-                        "type": "PutOnLibraryPositionOfChoice",
-                        "target": {
-                            "type": "BoundVariable",
-                            "name": "t0"
-                        }
+                    "otherwise": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "Sacrifice",
+                                    "filter": "creature"
+                                },
+                                "EmitExploitedEvent"
+                            ]
+                        },
+                        "reflexiveEffect": {
+                            "type": "Composite",
+                            "effects": []
+                        },
+                        "descriptionOverride": "You may sacrifice a creature"
                     },
-                    "reflexiveTargetRequirements": [
-                        {
-                            "type": "TargetObject",
-                            "filter": {
-                                "baseFilter": "creature"
-                            },
-                            "id": "t0"
-                        }
-                    ],
                     "descriptionOverride": "You may sacrifice a creature"
                 },
                 "descriptionOverride": "Exploit (When this creature enters, you may sacrifice a creature.)"
@@ -7793,50 +7824,81 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "ReflexiveTrigger",
-                    "action": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "Sacrifice",
-                                "filter": "creature"
-                            },
-                            "EmitExploitedEvent"
-                        ]
-                    },
-                    "reflexiveEffect": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "DrawCards",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 2
-                                },
-                                "target": {
-                                    "type": "BoundVariable",
-                                    "name": "t0"
-                                }
-                            },
-                            {
-                                "type": "LoseLife",
-                                "amount": {
-                                    "type": "Fixed",
-                                    "amount": 2
-                                },
-                                "target": {
-                                    "type": "BoundVariable",
-                                    "name": "t0"
-                                }
-                            }
-                        ]
-                    },
-                    "reflexiveTargetRequirements": [
-                        {
-                            "type": "TargetPlayer",
-                            "id": "t0"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "SourceInZone",
+                            "zones": [
+                                "Battlefield"
+                            ]
                         }
-                    ],
+                    },
+                    "then": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "Sacrifice",
+                                    "filter": "creature"
+                                },
+                                "EmitExploitedEvent"
+                            ]
+                        },
+                        "reflexiveEffect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    },
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                {
+                                    "type": "LoseLife",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    },
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            ]
+                        },
+                        "reflexiveTargetRequirements": [
+                            {
+                                "type": "TargetPlayer",
+                                "id": "t0"
+                            }
+                        ],
+                        "descriptionOverride": "You may sacrifice a creature"
+                    },
+                    "otherwise": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "Sacrifice",
+                                    "filter": "creature"
+                                },
+                                "EmitExploitedEvent"
+                            ]
+                        },
+                        "reflexiveEffect": {
+                            "type": "Composite",
+                            "effects": []
+                        },
+                        "descriptionOverride": "You may sacrifice a creature"
+                    },
                     "descriptionOverride": "You may sacrifice a creature"
                 },
                 "descriptionOverride": "Exploit (When this creature enters, you may sacrifice a creature.)"
@@ -8667,35 +8729,66 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "ReflexiveTrigger",
-                    "action": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "Sacrifice",
-                                "filter": "creature"
-                            },
-                            "EmitExploitedEvent"
-                        ]
-                    },
-                    "reflexiveEffect": {
-                        "type": "MoveToZone",
-                        "target": {
-                            "type": "BoundVariable",
-                            "name": "t0"
-                        },
-                        "destination": "Graveyard",
-                        "byDestruction": true
-                    },
-                    "reflexiveTargetRequirements": [
-                        {
-                            "type": "TargetObject",
-                            "filter": {
-                                "baseFilter": "planeswalker"
-                            },
-                            "id": "t0"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "SourceInZone",
+                            "zones": [
+                                "Battlefield"
+                            ]
                         }
-                    ],
+                    },
+                    "then": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "Sacrifice",
+                                    "filter": "creature"
+                                },
+                                "EmitExploitedEvent"
+                            ]
+                        },
+                        "reflexiveEffect": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        },
+                        "reflexiveTargetRequirements": [
+                            {
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": "planeswalker"
+                                },
+                                "id": "t0"
+                            }
+                        ],
+                        "descriptionOverride": "You may sacrifice a creature"
+                    },
+                    "otherwise": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "Sacrifice",
+                                    "filter": "creature"
+                                },
+                                "EmitExploitedEvent"
+                            ]
+                        },
+                        "reflexiveEffect": {
+                            "type": "Composite",
+                            "effects": []
+                        },
+                        "descriptionOverride": "You may sacrifice a creature"
+                    },
                     "descriptionOverride": "You may sacrifice a creature"
                 },
                 "descriptionOverride": "Exploit (When this creature enters, you may sacrifice a creature.)"
@@ -13321,57 +13414,88 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "ReflexiveTrigger",
-                    "action": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "Sacrifice",
-                                "filter": "creature"
-                            },
-                            "EmitExploitedEvent"
-                        ]
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "SourceInZone",
+                            "zones": [
+                                "Battlefield"
+                            ]
+                        }
                     },
-                    "reflexiveEffect": {
-                        "type": "ForEach",
-                        "space": {
-                            "type": "IterationSpace.Players",
-                            "players": "EachOpponent"
-                        },
-                        "body": {
+                    "then": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
                             "type": "Composite",
                             "effects": [
                                 {
-                                    "type": "GatherCards",
-                                    "source": {
-                                        "type": "FromZone",
-                                        "zone": "Hand"
-                                    },
-                                    "storeAs": "hand"
+                                    "type": "Sacrifice",
+                                    "filter": "creature"
                                 },
-                                {
-                                    "type": "SelectFromCollection",
-                                    "from": "hand",
-                                    "selection": {
-                                        "type": "ChooseExactly",
-                                        "count": {
-                                            "type": "Fixed",
-                                            "amount": 1
-                                        }
-                                    },
-                                    "storeSelected": "exiled",
-                                    "prompt": "Choose a card to exile"
-                                },
-                                {
-                                    "type": "MoveCollection",
-                                    "from": "exiled",
-                                    "destination": {
-                                        "type": "ToZone",
-                                        "zone": "Exile"
-                                    }
-                                }
+                                "EmitExploitedEvent"
                             ]
-                        }
+                        },
+                        "reflexiveEffect": {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachOpponent"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "exiled",
+                                        "prompt": "Choose a card to exile"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "exiled",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Exile"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "descriptionOverride": "You may sacrifice a creature"
+                    },
+                    "otherwise": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "Sacrifice",
+                                    "filter": "creature"
+                                },
+                                "EmitExploitedEvent"
+                            ]
+                        },
+                        "reflexiveEffect": {
+                            "type": "Composite",
+                            "effects": []
+                        },
+                        "descriptionOverride": "You may sacrifice a creature"
                     },
                     "descriptionOverride": "You may sacrifice a creature"
                 },
@@ -14716,39 +14840,70 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "ReflexiveTrigger",
-                    "action": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "Sacrifice",
-                                "filter": "creature"
-                            },
-                            "EmitExploitedEvent"
-                        ]
-                    },
-                    "reflexiveEffect": {
-                        "type": "Counter",
-                        "target": "CounterTarget.SpellOrAbility"
-                    },
-                    "reflexiveTargetRequirements": [
-                        {
-                            "type": "TargetObject",
-                            "filter": {
-                                "baseFilter": {
-                                    "anyOf": [
-                                        {},
-                                        {
-                                            "cardPredicates": [
-                                                "IsActivatedOrTriggeredAbility"
-                                            ]
-                                        }
-                                    ]
-                                },
-                                "zone": "Stack"
-                            }
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "SourceInZone",
+                            "zones": [
+                                "Battlefield"
+                            ]
                         }
-                    ],
+                    },
+                    "then": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "Sacrifice",
+                                    "filter": "creature"
+                                },
+                                "EmitExploitedEvent"
+                            ]
+                        },
+                        "reflexiveEffect": {
+                            "type": "Counter",
+                            "target": "CounterTarget.SpellOrAbility"
+                        },
+                        "reflexiveTargetRequirements": [
+                            {
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": {
+                                        "anyOf": [
+                                            {},
+                                            {
+                                                "cardPredicates": [
+                                                    "IsActivatedOrTriggeredAbility"
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    "zone": "Stack"
+                                }
+                            }
+                        ],
+                        "descriptionOverride": "You may sacrifice a creature"
+                    },
+                    "otherwise": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "Sacrifice",
+                                    "filter": "creature"
+                                },
+                                "EmitExploitedEvent"
+                            ]
+                        },
+                        "reflexiveEffect": {
+                            "type": "Composite",
+                            "effects": []
+                        },
+                        "descriptionOverride": "You may sacrifice a creature"
+                    },
                     "descriptionOverride": "You may sacrifice a creature"
                 },
                 "descriptionOverride": "Exploit (When this creature enters, you may sacrifice a creature.)"
@@ -15899,35 +16054,66 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "ReflexiveTrigger",
-                    "action": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "Sacrifice",
-                                "filter": "creature"
-                            },
-                            "EmitExploitedEvent"
-                        ]
-                    },
-                    "reflexiveEffect": {
-                        "type": "MoveToZone",
-                        "target": {
-                            "type": "BoundVariable",
-                            "name": "t0"
-                        },
-                        "destination": "Hand"
-                    },
-                    "reflexiveTargetRequirements": [
-                        {
-                            "type": "TargetObject",
-                            "filter": {
-                                "baseFilter": "instant|sorcery own:you",
-                                "zone": "Graveyard"
-                            },
-                            "id": "t0"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "SourceInZone",
+                            "zones": [
+                                "Battlefield"
+                            ]
                         }
-                    ],
+                    },
+                    "then": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "Sacrifice",
+                                    "filter": "creature"
+                                },
+                                "EmitExploitedEvent"
+                            ]
+                        },
+                        "reflexiveEffect": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Hand"
+                        },
+                        "reflexiveTargetRequirements": [
+                            {
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": "instant|sorcery own:you",
+                                    "zone": "Graveyard"
+                                },
+                                "id": "t0"
+                            }
+                        ],
+                        "descriptionOverride": "You may sacrifice a creature"
+                    },
+                    "otherwise": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "Sacrifice",
+                                    "filter": "creature"
+                                },
+                                "EmitExploitedEvent"
+                            ]
+                        },
+                        "reflexiveEffect": {
+                            "type": "Composite",
+                            "effects": []
+                        },
+                        "descriptionOverride": "You may sacrifice a creature"
+                    },
                     "descriptionOverride": "You may sacrifice a creature"
                 },
                 "descriptionOverride": "Exploit (When this creature enters, you may sacrifice a creature.)"
@@ -16215,24 +16401,55 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "ReflexiveTrigger",
-                    "action": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "Sacrifice",
-                                "filter": "creature"
-                            },
-                            "EmitExploitedEvent"
-                        ]
-                    },
-                    "reflexiveEffect": {
-                        "type": "ForceSacrifice",
-                        "filter": "creature",
-                        "target": {
-                            "type": "PlayerRef",
-                            "player": "EachOpponent"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "SourceInZone",
+                            "zones": [
+                                "Battlefield"
+                            ]
                         }
+                    },
+                    "then": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "Sacrifice",
+                                    "filter": "creature"
+                                },
+                                "EmitExploitedEvent"
+                            ]
+                        },
+                        "reflexiveEffect": {
+                            "type": "ForceSacrifice",
+                            "filter": "creature",
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        "descriptionOverride": "You may sacrifice a creature"
+                    },
+                    "otherwise": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "Sacrifice",
+                                    "filter": "creature"
+                                },
+                                "EmitExploitedEvent"
+                            ]
+                        },
+                        "reflexiveEffect": {
+                            "type": "Composite",
+                            "effects": []
+                        },
+                        "descriptionOverride": "You may sacrifice a creature"
                     },
                     "descriptionOverride": "You may sacrifice a creature"
                 },
@@ -18591,32 +18808,63 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "ReflexiveTrigger",
-                    "action": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "Sacrifice",
-                                "filter": "creature"
-                            },
-                            "EmitExploitedEvent"
-                        ]
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "SourceInZone",
+                            "zones": [
+                                "Battlefield"
+                            ]
+                        }
                     },
-                    "reflexiveEffect": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "Scry",
-                                "count": 1
-                            },
-                            {
-                                "type": "DrawCards",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
+                    "then": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "Sacrifice",
+                                    "filter": "creature"
+                                },
+                                "EmitExploitedEvent"
+                            ]
+                        },
+                        "reflexiveEffect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "Scry",
+                                    "count": 1
+                                },
+                                {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
                                 }
-                            }
-                        ]
+                            ]
+                        },
+                        "descriptionOverride": "You may sacrifice a creature"
+                    },
+                    "otherwise": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "Sacrifice",
+                                    "filter": "creature"
+                                },
+                                "EmitExploitedEvent"
+                            ]
+                        },
+                        "reflexiveEffect": {
+                            "type": "Composite",
+                            "effects": []
+                        },
+                        "descriptionOverride": "You may sacrifice a creature"
                     },
                     "descriptionOverride": "You may sacrifice a creature"
                 },

@@ -10346,55 +10346,86 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "ReflexiveTrigger",
-                    "action": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "Sacrifice",
-                                "filter": "creature"
-                            },
-                            "EmitExploitedEvent"
-                        ]
-                    },
-                    "reflexiveEffect": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "GainControl",
-                                "target": {
-                                    "type": "BoundVariable",
-                                    "name": "t0"
-                                },
-                                "duration": "EndOfTurn"
-                            },
-                            {
-                                "type": "TapUntap",
-                                "target": {
-                                    "type": "BoundVariable",
-                                    "name": "t0"
-                                },
-                                "tap": false
-                            },
-                            {
-                                "type": "GrantKeyword",
-                                "keyword": "HASTE",
-                                "target": {
-                                    "type": "BoundVariable",
-                                    "name": "t0"
-                                }
-                            }
-                        ]
-                    },
-                    "reflexiveTargetRequirements": [
-                        {
-                            "type": "TargetObject",
-                            "filter": {
-                                "baseFilter": "creature|artifact"
-                            },
-                            "id": "t0"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "SourceInZone",
+                            "zones": [
+                                "Battlefield"
+                            ]
                         }
-                    ],
+                    },
+                    "then": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "Sacrifice",
+                                    "filter": "creature"
+                                },
+                                "EmitExploitedEvent"
+                            ]
+                        },
+                        "reflexiveEffect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GainControl",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "duration": "EndOfTurn"
+                                },
+                                {
+                                    "type": "TapUntap",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "tap": false
+                                },
+                                {
+                                    "type": "GrantKeyword",
+                                    "keyword": "HASTE",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            ]
+                        },
+                        "reflexiveTargetRequirements": [
+                            {
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": "creature|artifact"
+                                },
+                                "id": "t0"
+                            }
+                        ],
+                        "descriptionOverride": "You may sacrifice a creature"
+                    },
+                    "otherwise": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "Sacrifice",
+                                    "filter": "creature"
+                                },
+                                "EmitExploitedEvent"
+                            ]
+                        },
+                        "reflexiveEffect": {
+                            "type": "Composite",
+                            "effects": []
+                        },
+                        "descriptionOverride": "You may sacrifice a creature"
+                    },
                     "descriptionOverride": "You may sacrifice a creature"
                 },
                 "descriptionOverride": "Exploit (When this creature enters, you may sacrifice a creature.)"
