@@ -1,0 +1,146 @@
+{
+  "Abzan Advantage": [
+    "removal",
+    "enchantment-removal"
+  ],
+  "Archfiend of Depravity": [
+    "removal",
+    "creature-removal"
+  ],
+  "Aven Surveyor": [
+    "removal",
+    "creature-removal"
+  ],
+  "Bathe in Dragonfire": [
+    "removal",
+    "creature-removal"
+  ],
+  "Channel Harm": [
+    "removal",
+    "creature-removal"
+  ],
+  "Collateral Damage": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Crux of Fate": [
+    "removal",
+    "creature-removal"
+  ],
+  "Cunning Strike": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Defiant Ogre": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Destructor Dragon": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Douse in Gloom": [
+    "removal",
+    "creature-removal"
+  ],
+  "Friendly Fire": [
+    "removal",
+    "creature-removal"
+  ],
+  "Frontier Siege": [
+    "removal",
+    "creature-removal"
+  ],
+  "Goblin Boom Keg": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Grim Contest": [
+    "removal",
+    "creature-removal"
+  ],
+  "Harsh Sustenance": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Hooded Assassin": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hunt the Weak": [
+    "removal",
+    "creature-removal"
+  ],
+  "Merciless Executioner": [
+    "removal",
+    "creature-removal"
+  ],
+  "Noxious Dragon": [
+    "removal",
+    "creature-removal"
+  ],
+  "Orc Sureshot": [
+    "removal",
+    "creature-removal"
+  ],
+  "Pyrotechnics": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Reach of Shadows": [
+    "removal",
+    "creature-removal"
+  ],
+  "Reality Shift": [
+    "removal",
+    "creature-removal"
+  ],
+  "Return to the Earth": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Rite of Undoing": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Sandblast": [
+    "removal",
+    "creature-removal"
+  ],
+  "Supplant Form": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ugin, the Spirit Dragon": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Valorous Stance": [
+    "removal",
+    "creature-removal"
+  ],
+  "Whisk Away": [
+    "removal",
+    "creature-removal"
+  ],
+  "Wild Slash": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ]
+}
