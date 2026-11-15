@@ -263,7 +263,8 @@ data class SpellOnStackComponent(
      * each modified creature you controlled as you cast this spell") or, for a 1/0 condition
      * capture, the `Conditions.CapturedAtCast(flag)` facade (Steer Clear's "if you
      * controlled a Mount as you cast this spell") even after the board has changed. Declared on the
-     * card via the `captureAtCast` DSL.
+     * card via the `captureAtCast` DSL. A copy (CR 707.10) wasn't cast, so it keeps only the
+     * captures an announced division's pool reads (`AnnouncedDivision.poolCaptures`).
      */
     val castTimeValues: Map<String, Int> = emptyMap()
 ) : Component

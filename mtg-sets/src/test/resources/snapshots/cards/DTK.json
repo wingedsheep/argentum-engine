@@ -1253,6 +1253,135 @@
     ]
 }
 
+// Draconic Roar
+{
+    "name": "Draconic Roar",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, you may reveal a Dragon card from your hand.\nDraconic Roar deals 3 damage to target creature. If you revealed a Dragon card or controlled a Dragon as you cast this spell, Draconic Roar deals 3 damage to that creature's controller.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomRevealFromHand",
+                    "filter": "Dragon"
+                }
+            },
+            "displayPrefix": "Additional cost",
+            "declaredSlot": "ADDITIONAL_COST_PAID"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Any",
+                            "conditions": [
+                                {
+                                    "type": "CastChoiceMade",
+                                    "slot": "ADDITIONAL_COST_PAID"
+                                },
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "CapturedAtCast",
+                                        "captureName": "controlledDragon"
+                                    },
+                                    "operator": "GT",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": "TargetController"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "castTimeCaptures": [
+            {
+                "captureName": "controlledDragon",
+                "value": {
+                    "type": "Conditional",
+                    "condition": {
+                        "type": "Exists",
+                        "player": "You",
+                        "zone": "Battlefield",
+                        "filter": "permanent Dragon"
+                    },
+                    "ifTrue": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "ifFalse": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "rarity": "UNCOMMON",
+        "artist": "Kev Walker",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6cf5591c-46e3-4904-8b4e-4f1f84d3118f.jpg?1783938591",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If one of these spells is copied, the controller of the copy will get the “Dragon bonus” only if a Dragon card was revealed as an additional cost. The copy wasn’t cast, so whether you controlled a Dragon won’t matter."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "You can’t reveal more than one Dragon card to multiply the bonus. There is also no additional benefit for both revealing a Dragon card as an additional cost and controlling a Dragon as you cast the spell."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If you don’t reveal a Dragon card from your hand, you must control a Dragon as you are finished casting the spell to get the bonus. For example, if you lose control of your only Dragon while casting the spell (because, for example, you sacrificed it to activate a mana ability), you won’t get the bonus."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Dragon Tempest
 {
     "name": "Dragon Tempest",
@@ -5398,6 +5527,120 @@
     "colorIdentityOverride": [
         "BLUE",
         "BLACK"
+    ]
+}
+
+// Silumgar's Scorn
+{
+    "name": "Silumgar's Scorn",
+    "manaCost": "{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, you may reveal a Dragon card from your hand.\nCounter target spell unless its controller pays {1}. If you revealed a Dragon card or controlled a Dragon as you cast this spell, counter that spell instead.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomRevealFromHand",
+                    "filter": "Dragon"
+                }
+            },
+            "displayPrefix": "Additional cost",
+            "declaredSlot": "ADDITIONAL_COST_PAID"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "CastChoiceMade",
+                            "slot": "ADDITIONAL_COST_PAID"
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "CapturedAtCast",
+                                "captureName": "controlledDragon"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 0
+                            }
+                        }
+                    ]
+                }
+            },
+            "then": "Counter",
+            "otherwise": {
+                "type": "Counter",
+                "condition": {
+                    "type": "CounterCondition.UnlessPaysMana",
+                    "cost": "{1}"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ],
+        "castTimeCaptures": [
+            {
+                "captureName": "controlledDragon",
+                "value": {
+                    "type": "Conditional",
+                    "condition": {
+                        "type": "Exists",
+                        "player": "You",
+                        "zone": "Battlefield",
+                        "filter": "permanent Dragon"
+                    },
+                    "ifTrue": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "ifFalse": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Yee",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/077bee72-62f6-4d90-8557-ff9cac42ec9a.jpg?1783938602",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If one of these spells is copied, the controller of the copy will get the “Dragon bonus” only if a Dragon card was revealed as an additional cost. The copy wasn’t cast, so whether you controlled a Dragon won’t matter."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "You can’t reveal more than one Dragon card to multiply the bonus. There is also no additional benefit for both revealing a Dragon card as an additional cost and controlling a Dragon as you cast the spell."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If you don’t reveal a Dragon card from your hand, you must control a Dragon as you are finished casting the spell to get the bonus. For example, if you lose control of your only Dragon while casting the spell (because, for example, you sacrificed it to activate a mana ability), you won’t get the bonus."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
