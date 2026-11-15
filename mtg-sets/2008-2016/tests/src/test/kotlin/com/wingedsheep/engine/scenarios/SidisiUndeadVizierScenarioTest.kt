@@ -22,7 +22,8 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  * your hand, then shuffle."
  *
  * Pins that exploiting offers the whole library and the chosen card lands in hand, that she can
- * exploit herself and still tutor, and that the tutor is optional ("you may") even after the sacrifice.
+ * exploit herself and still tutor, that the tutor is optional ("you may") even after the sacrifice,
+ * and that she gives no tutor if she left the battlefield before her exploit ability resolved.
  */
 class SidisiUndeadVizierScenarioTest : FunSpec({
 
@@ -114,6 +115,31 @@ class SidisiUndeadVizierScenarioTest : FunSpec({
         driver.submitYesNo(me, false)
 
         driver.pendingDecision shouldBe null
+        driver.getGraveyard(me) shouldContain fodder
+        driver.getHand(me).size shouldBe handBefore
+        driver.state.getLibrary(me).size shouldBe librarySizeBefore
+    }
+
+    test("Sidisi removed in response to her exploit gives no tutor, though the sacrifice still happens") {
+        val driver = createDriver()
+        val me = driver.activePlayer!!
+        val fodder = driver.putCreatureOnBattlefield(me, "Grizzly Bears")
+        val sidisi = driver.putCardInHand(me, "Sidisi, Undead Vizier")
+        driver.giveMana(me, Color.BLACK, 2)
+        driver.giveColorlessMana(me, 3)
+        driver.castSpell(me, sidisi).outcome shouldBe Outcome.Done
+        driver.bothPass() // resolve the creature spell -> exploit trigger goes on the stack
+        driver.moveToGraveyard(sidisi) // she dies in response
+        driver.bothPass() // resolve the exploit trigger without her
+
+        val librarySizeBefore = driver.state.getLibrary(me).size
+        val handBefore = driver.getHand(me).size
+
+        driver.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
+        driver.submitYesNo(me, true) // Grizzly Bears is the only creature -> auto-sacrificed
+        repeat(3) { if (driver.state.stack.isNotEmpty()) driver.bothPass() }
+
+        driver.pendingDecision shouldBe null // no "you may search" prompt
         driver.getGraveyard(me) shouldContain fodder
         driver.getHand(me).size shouldBe handBefore
         driver.state.getLibrary(me).size shouldBe librarySizeBefore

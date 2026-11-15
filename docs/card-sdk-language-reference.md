@@ -15848,6 +15848,11 @@ MacCready, Lamplight Mayor (granted).
     watcher would rely on the sacrifice look-back below.
   - `onExploitTargets` supplies `reflexiveTargetRequirements` for a **targeted** payoff (Fell Stinger's "target player
     draws two cards and loses 2 life"), chosen *after* the sacrifice resolves.
+  - **Exploiter must still be on the battlefield.** With a payoff, the whole reflexive is wrapped in
+    `Effects.If(SourceInZone(setOf(Zone.BATTLEFIELD)), then = <reflexive with payoff>, otherwise = <same reflexive, no-op payoff>)`.
+    The test runs as the exploit ability *starts* resolving, before the sacrifice, so an exploiter that sacrifices itself
+    still pays off; one that left in response (bounced, killed) gives no bonus even though the controller may still
+    sacrifice a creature and the `ExploitedEvent` still fires (DTK release-notes ruling on every exploit card).
   Examples: Stitched Assistant `exploit(onExploit = scry(1) then draw(1))` (untargeted self-payoff); Fell Stinger
   `exploit(onExploit = <target player draws 2, loses 2>, onExploitTargets = listOf(Targets.Player))`; Skull Skaab
   `exploit()` (no self-payoff) **plus** a hand-written broadcast watcher `triggeredAbility { trigger =
