@@ -6227,6 +6227,20 @@ object Effects {
     ): Effect = com.wingedsheep.sdk.scripting.effects.MakeNextSpellUncounterableEffect(spellFilter)
 
     /**
+     * The next spell matching [spellFilter] you cast (from [fromZones], `null` = anywhere) this turn
+     * goes to [destination] instead of your graveyard as it resolves (one-shot, no stack). Soulfire
+     * Grand Master: `GrantNextSpellResolveDestination(AfterResolveDestination.HAND, InstantOrSorcery,
+     * fromZones = setOf(Zone.HAND))`.
+     */
+    fun GrantNextSpellResolveDestination(
+        destination: AfterResolveDestination,
+        spellFilter: GameObjectFilter = GameObjectFilter.InstantOrSorcery,
+        fromZones: Set<Zone>? = null
+    ): Effect = com.wingedsheep.sdk.scripting.effects.GrantNextSpellResolveDestinationEffect(
+        destination, spellFilter, fromZones
+    )
+
+    /**
      * The next spell matching [spellFilter] you cast this turn can be cast without paying its mana
      * cost (World War Hulk I). One-shot: the next matching spell you cast consumes the rider,
      * whether or not you take the free cast — "the next" names a spell, not a discount. Unlike the

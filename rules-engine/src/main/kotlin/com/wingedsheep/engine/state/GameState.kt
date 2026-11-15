@@ -299,6 +299,13 @@ data class GameState(
     val pendingFreeCastSpells: List<PendingFreeCastSpell> = emptyList(),
 
     /**
+     * Pending "the next time you cast a matching spell this turn, put that card into your hand
+     * instead of into your graveyard as it resolves" riders (Soulfire Grand Master). Consumed by the
+     * next matching cast, which is stamped with an `AfterResolveDestinationComponent`.
+     */
+    val pendingNextSpellResolveDestinations: List<PendingNextSpellResolveDestination> = emptyList(),
+
+    /**
      * Pending "for one spell this turn, you may spend mana as though it were mana of any type"
      * riders (North Star). Read as a may-spend-any-type grant by the cast enumerators and spent by
      * [com.wingedsheep.engine.handlers.actions.spell.CastCostPayer] on the first matching spell

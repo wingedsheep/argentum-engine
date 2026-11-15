@@ -276,7 +276,8 @@ data class PlayWithFixedAlternativeManaCostComponent(
  *
  * @param destination Where the card goes instead of its owner's graveyard. Defaults to
  *   [AfterResolveDestination.EXILE] — every rider that predates the enum is an "exile it
- *   instead" one, and the extras below are all exile-only riders.
+ *   instead" one, and the extras below are all exile-only riders. `BOTTOM_OF_LIBRARY` is Kylox's
+ *   Voltstrider's cast-this-way rider, `HAND` Soulfire Grand Master's next-spell rider.
  * @param withCounters Counter types to add to the card after it is exiled (one of each).
  *   Used by Goliath Daydreamer's "exile that card with a dream counter on it" wording.
  * @param linkedSourceId When set, the spell is added to this permanent's
@@ -310,10 +311,11 @@ data class AfterResolveDestinationComponent(
     val exiledRider: com.wingedsheep.sdk.scripting.effects.ExiledSpellRider? = null,
     val everyStackExit: Boolean = false
 ) : Component {
-    /** The zone [destination] names — the two members differ in placement, not only in zone. */
+    /** The zone [destination] names — the members differ in placement, not only in zone. */
     val zone: com.wingedsheep.sdk.core.Zone
         get() = when (destination) {
             AfterResolveDestination.EXILE -> com.wingedsheep.sdk.core.Zone.EXILE
             AfterResolveDestination.BOTTOM_OF_LIBRARY -> com.wingedsheep.sdk.core.Zone.LIBRARY
+            AfterResolveDestination.HAND -> com.wingedsheep.sdk.core.Zone.HAND
         }
 }

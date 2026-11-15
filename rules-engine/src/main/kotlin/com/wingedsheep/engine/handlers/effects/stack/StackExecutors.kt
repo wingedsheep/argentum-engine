@@ -35,6 +35,7 @@ class StackExecutors(
         CopyNextSpellCastExecutor(),
         CopyEachSpellCastExecutor(),
         MakeNextSpellUncounterableExecutor(),
+        GrantNextSpellResolveDestinationExecutor(),
         GrantNextSpellAffinityExecutor(),
         GrantNextSpellKeywordExecutor(),
         GrantFreeCastThisTurnExecutor(),

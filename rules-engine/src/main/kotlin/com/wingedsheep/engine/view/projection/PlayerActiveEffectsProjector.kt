@@ -803,6 +803,31 @@ internal class PlayerActiveEffectsProjector(
             )
         }
 
+        // Pending "the next time you cast … this turn, put that card into your hand instead" riders
+        // (Soulfire Grand Master) — the player sees the next matching spell will come back.
+        val pendingDestinations = state.pendingNextSpellResolveDestinations.filter { it.controllerId == playerId }
+        pendingDestinations.groupBy { it.destination }.forEach { (destination, riders) ->
+            val sourceName = riders.map { it.sourceName }.distinct().joinToString(", ")
+            val filterDesc = riders.map { it.spellFilter.description }.distinct().joinToString("/")
+            val fromDesc = riders.mapNotNull { it.fromZones }.flatten().distinct()
+                .takeIf { it.isNotEmpty() && riders.all { r -> r.fromZones != null } }
+                ?.let { zones -> " from your " + zones.joinToString(" or ") { it.name.lowercase() } } ?: ""
+            val (name, whereTo) = when (destination) {
+                com.wingedsheep.sdk.scripting.effects.AfterResolveDestination.HAND -> "Returns to Hand" to "returns to your hand"
+                com.wingedsheep.sdk.scripting.effects.AfterResolveDestination.EXILE -> "Exiled on Resolve" to "is exiled"
+                com.wingedsheep.sdk.scripting.effects.AfterResolveDestination.BOTTOM_OF_LIBRARY ->
+                    "Bottom of Library" to "goes to the bottom of your library"
+            }
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "pending_next_spell_destination_${destination.name.lowercase()}",
+                    name = name,
+                    description = "Your next $filterDesc spell cast$fromDesc this turn $whereTo as it resolves ($sourceName)",
+                    icon = "granted-ability"
+                )
+            )
+        }
+
         // Check for pending "next spell has improvise / convoke / delve" riders (Archway of
         // Innovation) — one badge per keyword, so the player sees the grant is still waiting.
         state.pendingNextSpellKeywords

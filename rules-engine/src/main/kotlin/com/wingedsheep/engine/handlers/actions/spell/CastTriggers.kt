@@ -12,6 +12,7 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.mana.GrantedKeywordResolver
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.identity.AfterResolveDestinationComponent
 import com.wingedsheep.engine.state.components.identity.CantBeCounteredComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.CommanderRegistryComponent
@@ -60,7 +61,8 @@ internal class CastSpellOnStack(
  * - riders carried by the mana that paid (Cavern of Souls, Path of Ancestry, Pyromancer's Goggles, Scaled Nurturer,
  *   Carnelian Orb of Dragonkind);
  * - "the next spell you cast" riders — copies (Howl of the Horde), can't-be-countered (Mistrise
- *   Village), affinity (Don & Raph), free cast (World War Hulk I).
+ *   Village), affinity (Don & Raph), free cast (World War Hulk I), resolution destination
+ *   (Soulfire Grand Master).
  */
 internal class CastTriggers(
     private val predicateEvaluator: PredicateEvaluator,
@@ -350,6 +352,7 @@ internal class CastTriggers(
         newState = consumeAffinityRiders(newState, spell)
         newState = consumeKeywordRiders(newState, spell)
         newState = consumeFreeCastRiders(newState, spell)
+        newState = consumeResolveDestinationRiders(newState, spell)
         newState = consumeNextSpellCostModifiers(newState, spell)
         return ExecutionResult.success(newState, events + copyEvents)
     }
@@ -425,6 +428,33 @@ internal class CastTriggers(
         return state
             .copy(pendingUncounterableSpells = state.pendingUncounterableSpells.filter { it !in matching })
             .updateEntity(spell.action.cardId) { c -> c.with(CantBeCounteredComponent) }
+    }
+
+    /**
+     * "The next time you cast an instant or sorcery spell from your hand this turn, put that card
+     * into your hand instead of into your graveyard as it resolves" riders (Soulfire Grand Master).
+     * The first matching cast consumes every matching entry — several activations all apply to that
+     * one spell — and stamps it with a resolution-only destination: a countered or fizzled spell
+     * still goes to the graveyard, and the rider is spent anyway (Soulfire ruling). "Your graveyard":
+     * a spell cast by someone other than its owner is not redirected. A destination the spell
+     * already carries (a cast-this-way rider that also covers counter and fizzle) is kept.
+     */
+    private fun consumeResolveDestinationRiders(state: GameState, spell: CastSpellOnStack): GameState {
+        val matching = state.pendingNextSpellResolveDestinations.filter {
+            it.allowsCastFrom(spell.castFromZone) &&
+                spellMatchesRider(state, spell, it.controllerId, it.sourceId, it.spellFilter)
+        }
+        if (matching.isEmpty()) return state
+        val consumed = state.copy(
+            pendingNextSpellResolveDestinations = state.pendingNextSpellResolveDestinations.filter { it !in matching }
+        )
+        val cardId = spell.action.cardId
+        val container = consumed.getEntity(cardId) ?: return consumed
+        if (container.get<CardComponent>()?.ownerId != spell.action.playerId) return consumed
+        if (container.has<AfterResolveDestinationComponent>()) return consumed
+        return consumed.updateEntity(cardId) { c ->
+            c.with(AfterResolveDestinationComponent(destination = matching.first().destination, onlyIfResolved = true))
+        }
     }
 
     /**

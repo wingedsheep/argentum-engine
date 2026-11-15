@@ -1375,6 +1375,64 @@ data class MakeNextSpellUncounterableEffect(
 }
 
 /**
+ * The next spell its controller casts this turn matching [spellFilter] (from one of [fromZones])
+ * goes to [destination] instead of into its owner's graveyard **as it resolves**.
+ *
+ * Soulfire Grand Master: "The next time you cast an instant or sorcery spell from your hand this
+ * turn, put that card into your hand instead of into your graveyard as it resolves."
+ *
+ * This is not a triggered ability — nothing goes on the stack. It is the one-shot pending-rider
+ * shape of [MakeNextSpellUncounterableEffect]: the first matching cast consumes it and stamps that
+ * spell with the resolution destination, whether or not the spell then resolves. Its two
+ * neighbours don't take the axis: [MarkSpellExileOnResolveEffect] marks a spell that is *already*
+ * on the stack (and only ever exiles it), and [MakeNextSpellUncounterableEffect] names a single,
+ * different stamp.
+ *
+ * The destination replaces only the resolution move (Soulfire rulings):
+ *  - a spell that is countered or fizzles goes to its owner's graveyard, and the rider is still spent;
+ *  - a spell whose own instructions exile it ("Exile Temporal Trespass") was never headed for a
+ *    graveyard, so it isn't redirected;
+ *  - "your graveyard" — a matching spell you cast but don't own goes to its owner's graveyard.
+ *
+ * @property destination Where the card goes instead (Soulfire: [AfterResolveDestination.HAND]).
+ * @property spellFilter Which spell the rider waits for.
+ * @property fromZones The zones the spell must be cast from, or `null` for any zone. Same axis as
+ *   [GrantFreeCastThisTurnEffect.fromZones].
+ */
+@SerialName("GrantNextSpellResolveDestination")
+@Serializable
+data class GrantNextSpellResolveDestinationEffect(
+    val destination: AfterResolveDestination,
+    val spellFilter: GameObjectFilter = GameObjectFilter.InstantOrSorcery,
+    val fromZones: Set<Zone>? = null
+) : Effect {
+    init {
+        require(fromZones == null || fromZones.isNotEmpty()) { "fromZones must be null (any zone) or non-empty" }
+    }
+
+    override val description: String = buildString {
+        append("The next time you cast ")
+        append(
+            if (spellFilter == GameObjectFilter.Any) "a spell"
+            else "${spellFilter.indefiniteArticle} ${spellFilter.description} spell"
+        )
+        fromZones?.let { zones -> append(" from your " + zones.joinToString(" or ") { it.name.lowercase() }) }
+        append(" this turn, ")
+        append(
+            when (destination) {
+                AfterResolveDestination.HAND -> "put that card into your hand"
+                AfterResolveDestination.EXILE -> "exile that card"
+                AfterResolveDestination.BOTTOM_OF_LIBRARY -> "put that card on the bottom of your library"
+            }
+        )
+        append(" instead of into your graveyard as it resolves")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect =
+        copy(spellFilter = spellFilter.applyTextReplacement(replacer))
+}
+
+/**
  * Spells its controller casts this turn matching [spellFilter] can be cast without paying their
  * mana costs (CR 118.9 — "without paying its mana cost" is an alternative cost, so mandatory
  * additional costs still apply, and X is 0 per CR 107.3b because the free-cast action variant the

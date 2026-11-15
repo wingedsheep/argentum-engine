@@ -679,7 +679,9 @@ data class CastAnyNumberFromCollectionWithoutPayingCostEffect(
             AfterResolveDestination.EXILE -> append(". If those spells would be put into a graveyard, exile them instead")
             AfterResolveDestination.BOTTOM_OF_LIBRARY ->
                 append(". If those spells would be put into a graveyard, put them on the bottom of their owners' libraries instead")
-            else -> {}
+            AfterResolveDestination.HAND ->
+                append(". If those spells would be put into a graveyard, put them into their owners' hands instead")
+            null -> {}
         }
     }
 }
