@@ -25,7 +25,9 @@ import com.wingedsheep.engine.view.ClientPlayerEffect
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.engine.mechanics.durations.GrantDurationGate
 import com.wingedsheep.sdk.scripting.AttackTax
+import com.wingedsheep.sdk.scripting.CardsInZonesCantBeTargeted
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
@@ -74,6 +76,7 @@ internal class PlayerActiveEffectsProjector(
             designations(state, playerId, container, audience) +
             attackRequirements(container) +
             attackTaxGrants(state, playerId) +
+            targetLockGrants(state, playerId) +
             blockRestrictions(container) +
             pendingSpellRiders(state, playerId) +
             emblemsAndDelayedTriggers(state, playerId, container, audience)
@@ -753,6 +756,31 @@ internal class PlayerActiveEffectsProjector(
                 icon = "lock"
             )
         }
+
+    /**
+     * A targeting lock a resolving spell handed this player for a duration — "permanents you control
+     * can't be the targets of blue or black spells your opponents control this turn" (Display of
+     * Dominance). The player holds it, so it shows on them rather than on any one permanent.
+     */
+    private fun targetLockGrants(state: GameState, playerId: EntityId): List<ClientPlayerEffect> =
+        state.grantedStaticAbilities.filter {
+            it.entityId == playerId && it.ability is CardsInZonesCantBeTargeted &&
+                GrantDurationGate.holds(state, it.entityId, it.sourceId, it.duration)
+        }
+            .mapIndexed { index, grant ->
+                val lock = grant.ability as CardsInZonesCantBeTargeted
+                val description = if (grant.duration is Duration.Permanent) {
+                    lock.description
+                } else {
+                    "${lock.description} ${grant.duration.description}".trimEnd()
+                }
+                ClientPlayerEffect(
+                    effectId = "target_lock_${grant.sourceId?.value ?: "none"}_$index",
+                    name = "Targeting Shield",
+                    description = description,
+                    icon = "shield"
+                )
+            }
 
     /** A per-combat cap on how many creatures this player may block with (Mirri, Weatherlight Duelist). */
     private fun blockRestrictions(container: ComponentContainer): List<ClientPlayerEffect> {

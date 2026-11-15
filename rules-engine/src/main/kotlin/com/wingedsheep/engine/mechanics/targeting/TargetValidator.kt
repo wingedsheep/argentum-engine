@@ -535,7 +535,9 @@ class TargetValidator(
             else -> null
         }
         if (lockableId != null) {
-            UntargetableByRules.zoneLockError(state, lockableId, casterId, predicateEvaluator)?.let { return it }
+            UntargetableByRules.zoneLockError(
+                state, lockableId, casterId, predicateEvaluator, sourceId, targetingSourceType
+            )?.let { return it }
         }
 
         // Check hexproof from a quality — color, non-color, card type (Rule 702.11d)

@@ -11474,7 +11474,7 @@ staticAbility {
   Not controller-gated (binds its own controller's spells and abilities too). Projected as one keyword per
   quality; enforced at legal-target enumeration, cast/activation validation and the resolution re-check by
   the shared engine helper `UntargetableByRules`.
-- `CardsInZonesCantBeTargeted(zones = setOf(Zone.GRAVEYARD), filter = GameObjectFilter.Any, sourceController = Player.Each)`
+- `CardsInZonesCantBeTargeted(zones = setOf(Zone.GRAVEYARD), filter = GameObjectFilter.Any, sourceController = Player.Each, spellFilter = null)`
   — "Cards in graveyards can't be the targets of spells or abilities" (Ground Seal; Dennick, Pious
   Apprentice): objects matching `filter` in `zones` can't be chosen as targets by spells or abilities
   `sourceController` controls (relative to the lock's controller). `Player.Each` (default) binds everyone,
@@ -11489,6 +11489,27 @@ staticAbility {
   projected statics (`UntargetableByRules.zoneLocks`) at the same three sites — legal-target enumeration,
   cast/activation validation, and the resolution re-check (a lock arriving after targeting makes that
   target illegal, CR 608.2b) — and lifts when the holder loses all its abilities.
+
+  `spellFilter` narrows the lock to *spells* matching it ("can't be the targets of blue or black spells
+  your opponents control"); abilities may still target, even from sources matching it. Null (default) is
+  every spell and ability. A resolving spell creates the lock for a turn by granting it to its controller —
+  a rule about the game, not an ability of the permanents, so it covers permanents that come under their
+  control later that turn and survives their losing all abilities. Display of Dominance's second mode:
+
+  ```kotlin
+  Effects.GrantStaticAbility(
+      CardsInZonesCantBeTargeted(
+          zones = setOf(Zone.BATTLEFIELD),
+          filter = GameObjectFilter.Permanent.youControl(),
+          sourceController = Player.EachOpponent,
+          spellFilter = GameObjectFilter.Any.withAnyColor(Color.BLUE, Color.BLACK)
+      ),
+      EffectTarget.Controller
+  )
+  ```
+
+  `UntargetableByRules.zoneLocks` reads player-held grants beside the battlefield's statics; the grant ends
+  with its duration.
 - `SetColors(colors, filter, offBattlefield = null)` — Layer 5 color-*setting* static (CR 613.1e): the objects
   `filter` matches have exactly `colors`, replacing their own; an empty set is "are colorless". The add-a-color
   siblings are `GrantColor` / `GrantChosenColor`. `offBattlefield` (a `Player`, read relative to the static's

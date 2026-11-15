@@ -713,13 +713,22 @@ data class CantBeTargetedBy(
  * @property sourceController Whose spells and abilities can't target them, relative to the lock's
  *   controller: [Player.Each] (anyone's, the lock's own controller included) or
  *   [Player.EachOpponent] ("spells or abilities your opponents control").
+ * @property spellFilter Narrows the lock to *spells* matching it — "can't be the targets of blue or
+ *   black spells your opponents control" (Display of Dominance) — so abilities, even from sources
+ *   matching it, may still target. Null (the default): every spell and ability.
+ *
+ * A resolving spell can create this lock "this turn" by granting it to its controller
+ * ([com.wingedsheep.sdk.dsl.Effects.GrantStaticAbility] with `EffectTarget.Controller`): a rule
+ * about the game rather than an ability of the permanents, so it covers permanents that come under
+ * that player's control later in the turn and survives their losing all abilities.
  */
 @SerialName("CardsInZonesCantBeTargeted")
 @Serializable
 data class CardsInZonesCantBeTargeted(
     val zones: Set<Zone> = setOf(Zone.GRAVEYARD),
     val filter: GameObjectFilter = GameObjectFilter.Any,
-    val sourceController: Player = Player.Each
+    val sourceController: Player = Player.Each,
+    val spellFilter: GameObjectFilter? = null
 ) : StaticAbility {
     init {
         require(sourceController == Player.Each || sourceController == Player.EachOpponent) {
@@ -732,18 +741,29 @@ data class CardsInZonesCantBeTargeted(
         val offBattlefield = zones - Zone.BATTLEFIELD
         val parts = buildList {
             if (Zone.BATTLEFIELD in zones) {
-                add((if (filter == GameObjectFilter.Any) "permanents" else "${filter.description}s") + " on the battlefield")
+                val permanents = filter.pluralPermanentDescription
+                // A battlefield-only lock ("permanents you control can't be …") needs no zone phrase.
+                add(if (offBattlefield.isEmpty()) permanents else "$permanents on the battlefield")
             }
             if (offBattlefield.isNotEmpty()) add("${noun}s in ${zonePhrase(offBattlefield, "and")}")
         }
         append(parts.joinToString(" and ").replaceFirstChar { it.uppercase() })
-        append(" can't be the targets of spells or abilities")
+        append(
+            when (spellFilter) {
+                null -> " can't be the targets of spells or abilities"
+                GameObjectFilter.Any -> " can't be the targets of spells"
+                else -> " can't be the targets of ${spellFilter.description} spells"
+            }
+        )
         if (sourceController == Player.EachOpponent) append(" your opponents control")
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
-        return if (newFilter !== filter) copy(filter = newFilter) else this
+        val newSpellFilter = spellFilter?.applyTextReplacement(replacer)
+        return if (newFilter !== filter || newSpellFilter !== spellFilter) {
+            copy(filter = newFilter, spellFilter = newSpellFilter)
+        } else this
     }
 }
 
