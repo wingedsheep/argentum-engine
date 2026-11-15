@@ -709,8 +709,24 @@ class CostEnumerationUtils(
     }
 
     /**
-     * Calculate max affordable X for activated abilities, considering various X cost types.
+     * How many cards in [playerId]'s graveyard an [AbilityCost.ExileXFromGraveyard] cost could
+     * exile, honouring its filter. It is the upper bound on X (see [calculateMaxAffordableX]) and,
+     * for an ability whose X can't be 0 ("Exile one or more creature cards from your graveyard",
+     * Corpseweft — `minimumXValue = 1`), whether the ability can be activated at all.
      */
+    fun exileXCandidateCount(
+        state: GameState,
+        playerId: EntityId,
+        cost: AbilityCost.ExileXFromGraveyard,
+        sourceId: EntityId?,
+    ): Int {
+        val projected = state.projectedState
+        val context = PredicateContext(controllerId = playerId, sourceId = sourceId)
+        return state.getZone(ZoneKey(playerId, Zone.GRAVEYARD)).count { cardId ->
+            predicateEvaluator.matches(state, projected, cardId, cost.filter, context)
+        }
+    }
+
     /**
      * Does this cost make the player choose an X that is *not* paid in mana — "remove any number
      * of counters from ~" ([CostAtom.RemoveCounters] with an [DynamicAmount.XValue] count) or
@@ -735,6 +751,9 @@ class CostEnumerationUtils(
         }
     }
 
+    /**
+     * Calculate max affordable X for activated abilities, considering various X cost types.
+     */
     fun calculateMaxAffordableX(
         state: GameState,
         playerId: EntityId,
@@ -789,14 +808,8 @@ class CostEnumerationUtils(
             else -> emptyList()
         }
         if (exileXCosts.isNotEmpty()) {
-            val graveyard = state.getZone(ZoneKey(playerId, Zone.GRAVEYARD))
-            val projected = state.projectedState
-            val context = PredicateContext(controllerId = playerId, sourceId = sourceId)
             exileXCosts.forEach { cost ->
-                val matching = graveyard.count { cardId ->
-                    predicateEvaluator.matches(state, projected, cardId, cost.filter, context)
-                }
-                maxX = minOf(maxX, matching)
+                maxX = minOf(maxX, exileXCandidateCount(state, playerId, cost, sourceId))
             }
         }
 

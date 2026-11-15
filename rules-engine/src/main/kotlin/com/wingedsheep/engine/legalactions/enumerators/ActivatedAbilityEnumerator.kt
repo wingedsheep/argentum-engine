@@ -521,6 +521,13 @@ class ActivatedAbilityEnumerator(
                             .filter { projected.isCreature(it) && projected.canReceiveCounters(it, CounterType.MINUS_ONE_MINUS_ONE) }
                         if (blightCreatures.isEmpty()) continue
                     }
+                    is AbilityCost.ExileXFromGraveyard -> {
+                        // A bare exile-X cost whose X can't be 0 needs that many matching cards.
+                        if (ability.minimumXValue > 0 && context.costUtils.exileXCandidateCount(
+                                state, playerId, effectiveCost, entityId
+                            ) < ability.minimumXValue
+                        ) continue
+                    }
                     is AbilityCost.DiscardLastDrawnThisTurn -> {
                         // No player choice — engine picks the tracked entity at payment. Gate the
                         // ability if the controller hasn't drawn a card this turn or the tracked
@@ -885,7 +892,16 @@ class ActivatedAbilityEnumerator(
                                     }
                                 }
                                 is AbilityCost.ExileXFromGraveyard -> {
-                                    // ExileXFromGraveyard: validated via maxAffordableX cap below
+                                    // The upper bound is the maxAffordableX cap below. An ability
+                                    // whose X can't be 0 ("Exile one or more creature cards from
+                                    // your graveyard", Corpseweft) also needs that many to exist.
+                                    if (ability.minimumXValue > 0 && context.costUtils.exileXCandidateCount(
+                                            state, playerId, subCost, entityId
+                                        ) < ability.minimumXValue
+                                    ) {
+                                        costCanBePaid = false
+                                        break
+                                    }
                                 }
                                 is AbilityCost.TapXPermanents -> {
                                     // TapXPermanents: validated via maxAffordableX cap below

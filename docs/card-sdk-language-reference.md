@@ -727,7 +727,11 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   creature gets -X/-X") has none and the selection is free (0..matching cards); **Necropolis Fiend**
   ("{X}, {T}, Exile X cards from your graveyard") pays X in mana too, so the mana-X picker fixes the
   count first and the selection is pinned to exactly that many. Selecting nothing is legal and
-  settles as X = 0. `linkToSource = true` puts the exiled cards in the source permanent's linked-exile
+  settles as X = 0 — unless the ability sets `minimumXValue`: "Exile **one or more** creature cards
+  from your graveyard" (**Corpseweft**) is this cost under `minimumXValue = 1`, which floors the
+  selection and marks the ability unpayable while fewer matching cards are in the graveyard (greyed
+  out; omitted when the exile is the whole cost). A pre-filled pile must arrive with `xValue` equal to
+  its size. `linkToSource = true` puts the exiled cards in the source permanent's linked-exile
   pile so another ability printed on it can name "the cards exiled with it" (CR 607.2a) — Ludevic,
   Necrogenius's `{X}{U}{U}{B}{B}, Exile X creature cards from your graveyard: Transform Ludevic` feeds
   Olag's `BecomesCopyAsTransforms`.
@@ -14575,7 +14579,9 @@ expressed as *another object's mana cost* rather than as an amount of generic ma
 an X-cost ability whose X may not be 0 (**Gogo, Master of Mimicry**: "{X}{X}, {T}: … X can't be 0.").
 The X-choice decision clamps its lower bound to this value, the enumerated `LegalAction.minX` surfaces
 it to the client's X picker, and the handler rejects an engine-direct activation with a smaller X.
-Defaults to 0.
+When X is set by a cost choice instead (`Costs.ExileXFromGraveyard` with no `{X}` mana — Corpseweft's
+"Exile one or more creature cards from your graveyard"), the minimum floors that selection and the
+ability can't be activated without enough matching cards. Defaults to 0.
 
 **`xDefinedAs` — "X is …", an activation cost's X the card defines itself.** Set
 `xDefinedAs = <DynamicAmount>` in the `activatedAbility { }` block for an ability printed with `{X}`

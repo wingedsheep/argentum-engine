@@ -991,6 +991,82 @@
     ]
 }
 
+// Corpseweft
+{
+    "name": "Corpseweft",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "{1}{B}, Exile one or more creature cards from your graveyard: Create a tapped X/X black Zombie Horror creature token, where X is twice the number of cards exiled this way.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Corpseweft:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostExileXFromGraveyard",
+                            "filter": "creature"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie",
+                        "Horror"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/5/3/533c41ab-d9ee-4817-a982-41d4da6fa9ad.jpg?1783938561",
+                    "dynamicPower": {
+                        "type": "Multiply",
+                        "amount": "XValue",
+                        "multiplier": 2
+                    },
+                    "dynamicToughness": {
+                        "type": "Multiply",
+                        "amount": "XValue",
+                        "multiplier": 2
+                    },
+                    "tapped": true
+                },
+                "descriptionOverride": "{1}{B}, Exile one or more creature cards from your graveyard: Create a tapped X/X black Zombie Horror creature token, where X is twice the number of cards exiled this way.",
+                "minimumXValue": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "rarity": "RARE",
+        "artist": "Nils Hamm",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/25cf24e7-2e6e-46e0-aedd-89e17953811c.jpg?1783938599",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "Because exiling the creature cards from your graveyard is part of the activation cost, no player can respond to stop you from activating the ability by moving creature cards out of your graveyard."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "“Exiled this way” refers to that activation of the ability, not any creature cards that have been previously exiled."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Cunning Breezedancer
 {
     "name": "Cunning Breezedancer",

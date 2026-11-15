@@ -31,6 +31,7 @@ import com.wingedsheep.engine.mechanics.targeting.TargetValidator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
@@ -131,6 +132,7 @@ internal class ActivationValidator(
 
         return checkBatchActivation(action, effectiveCost, effectiveTargetReqs)
             ?: checkSubmittedTotalExileSelection(state, action, effectiveCost)
+            ?: checkExileXSelection(state, action, ability, effectiveCost)
             ?: checkLoyaltyAbilityTiming(state, action, container, ability)
             ?: checkSorcerySpeedTiming(state, action, ability)
             ?: checkAttachedCreatureSummoningSickness(state, container, effectiveCost)
@@ -390,6 +392,42 @@ internal class ActivationValidator(
         )
         return if (!resolver.isLegalSelection(candidates, atom.minTotal, submitted)) {
             "Those cards don't pay this cost: ${atom.description}"
+        } else null
+    }
+
+    /**
+     * An `ExileXFromGraveyard` cost binds X to the size of the exiled pile, so a client-supplied
+     * pile must arrive with that X: a pile with no (or a different) `xValue` would otherwise pay
+     * X = 0 and exile nothing. Every `GameAction` field is client-supplied; the selection pause's
+     * own resume always sends both.
+     *
+     * An exile-X cost whose X can't be 0 — "Exile one or more creature cards from your graveyard"
+     * (Corpseweft) is `ExileXFromGraveyard` under `minimumXValue = 1` — also can't be activated
+     * without that many matching cards (a cost that can't be paid can't be activated). A pile
+     * below the floor is then an X below `minimumXValue`, which ActivateAbilityHandler rejects.
+     */
+    private fun checkExileXSelection(
+        state: GameState,
+        action: ActivateAbility,
+        ability: ActivatedAbility,
+        effectiveCost: AbilityCost,
+    ): String? {
+        val cost = effectiveCost.extractExileXFromGraveyardCost() ?: return null
+        val submitted = action.costPayment?.exiledCards.orEmpty()
+        if (submitted.isNotEmpty() && action.xValue != submitted.size) {
+            return "X must equal the number of cards exiled to pay this cost"
+        }
+        val minimum = ability.minimumXValue
+        if (minimum <= 0) return null
+        val candidates = costHandler.findMatchingCardsUnified(
+            state,
+            state.getZone(ZoneKey(action.playerId, Zone.GRAVEYARD)),
+            cost.filter,
+            action.playerId,
+            sourceId = action.sourceId
+        )
+        return if (candidates.size < minimum) {
+            "Not enough ${cost.filter.description}s in your graveyard to pay this cost"
         } else null
     }
 
