@@ -745,6 +745,14 @@ sealed interface SerializableModification {
      * queues it as a [com.wingedsheep.engine.replacement.PendingReplacementRider] carrying that
      * application's prevented amount. Where the damage can't be prevented (CR 615.12) the shield
      * is still applied, prevents nothing, and queues it with amount 0.
+     *
+     * [onPreventedTargets] (and [onPreventedNamedTargets], the same targets by the name the card's
+     * `target(...)` bound them to) are the targets the creating spell or ability chose, frozen when the
+     * shield was created, so [onPrevented] can name them — "you may have Channel Harm deal that
+     * much damage to *target creature*", a target chosen as the spell was cast, not when damage is
+     * prevented. [onPreventedBound] pins each battlefield target to the object it was then: one
+     * that has left the battlefield since (even if it came back) is a new object the rider can't
+     * name (CR 400.7). Its legality is not re-checked after the spell resolves.
      */
     @Serializable
     data class PreventAllDamageToGroup(
@@ -752,7 +760,10 @@ sealed interface SerializableModification {
         val combatOnly: Boolean = false,
         val includesController: Boolean = false,
         val sourceFilter: GameObjectFilter? = null,
-        val onPrevented: com.wingedsheep.sdk.scripting.effects.Effect? = null
+        val onPrevented: com.wingedsheep.sdk.scripting.effects.Effect? = null,
+        val onPreventedTargets: List<com.wingedsheep.engine.state.components.stack.ChosenTarget> = emptyList(),
+        val onPreventedNamedTargets: Map<String, com.wingedsheep.engine.state.components.stack.ChosenTarget> = emptyMap(),
+        val onPreventedBound: List<com.wingedsheep.engine.handlers.CapturedObjectBinding> = emptyList(),
     ) : SerializableModification
 
     /**

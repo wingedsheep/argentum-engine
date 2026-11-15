@@ -339,7 +339,15 @@ class PreventDamageExecutor(
                     // damage sources.
                     sourceFilter = sourceFilter,
                     // "For each 1 damage prevented this way, …" (Inkshield).
-                    onPrevented = effect.onPrevented
+                    onPrevented = effect.onPrevented,
+                    // "… you may have Channel Harm deal that much damage to target creature": the
+                    // rest names targets chosen as the spell was cast, so they ride the shield.
+                    onPreventedTargets = if (effect.onPrevented != null) context.targets else emptyList(),
+                    onPreventedNamedTargets = if (effect.onPrevented != null) context.pipeline.namedTargets else emptyMap(),
+                    onPreventedBound = if (effect.onPrevented == null) emptyList() else
+                        (context.targets + context.pipeline.namedTargets.values).mapNotNull { t ->
+                            (t as? com.wingedsheep.engine.state.components.stack.ChosenTarget.Permanent)?.entityId?.takeIf { it in state.getBattlefield() }
+                        }.distinct().map { com.wingedsheep.engine.handlers.CapturedObjectBinding(it, state.objectRef(it)) },
                 )
             }
 

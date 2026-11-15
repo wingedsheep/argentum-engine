@@ -1625,6 +1625,13 @@ object TargetPolarityAnalyzer {
         definitions: CardLookup = NO_DEFINITIONS,
         source: CardDefinition? = null,
     ): List<Pair<EffectTarget, TargetPolarity>> {
+        // "If damage is prevented this way, you may have Channel Harm deal that much damage to
+        // target creature": the shield's reaction can name the spell's own targets, read as the
+        // reaction's leaves are anywhere else — a damage reaction aims at their side.
+        if (leaf is PreventDamageEffect && leaf.onPrevented != null) {
+            return classify(leaf.copy(onPrevented = null), definitions, source) +
+                EffectWalker.leaves(leaf.onPrevented!!).flatMap { classify(it, definitions, source) }
+        }
         val tapChoices = tapOrUntapTargets(leaf)
         if (tapChoices.isNotEmpty()) return tapChoices.map { it to TargetPolarity.FLEXIBLE }
         // Counters moved or removed whatever their kind — "move all counters from The Ozolith onto

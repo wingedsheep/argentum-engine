@@ -611,6 +611,68 @@
     ]
 }
 
+// Channel Harm
+{
+    "name": "Channel Harm",
+    "manaCost": "{5}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Prevent all damage that would be dealt to you and permanents you control this turn by sources you don't control. If damage is prevented this way, you may have Channel Harm deal that much damage to target creature.",
+    "script": {
+        "spellEffect": {
+            "type": "PreventDamageShield",
+            "recipientGroup": {
+                "cardPredicates": [
+                    "IsPermanent"
+                ],
+                "controllerPredicate": "ControlledByYou"
+            },
+            "recipientGroupIncludesController": true,
+            "sourceFilter": {
+                "type": "PreventFromMatching",
+                "filter": {
+                    "controllerPredicate": {
+                        "type": "ControllerNot",
+                        "predicate": "ControlledByYou"
+                    }
+                }
+            },
+            "onPrevented": {
+                "type": "Gated",
+                "gate": "Gate.MayDecide",
+                "then": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "PREVENTED_DAMAGE_AMOUNT"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "UNCOMMON",
+        "artist": "David Gaillet",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/8801465e-295f-4b6b-a321-120f1b1edd0b.jpg?1783938714"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Cloudform
 {
     "name": "Cloudform",
