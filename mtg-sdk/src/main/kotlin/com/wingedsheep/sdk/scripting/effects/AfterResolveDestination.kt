@@ -8,9 +8,11 @@ import kotlinx.serialization.Serializable
  *
  * This is the vocabulary behind the *cast-this-way rider*: an effect that lets you cast a card
  * from somewhere it normally couldn't be cast from often also redirects where the spell ends up,
- * so the same card can't simply be recast next turn. The two spellings printed on cards are the
- * two members here — "exile it instead" (Jetsam, Daring Waverider) and "put it on the bottom of
- * its owner's library instead" (Kylox's Voltstrider).
+ * so the same card can't simply be recast next turn. Those riders print "exile it instead"
+ * (Jetsam, Daring Waverider) and "put it on the bottom of its owner's library instead" (Kylox's
+ * Voltstrider). The third member, "put that card into your hand instead", is the reward rider of
+ * [GrantNextSpellResolveDestinationEffect] (Soulfire Grand Master), which only ever applies on
+ * resolution.
  *
  * It is deliberately *not* a general zone-change replacement. `RedirectZoneChange` is that, and it
  * applies to any card heading to a graveyard from anywhere; this rider is scoped to one spell the
@@ -27,7 +29,13 @@ enum class AfterResolveDestination {
      * under the rest of the library, which is what "on the bottom of its owner's library" means
      * (contrast the Omen face, which shuffles).
      */
-    BOTTOM_OF_LIBRARY;
+    BOTTOM_OF_LIBRARY,
+
+    /**
+     * Put the card into its owner's hand instead (Soulfire Grand Master — "put that card into your
+     * hand instead of into your graveyard as it resolves").
+     */
+    HAND;
 
     /** The printed rider sentence, for effect descriptions: ". If that spell would … instead". */
     val riderText: String
@@ -35,5 +43,6 @@ enum class AfterResolveDestination {
             EXILE -> ". If that spell would be put into a graveyard, exile it instead"
             BOTTOM_OF_LIBRARY ->
                 ". If that spell would be put into a graveyard, put it on the bottom of its owner's library instead"
+            HAND -> ". If that spell would be put into a graveyard, put it into its owner's hand instead"
         }
 }

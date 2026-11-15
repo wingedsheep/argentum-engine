@@ -575,8 +575,11 @@ internal class NonPermanentSpellResolver(
             // The rider is the most specific instruction on this one spell, so it outranks the
             // card-intrinsic exile reasons below rather than being OR'd into them — it is the only
             // one that can send the card somewhere other than exile (Kylox's Voltstrider — "put it
-            // on the bottom of its owner's library instead"). The guard is the graveyard wording.
-            exileAfterResolveComp != null && !selfToLibrary -> exileAfterResolveComp.zone
+            // on the bottom of its owner's library instead", Soulfire Grand Master — "into your hand
+            // instead"). The guard is the graveyard wording: a spell whose own instructions exile it
+            // or put it into its library was never headed for a graveyard (Soulfire ruling on
+            // Temporal Trespass), so the rider has nothing to replace.
+            exileAfterResolveComp != null && !selfToLibrary && !selfExile -> exileAfterResolveComp.zone
             // Flashback (CR 702.34a) / harmonize (CR 702.180a) — "anywhere else". Above the printed
             // clause, below the rider, which leaves the pre-existing rider-vs-flashback precedence
             // exactly as it was.

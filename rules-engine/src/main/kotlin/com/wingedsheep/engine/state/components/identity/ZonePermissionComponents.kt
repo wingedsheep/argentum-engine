@@ -315,5 +315,6 @@ data class AfterResolveDestinationComponent(
         get() = when (destination) {
             AfterResolveDestination.EXILE -> com.wingedsheep.sdk.core.Zone.EXILE
             AfterResolveDestination.BOTTOM_OF_LIBRARY -> com.wingedsheep.sdk.core.Zone.LIBRARY
+            AfterResolveDestination.HAND -> com.wingedsheep.sdk.core.Zone.HAND
         }
 }

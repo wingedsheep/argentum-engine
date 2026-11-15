@@ -171,6 +171,9 @@ class TurnManager(
             // riders (World War Hulk I) are turn-scoped too — an unused free cast must not leak
             // into a later turn.
             pendingFreeCastSpells = emptyList(),
+            // "The next time you cast … this turn, put that card into your hand instead" riders
+            // (Soulfire Grand Master) are turn-scoped as well.
+            pendingNextSpellResolveDestinations = emptyList(),
             // "For one spell this turn, … mana of any type" riders (North Star) likewise.
             pendingAnyManaTypeSpells = emptyList(),
             // "Spells you cast this turn cost {N} less" discounts (Will / Rowan, Scion of …) end

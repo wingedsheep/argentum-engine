@@ -1,0 +1,1 @@
+- #PR The AI now reads Soulfire Grand Master's "put that card into your hand instead" next-spell rider as recursion rather than an ability with no purpose.

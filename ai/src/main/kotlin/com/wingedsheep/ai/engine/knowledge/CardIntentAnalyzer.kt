@@ -2523,6 +2523,12 @@ object CardIntentAnalyzer {
         is CopyTargetSpellEffect, is CopyTargetSpellOrAbilityEffect, is CopyTargetTriggeredAbilityEffect,
         is CopyEachTargetSpellEffect, is CopyForOtherPossibleTargetsEffect, is CopyNextSpellCastEffect,
         is CopyEachSpellCastEffect -> setOf(IntentTag.SPELL_COPY)
+        // "The next time you cast an instant or sorcery spell from your hand this turn, put that card
+        // into your hand instead of into your graveyard as it resolves" (Soulfire Grand Master) gets
+        // the spell card back — the single-card return to hand. Sending it to exile or the bottom of
+        // the library instead is a cost of a cast-this-way grant, never a payoff.
+        is GrantNextSpellResolveDestinationEffect ->
+            if (effect.destination == AfterResolveDestination.HAND) setOf(IntentTag.RECURSION) else emptySet()
         is GainLifeEffect, is DrainLifeEffect -> setOf(IntentTag.LIFEGAIN)
         // An exchange is carried out as a gain for the player whose total goes up (rule 701.12c),
         // and its controller only casts it to be that player: Psychic Transfer at 4 against 9.
@@ -4042,8 +4048,15 @@ object CardIntentAnalyzer {
                 } || script.activatedAbilities.any { ability ->
                     ability.activateFromZone == Zone.BATTLEFIELD && !ability.isManaAbility &&
                         !consumesSource(ability.cost) && !isRummage(ability) &&
-                        analyzeEffect(ability.effect, ability.targetRequirements).tags
-                            .let { IntentTag.DRAW in it || IntentTag.IMPULSE in it }
+                        (analyzeEffect(ability.effect, ability.targetRequirements).tags
+                            .let { IntentTag.DRAW in it || IntentTag.IMPULSE in it } ||
+                            // The spell card back each activation (Soulfire Grand Master returning
+                            // the next instant or sorcery to hand) is a card gained for no card
+                            // spent — unlike a graveyard return paid for by a discard (Undertaker).
+                            EffectWalker.leaves(ability.effect).any {
+                                it is GrantNextSpellResolveDestinationEffect &&
+                                    it.destination == AfterResolveDestination.HAND
+                            })
                 }
             }
             // A second life (Exquisite Archangel, Enduring Angel — [LossShields]): while it stands,

@@ -3530,6 +3530,70 @@
     ]
 }
 
+// Soulfire Grand Master
+{
+    "name": "Soulfire Grand Master",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Monk",
+    "oracleText": "Lifelink\nInstant and sorcery spells you control have lifelink.\n{2}{U/R}{U/R}: The next time you cast an instant or sorcery spell from your hand this turn, put that card into your hand instead of into your graveyard as it resolves.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Soulfire Grand Master:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{U/R}{U/R}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantNextSpellResolveDestination",
+                    "destination": "HAND",
+                    "fromZones": [
+                        "Hand"
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeywordToOwnSpells",
+                "keyword": "LIFELINK",
+                "spellFilter": {
+                    "cardPredicates": [
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                "IsInstant",
+                                "IsSorcery"
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "rarity": "MYTHIC",
+        "artist": "Johannes Voss",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fc3a4e7d-6667-4c2f-b6b4-484f401b0455.jpg?1783938709"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Sultai Skullkeeper
 {
     "name": "Sultai Skullkeeper",
