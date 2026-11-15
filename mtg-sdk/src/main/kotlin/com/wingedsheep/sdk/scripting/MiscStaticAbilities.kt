@@ -982,8 +982,10 @@ data object PlayersPlayWithHandsRevealed : StaticAbility {
  * the card itself as the source, so `notSourceItself()` excludes it ("other") even though it still
  * sits in the graveyard while the cast is priced. It is the permission-scoped sibling of a
  * [ModifySpellCost] on [SpellCostTarget.SelfCast], which every cast of the card pays; it reuses
- * that type's [CostModification] vocabulary rather than adding a second one. Exclusive with
- * [alternativeManaCost] (a priced permission names its whole price).
+ * that type's [CostModification] vocabulary rather than adding a second one. A cast another
+ * permission also authorizes (a graveyard-cast grant, Muldrotha) goes through that one untaxed —
+ * each permission is its own authorization, and the caster picks one. Exclusive with [alternativeManaCost] (a
+ * priced permission names its whole price) and [castUsing]; never [CostModification.IncreaseLife].
  *
  * @property zones The zones from which this card may be cast.
  * @property condition Optional gate; null = always available.
@@ -1015,6 +1017,12 @@ data class MayCastSelfFromZones(
         }
         require(costModification == null || alternativeManaCost == null) {
             "MayCastSelfFromZones: an alternativeManaCost names the whole price; it can't also carry a costModification"
+        }
+        require(costModification == null || castUsing == null) {
+            "MayCastSelfFromZones: a castUsing cast is priced by its keyword's cost; it can't also carry a costModification"
+        }
+        require(costModification !is CostModification.IncreaseLife) {
+            "MayCastSelfFromZones: costModification prices mana; a life payment belongs in additionalCost"
         }
     }
 
@@ -1055,9 +1063,17 @@ data class MayCastSelfFromZones(
         is CostModification.IncreaseGenericBy -> "{X} more, where X is ${m.source.description},"
         is CostModification.IncreaseColored -> "${m.symbols} more"
         is CostModification.IncreaseColoredPerUnit -> "${m.symbols} more for each ${m.countSource.description}"
+        is CostModification.IncreaseGenericPerOtherSpellThisTurn ->
+            "{${m.amountPerSpell}} more for each other spell you've cast this turn"
+        is CostModification.IncreaseGenericIfAnyTargetMatches ->
+            "{${m.amount}} more if it targets ${m.filter.description}"
         is CostModification.ReduceGeneric -> "{${m.amount}} less"
         is CostModification.ReduceGenericBy -> "{X} less, where X is ${m.source.description},"
-        else -> "a modified amount"
+        is CostModification.ReduceColored -> "${m.symbols} less"
+        is CostModification.ReduceColoredPerUnit -> "${m.symbols} less for each ${m.countSource.description}"
+        is CostModification.ReduceColoredIfAnyTargetMatches ->
+            "${m.symbols} less if it targets ${m.filter.description}"
+        is CostModification.IncreaseLife -> "${m.amount} life"
     }
 }
 

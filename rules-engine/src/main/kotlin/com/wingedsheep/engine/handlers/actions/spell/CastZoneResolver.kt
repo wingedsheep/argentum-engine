@@ -205,6 +205,7 @@ class CastZoneResolver(
                     // (Muldrotha) at the printed cost — and never one announcing a different
                     // alternative cost (only one alternative cost per spell).
                     (ability.alternativeManaCost == null || announcesSelfZoneCost(action)) &&
+                    !yieldsToAnotherPermission(state, playerId, cardId, cardComponent, ability, action) &&
                     (ability.condition == null ||
                     conditionEvaluator.evaluate(
                         state,
@@ -212,6 +213,28 @@ class CastZoneResolver(
                         EffectContext(sourceId = cardId, controllerId = playerId)
                     ))
             }
+    }
+
+    /**
+     * Whether a permission that changes the cast's price ([MayCastSelfFromZones.costModification],
+     * Risen Executioner's "if you pay {1} more …") stands aside so the cast goes through another
+     * permission at the printed cost. Each permission is its own authorization, and the player
+     * picks the one they cast by (Gisa and Geralf's ruling), so the tax binds only a cast this permission carries:
+     * never one that announced a graveyard-cast grant (Gisa and Geralf — its offers always stamp
+     * [CastSpell.graveyardCastRider]), nor a plain cast Muldrotha's permission covers, which shares
+     * this permission's unannounced action and so is read as the cheaper route.
+     */
+    private fun yieldsToAnotherPermission(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId,
+        cardComponent: CardComponent,
+        ability: MayCastSelfFromZones,
+        action: CastSpell?,
+    ): Boolean {
+        if (ability.costModification == null || action == null) return false
+        if (action.graveyardCastRider != null) return true
+        return hasMayPlayPermanentFromGraveyardPermission(state, playerId, cardId, cardComponent)
     }
 
     private fun announcesSelfZoneCost(action: CastSpell?): Boolean =

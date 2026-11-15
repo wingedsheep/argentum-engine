@@ -14004,8 +14004,12 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   Zone.GRAVEYARD, GameObjectFilter.Creature.notSourceItself()))))` for "You may cast this creature from your
   graveyard if you pay {1} more to cast it for each other creature card in your graveyard." Priced by
   `CastFromZoneEnumerator.enumerateIntrinsicZoneCast` and charged by `CastCostTotaller` (both pass it to
-  `CostCalculator.calculateEffectiveCost(zonePermissionModification = …)`). Exclusive with
-  `alternativeManaCost`. Use a `ModifySpellCost(SpellCostTarget.SelfCast, …)` instead when *every* cast
+  `CostCalculator.calculateEffectiveCost(zonePermissionModification = …)`). The tax binds only a cast
+  this permission carries (each permission is its own authorization, and the caster picks one): a cast announcing a
+  graveyard-cast grant (Gisa and Geralf — its offer stamps `graveyardCastRider`) or a plain cast
+  Muldrotha's permission covers goes through that permission at the printed cost instead
+  (`CastZoneResolver.yieldsToAnotherPermission`). Exclusive with `alternativeManaCost` and `castUsing`,
+  and never `IncreaseLife` (a life payment is an `additionalCost`). Use a `ModifySpellCost(SpellCostTarget.SelfCast, …)` instead when *every* cast
   of the card pays the change.
   Wired through `CastZoneResolver.findMayCastSelfFromZoneAbility` (returns the applicable
   ability so callers can read its `additionalCost`), validated/collected in `CastSpellHandler`

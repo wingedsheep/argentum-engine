@@ -1279,6 +1279,16 @@ class CastFromZoneEnumerator(
                 // Only non-land spells (Squee is a creature)
                 if (cardComponent.typeLine.isLand) continue
 
+                // A taxed permission ("if you pay {1} more …", Risen Executioner) yields a plain
+                // cast to Muldrotha's permission (`CastZoneResolver.yieldsToAnotherPermission`):
+                // the two would be the same action, and Muldrotha's offer is the untaxed one.
+                if (zoneCastAbility.costModification != null && zone == Zone.GRAVEYARD &&
+                    state.isActiveTurnFor(playerId) &&
+                    cardComponent.typeLine.cardTypes.filter { it.isPermanent }.any { type ->
+                        context.castPermissionUtils.hasGraveyardPlayPermissionForType(state, playerId, type.name)
+                    }
+                ) continue
+
                 // Additional cost bundled with the permission (e.g. Alien Symbiosis: "by
                 // discarding a card in addition to paying its other costs").
                 val (zoneAdditionalCostInfo, canPayZoneAdditionalCost) = presentOwedCosts(

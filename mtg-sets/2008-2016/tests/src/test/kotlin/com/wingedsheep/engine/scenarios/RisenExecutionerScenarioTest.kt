@@ -33,12 +33,13 @@ class RisenExecutionerScenarioTest : ScenarioTestBase() {
                     .withCardInGraveyard(1, "Grizzly Bears")
                     .withCardInGraveyard(1, "Centaur Courser")
                     .withCardInGraveyard(1, "Swamp") // not a creature card
+                    .withCardInGraveyard(2, "Grizzly Bears") // not in *your* graveyard
                     .withLandsOnBattlefield(1, "Swamp", 6)
                     .withActivePlayer(1)
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
 
-                withClue("two other creature cards → {2} more; itself and the land don't count") {
+                withClue("two other creature cards → {2} more; itself, the land and the opponent's card don't count") {
                     game.executionerCastCost() shouldBe "{4}{B}{B}"
                 }
                 game.castSpellFromGraveyard(1, "Risen Executioner").error shouldBe null
@@ -59,6 +60,53 @@ class RisenExecutionerScenarioTest : ScenarioTestBase() {
 
                 game.castSpellFromGraveyard(1, "Risen Executioner").error shouldNotBe null
                 game.findCardsInGraveyard(1, "Risen Executioner").size shouldBe 1
+            }
+
+            test("cast through Gisa and Geralf's permission, it owes no tax") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Gisa and Geralf")
+                    .withCardInGraveyard(1, "Risen Executioner")
+                    .withCardInGraveyard(1, "Grizzly Bears")
+                    .withCardInGraveyard(1, "Centaur Courser")
+                    .withLandsOnBattlefield(1, "Swamp", 4)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val id = game.findCardsInGraveyard(1, "Risen Executioner").single()
+                val offers = game.getLegalActions(1).filter { (it.action as? CastSpell)?.cardId == id }
+                val viaGisa = offers.single { (it.action as CastSpell).graveyardCastRider != null }
+                val viaOwn = offers.single { (it.action as CastSpell).graveyardCastRider == null }
+                withClue("both permissions are offered, each at its own price") {
+                    viaGisa.manaCostString shouldBe "{2}{B}{B}"
+                    viaGisa.isAffordable shouldBe true
+                    viaOwn.manaCostString shouldBe "{4}{B}{B}"
+                    viaOwn.isAffordable shouldBe false
+                }
+                game.execute(viaGisa.action).error shouldBe null
+                game.resolveStack()
+                game.isOnBattlefield("Risen Executioner") shouldBe true
+            }
+
+            test("cast through Muldrotha's permission, it owes no tax and is offered once") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Muldrotha, the Gravetide")
+                    .withCardInGraveyard(1, "Risen Executioner")
+                    .withCardInGraveyard(1, "Grizzly Bears")
+                    .withCardInGraveyard(1, "Centaur Courser")
+                    .withLandsOnBattlefield(1, "Swamp", 4)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val id = game.findCardsInGraveyard(1, "Risen Executioner").single()
+                val offer = game.getLegalActions(1).single { (it.action as? CastSpell)?.cardId == id }
+                offer.manaCostString shouldBe "{2}{B}{B}"
+                game.castSpellFromGraveyard(1, "Risen Executioner").error shouldBe null
+                game.resolveStack()
+                game.isOnBattlefield("Risen Executioner") shouldBe true
             }
 
             test("a hand cast owes no tax, and other Zombies get +1/+1") {

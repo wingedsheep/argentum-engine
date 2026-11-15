@@ -129,9 +129,9 @@ object GraveyardSynergy {
             if (node is com.wingedsheep.sdk.scripting.AbilityCost.ExileXFromGraveyard) return true
             // A self-zone permission's price change ("if you pay {1} more to cast it for each other
             // creature card in your graveyard", Risen Executioner) taxes a stocked graveyard; it never
-            // cashes one in, so only the permission's gate and additional cost are read.
-            if (node is com.wingedsheep.sdk.scripting.MayCastSelfFromZones) {
-                return visit(node.condition) || visit(node.additionalCost)
+            // cashes one in, so the permission is read without it.
+            if (node is com.wingedsheep.sdk.scripting.MayCastSelfFromZones && node.costModification != null) {
+                return visitFields(node.copy(costModification = null))
             }
             // A destination fills a graveyard; it never consumes that resource.
             if (node is com.wingedsheep.sdk.scripting.effects.CardDestination) return false
