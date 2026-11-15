@@ -1,1 +1,1 @@
-- #TBD The AI reads the target of a damage-prevention shield's reaction (Channel Harm's "deal that much damage to target creature") as a harmful target and aims it at an opposing creature.
+- #4687 The AI reads the target of a damage-prevention shield's reaction (Channel Harm's "deal that much damage to target creature") as a harmful target and aims it at an opposing creature.
