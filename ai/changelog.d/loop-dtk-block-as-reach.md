@@ -1,0 +1,1 @@
+- #PR Lets a creature that "can block Dragons as though it had reach" (Dragon Hunter) block flying Dragons in its combat math, so it walls them instead of ignoring the block; reads the permission as extra blocking rather than an unrecognised static or an ask for Dragons

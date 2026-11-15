@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.mechanics.combat.rules.BlockAsThoughReach
 import com.wingedsheep.engine.mechanics.combat.rules.LandwalkSuppression
 import com.wingedsheep.sdk.scripting.CantBeBlockedBy
 import com.wingedsheep.sdk.scripting.CantBlockCreaturesWithGreaterPower
@@ -50,9 +51,13 @@ object CombatMath {
         // Unblockable
         if (AbilityFlag.CANT_BE_BLOCKED.name in aKeywords) return false
 
-        // Flying: only blocked by flying or reach
+        // Flying: only blocked by flying or reach — or "as though it had reach" against this
+        // attacker (Dragon Hunter), read by the same helper the engine's FlyingRule uses.
         if (Keyword.FLYING.name in aKeywords) {
-            if (Keyword.FLYING.name !in bKeywords && Keyword.REACH.name !in bKeywords) return false
+            if (Keyword.FLYING.name !in bKeywords && Keyword.REACH.name !in bKeywords &&
+                (cardRegistry == null ||
+                    !BlockAsThoughReach.hasReachAgainst(state, blocker, attacker, cardRegistry, PredicateEvaluator(cardRegistry)))
+            ) return false
         }
 
         // Shadow: only blocked by shadow

@@ -39,13 +39,16 @@ class UnblockableRule : BlockEvasionRule {
 }
 
 /**
- * Flying: Can only be blocked by creatures with flying or reach.
+ * Flying: Can only be blocked by creatures with flying or reach (CR 702.9b) — or by a creature that
+ * can block this attacker as though it had reach ([BlockAsThoughReach]).
  */
-class FlyingRule : BlockEvasionRule {
+class FlyingRule(
+    private val predicateEvaluator: PredicateEvaluator
+) : BlockEvasionRule {
     override fun check(ctx: BlockCheckContext): String? {
         if (ctx.projected.hasKeyword(ctx.attackerId, Keyword.FLYING)) {
             val canBlockFlying = ctx.projected.hasKeyword(ctx.blockerId, Keyword.FLYING) ||
-                ctx.projected.hasKeyword(ctx.blockerId, Keyword.REACH)
+                BlockAsThoughReach.hasReachAgainst(ctx.state, ctx.blockerId, ctx.attackerId, ctx.cardRegistry, predicateEvaluator)
             if (!canBlockFlying) {
                 val blockerName = ctx.publicName(ctx.blockerId)
                 val attackerName = ctx.publicName(ctx.attackerId)
@@ -409,7 +412,7 @@ class CantBeBlockedExceptByRule(
 
             // Per MTG rules, reach allows blocking creatures with "can't be blocked except by flying"
             if (filterRequiresFlying(filter) &&
-                ctx.projected.hasKeyword(ctx.blockerId, Keyword.REACH)
+                BlockAsThoughReach.hasReachAgainst(ctx.state, ctx.blockerId, ctx.attackerId, ctx.cardRegistry, predicateEvaluator)
             ) continue
 
             val attackerName = ctx.publicName(ctx.attackerId)
@@ -761,7 +764,7 @@ fun defaultBlockEvasionRules(
     predicateEvaluator: PredicateEvaluator
 ): List<BlockEvasionRule> = listOf(
     UnblockableRule(),
-    FlyingRule(),
+    FlyingRule(predicateEvaluator),
     HorsemanshipRule(),
     ShadowRule(),
     SkulkRule(),

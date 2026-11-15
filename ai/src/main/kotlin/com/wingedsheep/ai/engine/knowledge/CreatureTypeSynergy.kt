@@ -82,6 +82,12 @@ internal object CreatureTypeSynergy {
                     element.forEach { (key, value) -> if (key != "blockers") collect(value, out) }
                     return
                 }
+                // "Can block Dragons as though it had reach" (Dragon Hunter): the attacker filter
+                // names the creatures it blocks — a tribe it walls, never one it asks for.
+                if (type == "CanBlockAsThoughHadReach") {
+                    element.forEach { (key, value) -> if (key != "attackers") collect(value, out) }
+                    return
+                }
                 when (type) {
                     // "As long as enchanted creature is a Pirate" (Sea Legs, Gift of Fangs) wants the
                     // Aura on one of that tribe; its "otherwise" half sits under the `Not` above.
