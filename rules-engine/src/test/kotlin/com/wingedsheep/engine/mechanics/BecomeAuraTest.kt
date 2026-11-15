@@ -46,6 +46,23 @@ class BecomeAuraTest : FunSpec({
         }
     }
     val creatureForm = form("Test Creature Form", GameObjectFilter.Creature)
+    val artifactForm = card("Test Artifact Form") {
+        manaCost = "{U}"
+        typeLine = "Artifact Enchantment"
+        triggeredAbility {
+            trigger = Triggers.self.enters()
+            effect = Patterns.Library.manifest() then
+                Effects.BecomeAura(GameObjectFilter.Creature, attachTo = EffectTarget.PipelineTarget("manifested"))
+        }
+    }
+    val blink = card("Test Form Blink") {
+        manaCost = "{0}"
+        typeLine = "Instant"
+        spell {
+            val permanent = target(TargetFilter.Permanent)
+            effect = Effects.Exile(permanent) then Effects.Move(permanent, Zone.BATTLEFIELD)
+        }
+    }
     val landForm = form("Test Land Form", GameObjectFilter.Land)
     val kill = card("Test Form Kill") {
         manaCost = "{0}"
@@ -57,7 +74,7 @@ class BecomeAuraTest : FunSpec({
     }
 
     fun driver(): GameTestDriver = GameTestDriver().also {
-        it.registerCards(TestCards.all + listOf(creatureForm, landForm, kill))
+        it.registerCards(TestCards.all + listOf(creatureForm, artifactForm, landForm, kill, blink))
         it.initMirrorMatch(Deck.of("Island" to 40), skipMulligans = true)
         it.passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -149,5 +166,37 @@ class BecomeAuraTest : FunSpec({
         val host = d.manifestedBy(p)!!
         d.state.getEntity(host)?.get<AttachedToComponent>().shouldBeNull()
         (formId in d.state.getZone(ZoneKey(p, Zone.GRAVEYARD))) shouldBe true
+    }
+
+    test("becoming an Aura keeps its other card types: an artifact enchantment stays an artifact") {
+        val d = driver()
+        val p = d.activePlayer!!
+        val formId = d.castForm(artifactForm.name)
+
+        d.settle()
+
+        val projected = d.state.projectedState
+        projected.hasType(formId, "ARTIFACT") shouldBe true
+        projected.hasType(formId, "ENCHANTMENT") shouldBe true
+        projected.hasSubtype(formId, "Aura") shouldBe true
+        d.state.getEntity(formId)?.get<AttachedToComponent>()?.targetId shouldBe d.manifestedBy(p)
+    }
+
+    test("a source that left and returned is a new object: its old trigger manifests but doesn't move it") {
+        val d = driver()
+        val p = d.activePlayer!!
+        val olderCard = d.putCardOnTopOfLibrary(p, "Centaur Courser")
+        val formId = d.castForm(creatureForm.name)
+        // Blink the Form in response to its trigger; the returned Form's own trigger resolves first.
+        d.castSpellWithTargets(p, d.putCardInHand(p, blink.name), listOf(ChosenTarget.Permanent(formId))).error shouldBe null
+        d.bothPass()
+        val newerCard = d.putCardOnTopOfLibrary(p, "Savannah Lions")
+
+        d.settle()
+
+        val form = d.getPermanents(p).single { d.getCardName(it) == creatureForm.name }
+        val host = d.state.getEntity(form)?.get<AttachedToComponent>()?.targetId
+        host shouldBe newerCard
+        d.state.getEntity(olderCard)?.get<FaceDownModeComponent>()?.mode shouldBe FaceDownMode.MANIFEST
     }
 })

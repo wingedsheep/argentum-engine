@@ -4562,12 +4562,14 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   sacrificedByItsController = true))) } }` + `staticAbility { ModifyStats(-1, 0) }`.
 - `BecomeAuraEffect(enchant, attachTo)` — facade `Effects.BecomeAura(enchant, attachTo)`. "It becomes an
   Aura with enchant creature. … attach this enchantment to it": the **source permanent**, already on the
-  battlefield, becomes an Enchantment — Aura for as long as it stays there (layer 4 sets its card types and
-  subtypes) whose whole enchant ability is `enchant`, keeping its own abilities — so its printed
+  battlefield, becomes an Aura for as long as it stays there (layer 4: Aura replaces any other enchantment
+  type, CR 205.1a; card types and other subtypes stay) whose whole enchant ability is `enchant`, keeping its
+  own abilities — so its printed
   "Enchanted creature has …" static starts working once it is attached. It is then attached (untargeted) to
   `attachTo` if it can legally enchant it (`AttachmentMover.canAttach`: the new enchant ability, protection,
   "can't be enchanted"); otherwise it stays an unattached Aura and the CR 704.5m SBA puts it into the
-  graveyard. A no-op once the source has left the battlefield — the rest of the ability still happens.
+  graveyard — an animated one too, as a creature Aura (CR 303.4d). A no-op once the source has left the
+  battlefield, even if it returned as a new object — the rest of the ability still happens.
   Unlike `EnchantPutOntoBattlefield` the source needn't already be an Aura and its new enchant ability names
   no particular object; unlike `PutOntoBattlefieldAsAura` nothing changes zones. **Cloudform** (the FRF
   "Form" cycle): `triggeredAbility { trigger = Triggers.self.enters(); effect = Patterns.Library.manifest()
@@ -5472,7 +5474,8 @@ one-off pipeline belongs inline in the card file via `Effects.Pipeline { }` (§5
 - `lookAtTopAndReorder(count)` — reorder top N.
 - `manifest(count = 1)` — manifest the top N cards (CR 701.40): each is put onto the battlefield
   face down as a 2/2 creature (one at a time). A manifested creature card can be turned face up for
-  its mana cost; a manifested non-creature can't.
+  its mana cost; a manifested non-creature can't. The manifested permanents stay in pipeline
+  collection `"manifested"` for a later step ("attach this enchantment to it" — `Effects.BecomeAura`).
 - `manifestDread(markEntered = false)` — "Manifest dread" (CR 701.60, Duskmourn): look at the top
   two cards of your library, manifest one of them (your choice), and put the other into your
   graveyard. Composes gather → select → move-face-down(MANIFEST) → move-to-graveyard →

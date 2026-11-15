@@ -122,10 +122,10 @@ object CardLinter {
         return findings
     }
 
-    /** Serial names of the effects that put mana into a pool (CR 605.1a's "could add mana"). */
     /** Serial name of the effect that turns its source permanent into an Aura (`BecomeAuraEffect`). */
     private val BECOMES_AURA = setOf("BecomeAura")
 
+    /** Serial names of the effects that put mana into a pool (CR 605.1a's "could add mana"). */
     private val MANA_ADDING_EFFECTS = setOf(
         "AddMana",
         "AddColorlessMana",

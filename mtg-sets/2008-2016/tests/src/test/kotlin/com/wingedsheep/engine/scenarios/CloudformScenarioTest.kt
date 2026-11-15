@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.TurnFaceUp
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownModeComponent
 import com.wingedsheep.engine.support.GameTestDriver
@@ -20,7 +21,7 @@ import io.kotest.matchers.shouldBe
  */
 class CloudformScenarioTest : FunSpec({
 
-    test("enters, becomes an Aura and enchants the manifested 2/2, granting it flying and hexproof") {
+    test("enters, becomes an Aura and enchants the manifested 2/2, granting it flying and hexproof; it stays attached when the creature turns face up") {
         val d = GameTestDriver().apply {
             registerCards(TestCards.all + Cloudform)
             initMirrorMatch(deck = Deck.of("Island" to 40), skipMulligans = true)
@@ -40,5 +41,12 @@ class CloudformScenarioTest : FunSpec({
         d.state.getEntity(form)?.get<AttachedToComponent>()?.targetId shouldBe top
         projected.hasKeyword(top, Keyword.FLYING) shouldBe true
         projected.hasKeyword(top, Keyword.HEXPROOF) shouldBe true
+
+        // Ruling: if the enchanted creature is turned face up, the Form continues to enchant it.
+        d.giveMana(you, Color.GREEN, 3)
+        d.submit(TurnFaceUp(playerId = you, sourceId = top)).error shouldBe null
+        d.state.getEntity(top)?.get<FaceDownModeComponent>() shouldBe null
+        d.state.getEntity(form)?.get<AttachedToComponent>()?.targetId shouldBe top
+        d.state.projectedState.hasKeyword(top, Keyword.FLYING) shouldBe true
     }
 })

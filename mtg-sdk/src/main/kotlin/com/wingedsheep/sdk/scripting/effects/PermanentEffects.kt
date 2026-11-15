@@ -573,20 +573,21 @@ data class EnchantPutOntoBattlefieldEffect(
 }
 
 /**
- * "It becomes an Aura with enchant [enchant]. … attach it to [attachTo]." — a permanent already on
- * the battlefield turning *itself* into an Aura and attaching to an object the same ability names
- * (the Fate Reforged "Form" cycle: "When this enchantment enters, it becomes an Aura with enchant
- * creature. Manifest the top card of your library and attach this enchantment to it.").
+ * The source permanent turns itself into an Aura and attaches to an object its ability names: "it
+ * becomes an Aura with enchant creature. Manifest the top card of your library and attach this
+ * enchantment to it." (the Fate Reforged "Form" cycle).
  *
- * The source becomes an Enchantment — Aura for as long as it stays on the battlefield (layer 4: its
- * card types and subtypes are set, its supertypes, name and colors untouched) whose whole enchant
- * ability is [enchant]; it keeps its other abilities, so a printed "Enchanted creature has …" static
- * starts applying once it is attached. It is then attached to [attachTo] if it can legally enchant
- * that object (its new enchant ability, protection from it, "can't be enchanted" — CR 701.3a). The
- * attachment isn't targeted. With nothing to attach to (an empty library manifested nothing) it
- * stays an unattached Aura and the CR 704.5m state-based action puts it into its owner's graveyard,
- * as the Form rulings say. A no-op when the source is no longer on the battlefield (the rest of the
- * ability — the manifest — still happens).
+ * "Becomes an Aura" changes only its enchantment types for as long as it stays on the battlefield
+ * (layer 4: Aura replaces any other enchantment type, CR 205.1a; its card types, other subtypes,
+ * name and colors are untouched), and its whole enchant ability becomes [enchant]. It keeps its
+ * other abilities, so a printed "Enchanted creature has …" static starts applying once it is
+ * attached. It is then attached to [attachTo] if it can legally enchant that object (its new
+ * enchant ability, protection from it, "can't be enchanted" — CR 701.3a); the attachment isn't
+ * targeted. With nothing to attach to (an empty library manifested nothing) it doesn't move
+ * (CR 701.3b): it stays an unattached Aura and the CR 704.5m state-based action puts it into its
+ * owner's graveyard, as the Form rulings say — as it does an animated one, a creature Aura (CR
+ * 303.4d). A no-op when the source has left the battlefield, even if it came back as a new object
+ * (the rest of the ability — the manifest — still happens).
  *
  * Neither neighbour takes the axis: [EnchantPutOntoBattlefieldEffect] rebinds a source that is
  * already an Aura to the particular objects its ability returned, and [PutOntoBattlefieldAsAuraEffect]
