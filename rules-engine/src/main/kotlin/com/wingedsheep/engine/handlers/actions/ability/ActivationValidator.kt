@@ -31,6 +31,7 @@ import com.wingedsheep.engine.mechanics.targeting.TargetValidator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
@@ -131,6 +132,7 @@ internal class ActivationValidator(
 
         return checkBatchActivation(action, effectiveCost, effectiveTargetReqs)
             ?: checkSubmittedTotalExileSelection(state, action, effectiveCost)
+            ?: checkExileXMinimum(state, action, ability, effectiveCost)
             ?: checkLoyaltyAbilityTiming(state, action, container, ability)
             ?: checkSorcerySpeedTiming(state, action, ability)
             ?: checkAttachedCreatureSummoningSickness(state, container, effectiveCost)
@@ -391,6 +393,39 @@ internal class ActivationValidator(
         return if (!resolver.isLegalSelection(candidates, atom.minTotal, submitted)) {
             "Those cards don't pay this cost: ${atom.description}"
         } else null
+    }
+
+    /**
+     * An exile-X cost whose X can't be 0 — "Exile one or more creature cards from your graveyard"
+     * (Corpseweft) is `ExileXFromGraveyard` under `minimumXValue = 1` — can't be activated without
+     * that many matching cards (a cost that can't be paid can't be activated), and a submitted
+     * selection must exile at least that many: X *is* the number exiled. The mana-`{X}` case
+     * (Ludevic, Necrogenius) is bounded by the announced X in ActivateAbilityHandler instead.
+     */
+    private fun checkExileXMinimum(
+        state: GameState,
+        action: ActivateAbility,
+        ability: ActivatedAbility,
+        effectiveCost: AbilityCost,
+    ): String? {
+        val minimum = ability.minimumXValue
+        if (minimum <= 0) return null
+        val cost = effectiveCost.extractExileXFromGraveyardCost() ?: return null
+        val candidates = costHandler.findMatchingCardsUnified(
+            state,
+            state.getZone(ZoneKey(action.playerId, Zone.GRAVEYARD)),
+            cost.filter,
+            action.playerId,
+            sourceId = action.sourceId
+        )
+        if (candidates.size < minimum) {
+            return "Not enough ${cost.filter.description}s in your graveyard to pay this cost"
+        }
+        val submitted = action.costPayment?.exiledCards.orEmpty()
+        if (submitted.isNotEmpty() && submitted.size < minimum) {
+            return "Exile at least $minimum ${cost.filter.description}${if (minimum > 1) "s" else ""} to pay this cost"
+        }
+        return null
     }
 
     /** Check timing for planeswalker abilities. */

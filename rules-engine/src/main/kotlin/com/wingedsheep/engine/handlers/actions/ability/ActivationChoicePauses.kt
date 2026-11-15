@@ -229,17 +229,25 @@ internal class ActivationChoicePauses(
             sourceId = action.sourceId
         )
         // A mana `{X}` already fixed the count; otherwise the player is free to exile any
-        // number of matching cards (including none) and that count becomes X.
+        // number of matching cards and that count becomes X — at least the ability's minimum X
+        // ("Exile one or more creature cards", Corpseweft: `minimumXValue = 1`), else none is fine.
         val fixedCount = action.xValue
-        val minSelections = fixedCount ?: 0
+        val minimumX = activation.ability.minimumXValue
+        val minSelections = fixedCount ?: minimumX
         val maxSelections = fixedCount ?: exileXCandidates.size
-        val isRealChoice = exileXCandidates.size > minSelections
         // Not a real choice, so no prompt: either the graveyard has nothing matching (X = 0,
-        // legal) or a mana-fixed X consumes every candidate, which CostHandler pays as-is.
+        // legal unless the ability has a minimum — ActivationValidator rejects that) or a
+        // mana-fixed X consumes every candidate, which CostHandler pays as-is. A free X with a
+        // minimum still pauses when the candidates exactly meet it: X is bound by the selection.
+        val isRealChoice = if (fixedCount != null) exileXCandidates.size > fixedCount
+        else exileXCandidates.isNotEmpty()
         if (!isRealChoice) return null
         val prompt = if (fixedCount != null) {
             "Select $fixedCount card${if (fixedCount > 1) "s" else ""} to exile from " +
                 "graveyard for ${sourceName}"
+        } else if (minimumX > 0) {
+            "Select $minimumX or more cards to exile from graveyard for ${sourceName} " +
+                "(X is the number you choose)"
         } else {
             "Select any number of cards to exile from graveyard for ${sourceName} " +
                 "(X is the number you choose)"

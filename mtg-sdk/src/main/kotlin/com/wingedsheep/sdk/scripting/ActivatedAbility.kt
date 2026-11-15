@@ -219,7 +219,9 @@ data class ActivatedAbility(
      * Minimum legal value for the `{X}` in this ability's cost (CR 601.2b analogue for activated
      * abilities). Defaults to 0. Set to 1 for "X can't be 0" abilities (Gogo, Master of Mimicry:
      * "{X}{X}, {T}: … X can't be 0."). The activated-ability X-choice decision clamps its lower
-     * bound to this value.
+     * bound to this value. When X is the size of an [AbilityCost.ExileXFromGraveyard] selection
+     * (no `{X}` mana), it floors that selection instead — "Exile one or more creature cards from
+     * your graveyard" (Corpseweft) is `minimumXValue = 1`.
      */
     val minimumXValue: Int = 0,
     /**

@@ -721,6 +721,25 @@ class CostEnumerationUtils(
      * activation with no choice, which then pays X = 0 — the storage lands (Bottomless Vault and
      * its cycle) removing zero counters for zero mana was exactly that.
      */
+    /**
+     * How many cards in [playerId]'s graveyard an [AbilityCost.ExileXFromGraveyard] cost could
+     * exile, honouring its filter. It is the upper bound on X (see [calculateMaxAffordableX]) and,
+     * for an ability whose X can't be 0 ("Exile one or more creature cards from your graveyard",
+     * Corpseweft — `minimumXValue = 1`), whether the ability can be activated at all.
+     */
+    fun exileXCandidateCount(
+        state: GameState,
+        playerId: EntityId,
+        cost: AbilityCost.ExileXFromGraveyard,
+        sourceId: EntityId?,
+    ): Int {
+        val projected = state.projectedState
+        val context = PredicateContext(controllerId = playerId, sourceId = sourceId)
+        return state.getZone(ZoneKey(playerId, Zone.GRAVEYARD)).count { cardId ->
+            predicateEvaluator.matches(state, projected, cardId, cost.filter, context)
+        }
+    }
+
     fun hasPlayerChosenNonManaX(abilityCost: AbilityCost): Boolean {
         fun isXCounterRemoval(cost: AbilityCost): Boolean =
             cost is AbilityCost.Atom &&
@@ -789,14 +808,8 @@ class CostEnumerationUtils(
             else -> emptyList()
         }
         if (exileXCosts.isNotEmpty()) {
-            val graveyard = state.getZone(ZoneKey(playerId, Zone.GRAVEYARD))
-            val projected = state.projectedState
-            val context = PredicateContext(controllerId = playerId, sourceId = sourceId)
             exileXCosts.forEach { cost ->
-                val matching = graveyard.count { cardId ->
-                    predicateEvaluator.matches(state, projected, cardId, cost.filter, context)
-                }
-                maxX = minOf(maxX, matching)
+                maxX = minOf(maxX, exileXCandidateCount(state, playerId, cost, sourceId))
             }
         }
 

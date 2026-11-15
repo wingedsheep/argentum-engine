@@ -47,7 +47,8 @@ import java.util.concurrent.ConcurrentHashMap
  *    `player = You` (`DynamicAmount.Count(You, GRAVEYARD)` for threshold-style counts, the
  *    distinct-type aggregation behind delirium, a gather from your graveyard). A "search your
  *    library and/or graveyard" choice is a tutor, not a payoff;
- *  - exiles cards from **your** graveyard as a cost (`CostAtom.ExileFrom(GRAVEYARD)`);
+ *  - exiles cards from **your** graveyard as a cost (`CostAtom.ExileFrom(GRAVEYARD)`, or the
+ *    variable-count `AbilityCost.ExileXFromGraveyard`);
  *  - targets a card only **your** graveyard holds (a `TargetFilter` in the graveyard owned or
  *    controlled by you), however the effect then moves it.
  *
@@ -123,6 +124,9 @@ object GraveyardSynergy {
             // Caller, Scarred Vinebreeder): the atom's `zone` is the payer's own, with no `player` beside it.
             // A cost that may take any player's graveyard (Night Soil) is graveyard hate, not a payoff.
             if (node is CostAtom.ExileFrom) return node.zone == Zone.GRAVEYARD && !node.anyPlayersZone
+            // "Exile X / one or more creature cards from your graveyard" (Corpseweft, Winter, Cursed
+            // Rider, Necropolis Fiend): the variable-count twin, always the payer's own graveyard.
+            if (node is com.wingedsheep.sdk.scripting.AbilityCost.ExileXFromGraveyard) return true
             // A destination fills a graveyard; it never consumes that resource.
             if (node is com.wingedsheep.sdk.scripting.effects.CardDestination) return false
             if (node is ChooseActionEffect && isTutorWithGraveyardFallback(node)) return false
