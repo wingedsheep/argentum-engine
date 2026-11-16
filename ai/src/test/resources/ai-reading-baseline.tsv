@@ -747,6 +747,7 @@ Aragorn, the Uniter
 Arahbo, the First Fang
 Arashin Cleric
 Arashin Foremost
+Arashin Sovereign
 Arashin Sunshield
 Arasta of the Endless Web
 Araña, Heart of the Spider
@@ -1046,6 +1047,7 @@ Atarka Beastbreaker
 Atarka Efreet
 Atarka Monument
 Atarka Pummeler
+Atarka's Command
 Atarka, World Render
 Atemsis, All-Seeing
 Athreos, God of Passage	intent: PayOrSufferEffect; polarity: PayOrSufferEffect
@@ -4931,6 +4933,7 @@ Dragonloft Idol
 Dragonlord Atarka
 Dragonlord Dromoka
 Dragonlord Kolaghan
+Dragonlord Ojutai
 Dragonlord's Prerogative
 Dragonlord's Servant
 Dragonmaster Outcast
@@ -5067,7 +5070,9 @@ Dromar's Charm
 Dromar, the Banisher
 Dromoka Captain
 Dromoka Dunecaster
+Dromoka Monument
 Dromoka Warrior
+Dromoka's Command
 Dromoka's Gift
 Drooling Groodion
 Drop of Honey
@@ -5646,6 +5651,7 @@ Enduring Bondwarden
 Enduring Courage
 Enduring Curiosity
 Enduring Innocence
+Enduring Scalelord
 Enduring Tenacity
 Enduring Victory
 Enduring Vitality
@@ -7072,6 +7078,7 @@ Gastal Thrillroller
 Gastal Thrillseeker
 Gate Colossus
 Gate Hound
+Gate Smasher
 Gate to Phyrexia
 Gate to the Aether	intent: MoveToZoneEffect; intent: Pipeline(TopOfLibrary→?)
 Gate to the Afterlife
@@ -8212,6 +8219,7 @@ Haradrim Spearmaster
 Harald Unites the Elves
 Harald, King of Skemfar
 Harbin, Vanguard Aviator
+Harbinger of the Hunt
 Harbinger of the Seas
 Harbinger of the Tides
 Hard Cover
@@ -9876,6 +9884,7 @@ Keep Watch
 Keeper of Fables
 Keeper of the Accord
 Keeper of the Cadence
+Keeper of the Lens
 Keeper of the Nine Gales
 Keeper of the Quiet Hour
 Keepers of the Faith
@@ -10117,6 +10126,7 @@ Koilos Roc
 Kokusho, the Evening Star
 Kolaghan Aspirant
 Kolaghan Forerunners
+Kolaghan Monument
 Kolaghan Skirmisher
 Kolaghan Stormsinger
 Kolaghan Warmonger
@@ -12707,6 +12717,7 @@ Ojer Pakpatiq, Deepest Epoch
 Ojer Taq, Deepest Foundation
 Ojutai Exemplars
 Ojutai Interceptor
+Ojutai Monument
 Ojutai's Breath
 Ojutai's Command
 Ojutai's Summons
@@ -13750,6 +13761,7 @@ Prison Barricade
 Prison Break
 Prison Realm
 Prison Sentence
+Pristine Skywise
 Pristine Talisman
 Private Eye
 Privileged Position
@@ -16423,6 +16435,7 @@ Silkwrap
 Silt Crawler
 Silumgar Assassin
 Silumgar Butcher
+Silumgar Monument
 Silumgar Sorcerer
 Silumgar Spell-Eater
 Silumgar's Command
@@ -18013,6 +18026,7 @@ Swift Reconfiguration	polarity: Aura>GrantKeyword; polarity: Aura>TransformPerma
 Swift Response
 Swift Spinner
 Swift Warden
+Swift Warkite
 Swiftblade Vindicator
 Swiftfoot Boots
 Swiftgear Drake
