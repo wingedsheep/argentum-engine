@@ -4117,6 +4117,62 @@
     ]
 }
 
+// Dragonlord Silumgar
+{
+    "name": "Dragonlord Silumgar",
+    "manaCost": "{4}{U}{B}",
+    "typeLine": "Legendary Creature — Elder Dragon",
+    "oracleText": "Flying, deathtouch\nWhen Dragonlord Silumgar enters, gain control of target creature or planeswalker for as long as you control Dragonlord Silumgar.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dragonlord Silumgar:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": {
+                        "type": "WhileYouControlSource",
+                        "sourceDescription": "Dragonlord Silumgar"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|planeswalker"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When Dragonlord Silumgar enters, gain control of target creature or planeswalker for as long as you control Dragonlord Silumgar."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "220",
+        "rarity": "MYTHIC",
+        "artist": "Steven Belledin",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2eae504d-d4a9-440f-8ceb-df967cc50494.jpg?1783938572"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Dragonlord's Prerogative
 {
     "name": "Dragonlord's Prerogative",

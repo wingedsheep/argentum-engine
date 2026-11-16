@@ -487,7 +487,9 @@ sealed interface Duration {
      * of control-changing effect (one-shot steals, Threaten, static control Auras). One-way
      * (CR 611.2b): once the source's controller changes (or the source leaves the battlefield)
      * the effect ends for good — `EndedDurationExpiryCheck` physically removes it, so
-     * regaining control does not restart it.
+     * regaining control does not restart it. A source already gone or no longer yours when the
+     * effect would begin has ended the duration first, so the effect does nothing (Dragonlord
+     * Silumgar's enters-trigger steal).
      *
      * Examples: Aladdin (ARN) — "Gain control of target artifact for as long as you control
      * this creature."  Scroll of Isildur (LTR) — "Gain control of up to one target artifact

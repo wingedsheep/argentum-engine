@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
+import com.wingedsheep.engine.mechanics.sba.permanent.EndedDurationExpiryCheck
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -90,6 +91,14 @@ class GainControlExecutor : EffectExecutor<GainControlEffect> {
                 context = floatingContext
             )
 
+        // CR 611.2b: a "for as long as …" duration that ended before the effect would begin means
+        // the effect does nothing — Dragonlord Silumgar left the battlefield, came back as a new
+        // object, or changed hands before its enters trigger resolved. Asked of the very gate the
+        // expiry SBA latches on, so the two can never disagree.
+        if (durationAlreadyEnded(stateWithControlEffect, effect.duration, floatingContext)) {
+            return EffectResult.success(state)
+        }
+
         // Ordinary control changes make the creature unable to attack/tap this turn. Old Man of
         // the Sea's duration is the long-lived exception in this engine: keeping the source tapped
         // preserves the stolen creature as usable under the new controller.
@@ -112,6 +121,33 @@ class GainControlExecutor : EffectExecutor<GainControlEffect> {
         )
 
         return EffectResult.success(newState, events)
+    }
+
+    /**
+     * Whether the control effect just appended to [stateWithEffect] is already over. A
+     * source-keyed duration also ends when the source returned as a new object since the ability
+     * began resolving: its entity id is back on the battlefield, but it is not the permanent the
+     * duration names (CR 400.7).
+     */
+    private fun durationAlreadyEnded(
+        stateWithEffect: GameState,
+        duration: Duration,
+        context: EffectContext
+    ): Boolean {
+        if (context.sourceReferenceLost && duration.isSourceKeyed()) return true
+        val floating = stateWithEffect.floatingEffects.last()
+        return EndedDurationExpiryCheck.activeAffectedEntities(
+            stateWithEffect, stateWithEffect.projectedState, floating
+        ).isEmpty()
+    }
+
+    private fun Duration.isSourceKeyed(): Boolean = when (this) {
+        is Duration.WhileSourceOnBattlefield,
+        is Duration.WhileSourceTapped,
+        is Duration.WhileSourceTappedAndAffectedPowerAtMostSource,
+        is Duration.WhileYouControlSource,
+        is Duration.WhileYouControlSourceAndSourceTapped -> true
+        else -> false
     }
 
     /**

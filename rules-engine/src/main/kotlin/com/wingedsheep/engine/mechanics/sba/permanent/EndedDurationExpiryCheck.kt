@@ -128,97 +128,6 @@ class EndedDurationExpiryCheck : StateBasedActionCheck {
     }
 
     /**
-     * The subset of [ActiveFloatingEffect.effect]'s affected entities for which the effect's
-     * "for as long as" condition still holds. Returns the full set unchanged for non-conditional
-     * durations. The returned set is always a subset of the input (the affected set only shrinks),
-     * which is what makes the latch one-way.
-     */
-    private fun activeAffectedEntities(
-        state: GameState,
-        projected: ProjectedState,
-        floating: ActiveFloatingEffect
-    ): Set<EntityId> {
-        val all = floating.effect.affectedEntities
-        return when (floating.duration) {
-            // Source-keyed gates — the condition is a pure function of the source permanent (and,
-            // for the attachment gate, of which permanent it is attached to). Shared with the
-            // granted-ability path via [sourceGateHolds]; filtering per affected entity is
-            // equivalent to all-or-nothing for the two gates that ignore the affected object.
-            // "for as long as <source> remains tapped" also reads the untap clock the effect was
-            // stamped with, so an untap between activation and resolution ends it (CR 611.2b).
-            is Duration.WhileSourceTapped ->
-                if (GrantDurationGate.sourceTapped(state, floating)) all else emptySet()
-
-            is Duration.WhileSourceOnBattlefield,
-            Duration.WhileSourceAttachedToAffected,
-            Duration.WhileAffectedAttachedToSource ->
-                all.filterTo(LinkedHashSet()) {
-                    sourceGateHolds(state, floating.duration, floating.sourceId, it)
-                }
-
-            is Duration.WhileSourceTappedAndAffectedPowerAtMostSource -> {
-                if (!GrantDurationGate.sourceTapped(state, floating)) {
-                    emptySet()
-                } else {
-                    val sourcePower = projected.getPower(floating.sourceId!!) ?: return all
-                    all.filterTo(LinkedHashSet()) { id ->
-                        !state.getBattlefield().contains(id) ||
-                            (projected.getPower(id) ?: 0) <= sourcePower
-                    }
-                }
-            }
-
-            Duration.WhileControlledByController ->
-                all.filterTo(LinkedHashSet()) { id ->
-                    !state.getBattlefield().contains(id) || projected.getController(id) == floating.controllerId
-                }
-
-            is Duration.WhileYouControlSource -> {
-                val sourceId = floating.sourceId
-                if (sourceId == null || !state.getBattlefield().contains(sourceId)) emptySet()
-                else if (projected.getController(sourceId) != floating.controllerId) emptySet()
-                else all
-            }
-
-            // Seasinger — the conjunction of the two gates above. Either half failing ends the
-            // effect for good (CR 611.2b), which is what makes untapping Seasinger hand the
-            // borrowed creature back permanently rather than for one turn.
-            is Duration.WhileYouControlSourceAndSourceTapped -> {
-                val sourceId = floating.sourceId
-                if (sourceId == null || !state.getBattlefield().contains(sourceId)) emptySet()
-                else if (!GrantDurationGate.sourceTapped(state, floating)) emptySet()
-                else if (projected.getController(sourceId) != floating.controllerId) emptySet()
-                else all
-            }
-
-            is Duration.WhileAffectedHasCounter -> {
-                // "for as long as it has a [X] counter on it" (Ultima) — keep only affected
-                // entities that still carry the counter (CR 611.2b). Entities that merely left
-                // the battlefield are kept here and reaped by zone-change cleanup instead, matching
-                // the other per-affected gates.
-                val counterType = floating.duration.counterType
-                all.filterTo(LinkedHashSet()) { id ->
-                    !state.getBattlefield().contains(id) ||
-                        (state.getEntity(id)?.get<CountersComponent>()?.getCount(counterType) ?: 0) > 0
-                }
-            }
-
-            Duration.WhileAffectedTapped -> {
-                // "for as long as it remains tapped" (Braided Net) — keep only affected entities
-                // that are still tapped (CR 611.2b). One-way: once dropped here, a later re-tap
-                // does not resurrect the effect. Entities that merely left the battlefield are
-                // kept and reaped by zone-change cleanup, matching the other per-affected gates.
-                all.filterTo(LinkedHashSet()) { id ->
-                    !state.getBattlefield().contains(id) ||
-                        state.getEntity(id)?.has<TappedComponent>() == true
-                }
-            }
-
-            else -> all
-        }
-    }
-
-    /**
      * Drop any grant whose "for as long as …" condition no longer holds. Two families:
      *
      *  - **Affected-object-keyed** (or whose entity has left the battlefield — a returning
@@ -411,6 +320,103 @@ class EndedDurationExpiryCheck : StateBasedActionCheck {
                     newControllerId = baseController
                 )
             )
+        }
+    }
+
+    companion object {
+        /**
+         * The subset of [ActiveFloatingEffect.effect]'s affected entities for which the effect's
+         * "for as long as" condition still holds. Returns the full set unchanged for non-conditional
+         * durations. The returned set is always a subset of the input (the affected set only shrinks),
+         * which is what makes the latch one-way.
+         *
+         * Also asked by an executor about the effect it is about to create: an empty result means the
+         * duration had already ended before the effect would begin, so the effect does nothing
+         * (CR 611.2b — Dragonlord Silumgar's steal when Silumgar left or changed hands first).
+         */
+        fun activeAffectedEntities(
+            state: GameState,
+            projected: ProjectedState,
+            floating: ActiveFloatingEffect
+        ): Set<EntityId> {
+            val all = floating.effect.affectedEntities
+            return when (floating.duration) {
+                // Source-keyed gates — the condition is a pure function of the source permanent (and,
+                // for the attachment gate, of which permanent it is attached to). Shared with the
+                // granted-ability path via [sourceGateHolds]; filtering per affected entity is
+                // equivalent to all-or-nothing for the two gates that ignore the affected object.
+                // "for as long as <source> remains tapped" also reads the untap clock the effect was
+                // stamped with, so an untap between activation and resolution ends it (CR 611.2b).
+                is Duration.WhileSourceTapped ->
+                    if (GrantDurationGate.sourceTapped(state, floating)) all else emptySet()
+
+                is Duration.WhileSourceOnBattlefield,
+                Duration.WhileSourceAttachedToAffected,
+                Duration.WhileAffectedAttachedToSource ->
+                    all.filterTo(LinkedHashSet()) {
+                        GrantDurationGate.sourceGateHolds(state, floating.duration, floating.sourceId, it)
+                    }
+
+                is Duration.WhileSourceTappedAndAffectedPowerAtMostSource -> {
+                    if (!GrantDurationGate.sourceTapped(state, floating)) {
+                        emptySet()
+                    } else {
+                        val sourcePower = projected.getPower(floating.sourceId!!) ?: return all
+                        all.filterTo(LinkedHashSet()) { id ->
+                            !state.getBattlefield().contains(id) ||
+                                (projected.getPower(id) ?: 0) <= sourcePower
+                        }
+                    }
+                }
+
+                Duration.WhileControlledByController ->
+                    all.filterTo(LinkedHashSet()) { id ->
+                        !state.getBattlefield().contains(id) || projected.getController(id) == floating.controllerId
+                    }
+
+                is Duration.WhileYouControlSource -> {
+                    val sourceId = floating.sourceId
+                    if (sourceId == null || !state.getBattlefield().contains(sourceId)) emptySet()
+                    else if (projected.getController(sourceId) != floating.controllerId) emptySet()
+                    else all
+                }
+
+                // Seasinger — the conjunction of the two gates above. Either half failing ends the
+                // effect for good (CR 611.2b), which is what makes untapping Seasinger hand the
+                // borrowed creature back permanently rather than for one turn.
+                is Duration.WhileYouControlSourceAndSourceTapped -> {
+                    val sourceId = floating.sourceId
+                    if (sourceId == null || !state.getBattlefield().contains(sourceId)) emptySet()
+                    else if (!GrantDurationGate.sourceTapped(state, floating)) emptySet()
+                    else if (projected.getController(sourceId) != floating.controllerId) emptySet()
+                    else all
+                }
+
+                is Duration.WhileAffectedHasCounter -> {
+                    // "for as long as it has a [X] counter on it" (Ultima) — keep only affected
+                    // entities that still carry the counter (CR 611.2b). Entities that merely left
+                    // the battlefield are kept here and reaped by zone-change cleanup instead, matching
+                    // the other per-affected gates.
+                    val counterType = floating.duration.counterType
+                    all.filterTo(LinkedHashSet()) { id ->
+                        !state.getBattlefield().contains(id) ||
+                            (state.getEntity(id)?.get<CountersComponent>()?.getCount(counterType) ?: 0) > 0
+                    }
+                }
+
+                Duration.WhileAffectedTapped -> {
+                    // "for as long as it remains tapped" (Braided Net) — keep only affected entities
+                    // that are still tapped (CR 611.2b). One-way: once dropped here, a later re-tap
+                    // does not resurrect the effect. Entities that merely left the battlefield are
+                    // kept and reaped by zone-change cleanup, matching the other per-affected gates.
+                    all.filterTo(LinkedHashSet()) { id ->
+                        !state.getBattlefield().contains(id) ||
+                            state.getEntity(id)?.has<TappedComponent>() == true
+                    }
+                }
+
+                else -> all
+            }
         }
     }
 }
