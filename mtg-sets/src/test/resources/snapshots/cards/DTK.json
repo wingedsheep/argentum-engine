@@ -161,6 +161,75 @@
     ]
 }
 
+// Ainok Survivalist
+{
+    "name": "Ainok Survivalist",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Dog Shaman",
+    "oracleText": "Megamorph {1}{G} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)\nWhen this creature is turned face up, destroy target artifact or enchantment an opponent controls.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{1}{G}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ainok Survivalist:1",
+                "trigger": "TurnFaceUpEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact|enchantment ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "rarity": "UNCOMMON",
+        "artist": "Craig J Spearing",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac0a7410-493c-4c99-99e2-b8e1116622e8.jpg?1783938582",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If a face-down creature with megamorph is turned face up some other way (for example, if you manifest a card with megamorph and then pay its mana cost to turn it face up), you won't put a +1/+1 counter on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Ambuscade Shaman
 {
     "name": "Ambuscade Shaman",
@@ -576,6 +645,178 @@
     ]
 }
 
+// Assault Formation
+{
+    "name": "Assault Formation",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Each creature you control assigns combat damage equal to its toughness rather than its power.\n{G}: Target creature with defender can attack this turn as though it didn't have defender.\n{2}{G}: Creatures you control get +0/+1 until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Assault Formation:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{G}"
+                    }
+                },
+                "effect": {
+                    "type": "CanAttackDespiteDefenderThisTurn",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature kw:defender"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{G}: Target creature with defender can attack this turn as though it didn't have defender."
+            },
+            {
+                "id": "Assault Formation:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "{2}{G}: Creatures you control get +0/+1 until end of turn."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "AssignDamageEqualToToughness",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "onlyWhenToughnessGreaterThanPower": false
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "173",
+        "rarity": "RARE",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f672dd0-cd63-464c-9581-0ec6f0e391f7.jpg?1783938582",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "Assault Formation's first ability doesn't actually change any creature's power. It changes only the amount of combat damage it assigns. All other rules and effects that check power or toughness use the real values. For example, Hunt the Weak won't cause a creature to fight with its toughness."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Atarka Beastbreaker
+{
+    "name": "Atarka Beastbreaker",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Formidable — {4}{G}: This creature gets +4/+4 until end of turn. Activate only if creatures you control have total power 8 or greater.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Atarka Beastbreaker:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": "Self"
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "creature",
+                                "aggregation": "SUM",
+                                "property": "POWER"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 8
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "174",
+        "artist": "Johannes Voss",
+        "flavorText": "He scorns the heavy winter garb of lesser warriors, trusting his anger to keep him warm.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c8ef9a03-3044-4e90-9409-c330972fcafb.jpg?1783938582",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If you control a creature with power less than 0, use its actual power when calculating the total power of creatures you control. For example, if you control three creatures with powers 4, 5, and -2, the total power of creatures you control is 7."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Some formidable abilities are activated abilities that require creatures you control to have total power 8 or greater. Once you activate these abilities, it doesn't matter what happens to the total power of creatures you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Atarka Efreet
 {
     "name": "Atarka Efreet",
@@ -796,6 +1037,65 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Avatar of the Resolute
+{
+    "name": "Avatar of the Resolute",
+    "manaCost": "{G}{G}",
+    "typeLine": "Creature — Avatar",
+    "oracleText": "Reach, trample\nThis creature enters with a +1/+1 counter on it for each other creature you control with a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "REACH",
+        "TRAMPLE"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            },
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsSource"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "rarity": "RARE",
+        "artist": "Jeff Simpson",
+        "flavorText": "It exemplifies the ideals of the Dromoka: strength, unity, and honor.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7bf18a2f-f93e-4a18-92d5-c9d2cca276d7.jpg?1783938582",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "When determining how many +1/+1 counters Avatar of the Resolute enters the battlefield with, don't count any creatures entering the battlefield at the same time, even if those creatures enter the battlefield with +1/+1 counters on them."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -1418,6 +1718,78 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Circle of Elders
+{
+    "name": "Circle of Elders",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "Vigilance\nFormidable — {T}: Add {C}{C}{C}. Activate only if creatures you control have total power 8 or greater.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Circle of Elders:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "timing": "ManaAbility",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "creature",
+                                "aggregation": "SUM",
+                                "property": "POWER"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 8
+                            }
+                        }
+                    }
+                ],
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "rarity": "UNCOMMON",
+        "artist": "Jakub Kasper",
+        "flavorText": "They whisper of an ancient hero who saved the dragons of their world.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a99df522-cc97-41e3-8073-72e092afe8bb.jpg?1783938581",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If you control a creature with power less than 0, use its actual power when calculating the total power of creatures you control. For example, if you control three creatures with powers 4, 5, and -2, the total power of creatures you control is 7."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Some formidable abilities are activated abilities that require creatures you control to have total power 8 or greater. Once you activate these abilities, it doesn't matter what happens to the total power of creatures you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -2408,6 +2780,83 @@
     ]
 }
 
+// Den Protector
+{
+    "name": "Den Protector",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Creatures with power less than this creature's power can't block it.\nMegamorph {1}{G} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)\nWhen this creature is turned face up, return target card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{1}{G}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Den Protector:1",
+                "trigger": "TurnFaceUpEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature is turned face up, return target card from your graveyard to your hand."
+            }
+        ],
+        "staticAbilities": [
+            "CantBeBlockedByCreaturesWithLessPower"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "rarity": "RARE",
+        "artist": "Viktor Titov",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bd90d5ea-c586-4afd-be75-1c821e48df0c.jpg?1783938581",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "You compare Den Protector's power to the power of any creature trying to block it only as blockers are assigned. Once Den Protector has been legally blocked by a creature, changing the power of either creature won't change or undo the block."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If a face-down creature with megamorph is turned face up some other way (for example, if you manifest a card with megamorph and then pay its mana cost to turn it face up), you won't put a +1/+1 counter on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Descent of the Dragons
 {
     "name": "Descent of the Dragons",
@@ -3021,6 +3470,76 @@
     ]
 }
 
+// Dragon-Scarred Bear
+{
+    "name": "Dragon-Scarred Bear",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Bear",
+    "oracleText": "Formidable — {1}{G}: Regenerate this creature. Activate only if creatures you control have total power 8 or greater.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Dragon-Scarred Bear:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "Self"
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "creature",
+                                "aggregation": "SUM",
+                                "property": "POWER"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 8
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Formidable — {1}{G}: Regenerate this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "183",
+        "artist": "Lars Grant-West",
+        "flavorText": "Bears are a delicacy for the Atarka. The few that remain are the toughest of their species.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/689a6390-894a-4d31-87c2-f9cec3b187a7.jpg?1783938580",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If you control a creature with power less than 0, use its actual power when calculating the total power of creatures you control. For example, if you control three creatures with powers 4, 5, and -2, the total power of creatures you control is 7."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Some formidable abilities are activated abilities that require creatures you control to have total power 8 or greater. Once you activate these abilities, it doesn't matter what happens to the total power of creatures you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Dragonloft Idol
 {
     "name": "Dragonloft Idol",
@@ -3568,6 +4087,65 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Dromoka's Gift
+{
+    "name": "Dromoka's Gift",
+    "manaCost": "{4}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Bolster 4. (Choose a creature with the least toughness among creatures you control and put four +1/+1 counters on it.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "ControlledPermanents",
+                        "filter": "creature"
+                    },
+                    "storeAs": "bolsterCreatures"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "bolsterCreatures",
+                    "collectionFilter": "LeastToughness",
+                    "storeMatching": "bolsterLeastToughness"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "bolsterLeastToughness",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "bolstered",
+                    "prompt": "Bolster 4 — choose a creature with the least toughness",
+                    "useTargetingUI": true
+                },
+                {
+                    "type": "AddCountersToCollection",
+                    "collectionName": "bolstered",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 4
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "184",
+        "rarity": "UNCOMMON",
+        "artist": "Winona Nelson",
+        "flavorText": "The simplest gift from a dragon can be a revered accolade for a human warrior.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a356afb6-19d7-459a-84ca-090924d45387.jpg?1783938580"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -4398,6 +4976,75 @@
     ]
 }
 
+// Glade Watcher
+{
+    "name": "Glade Watcher",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Defender\nFormidable — {G}: This creature can attack this turn as though it didn't have defender. Activate only if creatures you control have total power 8 or greater.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Glade Watcher:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{G}"
+                    }
+                },
+                "effect": "CanAttackDespiteDefenderThisTurn",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "creature",
+                                "aggregation": "SUM",
+                                "property": "POWER"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 8
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Formidable — {G}: This creature can attack this turn as though it didn't have defender."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "188",
+        "artist": "Jesper Ejsing",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/02c9c6d9-e715-4b70-a10e-8bc5a4e9e938.jpg?1783938579",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If you control a creature with power less than 0, use its actual power when calculating the total power of creatures you control. For example, if you control three creatures with powers 4, 5, and -2, the total power of creatures you control is 7."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Some formidable abilities are activated abilities that require creatures you control to have total power 8 or greater. Once you activate these abilities, it doesn't matter what happens to the total power of creatures you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Glaring Aegis
 {
     "name": "Glaring Aegis",
@@ -4716,6 +5363,76 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Guardian Shield-Bearer
+{
+    "name": "Guardian Shield-Bearer",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Megamorph {3}{G} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)\nWhen this creature is turned face up, put a +1/+1 counter on another target creature you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{3}{G}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Guardian Shield-Bearer:1",
+                "trigger": "TurnFaceUpEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature is turned face up, put a +1/+1 counter on another target creature you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "artist": "Lindsey Look",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/c/dcbd7958-29a0-4f59-9648-eabe0fbfb4f9.jpg?1783938579",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If a face-down creature with megamorph is turned face up some other way (for example, if you manifest a card with megamorph and then pay its mana cost to turn it face up), you won't put a +1/+1 counter on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -5219,6 +5936,80 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Herdchaser Dragon
+{
+    "name": "Herdchaser Dragon",
+    "manaCost": "{5}{G}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying, trample\nMegamorph {5}{G}{G} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)\nWhen this creature is turned face up, put a +1/+1 counter on each other Dragon creature you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{5}{G}{G}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Herdchaser Dragon:1",
+                "trigger": "TurnFaceUpEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature Dragon ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "When this creature is turned face up, put a +1/+1 counter on each other Dragon creature you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "rarity": "UNCOMMON",
+        "artist": "Seb McKinnon",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5fb84323-b6f7-43ea-baf1-3e29b33b680d.jpg?1783938579",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If a face-down creature with megamorph is turned face up some other way (for example, if you manifest a card with megamorph and then pay its mana cost to turn it face up), you won't put a +1/+1 counter on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -6256,6 +7047,97 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Lurking Arynx
+{
+    "name": "Lurking Arynx",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Cat Beast",
+    "oracleText": "Formidable — {2}{G}: Target creature blocks this creature this turn if able. Activate only if creatures you control have total power 8 or greater.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Lurking Arynx:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "ForceBlock",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "creature",
+                                "aggregation": "SUM",
+                                "property": "POWER"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 8
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Formidable — {2}{G}: Target creature blocks this creature this turn if able."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "192",
+        "rarity": "UNCOMMON",
+        "artist": "Carl Frank",
+        "flavorText": "Once it has your scent, it will hunt you from the Gurmag Swamp to Ayagor.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f59bc0b-88de-4580-bfc8-5af911d9ee99.jpg?1783938578",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "You may activate Lurking Arynx's ability multiple times in a turn to force multiple creatures to block it if able."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Activating Lurking Arynx's ability doesn't force you to attack with it that turn. If it doesn't attack, the creatures affected by its ability can block other attacking creatures or not block at all."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If a creature affected by Lurking Arynx's ability can't legally block it (perhaps because Lurking Arynx has gained flying), that creature can block other attacking creatures or not block at all."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Some formidable abilities are activated abilities that require creatures you control to have total power 8 or greater. Once you activate these abilities, it doesn't matter what happens to the total power of creatures you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -7464,6 +8346,87 @@
     ]
 }
 
+// Pinion Feast
+{
+    "name": "Pinion Feast",
+    "manaCost": "{4}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature with flying. Bolster 2. (Choose a creature with the least toughness among creatures you control and put two +1/+1 counters on it.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "ControlledPermanents",
+                                "filter": "creature"
+                            },
+                            "storeAs": "bolsterCreatures"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "bolsterCreatures",
+                            "collectionFilter": "LeastToughness",
+                            "storeMatching": "bolsterLeastToughness"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "bolsterLeastToughness",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "bolstered",
+                            "prompt": "Bolster 2 — choose a creature with the least toughness",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "AddCountersToCollection",
+                            "collectionName": "bolstered",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 2
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature kw:flying"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "195",
+        "artist": "Ryan Barger",
+        "flavorText": "\"Even paradise is not without tragedies.\"\n—Sarkhan Vol",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/45d6df03-c3c3-42c3-85a4-6fccb0741592.jpg?1783938577"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Pitiless Horde
 {
     "name": "Pitiless Horde",
@@ -8135,6 +9098,68 @@
     ]
 }
 
+// Revealing Wind
+{
+    "name": "Revealing Wind",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Prevent all combat damage that would be dealt this turn. You may look at each face-down creature that's attacking or blocking.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "PreventDamageShield",
+                    "scope": "CombatOnly"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "IsFaceDown",
+                                    {
+                                        "type": "StateOr",
+                                        "predicates": [
+                                            "IsAttacking",
+                                            "IsBlocking"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "LookAtFaceDown",
+                        "target": "IterationEntity",
+                        "scope": "SINGLE_TARGET"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "197",
+        "artist": "Phill Simmer",
+        "flavorText": "\"The sands obscure the vision of others, but clarify ours.\"\n—Faiso, Dromoka commander",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/36bdd624-e412-4ec8-9929-e1f6b4720e82.jpg?1783938577",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "You can cast Revealing Wind even if there are no face-down creatures attacking or blocking. The damage-prevention effect will still apply."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Risen Executioner
 {
     "name": "Risen Executioner",
@@ -8368,6 +9393,89 @@
     ]
 }
 
+// Salt Road Ambushers
+{
+    "name": "Salt Road Ambushers",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Dog Warrior",
+    "oracleText": "Whenever another permanent you control is turned face up, if it's a creature, put two +1/+1 counters on it.\nMegamorph {3}{G}{G} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{3}{G}{G}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Salt Road Ambushers:1",
+                "trigger": {
+                    "type": "CreatureTurnedFaceUpEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsPermanent"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsSource"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": "TriggeringEntity"
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "TriggeringEntity",
+                    "filter": "creature"
+                },
+                "descriptionOverride": "Whenever another permanent you control is turned face up, if it's a creature, put two +1/+1 counters on it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "rarity": "UNCOMMON",
+        "artist": "Joseph Meehan",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/56c1111a-9680-4d34-8cf7-af16ae508a72.jpg?1783938577",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "The face-down permanent must be a creature both before it's turned face up and when the triggered ability resolves to have +1/+1 counters placed on it."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If a face-down creature with megamorph is turned face up some other way (for example, if you manifest a card with megamorph and then pay its mana cost to turn it face up), you won't put a +1/+1 counter on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Salt Road Quartermasters
 {
     "name": "Salt Road Quartermasters",
@@ -8508,6 +9616,77 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Sandsteppe Scavenger
+{
+    "name": "Sandsteppe Scavenger",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Dog Scout",
+    "oracleText": "When this creature enters, bolster 2. (Choose a creature with the least toughness among creatures you control and put two +1/+1 counters on it.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sandsteppe Scavenger:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "ControlledPermanents",
+                                "filter": "creature"
+                            },
+                            "storeAs": "bolsterCreatures"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "bolsterCreatures",
+                            "collectionFilter": "LeastToughness",
+                            "storeMatching": "bolsterLeastToughness"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "bolsterLeastToughness",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "bolstered",
+                            "prompt": "Bolster 2 — choose a creature with the least toughness",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "AddCountersToCollection",
+                            "collectionName": "bolstered",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 2
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "artist": "Kieran Yanner",
+        "flavorText": "\"Sad what passes for a dragon among the Silumgar.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/861f215b-4f3b-4aca-9664-3ef9a0ddea1a.jpg?1783938577"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
