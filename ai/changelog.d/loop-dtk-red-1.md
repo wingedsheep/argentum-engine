@@ -1,0 +1,1 @@
+- #<pr> The AI holds a self "base power 8 until end of turn" (Crater Elemental) for a fight it can still be in, reads "the next spell you cast costs {1} less" (Hardened Berserker, Peerless Samurai) as a cost reducer, and reads "can't attack or block unless you pay {2}" (Qal Sisma Behemoth) as the body's drawback but Brainwash's as a curse on what it enchants

@@ -1449,6 +1449,11 @@ internal object ExpiringGrantWindow {
                 leaf is ModifyStatsEffect && leaf.duration == Duration.EndOfTurn &&
                     (isPump(leaf) || leaf.target == EffectTarget.Self) ->
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target)
+                // "This creature has base power 8 until end of turn" (Crater Elemental): the
+                // holder's own body reset for this fight, read as the self-pump it is — spent in a
+                // fight it can still be in, like a self-targeted [ModifyStatsEffect] above.
+                leaf is SetBaseStatsEffect && leaf.duration == Duration.EndOfTurn && leaf.target == EffectTarget.Self ->
+                    payoffs += Payoff(PayoffKind.CREATURE, leaf.target)
                 readShrinks && leaf is ModifyStatsEffect && leaf.duration == Duration.EndOfTurn &&
                     statsSign(leaf.powerModifier, leaf.toughnessModifier) == AmountSign.LOSS -> {
                     // The loss has to be a number to tell a shrink from removal: a printed one is

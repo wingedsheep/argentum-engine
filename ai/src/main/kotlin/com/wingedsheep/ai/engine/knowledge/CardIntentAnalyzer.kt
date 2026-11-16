@@ -37,6 +37,7 @@ import com.wingedsheep.sdk.scripting.CantBeBlockedBy
 import com.wingedsheep.sdk.scripting.CantBeBlockedByMoreThan
 import com.wingedsheep.sdk.scripting.CantBeBlockedExceptBy
 import com.wingedsheep.sdk.scripting.CantAttack
+import com.wingedsheep.sdk.scripting.CantAttackOrBlockUnlessPay
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWith
 import com.wingedsheep.sdk.scripting.CanBlockAdditionalForCreatureGroup
@@ -406,6 +407,9 @@ object CardIntentAnalyzer {
         for (script in scripts) for (static in script.staticAbilities) {
             // A curse Aura's granted ability is the opponent's consolation, not our payoff.
             if (static is GrantActivatedAbility && TargetPolarityAnalyzer.cursesHost(script.staticAbilities)) continue
+            // On an Aura the tax lands on what it enchants (Brainwash): a price on the host's
+            // attacks, not a drawback of the card's own body — the polarity reader's question.
+            if (static is CantAttackOrBlockUnlessPay && script.isAura) continue
             tags += tagsOf(static)
             anthemBonus = maxOf(anthemBonus, anthemBonusOf(static))
         }
@@ -2592,6 +2596,16 @@ object CardIntentAnalyzer {
 
         is AddManaEffect, is AddColorlessManaEffect, is AddDynamicManaEffect,
         is AddManaOfChoiceEffect, is PlayAdditionalLandsEffect -> setOf(IntentTag.RAMP)
+        // "The next spell you cast this turn costs {1} less" (Hardened Berserker, Peerless Samurai),
+        // "spells you cast this turn cost {X} less" (Will, Scion of Peace): a discount on our own
+        // spells, as the static form reads. The tax mirror aimed at the opponents ("your opponents'
+        // noncreature spells cost {2} more") is disruption; one on every player, or on whoever's
+        // draw step it is (Academy Loremaster), taxes us alike and earns no tag.
+        is ModifySpellCostsEffect -> when {
+            !effect.increase && effect.player == Player.You -> setOf(IntentTag.COST_REDUCER)
+            effect.increase && effect.player in OPPONENT_PLAYERS -> setOf(IntentTag.SPELL_TAX)
+            else -> emptySet()
+        }
 
         is RegenerateEffect, is HealDamageEffect -> setOf(IntentTag.PROTECTION)
         // A shield is protection; the reaction it carries ("for each 1 damage prevented this way,
@@ -3627,6 +3641,10 @@ object CardIntentAnalyzer {
         // "This creature can't attack unless you control an artifact" (Desperate Castaways, Gadrak):
         // a condition on its own attacks — the same drawback on the body as needing a co-attacker.
         is CantAttackUnless -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
+        // "This creature can't attack or block unless you pay {2}" (Qal Sisma Behemoth, Myr
+        // Prototype): a mana price on its own combat — the drawback of an oversized body. Scoped
+        // to itself by construction; the Aura form (Brainwash) is skipped where the card is read.
+        is CantAttackOrBlockUnlessPay -> setOf(IntentTag.COMBAT_RESTRICTION)
         is CantBlockUnlessCoBlocker -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
         // "This creature can't block unless you control another Wolf or Werewolf" (Howlpack Wolf):
         // the blocking half of [CantAttackUnless] — a condition on its own blocks, a drawback.

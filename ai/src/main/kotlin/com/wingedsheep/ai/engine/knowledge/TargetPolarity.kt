@@ -22,6 +22,7 @@ import com.wingedsheep.sdk.scripting.GrantProtection
 import com.wingedsheep.sdk.scripting.GrantProtectionFromCardType
 import com.wingedsheep.sdk.scripting.LoseAllAbilities
 import com.wingedsheep.sdk.scripting.CantAttack
+import com.wingedsheep.sdk.scripting.CantAttackOrBlockUnlessPay
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.MustAttack
 import com.wingedsheep.sdk.scripting.EntersWithChoice
@@ -2643,6 +2644,9 @@ object TargetPolarityAnalyzer {
         is GrantLandwalkOfChosenType -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.BENEFICIAL
         is CantAttack -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.HARMFUL
         is CantBlock -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.HARMFUL
+        // "Enchanted creature can't attack unless its controller pays {3}" (Brainwash): a price on
+        // the host's every attack. No filter: on an Aura it only ever reads the host.
+        is CantAttackOrBlockUnlessPay -> TargetPolarity.HARMFUL
         is GrantTriggeredAbility -> if (static.filter.scope != Scope.AttachedTo) null else grantedTriggerPolarity(static.ability)
         is GrantWard -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.BENEFICIAL
         is GrantProtection -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.BENEFICIAL
