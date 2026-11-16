@@ -2645,7 +2645,9 @@ object TargetPolarityAnalyzer {
         is CantAttack -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.HARMFUL
         is CantBlock -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.HARMFUL
         // "Enchanted creature can't attack unless its controller pays {3}" (Brainwash): a price on
-        // the host's every attack. No filter: on an Aura it only ever reads the host.
+        // the host's every attack. No filter: on an Aura it only ever reads the host. On a creature's
+        // own script (Qal Sisma Behemoth) it reads HARMFUL too, which only matters to [cursesHost],
+        // and that is consulted for AttachedTo grants — which a bare creature never carries.
         is CantAttackOrBlockUnlessPay -> TargetPolarity.HARMFUL
         is GrantTriggeredAbility -> if (static.filter.scope != Scope.AttachedTo) null else grantedTriggerPolarity(static.ability)
         is GrantWard -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.BENEFICIAL

@@ -2599,11 +2599,13 @@ object CardIntentAnalyzer {
         // "The next spell you cast this turn costs {1} less" (Hardened Berserker, Peerless Samurai),
         // "spells you cast this turn cost {X} less" (Will, Scion of Peace): a discount on our own
         // spells, as the static form reads. The tax mirror aimed at the opponents ("your opponents'
-        // noncreature spells cost {2} more") is disruption; one on every player, or on whoever's
-        // draw step it is (Academy Loremaster), taxes us alike and earns no tag.
+        // noncreature spells cost {2} more") is disruption, one on our own spells is a drawback; one
+        // on every player, or on whoever's draw step it is (Academy Loremaster), taxes us alike and
+        // earns no tag.
         is ModifySpellCostsEffect -> when {
             !effect.increase && effect.player == Player.You -> setOf(IntentTag.COST_REDUCER)
             effect.increase && effect.player in OPPONENT_PLAYERS -> setOf(IntentTag.SPELL_TAX)
+            effect.increase && effect.player == Player.You -> setOf(IntentTag.OWN_SPELL_TAX)
             else -> emptySet()
         }
 
