@@ -21,7 +21,11 @@ import io.kotest.matchers.shouldBe
  */
 class DragonlordsPrerogativeScenarioTest : ScenarioTestBase() {
 
-    private fun setup(dragonOnBattlefield: Boolean = false, dragonInHand: Boolean = false): TestGame {
+    private fun setup(
+        dragonOnBattlefield: Boolean = false,
+        dragonInHand: Boolean = false,
+        countererHasMurder: Boolean = false,
+    ): TestGame {
         var b = scenario()
             .withPlayers("Caster", "Counterer")
             .withCardInHand(1, "Dragonlord's Prerogative")
@@ -33,6 +37,9 @@ class DragonlordsPrerogativeScenarioTest : ScenarioTestBase() {
         repeat(5) { b = b.withCardInLibrary(1, "Island") }
         if (dragonOnBattlefield) b = b.withCardOnBattlefield(1, "Shivan Dragon")
         if (dragonInHand) b = b.withCardInHand(1, "Shivan Dragon")
+        if (countererHasMurder) {
+            b = b.withCardInHand(2, "Murder").withLandsOnBattlefield(2, "Swamp", 3)
+        }
         return b.build()
     }
 
@@ -88,6 +95,21 @@ class DragonlordsPrerogativeScenarioTest : ScenarioTestBase() {
             game.cancelPrerogativeAndResolve()
 
             withClue("Prerogative resolved and drew four") { game.handSize(1) shouldBe 4 }
+        }
+
+        test("the Dragon counts as the spell is cast, even if it is gone when the counter resolves") {
+            val game = setup(dragonOnBattlefield = true, countererHasMurder = true)
+            game.castSpell(1, "Dragonlord's Prerogative").error shouldBe null
+            game.passPriority()
+            game.castSpellTargetingStackSpell(2, "Cancel", "Dragonlord's Prerogative").error shouldBe null
+            game.castSpell(2, "Murder", game.findPermanent("Shivan Dragon")).error shouldBe null
+            game.resolveStack()
+
+            game.isInGraveyard(1, "Shivan Dragon") shouldBe true
+            game.isInGraveyard(2, "Cancel") shouldBe true
+            withClue("Cancel found the Dragon gone, but the bonus was locked in as Prerogative was cast") {
+                game.handSize(1) shouldBe 4
+            }
         }
     }
 }

@@ -659,7 +659,7 @@ data class EffectContext(
          * Shared by everything that reads a spell's own text while it is still a stack object:
          * [com.wingedsheep.engine.mechanics.stack.NonPermanentSpellResolver] as it resolves,
          * `SpellCounterer` for its "this spell can't be countered if …" (Dragonlord's Prerogative's
-         * revealed Dragon), and the stack-text renderer. One builder keeps them agreeing: a cast
+         * revealed Dragon), the stack-text renderer, and the would-destroy preview. One builder keeps them agreeing: a cast
          * choice only one of them carried would read as never made to the others.
          */
         fun forSpellOnStack(spellId: EntityId, spell: SpellOnStackComponent): EffectContext = EffectContext(
