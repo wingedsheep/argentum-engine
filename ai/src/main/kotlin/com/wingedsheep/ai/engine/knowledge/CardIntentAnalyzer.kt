@@ -65,6 +65,8 @@ import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.UntapLimitPerStep
 import com.wingedsheep.sdk.scripting.GrantChosenSubtype
 import com.wingedsheep.sdk.scripting.SuppressZoneChangeTriggers
+import com.wingedsheep.sdk.scripting.LookAtFaceDownCreatures
+import com.wingedsheep.sdk.scripting.LookAtTopOfLibrary
 import com.wingedsheep.sdk.scripting.PlayersCantCastSpells
 import com.wingedsheep.sdk.scripting.PlayersCantGetCounters
 import com.wingedsheep.sdk.scripting.CantReceiveCounters
@@ -3710,6 +3712,9 @@ object CardIntentAnalyzer {
         is GrantChosenSubtype -> if (static.filter == GroupFilter.AllCreaturesYouControl)
             setOf(IntentTag.TRIBAL_ENABLER) else emptySet()
         is SuppressZoneChangeTriggers -> setOf(IntentTag.TRIGGER_LOCK)
+        // "You may look at face-down creatures you don't control any time" (Keeper of the Lens),
+        // "…at the top card of your library any time" (Lens of Clarity): information, nothing more.
+        is LookAtFaceDownCreatures, is LookAtTopOfLibrary -> setOf(IntentTag.HIDDEN_INFO)
         // "Players can't get counters" (Solemnity) and a battlefield-wide "can't have counters put
         // on them" lock counters out; an Aura's or the creature's own (Blossombind) is read by
         // whatever else the card does to what it enchants.

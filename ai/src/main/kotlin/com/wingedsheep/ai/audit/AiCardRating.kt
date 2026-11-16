@@ -329,6 +329,7 @@ object AiCardRating {
         IntentTag.GAME_WIN to "Wins the game outright",
         IntentTag.EXTRA_TURN to "Takes an extra turn",
         IntentTag.FREE_SPELL to "Casts spells for free",
+        IntentTag.HIDDEN_INFO to "Shows hidden information",
         IntentTag.SPELL_TAX to "Taxes opponents' spells",
         IntentTag.OWN_SPELL_TAX to "Taxes its controller's own spells",
         IntentTag.COMBAT_RESTRICTION to "Combat restriction",

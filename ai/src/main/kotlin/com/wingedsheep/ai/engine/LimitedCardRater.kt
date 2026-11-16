@@ -984,6 +984,9 @@ object LimitedCardRater {
         // A spell cast for free is the mana it didn't cost — usually an attack or a cast trigger
         // away and only as good as the spells beside it: priced like ramp.
         IntentTag.FREE_SPELL to 0.4,
+        // Peeking at face-down creatures or the top of the library informs a block or a draw but
+        // changes no board: a rounding error in a pick.
+        IntentTag.HIDDEN_INFO to 0.05,
         IntentTag.CARD_SELECTION to 0.15,
         IntentTag.LIFEGAIN to 0.1,
     )
