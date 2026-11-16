@@ -181,9 +181,9 @@ object CombatMath {
                     }
                 }
             }
-            val blockerCard = state.getEntity(blocker)?.get<CardComponent>()
-            if (blockerCard != null) {
-                val cardDef = cardRegistry.getCard(blockerCard.cardDefinitionId)
+            // Same read as the attacker side: no printed restriction while face down or ability-less.
+            if (!projected.hasLostAllAbilities(blocker)) {
+                val cardDef = state.getEntity(blocker)?.faceUpCardDefinition(cardRegistry)
                 if (cardDef != null) {
                     for (ability in cardDef.staticAbilities) {
                         when (ability) {

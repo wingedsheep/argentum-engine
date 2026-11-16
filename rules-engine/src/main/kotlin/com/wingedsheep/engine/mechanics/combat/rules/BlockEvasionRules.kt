@@ -460,8 +460,7 @@ class CantBeBlockedIfDefenderControlsRule(
     private val predicateEvaluator: PredicateEvaluator
 ) : BlockEvasionRule {
     override fun check(ctx: BlockCheckContext): String? {
-        // Face-down creatures have no abilities — the evasion doesn't apply.
-        if (ctx.state.getEntity(ctx.attackerId)?.has<FaceDownComponent>() == true) return null
+        // Printed evasion is off while face down or ability-less; a granted one still applies.
         val printed = ctx.printedStatics(ctx.attackerId)
             .filterIsInstance<CantBeBlockedIfDefenderControls>()
             .filter { it.filter.scope is Scope.Self }

@@ -34,5 +34,24 @@ class FaceDownPrintedEvasionAiTest : ScenarioTestBase() {
                 CombatMath.canBeBlockedBy(faceDown, faceDown.projectedState, assassin, giant, cardRegistry) shouldBe true
             }
         }
+
+        test("a face-down blocker is no longer held back by its printed restriction") {
+            val game = scenario()
+                .withPlayers("Attacker", "AI")
+                .withCardOnBattlefield(1, "Hill Giant")
+                .withCardOnBattlefield(2, "Spitfire Handler")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val giant = game.findPermanent("Hill Giant")!!
+            val handler = game.findPermanent("Spitfire Handler")!!
+
+            CombatMath.canBeBlockedBy(game.state, game.state.projectedState, giant, handler, cardRegistry) shouldBe false
+
+            val faceDown = game.state.updateEntity(handler) { it.with(FaceDownComponent) }
+            withClue("a face-down blocker has no printed restriction") {
+                CombatMath.canBeBlockedBy(faceDown, faceDown.projectedState, giant, handler, cardRegistry) shouldBe true
+            }
+        }
     }
 }
