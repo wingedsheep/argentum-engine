@@ -44,6 +44,7 @@ import com.wingedsheep.sdk.scripting.effects.ChangeTriggeringObjectTargetsEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
 import com.wingedsheep.sdk.scripting.effects.ChoosePileEffect
 import com.wingedsheep.sdk.scripting.effects.Chooser
+import com.wingedsheep.sdk.scripting.effects.DrainLifeEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GrantCantBeBlockedByChosenColorEffect
@@ -783,6 +784,9 @@ object TargetPolarityAnalyzer {
         if (CardIntentAnalyzer.exilesChosenGraveyardTargetsToUse(effect, requirements)) recursions += requirements.indices
         // Graveyard cards a pipeline returns to our hand (Wildest Dreams): the best card is the one to name.
         if (CardIntentAnalyzer.returnsChosenGraveyardTargetsToHand(effect, requirements)) recursions += requirements.indices
+        // A single graveyard target a pipeline returns (Foul Renewal), or graveyard targets it puts
+        // back on top of our library (Gravepurge): the single-card recursion as gather + move.
+        recursions += pipelineGraveyardReturnSlots(effect, requirements)
         // Graveyard cards a pipeline lets us cast (Zul Ashur, Torrential Gearhulk): recursion by way of the stack.
         recursions += castGraveyardSlots(effect, requirements)
         for (slot in ownerRecastSlots(effect, requirements)) perSlot[slot] += TargetPolarity.FLEXIBLE
@@ -1559,6 +1563,48 @@ object TargetPolarityAnalyzer {
         }
     }
 
+    /**
+     * The graveyard slots a pipeline gathers and brings back — [recursionSlot]'s single-card move,
+     * spelled as `gather` + `move`. "Return target creature card from your graveyard to your hand"
+     * as `moveTracked(gather(CardSource.Entity(t)), ToZone(HAND))`, to read what came back (Foul
+     * Renewal), and "put any number of target creature cards from your graveyard on top of your
+     * library" as `toLibraryTop(gather(ChosenTargets))` (Gravepurge, Forever Young): the card comes
+     * back to us, so the best card is the one to name. As with the single move, onto our own
+     * battlefield or into our hand from any graveyard, into the library only out of our own — from
+     * anyone's graveyard a tuck is graveyard hate. A `ChosenTargets` gather reads only when every
+     * slot is a graveyard card, so a battlefield slot beside it keeps its own reading.
+     */
+    private fun pipelineGraveyardReturnSlots(effect: Effect, requirements: List<TargetRequirement>): Set<Int> {
+        fun inGraveyard(slot: Int) = objectFilter(requirements[slot])?.zone == Zone.GRAVEYARD
+        val leaves = EffectWalker.leaves(effect)
+        val returned = mutableSetOf<Int>()
+        for (gather in leaves.filterIsInstance<GatherCardsEffect>()) {
+            val slots = when (val source = gather.source) {
+                is CardSource.ChosenTargets ->
+                    requirements.indices.toList().takeIf { it.isNotEmpty() && it.all(::inGraveyard) }
+                is CardSource.Entity -> slotOf(source.entity, requirements)?.takeIf(::inGraveyard)?.let(::listOf)
+                else -> null
+            } ?: continue
+            val collections = hashSetOf(gather.storeAs)
+            do {
+                val before = collections.size
+                for (leaf in leaves) collections += CardIntentAnalyzer.derivedCollections(leaf, collections)
+            } while (collections.size != before)
+            val comesBack = leaves.any { leaf ->
+                val move = leaf as? MoveCollectionEffect ?: return@any false
+                val to = move.destination as? CardDestination.ToZone ?: return@any false
+                move.from in collections && move.faceDown == null && to.player == Player.You && when (to.zone) {
+                    Zone.HAND -> true
+                    Zone.BATTLEFIELD -> !move.underOwnersControl
+                    Zone.LIBRARY -> slots.all { ownGraveyardOnly(objectFilter(requirements[it])) }
+                    else -> false
+                }
+            }
+            if (comesBack) returned += slots
+        }
+        return returned
+    }
+
     /** The permanent slots a pipeline blinks ([blinksChosenTargets]). */
     private fun pipelineBlinkSlots(effect: Effect, requirements: List<TargetRequirement>): List<Int> {
         if (!blinksChosenTargets(effect)) return emptyList()
@@ -1698,6 +1744,13 @@ object TargetPolarityAnalyzer {
         // opposing spell turned away from what it aimed at, or one of ours re-aimed after its
         // target went bad. Where the targets go is the decision's question.
         if (leaf is ChangeTriggeringObjectTargetsEffect) return listOf(leaf.spell to TargetPolarity.FLEXIBLE)
+        // "Target opponent loses 1 life for each attacking creature you control. You gain that much
+        // life" (Foul-Tongue Shriek, Bloodhunter Bat's "target player"): the single LoseLife and
+        // GainLife above in one step — the player who loses is hurt, the one who gains is helped.
+        if (leaf is DrainLifeEffect) return listOfNotNull(
+            leaf.from.takeIf { it.isSlot() }?.let { it to TargetPolarity.HARMFUL },
+            leaf.to.takeIf { it.isSlot() }?.let { it to TargetPolarity.BENEFICIAL },
+        )
         punisherReading(leaf, definitions, source)?.let { return it }
         val polarity: Pair<EffectTarget, TargetPolarity?> = when (leaf) {
             // Off the battlefield to a graveyard or exile is removal, and so is a tuck onto a

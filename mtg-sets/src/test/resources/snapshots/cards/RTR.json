@@ -4675,6 +4675,55 @@
     ]
 }
 
+// Ultimate Price
+{
+    "name": "Ultimate Price",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target monocolored creature.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsMonocolored"
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "rarity": "UNCOMMON",
+        "artist": "Karl Kopinski",
+        "flavorText": "\"Let him be an example to others who would default on their debts to us.\"\n—\"The Cozen,\" Orzhov assassin",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d2b4912a-83a2-4870-8fac-81fa79da2830.jpg?1783940359",
+        "rulings": [
+            {
+                "date": "2024-01-12",
+                "text": "A monocolored creature is exactly one color. Colorless creatures aren't monocolored."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Utvara Hellkite
 {
     "name": "Utvara Hellkite",

@@ -1,3 +1,77 @@
+// Acid-Spewer Dragon
+{
+    "name": "Acid-Spewer Dragon",
+    "manaCost": "{5}{B}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying, deathtouch\nMegamorph {5}{B}{B} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)\nWhen this creature is turned face up, put a +1/+1 counter on each other Dragon creature you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "DEATHTOUCH"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{5}{B}{B}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Acid-Spewer Dragon:1",
+                "trigger": "TurnFaceUpEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature Dragon ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "When this creature is turned face up, put a +1/+1 counter on each other Dragon creature you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "rarity": "UNCOMMON",
+        "artist": "James Zapata",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aa8f58f1-4843-4926-b3c4-98898201c216.jpg?1783938600",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If a face-down creature with megamorph is turned face up some other way (for example, if you manifest a card with megamorph and then pay its mana cost to turn it face up), you won't put a +1/+1 counter on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Aerie Bowmasters
 {
     "name": "Aerie Bowmasters",
@@ -84,6 +158,68 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Ambuscade Shaman
+{
+    "name": "Ambuscade Shaman",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Orc Shaman",
+    "oracleText": "Whenever this creature or another creature you control enters, that creature gets +2/+2 until end of turn.\nDash {3}{B} (You may cast this spell for its dash cost. If you do, it gains haste, and it's returned from the battlefield to its owner's hand at the beginning of the next end step.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DASH"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Dash",
+            "cost": "{3}{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ambuscade Shaman:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "TriggeringEntity"
+                },
+                "descriptionOverride": "Whenever this creature or another creature you control enters, that creature gets +2/+2 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "UNCOMMON",
+        "artist": "Anthony Palumbo",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5b9a91f8-5f9f-46a2-bd80-1ca014591de9.jpg?1783938602",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If Ambuscade Shaman enters the battlefield at the same time as other creatures you control, its ability will trigger for each of those creatures."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -813,6 +949,93 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Blood-Chin Fanatic
+{
+    "name": "Blood-Chin Fanatic",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Creature — Orc Warrior",
+    "oracleText": "{1}{B}, Sacrifice another Warrior creature: Target player loses X life and you gain X life, where X is the sacrificed creature's power.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Blood-Chin Fanatic:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature Warrior",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "SacrificedAsCost",
+                                "numericProperty": "Power"
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "SacrificedAsCost",
+                                "numericProperty": "Power"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Target player loses X life and you gain X life, where X is the sacrificed Warrior's power."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "rarity": "RARE",
+        "artist": "David Palumbo",
+        "flavorText": "\"We are as brutal as our dragonlord. We strike like wild lightning and feast on human flesh.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4eb00d55-de56-4bbb-9545-e8cfb25a4f23.jpg?1783938601",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "Use the creature's power as it last existed on the battlefield, including any +1/+1 counters it had, when determining the value of X."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -1714,6 +1937,71 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Deadly Wanderings
+{
+    "name": "Deadly Wanderings",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "As long as you control exactly one creature, that creature gets +2/+0 and has deathtouch and lifelink.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "CompositeStaticAbility",
+                    "abilities": [
+                        {
+                            "type": "ModifyStats",
+                            "powerBonus": 2,
+                            "toughnessBonus": 0,
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DEATHTOUCH",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "LIFELINK",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        }
+                    ]
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    },
+                    "operator": "EQ",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "UNCOMMON",
+        "artist": "David Palumbo",
+        "flavorText": "\"Seclusion is only an option for the strong.\"\n—Sorin Markov",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/23bb5d9f-9b12-482a-91b4-6786e8310805.jpg?1783938599"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -2807,6 +3095,57 @@
     ]
 }
 
+// Dutiful Attendant
+{
+    "name": "Dutiful Attendant",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "When this creature dies, return another target creature card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dutiful Attendant:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature own:you",
+                        "zone": "Graveyard",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature dies, return another target creature card from your graveyard to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "artist": "Aaron Miller",
+        "flavorText": "The dragon who eats the last head in the basket is entitled to the servant's.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4ee71b19-eb1d-4f5a-a1b7-1799f2f50da0.jpg?1783938598"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Echoes of the Kin Tree
 {
     "name": "Echoes of the Kin Tree",
@@ -3314,6 +3653,272 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Foul Renewal
+{
+    "name": "Foul Renewal",
+    "manaCost": "{3}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Return target creature card from your graveyard to your hand. Target creature gets -X/-X until end of turn, where X is the toughness of the card returned this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "Entity",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "foulRenewalCard"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "foulRenewalCard",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "storeMovedAs": "moved1"
+                },
+                {
+                    "type": "ConditionalOnCollection",
+                    "collection": "moved1",
+                    "ifNotEmpty": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Multiply",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "moved1"
+                                },
+                                "numericProperty": "Toughness"
+                            },
+                            "multiplier": -1
+                        },
+                        "toughnessModifier": {
+                            "type": "Multiply",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "moved1"
+                                },
+                                "numericProperty": "Toughness"
+                            },
+                            "multiplier": -1
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "RARE",
+        "artist": "Filip Burburan",
+        "flavorText": "The cycle of life and death is rarely pretty.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e319b7ca-d0a4-43ff-8e87-2af6ead089f5.jpg?1783938597",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "You must target a creature card in your graveyard and a creature on the battlefield to cast Foul Renewal. If the creature becomes an illegal target before Foul Renewal resolves, you'll still return the creature card to your hand. If the creature card in your graveyard becomes an illegal target, the creature on the battlefield will be unaffected as there is no \"card returned this way.\""
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Foul-Tongue Invocation
+{
+    "name": "Foul-Tongue Invocation",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, you may reveal a Dragon card from your hand.\nTarget player sacrifices a creature of their choice. If you revealed a Dragon card or controlled a Dragon as you cast this spell, you gain 4 life.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomRevealFromHand",
+                    "filter": "Dragon"
+                }
+            },
+            "displayPrefix": "Additional cost",
+            "declaredSlot": "ADDITIONAL_COST_PAID"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForceSacrifice",
+                    "filter": "creature",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Any",
+                            "conditions": [
+                                {
+                                    "type": "CastChoiceMade",
+                                    "slot": "ADDITIONAL_COST_PAID"
+                                },
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "CapturedAtCast",
+                                        "captureName": "controlledDragon"
+                                    },
+                                    "operator": "GT",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ],
+        "castTimeCaptures": [
+            {
+                "captureName": "controlledDragon",
+                "value": {
+                    "type": "Conditional",
+                    "condition": {
+                        "type": "Exists",
+                        "player": "You",
+                        "zone": "Battlefield",
+                        "filter": "permanent Dragon"
+                    },
+                    "ifTrue": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "ifFalse": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac6d021a-7bb8-4173-9a2f-e4a1d21fda8e.jpg?1783938597",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If you don’t reveal a Dragon card from your hand, you must control a Dragon as you are finished casting the spell to get the bonus. For example, if you lose control of your only Dragon while casting the spell (because, for example, you sacrificed it to activate a mana ability), you won’t get the bonus."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "You may cast Foul-Tongue Invocation targeting a player who controls no creatures. If you qualify for the “Dragon bonus,” you’ll just gain 4 life."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If one of these spells is copied, the controller of the copy will get the “Dragon bonus” only if a Dragon card was revealed as an additional cost. The copy wasn’t cast, so whether you controlled a Dragon won’t matter."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "You can’t reveal more than one Dragon card to multiply the bonus. There is also no additional benefit for both revealing a Dragon card as an additional cost and controlling a Dragon as you cast the spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Foul-Tongue Shriek
+{
+    "name": "Foul-Tongue Shriek",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target opponent loses 1 life for each attacking creature you control. You gain that much life.",
+    "script": {
+        "spellEffect": {
+            "type": "DrainLife",
+            "amount": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature attacking"
+            },
+            "from": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "artist": "Dave Kendall",
+        "flavorText": "Foul-Tongue shamans draw their powers from a dark twisting of the Draconic language.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/81d98ee0-6b32-4735-89f1-b37da766761f.jpg?1783938597"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -3948,6 +4553,108 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Hedonist's Trove
+{
+    "name": "Hedonist's Trove",
+    "manaCost": "{5}{B}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, exile target opponent's graveyard.\nYou may play lands from among cards exiled with this enchantment.\nYou may cast spells from among cards exiled with this enchantment. You can't cast more than one spell this way each turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hedonist's Trove:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "linkToSource": true
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this enchantment enters, exile target opponent's graveyard."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MayPlayCardsFromExile",
+                "filter": {
+                    "cardPredicates": [
+                        "IsLand"
+                    ],
+                    "statePredicates": [
+                        "ExiledWithSource"
+                    ]
+                }
+            },
+            {
+                "type": "GrantMayCastFromLinkedExile",
+                "oncePerTurn": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "RARE",
+        "artist": "Peter Mohrbacher",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b2b73bbf-39a8-4358-9af6-8f4f0b57c028.jpg?1783938596",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "The cards are exiled face up."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "The once-a-turn restriction of the last ability applies only to nonland cards. You can play a land card exiled with Hedonist's Trove on the same turn you cast a nonland card exiled that way."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Playing a card this way follows the normal rules for playing the card. You must pay its costs, and you must follow all applicable timing rules. For example, if one of the cards is a creature card, you can cast that card only during your main phase while the stack is empty."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Under normal circumstances, you can play a land card exiled with Hedonist's Trove only if you haven't played a land yet that turn."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If Hedonist's Trove leaves the battlefield, any cards it exiled remain exiled. Those cards can no longer be played. Any future instance of Hedonist's Trove (even one represented by the same card) will be a new object and won't allow you to play those cards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Herald of Dromoka
@@ -4785,6 +5492,123 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Marang River Skeleton
+{
+    "name": "Marang River Skeleton",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Skeleton",
+    "oracleText": "{B}: Regenerate this creature.\nMegamorph {3}{B} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{3}{B}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Marang River Skeleton:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "rarity": "UNCOMMON",
+        "artist": "Jack Wang",
+        "flavorText": "The gurgling of the Marang conceals both footsteps and screams.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/9497f7e6-2121-44a9-9bd6-258685636b1c.jpg?1783938596",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If a face-down creature with megamorph is turned face up some other way (for example, if you manifest a card with megamorph and then pay its mana cost to turn it face up), you won't put a +1/+1 counter on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Marsh Hulk
+{
+    "name": "Marsh Hulk",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Zombie Ogre",
+    "oracleText": "Megamorph {6}{B} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 6
+    },
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{6}{B}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "109",
+        "artist": "Raf Sarmento",
+        "flavorText": "Now vengeance is his sole purpose.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff347b25-7ce9-42c4-811d-86f3e9c55d75.jpg?1783938596",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "Turning a face-down creature with megamorph face up and putting a +1/+1 counter on it is a special action. It doesn't use the stack and can't be responded to."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If a face-down creature with megamorph is turned face up some other way (for example, if you manifest a card with megamorph and then pay its mana cost to turn it face up), you won't put a +1/+1 counter on it."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Megamorph is a variant of the morph ability. You can find more information on morph on cards with morph from the Khans of Tarkir set."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -7399,6 +8223,71 @@
     ]
 }
 
+// Self-Inflicted Wound
+{
+    "name": "Self-Inflicted Wound",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent sacrifices a green or white creature of their choice. If that player does, they lose 2 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForceSacrifice",
+                    "filter": "creature green|white",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": "PermanentsSacrificedThisWay",
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "flavorText": "\"Worse than watching the cruelest deed is watching it done by your own hand.\"\n—Baihir, Dromoka mage",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f69b1a5d-fb17-43f0-bf29-4ade853e0e6e.jpg?1783938594"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Servant of the Scale
 {
     "name": "Servant of the Scale",
@@ -9275,6 +10164,42 @@
         "imageUri": "https://cards.scryfall.io/normal/front/e/5/e50e88fe-307a-4944-9233-14df4e0bb775.jpg?1783938567"
     },
     "colorIdentityOverride": []
+}
+
+// Virulent Plague
+{
+    "name": "Virulent Plague",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Creature tokens get -2/-2.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": -2,
+                "toughnessBonus": -2,
+                "filter": {
+                    "baseFilter": "creature token"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "rarity": "UNCOMMON",
+        "artist": "Johann Bodin",
+        "flavorText": "\"This pestilence robs us of glorious death in battle. We starve to death with full bellies and drown trying to slake our unnatural thirst.\"\n—Kerai Hatesinger, Kolaghan warrior",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c5f82b6-53d9-43ce-8a17-c680c443e586.jpg?1783938593",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If an effect creates a creature token that normally has toughness 2 or less, it will enter the battlefield with toughness 0 or less, be put into its owner's graveyard, and then cease to exist. Any abilities that trigger when a creature enters the battlefield or dies will trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Void Squall
