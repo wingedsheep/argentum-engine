@@ -2327,6 +2327,7 @@ object TargetPolarityAnalyzer {
         // creature it can shrink as well as grow — and the type alone could leave a 0/0.
         if (animatesHost(card.script.staticAbilities)) readings += TargetPolarity.BENEFICIAL
         for (ability in card.script.triggeredAbilities) readings += hostDamageTriggerReadings(ability)
+        for (ability in card.script.triggeredAbilities) readings += hostAttackCopyReadings(ability)
         val abilityEffects = card.script.triggeredAbilities.map { it.effect } +
             card.script.activatedAbilities.map { it.effect }
         for (effect in abilityEffects) {
@@ -2618,6 +2619,24 @@ object TargetPolarityAnalyzer {
                     dealsDamage && leaf.target == EffectTarget.Controller
                 }
                 else -> null
+            }
+        }
+    }
+
+    /**
+     * What an attachment's "whenever enchanted creature attacks, you may create a token that's a
+     * copy of that creature" trigger (Mirror Mockery) does: the copy arrives on the Aura
+     * controller's side, untapped and not attacking, in the middle of the host's attack. On an
+     * opponent's attacker it is a blocker made of the very creature coming at us — a deterrent
+     * that curses the host's attacks; on our own attacker it only stands beside it. So the slot is
+     * aimed at an opponent's creature. A copy made attacking, or for someone else, isn't this shape.
+     */
+    private fun hostAttackCopyReadings(ability: TriggeredAbility): List<TargetPolarity> {
+        if (ability.binding != TriggerBinding.ATTACHED || ability.trigger !is EventPattern.AttackEvent) return emptyList()
+        return EffectWalker.payoffLeaves(ability.effect).mapNotNull { leaf ->
+            TargetPolarity.HARMFUL.takeIf {
+                leaf is CreateTokenCopyOfTargetEffect && leaf.target == EffectTarget.TriggeringEntity &&
+                    leaf.controller == null && !leaf.attacking
             }
         }
     }

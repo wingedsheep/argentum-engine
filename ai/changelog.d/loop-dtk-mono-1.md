@@ -1,0 +1,1 @@
+- #PR Puts copy-on-attack Auras (Mirror Mockery) on the opponent's attacker: their enchant slot reads as harmful
