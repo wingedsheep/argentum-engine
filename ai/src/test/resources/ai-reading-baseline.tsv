@@ -890,7 +890,7 @@ Armguard Familiar	intent: UnattachEquipmentEffect
 Armillary Sphere
 Armor Sliver
 Armor Thrull
-Armor Wars	intent: ModifySpellCostsEffect
+Armor Wars
 Armorcraft Judge
 Armored Armadillo
 Armored Cancrix
@@ -914,7 +914,7 @@ Armus, Skin of Evil
 Army of Allah
 Army of the Damned
 Arna Kennerüd, Skycaptain
-Arni Brokenbrow	timing: SetBaseStatsEffect
+Arni Brokenbrow
 Arni Metalbrow
 Arni Slays the Troll
 Arni, Humble Scribe
@@ -1040,7 +1040,9 @@ Astute Terraformer
 Asylum Visitor
 At Knifepoint
 Atalya, Samite Master
+Atarka Efreet
 Atarka Monument
+Atarka Pummeler
 Atarka, World Render
 Atemsis, All-Seeing
 Athreos, God of Passage	intent: PayOrSufferEffect; polarity: PayOrSufferEffect
@@ -2202,14 +2204,14 @@ Braingeyser
 Brainspoil
 Brainstorm
 Brainsurge
-Brainwash	polarity: Aura>CantAttackOrBlockUnlessPay
+Brainwash
 Bramble Armor
 Bramble Elemental
 Bramble Familiar
 Bramble Wurm
 Brambleback Brute
 Bramblecrush
-Bramblefort Fink	timing: SetBaseStatsEffect
+Bramblefort Fink
 Brambleguard Captain
 Brambleguard Veteran
 Bramblesnap
@@ -2350,7 +2352,7 @@ Broken Wings
 Brokers Ascendancy
 Brokers Charm
 Brokers Hideout
-Brokers Initiate	timing: SetBaseStatsEffect
+Brokers Initiate
 Brokers Veteran
 Brokkos, Apex of Forever
 Brontotherium	intent: ProvokeEffect; polarity: ProvokeEffect
@@ -3092,7 +3094,7 @@ Chrome Replicator
 Chrome Steed
 Chromeshell Crab
 Chromium
-Chromium, the Mutable	timing: RemoveAllAbilitiesEffect; timing: SetBaseStatsEffect; timing: SetCreatureSubtypesEffect
+Chromium, the Mutable	timing: RemoveAllAbilitiesEffect; timing: SetCreatureSubtypesEffect
 Chronicle of Victory
 Chronosavant
 Chthonian Nightmare
@@ -3704,6 +3706,7 @@ Crashing Drawbridge
 Crashing Footfalls
 Crashing Tide
 Crashing Wave
+Crater Elemental
 Crater's Claws
 Craterclaw Colossus
 Craterhoof Behemoth
@@ -4462,6 +4465,7 @@ Derevi, Empyrial Tactician
 Dermoplasm
 Descend upon the Sinful
 Descendant of Storms
+Descent of the Dragons
 Desculpting Blast
 Desdemona, Freedom's Edge	intent: GrantEscapeEffect; polarity: GrantEscapeEffect
 Desecrated Tomb
@@ -4894,6 +4898,7 @@ Dragon Trainer
 Dragon Turtle
 Dragon Tyrant
 Dragon Whelp
+Dragon Whisperer
 Dragon Wings
 Dragon's Approach
 Dragon's Claw
@@ -5445,7 +5450,7 @@ Ellywick Tumblestrum
 Elrond, Lord of Rivendell	intent: IncrementAbilityResolutionCountEffect
 Elrond, Master of Healing
 Elrond, Moon-Reader
-Elspeth Conquers Death	intent: ModifySpellCostsEffect
+Elspeth Conquers Death
 Elspeth Resplendent
 Elspeth's Devotee
 Elspeth's Nightmare
@@ -6558,7 +6563,7 @@ Fleshformer
 Fleshless Gladiator
 Fleshtaker
 Fleshwrither
-Flexible Waterbender	timing: SetBaseStatsEffect
+Flexible Waterbender
 Flick a Coin
 Flicker of Fate
 Flickerform	intent: Pipeline(AttachedTo|BattlefieldMatching→battlefield|exile); polarity: Aura>CreateDelayedTriggerEffect; polarity: Aura>GatherCardsEffect; polarity: Aura>MoveCollectionEffect
@@ -7583,7 +7588,7 @@ Goblin Locksmith
 Goblin Lookout
 Goblin Lore
 Goblin Machinist
-Goblin Maskmaker	intent: ModifySpellCostsEffect
+Goblin Maskmaker
 Goblin Masons
 Goblin Matron
 Goblin Morningstar
@@ -8204,6 +8209,7 @@ Hard-Hitting Question
 Hard-Won Jitte
 Hardbristle Bandit
 Hardened Academic
+Hardened Berserker
 Hardened Escort
 Hardened Scales
 Hardened Tactician
@@ -9303,7 +9309,7 @@ Invasion of Ulgrotha
 Invasion of Vryn
 Invasion of Xerex
 Invasion of Zendikar
-Invasion of the Giants	intent: ModifySpellCostsEffect
+Invasion of the Giants
 Invasive Maneuvers
 Invasive Surgery
 Inventive Iteration
@@ -9341,6 +9347,7 @@ Ionize
 Ioreth of the Healing House
 Ipnu Rivulet
 Irascible Wolverine
+Ire Shaman
 Irencrag Feat
 Irencrag Pyromancer
 Irenicus's Vile Duplication
@@ -9832,7 +9839,7 @@ Kaya, Orzhov Usurper	polarity: GainLifeEffect; polarity: Pipeline(ChosenTargets�
 Kaya, Spirits' Justice
 Kayla's Command
 Kayla's Reconstruction
-Kaza, Roil Chaser	intent: ModifySpellCostsEffect; timing: ModifySpellCostsEffect
+Kaza, Roil Chaser	timing: ModifySpellCostsEffect
 Kazandu Blademaster
 Kazandu Mammoth
 Kazandu Nectarpot
@@ -10097,8 +10104,10 @@ Kogla, the Titan Ape
 Koh, the Face Stealer	intent: Pipeline(FromLinkedExile→?); intent: RecordChosenLinkedExileEffect
 Koilos Roc
 Kokusho, the Evening Star
+Kolaghan Aspirant
 Kolaghan Forerunners
 Kolaghan Skirmisher
+Kolaghan Stormsinger
 Kolaghan Warmonger
 Kolaghan's Command
 Kolinahr Priest
@@ -10772,6 +10781,7 @@ Lorehold Pledgemage
 Lorehold, the Historian
 Lorescale Coatl
 Los Diablos Missile Base
+Lose Calm
 Lose Hope
 Lost Days
 Lost Isle Calling
@@ -10935,7 +10945,7 @@ Madcap Experiment
 Maddening Cacophony
 Maelstrom Artisan
 Maelstrom Colossus
-Maelstrom Muse	intent: ModifySpellCostsEffect
+Maelstrom Muse
 Maelstrom Pulse	polarity: Pipeline(BattlefieldMatching|ChosenTargets→graveyard); polarity: StoreCardNameEffect
 Maelstrom Wanderer
 Maelstrom of the Spirit Dragon
@@ -11194,7 +11204,7 @@ Marrow Bats
 Marrow-Gnawer
 Marsh Boa
 Marsh Flats
-Marsh Flitter	timing: SetBaseStatsEffect
+Marsh Flitter
 Marsh Gas
 Marsh Goblins
 Marsh Hulk
@@ -13175,7 +13185,7 @@ Peer Through Depths
 Peer into the Abyss
 Peerless Recycling
 Peerless Ropemaster
-Peerless Samurai	intent: ModifySpellCostsEffect
+Peerless Samurai
 Pegasus Charger
 Pegasus Courser
 Pegasus Refuge
@@ -13844,7 +13854,7 @@ Psychotrope Thallid
 Pterafractyl
 Pteramander
 Pterodon Knight
-PuPu UFO	timing: SetBaseStatsEffect
+PuPu UFO
 Public Enemy	polarity: Aura>DrawCardsEffect; polarity: Aura>MustAttack
 Public Thoroughfare
 Puca's Eye
@@ -13932,6 +13942,7 @@ Pyrrhic Strike
 Python
 Q Continuum
 Q, Stacking the Deck	intent: GatherUntilMatchEffect; intent: GrantActivatedAbilityEffect; intent: Pipeline(?→exile)
+Qal Sisma Behemoth
 Qala, Ajani's Pridemate
 Qarsi Deceiver
 Qarsi Revenant
@@ -14157,7 +14168,7 @@ Ral's Staticaster
 Ral, Caller of Storms
 Ral, Crackling Wit	combat: GrantSpellKeywordEffect
 Ral, Izzet Viceroy
-Ral, Monsoon Mage	intent: FlipCoinEffect; intent: ModifySpellCostsEffect
+Ral, Monsoon Mage	intent: FlipCoinEffect
 Ral, Storm Conduit
 Rally
 Rally Maneuver
@@ -14557,6 +14568,7 @@ Rend Spirit
 Render Inert
 Render Speechless
 Rending Flame
+Rending Volley
 Renegade Demon
 Renegade Firebrand
 Renegade Freighter
@@ -15095,7 +15107,7 @@ Rowan's Grim Search
 Rowan's Stalwarts
 Rowan, Fearless Sparkmage
 Rowan, Scholar of Sparks
-Rowan, Scion of War	intent: ModifySpellCostsEffect
+Rowan, Scion of War
 Rowdy Crew
 Rowdy Research
 Rowdy Snowballers
@@ -15246,6 +15258,7 @@ Saberclaw Golem
 Sabertooth Alley Cat	combat: GrantCantBeBlockedExceptByEffect; intent: GrantCantBeBlockedExceptByEffect; timing: GrantCantBeBlockedExceptByEffect
 Sabertooth Mauler
 Sabertooth Nishoba
+Sabertooth Outrider
 Sabotage Strategist
 Sabotender
 Sabretooth Tiger
@@ -17587,6 +17600,7 @@ Stormchaser Drake
 Stormchaser Mage
 Stormchaser's Talent
 Stormclaw Rager
+Stormcrag Elemental
 Stormfist Crusader
 Stormfront Pegasus
 Stormkeld Prowler
@@ -17600,6 +17614,7 @@ Stormshriek Feral
 Stormsplitter
 Stormwatch Eagle
 Stormwild Capridor
+Stormwing Dragon
 Stormwing Entity
 Storrev, Devkarin Lich
 Story Seeker
@@ -19515,7 +19530,7 @@ Turtle Blimp
 Turtle Lair
 Turtle Power!
 Turtle Van
-Turtle-Duck	timing: SetBaseStatsEffect
+Turtle-Duck
 Turtles Forever
 Turtles in Time
 Turtleshell Changeling
@@ -20971,7 +20986,7 @@ Will of the Jeskai
 Will of the Mardu	polarity: CreateTokenEffect
 Will of the Sultai
 Will of the Temur
-Will, Scion of Peace	intent: ModifySpellCostsEffect
+Will, Scion of Peace
 Will-Forged Golem
 Will-o'-the-Wisp
 Willbender
