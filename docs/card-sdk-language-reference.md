@@ -12086,6 +12086,14 @@ in the declare-blockers step, even before the turn-based block action has comple
   **not** skipped when it is itself the attacker, so a creature whose own group clause covers
   "creatures you control" gets the evasion too; set `excludeSelf` on the `GroupFilter` for the
   "other creatures you control …" wording.
+  The printed and host-scoped reads go through `BlockCheckContext.printedStatics`, which is empty
+  while the permanent is face down or has lost all its abilities — so Silumgar Assassin's
+  "creatures with power greater than this creature's power can't block it"
+  (`CantBeBlockedBy(GameObjectFilter.Creature.powerGreaterThanEntity(EffectTarget.Self))`) is off
+  while it is a face-down 2/2, and a host under Dance of the Skywise stops projecting its group
+  clause. Every printed-restriction rule in `BlockEvasionRules` (the power comparisons,
+  `CantBeBlockedIfDefenderControls`, `CantBeBlockedUnlessDefenderSharesCreatureType`, …) reads it
+  the same way; granted restrictions are read separately.
 - `CantBeBlockedByMoreThan(maxBlockers, filter = GroupFilter.source())` — static cap on how many
   creatures may block the source (CR 509.1b). A **group** filter projects the cap from the host onto
   every attacker matching it — Challenger Troll / Flopsie, Bumi's Buddy's "each creature you control

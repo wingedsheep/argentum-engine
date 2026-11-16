@@ -3,7 +3,9 @@ package com.wingedsheep.engine.mechanics.combat.rules
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.StaticAbility
 
 /**
  * Context passed to block evasion rules for evaluating whether a blocker can block an attacker.
@@ -26,6 +28,18 @@ data class BlockCheckContext(
         ?.get<com.wingedsheep.engine.state.components.combat.AttackingComponent>()
         ?.let { com.wingedsheep.engine.mechanics.combat.CombatDefenders.defendingPlayerOf(state, it, projected) }
         ?: blockingPlayer
+
+    /**
+     * The printed static abilities [entityId] has right now: none while it is face down (a
+     * face-down permanent has no abilities) or while an effect says it loses all abilities
+     * (Dance of the Skywise, Turn to Frog). Every rule that reads an attacker's or blocker's own
+     * printed restriction goes through here, so Silumgar Assassin's "creatures with power greater
+     * than this creature's power can't block it" is off while it is a face-down 2/2.
+     */
+    fun printedStatics(entityId: EntityId): List<StaticAbility> {
+        if (projected.hasLostAllAbilities(entityId)) return emptyList()
+        return state.getEntity(entityId)?.faceUpCardDefinition(cardRegistry)?.staticAbilities.orEmpty()
+    }
 }
 
 /**

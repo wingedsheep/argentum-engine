@@ -11,6 +11,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 import com.wingedsheep.engine.state.components.identity.CommanderComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.sdk.core.AbilityFlag
@@ -148,9 +149,10 @@ object CombatMath {
 
         // Attacker-side filter restrictions (e.g., "can't be blocked by creatures with power 2 or less")
         if (cardRegistry != null) {
-            val attackerCard = state.getEntity(attacker)?.get<CardComponent>()
-            if (attackerCard != null) {
-                val attackerDef = cardRegistry.getCard(attackerCard.cardDefinitionId)
+            // A face-down attacker has no printed text to read (and reading it would leak the
+            // hidden card), and one that lost all abilities has none either.
+            if (!projected.hasLostAllAbilities(attacker)) {
+                val attackerDef = state.getEntity(attacker)?.faceUpCardDefinition(cardRegistry)
                 if (attackerDef != null) {
                     val attackerController = projected.getController(attacker)
                     val predicateEvaluator = PredicateEvaluator(cardRegistry)

@@ -1,0 +1,1 @@
+- #4703 The AI's block math no longer reads a face-down or ability-stripped attacker's printed "can't be blocked by" evasion (and no longer sees through a face-down morph's text to do so).
