@@ -1,0 +1,1 @@
+- #TBD The AI reads "look at face-down creatures / the top of your library any time" statics (Keeper of the Lens, Lens of Clarity) as hidden information instead of an unrecognised ability.

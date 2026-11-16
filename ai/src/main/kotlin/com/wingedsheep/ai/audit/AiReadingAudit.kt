@@ -875,6 +875,7 @@ object AiReadingAudit {
         IntentTag.GAME_WIN -> "makes an opponent lose the game outright"
         IntentTag.EXTRA_TURN -> "takes an extra turn"
         IntentTag.FREE_SPELL -> "casts a spell without paying its mana cost"
+        IntentTag.HIDDEN_INFO -> "lets its controller look at hidden cards"
         IntentTag.IMPULSE -> "exiles cards to play this turn"
         IntentTag.COST_REDUCER -> "makes your spells or abilities cheaper"
         else -> tag.name.lowercase(Locale.ROOT).replace('_', ' ')

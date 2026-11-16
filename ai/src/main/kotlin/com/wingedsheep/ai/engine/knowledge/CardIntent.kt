@@ -620,6 +620,15 @@ enum class IntentTag {
      * Lackey) is the same payoff without the cast, and reads the same.
      */
     FREE_SPELL,
+
+    /**
+     * Shows its controller hidden information, any time — Keeper of the Lens's and Lens of
+     * Clarity's "you may look at face-down creatures you don't control", Lens of Clarity's and
+     * Found Footage's "look at the top card of your library". It moves nothing and its payoff is
+     * a better-informed block or draw, which no board simulation sees; without the tag the static
+     * read as "abilities not recognised". Worth next to nothing in a Limited pick.
+     */
+    HIDDEN_INFO,
 }
 
 /** When a card's payoff happens — the axis the hold policy reasons about. */
