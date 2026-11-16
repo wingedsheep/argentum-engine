@@ -86,18 +86,7 @@ internal class StackTextRenderer(
                 ?.get<TargetsComponent>()
                 ?.targets
                 ?: emptyList()
-            val context = EffectContext(
-                sourceId = spellEntityId,
-                controllerId = spellOnStack.casterId,
-                xValue = spellOnStack.xValue,
-                declaredCostSlot = spellOnStack.declaredCostSlot,
-                wasBlightPaid = spellOnStack.wasBlightPaid,
-                sacrificedPermanents = spellOnStack.sacrificedPermanents,
-                discardedAsCostCards = spellOnStack.discardedAsCostCards,
-                revealedAsCostSnapshots = spellOnStack.revealedAsCostSnapshots,
-                chosenEntitySnapshots = spellOnStack.chosenEntitySnapshots,
-                exiledCardCount = spellOnStack.exiledCardCount,
-                additionalCostBlightAmount = spellOnStack.additionalCostBlightAmount,
+            val context = EffectContext.forSpellOnStack(spellEntityId, spellOnStack).copy(
                 targets = chosenTargets,
                 pipeline = PipelineState(
                     storedCollections = buildBeheldStoredCollections(spellOnStack.beheldCards, cardDef)
@@ -156,17 +145,9 @@ internal class StackTextRenderer(
         modal: ModalEffect
     ): List<String> {
         if (spellOnStack.chosenModes.isEmpty()) return emptyList()
-        val context = EffectContext(
-            sourceId = spellEntityId,
-            controllerId = spellOnStack.casterId,
-            xValue = spellOnStack.xValue,
-            sacrificedPermanents = spellOnStack.sacrificedPermanents,
-            discardedAsCostCards = spellOnStack.discardedAsCostCards,
-            revealedAsCostSnapshots = spellOnStack.revealedAsCostSnapshots,
-            exiledCardCount = spellOnStack.exiledCardCount,
-            additionalCostBlightAmount = spellOnStack.additionalCostBlightAmount
+        return modeDescriptions(
+            state, modal, spellOnStack.chosenModes, EffectContext.forSpellOnStack(spellEntityId, spellOnStack)
         )
-        return modeDescriptions(state, modal, spellOnStack.chosenModes, context)
     }
 
     /**

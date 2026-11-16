@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.EntitySnapshot
+import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
@@ -648,6 +649,57 @@ data class EffectContext(
             }
             return result
         }
+
+        /**
+         * The context a spell on the stack is judged in: the spell as its source, its controller as
+         * `You`, and every choice locked in as it was cast (CR 601.2) — X, the optional or
+         * alternative cost it was cast with, what it sacrificed, revealed, exiled or tapped to pay,
+         * the mana spent, its modes. Targets, program origin and pipeline are the caller's.
+         *
+         * Shared by everything that reads a spell's own text while it is still a stack object:
+         * [com.wingedsheep.engine.mechanics.stack.NonPermanentSpellResolver] as it resolves,
+         * `SpellCounterer` for its "this spell can't be countered if …" (Dragonlord's Prerogative's
+         * revealed Dragon), the stack-text renderer, and the would-destroy preview. One builder keeps them agreeing: a cast
+         * choice only one of them carried would read as never made to the others.
+         */
+        fun forSpellOnStack(spellId: EntityId, spell: SpellOnStackComponent): EffectContext = EffectContext(
+            sourceId = spellId,
+            controllerId = spell.casterId,
+            // A pay-X-life additional cost (AdditionalCost.PayXLife, e.g. Vicious Rivalry) feeds
+            // its declared X through the same X slot read by DynamicAmount.XValue and the
+            // ManaValue*X predicates. Such a card never also carries an {X} mana cost, so
+            // coalescing is unambiguous (CR 601.2b — the value is locked in as the spell is cast).
+            xValue = spell.xValue ?: spell.additionalCostPayXLifeAmount,
+            totalManaSpent = spell.manaSpentWhite + spell.manaSpentBlue + spell.manaSpentBlack +
+                spell.manaSpentRed + spell.manaSpentGreen + spell.manaSpentColorless,
+            manaSpentOnXByColor = spell.manaSpentOnXByColor,
+            manaSpent = com.wingedsheep.engine.mechanics.mana.SpentMana(
+                white = spell.manaSpentWhite, blue = spell.manaSpentBlue,
+                black = spell.manaSpentBlack, red = spell.manaSpentRed,
+                green = spell.manaSpentGreen, colorless = spell.manaSpentColorless,
+            ),
+            declaredCostSlot = spell.declaredCostSlot,
+            wasBlightPaid = spell.wasBlightPaid,
+            wasWaterbendPaid = spell.wasWaterbendPaid,
+            wasSneaked = spell.wasSneaked,
+            wasWebSlung = spell.wasWebSlung,
+            wasMayhem = spell.wasMayhem,
+            sacrificedPermanents = spell.sacrificedPermanents,
+            discardedAsCostCards = spell.discardedAsCostCards,
+            revealedAsCostSnapshots = spell.revealedAsCostSnapshots,
+            exiledAsCostCards = spell.exiledAsCostCards,
+            exiledAsCostSnapshots = spell.exiledAsCostSnapshots,
+            tappedPermanents = spell.tappedPermanents,
+            chosenEntitySnapshots = spell.chosenEntitySnapshots,
+            damageDistribution = spell.damageDistribution,
+            chosenModes = spell.chosenModes,
+            modeTargetsOrdered = spell.modeTargetsOrdered,
+            modeTargetRequirements = spell.modeTargetRequirements,
+            chosenCreatureType = spell.chosenCreatureType,
+            exiledCardCount = spell.exiledCardCount,
+            additionalCostBlightAmount = spell.additionalCostBlightAmount,
+            castFromZone = spell.castFromZone,
+        )
 
         /**
          * Build the execution context for a triggered ability sitting on the stack.

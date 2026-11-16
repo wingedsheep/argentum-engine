@@ -2519,6 +2519,103 @@
     ]
 }
 
+// Dragonlord's Prerogative
+{
+    "name": "Dragonlord's Prerogative",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, you may reveal a Dragon card from your hand.\nIf you revealed a Dragon card or controlled a Dragon as you cast this spell, this spell can't be countered.\nDraw four cards.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomRevealFromHand",
+                    "filter": "Dragon"
+                }
+            },
+            "displayPrefix": "Additional cost",
+            "declaredSlot": "ADDITIONAL_COST_PAID"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 4
+            }
+        },
+        "cantBeCounteredIf": {
+            "type": "Any",
+            "conditions": [
+                {
+                    "type": "CastChoiceMade",
+                    "slot": "ADDITIONAL_COST_PAID"
+                },
+                {
+                    "type": "Compare",
+                    "left": {
+                        "type": "CapturedAtCast",
+                        "captureName": "controlledDragon"
+                    },
+                    "operator": "GT",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                }
+            ]
+        },
+        "castTimeCaptures": [
+            {
+                "captureName": "controlledDragon",
+                "value": {
+                    "type": "Conditional",
+                    "condition": {
+                        "type": "Exists",
+                        "player": "You",
+                        "zone": "Battlefield",
+                        "filter": "permanent Dragon"
+                    },
+                    "ifTrue": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "ifFalse": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "rarity": "RARE",
+        "artist": "Seb McKinnon",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/53f2d2b3-6e48-413e-ad8f-9ce40c7ff167.jpg?1783938609",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If one of these spells is copied, the controller of the copy will get the “Dragon bonus” only if a Dragon card was revealed as an additional cost. The copy wasn’t cast, so whether you controlled a Dragon won’t matter."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "You can’t reveal more than one Dragon card to multiply the bonus. There is also no additional benefit for both revealing a Dragon card as an additional cost and controlling a Dragon as you cast the spell."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If you don’t reveal a Dragon card from your hand, you must control a Dragon as you are finished casting the spell to get the bonus. For example, if you lose control of your only Dragon while casting the spell (because, for example, you sacrificed it to activate a mana ability), you won’t get the bonus."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Dragonlord's Servant
 {
     "name": "Dragonlord's Servant",

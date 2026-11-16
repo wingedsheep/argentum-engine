@@ -200,7 +200,10 @@ multi-paragraph entry down the same way when you touch it.
 - `cantBeCountered: Boolean` — spell is uncounterable.
 - `cantBeCounteredIf: Condition?` — "If …, this spell can't be countered." Evaluated against the spell *on the
   stack* each time something tries to counter it: `DynamicAmounts.xValue()` reads its locked-in X and `Player.You` is
-  its caster (Banefire: `Conditions.CompareAmounts(DynamicAmounts.xValue(), GTE, 5)`). Pair it with an `Effects.If`
+  its caster (Banefire: `Conditions.CompareAmounts(DynamicAmounts.xValue(), GTE, 5)`). Every cast choice the spell
+  carries counts too — the optional cost it paid (`Conditions.AdditionalCostWasPaid`, `WasKicked`) and its
+  `captureAtCast` flags (Dragonlord's Prerogative: `Conditions.Any(AdditionalCostWasPaid, CapturedAtCast("controlledDragon"))`
+  with the reveal as `KeywordAbility.optionalAdditionalCost(...)`). Pair it with an `Effects.If`
   over the same condition when the rider also changes the effect ("…and the damage can't be prevented").
 - `cantBeCopied: Boolean` — spell can't be copied (CR 707.10); copy effects that name it create no copy (Display of Power).
 - `conditionalFlash: Condition?` — gains flash while condition holds. `DynamicAmounts.xValue()` reads the

@@ -65,15 +65,9 @@ internal fun stackObjectWouldDestroy(
             val card = container.get<CardComponent>()
             val definition = card?.let { cardRegistry?.getCard(it.name) }
             val effect = resolvingSpellEffect(state, stackObjectId, spell, card, definition) ?: return emptySet()
-            effect to EffectContext(
-                sourceId = stackObjectId,
-                controllerId = spell.casterId,
+            effect to EffectContext.forSpellOnStack(stackObjectId, spell).copy(
                 targets = targets,
                 alignedTargets = targets,
-                xValue = spell.xValue,
-                chosenModes = spell.chosenModes,
-                modeTargetsOrdered = spell.modeTargetsOrdered,
-                modeTargetRequirements = spell.modeTargetRequirements,
                 pipeline = com.wingedsheep.engine.handlers.PipelineState(namedTargets = namedTargets),
             )
         }
