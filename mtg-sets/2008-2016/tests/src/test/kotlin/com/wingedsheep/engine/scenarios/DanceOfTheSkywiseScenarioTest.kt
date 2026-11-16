@@ -24,8 +24,8 @@ import io.kotest.matchers.shouldNotBe
  * Illusion with base power and toughness 4/4, loses all abilities, and gains flying."
  *
  * Pins the layered result (types and colour replaced, other card types kept, flying survives the
- * ability loss, counters still apply on top of base 4/4), and the ruling that a face-down morph it
- * targets can't be turned face up for its morph cost.
+ * ability loss), and the ruling that a face-down morph it targets can't be turned face up for its
+ * morph cost.
  */
 class DanceOfTheSkywiseScenarioTest : FunSpec({
 
