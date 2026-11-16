@@ -600,6 +600,81 @@
     ]
 }
 
+// Arashin Sovereign
+{
+    "name": "Arashin Sovereign",
+    "manaCost": "{5}{G}{W}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nWhen this creature dies, you may put it on your choice of the top or bottom of its owner's library.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Arashin Sovereign:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "ChooseAction",
+                        "choices": [
+                            {
+                                "label": "Put it on top of its owner's library",
+                                "effect": {
+                                    "type": "MoveToZone",
+                                    "target": "Self",
+                                    "destination": "Library",
+                                    "placement": "Top"
+                                }
+                            },
+                            {
+                                "label": "Put it on the bottom of its owner's library",
+                                "effect": {
+                                    "type": "MoveToZone",
+                                    "target": "Self",
+                                    "destination": "Library",
+                                    "placement": "Bottom"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "Dromoka dragons foster trust among their subjects, while the other clans must spend their time quelling rebellion.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/db7fbf78-8cb6-4fbf-b925-5543bcb64b45.jpg?1783938575",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "The player who controlled Arashin Sovereign when it died chooses whether to put it on the top or bottom of its owner's library. The player may also choose to leave Arashin Sovereign in the graveyard. This choice is made as the ability resolves."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Arashin Sovereign will be put on the top or bottom of that library only if it's still in the graveyard when its ability resolves. If it leaves the graveyard before that point, it will stay in whatever zone it's in, even if it's returned to the graveyard before the ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Artful Maneuver
 {
     "name": "Artful Maneuver",
@@ -1037,6 +1112,138 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Atarka's Command
+{
+    "name": "Atarka's Command",
+    "manaCost": "{R}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Choose two —\n• Your opponents can't gain life this turn.\n• Atarka's Command deals 3 damage to each opponent.\n• You may put a land card from your hand onto the battlefield.\n• Creatures you control get +1/+1 and gain reach until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "LockLifeGain",
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "EachOpponent"
+                        },
+                        "duration": "EndOfTurn"
+                    },
+                    "description": "Your opponents can't gain life this turn"
+                },
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "EachOpponent"
+                        }
+                    },
+                    "description": "Atarka's Command deals 3 damage to each opponent"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "filter": "land"
+                                },
+                                "storeAs": "put_candidates"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "put_candidates",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "putting"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "putting",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            }
+                        ]
+                    },
+                    "description": "You may put a land card from your hand onto the battlefield"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "ModifyStats",
+                                    "powerModifier": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "toughnessModifier": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "target": "IterationEntity"
+                                },
+                                {
+                                    "type": "GrantKeyword",
+                                    "keyword": "REACH",
+                                    "target": "IterationEntity"
+                                }
+                            ]
+                        }
+                    },
+                    "description": "Creatures you control get +1/+1 and gain reach until end of turn"
+                }
+            ],
+            "chooseCount": 2
+        }
+    },
+    "metadata": {
+        "collectorNumber": "213",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/903d78c9-c5b3-45c3-a6d0-7e92b4196ae3.jpg?1783938574",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "The first mode won't affect life that was gained earlier in the turn."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If you choose the third mode and put a land card onto the battlefield, that doesn't count as playing a land. For example, you can both play a land and put a land onto the battlefield this way during your turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
     ]
 }
 
@@ -3802,6 +4009,114 @@
     ]
 }
 
+// Dragonlord Ojutai
+{
+    "name": "Dragonlord Ojutai",
+    "manaCost": "{3}{W}{U}",
+    "typeLine": "Legendary Creature — Elder Dragon",
+    "oracleText": "Flying\nDragonlord Ojutai has hexproof as long as it's untapped.\nWhenever Dragonlord Ojutai deals combat damage to a player, look at the top three cards of your library. Put one of them into your hand and the rest on the bottom of your library in any order.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dragonlord Ojutai:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "selectedLabel": "Put in hand",
+                            "remainderLabel": "Put on bottom"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "ControllerChooses"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Dragonlord Ojutai deals combat damage to a player, look at the top three cards of your library. Put one of them into your hand and the rest on the bottom of your library in any order."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "untapped"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "219",
+        "rarity": "MYTHIC",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a42b2c9c-1650-468e-94d6-e09b3518447f.jpg?1783938573"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Dragonlord's Prerogative
 {
     "name": "Dragonlord's Prerogative",
@@ -4070,6 +4385,79 @@
     ]
 }
 
+// Dromoka Monument
+{
+    "name": "Dromoka Monument",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {G} or {W}.\n{4}{G}{W}: This artifact becomes a 4/4 green and white Dragon artifact creature with flying until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Dromoka Monument:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Dromoka Monument:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Dromoka Monument:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{G}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "creatureTypes": [
+                        "Dragon"
+                    ],
+                    "colors": [
+                        "GREEN",
+                        "WHITE"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "238",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d4df975f-b6ef-4e8e-8be8-529c0ffd8a37.jpg?1783938569"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Dromoka Warrior
 {
     "name": "Dromoka Warrior",
@@ -4086,6 +4474,131 @@
         "imageUri": "https://cards.scryfall.io/normal/front/1/3/13ae001b-556f-4576-8cf4-0b8902997bb1.jpg?1562782782"
     },
     "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Dromoka's Command
+{
+    "name": "Dromoka's Command",
+    "manaCost": "{G}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Choose two —\n• Prevent all damage target instant or sorcery spell would deal this turn.\n• Target player sacrifices an enchantment of their choice.\n• Put a +1/+1 counter on target creature.\n• Target creature you control fights target creature you don't control.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "PreventDamageShield",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "direction": "FromTarget"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "instant|sorcery",
+                                "zone": "Stack"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Prevent all damage target instant or sorcery spell would deal this turn"
+                },
+                {
+                    "effect": {
+                        "type": "ForceSacrifice",
+                        "filter": "enchantment",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Target player sacrifices an enchantment of their choice"
+                },
+                {
+                    "effect": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t2"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t2"
+                        }
+                    ],
+                    "description": "Put a +1/+1 counter on target creature"
+                },
+                {
+                    "effect": {
+                        "type": "Fight",
+                        "target1": {
+                            "type": "BoundVariable",
+                            "name": "t3"
+                        },
+                        "target2": {
+                            "type": "BoundVariable",
+                            "name": "t4"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "t3"
+                        },
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:opponent"
+                            },
+                            "id": "t4"
+                        }
+                    ],
+                    "description": "Target creature you control fights target creature you don't control"
+                }
+            ],
+            "chooseCount": 2
+        }
+    },
+    "metadata": {
+        "collectorNumber": "221",
+        "rarity": "RARE",
+        "artist": "James Ryman",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/df1e43a8-0adc-4e26-bc56-6b914bd35838.jpg?1783938573",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "Although most instants and sorceries that cause damage to be dealt are the sources of that damage, a few cause other objects to deal damage (for example, spells that cause creatures to fight). The first ability of Dromoka's Command won't prevent damage caused by those other sources."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "You can target any player with the second ability, including one that doesn't control an enchantment."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
         "WHITE"
     ]
 }
@@ -4389,6 +4902,69 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Enduring Scalelord
+{
+    "name": "Enduring Scalelord",
+    "manaCost": "{4}{G}{W}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nWhenever one or more +1/+1 counters are put on another creature you control, you may put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Enduring Scalelord:1",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "filter": "creature ctrl:you"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "UNCOMMON",
+        "artist": "Clint Cearley",
+        "flavorText": "Only the sun that beats down upon Arashin's walls could shine more brightly.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5dfdfff3-0ef8-4e9a-b6bd-a0e11cbdf22e.jpg?1783938572",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "A creature entering the battlefield with one or more +1/+1 counters on it will cause Enduring Scalelord's ability to trigger."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If +1/+1 counters are put on multiple creatures you control (other than Enduring Scalelord) at the same time, Enduring Scalelord's ability will trigger once for each of those creatures."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If you control two Enduring Scalelords, putting a +1/+1 counter on one of them will cause the ability of the other one to trigger. When this ability resolves, you'll put a +1/+1 counter on the other Scalelord. This will cause the ability of the first one to trigger. This loop will repeat until you choose not to put a +1/+1 counter on one of the Enduring Scalelords."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
     ]
 }
 
@@ -4974,6 +5550,79 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Gate Smasher
+{
+    "name": "Gate Smasher",
+    "manaCost": "{3}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "This Equipment can be attached only to a creature with toughness 4 or greater.\nEquipped creature gets +3/+0 and has trample.\nEquip {3}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Gate Smasher:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "EquipmentAttachRestriction",
+                "filter": "creature tou>=4"
+            },
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 0
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE"
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "239",
+        "rarity": "UNCOMMON",
+        "artist": "Filip Burburan",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/001e8222-8dea-4767-8c13-21fb7ba556d7.jpg?1783938568",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "Gate Smasher's equip ability can target any creature. However, if that creature's toughness is 3 or less as the equip ability resolves, Gate Smasher won't become attached to it."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If Gate Smasher is attached to a creature whose toughness falls below 4, Gate Smasher will become unattached as a state-based action."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Glade Watcher
@@ -5627,6 +6276,99 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Harbinger of the Hunt
+{
+    "name": "Harbinger of the Hunt",
+    "manaCost": "{3}{R}{G}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\n{2}{R}: This creature deals 1 damage to each creature without flying.\n{2}{G}: This creature deals 1 damage to each other creature with flying.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Harbinger of the Hunt:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NotKeyword",
+                                        "keyword": "FLYING"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            },
+            {
+                "id": "Harbinger of the Hunt:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature kw:flying",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "RARE",
+        "artist": "Aaron Miller",
+        "flavorText": "An Atarka dragon's exhale cooks what its inhale consumes.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cbeb21b8-8817-48c2-8ae8-25221600ce32.jpg?1783938571"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
     ]
 }
 
@@ -6481,6 +7223,44 @@
     ]
 }
 
+// Keeper of the Lens
+{
+    "name": "Keeper of the Lens",
+    "manaCost": "{1}",
+    "typeLine": "Artifact Creature — Golem",
+    "oracleText": "You may look at face-down creatures you don't control any time.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            "LookAtFaceDownCreatures"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "240",
+        "artist": "Ryan Barger",
+        "flavorText": "\"It sees all, but it reveals what it sees only to a chosen few.\"\n—Taigam, Ojutai master",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/86d6c502-ae3e-4e67-8f1d-3323b4468f72.jpg?1783938568",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "Keeper of the Lens allows you to look at face-down creatures you don't control whenever you want to, even if you don't have priority. This action doesn't use the stack."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Keeper of the Lens doesn't stop your opponents from looking at face-down creatures they control."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Keeper of the Lens doesn't let you look at other players' face-down spells while they're on the stack."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Kolaghan Aspirant
 {
     "name": "Kolaghan Aspirant",
@@ -6566,6 +7346,79 @@
         "imageUri": "https://cards.scryfall.io/normal/front/2/c/2c56a8de-8ae8-4672-8119-9e6a1f4cf5cd.jpg?1783938589"
     },
     "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Kolaghan Monument
+{
+    "name": "Kolaghan Monument",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {B} or {R}.\n{4}{B}{R}: This artifact becomes a 4/4 black and red Dragon artifact creature with flying until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kolaghan Monument:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Kolaghan Monument:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Kolaghan Monument:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{B}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "creatureTypes": [
+                        "Dragon"
+                    ],
+                    "colors": [
+                        "BLACK",
+                        "RED"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "241",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/620cddb7-abf7-4367-8440-815b886db8e0.jpg?1783938568"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
         "RED"
     ]
 }
@@ -8329,6 +9182,79 @@
     ]
 }
 
+// Ojutai Monument
+{
+    "name": "Ojutai Monument",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {W} or {U}.\n{4}{W}{U}: This artifact becomes a 4/4 white and blue Dragon artifact creature with flying until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ojutai Monument:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Ojutai Monument:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Ojutai Monument:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{W}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "creatureTypes": [
+                        "Dragon"
+                    ],
+                    "colors": [
+                        "WHITE",
+                        "BLUE"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "242",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8ef29942-a7e3-4e47-9f95-527a5d7e4f1d.jpg?1783938567"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Ojutai's Breath
 {
     "name": "Ojutai's Breath",
@@ -8848,6 +9774,65 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Pristine Skywise
+{
+    "name": "Pristine Skywise",
+    "manaCost": "{4}{W}{U}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nWhenever you cast a noncreature spell, untap this creature. It gains protection from the color of your choice until end of turn.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pristine Skywise:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": "Self",
+                            "tap": false
+                        },
+                        {
+                            "type": "ChooseColorThen",
+                            "then": {
+                                "type": "GrantProtectionFromChosenColor",
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "228",
+        "rarity": "RARE",
+        "artist": "Adam Paquette",
+        "flavorText": "The elite of Ojutai's brood, the skywise see their enemies as puzzles to be solved.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/083eabac-f7c9-45d9-b3c7-10d719da1e0b.jpg?1783938571"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
     ]
 }
 
@@ -12120,6 +13105,79 @@
     ]
 }
 
+// Silumgar Monument
+{
+    "name": "Silumgar Monument",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {U} or {B}.\n{4}{U}{B}: This artifact becomes a 4/4 blue and black Dragon artifact creature with flying until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Silumgar Monument:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Silumgar Monument:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Silumgar Monument:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{U}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "creatureTypes": [
+                        "Dragon"
+                    ],
+                    "colors": [
+                        "BLUE",
+                        "BLACK"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "243",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/3243e300-1420-4e96-a3d3-610c3723a11f.jpg?1783938567"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Silumgar Sorcerer
 {
     "name": "Silumgar Sorcerer",
@@ -13158,6 +14216,123 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Swift Warkite
+{
+    "name": "Swift Warkite",
+    "manaCost": "{4}{B}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nWhen this creature enters, you may put a creature card with mana value 3 or less from your hand or graveyard onto the battlefield. That creature gains haste. Return it to your hand at the beginning of the next end step.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Swift Warkite:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromMultipleZones",
+                                "zones": [
+                                    "Hand",
+                                    "Graveyard"
+                                ],
+                                "filter": "creature mv<=3"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may put a creature card with mana value 3 or less from your hand or graveyard onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "storeMovedAs": "moved2"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "moved2"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "HASTE",
+                                        "target": "IterationEntity",
+                                        "duration": "Permanent"
+                                    },
+                                    {
+                                        "type": "CreateDelayedTrigger",
+                                        "step": "END",
+                                        "effect": {
+                                            "type": "MoveToZone",
+                                            "target": "IterationEntity",
+                                            "destination": "Hand"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Swift Warkite enters, you may put a creature card with mana value 3 or less from your hand or graveyard onto the battlefield. That creature gains haste. Return it to your hand at the beginning of the next end step."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "233",
+        "rarity": "UNCOMMON",
+        "artist": "Izzy",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f62db9d7-3cc7-49cb-bffc-d2f9c286aa36.jpg?1783938570",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "You can't put creatures onto the battlefield face down this way."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "The creature you put onto the battlefield will be returned to your hand only if it's still on the battlefield as the delayed triggered ability resolves during the next end step. If it leaves the battlefield before then, it will remain wherever it is."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "The delayed triggered ability that returns the creature to your hand will trigger even if Swift Warkite leaves the battlefield before the next end step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 
