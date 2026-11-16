@@ -3681,7 +3681,14 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   one-way half of CR 611.2b ("for as long as" durations don't restart) is enforced by the
   `EndedDurationExpiryCheck` state-based action, which physically removes the effect the moment
   the condition fails — so a pump that wears off, a re-tap, or a re-acquired source never
-  re-grabs the creature.
+  re-grabs the creature. The other half of CR 611.2b — a duration that has **already ended before
+  the effect would begin** means the effect does nothing — is enforced by `GainControlExecutor`
+  asking that same gate (`EndedDurationExpiryCheck.activeAffectedEntities`) about the effect it is
+  about to create: a source that left the battlefield, returned as a new object, changed hands, or
+  untapped before the steal resolved yields no control change, no summoning sickness and no
+  `ControlChangedEvent`. **Dragonlord Silumgar** = `Triggers.self.enters()` +
+  `Effects.GainControl(target(TargetFilter(GameObjectFilter.CreatureOrPlaneswalker)),
+  Duration.WhileYouControlSource("Dragonlord Silumgar"))` — killed in response, it steals nothing.
 - `ExchangeControlEffect(target1, target2)` — swap control of two permanents.
 - `ExchangeTextBoxesEffect(first, second)` (facade `Effects.ExchangeTextBoxes(first, second)`) — exchange the
   text boxes of two permanents (CR 612.5, 701.12h): each one's rules text — abilities, keywords, oracle text —
