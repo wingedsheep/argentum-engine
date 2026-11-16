@@ -145,6 +145,8 @@ every AI/MCTS node. **Cheap-looking work in a primitive multiplies.**
 - **Respect immutability without copying the world.** Use the `with`/`without` component helpers and
   `copy(…)` of the changed slice; don't rebuild whole maps. Local `mutableListOf` accumulation inside a
   pure function is fine (the SBA loop does it); leaking mutation across calls is not.
+- **Reason about the cost, don't benchmark it.** This step is a design check; don't run `just benchmark*`
+  or `just arena*` to confirm it unless the user asks for a measurement.
 - **Watch the client too.** New per-card fields on `ClientCard` or frequent `StateDeltaUpdate` churn cause
   battlefield re-renders. If the feature adds card-visible state, confirm it only changes when it
   actually changes.
@@ -307,7 +309,9 @@ same for `Pick`, but only when it comes from the effect heuristic; a Draftsim/17
 its table rating. When no value should move (a pure targeting or timing reading), say so and why. When
 closing the gap would be a feature of its own, name it in the PR body as `value gap: <what>`.
 
-Prove each reading with an AI test (a decision that changes, a profile or score that's pinned), and add
+Prove each reading with an AI test (a decision that changes, a profile or score that's pinned) — **never
+with a benchmark**: don't run `just benchmark*`, `just arena*`, `just deck-colours`, `just ai-game-logs` or
+any `*Benchmark` class for a feature, unless the user asks for a measurement. Add
 an `ai/changelog.d/<branch>.md` entry (rules in `ai/CHANGELOG.md`'s header). Don't re-bless
 `just ai-reading-baseline` for the gain: main does that after merge (`docs/ai/reading-audit.md`, "The
 ratchet").

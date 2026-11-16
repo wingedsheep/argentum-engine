@@ -23,6 +23,11 @@ LOOP_PR_PROTOCOL="PR LIFECYCLE — every PR is reviewed BEFORE it is opened, so 
   player would: layout, labels, highlighting, nothing overlapping, clipped or stale. Fix what looks off and shoot
   again. Stop the servers when done, and never touch another loop's ports. Put the final screenshots in the PR body.
   If the app or images can't be run or viewed, say exactly that rather than claiming a UX pass.
+- NO BENCHMARKS — never run an AI or engine benchmark: no \`just benchmark*\`, \`just arena*\`, \`just deck-colours\`,
+  \`just ai-game-logs\`, no \`*Benchmark\` class and nothing with \`-Dbenchmark=true\`. They play hundreds of games and
+  hold a build slot for it. An AI reader change is proven by its one AI decision test, never by a win rate; don't
+  quote or refresh benchmark numbers in the PR. The only exceptions are \`just ai-card\` (a static report) and
+  \`just ai-reading-audit\` when a step names it.
 - AI CHECK — before review, on any unit that adds or changes cards or SDK vocabulary: run
   \`just ai-card \"<every card the unit adds or touches>\"\` and close every understanding, rating and synergy gap it
   shows IN THIS PR, per add-card / add-feature Step 10: a reader entry keyed by the effect type, an AI decision test,
