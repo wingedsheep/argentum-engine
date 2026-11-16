@@ -9031,6 +9031,93 @@
     ]
 }
 
+// Silumgar Assassin
+{
+    "name": "Silumgar Assassin",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Assassin",
+    "oracleText": "Creatures with power greater than this creature's power can't block it.\nMegamorph {2}{B} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)\nWhen this creature is turned face up, destroy target creature with power 3 or less an opponent controls.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{2}{B}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Silumgar Assassin:1",
+                "trigger": "TurnFaceUpEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature pow<=3 ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "PowerGreaterThanEntity",
+                            "reference": "Self"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "RARE",
+        "artist": "Yohann Schepacz",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ecc4693f-59fe-4671-b8c6-66fe53a76bbe.jpg?1783938593",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "The powers of Silumgar Assassin and the creature trying to block it are checked only as blockers are declared. Changing the powers of either of those creatures after Silumgar Assassin is legally blocked won't change or undo the block."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If a face-down creature with megamorph is turned face up some other way (for example, if you manifest a card with megamorph and then pay its mana cost to turn it face up), you won't put a +1/+1 counter on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Silumgar Butcher
 {
     "name": "Silumgar Butcher",
