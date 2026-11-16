@@ -235,51 +235,18 @@ internal class NonPermanentSpellResolver(
         mainAlignedTargets: List<ChosenTarget?>,
         targetRequirements: List<TargetRequirement>
     ): EffectContext =
-        EffectContext(
-            sourceId = spellId,
+        EffectContext.forSpellOnStack(spellId, spellComponent).copy(
             // The spell's effect runs as a program whose origin is this resolving stack object.
             programOrigin = state.objectRef(spellId)?.let { com.wingedsheep.engine.core.ProgramOrigin.Resolving(it) },
             objectReferences = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(
                 captured = true, origin = state.objectRef(spellId), source = state.objectRef(spellId),
                 resolutionKey = "$spellId:${state.objectRef(spellId)?.generation}",
             ),
-            controllerId = spellComponent.casterId,
             targets = mainTargets,
             // Position-preserving view (null in slots dropped by 608.2b) so positional
             // references — ContextTarget(n), ContextPlayer(n) —
             // resolve by ORIGINAL slot and don't shift onto a later still-valid target.
             alignedTargets = mainAlignedTargets,
-            // A pay-X-life additional cost (AdditionalCost.PayXLife, e.g. Vicious Rivalry) feeds
-            // its declared X through the same X slot read by DynamicAmount.XValue and the
-            // ManaValue*X predicates. Such a card never also carries an {X} mana cost, so
-            // coalescing is unambiguous (CR 601.2b — the value is locked in as the spell is cast).
-            xValue = spellComponent.xValue ?: spellComponent.additionalCostPayXLifeAmount,
-            totalManaSpent = spellComponent.manaSpentWhite + spellComponent.manaSpentBlue +
-                spellComponent.manaSpentBlack + spellComponent.manaSpentRed +
-                spellComponent.manaSpentGreen + spellComponent.manaSpentColorless,
-            manaSpentOnXByColor = spellComponent.manaSpentOnXByColor,
-            manaSpent = com.wingedsheep.engine.mechanics.mana.SpentMana(
-                white = spellComponent.manaSpentWhite, blue = spellComponent.manaSpentBlue,
-                black = spellComponent.manaSpentBlack, red = spellComponent.manaSpentRed,
-                green = spellComponent.manaSpentGreen, colorless = spellComponent.manaSpentColorless,
-            ),
-            declaredCostSlot = spellComponent.declaredCostSlot,
-            wasBlightPaid = spellComponent.wasBlightPaid,
-            wasWaterbendPaid = spellComponent.wasWaterbendPaid,
-            wasSneaked = spellComponent.wasSneaked,
-            wasWebSlung = spellComponent.wasWebSlung,
-            wasMayhem = spellComponent.wasMayhem,
-            sacrificedPermanents = spellComponent.sacrificedPermanents,
-            discardedAsCostCards = spellComponent.discardedAsCostCards,
-            revealedAsCostSnapshots = spellComponent.revealedAsCostSnapshots,
-            exiledAsCostCards = spellComponent.exiledAsCostCards,
-            exiledAsCostSnapshots = spellComponent.exiledAsCostSnapshots,
-            tappedPermanents = spellComponent.tappedPermanents,
-            chosenEntitySnapshots = spellComponent.chosenEntitySnapshots,
-            damageDistribution = spellComponent.damageDistribution,
-            chosenModes = spellComponent.chosenModes,
-            modeTargetsOrdered = spellComponent.modeTargetsOrdered,
-            modeTargetRequirements = spellComponent.modeTargetRequirements,
             // A repeated mode can bind a different number of targets on each occurrence.
             // The flat requirements already carry those announced counts, including zero.
             modeTargetRequirementsOrdered = spellComponent.chosenModes.takeIf { modes ->
@@ -291,10 +258,6 @@ internal class NonPermanentSpellResolver(
                     targetRequirements.drop(cursor).take(size).also { cursor += size }
                 }
             }.orEmpty(),
-            chosenCreatureType = spellComponent.chosenCreatureType,
-            exiledCardCount = spellComponent.exiledCardCount,
-            additionalCostBlightAmount = spellComponent.additionalCostBlightAmount,
-            castFromZone = spellComponent.castFromZone,
             pipeline = PipelineState(
                 // Use the positionally-aligned validated list so a sub-effect that
                 // references a target dropped by 608.2b through its BoundVariable id

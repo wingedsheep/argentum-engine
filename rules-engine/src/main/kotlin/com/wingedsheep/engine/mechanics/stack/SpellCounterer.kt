@@ -676,20 +676,17 @@ class SpellCounterer(
             isGrantedCantBeCountered(state, spellId)
 
     /**
-     * The spell's own "if …, this spell can't be countered" (Banefire's "if X is 5 or more").
-     * Evaluated against the spell as it sits on the stack: its locked-in X and its caster as `You`,
-     * so a copy (which copies X, CR 707.10) is judged on its own values.
+     * The spell's own "if …, this spell can't be countered" (Banefire's "if X is 5 or more",
+     * Dragonlord's Prerogative's "if you revealed a Dragon card or controlled a Dragon as you cast
+     * this spell"). Evaluated against the spell as it sits on the stack, with every choice locked
+     * in as it was cast — X, the optional cost it paid, its cast-time captures — and its caster
+     * as `You`, so a copy (which copies those choices, CR 707.10) is judged on its own values.
      */
     private fun ownConditionMakesUncounterable(state: GameState, spellId: EntityId, container: ComponentContainer): Boolean {
         val spell = container.get<SpellOnStackComponent>() ?: return false
         val definitionId = container.get<CardComponent>()?.cardDefinitionId ?: return false
         val condition = cardRegistry.getCard(definitionId)?.script?.cantBeCounteredIf ?: return false
-        val context = EffectContext(
-            sourceId = spellId,
-            controllerId = spell.casterId,
-            xValue = spell.xValue ?: spell.additionalCostPayXLifeAmount,
-        )
-        return predicateEvaluator.conditions.evaluate(state, condition, context)
+        return predicateEvaluator.conditions.evaluate(state, condition, EffectContext.forSpellOnStack(spellId, spell))
     }
 
     private fun isGrantedCantBeCountered(state: GameState, spellId: EntityId): Boolean {
