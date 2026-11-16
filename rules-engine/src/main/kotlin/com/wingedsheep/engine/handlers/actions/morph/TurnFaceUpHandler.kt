@@ -110,6 +110,12 @@ class TurnFaceUpHandler(
         // client-supplied, so bounds-check it here rather than trusting it.
         val procedure = morphData.procedures.getOrNull(action.procedureIndex)
             ?: return "No such turn-up procedure: ${action.procedureIndex}"
+        // "If the permanent wouldn't have a morph cost if it were face up, it can't be turned face
+        // up this way" (CR 702.37e, 702.168d): a lose-all-abilities effect closes the morph and
+        // disguise routes; a manifest or cloak route stays open.
+        if (!procedure.isOpen(state.projectedState.hasLostAllAbilities(action.sourceId))) {
+            return "This creature has lost its ${procedure.label.lowercase()} ability"
+        }
         // Lets restricted mana tagged "spend only to turn permanents face up" (Overgrown Zealot) — or
         // only for some procedures, "a morph cost" (Qarsi Deceiver) — pay for this procedure.
         val faceUpContext = SpellPaymentContext.turnFaceUp(procedure.mechanic)

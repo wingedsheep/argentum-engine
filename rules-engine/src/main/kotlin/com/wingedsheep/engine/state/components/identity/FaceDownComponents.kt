@@ -59,6 +59,20 @@ data class TurnUpProcedure(
      */
     val costReduction: CostReductionSource? = null
 ) {
+    /**
+     * Whether this route is the card's own morph or disguise ability rather than a rule of the
+     * manifest/cloak that put it face down. The special action needs the permanent to "have a
+     * morph cost if it were face up" (CR 702.37e, 702.168d), so a "loses all abilities" effect on
+     * the face-down permanent (Dance of the Skywise, Turn to Frog) closes this route. The
+     * manifest/cloak route only needs a creature card with a mana cost (CR 701.40b, 701.58b), so it
+     * stays open.
+     */
+    val isAbilityRoute: Boolean
+        get() = mechanic == FaceDownMode.MORPH || mechanic == FaceDownMode.DISGUISE
+
+    /** Whether this route can be taken on a permanent whose projected abilities are all gone. */
+    fun isOpen(lostAllAbilities: Boolean): Boolean = !(lostAllAbilities && isAbilityRoute)
+
     /** Player-facing mechanic name, e.g. "Disguise". */
     val label: String get() = mechanic.name.lowercase().replaceFirstChar { it.uppercase() }
 }
