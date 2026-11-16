@@ -6985,6 +6985,169 @@
     ]
 }
 
+// Living Lore
+{
+    "name": "Living Lore",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Avatar",
+    "oracleText": "As this creature enters, exile an instant or sorcery card from your graveyard.\nLiving Lore's power and toughness are each equal to the exiled card's mana value.\nWhenever this creature deals combat damage, you may sacrifice it. If you do, you may cast the exiled card without paying its mana cost.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "EntityProperty",
+                "entity": "LinkedExiledCard",
+                "numericProperty": "ManaValue"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "EntityProperty",
+                "entity": "LinkedExiledCard",
+                "numericProperty": "ManaValue"
+            }
+        }
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Living Lore:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "sourceRequiredZone": "Battlefield"
+                    },
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": "SacrificeSelf",
+                            "successCriterion": "SuccessCriterion.PermanentsSacrificed"
+                        },
+                        "then": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": "FromLinkedExile",
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected1",
+                                    "prompt": "You may cast the card exiled with Living Lore without paying its mana cost",
+                                    "selectedLabel": "Cast"
+                                },
+                                {
+                                    "type": "CastFromCollectionWithoutPayingCost",
+                                    "from": "selected1"
+                                }
+                            ]
+                        }
+                    },
+                    "descriptionOverride": "sacrifice this creature. If you do, you may cast the exiled card without paying its mana cost"
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage, you may sacrifice it. If you do, you may cast the exiled card without paying its mana cost."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "OnEnterRunEffect",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "instant|sorcery"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Choose an instant or sorcery card to exile with Living Lore",
+                            "selectedLabel": "Exile"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "RARE",
+        "artist": "Jason Felix",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8f658281-1c6c-4450-8d75-81714dbd0472.jpg?1783938606",
+        "rulings": [
+            {
+                "date": "2018-12-07",
+                "text": "If there are no instant or sorcery cards in your graveyard as Living Lore enters the battlefield, it will enter the battlefield as a 0/0 creature and be put into its owner's graveyard due to having 0 toughness."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "If an instant or sorcery spell puts Living Lore onto the battlefield, that spell is still on the stack while you choose a card to exile. You can't exile it with Living Lore."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "If Living Lore leaves the battlefield, the ability that defines its power and toughness will lose track of the exiled card. Its power and toughness are 0 in other zones."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "Similarly, if the exiled card somehow leaves exile while Living Lore is on the battlefield, it will become a 0/0 creature."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "Living Lore's last ability will trigger whenever it deals combat damage, no matter if that damage is dealt to an opponent, an opposing planeswalker, or a creature it's blocking or being blocked by. You choose whether to sacrifice Living Lore as that ability resolves. If Living Lore has already left the battlefield, perhaps because it was dealt lethal damage at the same time it dealt damage, you can't sacrifice it."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "You may cast a sorcery this way even if it's not your turn."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "If a spell has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Lose Calm
 {
     "name": "Lose Calm",
@@ -7400,6 +7563,74 @@
     ]
 }
 
+// Mirror Mockery
+{
+    "name": "Mirror Mockery",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhenever enchanted creature attacks, you may create a token that's a copy of that creature. Exile that token at end of combat.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mirror Mockery:1",
+                "trigger": "AttackEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Create a token that's a copy of the enchanted creature?"
+                    },
+                    "then": {
+                        "type": "CreateTokenCopyOfTarget",
+                        "target": "TriggeringEntity",
+                        "exileAtStep": "END_COMBAT"
+                    }
+                },
+                "descriptionOverride": "Whenever enchanted creature attacks, you may create a token that's a copy of that creature. Exile that token at end of combat."
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "RARE",
+        "artist": "Ryan Alexander Lee",
+        "flavorText": "Who you are constantly runs toward who you will be.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f837b050-70a6-46f0-963d-4badb37a42a1.jpg?1783938607",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "Notably, the token won't be attacking."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If Mirror Mockery enchants a creature you don't control, and you are the defending player, you can block with the token."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "The ability that exiles the token will trigger at end of combat no matter what happens to the original creature or to Mirror Mockery."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If Mirror Mockery is no longer on the battlefield as its triggered ability resolves, its ability makes a copy of the creature it was enchanting when it left the battlefield. If it left the battlefield because it was no longer enchanting a legal creature, it makes a copy of the creature it was most recently enchanting before it left the battlefield."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If Mirror Mockery's ability creates multiple tokens (due to an effect such as the one Doubling Season creates), all such tokens will be exiled by the delayed triggered ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Misthoof Kirin
 {
     "name": "Misthoof Kirin",
@@ -7503,6 +7734,85 @@
             {
                 "date": "2015-02-25",
                 "text": "If a face-down creature with megamorph is turned face up some other way (for example, if you manifest a card with megamorph and then pay its mana cost to turn it face up), you won't put a +1/+1 counter on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Mystic Meditation
+{
+    "name": "Mystic Meditation",
+    "manaCost": "{3}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw three cards. Then discard two cards unless you discard a creature card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeSelected": "discarded",
+                            "prompt": "Discard two cards, or a single creature card",
+                            "restrictions": [
+                                {
+                                    "type": "ReducedMinimumIfMatches",
+                                    "reducedMinimum": 1,
+                                    "filter": "creature"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "artist": "Howard Lyon",
+        "flavorText": "\"Still the mind and quiet the heart. Only then will you hear the Multiverse's great truths.\"\n—Narset",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d169f469-10d5-4ae8-88fe-12a8e20ab01b.jpg?1783938606",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "You may choose to discard a creature card and another card if you want to."
             }
         ]
     },
@@ -8538,6 +8848,133 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Profaner of the Dead
+{
+    "name": "Profaner of the Dead",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Snake Wizard",
+    "oracleText": "Exploit (When this creature enters, you may sacrifice a creature.)\nWhen this creature exploits a creature, return to their owners' hands all creatures your opponents control with toughness less than the exploited creature's toughness.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "EXPLOIT"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Profaner of the Dead:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "SourceInZone",
+                            "zones": [
+                                "Battlefield"
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "Sacrifice",
+                                    "filter": "creature"
+                                },
+                                "EmitExploitedEvent"
+                            ]
+                        },
+                        "reflexiveEffect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "BattlefieldMatching",
+                                        "filter": {
+                                            "cardPredicates": [
+                                                "IsCreature",
+                                                {
+                                                    "type": "CompareNumericProperty",
+                                                    "property": "TOUGHNESS",
+                                                    "operator": "LT",
+                                                    "amount": {
+                                                        "type": "EntityProperty",
+                                                        "entity": "SacrificedAsCost",
+                                                        "numericProperty": "Toughness"
+                                                    }
+                                                }
+                                            ],
+                                            "controllerPredicate": "ControlledByOpponent"
+                                        }
+                                    },
+                                    "storeAs": "returnAllToHand_gathered"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "returnAllToHand_gathered",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Hand"
+                                    }
+                                }
+                            ]
+                        },
+                        "descriptionOverride": "You may sacrifice a creature"
+                    },
+                    "otherwise": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "Sacrifice",
+                                    "filter": "creature"
+                                },
+                                "EmitExploitedEvent"
+                            ]
+                        },
+                        "reflexiveEffect": {
+                            "type": "Composite",
+                            "effects": []
+                        },
+                        "descriptionOverride": "You may sacrifice a creature"
+                    },
+                    "descriptionOverride": "You may sacrifice a creature"
+                },
+                "descriptionOverride": "Exploit (When this creature enters, you may sacrifice a creature.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "rarity": "RARE",
+        "artist": "Vincent Proce",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/87630910-47cc-4347-b126-fd779e7dadc0.jpg?1783938605",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "Use the toughness of the exploited creature as it last existed on the battlefield to determine which creatures to return to their owners' hands."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If the creature with exploit isn't on the battlefield as the exploit ability resolves, you won't get any bonus from the creature with exploit, even if you sacrifice a creature. Because the creature with exploit isn't on the battlefield, its other triggered ability won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -10301,6 +10738,45 @@
     ]
 }
 
+// Segmented Krotiq
+{
+    "name": "Segmented Krotiq",
+    "manaCost": "{5}{G}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "Megamorph {6}{G} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{6}{G}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "202",
+        "artist": "Christopher Moeller",
+        "flavorText": "The list of things a krotiq eats is as long as the krotiq itself.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/c/dcdbe824-f9c7-4f4d-af92-438b16057d99.jpg?1783938576"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Seismic Rupture
 {
     "name": "Seismic Rupture",
@@ -10464,6 +10940,130 @@
     ]
 }
 
+// Shaman of Forgotten Ways
+{
+    "name": "Shaman of Forgotten Ways",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "{T}: Add two mana in any combination of colors. Spend this mana only to cast creature spells.\nFormidable — {9}{G}{G}, {T}: Each player's life total becomes the number of creatures they control. Activate only if creatures you control have total power 8 or greater.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Shaman of Forgotten Ways:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddDynamicMana",
+                    "amountSource": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "allowedColors": [
+                        "WHITE",
+                        "BLUE",
+                        "BLACK",
+                        "RED",
+                        "GREEN"
+                    ],
+                    "restriction": "CreatureSpellsOnly"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Shaman of Forgotten Ways:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{9}{G}{G}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "SetLifeTotal",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "creature"
+                        }
+                    }
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "creature",
+                                "aggregation": "SUM",
+                                "property": "POWER"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 8
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Formidable — {9}{G}{G}, {T}: Each player's life total becomes the number of creatures they control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "rarity": "MYTHIC",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a3e9c8f7-2232-4a2a-8a00-0a2908bc7543.jpg?1783938576",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "The mana produced by Shaman of Forgotten Ways can be used to cast face-down creature spells with morph or megamorph."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Count the number of creatures each player controls when the last ability resolves to determine what number each player's life total will become."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "For a player's life total to become a specific number, the player gains or loses the appropriate amount of life. For example, if a player's life total is 12 and that player controls three creatures as the ability resolves, they will lose 9 life. Other effects that interact with life gain or loss will interact with this effect accordingly."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If a player controls no creatures as the last ability resolves, their life total will become 0, causing that player to lose the game. If all players' life totals become 0 this way, the game will be a draw."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If you control a creature with power less than 0, use its actual power when calculating the total power of creatures you control. For example, if you control three creatures with powers 4, 5, and -2, the total power of creatures you control is 7."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Some formidable abilities are activated abilities that require creatures you control to have total power 8 or greater. Once you activate these abilities, it doesn't matter what happens to the total power of creatures you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Shambling Goblin
 {
     "name": "Shambling Goblin",
@@ -10576,6 +11176,49 @@
     ]
 }
 
+// Sheltered Aerie
+{
+    "name": "Sheltered Aerie",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nEnchanted land has \"{T}: Add two mana of any one color.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Sheltered Aerie:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddManaOfChoice",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "artist": "Raoul Vitale",
+        "flavorText": "Dromoka's scalelords patrol the skies over Arashin, offering her people safety from the harsh world.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/afecf5a8-3c9e-48e0-8818-e2e3183e958c.jpg?1783938576"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Shieldhide Dragon
 {
     "name": "Shieldhide Dragon",
@@ -10647,6 +11290,137 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Shorecrasher Elemental
+{
+    "name": "Shorecrasher Elemental",
+    "manaCost": "{U}{U}{U}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "{U}: Exile this creature, then return it to the battlefield face down under its owner's control.\n{1}: This creature gets +1/-1 or -1/+1 until end of turn.\nMegamorph {4}{U} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{4}{U}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Shorecrasher Elemental:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Battlefield",
+                            "fromZone": "Exile",
+                            "faceDown": "MORPH"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{U}: Exile Shorecrasher Elemental, then return it to the battlefield face down under its owner's control."
+            },
+            {
+                "id": "Shorecrasher Elemental:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Shorecrasher Elemental gets +1/-1 until end of turn",
+                            "effect": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": -1
+                                },
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "label": "Shorecrasher Elemental gets -1/+1 until end of turn",
+                            "effect": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": -1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{1}: Shorecrasher Elemental gets +1/-1 or -1/+1 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "rarity": "MYTHIC",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e8890fc6-45e9-443d-ae86-f1acb1ebd0aa.jpg?1783938604",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "After Shorecrasher Elemental's first ability returns it to the battlefield, it will be a new object with no connection to the Shorecrasher Elemental that left the battlefield. It won't be in combat or have any additional abilities it may have had when it left the battlefield. Any +1/+1 counters on it or Auras attached to it are removed."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "You choose whether Shorecrasher Elemental gets +1/-1 or -1/+1 as the last activated ability resolves."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If a face-down creature with megamorph is turned face up some other way (for example, if you manifest a card with megamorph and then pay its mana cost to turn it face up), you won't put a +1/+1 counter on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -11440,6 +12214,74 @@
     ]
 }
 
+// Silumgar Spell-Eater
+{
+    "name": "Silumgar Spell-Eater",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Snake Wizard",
+    "oracleText": "Megamorph {4}{U} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)\nWhen this creature is turned face up, counter target spell unless its controller pays {3}.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{4}{U}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Silumgar Spell-Eater:1",
+                "trigger": "TurnFaceUpEvent",
+                "effect": {
+                    "type": "Counter",
+                    "condition": {
+                        "type": "CounterCondition.UnlessPaysMana",
+                        "cost": "{3}"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {},
+                        "zone": "Stack"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "rarity": "UNCOMMON",
+        "artist": "Dave Kendall",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/20a99655-34b2-4756-bf12-b344eb71ad37.jpg?1783938602",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If a face-down creature with megamorph is turned face up some other way (for example, if you manifest a card with megamorph and then pay its mana cost to turn it face up), you won't put a +1/+1 counter on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Silumgar's Command
 {
     "name": "Silumgar's Command",
@@ -11755,6 +12597,74 @@
     ]
 }
 
+// Stampeding Elk Herd
+{
+    "name": "Stampeding Elk Herd",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Elk",
+    "oracleText": "Formidable — Whenever this creature attacks, if creatures you control have total power 8 or greater, creatures you control gain trample until end of turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Stampeding Elk Herd:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "TRAMPLE",
+                        "target": "IterationEntity"
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature",
+                        "aggregation": "SUM",
+                        "property": "POWER"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "208",
+        "artist": "Carl Frank",
+        "flavorText": "The Atarka use them not just for food, but also to clear away snow, trees, and enemy forces.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7e55e213-6eab-4086-96cd-024de6150fbe.jpg?1783938575",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If you control a creature with power less than 0, use its actual power when calculating the total power of creatures you control. For example, if you control three creatures with powers 4, 5, and -2, the total power of creatures you control is 7."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Other formidable abilities are triggered abilities with an \"intervening 'if'\" clause. Such abilities check the total power of creatures you control twice: once at the appropriate time to see if the ability will trigger, and again as the ability tries to resolve. If, at that time, the total power of creatures you control is no longer 8 or greater, the ability will have no effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Stormcrag Elemental
 {
     "name": "Stormcrag Elemental",
@@ -11875,6 +12785,71 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Stratus Dancer
+{
+    "name": "Stratus Dancer",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Djinn Monk",
+    "oracleText": "Flying\nMegamorph {1}{U} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)\nWhen this creature is turned face up, counter target instant or sorcery spell.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{1}{U}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Stratus Dancer:1",
+                "trigger": "TurnFaceUpEvent",
+                "effect": "Counter",
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "instant|sorcery",
+                        "zone": "Stack"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "RARE",
+        "artist": "Anastasia Ovchinnikova",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e3bf4f37-2a2e-4c49-88dc-a26dd7367afb.jpg?1783938602",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If a face-down creature with megamorph is turned face up some other way (for example, if you manifest a card with megamorph and then pay its mana cost to turn it face up), you won't put a +1/+1 counter on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -12036,6 +13011,92 @@
     ]
 }
 
+// Surge of Righteousness
+{
+    "name": "Surge of Righteousness",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target black or red creature that's attacking or blocking. You gain 2 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "HasColor",
+                                        "color": "BLACK"
+                                    },
+                                    {
+                                        "type": "HasColor",
+                                        "color": "RED"
+                                    }
+                                ]
+                            }
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "StateOr",
+                                "predicates": [
+                                    "IsAttacking",
+                                    "IsBlocking"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "rarity": "UNCOMMON",
+        "artist": "Marco Nelor",
+        "flavorText": "Though she stood alone, she struck with the force of an army.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/114366f3-237f-4f96-b644-5bd82d97b18b.jpg?1783938611",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If Surge of Righteousness resolves but the creature isn't destroyed (perhaps because it regenerated or it has indestructible), you'll still gain 2 life."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "However, if the creature becomes an illegal target before Surge of Righteousness resolves, it won't resolve and none of its effects will happen. You won't gain life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Surrak, the Hunt Caller
 {
     "name": "Surrak, the Hunt Caller",
@@ -12155,6 +13216,66 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Tail Slash
+{
+    "name": "Tail Slash",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control deals damage equal to its power to target creature you don't control.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "EntityProperty",
+                "entity": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "numericProperty": "Power"
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t1"
+            },
+            "damageSource": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "161",
+        "artist": "Efrem Palacios",
+        "flavorText": "\"Kneel before a dragon and you will be spared when it turns to leave.\"\n—Yikaro, Atarka warrior",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/91a59f12-8d1b-4378-abb8-e266d9b6cdba.jpg?1783938585",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If either creature is an illegal target as Tail Slash tries to resolve, the creature you control won’t deal damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -12624,6 +13745,80 @@
     ]
 }
 
+// Volcanic Vision
+{
+    "name": "Volcanic Vision",
+    "manaCost": "{5}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target instant or sorcery card from your graveyard to your hand. Volcanic Vision deals damage equal to that card's mana value to each creature your opponents control. Exile Volcanic Vision.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "numericProperty": "ManaValue"
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "instant|sorcery own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ],
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "rarity": "RARE",
+        "artist": "Noah Bradley",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/979da13b-9be6-49cc-a62c-67eeea289612.jpg?1783938584",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If the target instant or sorcery card becomes an illegal target before Volcanic Vision resolves, the spell won't resolve and none of its effects will happen. No damage will be dealt and Volcanic Vision won't be exiled."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If the target has {X} in its mana cost, X is 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Vulturous Aven
 {
     "name": "Vulturous Aven",
@@ -12936,5 +14131,61 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Zurgo Bellstriker
+{
+    "name": "Zurgo Bellstriker",
+    "manaCost": "{R}",
+    "typeLine": "Legendary Creature — Orc Warrior",
+    "oracleText": "Zurgo can't block creatures with power 2 or greater.\nDash {1}{R} (You may cast this spell for its dash cost. If you do, it gains haste, and it's returned from the battlefield to its owner's hand at the beginning of the next end step.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DASH"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Dash",
+            "cost": "{1}{R}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanOnlyBlockCreaturesWith",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "PowerAtMost",
+                            "max": 1
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "169",
+        "rarity": "RARE",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bbac6d75-59ab-4d7d-87ae-46875abf8cc7.jpg?1783938583",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "Once Zurgo Bellstriker has legally blocked a creature, raising that creature's power to 2 or greater won't undo the block."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Even though both cards portray the same character, Zurgo Bellstriker and Zurgo Helmsmasher have different names. Controlling both of them won't invoke the \"legend rule.\""
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
