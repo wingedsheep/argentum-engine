@@ -76,6 +76,7 @@ import com.wingedsheep.sdk.scripting.effects.BecomePreparedEffect
 import com.wingedsheep.sdk.scripting.effects.UnprepareEffect
 import com.wingedsheep.sdk.scripting.effects.CantBeRegeneratedEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
+import com.wingedsheep.sdk.scripting.effects.CanAttackDespiteDefenderThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellEffect
 import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellOrAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.CopyTargetTriggeredAbilityEffect
@@ -1842,6 +1843,9 @@ object TargetPolarityAnalyzer {
             // source ([biteSourceSlot]).
             is FightEffect -> leaf.target2 to TargetPolarity.HARMFUL
             is RegenerateEffect -> leaf.target to TargetPolarity.BENEFICIAL
+            // "Target creature with defender can attack this turn as though it didn't have defender"
+            // (Assault Formation): lifting a wall's defender only ever turns our own blocker into an attacker.
+            is CanAttackDespiteDefenderThisTurnEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is HealDamageEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is PreventDamageEffect -> leaf.target to when {
                 !leaf.preventDamage -> null

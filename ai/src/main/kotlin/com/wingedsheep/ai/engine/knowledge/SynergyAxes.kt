@@ -57,6 +57,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.targets.TargetSpellOrPermanent
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
+import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -252,6 +253,12 @@ object SynergyAxes {
                         script.triggeredAbilities.any { copiesSpells(it.effect, it.allTargetRequirements) }
                 }
             ) add(SynergyAxis.SPELLS)
+            // "Enters with a +1/+1 counter on it for each other creature you control with a +1/+1
+            // counter on it" (Avatar of the Resolute): the count cashes in the counters the deck has
+            // already put down — with none placed, it enters bare.
+            if (scripts.any { script -> script.replacementEffects.any(::countsOwnPlusCounters) }) {
+                add(SynergyAxis.PLUS_COUNTERS)
+            }
         }
         val feeds = buildSet {
             scripts.forEach { addAll(feedsOf(it, card.typeLine.isCreature)) }
@@ -714,6 +721,15 @@ object SynergyAxes {
         is EntersWithRevealCounters -> effect.counterType == CounterType.PLUS_ONE_PLUS_ONE
         is EntersWithDevour -> effect.counterType == CounterType.PLUS_ONE_PLUS_ONE
         else -> false
+    }
+
+    /** An as-enters counter count over our own permanents carrying +1/+1 counters. */
+    private fun countsOwnPlusCounters(effect: ReplacementEffect): Boolean {
+        val count = (effect as? EntersWithDynamicCounters)?.count as? DynamicAmount.Count ?: return false
+        return count.player == Player.You && count.zone == Zone.BATTLEFIELD &&
+            count.filter.statePredicates.any {
+                it is StatePredicate.HasCounter && it.counterType == CounterType.PLUS_ONE_PLUS_ONE
+            }
     }
 
     private fun plusCounters(type: CounterType): Set<SynergyAxis> =

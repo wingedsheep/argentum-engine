@@ -1,0 +1,1 @@
+- #PR The AI aims a targeted "can attack as though it didn't have defender" (Assault Formation) at its own walls, and reads an entry count of creatures with +1/+1 counters (Avatar of the Resolute) as a +1/+1-counter payoff.
