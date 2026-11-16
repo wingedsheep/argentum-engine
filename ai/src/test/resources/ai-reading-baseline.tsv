@@ -10674,6 +10674,7 @@ Living Hive
 Living Lands
 Living Lectern
 Living Library
+Living Lore
 Living Phone
 Living Plane
 Living Tempest
@@ -11671,6 +11672,7 @@ Mirror Entity	timing: ForEach>SetBaseStatsEffect
 Mirror Golem
 Mirror Image
 Mirror March
+Mirror Mockery
 Mirror Room // Fractured Realm
 Mirror Shield
 Mirror Universe
@@ -12107,6 +12109,7 @@ Mysterious Tome
 Mystic Archaeologist
 Mystic Denial
 Mystic Forge	intent: Pipeline(TopOfLibrary→exile)
+Mystic Meditation
 Mystic Monastery
 Mystic Reflection	intent: GrantReplacementEffectEffect; polarity: GrantReplacementEffectEffect
 Mystic Remora	intent: PayOrSufferEffect
@@ -13767,6 +13770,7 @@ Prodigy's Prototype
 Profane Command
 Profane Prayers
 Profane Procession
+Profaner of the Dead
 Professional Face-Breaker
 Professional Wrestler
 Professor Dellian Fel
@@ -15872,6 +15876,7 @@ Seer's Sundial
 Seer's Vision
 Seething Landscape
 Seething Song
+Segmented Krotiq
 Segovian Angel
 Segovian Leviathan
 Seifer Almasy
@@ -16088,6 +16093,7 @@ Shalai's Acolyte
 Shalai, Voice of Plenty
 Shaleskin Bruiser	intent: ModifyStatsEffect
 Shaleskin Plower
+Shaman of Forgotten Ways
 Shaman of Spring
 Shaman of the Pack
 Shamanic Revelation
@@ -16163,6 +16169,7 @@ Shell of the Last Kappa	intent: ExileTargetSpellEffect
 Shelldock Isle	intent: Pipeline(TopOfLibrary→exile|library)
 Shelob's Ambush
 Shelob, Child of Ungoliant
+Sheltered Aerie
 Sheltered Thicket
 Sheltered by Ghosts
 Sheltering Boughs
@@ -16267,6 +16274,7 @@ Shore Lurker
 Shore Snapper
 Shore Up
 Shorecomber Crab
+Shorecrasher Elemental
 Shoreline Looter
 Shoreline Raider
 Shoreline Ranger
@@ -16416,6 +16424,7 @@ Silt Crawler
 Silumgar Assassin
 Silumgar Butcher
 Silumgar Sorcerer
+Silumgar Spell-Eater
 Silumgar's Command
 Silumgar's Scorn
 Silumgar, the Drifting Death
@@ -17354,6 +17363,7 @@ Stalwarts of Osgiliath
 Stampede
 Stampede Driver
 Stampede Rider
+Stampeding Elk Herd
 Stampeding Horncrest
 Stampeding Scurryfoot
 Stand // Deliver
@@ -17646,6 +17656,7 @@ Strangling Spores
 Strategic Betrayal
 Strategic Planning
 Stratosoarer
+Stratus Dancer
 Stratus Walk
 Straw Soldiers
 Stray from History
@@ -17911,6 +17922,7 @@ Sure-Footed Infiltrator
 Sureshot Sower
 Surge Engine	combat: RemoveKeywordEffect; intent: ChangeColorEffect
 Surge Mare
+Surge of Righteousness
 Surge of Salvation	timing: ForEach>GrantKeywordEffect; timing: GrantEvasionKeywordEffect
 Surge of Thoughtweft
 Surge of Zeal	timing: ForEach>GrantKeywordEffect
@@ -18116,6 +18128,7 @@ Taigam's Scheming
 Taigam's Strike
 Taigam, Master Opportunist
 Taii Wakeen, Perfect Shot	intent: AmplifyDamageThisTurnEffect
+Tail Slash
 Tail Swipe
 Tainted Adversary
 Tainted Field
@@ -20417,6 +20430,7 @@ Volcanic Strength
 Volcanic Submersion
 Volcanic Upheaval
 Volcanic Villain
+Volcanic Vision
 Volcano Imp
 Voldaren Ambusher
 Voldaren Bloodcaster
@@ -21532,6 +21546,7 @@ Zur, Eternal Schemer
 Zuran Enchanter
 Zuran Orb
 Zuran Spellcaster
+Zurgo Bellstriker
 Zurgo Helmsmasher
 Zurgo Stormrender
 Zurgo and Ojutai
