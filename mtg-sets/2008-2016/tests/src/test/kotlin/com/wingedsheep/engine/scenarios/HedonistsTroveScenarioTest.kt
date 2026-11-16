@@ -49,7 +49,7 @@ class HedonistsTroveScenarioTest : ScenarioTestBase() {
 
         /**
          * Cast the Trove from hand with an opponent's graveyard of [graveyard] and a card that was
-         * already in the opponent's exile before the Trove arrived, then resolve the enters trigger.
+         * already in the opponent's exile (a creature and a land) before the Trove arrived, then resolve the enters trigger.
          */
         fun troveResolved(vararg graveyard: String): TestGame {
             var builder = scenario()
@@ -57,6 +57,7 @@ class HedonistsTroveScenarioTest : ScenarioTestBase() {
                 .withCardInHand(1, "Hedonist's Trove")
                 .withLandsOnBattlefield(1, "Swamp", 12)
                 .withCardInExile(2, "Muck Rats")
+                .withCardInExile(2, "Plains")
                 .withCardInLibrary(1, "Swamp")
                 .withCardInLibrary(2, "Swamp")
             graveyard.forEach { builder = builder.withCardInGraveyard(2, it) }
@@ -100,6 +101,9 @@ class HedonistsTroveScenarioTest : ScenarioTestBase() {
                 }
                 withClue("a card the Trove didn't exile is not covered") {
                     hasCast(game, "Muck Rats") shouldBe false
+                }
+                withClue("a land the Trove didn't exile is not covered") {
+                    hasLandPlay(game, "Plains") shouldBe false
                 }
             }
 
