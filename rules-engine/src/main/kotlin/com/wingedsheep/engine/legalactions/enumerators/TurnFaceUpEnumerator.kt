@@ -9,6 +9,7 @@ import com.wingedsheep.engine.mechanics.cost.CostPaymentService
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
+import com.wingedsheep.engine.state.components.identity.TurnUpProcedure
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 
@@ -21,7 +22,8 @@ import com.wingedsheep.sdk.scripting.costs.PayCost
  * [com.wingedsheep.engine.handlers.effects.FaceDownTurnUp]; this enumerator only offers what the
  * resulting [MorphDataComponent] lists. A manifested or cloaked card that also prints morph or
  * disguise lists two procedures (CR 701.40c/d, 701.58c/d) and so produces two legal actions on the
- * same permanent, distinguished by `procedureIndex`.
+ * same permanent, distinguished by `procedureIndex`. A morph or disguise route is not offered
+ * while the permanent has lost all abilities ([TurnUpProcedure.isOpen]).
  *
  * Mana turn-up costs keep their rich enumeration here (X selection + auto-tap preview). Every other
  * cost is gated by a single [CostPaymentService.canAfford] check; the cost-specific selection
@@ -49,7 +51,13 @@ class TurnFaceUpEnumerator(
             // Must have turn-up data (to get the cost)
             val morphData = container.get<MorphDataComponent>() ?: continue
 
+            // A face-down morph that lost all abilities has no morph cost to pay (CR 702.37e);
+            // only a manifest/cloak route survives that.
+            val lostAllAbilities = state.projectedState.hasLostAllAbilities(entityId)
+            val openRoutes = morphData.procedures.count { it.isOpen(lostAllAbilities) }
+
             morphData.procedures.forEachIndexed { procedureIndex, procedure ->
+                if (!procedure.isOpen(lostAllAbilities)) return@forEachIndexed
                 // Lets restricted mana tagged "spend only to turn permanents face up" (Overgrown
                 // Zealot) — or only for one route, "a morph cost" (Qarsi Deceiver) — count toward
                 // affordability of this procedure.
@@ -67,7 +75,7 @@ class TurnFaceUpEnumerator(
                 val costLabel = effectiveCost?.toString() ?: cost.description
                 // Only label the mechanic when there is a choice to make; a lone procedure reads
                 // the way it always has.
-                val label = if (morphData.procedures.size > 1) {
+                val label = if (openRoutes > 1) {
                     "Turn face-up — ${procedure.label} ($costLabel)"
                 } else {
                     "Turn face-up ($costLabel)"

@@ -680,6 +680,10 @@ object CardIntentAnalyzer {
                 // anything; [tagsOf] reads the move off any other creature as one.
                 is RemoveFromCombatEffect -> if (TargetPolarityAnalyzer.targetsOwnSide(leaf.target, requirements)) emptyList()
                     else listOf(leaf)
+                // "Target creature you control … loses all abilities, and gains flying" (Dance of the
+                // Skywise): a trade our own creature makes for a bigger body, not a creature shut off.
+                is RemoveAllAbilitiesEffect -> if (TargetPolarityAnalyzer.targetsOwnSide(leaf.target, requirements)) emptyList()
+                    else listOf(leaf)
                 // "After that turn, that player takes an extra turn" aimed at a target opponent
                 // (Emrakul, the Promised End) is the price of the hijack, not a turn of ours.
                 is TakeExtraTurnEffect -> if (namesAnOpponentSlot(leaf.target, requirements)) emptyList()

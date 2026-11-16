@@ -1,0 +1,1 @@
+- #4700 A "loses all abilities" aimed only at our own creature (Dance of the Skywise) no longer reads as neutralizing removal; the AI sees it as the combat trick it is.
