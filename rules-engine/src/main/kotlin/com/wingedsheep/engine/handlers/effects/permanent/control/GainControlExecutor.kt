@@ -134,11 +134,23 @@ class GainControlExecutor : EffectExecutor<GainControlEffect> {
         duration: Duration,
         context: EffectContext
     ): Boolean {
+        if (!duration.canEndEarly()) return false
         if (context.sourceReferenceLost && duration.isSourceKeyed()) return true
+        // addFloatingEffect appends, so the effect just created is the last one.
         val floating = stateWithEffect.floatingEffects.last()
         return EndedDurationExpiryCheck.activeAffectedEntities(
             stateWithEffect, stateWithEffect.projectedState, floating
         ).isEmpty()
+    }
+
+    /** The "for as long as …" durations [EndedDurationExpiryCheck] gates; any other can't have ended yet. */
+    private fun Duration.canEndEarly(): Boolean = isSourceKeyed() || when (this) {
+        Duration.WhileSourceAttachedToAffected,
+        Duration.WhileAffectedAttachedToSource,
+        Duration.WhileControlledByController,
+        Duration.WhileAffectedTapped,
+        is Duration.WhileAffectedHasCounter -> true
+        else -> false
     }
 
     private fun Duration.isSourceKeyed(): Boolean = when (this) {

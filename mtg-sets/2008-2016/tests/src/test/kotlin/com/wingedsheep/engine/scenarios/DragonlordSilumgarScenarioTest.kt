@@ -1,7 +1,9 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseTargetsDecision
+import com.wingedsheep.engine.core.ControlChangedEvent
 import com.wingedsheep.engine.core.PassPriority
+import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -83,12 +85,15 @@ class DragonlordSilumgarScenarioTest : ScenarioTestBase() {
 
                 game.execute(PassPriority(game.player1Id)).error shouldBe null
                 game.castSpell(2, "Murder", silumgar).error shouldBe null
-                game.resolveStack()
+                val steal = game.resolveStack().flatMap { it.events }
 
                 game.isInGraveyard(1, "Dragonlord Silumgar") shouldBe true
                 game.state.stack.isEmpty() shouldBe true
                 game.state.projectedState.getController(courser) shouldBe game.player2Id
                 game.state.floatingEffects.none { courser in it.effect.affectedEntities } shouldBe true
+                // No control change happened at all: no summoning sickness stamped, no event.
+                game.state.getEntity(courser)!!.has<SummoningSicknessComponent>() shouldBe false
+                steal.none { it is ControlChangedEvent } shouldBe true
             }
         }
     }
