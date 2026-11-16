@@ -39,6 +39,20 @@ class CostReducerReadingAiTest : ScenarioTestBase() {
             }
         }
 
+        test("a resolved discount on our next spell reads as a cost reducer; a resolved tax on theirs as a spell tax") {
+            listOf("Hardened Berserker", "Peerless Samurai", "Will, Scion of Peace").forEach { name ->
+                withClue(name) { CardIntentAnalyzer.analyze(card(name)).tags shouldContain IntentTag.COST_REDUCER }
+            }
+            withClue("Elspeth Conquers Death's chapter II taxes the opponents' noncreature spells") {
+                CardIntentAnalyzer.analyze(card("Elspeth Conquers Death")).tags shouldContain IntentTag.SPELL_TAX
+            }
+            withClue("Academy Loremaster's tax lands on whoever's draw step it is — us too") {
+                val loremaster = CardIntentAnalyzer.analyze(card("Academy Loremaster")).tags
+                loremaster shouldNotContain IntentTag.SPELL_TAX
+                loremaster shouldNotContain IntentTag.COST_REDUCER
+            }
+        }
+
         test("the draft heuristic prices Bladegraft's statics above its bare body") {
             val terms = LimitedCardRater.explain(card("Bladegraft Aspirant")).heuristic
             val staticTerms = terms.filter { it.part.startsWith("Static") }

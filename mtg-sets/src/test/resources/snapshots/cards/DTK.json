@@ -576,6 +576,73 @@
     ]
 }
 
+// Atarka Efreet
+{
+    "name": "Atarka Efreet",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Efreet Shaman",
+    "oracleText": "Megamorph {2}{R} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)\nWhen this creature is turned face up, it deals 1 damage to any target.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 1
+    },
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{2}{R}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Atarka Efreet:1",
+                "trigger": "TurnFaceUpEvent",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "artist": "Izzy",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b192067c-7cdb-4d3c-95b7-819733e44678.jpg?1783938592",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If a face-down creature with megamorph is turned face up some other way (for example, if you manifest a card with megamorph and then pay its mana cost to turn it face up), you won't put a +1/+1 counter on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Atarka Monument
 {
     "name": "Atarka Monument",
@@ -646,6 +713,89 @@
     "colorIdentityOverride": [
         "RED",
         "GREEN"
+    ]
+}
+
+// Atarka Pummeler
+{
+    "name": "Atarka Pummeler",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Ogre Warrior",
+    "oracleText": "Formidable — {3}{R}{R}: Creatures you control gain menace until end of turn. Activate only if creatures you control have total power 8 or greater. (They can't be blocked except by two or more creatures.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Atarka Pummeler:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{R}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "MENACE",
+                        "target": "IterationEntity"
+                    }
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "creature",
+                                "aggregation": "SUM",
+                                "property": "POWER"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 8
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "rarity": "UNCOMMON",
+        "artist": "Lucas Graciano",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d55f2528-f37f-46b9-b95f-4d142f656723.jpg?1783938592",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "Activating Atarka Pummeler's ability more than once conveys no additional benefit to creatures you control."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If you control a creature with power less than 0, use its actual power when calculating the total power of creatures you control. For example, if you control three creatures with powers 4, 5, and -2, the total power of creatures you control is 7."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Some formidable abilities are activated abilities that require creatures you control to have total power 8 or greater. Once you activate these abilities, it doesn't matter what happens to the total power of creatures you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -1703,6 +1853,125 @@
     ]
 }
 
+// Crater Elemental
+{
+    "name": "Crater Elemental",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "{R}, {T}, Sacrifice this creature: It deals 4 damage to target creature.\nFormidable — {2}{R}: This creature has base power 8 until end of turn. Activate only if creatures you control have total power 8 or greater.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 6
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Crater Elemental:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{R}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            },
+            {
+                "id": "Crater Elemental:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "SetBaseStats",
+                    "target": "Self",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 8
+                    },
+                    "duration": "EndOfTurn"
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "creature",
+                                "aggregation": "SUM",
+                                "property": "POWER"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 8
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4ee8d1f-00e8-44e3-b125-ef98e1461263.jpg?1783938591",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "Crater Elemental's last ability overrides all previous effects that set its power to a specific value. Other effects that set its power to a specific value that start to apply after the ability resolves will override this effect."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Effects that modify Crater Elemental's power, such as the effects of Giant Growth or Hall of Triumph, will apply to it no matter when they started to take effect. The same is true for counters that change its power (such as +1/+1 counters) and effects that switch its power and toughness."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If you control a creature with power less than 0, use its actual power when calculating the total power of creatures you control. For example, if you control three creatures with powers 4, 5, and -2, the total power of creatures you control is 7."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Some formidable abilities are activated abilities that require creatures you control to have total power 8 or greater. Once you activate these abilities, it doesn't matter what happens to the total power of creatures you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Cunning Breezedancer
 {
     "name": "Cunning Breezedancer",
@@ -2139,6 +2408,96 @@
     ]
 }
 
+// Descent of the Dragons
+{
+    "name": "Descent of the Dragons",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy any number of target creatures. For each creature destroyed this way, its controller creates a 4/4 red Dragon creature token with flying.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "CaptureControllers",
+                    "from": "gathered0",
+                    "storeAs": "controllers1"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy",
+                    "storeMovedAs": "moved2"
+                },
+                {
+                    "type": "ForEachCapturedController",
+                    "collection": "moved2",
+                    "originalCollection": "gathered0",
+                    "controllerSnapshot": "controllers1",
+                    "countVariable": "count3",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "count": {
+                                "type": "VariableReference",
+                                "variableName": "count3"
+                            },
+                            "power": 4,
+                            "toughness": 4,
+                            "colors": [
+                                "RED"
+                            ],
+                            "creatureTypes": [
+                                "Dragon"
+                            ],
+                            "keywords": [
+                                "FLYING"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/1/e/1ee0725f-8562-49c2-83fa-11a702e5c78d.jpg?1783938561",
+                            "controller": "Controller"
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "MYTHIC",
+        "artist": "Steve Prescott",
+        "flavorText": "Dragons emerge from tempests fully formed and terribly hungry.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5ab919f3-5797-406b-ae1f-7a7c27739b2d.jpg?1783938591",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If a creature is targeted but not destroyed (for example, if it regenerates or has indestructible), it won't count toward the number of Dragon tokens put onto the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Dirgur Nemesis
 {
     "name": "Dirgur Nemesis",
@@ -2513,6 +2872,123 @@
             {
                 "date": "2017-11-17",
                 "text": "The two abilities aren't mutually exclusive. If a Dragon with flying (which is most of them) enters the battlefield under your control, both abilities will trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Dragon Whisperer
+{
+    "name": "Dragon Whisperer",
+    "manaCost": "{R}{R}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "{R}: This creature gains flying until end of turn.\n{1}{R}: This creature gets +1/+0 until end of turn.\nFormidable — {4}{R}{R}: Create a 4/4 red Dragon creature token with flying. Activate only if creatures you control have total power 8 or greater.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Dragon Whisperer:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Dragon Whisperer:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Dragon Whisperer:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{R}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Dragon"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/e/1ee0725f-8562-49c2-83fa-11a702e5c78d.jpg?1783938561"
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "creature",
+                                "aggregation": "SUM",
+                                "property": "POWER"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 8
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c75b106-349f-44e1-a737-079955cc91b2.jpg?1783938590",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If you control a creature with power less than 0, use its actual power when calculating the total power of creatures you control. For example, if you control three creatures with powers 4, 5, and -2, the total power of creatures you control is 7."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Some formidable abilities are activated abilities that require creatures you control to have total power 8 or greater. Once you activate these abilities, it doesn't matter what happens to the total power of creatures you control."
             }
         ]
     },
@@ -4437,6 +4913,59 @@
     ]
 }
 
+// Hardened Berserker
+{
+    "name": "Hardened Berserker",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Berserker",
+    "oracleText": "Whenever this creature attacks, the next spell you cast this turn costs {1} less to cast.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hardened Berserker:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ModifySpellCosts",
+                    "spellFilter": {},
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "nextSpellOnly": true
+                },
+                "descriptionOverride": "Whenever this creature attacks, the next spell you cast this turn costs {1} less to cast."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "artist": "Viktor Titov",
+        "flavorText": "\"Just let him loose and follow the charge.\"\n—Yikaro, Atarka warrior",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d10fb883-12b8-4050-967e-4281ea620906.jpg?1783938590",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "Hardened Berserker can't reduce the colored mana requirement of a spell you cast."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If there are any additional costs to cast a spell, apply those before applying Hardened Berserker and any other cost reductions."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "The ability can apply to alternative costs to cast a spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Haven of the Spirit Dragon
 {
     "name": "Haven of the Spirit Dragon",
@@ -5073,6 +5602,145 @@
     ]
 }
 
+// Ire Shaman
+{
+    "name": "Ire Shaman",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Orc Shaman",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nMegamorph {R} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)\nWhen this creature is turned face up, exile the top card of your library. Until end of turn, you may play that card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{R}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ire Shaman:1",
+                "trigger": "TurnFaceUpEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "impulseExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "impulseExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "impulseExiled"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "rarity": "RARE",
+        "artist": "Jack Wang",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/18f8ac7a-a68a-4adf-995f-1cd96ee3d295.jpg?1783938589",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If a face-down Ire Shaman attacks and is blocked by one creature, turning it face up won't cause it to become unblocked."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If a face-down creature with megamorph is turned face up some other way (for example, if you manifest a card with megamorph and then pay its mana cost to turn it face up), you won't put a +1/+1 counter on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Kolaghan Aspirant
+{
+    "name": "Kolaghan Aspirant",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Whenever this creature becomes blocked by a creature, this creature deals 1 damage to that creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kolaghan Aspirant:1",
+                "trigger": {
+                    "type": "BecomesBlockedEvent",
+                    "filter": "creature"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "TriggeringEntity"
+                },
+                "descriptionOverride": "Whenever this creature becomes blocked by a creature, this creature deals 1 damage to that creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "artist": "Aaron Miller",
+        "flavorText": "She answers the call of the Crave, the desire for battle sated only by bloodshed.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aa17972e-c16b-4dec-a108-1c3fb0138a4e.jpg?1783938589",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If Kolaghan Aspirant becomes blocked by multiple creatures, its ability will trigger once for each of them."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "The damage Kolaghan Aspirant deals because of its triggered ability isn't combat damage. If that damage causes each creature blocking it to leave combat, Kolaghan Aspirant will remain blocked. It won't be dealt combat damage in this case."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Kolaghan Forerunners
 {
     "name": "Kolaghan Forerunners",
@@ -5138,6 +5806,76 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Kolaghan Stormsinger
+{
+    "name": "Kolaghan Stormsinger",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "Haste\nMegamorph {R} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)\nWhen this creature is turned face up, target creature gains haste until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{R}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kolaghan Stormsinger:1",
+                "trigger": "TurnFaceUpEvent",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "artist": "Scott Murphy",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b6723f5-a7a9-425d-b4b0-f380da578ef8.jpg?1783938588",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If a face-down creature with megamorph is turned face up some other way (for example, if you manifest a card with megamorph and then pay its mana cost to turn it face up), you won't put a +1/+1 counter on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -5453,6 +6191,71 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Lose Calm
+{
+    "name": "Lose Calm",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Gain control of target creature until end of turn. Untap that creature. It gains haste and menace until end of turn. (A creature with menace can't be blocked except by two or more creatures.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "MENACE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "artist": "Jason A. Engle",
+        "flavorText": "A lifetime of discipline forsaken in a moment of rage.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/732a4912-97d1-4640-976e-ae1ffeb70236.jpg?1783938588"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -6816,6 +7619,45 @@
     ]
 }
 
+// Qal Sisma Behemoth
+{
+    "name": "Qal Sisma Behemoth",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Ogre Warrior",
+    "oracleText": "This creature can't attack or block unless you pay {2}.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackOrBlockUnlessPay",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "rarity": "UNCOMMON",
+        "artist": "Evan Shipard",
+        "flavorText": "\"It hunts grand game for Atarka, and when the time comes, it will become a mighty feast.\"\n—Surrak, the Hunt Caller",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ea70e96a-bebd-4ca4-aa24-e5fd0df38b8a.jpg?1783938587",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If an effect says that Qal Sisma Behemoth must attack or block if able, you can choose not to pay the associated cost and ignore that requirement. Players are never forced to pay a cost to attack or block."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Qarsi Deceiver
 {
     "name": "Qarsi Deceiver",
@@ -7214,6 +8056,47 @@
     ]
 }
 
+// Rending Volley
+{
+    "name": "Rending Volley",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "This spell can't be countered.\nRending Volley deals 4 damage to target white or blue creature.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 4
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature white|blue"
+                },
+                "id": "t0"
+            }
+        ],
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "rarity": "UNCOMMON",
+        "artist": "Lucas Graciano",
+        "flavorText": "The sky offers few hiding places.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/2/8234090e-9df1-4915-90ef-8a4bc6212655.jpg?1783938587"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Resupply
 {
     "name": "Resupply",
@@ -7421,6 +8304,67 @@
     "colorIdentityOverride": [
         "BLACK",
         "BLUE"
+    ]
+}
+
+// Sabertooth Outrider
+{
+    "name": "Sabertooth Outrider",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Trample\nFormidable — Whenever this creature attacks, if creatures you control have total power 8 or greater, this creature gains first strike until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sabertooth Outrider:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature",
+                        "aggregation": "SUM",
+                        "property": "POWER"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "artist": "Winona Nelson",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/64ddda91-3ccb-4c87-82e6-d4e60f4afc24.jpg?1783938587",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If you control a creature with power less than 0, use its actual power when calculating the total power of creatures you control. For example, if you control three creatures with powers 4, 5, and -2, the total power of creatures you control is 7."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Other formidable abilities are triggered abilities with an \"intervening 'if'\" clause. Such abilities check the total power of creatures you control twice: once at the appropriate time to see if the ability will trigger, and again as the ability tries to resolve. If, at that time, the total power of creatures you control is no longer 8 or greater, the ability will have no effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -9626,6 +10570,129 @@
         "collectorNumber": "157",
         "artist": "Lake Hurwitz",
         "imageUri": "https://cards.scryfall.io/normal/front/a/2/a215bde8-1680-4aea-9d0f-2d6d80a592e3.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Stormcrag Elemental
+{
+    "name": "Stormcrag Elemental",
+    "manaCost": "{5}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Trample\nMegamorph {4}{R}{R} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{4}{R}{R}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "158",
+        "rarity": "UNCOMMON",
+        "artist": "Ralph Horsley",
+        "flavorText": "The storms of Tarkir awaken more than dragons.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a906f718-635b-4d51-8896-530c52b260f7.jpg?1783938585",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If a face-down creature with megamorph is turned face up some other way (for example, if you manifest a card with megamorph and then pay its mana cost to turn it face up), you won't put a +1/+1 counter on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Stormwing Dragon
+{
+    "name": "Stormwing Dragon",
+    "manaCost": "{5}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying, first strike\nMegamorph {5}{R}{R} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)\nWhen this creature is turned face up, put a +1/+1 counter on each other Dragon creature you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "FIRST_STRIKE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{5}{R}{R}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Stormwing Dragon:1",
+                "trigger": "TurnFaceUpEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature Dragon ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "When this creature is turned face up, put a +1/+1 counter on each other Dragon creature you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6da2b004-97e5-41ab-98b0-3637cb32a35a.jpg?1783938585",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If a face-down creature with megamorph is turned face up some other way (for example, if you manifest a card with megamorph and then pay its mana cost to turn it face up), you won't put a +1/+1 counter on it."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED"
