@@ -105,6 +105,7 @@ Accursed Spirit
 Accursed Witch
 Acererak the Archlich	intent: ForEach>PayOrSufferEffect
 Acid Rain
+Acid-Spewer Dragon
 Aclazotz, Deepest Betrayal
 Acolyte of Aclazotz
 Acolyte of Affliction
@@ -486,6 +487,7 @@ Ambling Stormshell
 Ambrosia Whiteheart
 Ambulatory Edifice
 Ambuscade
+Ambuscade Shaman
 Ambush Commander
 Ambush Gigapede
 Ambush Paratrooper
@@ -1888,6 +1890,7 @@ Blood Vassal
 Blood for Bones
 Blood of the Martyr	timing: RedirectNextDamageEffect
 Blood on the Snow
+Blood-Chin Fanatic
 Blood-Chin Rager
 Blood-Cursed Knight
 Bloodbond March	intent: Pipeline(graveyard→battlefield)
@@ -1912,7 +1915,7 @@ Bloodghast
 Bloodgift Demon
 Bloodhall Priest
 Bloodhaze Wolverine
-Bloodhunter Bat	polarity: DrainLifeEffect
+Bloodhunter Bat
 Bloodletter Quill
 Bloodletter of Aclazotz
 Bloodline Bidding
@@ -4216,6 +4219,7 @@ Deadly Recluse
 Deadly Riposte
 Deadly Rollick
 Deadly Visit
+Deadly Wanderings
 Deadpool, Trading Card
 Deafening Clarion
 Deafening Silence
@@ -5166,6 +5170,7 @@ Dust Bowl
 Dust Stalker
 Dust to Dust
 Dusyut Earthcarver
+Dutiful Attendant
 Dutiful Griffin
 Dutiful Replicator
 Dutiful Return
@@ -6665,7 +6670,7 @@ Foot Headquarters
 Foot Mystic
 Foot Ninjas
 Foot Soldiers
-Footbottom Feast	polarity: DrawCardsEffect; polarity: Pipeline(ChosenTargets→library)
+Footbottom Feast
 Footfall Crater
 Foothill Guide
 Footlight Fiend
@@ -6708,7 +6713,7 @@ Forerunner of the Legion
 Foresee
 Forest Bear
 Forethought Amulet
-Forever Young	polarity: DrawCardsEffect; polarity: Pipeline(ChosenTargets→library)
+Forever Young
 Forge Anew
 Forge Armor
 Forge Boss
@@ -6755,8 +6760,11 @@ Forum of Amity
 Foul Emissary
 Foul Orchard
 Foul Play
+Foul Renewal
 Foul Roads
 Foul Spirit
+Foul-Tongue Invocation
+Foul-Tongue Shriek
 Foulmire Knight
 Found Footage
 Foundation Breaker
@@ -7820,6 +7828,7 @@ Gravelighter
 Graven Abomination
 Graven Cairns
 Graven Lore
+Gravepurge
 Graveshifter
 Gravespawn Sovereign
 Gravestone Strider
@@ -8353,6 +8362,7 @@ Hedge Shredder	intent: Pipeline(?→battlefield)
 Hedge Troll
 Hedge Whisperer
 Hedgewitch's Mask
+Hedonist's Trove
 Hedron Alignment
 Hedron Archive
 Hedron Blade
@@ -11109,6 +11119,7 @@ Maraleaf Pixie
 Maraleaf Rider
 Maralen, Fae Ascendant
 Marang River Regent	intent: Pipeline(ChosenTargets→hand)
+Marang River Skeleton
 Marauder's Axe
 Marauding Blight-Priest
 Marauding Boneslasher
@@ -11186,6 +11197,7 @@ Marsh Flats
 Marsh Flitter	timing: SetBaseStatsEffect
 Marsh Gas
 Marsh Goblins
+Marsh Hulk
 Marsh Lurker
 Marsh Viper
 Marshal of Zhalfir
@@ -12803,7 +12815,7 @@ Optimistic Scavenger
 Opulent Palace
 Oracle of Dust
 Oracle of Mul Daya
-Oracle of Tragedy	polarity: Pipeline(ChosenTargets→library)
+Oracle of Tragedy
 Oracle's Restoration
 Oracle's Vault
 Orah, Skyclave Hierophant
@@ -14559,7 +14571,7 @@ Renet, Temporal Apprentice
 Renewed Faith
 Renewed Solidarity
 Renewing Dawn	polarity: GainLifeEffect
-Renewing Touch	intent: Pipeline(ChosenTargets→library); polarity: Pipeline(ChosenTargets→library)
+Renewing Touch	intent: Pipeline(ChosenTargets→library)
 Reno and Rude
 Renowned Weaponsmith
 Rent Is Due
@@ -15867,6 +15879,7 @@ Selesnya Sentry
 Selesnya Signet
 Self-Assembler
 Self-Destruct
+Self-Inflicted Wound
 Self-Reflection
 Selfcraft Mechan
 Selfless Cathar
@@ -19613,6 +19626,7 @@ Ultima
 Ultima Weapon
 Ultima, Origin of Oblivion	intent: AddCountersEffect; intent: BecomeArtifactEffect; polarity: AddCountersEffect; polarity: BecomeArtifactEffect
 Ultimate Green Goblin
+Ultimate Price
 Ultimecia, Temporal Threat
 Ultimecia, Time Sorceress
 Ultron Drone
@@ -20032,7 +20046,7 @@ Vega, the Watcher
 Veil of Assimilation
 Veil of Summer	timing: ForEach>GrantEvasionKeywordEffect; timing: GrantEvasionKeywordEffect; timing: GrantSpellsCantBeCounteredEffect
 Veiled Shade
-Vein Ripper	polarity: DrainLifeEffect
+Vein Ripper
 Veloheart Bike
 Velomachus Lorehold
 Velvetwing Butterflies
@@ -20243,6 +20257,7 @@ Virtue of Strength
 Virtue's Ruin
 Virtuous Charge
 Virulent Emissary
+Virulent Plague
 Virulent Silencer
 Virulent Swipe
 Virus Beetle
@@ -21429,7 +21444,7 @@ Ziatora's Proving Ground
 Ziatora, the Incinerator
 Zidane, Tantalus Thief
 Zilortha, Strength Incarnate
-Zimone and Dina	polarity: DrainLifeEffect
+Zimone and Dina
 Zimone's Experiment
 Zimone, All-Questioning
 Zimone, Paradox Sculptor	intent: ForEach>DoubleCountersEffect
