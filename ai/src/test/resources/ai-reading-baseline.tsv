@@ -294,6 +294,7 @@ Ainok Artillerist
 Ainok Bond-Kin
 Ainok Guide
 Ainok Strike Leader
+Ainok Survivalist
 Ainok Tracker
 Ainok Wayfarer
 Air Bladder
@@ -1014,6 +1015,7 @@ Assassin's Trophy
 Assassinate
 Assault // Battery
 Assault Drone
+Assault Formation
 Assault Griffin
 Assault Strobe
 Assault on Osgiliath
@@ -1040,6 +1042,7 @@ Astute Terraformer
 Asylum Visitor
 At Knifepoint
 Atalya, Samite Master
+Atarka Beastbreaker
 Atarka Efreet
 Atarka Monument
 Atarka Pummeler
@@ -1141,6 +1144,7 @@ Avatar Destiny
 Avatar Enthusiasts
 Avatar Kyoshi, Earthbender
 Avatar of Burgeoning Echoes
+Avatar of the Resolute
 Avatar's Wrath	polarity: CantCastSpellsFromNonHandZonesEffect; polarity: EmitBendEventEffect; polarity: GrantMayPlayFromExileEffect; polarity: Pipeline(BattlefieldMatching→exile)
 Aven Archer
 Aven Battle Priest
@@ -3117,6 +3121,7 @@ Cinderslash Ravager
 Cindervines
 Circle of Confinement
 Circle of Dreams Druid
+Circle of Elders
 Circle of Flame
 Circle of Power
 Circle of Protection: Artifacts
@@ -4436,6 +4441,7 @@ Demonlord Belzenlok	intent: ExileFromTopRepeatingEffect
 Demonmail Hauberk
 Demotion
 Demystify
+Den Protector
 Den of the Bugbear	intent: GrantTriggeredAbilityEffect
 Denethor, Ruling Steward
 Denizen of the Deep
@@ -4908,6 +4914,7 @@ Dragon's Eye Sentry
 Dragon's Fire
 Dragon's Hoard
 Dragon's Prey
+Dragon-Scarred Bear
 Dragon-Style Twins
 Dragonback Assault
 Dragonback Lancer
@@ -5061,6 +5068,7 @@ Dromar, the Banisher
 Dromoka Captain
 Dromoka Dunecaster
 Dromoka Warrior
+Dromoka's Gift
 Drooling Groodion
 Drop of Honey
 Dropkick Bomber	polarity: GrantTriggeredAbilityEffect
@@ -7364,6 +7372,7 @@ Glacial Stalker
 Glacial Wall
 Glacier Godmaw
 Glacierwood Siege
+Glade Watcher
 Gladecover Scout
 Gladehart Cavalry
 Gladewalker Ritualist
@@ -8026,6 +8035,7 @@ Guardian Beast
 Guardian Gladewalker
 Guardian Idol
 Guardian Project
+Guardian Shield-Bearer
 Guardian Sunmare
 Guardian of Cloverdell
 Guardian of Faith	intent: ForEach>PhaseOutEffect; polarity: ForEachEffect
@@ -8455,6 +8465,7 @@ Herd Baloth
 Herd Gnarr
 Herd Heirloom
 Herd Migration
+Herdchaser Dragon
 Herigast, Erupting Nullkite
 Heritage Reclamation
 Hermes, Overseer of Elpis
@@ -10889,6 +10900,7 @@ Lupinflower Village
 Lurching Rotbeast
 Lure	polarity: Aura>MustBeBlocked
 Lurker
+Lurking Arynx
 Lurking Chupacabra
 Lurking Deadeye
 Lurking Informant	intent: Pipeline(TopOfLibrary→graveyard|library)
@@ -13402,6 +13414,7 @@ Pine Barrens
 Pine Walker	intent: TapUntapEffect
 Pinecone Strike
 Pinecrest Ridge
+Pinion Feast
 Pinnacle Emissary
 Pinnacle Kill-Ship
 Pinnacle Monk
@@ -14715,6 +14728,7 @@ Returned Centaur
 Returned Pastcaller
 Returned Reveler
 Rev, Tithe Extractor
+Revealing Wind
 Revel Ruiner
 Revel in Riches
 Revelation
@@ -15331,6 +15345,7 @@ Sakura-Tribe Elder
 Salivating Gremlins
 Sally Pride, Lioness Leader
 Salt Marsh
+Salt Road Ambushers
 Salt Road Packbeast
 Salt Road Patrol
 Salt Road Quartermasters
@@ -15409,6 +15424,7 @@ Sandsower
 Sandstalker Moloch
 Sandsteppe Citadel
 Sandsteppe Outcast
+Sandsteppe Scavenger
 Sandstone Bridge
 Sandstone Warrior
 Sandstorm
