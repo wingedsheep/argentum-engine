@@ -1,0 +1,1 @@
+- #TBD The AI now aims a gather-and-move graveyard return (Foul Renewal, Gravepurge, Forever Young) at its best graveyard card and reads a targeted drain (Foul-Tongue Shriek, Bloodhunter Bat) as harm to the player who loses the life, instead of leaving both targets unread

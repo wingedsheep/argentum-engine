@@ -968,6 +968,77 @@
     ]
 }
 
+// Gravepurge
+{
+    "name": "Gravepurge",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Put any number of target creature cards from your graveyard on top of your library.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Top"
+                    },
+                    "order": "ControllerChooses"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"The Blessed Sleep? Ha! Wake up my lovelies, there's work to be done!\"\n—Gisa, ghoulcaller of Gavony",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c0c266b-9ef5-4de2-a358-65739de41491.jpg?1783940828",
+        "rulings": [
+            {
+                "date": "2011-01-22",
+                "text": "You choose the order of the cards you put on top of your library."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "You can cast Gravepurge with zero targets. If you do, you'll draw a card as the spell resolves."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "If you cast Gravepurge with at least one target and all of those targets become illegal, the spell won't resolve and you won't get to draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Grim Backwoods
 {
     "name": "Grim Backwoods",
