@@ -121,6 +121,7 @@ import com.wingedsheep.sdk.scripting.effects.MarkMustAttackEffect
 import com.wingedsheep.sdk.scripting.effects.MarkMustBlockThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.ForceBlockEffect
 import com.wingedsheep.sdk.scripting.effects.TransformEffect
+import com.wingedsheep.sdk.scripting.effects.TurnFaceDownEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
@@ -1822,6 +1823,10 @@ object TargetPolarityAnalyzer {
             // an Aura grants reads the same. A drawback-only creature gains from it, but that is a
             // board fact the cards that aim it (Lizard, Connors's Curse; Azure Beastbinder) don't rely on.
             is RemoveAllAbilitiesEffect -> leaf.target to TargetPolarity.HARMFUL
+            // "Turn target creature with a morph ability face down" (Backslide, Master of the Veil):
+            // its holder is left a nameless 2/2 with no abilities until it pays the morph cost again —
+            // the same strip as losing all abilities, aimed at an opponent's creature.
+            is TurnFaceDownEffect -> leaf.target to TargetPolarity.HARMFUL
             // "That player can't get counters" (Suncleanser): a prohibition on the player — the
             // energy, experience and other counters they build toward stop coming. Locking out
             // poison would help them, but the cards aim it at an opponent to shut off their engine.

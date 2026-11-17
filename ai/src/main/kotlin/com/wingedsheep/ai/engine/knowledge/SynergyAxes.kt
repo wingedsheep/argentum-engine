@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.scripting.AbilityCost
+import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -19,6 +20,7 @@ import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.conditions.PermanentLeftBattlefieldThisTurn
+import com.wingedsheep.sdk.scripting.conditions.PlayerCastSpellsThisTurn
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
@@ -214,7 +216,16 @@ object SynergyAxes {
                 // Rider, Angelic Accord, Restless Bloodseeker): the turn's life-gained tracker as the
                 // gate pays off what the lifegain axis feeds — a lifelinker, a gain-life spell.
                 if (readsLifeGainedThisTurn(ability.interveningIf)) add(SynergyAxis.LIFEGAIN)
+                // "If you've cast a noncreature spell this turn" as the gate pays off what the spells
+                // axis feeds, like a "whenever you cast a noncreature spell" trigger does.
+                if (readsSpellsCastThisTurn(ability.interveningIf)) add(SynergyAxis.SPELLS)
             }
+            // "Activate only if you've cast a noncreature spell this turn" (Tapestry of the Ages): with
+            // no instant or sorcery cast first the ability is dead, so it cashes in the deck's spells.
+            if (scripts.any { script ->
+                    script.activatedAbilities.any { ability -> ability.restrictions.any(::spellsCastGate) }
+                }
+            ) add(SynergyAxis.SPELLS)
             if (Keyword.PROWESS in card.keywords) add(SynergyAxis.SPELLS)
             if (GraveyardSynergy.isPayoff(card)) add(SynergyAxis.GRAVEYARD)
             // The processor cost spends an opponent's exiled card: with none there, the ability
@@ -303,6 +314,20 @@ object SynergyAxes {
     private fun readsLifeGainedThisTurn(condition: Condition?): Boolean =
         condition is Compare && condition.left == DynamicAmount.TurnTracking(Player.You, TurnTracker.LIFE_GAINED) &&
             (condition.operator == ComparisonOperator.GTE || condition.operator == ComparisonOperator.GT)
+
+    /**
+     * Whether [condition] asks that we have cast an instant, sorcery or noncreature spell this turn
+     * (`Conditions.YouCastSpellsThisTurn(filter = Noncreature)`). "If you've cast a spell this turn"
+     * counts creature spells too, so it is no spells payoff — as for a cast trigger ([rewardsSpells]).
+     */
+    private fun readsSpellsCastThisTurn(condition: Condition?): Boolean =
+        condition is PlayerCastSpellsThisTurn && condition.player == Player.You && rewardsSpells(condition.filter)
+
+    private fun spellsCastGate(restriction: ActivationRestriction): Boolean = when (restriction) {
+        is ActivationRestriction.OnlyIfCondition -> readsSpellsCastThisTurn(restriction.condition)
+        is ActivationRestriction.All -> restriction.restrictions.any(::spellsCastGate)
+        else -> false
+    }
 
     private val matchCache = ConcurrentHashMap<Pair<String, GameObjectFilter>, Boolean>()
 

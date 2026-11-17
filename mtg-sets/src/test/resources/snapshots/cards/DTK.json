@@ -2951,6 +2951,106 @@
     ]
 }
 
+// Deathmist Raptor
+{
+    "name": "Deathmist Raptor",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Dinosaur Beast",
+    "oracleText": "Deathtouch\nWhenever a permanent you control is turned face up, you may return this card from your graveyard to the battlefield face up or face down.\nMegamorph {4}{G} (You may cast this card face down as a 2/2 creature for {3}. Turn it face up any time for its megamorph cost and put a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Morph",
+            "morphCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{4}{G}"
+                }
+            },
+            "faceUpEffect": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": "Self"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Deathmist Raptor:1",
+                "trigger": "CreatureTurnedFaceUpEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Return Deathmist Raptor face up",
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": "Self",
+                                "destination": "Battlefield",
+                                "fromZone": "Graveyard"
+                            }
+                        },
+                        {
+                            "label": "Return Deathmist Raptor face down",
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": "Self",
+                                "destination": "Battlefield",
+                                "fromZone": "Graveyard",
+                                "faceDown": "MORPH"
+                            }
+                        },
+                        {
+                            "label": "Leave it in your graveyard",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": []
+                            }
+                        }
+                    ]
+                },
+                "activeZones": [
+                    "Graveyard"
+                ],
+                "descriptionOverride": "Whenever a permanent you control is turned face up, you may return Deathmist Raptor from your graveyard to the battlefield face up or face down."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "rarity": "MYTHIC",
+        "artist": "Filip Burburan",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/74c40df1-3f63-49e7-a869-1ce14f94a753.jpg?1783938581",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "Deathmist Raptor's second ability triggers only if Deathmist Raptor is in the graveyard when a permanent you control is turned face up."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "You choose whether Deathmist Raptor will enter the battlefield face up or face down as the ability resolves. You may also choose to leave it in the graveyard."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "If a face-down creature with megamorph is turned face up some other way (for example, if you manifest a card with megamorph and then pay its mana cost to turn it face up), you won't put a +1/+1 counter on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Defeat
 {
     "name": "Defeat",
@@ -9087,6 +9187,62 @@
     ]
 }
 
+// Obscuring Aether
+{
+    "name": "Obscuring Aether",
+    "manaCost": "{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Face-down creature spells you cast cost {1} less to cast.\n{1}{G}: Turn this enchantment face down. (It becomes a 2/2 creature.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Obscuring Aether:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "TurnFaceDown",
+                    "target": "Self"
+                },
+                "descriptionOverride": "{1}{G}: Turn this enchantment face down."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "FaceDownYouCast",
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "194",
+        "rarity": "RARE",
+        "artist": "Min Yum",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0bff71e3-b309-4659-9d43-7a0d8ada1efc.jpg?1783938578",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "Obscuring Aether has no effect on spells that instruct you to manifest cards."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Note that Obscuring Aether doesn't have a morph cost. Once it's turned face down, it doesn't have a way to turn itself face up."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Ojutai Exemplars
 {
     "name": "Ojutai Exemplars",
@@ -13828,6 +13984,86 @@
     ]
 }
 
+// Stormrider Rig
+{
+    "name": "Stormrider Rig",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+1.\nWhenever a creature you control enters, you may attach this Equipment to it.\nEquip {2}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Stormrider Rig:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "AttachEquipment",
+                        "target": "TriggeringEntity"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Stormrider Rig:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "245",
+        "rarity": "UNCOMMON",
+        "artist": "Min Yum",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/38b08344-780d-4bd7-882a-dcadeb40f159.jpg?1783938567",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "If the creature that entered the battlefield is no longer on the battlefield as Stormrider Rig's second ability resolves, Stormrider Rig doesn't move. This is also true if that creature can't legally be equipped by Stormrider Rig."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Stormwing Dragon
 {
     "name": "Stormwing Dragon",
@@ -14067,6 +14303,107 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Sunbringer's Touch
+{
+    "name": "Sunbringer's Touch",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Bolster X, where X is the number of cards in your hand. Each creature you control with a +1/+1 counter on it gains trample until end of turn. (To bolster X, choose a creature with the least toughness among creatures you control and put X +1/+1 counters on it.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "ControlledPermanents",
+                        "filter": "creature"
+                    },
+                    "storeAs": "bolsterCreatures"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "bolsterCreatures",
+                    "collectionFilter": "LeastToughness",
+                    "storeMatching": "bolsterLeastToughness"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "bolsterLeastToughness",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "bolstered",
+                    "prompt": "Bolster X — choose a creature with the least toughness",
+                    "useTargetingUI": true
+                },
+                {
+                    "type": "AddCountersToCollection",
+                    "collectionName": "bolstered",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "PLUS_ONE_PLUS_ONE"
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "TRAMPLE",
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "rarity": "RARE",
+        "artist": "Lucas Graciano",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/ad4d33ea-0193-4ea5-92ea-5f50a533bf6b.jpg?1783938574",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "Count the number of cards in your hand as Sunbringer's Touch resolves to determine the value of X."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "Bolster itself doesn't target any creature, though some spells and abilities that bolster may have other effects that target creatures. For example, you could put counters on a creature with protection from white with Aven Tactician's bolster ability."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "You determine which creature to put counters on as the spell or ability that instructs you to bolster resolves. That could be the creature with the bolster ability, if it's still under your control and has the least toughness."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -14508,6 +14845,58 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Tapestry of the Ages
+{
+    "name": "Tapestry of the Ages",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "{2}, {T}: Draw a card. Activate only if you've cast a noncreature spell this turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tapestry of the Ages:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "PlayerCastSpellsThisTurn",
+                            "filter": "noncreature",
+                            "atLeast": 1
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "246",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "\"Abzan, Jeskai, Sultai, Mardu, Temur—names lost to history, yet worthy of further study.\"\n—Narset",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/122e5e24-d704-4f1c-9577-0f25aaabb7ed.jpg?1783938567"
+    }
 }
 
 // Territorial Roc

@@ -22,7 +22,6 @@ object DragonsOfTarkirSet : MtgSet {
     override val displayName = "Dragons of Tarkir"
     override val releaseDate = "2015-03-27"
     override val block = "Khans of Tarkir"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
