@@ -30,6 +30,15 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-frf',
+    date: '2026-11-17',
+    kind: 'set',
+    setCode: 'FRF',
+    title: 'Fate Reforged is complete',
+    body: "Travel 1,280 years into Tarkir's past, when the five clans still fought the dragon broods. Manifest the top of your library into face-down 2/2s that may flip into something bigger, lean on your clan's tool (Abzan bolster, Jeskai prowess, Sultai delve, Mardu dash or Temur ferocious), choose Khans or Dragons as each Siege enters, and meet the Dragonlords before they took the throne.",
+    tryIf: 'wedge-coloured clan decks, face-down mind games and Dragons',
+  },
+  {
     id: 'set-dtk',
     date: '2026-11-17',
     kind: 'set',
