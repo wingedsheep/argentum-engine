@@ -84,6 +84,136 @@
     ]
 }
 
+// Abzan Beastmaster
+{
+    "name": "Abzan Beastmaster",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Dog Shaman",
+    "oracleText": "At the beginning of your upkeep, draw a card if you control the creature with the greatest toughness or tied for the greatest toughness.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Abzan Beastmaster:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "All",
+                            "conditions": [
+                                {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "creature"
+                                },
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "creature",
+                                        "aggregation": "MAX",
+                                        "property": "TOUGHNESS"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "Each",
+                                        "filter": "creature",
+                                        "aggregation": "MAX",
+                                        "property": "TOUGHNESS"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, draw a card if you control the creature with the greatest toughness or tied for the greatest toughness."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "rarity": "UNCOMMON",
+        "artist": "Winona Nelson",
+        "flavorText": "His beasts move the great siege towers of the Abzan across the endless sands.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/219c4ab2-1f7c-469b-a72a-d435213f130c.jpg?1783938683",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "The ability checks the creatures on the battlefield as it resolves to determine if you will draw a card."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "You'll draw a maximum of one card, even if you control multiple creatures tied for the greatest toughness."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Abzan Kin-Guard
+{
+    "name": "Abzan Kin-Guard",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "This creature has lifelink as long as you control a white or black permanent.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent white|black"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "rarity": "UNCOMMON",
+        "artist": "Craig J Spearing",
+        "flavorText": "\"The Mardu rush headlong toward extinction. We ensure the longevity of our clan by protecting our territory, not rampaging through it.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/cec0ef55-57fd-404f-b9f6-b5d41e77b58c.jpg?1783938682"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Abzan Runemark
 {
     "name": "Abzan Runemark",
@@ -332,6 +462,89 @@
     ]
 }
 
+// Ambush Krotiq
+{
+    "name": "Ambush Krotiq",
+    "manaCost": "{5}{G}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "Trample\nWhen this creature enters, return another creature you control to its owner's hand.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ambush Krotiq:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "creature",
+                                "player": "You",
+                                "excludeSelf": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Return another creature you control to its owner's hand",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, return another creature you control to its owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "artist": "Filip Burburan",
+        "flavorText": "The Abzan merchants soon discovered why this route was clear of dragons.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd3068c6-d403-46d5-b3d7-1c3b00b9a9b1.jpg?1783938682",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "If you control no other creatures as Ambush Krotiq's triggered ability resolves, nothing happens. Ambush Krotiq remains on the battlefield."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "The triggered ability doesn't target any permanent. You choose which one to return as the ability resolves. No player can respond to this choice once the ability starts resolving."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Ancestral Vengeance
 {
     "name": "Ancestral Vengeance",
@@ -425,6 +638,75 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Arashin War Beast
+{
+    "name": "Arashin War Beast",
+    "manaCost": "{5}{G}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Whenever this creature deals combat damage to one or more blocking creatures, manifest the top card of your library. (Put it onto the battlefield face down as a 2/2 creature. Turn it face up any time for its mana cost if it's a creature card.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Arashin War Beast:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": "creature blocking"
+                    },
+                    "batch": true
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "manifested"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "manifested",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "faceDown": "MANIFEST"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to one or more blocking creatures, manifest the top card of your library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "rarity": "UNCOMMON",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66aed11a-0831-4619-931f-7dfded999c66.jpg?1783938682",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "Arashin War Beast's ability will trigger only once per combat damage step, no matter how many creatures are blocking it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -719,6 +1001,60 @@
     ]
 }
 
+// Battlefront Krushok
+{
+    "name": "Battlefront Krushok",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "This creature can't be blocked by more than one creature.\nEach creature you control with a +1/+1 counter on it can't be blocked by more than one creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedByMoreThan",
+                "maxBlockers": 1
+            },
+            {
+                "type": "CantBeBlockedByMoreThan",
+                "maxBlockers": 1,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Prescott",
+        "flavorText": "Krushoks clear debris from fertile fields, fallow fields, and battlefields.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e3b425cd-c5a5-48e9-b697-3860dfa6d5d3.jpg?1783938681",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "The second ability applies only as blockers are declared. If a creature you control with no +1/+1 counters on it becomes blocked by more than one creature, putting a +1/+1 counter on it won't change or undo the block."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Brutal Hordechief
 {
     "name": "Brutal Hordechief",
@@ -826,6 +1162,75 @@
         "BLACK",
         "RED",
         "WHITE"
+    ]
+}
+
+// Cached Defenses
+{
+    "name": "Cached Defenses",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Bolster 3. (Choose a creature with the least toughness among creatures you control and put three +1/+1 counters on it.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "ControlledPermanents",
+                        "filter": "creature"
+                    },
+                    "storeAs": "bolsterCreatures"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "bolsterCreatures",
+                    "collectionFilter": "LeastToughness",
+                    "storeMatching": "bolsterLeastToughness"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "bolsterLeastToughness",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "bolstered",
+                    "prompt": "Bolster 3 — choose a creature with the least toughness",
+                    "useTargetingUI": true
+                },
+                {
+                    "type": "AddCountersToCollection",
+                    "collectionName": "bolstered",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 3
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "rarity": "UNCOMMON",
+        "artist": "Zack Stella",
+        "flavorText": "The glittering scales in the Abzan vaults represent mighty deeds of the past and protection for generations to come.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/41ad36cf-5f29-41c4-b2a3-6b8e8c0c493f.jpg?1783938684",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "Bolster itself doesn't target any creature, though some spells and abilities that bolster may have other effects that target creatures. For example, you could put counters on a creature with protection from white with Abzan Skycaptain's bolster ability."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "You determine which creature to put counters on as the spell or ability that instructs you to bolster resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -1837,6 +2242,64 @@
     ]
 }
 
+// Formless Nurturing
+{
+    "name": "Formless Nurturing",
+    "manaCost": "{3}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Manifest the top card of your library, then put a +1/+1 counter on it. (To manifest a card, put it onto the battlefield face down as a 2/2 creature. Turn it face up any time for its mana cost if it's a creature card.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeAs": "manifested"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "manifested",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    },
+                    "faceDown": "MANIFEST"
+                },
+                {
+                    "type": "AddCountersToCollection",
+                    "collectionName": "manifested",
+                    "counterType": "PLUS_ONE_PLUS_ONE"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "artist": "Cliff Childs",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f70646e4-936a-4c2a-8d4a-a2c659733093.jpg?1783938681",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "A permanent that turns face up or face down changes characteristics but is otherwise the same permanent. Spells and abilities that were targeting that permanent, as well as Auras and Equipment that were attached to the permanent, aren't affected."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "Unlike a face-down creature that was cast using the morph ability, a manifested creature may still be turned face up after it loses its abilities if it's a creature card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Frontier Mastodon
 {
     "name": "Frontier Mastodon",
@@ -2009,6 +2472,74 @@
             {
                 "date": "2014-11-24",
                 "text": "If a permanent enters the battlefield as a copy of one of the Sieges, its controller will make a new choice for that Siege. Which ability the copy has won't depend on the choice made for the original permanent."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Fruit of the First Tree
+{
+    "name": "Fruit of the First Tree",
+    "manaCost": "{3}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen enchanted creature dies, you gain X life and draw X cards, where X is its toughness.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fruit of the First Tree:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Toughness"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Toughness"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Yee",
+        "flavorText": "\"I will be the ancestor my descendants call upon for aid. On that day I will take up my sword for my family once more.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2d3e6a6a-4a19-41e1-b29e-a8f19838efe3.jpg?1783938678",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "Use the creature's toughness when it left the battlefield to determine the value of X. If that number is 0 or less, you won't gain life or draw cards. (You won't lose life or discard cards either.)"
+            },
+            {
+                "date": "2014-11-24",
+                "text": "Fruit of the First Tree can enchant any creature, but Fruit of the First Tree's controller will gain life and draw cards."
             }
         ]
     },
@@ -2919,6 +3450,112 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Map the Wastes
+{
+    "name": "Map the Wastes",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for a basic land card, put it onto the battlefield tapped, then shuffle. Bolster 1. (Choose a creature with the least toughness among creatures you control and put a +1/+1 counter on it.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "basicland"
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for a basic land card to put onto the battlefield tapped",
+                    "selectedLabel": "Put onto the battlefield tapped"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent",
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "ControlledPermanents",
+                                "filter": "creature"
+                            },
+                            "storeAs": "bolsterCreatures"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "bolsterCreatures",
+                            "collectionFilter": "LeastToughness",
+                            "storeMatching": "bolsterLeastToughness"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "bolsterLeastToughness",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "bolstered",
+                            "prompt": "Bolster 1 — choose a creature with the least toughness",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "AddCountersToCollection",
+                            "collectionName": "bolstered",
+                            "counterType": "PLUS_ONE_PLUS_ONE"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "artist": "Volkan Baǵa",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/039b61b1-79d5-44b6-8c0f-b8e8e508e5a9.jpg?1783938680",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "Bolster itself doesn't target any creature, though some spells and abilities that bolster may have other effects that target creatures. For example, you could put counters on a creature with protection from white with Abzan Skycaptain's bolster ability."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "You determine which creature to put counters on as the spell or ability that instructs you to bolster resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -4186,6 +4823,128 @@
     ]
 }
 
+// Ruthless Instincts
+{
+    "name": "Ruthless Instincts",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Target nonattacking creature gains reach and deathtouch until end of turn. Untap it.\n• Target attacking creature gets +2/+2 and gains trample until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "REACH",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "DEATHTOUCH",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "TapUntap",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "tap": false
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "StateNot",
+                                            "predicate": "IsAttacking"
+                                        }
+                                    ]
+                                }
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Target nonattacking creature gains reach and deathtouch until end of turn. Untap it"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature attacking"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Target attacking creature gets +2/+2 and gains trample until end of turn"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "rarity": "UNCOMMON",
+        "artist": "Lius Lasahido",
+        "flavorText": "A single battle affects countless others.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d2c8bfde-c4c5-40de-83de-ff236999d79b.jpg?1783938678",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "If you choose the first mode, the target creature must not be attacking. However, it can attack later in the turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Sage's Reverie
 {
     "name": "Sage's Reverie",
@@ -4348,6 +5107,91 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Sandsteppe Mastodon
+{
+    "name": "Sandsteppe Mastodon",
+    "manaCost": "{5}{G}{G}",
+    "typeLine": "Creature — Elephant",
+    "oracleText": "Reach\nWhen this creature enters, bolster 5. (Choose a creature with the least toughness among creatures you control and put five +1/+1 counters on it.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sandsteppe Mastodon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "ControlledPermanents",
+                                "filter": "creature"
+                            },
+                            "storeAs": "bolsterCreatures"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "bolsterCreatures",
+                            "collectionFilter": "LeastToughness",
+                            "storeMatching": "bolsterLeastToughness"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "bolsterLeastToughness",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "bolstered",
+                            "prompt": "Bolster 5 — choose a creature with the least toughness",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "AddCountersToCollection",
+                            "collectionName": "bolstered",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 5
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "rarity": "RARE",
+        "artist": "James Zapata",
+        "flavorText": "A mastodon's path always leads to an oasis.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/76ae01fb-12fa-444d-9d49-bfe195c2a5a6.jpg?1783938678",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "Bolster itself doesn't target any creature, though some spells and abilities that bolster may have other effects that target creatures. For example, you could put counters on a creature with protection from white with Abzan Skycaptain's bolster ability."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "You determine which creature to put counters on as the spell or ability that instructs you to bolster resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -4840,6 +5684,116 @@
     ]
 }
 
+// Sudden Reclamation
+{
+    "name": "Sudden Reclamation",
+    "manaCost": "{3}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Mill four cards, then return a creature card and a land card from your graveyard to your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 4
+                        },
+                        "isMill": true
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard"
+                    },
+                    "storeAs": "gathered2"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered2",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "creature",
+                    "storeSelected": "selected3",
+                    "storeRemainder": "remainder3",
+                    "prompt": "Choose a creature card to return to your hand",
+                    "selectedLabel": "Return to hand"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "remainder3",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "land",
+                    "storeSelected": "selected4",
+                    "prompt": "Choose a land card to return to your hand",
+                    "selectedLabel": "Return to hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected3",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected4",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "rarity": "UNCOMMON",
+        "artist": "Jack Wang",
+        "flavorText": "\"There is no secret buried so deep that we will never find it.\"\n—Kurtar, Sultai necromancer",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2ac7645d-ea10-4ca6-92a5-ac3418c6a510.jpg?1783938678",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "You choose which creature card and land card to return to your hand as Sudden Reclamation resolves. This doesn't target either card."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "If there are no land cards in your graveyard, you still choose a creature card to return, and vice versa."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Sultai Skullkeeper
 {
     "name": "Sultai Skullkeeper",
@@ -5061,6 +6015,50 @@
     ]
 }
 
+// Temur Runemark
+{
+    "name": "Temur Runemark",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+2.\nEnchanted creature has trample as long as you control a blue or red permanent.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE"
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent blue|red"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "artist": "Ryan Alexander Lee",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/ddd76874-842e-4f4c-b18e-0e441dae59d7.jpg?1783938677"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Temur Sabertooth
 {
     "name": "Temur Sabertooth",
@@ -5152,6 +6150,121 @@
             {
                 "date": "2014-11-24",
                 "text": "You choose whether to return a creature and which creature to return as the activated ability resolves. This doesn't target any creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Temur War Shaman
+{
+    "name": "Temur War Shaman",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "When this creature enters, manifest the top card of your library. (Put that card onto the battlefield face down as a 2/2 creature. Turn it face up any time for its mana cost if it's a creature card.)\nWhenever a permanent you control is turned face up, if it's a creature, you may have it fight target creature you don't control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Temur War Shaman:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "manifested"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "manifested",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "faceDown": "MANIFEST"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Temur War Shaman enters, manifest the top card of your library."
+            },
+            {
+                "id": "Temur War Shaman:2",
+                "trigger": "CreatureTurnedFaceUpEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Fight",
+                        "target1": "TriggeringEntity",
+                        "target2": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "descriptionOverride": "Whenever a permanent you control is turned face up, if it's a creature, you may have it fight target creature you don't control."
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "controllerPredicate": {
+                                "type": "ControllerNot",
+                                "predicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "TriggeringEntity",
+                    "filter": "creature"
+                },
+                "descriptionOverride": "Whenever a permanent you control is turned face up, if it's a creature, you may have it fight target creature you don't control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "rarity": "RARE",
+        "artist": "Nils Hamm",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a873164f-d8eb-460e-a8cc-8b2a663dcf3a.jpg?1783938678",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "Any time you have priority, you may turn a manifested creature face up by revealing that it's a creature card (ignoring any copy effects or type-changing effects that might be applying to it) and paying its mana cost. This is a special action. It doesn't use the stack and can't be responded to."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "If a manifested creature would have morph if it were face up, you may also turn it face up by paying its morph cost."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "Because the permanent is on the battlefield both before and after it's turned face up, turning a permanent face up doesn't cause any enters-the-battlefield abilities to trigger."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "If something tries to turn a face-down instant or sorcery card on the battlefield face up, reveal that card to show all players it's an instant or sorcery card. The permanent remains on the battlefield face down. Abilities that trigger when a permanent turns face up won't trigger, because even though you revealed the card, it never turned face up."
             }
         ]
     },
@@ -5468,6 +6581,161 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Warden of the First Tree
+{
+    "name": "Warden of the First Tree",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Human",
+    "oracleText": "{1}{W/B}: This creature becomes a Human Warrior with base power and toughness 3/3.\n{2}{W/B}{W/B}: If this creature is a Warrior, it becomes a Human Spirit Warrior with trample and lifelink.\n{3}{W/B}{W/B}{W/B}: If this creature is a Spirit, put five +1/+1 counters on it.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Warden of the First Tree:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{W/B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "SetCreatureSubtypes",
+                            "subtypes": [
+                                "Human",
+                                "Warrior"
+                            ]
+                        },
+                        {
+                            "type": "SetBaseStats",
+                            "target": "Self",
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "This creature becomes a Human Warrior with base power and toughness 3/3."
+            },
+            {
+                "id": "Warden of the First Tree:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{W/B}{W/B}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": "Warrior"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SetCreatureSubtypes",
+                                "subtypes": [
+                                    "Human",
+                                    "Spirit",
+                                    "Warrior"
+                                ]
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": "Self",
+                                "duration": "Permanent"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "LIFELINK",
+                                "target": "Self",
+                                "duration": "Permanent"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "If this creature is a Warrior, it becomes a Human Spirit Warrior with trample and lifelink."
+            },
+            {
+                "id": "Warden of the First Tree:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{W/B}{W/B}{W/B}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": "Spirit"
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 5,
+                        "target": "Self"
+                    }
+                },
+                "descriptionOverride": "If this creature is a Spirit, put five +1/+1 counters on it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "rarity": "MYTHIC",
+        "artist": "Ryan Alexander Lee",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e0c6628-04f1-4800-baa8-bcaefe64f59f.jpg?1783938676",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "Neither the first nor the second ability has a duration. If one of them resolves, it will remain in effect until Warden of the First Tree leaves the battlefield or some subsequent effect changes its characteristics."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "The first and second activated abilities cause Warden of the First Tree to lose any other creature types it has. It retains any card types or supertypes it may have."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "The first ability overwrites any previous effects that set the creature's base power and toughness to specific values. Any power- or toughness-setting effects that start to apply after the first ability resolves will overwrite this effect."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "Effects that modify Warden of the First Tree's power or toughness, such as the one created by Titanic Growth, will apply to Warden of the First Tree no matter when they started to take effect. The same is true for any +1/+1 counters on Warden of the First Tree and effects that switch its power and toughness."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN",
+        "WHITE"
     ]
 }
 

@@ -196,4 +196,10 @@ class AiReadingByAbilityTest : FunSpec({
         squareUp.abilities.flatMap { it.findings }.filter { it.check == Check.INTENT }
             .any { it.read && it.reason.contains("makes a creature better in combat") } shouldBe true
     }
+
+    test("a permanent changing its own creature types needs no intent") {
+        AiReadingAudit.audit(card("Warden of the First Tree")).map { it.key } shouldNotContain "intent: SetCreatureSubtypesEffect"
+        AiReadingAudit.audit(card("Ascendant Spirit")).map { it.key } shouldNotContain "intent: SetCreatureSubtypesEffect"
+        AiReadingAudit.read(card("Warden of the First Tree")).readFully shouldBe true
+    }
 })

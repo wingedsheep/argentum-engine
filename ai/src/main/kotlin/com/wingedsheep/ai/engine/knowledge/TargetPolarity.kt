@@ -2362,6 +2362,16 @@ object TargetPolarityAnalyzer {
         // A price needs a gift the Aura gives outright, so judge it before any consolation joins.
         val payPrices = TargetPolarity.BENEFICIAL !in readings || TargetPolarity.HARMFUL in readings
         if (TargetPolarity.HARMFUL !in readings) readings += consolations
+        // A payoff off the host's death (Fruit of the First Tree) is the same kind of consolation
+        // beside a curse — Gremlin Infestation's Gremlin when the artifact it burns dies — and the
+        // whole point of an Aura that does nothing else. Only then: a static no reader handles
+        // leaves no trace in [readings] (Public Enemy's "all creatures attack enchanted creature's
+        // controller" beside its death draw), so an Aura with statics or activations keeps its gap.
+        if (TargetPolarity.HARMFUL !in readings && card.script.auraTarget != null &&
+            card.script.staticAbilities.isEmpty() && card.script.activatedAbilities.isEmpty()
+        ) {
+            for (ability in card.script.triggeredAbilities) readings += hostDeathPayoffReadings(ability)
+        }
         if (payPrices) readings += prices
         return readings
     }
@@ -2626,6 +2636,23 @@ object TargetPolarityAnalyzer {
                 else -> null
             }
         }
+    }
+
+    /**
+     * What an Aura's "when enchanted creature dies, you gain X life and draw X cards" trigger (Fruit
+     * of the First Tree) does to the host's side: every payoff leaf is a gift to the Aura's own
+     * controller, collected when its host dies. On our own creature that death is ours to time — a
+     * chump block, a trade, a sacrifice — while an opponent's creature is kept alive by the player
+     * who doesn't want us paid, so the slot belongs on one of ours. A death trigger that hurts the
+     * host's controller (Creature Bond) or moves the Aura (Angelic Destiny) isn't this shape.
+     */
+    private fun hostDeathPayoffReadings(ability: TriggeredAbility): List<TargetPolarity> {
+        if (ability.binding != TriggerBinding.ATTACHED) return emptyList()
+        val dies = ability.trigger as? EventPattern.ZoneChangeEvent ?: return emptyList()
+        if (dies.from != Zone.BATTLEFIELD || dies.to != Zone.GRAVEYARD) return emptyList()
+        val leaves = EffectWalker.payoffLeaves(ability.effect)
+        if (leaves.isEmpty() || !leaves.all { controllerPolarity(it) == TargetPolarity.BENEFICIAL }) return emptyList()
+        return listOf(TargetPolarity.BENEFICIAL)
     }
 
     /**

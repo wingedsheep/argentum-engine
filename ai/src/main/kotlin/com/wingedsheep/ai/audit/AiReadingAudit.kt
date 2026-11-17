@@ -105,6 +105,7 @@ import com.wingedsheep.sdk.scripting.effects.ForagedEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.SetBaseStatsEffect
+import com.wingedsheep.sdk.scripting.effects.SetCreatureSubtypesEffect
 import com.wingedsheep.sdk.scripting.effects.SetLifeTotalEffect
 import com.wingedsheep.sdk.scripting.effects.SkipUntapEffect
 import com.wingedsheep.sdk.scripting.effects.ScryEffect
@@ -1044,6 +1045,12 @@ object AiReadingAudit {
         // when to activate it is the timing check's question, and what it is worth is the body the
         // simulation then sees. Setting a target's base stays flagged (a gift or a curse by creature).
         if (leaf is SetBaseStatsEffect && leaf.target == EffectTarget.Self) return true
+        // A permanent changing its own creature types (Warden of the First Tree's "becomes a Human
+        // Warrior", Ascendant Spirit's levels) is the same self-levelling: no target, nothing to hold,
+        // and its payoff is the abilities that then see the new type, which the simulation reads off
+        // the board. A type change that is itself evasion (Boldwyr Intimidator) already reads as one;
+        // changing a target's types stays flagged.
+        if (leaf is SetCreatureSubtypesEffect && leaf.target == EffectTarget.Self) return true
         // A permanent stripping its own abilities — Retched Wretch's "return it to the battlefield
         // … and it loses all abilities" — has no target and nothing to hold: the price of its own
         // return, and what is left is the vanilla body the simulation sees. Stripping another stays flagged.
