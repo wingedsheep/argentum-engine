@@ -20,7 +20,6 @@ object FateReforgedSet : MtgSet {
     override val code = "FRF"
     override val displayName = "Fate Reforged"
     override val releaseDate = "2015-01-23"
-    override val incomplete = true
     override val sealedSupported = false
 
     override val cards: List<CardDefinition> by lazy {
