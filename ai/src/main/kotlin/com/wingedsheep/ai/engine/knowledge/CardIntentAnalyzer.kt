@@ -3048,13 +3048,6 @@ object CardIntentAnalyzer {
      * "… to its owner's hand" (Verdant Rebirth, Ashnod's Intervention). Either way the removal
      * aimed at it costs its controller nothing but tempo.
      */
-    /** Whether [ability] is a "when this creature dies, …" trigger on the permanent holding it. */
-    internal fun firesWhenItDies(ability: TriggeredAbility): Boolean {
-        if (ability.binding != TriggerBinding.SELF) return false
-        val pattern = ability.trigger as? EventPattern.ZoneChangeEvent ?: return false
-        return pattern.from == Zone.BATTLEFIELD && pattern.to == Zone.GRAVEYARD
-    }
-
     internal fun returnsItselfWhenItLeaves(ability: TriggeredAbility): Boolean {
         if (ability.binding != TriggerBinding.SELF) return false
         val pattern = ability.trigger as? EventPattern.ZoneChangeEvent ?: return false
@@ -3063,6 +3056,13 @@ object CardIntentAnalyzer {
             it is MoveToZoneEffect && it.target == EffectTarget.Self &&
                 (it.destination == Zone.BATTLEFIELD || it.destination == Zone.HAND)
         }
+    }
+
+    /** Whether [ability] is a "when this creature dies, …" trigger on the permanent holding it. */
+    internal fun firesWhenItDies(ability: TriggeredAbility): Boolean {
+        if (ability.binding != TriggerBinding.SELF) return false
+        val pattern = ability.trigger as? EventPattern.ZoneChangeEvent ?: return false
+        return pattern.from == Zone.BATTLEFIELD && pattern.to == Zone.GRAVEYARD
     }
 
     /**

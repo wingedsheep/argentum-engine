@@ -1596,9 +1596,9 @@ internal object ExpiringGrantWindow {
      * Whether [effect] grants, until end of turn, a "when this creature dies, …" trigger of any kind
      * (Whisperwood Elemental's "manifest the top card of your library"): like
      * [returnsFromDeathThisTurn], a payoff spent only if the creature dies before cleanup — in a
-     * fight or to something on the stack. For the AI card-reading audit and the grant floors.
+     * fight or to something on the stack.
      */
-    fun paysOffIfItDiesThisTurn(effect: Effect): Boolean =
+    private fun paysOffIfItDiesThisTurn(effect: Effect): Boolean =
         effect is GrantTriggeredAbilityEffect && effect.duration == Duration.EndOfTurn &&
             CardIntentAnalyzer.firesWhenItDies(effect.ability)
 
