@@ -75,10 +75,12 @@ Abzan Advantage
 Abzan Ascendancy
 Abzan Banner
 Abzan Battle Priest
+Abzan Beastmaster
 Abzan Charm
 Abzan Devotee
 Abzan Falconer
 Abzan Guide
+Abzan Kin-Guard
 Abzan Monument
 Abzan Runemark
 Abzan Skycaptain
@@ -253,7 +255,7 @@ Agatha of the Vile Cauldron
 Agatha's Champion
 Agatha's Soul Cauldron
 Ageless Guardian
-Ageless Sentinels	intent: RemoveKeywordEffect; intent: SetCreatureSubtypesEffect
+Ageless Sentinels	intent: RemoveKeywordEffect
 Agency Coroner
 Agency Outfitter
 Agent 13, Sharon Carter
@@ -494,6 +496,7 @@ Ambuscade
 Ambuscade Shaman
 Ambush Commander
 Ambush Gigapede
+Ambush Krotiq
 Ambush Paratrooper
 Ambush Viper
 Ambush Wolf
@@ -752,6 +755,7 @@ Arashin Cleric
 Arashin Foremost
 Arashin Sovereign
 Arashin Sunshield
+Arashin War Beast
 Arasta of the Endless Web
 Araña, Heart of the Spider
 Arbalest Engineers
@@ -965,7 +969,7 @@ Asari Captain
 Ascendant Dustspeaker
 Ascendant Evincar
 Ascendant Packleader
-Ascendant Spirit	intent: SetCreatureSubtypesEffect
+Ascendant Spirit
 Ascending Aven
 Ascent of the Worthy
 Asceticism
@@ -1480,6 +1484,7 @@ Battlefield Promotion
 Battlefield Raptor
 Battlefield Scavenger
 Battlefly Swarm
+Battlefront Krushok
 Battleground Geist
 Battlegrowth
 Battlesong Berserker
@@ -2526,6 +2531,7 @@ Cabaretti Charm
 Cabaretti Courtyard
 Cabaretti Initiate
 Cache Grab
+Cached Defenses
 Cackling Counterpart
 Cackling Fiend
 Cackling Imp
@@ -5885,7 +5891,7 @@ Evolution Charm
 Evolution Sage
 Evolution Witness
 Evolutionary Leap
-Evolved Sleeper	intent: SetCreatureSubtypesEffect
+Evolved Sleeper
 Evolved Spinoderm
 Evolving Adaptive
 Evolving Door
@@ -6763,6 +6769,7 @@ Form of the Dragon
 Formation Breaker
 Formidable Commons
 Formidable Speaker
+Formless Nurturing
 Forsake the Worldly
 Forsaken Miner
 Forsaken Monument
@@ -6910,6 +6917,7 @@ Frozen Shade
 Frozen Solid
 Frozen in Ice
 Fruit of Tizerus
+Fruit of the First Tree
 Fruition
 Fry
 Fuel the Flames
@@ -9918,7 +9926,7 @@ Kellan Joins Up	intent: MakePlottedEffect; intent: Pipeline(hand→exile)
 Kellan's Lightblades
 Kellan, Daring Traveler
 Kellan, Inquisitive Prodigy
-Kellan, Planar Trailblazer	intent: GrantTriggeredAbilityEffect; intent: SetCreatureSubtypesEffect
+Kellan, Planar Trailblazer	intent: GrantTriggeredAbilityEffect
 Kellan, the Fae-Blooded
 Kellan, the Kid
 Kellogg, Dangerous Mind
@@ -11160,6 +11168,7 @@ Mantle of the Ancients
 Mantle of the Wolf
 Many Partings
 Map the Frontier
+Map the Wastes
 Maraleaf Pixie
 Maraleaf Rider
 Maralen, Fae Ascendant
@@ -12522,7 +12531,7 @@ Nobody
 Noctis, Prince of Lucis
 Nocturnal Hunger
 Nocturnal Raid
-Nog, Ambitious Cadet	intent: GrantStaticAbilityEffect; intent: GrantTriggeredAbilityEffect; intent: SetCreatureSubtypesEffect
+Nog, Ambitious Cadet	intent: GrantStaticAbilityEffect; intent: GrantTriggeredAbilityEffect
 Noggle Robber
 Noggle the Mind
 Nogi, Draco-Zealot
@@ -15279,6 +15288,7 @@ Rustwing Falcon
 Rutherford, Upgraded Ensign
 Ruthless Deathfang
 Ruthless Disposal
+Ruthless Instincts
 Ruthless Knave
 Ruthless Lawbringer
 Ruthless Negotiation
@@ -15454,6 +15464,7 @@ Sandskitter Outrider
 Sandsower
 Sandstalker Moloch
 Sandsteppe Citadel
+Sandsteppe Mastodon
 Sandsteppe Outcast
 Sandsteppe Scavenger
 Sandstone Bridge
@@ -17774,6 +17785,7 @@ Succumb to Temptation
 Succumb to the Cold
 Sudden Breakthrough
 Sudden Insight
+Sudden Reclamation
 Sudden Setback
 Sudden Spinnerets
 Sudden Strength
@@ -18445,8 +18457,10 @@ Temur Charger
 Temur Charm
 Temur Devotee
 Temur Monument
+Temur Runemark
 Temur Sabertooth
 Temur Tawnyback
+Temur War Shaman
 Tenacious Drone
 Tenacious Hunter
 Tenacious Tomeseeker
@@ -20688,6 +20702,7 @@ Warden of Evos Isle
 Warden of Geometries
 Warden of the Chained
 Warden of the Eye
+Warden of the First Tree
 Warden of the Grove
 Warden of the Inner Sky
 Warden of the Woods
@@ -21155,7 +21170,7 @@ Wisecrack
 Wish	intent: GrantMayPlayFromExileEffect; intent: Pipeline(sideboard→?)
 Wishclaw Talisman
 Wishcoin Crab
-Wishful Merfolk	combat: RemoveKeywordEffect; intent: RemoveKeywordEffect; intent: SetCreatureSubtypesEffect; timing: RemoveKeywordEffect; timing: SetCreatureSubtypesEffect
+Wishful Merfolk	combat: RemoveKeywordEffect; intent: RemoveKeywordEffect; timing: RemoveKeywordEffect; timing: SetCreatureSubtypesEffect
 Wishing Well
 Wispdrinker Vampire
 Wispmare
