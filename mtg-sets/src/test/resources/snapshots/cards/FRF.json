@@ -11146,6 +11146,56 @@
     ]
 }
 
+// Winds of Qal Sisma
+{
+    "name": "Winds of Qal Sisma",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Prevent all combat damage that would be dealt this turn.\nFerocious — If you control a creature with power 4 or greater, instead prevent all combat damage that would be dealt this turn by creatures your opponents control.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "creature pow>=4"
+                }
+            },
+            "then": {
+                "type": "PreventDamageShield",
+                "scope": "CombatOnly",
+                "direction": "FromTarget",
+                "sourceFilter": {
+                    "type": "PreventFromMatching",
+                    "filter": "creature ctrl:opponent"
+                }
+            },
+            "otherwise": {
+                "type": "PreventDamageShield",
+                "scope": "CombatOnly"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "rarity": "UNCOMMON",
+        "artist": "Howard Lyon",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0c45d98d-b8bd-409d-bce9-d7d73be735a9.jpg?1783938674",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "If you control a creature with power 4 or greater as Winds of Qal Sisma resolves, the ferocious ability will apply. Combat damage dealt by creatures your opponents control will be prevented, even if you no longer control a creature with power 4 or greater as that damage would be dealt."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Write into Being
 {
     "name": "Write into Being",
