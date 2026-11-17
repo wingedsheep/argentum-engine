@@ -1936,6 +1936,146 @@
     ]
 }
 
+// Crucible of the Spirit Dragon
+{
+    "name": "Crucible of the Spirit Dragon",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{1}, {T}: Put a storage counter on this land.\n{T}, Remove X storage counters from this land: Add X mana in any combination of colors. Spend this mana only to cast Dragon spells or activate abilities of Dragons.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Crucible of the Spirit Dragon:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Crucible of the Spirit Dragon:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "STORAGE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "{1}, {T}: Put a storage counter on this land."
+            },
+            {
+                "id": "Crucible of the Spirit Dragon:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "STORAGE",
+                                "count": "XValue",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddDynamicMana",
+                    "amountSource": "XValue",
+                    "allowedColors": [
+                        "WHITE",
+                        "BLUE",
+                        "BLACK",
+                        "RED",
+                        "GREEN"
+                    ],
+                    "restriction": {
+                        "type": "AnyOf",
+                        "restrictions": [
+                            {
+                                "type": "SubtypeSpellsOnly",
+                                "subtypes": [
+                                    "Dragon"
+                                ]
+                            },
+                            {
+                                "type": "AllOf",
+                                "restrictions": [
+                                    {
+                                        "type": "AnyOf",
+                                        "restrictions": [
+                                            {
+                                                "type": "CardTypeSpellsOrAbilitiesOnly",
+                                                "cardType": "CREATURE",
+                                                "allowSpells": false,
+                                                "allowAbilities": true,
+                                                "permanentSourcesOnly": true
+                                            },
+                                            {
+                                                "type": "CardTypeSpellsOrAbilitiesOnly",
+                                                "cardType": "KINDRED",
+                                                "allowSpells": false,
+                                                "allowAbilities": true,
+                                                "permanentSourcesOnly": true
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "SubtypeSpellsOrAbilitiesOnly",
+                                        "subtype": "Dragon"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}, Remove X storage counters from this land: Add X mana in any combination of colors. Spend this mana only to cast Dragon spells or activate abilities of Dragons."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "rarity": "RARE",
+        "artist": "Jung Park",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6bf563e0-1f42-4768-a667-3e120bdb6534.jpg?1783938669",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "You can use mana generated by the last ability to pay an alternative cost (such as a dash cost) or an additional cost to cast a Dragon spell. It's not limited to paying just that spell's mana cost."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "Notably, turning a face-down creature face up isn't an activated ability. If you manifest a Dragon creature card or cast a Dragon creature card face down using the morph ability, you can't use mana generated by the last ability to turn that card face up."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "The mana generated by the last ability can't be spent to activate abilities of Dragon sources that aren't on the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Crux of Fate
 {
     "name": "Crux of Fate",
@@ -2016,6 +2156,79 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Cunning Strike
+{
+    "name": "Cunning Strike",
+    "manaCost": "{3}{U}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Cunning Strike deals 2 damage to target creature and 2 damage to target player or planeswalker.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetPlayerOrPlaneswalker",
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "artist": "Clint Cearley",
+        "flavorText": "\"The opponent who blocks the path, becomes the path.\"\n—Shu Yun, the Silent Tempest",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/4/e4991f81-3190-4d33-bf09-9d5387cbec11.jpg?1783938674",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "You can't cast Cunning Strike unless you target both a creature and a player. If one target (but not both) is illegal as Cunning Strike resolves, it deals damage to the remaining legal target and you draw a card. If both targets are illegal, the spell won't resolve and none of its effects will happen. You won't draw a card in that case."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
     ]
 }
 
@@ -2643,6 +2856,97 @@
     ]
 }
 
+// Dromoka, the Eternal
+{
+    "name": "Dromoka, the Eternal",
+    "manaCost": "{3}{G}{W}",
+    "typeLine": "Legendary Creature — Dragon",
+    "oracleText": "Flying\nWhenever a Dragon you control attacks, bolster 2. (Choose a creature with the least toughness among creatures you control and put two +1/+1 counters on it.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dromoka, the Eternal:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "creature Dragon ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "ControlledPermanents",
+                                "filter": "creature"
+                            },
+                            "storeAs": "bolsterCreatures"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "bolsterCreatures",
+                            "collectionFilter": "LeastToughness",
+                            "storeMatching": "bolsterLeastToughness"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "bolsterLeastToughness",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "bolstered",
+                            "prompt": "Bolster 2 — choose a creature with the least toughness",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "AddCountersToCollection",
+                            "collectionName": "bolstered",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 2
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "151",
+        "rarity": "RARE",
+        "artist": "Eric Deschamps",
+        "flavorText": "\"The bane of countless shattered weapons, each a failure to slay her.\"\n—Daghatar the Adamant",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/0/10a10e86-d2cd-4193-85f5-5e4908c30e7f.jpg?1783938675",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "Each Dragon you attack with will cause Dromoka's triggered ability to trigger. For each instance of the ability, you'll determine which creature to put +1/+1 counters on as it resolves. Specifically, the creature you control with the lowest toughness as the first such ability resolves may not have the lowest toughness as the second such ability resolves."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "Bolster itself doesn't target any creature, though some spells and abilities that bolster may have other effects that target creatures. For example, you could put counters on a creature with protection from white with Abzan Skycaptain's bolster ability."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "You determine which creature to put counters on as the spell or ability that instructs you to bolster resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Elite Scaleguard
 {
     "name": "Elite Scaleguard",
@@ -2831,6 +3135,61 @@
         "imageUri": "https://cards.scryfall.io/normal/front/2/1/21df7db7-c23b-4dca-b9c8-c785d7007285.jpg"
     },
     "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Ethereal Ambush
+{
+    "name": "Ethereal Ambush",
+    "manaCost": "{3}{G}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Manifest the top two cards of your library. (To manifest a card, put it onto the battlefield face down as a 2/2 creature. Turn it face up any time for its mana cost if it's a creature card.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "storeAs": "manifested"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "manifested",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    },
+                    "faceDown": "MANIFEST"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "artist": "Lius Lasahido",
+        "flavorText": "The energies of the Temur lands are readily unleashed upon intruders.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/2/825d3f4d-eba3-4c45-8846-03b246e93f6c.jpg?1783938674",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "The cards are manifested one at a time. It must remain clear which face-down creature was the top card of your library and which one was the second card of your library."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "If you're playing with the top card of your library revealed as Ethereal Ambush resolves (perhaps because you control a card such as Courser of Kruphix), you'll manifest the top card, reveal the next card (now the top card), and then manifest that card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
         "BLUE"
     ]
 }
@@ -3944,6 +4303,57 @@
     ]
 }
 
+// Harsh Sustenance
+{
+    "name": "Harsh Sustenance",
+    "manaCost": "{1}{W}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Harsh Sustenance deals X damage to any target and you gain X life, where X is the number of creatures you control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "artist": "Cynthia Sheppard",
+        "flavorText": "The Shifting Wastes provide refuge to those who know where to look for it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/7/770d60a0-23fc-4224-873c-2e5549b3a816.jpg?1783938674"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Hero's Blade
 {
     "name": "Hero's Blade",
@@ -4029,6 +4439,43 @@
             {
                 "date": "2014-11-24",
                 "text": "The triggered ability will trigger when one of the Gods from Theros block enters the battlefield only if your devotion is high enough that it's a creature when it enters. If Hero's Blade is attached to a God that stops being a creature (or any creature that stops being a creature), it will become unattached."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Hewed Stone Retainers
+{
+    "name": "Hewed Stone Retainers",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Golem",
+    "oracleText": "Cast this spell only if you've cast another spell this turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "castRestrictions": [
+            {
+                "type": "CastOnlyIfCondition",
+                "condition": {
+                    "type": "PlayerCastSpellsThisTurn",
+                    "atLeast": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "161",
+        "rarity": "UNCOMMON",
+        "artist": "David Seguin",
+        "flavorText": "\"Their origins are shrouded in mystery. I believe they are the protectors of the lost secrets of our world.\"\n—Jilaya, Temur whisperer",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/250bc19c-b882-42ae-b516-fe876d0d047d.jpg?1783938672",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "It doesn't matter whether the other spell resolved. It could have been countered or, if you've somehow cast Hewed Stone Retainers as though it had flash, it could still be on the stack."
             }
         ]
     },
@@ -4593,6 +5040,81 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Kolaghan, the Storm's Fury
+{
+    "name": "Kolaghan, the Storm's Fury",
+    "manaCost": "{3}{B}{R}",
+    "typeLine": "Legendary Creature — Dragon",
+    "oracleText": "Flying\nWhenever a Dragon you control attacks, creatures you control get +1/+0 until end of turn.\nDash {3}{B}{R} (You may cast this spell for its dash cost. If you do, it gains haste, and it's returned from the battlefield to its owner's hand at the beginning of the next end step.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "DASH"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Dash",
+            "cost": "{3}{B}{R}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kolaghan, the Storm's Fury:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "creature Dragon ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "rarity": "RARE",
+        "artist": "Jaime Jones",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/96376314-2085-4c57-861e-44d25e2d3bc8.jpg?1783938673",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "If you pay the dash cost to cast a creature spell, that card will be returned to its owner's hand only if it's still on the battlefield when its triggered ability resolves. If it dies or goes to another zone before then, it will stay where it is."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "If a creature enters the battlefield as a copy of or becomes a copy of a creature whose dash cost was paid, the copy won't have haste and won't be returned to its owner's hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -5957,6 +6479,87 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Ojutai, Soul of Winter
+{
+    "name": "Ojutai, Soul of Winter",
+    "manaCost": "{5}{W}{U}",
+    "typeLine": "Legendary Creature — Dragon",
+    "oracleText": "Flying, vigilance\nWhenever a Dragon you control attacks, tap target nonland permanent an opponent controls. That permanent doesn't untap during its controller's next untap step.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ojutai, Soul of Winter:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "creature Dragon ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "nonland permanent ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "rarity": "RARE",
+        "artist": "Chase Stone",
+        "flavorText": "\"When I battled Ojutai, I realized my learning had only begun.\"\n—Shu Yun, the Silent Tempest",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/67d470cd-9ff9-49d8-b66a-331cb6cf8257.jpg?1783938672",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "The triggered ability can target a nonland permanent that's already tapped. That permanent won't untap during its controller's next untap step."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "The ability tracks the permanent, but not its controller. If the permanent changes controllers before its first controller's next untap step, then it won't untap during its new controller's next untap step."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "The ability only applies during the controller's next untap step, even if the permanent has been the target of Ojutai's triggered ability more than once. The permanent won't stay tapped through multiple untap steps."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
     ]
 }
 
@@ -7556,6 +8159,103 @@
     ]
 }
 
+// Scroll of the Masters
+{
+    "name": "Scroll of the Masters",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever you cast a noncreature spell, put a lore counter on this artifact.\n{3}, {T}: Target creature you control gets +1/+1 until end of turn for each lore counter on this artifact.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Scroll of the Masters:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "LORE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Scroll of the Masters:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "LORE"
+                        }
+                    },
+                    "toughnessModifier": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "LORE"
+                        }
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{3}, {T}: Target creature you control gets +1/+1 until end of turn for each lore counter on this artifact."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "rarity": "RARE",
+        "artist": "Lake Hurwitz",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d6c7f24e-5ead-4b32-a804-4c89929508f6.jpg?1783938675",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "Count the number of lore counters on Scroll of the Masters as the activated ability resolves to determine how big a bonus the target creature gets. If Scroll of the Masters isn't on the battlefield at that time, use the number of lore counters on it when it left the battlefield."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "Once the activated ability has resolved, changing the number of lore counters on Scroll of the Masters won't affect the bonus that activation granted."
+            }
+        ]
+    }
+}
+
 // Shaman of the Great Hunt
 {
     "name": "Shaman of the Great Hunt",
@@ -7669,6 +8369,86 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Shifting Loyalties
+{
+    "name": "Shifting Loyalties",
+    "manaCost": "{5}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exchange control of two target permanents that share a card type. (Artifact, creature, enchantment, land, and planeswalker are card types.)",
+    "script": {
+        "spellEffect": {
+            "type": "ExchangeControl",
+            "target1": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "target2": {
+                "type": "BoundVariable",
+                "name": "t1"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "permanent"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsPermanent",
+                            {
+                                "type": "SharesCardTypeWith",
+                                "entity": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "rarity": "UNCOMMON",
+        "artist": "James Ryman",
+        "flavorText": "\"Show the enemy the true path, and the spirit will yearn to follow it.\"\n—Houn, Jeskai elder",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/ed9ff175-2e4c-4658-813e-1bfb4b9a6ca0.jpg?1783938702",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "If one of the target permanents is an illegal target when Shifting Loyalties resolves, the exchange won't happen. If both permanents are illegal targets (perhaps because they no longer share a card type), Shifting Loyalties won't resolve."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "Either target can have card types the other does not, as long as they share at least one card type. For example, you could target a creature and an artifact creature."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "You don't have to control either target permanent."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "If the same player controls both permanents when Shifting Loyalties resolves, nothing happens."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "Gaining control of an Aura or Equipment doesn't cause it to move, though gaining control of an Equipment will allow you to activate its equip ability later to attach it to a creature you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -9095,6 +9875,52 @@
     ]
 }
 
+// Ugin's Construct
+{
+    "name": "Ugin's Construct",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "When this creature enters, sacrifice a permanent that's one or more colors.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ugin's Construct:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Sacrifice",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsPermanent",
+                            "IsColored"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "164",
+        "rarity": "UNCOMMON",
+        "artist": "Peter Mohrbacher",
+        "flavorText": "While trapping the Eldrazi on Zendikar, Ugin learned little from Sorin, but he gleaned the rudiments of lithomancy from Nahiri.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7ee009a4-72d0-4828-b826-3ed7c7d87b53.jpg?1783938670",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "If you control only colorless permanents as the ability resolves (for example, basic lands and face-down permanents), you won't sacrifice anything."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Ugin, the Spirit Dragon
 {
     "name": "Ugin, the Spirit Dragon",
@@ -9515,6 +10341,57 @@
     ]
 }
 
+// War Flare
+{
+    "name": "War Flare",
+    "manaCost": "{2}{R}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Creatures you control get +2/+1 until end of turn. Untap those creatures.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    },
+                    {
+                        "type": "TapUntap",
+                        "target": "IterationEntity",
+                        "tap": false
+                    }
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "artist": "Karl Kopinski",
+        "flavorText": "\"No sun or fire can warm my blood quite like a war flare.\"\n—Urut Barzeel, Mardu hordechief",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/243f33d8-ec20-4376-99c2-a12098773dee.jpg?1783938677"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "RED"
+    ]
+}
+
 // Warden of the First Tree
 {
     "name": "Warden of the First Tree",
@@ -9812,6 +10689,132 @@
     ]
 }
 
+// Whisperwood Elemental
+{
+    "name": "Whisperwood Elemental",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "At the beginning of your end step, manifest the top card of your library. (Put it onto the battlefield face down as a 2/2 creature. Turn it face up any time for its mana cost if it's a creature card.)\nSacrifice this creature: Until end of turn, face-up nontoken creatures you control gain \"When this creature dies, manifest the top card of your library.\"",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Whisperwood Elemental:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "manifested"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "manifested",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "faceDown": "MANIFEST"
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Whisperwood Elemental:3",
+                "cost": "CostSacrificeSelf",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsNontoken"
+                                ],
+                                "statePredicates": [
+                                    "IsFaceUp"
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "GrantTriggeredAbility",
+                        "ability": {
+                            "id": "Whisperwood Elemental:2",
+                            "trigger": {
+                                "type": "ZoneChangeEvent",
+                                "from": "Battlefield",
+                                "to": "Graveyard"
+                            },
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "TopOfLibrary",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeAs": "manifested"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "manifested",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield"
+                                        },
+                                        "faceDown": "MANIFEST"
+                                    }
+                                ]
+                            },
+                            "descriptionOverride": "When this creature dies, manifest the top card of your library."
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "MYTHIC",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66c61828-98b9-4264-b3dd-e83f881f4a67.jpg?1783938675",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "The last ability grants that ability to face-up nontoken creatures you control as that ability resolves. Creatures that come under your control later in the turn won't have that ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Wild Slash
 {
     "name": "Wild Slash",
@@ -9874,6 +10877,67 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Wildcall
+{
+    "name": "Wildcall",
+    "manaCost": "{X}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Manifest the top card of your library, then put X +1/+1 counters on it. (To manifest a card, put it onto the battlefield face down as a 2/2 creature. Turn it face up any time for its mana cost if it's a creature card.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeAs": "manifested"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "manifested",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    },
+                    "faceDown": "MANIFEST"
+                },
+                {
+                    "type": "AddCountersToCollection",
+                    "collectionName": "manifested",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": "XValue"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "146",
+        "rarity": "RARE",
+        "artist": "Adam Paquette",
+        "flavorText": "A howl on the wind hides many dangers.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/065fc4d8-c097-4d0e-81cf-22a0b694be9a.jpg?1783938675",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "If you choose 0 for X, you'll just manifest the top card of your library."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "Unlike a face-down creature that was cast using the morph ability, a manifested creature may still be turned face up after it loses its abilities if it's a creature card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -10049,5 +11113,108 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Yasova Dragonclaw
+{
+    "name": "Yasova Dragonclaw",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Human Warrior",
+    "oracleText": "Trample\nAt the beginning of combat on your turn, you may pay {1}{U/R}{U/R}. If you do, gain control of target creature an opponent controls with power less than Yasova Dragonclaw's power until end of turn, untap that creature, and it gains haste until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Yasova Dragonclaw:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}{U/R}{U/R}"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GainControl",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "duration": "EndOfTurn"
+                            },
+                            {
+                                "type": "TapUntap",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "tap": false
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "PowerLessThanEntity",
+                                    "reference": "Self"
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByOpponent"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "rarity": "RARE",
+        "artist": "Winona Nelson",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/490994c6-9fef-482b-835d-a64350bfaa8d.jpg?1783938674",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "The powers of the target creature and Yasova Dragonclaw are checked as you put the ability on the stack and again as the ability resolves. Once the ability resolves, it doesn't matter what happens to either creature's power."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "Gaining control of a creature doesn't cause you to gain control of any Auras or Equipment attached to it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE",
+        "RED"
     ]
 }

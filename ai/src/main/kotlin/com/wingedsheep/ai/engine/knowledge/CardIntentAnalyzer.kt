@@ -2883,6 +2883,16 @@ object CardIntentAnalyzer {
             // a hit. The granted effect itself waits on combat damage, so it is not read as a draw
             // the HoldPolicy card-flow windows could cash.
             else if (helpful && dealsCombatDamage(ability)) add(IntentTag.COMBAT_ENHANCEMENT)
+            // "Until end of turn, face-up nontoken creatures you control gain 'When this creature
+            // dies, manifest the top card of your library'" (Whisperwood Elemental): the death it
+            // waits on is the creature's own, so what the trigger does is what the grant is for —
+            // read as if printed. Its payoff still waits on that event, and the HoldPolicy windows
+            // read any granted trigger as one that waits (`createsTemporaryTrigger`).
+            // A self-return (Feign Death) is already read above as the protection it is.
+            // Untargeted, its polarity reads neutral; only a harmful one (a curse) is the opponent's.
+            else if (firesWhenItDies(ability) && !returnsItselfWhenItLeaves(ability) &&
+                TargetPolarityAnalyzer.grantedTriggerPolarity(ability) != TargetPolarity.HARMFUL
+            ) addAll(granted)
         }
 
         // "That player loses the game" aimed away from its controller, or "you win the game": the
@@ -3038,6 +3048,13 @@ object CardIntentAnalyzer {
      * "… to its owner's hand" (Verdant Rebirth, Ashnod's Intervention). Either way the removal
      * aimed at it costs its controller nothing but tempo.
      */
+    /** Whether [ability] is a "when this creature dies, …" trigger on the permanent holding it. */
+    internal fun firesWhenItDies(ability: TriggeredAbility): Boolean {
+        if (ability.binding != TriggerBinding.SELF) return false
+        val pattern = ability.trigger as? EventPattern.ZoneChangeEvent ?: return false
+        return pattern.from == Zone.BATTLEFIELD && pattern.to == Zone.GRAVEYARD
+    }
+
     internal fun returnsItselfWhenItLeaves(ability: TriggeredAbility): Boolean {
         if (ability.binding != TriggerBinding.SELF) return false
         val pattern = ability.trigger as? EventPattern.ZoneChangeEvent ?: return false
