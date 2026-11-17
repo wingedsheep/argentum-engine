@@ -1190,11 +1190,16 @@ data class EntersWithKeywords(
  * [com.wingedsheep.sdk.scripting.effects.PreventNextDamageLeavingAmountEffect]; [amount] must be null and
  * [half] false with it. The affected player applies it before any "prevent half" or fixed "prevent N"
  * (CR 616.1 lets them order it), the order that always leaves them the least damage.
+ *
+ * [amount] is a [DynamicAmount] so "prevent X of that damage, where X is …" reads its X the moment
+ * the damage would be dealt, never as a snapshot — Shield of the Avatar's "prevent X of that damage,
+ * where X is the number of creatures you control". It is evaluated with this permanent as the source
+ * and its controller as "you"; a negative X prevents nothing.
  */
 @SerialName("PreventDamage")
 @Serializable
 data class PreventDamage(
-    val amount: Int? = null,  // null = prevent all
+    val amount: DynamicAmount? = null,  // null = prevent all
     override val restrictions: List<Condition> = emptyList(),
     override val appliesTo: EventPattern,
     val onPrevented: Effect? = null,
@@ -1225,8 +1230,10 @@ data class PreventDamage(
             append("all but $allBut of that damage")
         } else if (amount == null) {
             append("that damage")
+        } else if (amount is DynamicAmount.Fixed) {
+            append("${amount.amount} of that damage")
         } else {
-            append("$amount of that damage")
+            append("X of that damage, where X is ${amount.description}")
         }
         onPrevented?.let { append(". ${it.description.replaceFirstChar { c -> c.uppercase() }}") }
     }
@@ -1235,10 +1242,11 @@ data class PreventDamage(
         val newAppliesTo = appliesTo.applyTextReplacement(replacer)
         val newRestrictions = restrictions.map { it.applyTextReplacement(replacer) }
         val newOnPrevented = onPrevented?.applyTextReplacement(replacer)
-        val anyChanged = newAppliesTo !== appliesTo || newOnPrevented !== onPrevented ||
+        val newAmount = amount?.applyTextReplacement(replacer)
+        val anyChanged = newAppliesTo !== appliesTo || newOnPrevented !== onPrevented || newAmount !== amount ||
             newRestrictions.zip(restrictions).any { (n, o) -> n !== o }
         return if (anyChanged) {
-            copy(appliesTo = newAppliesTo, restrictions = newRestrictions, onPrevented = newOnPrevented)
+            copy(appliesTo = newAppliesTo, restrictions = newRestrictions, onPrevented = newOnPrevented, amount = newAmount)
         } else this
     }
 }

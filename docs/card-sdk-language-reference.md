@@ -20022,7 +20022,12 @@ The priority groups are (CR 616.1a–f):
 | _(repeat)_ | 616.1f | After applying one effect, repeat until no more apply |
 
 - `ReplacementEffect.PreventDamage(amount?, restrictions?, appliesTo)` — prevent damage matching the
-  `EventPattern.DamageEvent` shape. `amount = null` prevents all; a number prevents up to that much.
+  `EventPattern.DamageEvent` shape. `amount: DynamicAmount?` — `null` prevents all; an amount prevents
+  up to that much (`DynamicAmounts.fixed(2)` for Shield of the Realm's "prevent 2 of that damage").
+  A non-fixed amount is "prevent X of that damage, where X is …": X is evaluated each time damage
+  would be dealt (never snapshotted), with the host as the source and its controller as "you", and a
+  negative X prevents nothing — Shield of the Avatar = `PreventDamage(amount =
+  DynamicAmounts.creaturesYouControl(), appliesTo = DamageEvent(recipient = Recipient.EquippedCreature))`.
   `restrictions: List<Condition>` (default empty) gates the prevention on extra conditions evaluated
   against the source's controller — the same pattern as `ModifyLifeLoss.restrictions`. Use it for
   "as long as …, prevent …" statics (Spirit of Resistance: a five-distinct-colors `Compare` gate).

@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.DamageDealtEvent
 import com.wingedsheep.engine.core.OptionChosenResponse
@@ -52,7 +53,7 @@ class HarshJusticeScenarioTest : ScenarioTestBase() {
         })
         cardRegistry.register(card("Justice Noncombat Barrier") {
             typeLine = "Enchantment"
-            replacementEffect(PreventDamage(amount = 1, appliesTo = EventPattern.DamageEvent(
+            replacementEffect(PreventDamage(amount = DynamicAmounts.fixed(1), appliesTo = EventPattern.DamageEvent(
                 damageType = DamageType.NonCombat, recipient = Recipient.You
             )))
         })

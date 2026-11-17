@@ -10499,7 +10499,10 @@
         "replacementEffects": [
             {
                 "type": "PreventDamage",
-                "amount": 2,
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
                 "appliesTo": {
                     "type": "DamageEvent",
                     "recipient": {

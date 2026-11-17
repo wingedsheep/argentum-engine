@@ -446,12 +446,13 @@ object DamageReplacementChain {
                         if (d.amount < minimum) amount(key, "$hostName — raise damage to $minimum", host, minimum)
                     }
                     is PreventDamage -> if (!disabled || effect.onPrevented != null) {
+                        val fixed = effect.amount?.let { evaluator.amounts.evaluate(viewState, it, context, projected).coerceAtLeast(0) }
                         val prevented = when {
                             disabled -> 0
                             effect.allBut != null -> (d.amount - effect.allBut!!).coerceAtLeast(0)
                             effect.half -> if (effect.roundUp) (d.amount + 1) / 2 else d.amount / 2
-                            effect.amount == null -> d.amount
-                            else -> minOf(d.amount, effect.amount!!)
+                            fixed == null -> d.amount
+                            else -> minOf(d.amount, fixed)
                         }
                         out += Candidate(key, "$hostName — prevent $prevented damage", host,
                             commute = if (effect.amount == null && !effect.half && effect.allBut == null && effect.onPrevented == null) "prevent-all" else null) {

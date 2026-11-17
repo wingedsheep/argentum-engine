@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
@@ -61,7 +62,7 @@ class ProjectedControllerInReplacementsTest : FunSpec({
         oracleText = "If a source would deal damage to a creature you control, prevent 2 of that damage."
         replacementEffect(
             PreventDamage(
-                amount = 2,
+                amount = DynamicAmounts.fixed(2),
                 appliesTo = EventPattern.DamageEvent(recipient = Recipient.CreatureYouControl)
             )
         )

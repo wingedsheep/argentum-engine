@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.mrd.cards
 
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EventPattern
@@ -33,7 +34,7 @@ val SphereOfPurity = card("Sphere of Purity") {
 
     replacementEffect(
         PreventDamage(
-            amount = 1,
+            amount = DynamicAmounts.fixed(1),
             appliesTo = EventPattern.DamageEvent(
                 recipient = Recipient.You,
                 source = GameObjectFilter.Artifact

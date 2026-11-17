@@ -1,5 +1,6 @@
 package com.wingedsheep.engine
 
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
@@ -43,7 +44,7 @@ class PreventHalfDamageReplacementTest : FunSpec({
         typeLine = "Enchantment"
         oracleText = "If a source would deal damage to you, prevent 1 of that damage."
         replacementEffect(
-            PreventDamage(amount = 1, appliesTo = EventPattern.DamageEvent(recipient = Recipient.You))
+            PreventDamage(amount = DynamicAmounts.fixed(1), appliesTo = EventPattern.DamageEvent(recipient = Recipient.You))
         )
     }
 

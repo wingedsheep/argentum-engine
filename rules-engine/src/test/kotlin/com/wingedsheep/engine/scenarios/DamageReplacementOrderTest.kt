@@ -41,7 +41,7 @@ class DamageReplacementOrderTest : FunSpec({
     val threshold = host("Order Threshold", PreventDamage(appliesTo = EventPattern.DamageEvent(
         amount = AmountFilter.AtLeast(4)
     )))
-    val oneWard = host("Order One Ward", PreventDamage(amount = 1, appliesTo = EventPattern.DamageEvent()))
+    val oneWard = host("Order One Ward", PreventDamage(amount = DynamicAmounts.fixed(1), appliesTo = EventPattern.DamageEvent()))
     val lifeWard = host("Order Life Ward", PreventDamage(
         appliesTo = EventPattern.DamageEvent(recipient = Recipient.You),
         onPrevented = Effects.GainLife(DynamicAmounts.preventedDamage())

@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.combat
 
+import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
@@ -365,7 +366,11 @@ class DamageCalculator(
                 )
 
                 if (recipientMatches) {
-                    totalPrevention += effect.amount ?: 0
+                    totalPrevention += effect.amount?.let {
+                        predicateEvaluator.amounts.evaluate(
+                            state, it, EffectContext(sourceId = entityId, controllerId = sourceControllerId), projected
+                        ).coerceAtLeast(0)
+                    } ?: 0
                 }
             }
         }

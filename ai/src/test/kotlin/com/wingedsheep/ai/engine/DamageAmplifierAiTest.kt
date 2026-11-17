@@ -1,5 +1,6 @@
 package com.wingedsheep.ai.engine
 
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.ai.audit.AiCardRating
 import com.wingedsheep.ai.engine.evaluation.BoardPresence
 import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
@@ -46,7 +47,7 @@ class DamageAmplifierAiTest : ScenarioTestBase() {
 
         cardRegistry.register(card("AI Damage Barrier") {
             typeLine = "Enchantment"
-            replacementEffect(PreventDamage(amount = 1, appliesTo = EventPattern.DamageEvent(recipient = Recipient.You)))
+            replacementEffect(PreventDamage(amount = DynamicAmounts.fixed(1), appliesTo = EventPattern.DamageEvent(recipient = Recipient.You)))
         })
 
         test("the affected AI applies prevention before multiplication to preserve life") {
