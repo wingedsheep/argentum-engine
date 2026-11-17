@@ -2532,7 +2532,12 @@ object DamageUtils {
                 )
 
                 if (recipientMatches) {
-                    val preventAmount = effect.amount
+                    // "Prevent X of that damage" reads X now, as the damage would be dealt.
+                    val preventAmount = effect.amount?.let {
+                        predicateEvaluator.amounts.evaluate(
+                            state, it, EffectContext(sourceId = entityId, controllerId = sourceControllerId), projected
+                        ).coerceAtLeast(0)
+                    }
                     val allBut = effect.allBut
                     val prevented = when {
                         unpreventable -> 0

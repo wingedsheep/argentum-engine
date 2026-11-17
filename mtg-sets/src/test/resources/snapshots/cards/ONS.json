@@ -4215,7 +4215,10 @@
         "replacementEffects": [
             {
                 "type": "PreventDamage",
-                "amount": 1,
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
                 "appliesTo": {
                     "type": "DamageEvent",
                     "recipient": {

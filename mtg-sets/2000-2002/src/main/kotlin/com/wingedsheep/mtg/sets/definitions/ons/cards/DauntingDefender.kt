@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.ons.cards
 
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -25,7 +26,7 @@ val DauntingDefender = card("Daunting Defender") {
 
     replacementEffect(
         PreventDamage(
-            amount = 1,
+            amount = DynamicAmounts.fixed(1),
             appliesTo = EventPattern.DamageEvent(
                 recipient = Recipient.Object(
                     GameObjectFilter.Creature.withSubtype(Subtype("Cleric")).youControl()

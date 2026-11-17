@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.hou.cards
 
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Patterns
@@ -53,7 +54,7 @@ val DjeruWithEyesOpen = card("Djeru, With Eyes Open") {
 
     replacementEffect(
         PreventDamage(
-            amount = 1,
+            amount = DynamicAmounts.fixed(1),
             appliesTo = EventPattern.DamageEvent(
                 recipient = Recipient.Object(GameObjectFilter.Planeswalker.youControl())
             )

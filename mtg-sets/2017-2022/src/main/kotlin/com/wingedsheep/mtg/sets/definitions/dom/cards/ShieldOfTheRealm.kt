@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.dom.cards
 
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EventPattern
@@ -21,7 +22,7 @@ val ShieldOfTheRealm = card("Shield of the Realm") {
 
     replacementEffect(
         PreventDamage(
-            amount = 2,
+            amount = DynamicAmounts.fixed(2),
             appliesTo = EventPattern.DamageEvent(
                 recipient = Recipient.EquippedCreature
             )

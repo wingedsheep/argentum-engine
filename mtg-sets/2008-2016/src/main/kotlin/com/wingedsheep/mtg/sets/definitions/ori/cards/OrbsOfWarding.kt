@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.ori.cards
 
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EventPattern
@@ -34,7 +35,7 @@ val OrbsOfWarding = card("Orbs of Warding") {
 
     replacementEffect(
         PreventDamage(
-            amount = 1,
+            amount = DynamicAmounts.fixed(1),
             appliesTo = EventPattern.DamageEvent(
                 recipient = Recipient.You,
                 source = GameObjectFilter.Creature

@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.akh.cards
 
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EventPattern
@@ -24,7 +25,7 @@ val ProtectionOfTheHekma = card("Protection of the Hekma") {
 
     replacementEffect(
         PreventDamage(
-            amount = 1,
+            amount = DynamicAmounts.fixed(1),
             appliesTo = EventPattern.DamageEvent(
                 recipient = Recipient.You,
                 source = GameObjectFilter.Any.opponentControls(),
