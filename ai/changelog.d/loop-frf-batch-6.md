@@ -1,0 +1,1 @@
+- #4716 Reads an until-end-of-turn "when this creature dies, …" grant (Whisperwood Elemental) as a payoff spent only if the creature can still die this turn, and as what its trigger does — no more sacrificing for a grant nothing can cash.

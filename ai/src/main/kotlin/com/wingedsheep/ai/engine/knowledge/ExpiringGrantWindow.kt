@@ -974,6 +974,10 @@ internal object ExpiringGrantWindow {
         val recipients = when (target) {
             EffectTarget.Self -> listOfNotNull(sourceId)
             EffectTarget.Controller -> listOf(playerId)
+            // A group shield ("face-up nontoken creatures you control gain …", Whisperwood
+            // Elemental): our own creatures other than the source, which pays for it with its life.
+            EffectTarget.IterationEntity -> projected.getBattlefieldControlledBy(playerId)
+                .filter { projected.isCreature(it) && it != sourceId }
             null -> emptyList()
             else -> targets.mapNotNull {
                 when (it) {
@@ -1426,7 +1430,10 @@ internal object ExpiringGrantWindow {
                 // (Feign Death, Verdant Rebirth): a shield against dying rather than damage — it
                 // buys something only while the creature can still die this turn, in a fight or to
                 // something on the stack, which is exactly when a [PayoffKind.SHIELD] is spendable.
-                returnsFromDeathThisTurn(leaf) ->
+                // "Until end of turn, face-up nontoken creatures you control gain 'When this creature
+                // dies, manifest the top card of your library'" (Whisperwood Elemental): any granted
+                // dies trigger pays off the same way — only if the creature dies before cleanup.
+                returnsFromDeathThisTurn(leaf) || paysOffIfItDiesThisTurn(leaf) ->
                     payoffs += Payoff(PayoffKind.SHIELD, (leaf as GrantTriggeredAbilityEffect).target)
                 // "Until end of turn, whenever one or more Snakes you control deal combat damage to a
                 // player, …" (Aphelia, Viper Whisperer; Jace, Cunning Castaway): see [PayoffKind.CONNECT].
@@ -1584,6 +1591,16 @@ internal object ExpiringGrantWindow {
     fun returnsFromDeathThisTurn(effect: Effect): Boolean =
         effect is GrantTriggeredAbilityEffect && effect.duration == Duration.EndOfTurn &&
             CardIntentAnalyzer.returnsItselfWhenItLeaves(effect.ability)
+
+    /**
+     * Whether [effect] grants, until end of turn, a "when this creature dies, …" trigger of any kind
+     * (Whisperwood Elemental's "manifest the top card of your library"): like
+     * [returnsFromDeathThisTurn], a payoff spent only if the creature dies before cleanup — in a
+     * fight or to something on the stack.
+     */
+    private fun paysOffIfItDiesThisTurn(effect: Effect): Boolean =
+        effect is GrantTriggeredAbilityEffect && effect.duration == Duration.EndOfTurn &&
+            CardIntentAnalyzer.firesWhenItDies(effect.ability)
 
     /**
      * Whether [effect] grants indestructible until end of turn — "target permanent gains
