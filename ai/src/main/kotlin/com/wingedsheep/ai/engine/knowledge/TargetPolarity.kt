@@ -2364,8 +2364,12 @@ object TargetPolarityAnalyzer {
         if (TargetPolarity.HARMFUL !in readings) readings += consolations
         // A payoff off the host's death (Fruit of the First Tree) is the same kind of consolation
         // beside a curse — Gremlin Infestation's Gremlin when the artifact it burns dies — and the
-        // whole point of an Aura that harms nothing.
-        if (TargetPolarity.HARMFUL !in readings && card.script.auraTarget != null) {
+        // whole point of an Aura that does nothing else. Only then: a static no reader handles
+        // leaves no trace in [readings] (Public Enemy's "all creatures attack enchanted creature's
+        // controller" beside its death draw), so an Aura with statics or activations keeps its gap.
+        if (TargetPolarity.HARMFUL !in readings && card.script.auraTarget != null &&
+            card.script.staticAbilities.isEmpty() && card.script.activatedAbilities.isEmpty()
+        ) {
             for (ability in card.script.triggeredAbilities) readings += hostDeathPayoffReadings(ability)
         }
         if (payPrices) readings += prices

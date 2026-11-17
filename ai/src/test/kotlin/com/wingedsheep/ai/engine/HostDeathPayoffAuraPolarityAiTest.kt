@@ -17,7 +17,8 @@ import io.kotest.matchers.shouldBe
  * (Fruit of the First Tree) pays its controller off its host's death. On our own creature that
  * death is ours to time; an opponent keeps their enchanted creature alive, so the enchant slot is
  * a gift aimed at our side. Beside a curse it is only a consolation: Gremlin Infestation, which
- * burns its host's controller and makes a Gremlin when the artifact dies, stays a curse.
+ * burns its host's controller and makes a Gremlin when the artifact dies, stays a curse; and beside
+ * any static (Public Enemy's forced attacks) the death payoff isn't the whole card, so it decides nothing.
  *
  * The decision it changes: Fruit of the First Tree on the opponent's only creature reads as aimed
  * at the wrong side, so the AI holds it for a creature of its own.
@@ -48,6 +49,9 @@ class HostDeathPayoffAuraPolarityAiTest : ScenarioTestBase() {
             AiReadingAudit.read(card("Fruit of the First Tree")).readFully shouldBe true
             withClue("a Gremlin when the burned artifact dies is a consolation beside the curse, not a gift") {
                 TargetPolarityAnalyzer.forSpell(card("Gremlin Infestation")) shouldBe listOf(TargetPolarity.HARMFUL)
+            }
+            withClue("beside a static no reader handles, the death draw doesn't make Public Enemy a gift") {
+                TargetPolarityAnalyzer.forSpell(card("Public Enemy")) shouldBe listOf(TargetPolarity.UNKNOWN)
             }
         }
 
