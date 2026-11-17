@@ -1,0 +1,1 @@
+- #4712 The AI aims an Aura whose only payoff is its host's death (Fruit of the First Tree's gain-and-draw) at a creature of its own, and reads a permanent changing its own creature types (Warden of the First Tree, Ascendant Spirit) as no ability left unread
