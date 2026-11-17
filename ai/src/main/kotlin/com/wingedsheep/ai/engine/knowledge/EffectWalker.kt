@@ -342,7 +342,10 @@ object EffectWalker {
      *
      * The static readers that ask what a card is *for* ([CardIntentAnalyzer], [TargetPolarityAnalyzer])
      * read this walk. [leaves] keeps stopping at the gate, because widening it would move the rater's
-     * numbers — the same reason it stops at modes and `ForEach` bodies.
+     * numbers — the same reason it stops at modes and `ForEach` bodies. One rater input reads this
+     * walk on purpose: `LimitedCardRater.pipelineScore`'s reanimation check
+     * (`CardIntentAnalyzer.putsChosenTargetsOntoOurBattlefield`), because a return behind a price we
+     * choose to pay (Alesha, Who Smiles at Death) is still the card's recursion payoff.
      */
     fun payoffLeaves(effect: Effect): List<Effect> = leaves(effect).flatMap { leaf ->
         when {
