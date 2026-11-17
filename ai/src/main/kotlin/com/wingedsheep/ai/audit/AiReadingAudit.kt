@@ -115,6 +115,7 @@ import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.effects.TheRingTemptsYouEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnSelfFromExileTransformedEffect
 import com.wingedsheep.sdk.scripting.effects.TransformEffect
+import com.wingedsheep.sdk.scripting.effects.TurnFaceDownEffect
 import com.wingedsheep.sdk.scripting.effects.VentureIntoTheDungeonEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.AdditionalCost
@@ -978,6 +979,10 @@ object AiReadingAudit {
         // that it can block is CombatReach's; what it is worth is the creature the simulation then sees.
         // Animating another permanent stays flagged.
         if (leaf is BecomeCreatureEffect && leaf.target == EffectTarget.Self) return true
+        // A permanent turning itself face down (Obscuring Aether, Wall of Deceit, Mischievous Quanar)
+        // is the same self-animation spelled as a face change: it becomes a 2/2 creature the
+        // simulation prices on the board. Turning another permanent face down stays flagged.
+        if (leaf is TurnFaceDownEffect && leaf.target == EffectTarget.Self) return true
         // "When this Vehicle enters, it becomes an artifact creature until end of turn" (Fleetwheel
         // Cruiser) is the same self-animation spelled as crew's type change: the creature it becomes
         // is its printed body, which the simulation prices on the board and attacks with.

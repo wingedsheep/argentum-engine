@@ -2471,6 +2471,11 @@ object CardIntentAnalyzer {
         // "Target creature loses all abilities" strips its evasion, deathtouch and triggers: still on
         // the battlefield, shut off — the Pacifism reading without the static.
         is RemoveAllAbilitiesEffect -> if (hitsAnotherPermanent(effect.target)) setOf(IntentTag.NEUTRALIZE) else emptySet()
+        // "Turn target creature with a morph ability face down" (Backslide, Master of the Veil): it
+        // becomes a 2/2 with no name, types or abilities until its controller pays to unmorph it —
+        // shut off like the loss of all abilities. The source turning itself face down (Obscuring
+        // Aether, Wall of Deceit) is a self-animation into that 2/2 body, not an answer.
+        is TurnFaceDownEffect -> if (hitsAnotherPermanent(effect.target)) setOf(IntentTag.NEUTRALIZE) else emptySet()
         // "Creatures your opponents control lose hexproof and indestructible until end of turn"
         // (Bonds of Mortality), "target creature loses flying until end of turn": one keyword taken
         // off another permanent opens it to the fight or the removal it shrugged off — a combat
@@ -3674,6 +3679,10 @@ object CardIntentAnalyzer {
                 setOf(IntentTag.PROTECTION)
             // "Equipment spells you cast cost {1} less": a discount on our own spells only.
             static.target is SpellCostTarget.YouCast && !taxes(static.modification) ->
+                setOf(IntentTag.COST_REDUCER)
+            // "Face-down creature spells you cast cost {1} less" (Obscuring Aether, Dream Chisel):
+            // the same discount, on the morphs and other face-down spells we cast.
+            static.target == SpellCostTarget.FaceDownYouCast && !taxes(static.modification) ->
                 setOf(IntentTag.COST_REDUCER)
             // "Noncreature spells your opponents cast cost {1} more" (Thalia, God-Pharaoh's Statue):
             // every spell of theirs that matches is slower, which no board simulation sees.
