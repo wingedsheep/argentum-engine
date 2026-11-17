@@ -20,6 +20,7 @@ class DamageExecutors(
         DividedDamageExecutor(zones, decisionHandler, amountEvaluator = amountEvaluator),
         DistributeDamageAmongCollectionExecutor(zones, amountEvaluator),
         FightEffectExecutor(zones),
+        MutualDamageEffectExecutor(zones),
         AmplifyDamageThisTurnExecutor(amountEvaluator),
         DoubleDamageToPlayerExecutor(),
         DamageCantBePreventedThisTurnExecutor(),

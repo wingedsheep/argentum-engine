@@ -1815,6 +1815,14 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   no target re-check removes.
   A fight that happens emits one `CreatureFoughtEvent` per fighter, which "whenever a creature fights"
   triggers watch — see "Fight (CR 701.14)" under triggers.
+- `Effects.MutualDamage(target1, target2, stat)` — `MutualDamageEffect`: each of two creatures deals
+  damage equal to its `stat` (`CreatureStat.TOUGHNESS` / `POWER`) to the other, simultaneously — Grim
+  Contest: "Each of those creatures deals damage equal to its toughness to the other" is
+  `MutualDamage(mine, theirs, CreatureStat.TOUGHNESS)`. Both amounts are read before either is dealt and
+  dealt as one batch (a wither source's counters can't shrink the other's toughness first); the
+  creatures are the sources, so lifelink/deathtouch/wither apply. If either creature is no longer a
+  creature on the battlefield as it resolves, neither deals or is dealt damage. **Not a fight** — no
+  `CreatureFoughtEvent`, so "whenever a creature fights" doesn't trigger; "X fights Y" is `Fight`.
 - `Effects.DividedDamage(total, minTargets, maxTargets, dynamicTotal?, among?, storeDamagedAs?)` — "N damage divided as you
   choose among target ..." The targets come from the ability's target requirement; pair with
   `TargetObject(filter = TargetFilter.Creature, count = count, minCount = minCount)` (Forked Lightning, Skirk Volcanist) or, for "any number of target",

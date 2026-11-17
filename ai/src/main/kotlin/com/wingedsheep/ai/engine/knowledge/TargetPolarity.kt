@@ -127,6 +127,7 @@ import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.SetBaseStatsEffect
 import com.wingedsheep.sdk.scripting.effects.FightEffect
+import com.wingedsheep.sdk.scripting.effects.MutualDamageEffect
 import com.wingedsheep.sdk.scripting.effects.GatedEffect
 import com.wingedsheep.sdk.scripting.effects.ForceSacrificeEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllCountersEffect
@@ -1165,6 +1166,8 @@ object TargetPolarityAnalyzer {
     private fun biteSourceSlot(leaf: Effect, requirements: List<TargetRequirement>): Int? = when (leaf) {
         is DealDamageEffect -> leaf.damageSource?.takeIf { it.isSlot() }?.let { ownSideSlot(it, requirements) }
         is FightEffect -> ownSideSlot(leaf.target1, requirements)
+        // Grim Contest lends its creature's toughness the same way a fighter lends its power.
+        is MutualDamageEffect -> ownSideSlot(leaf.target1, requirements)
         else -> null
     }
 
@@ -1852,6 +1855,7 @@ object TargetPolarityAnalyzer {
             // the damage dealt back is the price. A fighter kept on our side reads like a bite's
             // source ([biteSourceSlot]).
             is FightEffect -> leaf.target2 to TargetPolarity.HARMFUL
+            is MutualDamageEffect -> leaf.target2 to TargetPolarity.HARMFUL
             is RegenerateEffect -> leaf.target to TargetPolarity.BENEFICIAL
             // "Target creature with defender can attack this turn as though it didn't have defender"
             // (Assault Formation): lifting a wall's defender only ever turns our own blocker into an attacker.

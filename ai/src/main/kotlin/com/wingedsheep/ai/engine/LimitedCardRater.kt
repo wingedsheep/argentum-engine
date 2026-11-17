@@ -755,6 +755,8 @@ object LimitedCardRater {
             is DealDamageEffect ->
                 damageScore((effect.amount as? com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed)?.amount ?: 3)
             is DividedDamageEffect -> 1.3
+            // Grim Contest: removal reach set by our creature's toughness, priced like a chosen-fighter fight.
+            is com.wingedsheep.sdk.scripting.effects.MutualDamageEffect -> 1.0
             is FightEffect -> {
                 // A self-fight can only kill within this creature's damage reach. A spell that
                 // chooses both fighters, or a variable-power source, keeps the generic estimate.

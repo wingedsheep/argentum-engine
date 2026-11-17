@@ -336,6 +336,31 @@ data class FightEffect(
 }
 
 /**
+ * Each of two creatures deals damage equal to its [stat] to the other, simultaneously — "Each of
+ * those creatures deals damage equal to its toughness to the other" (Grim Contest). The damage is
+ * announced from both creatures' current values before either is dealt, then dealt as one event
+ * (so wither or infect on one side can't shrink the other's number first). If either creature is no
+ * longer a creature on the battlefield as it resolves, neither deals or is dealt damage — the same
+ * all-or-nothing as a fight (Grim Contest's ruling).
+ *
+ * Closest types: [FightEffect] is the fight keyword action (CR 701.14), always power, and emits the
+ * fought events "whenever a creature fights" payoffs watch — this is not a fight, so widening Fight
+ * with a stat axis would hand those payoffs a fight that never happened. [DealDamageEffect] has one
+ * source and one recipient; two of them in sequence aren't simultaneous and the second would read a
+ * toughness the first already moved.
+ */
+@SerialName("MutualDamage")
+@Serializable
+data class MutualDamageEffect(
+    val target1: EffectTarget,
+    val target2: EffectTarget,
+    val stat: CreatureStat
+) : Effect {
+    override val description: String =
+        "each of ${target1.description} and ${target2.description} deals damage equal to its ${stat.displayName} to the other"
+}
+
+/**
  * Deal damage to a target for each entity from a tracked collection that is still in a given zone.
  * Used for Dragonhawk-style "deal 2 damage to each opponent for each of those cards that are still exiled."
  *

@@ -447,6 +447,17 @@ object Effects {
         FightEffect(target1, target2, excessDamageVariable)
 
     /**
+     * "Each of those creatures deals damage equal to its toughness to the other" (Grim Contest) —
+     * both deal damage at once, each equal to its own [stat]. Not a fight: no fought events.
+     */
+    fun MutualDamage(
+        target1: EffectTarget,
+        target2: EffectTarget,
+        stat: CreatureStat
+    ): Effect =
+        com.wingedsheep.sdk.scripting.effects.MutualDamageEffect(target1, target2, stat)
+
+    /**
      * "Damage can't be prevented this turn." Turn-scoped shutoff of all damage prevention
      * (shields, prevention/replacement-of-damage effects, protection's prevention clause).
      * Used by Fear, Fire, Foes!.

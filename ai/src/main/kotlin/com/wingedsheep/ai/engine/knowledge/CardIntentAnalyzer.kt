@@ -2403,6 +2403,9 @@ object CardIntentAnalyzer {
         // [GainControlEffect] takes it; ours, handed back, is the price — a steal, priced as removal.
         is ExchangeControlEffect -> setOf(IntentTag.REMOVAL)
         is FightEffect -> setOf(IntentTag.REMOVAL, IntentTag.FIGHT)
+        // "Each of those creatures deals damage equal to its toughness to the other" (Grim Contest):
+        // removal by one of our creatures, priced like a fight but feeding no fight payoff.
+        is MutualDamageEffect -> setOf(IntentTag.REMOVAL)
 
         // Damage to a *player* is a clock, not an answer — a permanent that pings the opponent for
         // 1 each upkeep must not be priced as repeatable removal.

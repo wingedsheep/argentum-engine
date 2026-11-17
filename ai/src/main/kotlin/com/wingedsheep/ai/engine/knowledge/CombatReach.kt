@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.FightEffect
+import com.wingedsheep.sdk.scripting.effects.MutualDamageEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.MassAnimateEffect
@@ -92,7 +93,7 @@ internal enum class CombatReach {
                 // [EffectWalker] keeps a ForEach whole; a team pump is "for each creature you
                 // control, +1/+1", so its body is what this reading needs.
                 is ForEachEffect -> EffectWalker.leaves(leaf.body).forEach { visit(it, reach) }
-                is ModifyStatsEffect, is GrantKeywordEffect, is DividedDamageEffect, is FightEffect,
+                is ModifyStatsEffect, is GrantKeywordEffect, is DividedDamageEffect, is FightEffect, is MutualDamageEffect,
                 is RegenerateEffect, is HealDamageEffect, is PreventDamageEffect, is RemoveFromCombatEffect -> reach += FIGHT
                 // "Target creature has base power and toughness 0/2 until end of turn" (Sorceress Queen),
                 // "target attacking creature has base power 0" (Singing Tree), "this creature has base
