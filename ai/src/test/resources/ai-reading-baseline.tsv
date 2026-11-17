@@ -417,6 +417,7 @@ Alert Shu Infantry
 Alesha's Legacy
 Alesha's Vanguard
 Alesha, Who Laughs at Fate
+Alesha, Who Smiles at Death
 Alexi's Cloak
 Alhammarret's Archive
 Alhammarret, High Arbiter
@@ -792,6 +793,7 @@ Arcane Signet
 Arcane Subtraction
 Arcanis the Omnipotent
 Arcanist's Owl
+Arcbond
 Arcbound Condor
 Arcbound Mouser
 Arcbound Prototype
@@ -1922,6 +1924,7 @@ Bloodfeather Phoenix
 Bloodfell Caves
 Bloodfire Colossus
 Bloodfire Dwarf
+Bloodfire Enforcers
 Bloodfire Expert
 Bloodfire Kavu
 Bloodfire Mentor
@@ -2275,6 +2278,7 @@ Break Down
 Break Down the Door
 Break Open	intent: TurnFaceUpEffect; polarity: TurnFaceUpEffect
 Break Out
+Break Through the Line
 Break Under Pressure
 Break the Spell
 Breaker of Armies
@@ -4952,6 +4956,7 @@ Dragonlord's Prerogative
 Dragonlord's Servant
 Dragonmaster Outcast
 Dragonologist
+Dragonrage
 Dragonscale Boon
 Dragonsguard Elite
 Dragonskull Summit
@@ -6371,6 +6376,7 @@ Fiendish Duo
 Fiendish Panda
 Fierce Empath
 Fierce Guardianship
+Fierce Invocation
 Fierce Retribution
 Fierce Witchstalker
 Fiery Annihilation
@@ -6538,6 +6544,7 @@ Flamekin Brawler
 Flamekin Gildweaver
 Flamekin Harbinger
 Flamekin Spitfire
+Flamerush Rider
 Flames of the Firebrand
 Flames of the Raze-Boar
 Flamescroll Celebrant	timing: CantActivateLoyaltyAbilitiesEffect; timing: CantCastSpellsEffect
@@ -6859,6 +6866,7 @@ Fresh Volunteers
 Fresh-Faced Recruit
 Fretwork Colony
 Freya Crescent
+Friendly Fire
 Friendly Ghost
 Friendly Neighborhood
 Friendly Rivalry
@@ -8847,6 +8855,7 @@ Hundroog
 Hunger of the Howlpack
 Hungering Hydra
 Hungering Puppetbeast
+Hungering Yeti
 Hungry Flames
 Hungry Ghoul
 Hungry Graffalon
@@ -10609,6 +10618,7 @@ Lightning Mare
 Lightning Mauler	intent: PairWithSourceEffect; intent: Pipeline(BattlefieldMatching→?); intent: Pipeline(Entity→?)
 Lightning Rift
 Lightning Runner
+Lightning Shrieker
 Lightning Spear
 Lightning Stormkin
 Lightning Strike
@@ -11217,6 +11227,7 @@ Mardu Heart-Piercer
 Mardu Hordechief
 Mardu Monument
 Mardu Roughrider
+Mardu Runemark
 Mardu Scout
 Mardu Shadowspear
 Mardu Siegebreaker
@@ -11818,6 +11829,7 @@ Moat
 Moat Piranhas
 Mob
 Mob Lookout
+Mob Rule
 Mobile Garrison
 Mobile Homestead
 Mobilization
@@ -16100,7 +16112,7 @@ Shacklegeist
 Shackles
 Shackles of Treachery	polarity: mixed(GainControlEffect+GrantKeywordEffect+GrantTriggeredAbilityEffect+TapUntapEffect)
 Shade of Trokair
-Shade's Breath	timing: ChangeGroupColorEffect; timing: GrantActivatedAbilityToGroupEffect; timing: SetGroupCreatureSubtypesEffect
+Shade's Breath	timing: ChangeGroupColorEffect; timing: SetGroupCreatureSubtypesEffect
 Shadewing Laureate
 Shadow Glider
 Shadow Prophecy
@@ -16145,6 +16157,7 @@ Shaleskin Bruiser	intent: ModifyStatsEffect
 Shaleskin Plower
 Shaman of Forgotten Ways
 Shaman of Spring
+Shaman of the Great Hunt
 Shaman of the Pack
 Shamanic Revelation
 Shamble Back
@@ -16316,6 +16329,7 @@ Shock Troops
 Shocker, Unshakable
 Shocking Grasp
 Shocking Sharpshooter
+Shockmaw Dragon
 Shoot Down
 Shoot the Sheriff
 Shopkeeper's Bane
@@ -20586,7 +20600,7 @@ Wakandan Royal Guard
 Wake Thrasher
 Wake the Dragon
 Wake the Past
-Wake to Slaughter	polarity: CreateDelayedTriggerEffect; polarity: GrantKeywordEffect; polarity: Pipeline(ChosenTargets→battlefield|hand)
+Wake to Slaughter
 Wakedancer
 Wakening Sun's Avatar
 Waker of Waves
@@ -21043,6 +21057,7 @@ Wild Ricochet
 Wild Ride
 Wild Roads
 Wild Shape
+Wild Slash
 Wild Unraveling
 Wild Wanderer
 Wild Wasteland
