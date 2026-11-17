@@ -36,7 +36,7 @@ object CopyAuraEntry {
                 EnchantRestriction.hostAllowsAura(preview, projected, evaluator, id, host) &&
                 !(if (host in state.turnOrder) PlayerProtectionRules.isProtectedFromSource(
                     preview, host, id, controller, evaluator)
-                else EnchantRestriction.hostProtectedFromAttachment(preview, projected, registry, id, card, host)) }
+                else EnchantRestriction.hostProtectedFromAttachment(preview, projected, id, card, host)) }
     }
 
     fun question(id: EntityId, name: String, controller: EntityId, hosts: List<EntityId>): (String) -> ChooseTargetsDecision =

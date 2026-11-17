@@ -51,8 +51,8 @@ import com.wingedsheep.sdk.model.EntityId
  * Auras (put into their owners' graveyards as a state-based action) or equipped by Equipment
  * (becomes unattached, stays on the battlefield) that have the stated quality. This covers
  * protection gained *after* the attachment landed — targeting-time protection is enforced by
- * `TargetValidator`. An attachment whose own printed ability grants that very protection to
- * its host is exempt ("This effect doesn't remove this Aura", the Ward cycle).
+ * `TargetValidator`. A protection whose granting effects all spare the attachment doesn't remove
+ * it ("This effect doesn't remove this Aura", the Ward cycle; Spectra Ward's "doesn't remove Auras").
  */
 class UnattachedAurasCheck(
     private val zones: ZoneTransitionService,
@@ -352,7 +352,11 @@ class UnattachedAurasCheck(
         ) == true
     }
 
-    /** CR 702.16c/d — see [com.wingedsheep.engine.handlers.predicates.EnchantRestriction.hostProtectedFromAttachment]. */
+    /**
+     * CR 702.16c/d, asked of an attachment already on its host, so a protection whose granting
+     * effects all spare it doesn't remove it — see
+     * [com.wingedsheep.engine.handlers.predicates.EnchantRestriction.hostProtectedFromAttachment].
+     */
     private fun hostProtectedFromAttachment(
         state: GameState,
         projected: ProjectedState,
@@ -360,6 +364,6 @@ class UnattachedAurasCheck(
         attachmentCard: CardComponent,
         hostId: EntityId
     ): Boolean = com.wingedsheep.engine.handlers.predicates.EnchantRestriction.hostProtectedFromAttachment(
-        state, projected, cardRegistry, attachmentId, attachmentCard, hostId
+        state, projected, attachmentId, attachmentCard, hostId, alreadyAttached = true
     )
 }

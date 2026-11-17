@@ -66,7 +66,7 @@ object AttachmentMover {
                 projected.isCreature(hostId) &&
                     !(projected.isCreature(attachmentId) && !projected.hasKeyword(attachmentId, Keyword.RECONFIGURE)) &&
                     !EnchantRestriction.hostProtectedFromAttachment(
-                        state, projected, cardRegistry, attachmentId, card, hostId
+                        state, projected, attachmentId, card, hostId
                     ) &&
                     equipRestrictionAllows(state, predicateEvaluator, cardRegistry, attachmentId, hostId)
             // CR 301.6: a Fortification can be attached only to a land, and one that's also a
@@ -75,7 +75,7 @@ object AttachmentMover {
                 projected.hasType(hostId, "LAND") &&
                     !projected.isCreature(attachmentId) &&
                     !EnchantRestriction.hostProtectedFromAttachment(
-                        state, projected, cardRegistry, attachmentId, card, hostId
+                        state, projected, attachmentId, card, hostId
                     )
             else -> false
         }
@@ -111,11 +111,11 @@ object AttachmentMover {
             )
             typeLine.isEquipment ->
                 projected.isCreature(hostId) && !typeLine.isCreature &&
-                    !EnchantRestriction.hostProtectedFromAttachment(state, projected, cardRegistry, cardId, card, hostId) &&
+                    !EnchantRestriction.hostProtectedFromAttachment(state, projected, cardId, card, hostId) &&
                     equipRestrictionAllows(state, predicateEvaluator, cardRegistry, cardId, hostId, controllerId)
             typeLine.isFortification ->
                 projected.hasType(hostId, "LAND") && !typeLine.isCreature &&
-                    !EnchantRestriction.hostProtectedFromAttachment(state, projected, cardRegistry, cardId, card, hostId)
+                    !EnchantRestriction.hostProtectedFromAttachment(state, projected, cardId, card, hostId)
             else -> false
         }
     }

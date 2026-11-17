@@ -11248,7 +11248,7 @@ staticAbility {
 - `SetStats(p, t)` — overwrite both.
 - `GrantKeyword(keyword)` — grant a keyword.
 - `RemoveKeyword(keyword)` — remove a keyword.
-- `GrantProtection(color)` — grant protection from a color.
+- `GrantProtection(color, spares = NONE)` — grant protection from a color; `spares` is the "doesn't remove this Aura" clause (see `ProtectionSpares` below).
 - `Custom(...)` — escape hatch for one-off modifications.
 
 **Composite static abilities**
@@ -11399,11 +11399,20 @@ staticAbility {
   and the engine reaches attach-scoped grants only by walking the permanents attached to a creature —
   so on a creature that is nobody's Aura or Equipment host the grant matches nothing and the card ends
   up with **no ward at all**, silently. `CardLinter` flags this shape (`AttachedScopeGrantOnNonAttachment`).
-- `GrantProtectionFromControlledColors(filter = attachedCreature())` — "[filter] have protection from
+- `GrantProtectionFromControlledColors(filter = attachedCreature(), spares = NONE)` — "[filter] have protection from
   the colors of permanents you control" — grants the affected creature(s) protection from every color
   among the permanents the source's controller controls, recomputed at projection (Layer 6, after
   Layer 5 colors) so it tracks the board in real time. Colorless permanents add no color. (Pledge of
-  Loyalty)
+  Loyalty, `spares = SELF`)
+- **`spares: ProtectionSpares`** — the "This effect doesn't remove …" clause, on `GrantProtection`,
+  `GrantProtectionFromChosenColorToGroup` and `GrantProtectionFromControlledColors`. `NONE` (default):
+  ordinary protection, every attachment with the quality falls off (CR 704.5m/n). `SELF` — "This effect
+  doesn't remove this Aura" (White Ward, Flickering Ward, Pledge of Loyalty). `AURAS` — "This effect
+  doesn't remove Auras" (Spectra Ward: one `GrantProtection(color, spares = AURAS)` per color). Only the
+  removal leg is spared, and only for attachments already on the host: targeting, blocking and damage
+  are still protected against, and an Aura can't newly attach. The sparing is **per effect**: the same
+  protection from any source that doesn't spare the attachment (printed, a later grant, or another
+  sparing grant that spares only itself) still removes it.
 - `GrantProtectionFromCardType(cardType, filter = attachedCreature())` — "[filter] have protection from
   [card type]s" (e.g. *protection from instants*, *protection from sorceries*). Projects the keyword
   `PROTECTION_FROM_CARDTYPE_<TYPE>`, which is read on the targeting leg (`TargetValidator`,

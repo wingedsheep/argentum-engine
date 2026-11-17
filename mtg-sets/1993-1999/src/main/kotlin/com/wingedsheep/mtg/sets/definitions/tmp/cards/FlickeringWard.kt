@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ChoiceType
 import com.wingedsheep.sdk.scripting.EntersWithChoice
 import com.wingedsheep.sdk.scripting.GrantProtectionFromChosenColorToGroup
+import com.wingedsheep.sdk.scripting.ProtectionSpares
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
@@ -43,7 +44,8 @@ val FlickeringWard = card("Flickering Ward") {
 
     staticAbility {
         ability = GrantProtectionFromChosenColorToGroup(
-            filter = GroupFilter.attachedCreature()
+            filter = GroupFilter.attachedCreature(),
+            spares = ProtectionSpares.SELF
         )
     }
 

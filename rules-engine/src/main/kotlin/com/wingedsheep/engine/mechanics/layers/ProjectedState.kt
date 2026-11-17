@@ -46,6 +46,15 @@ data class ActiveEnchantmentRestriction(
     val survivesSourceAbilityRemoval: Boolean = false
 )
 
+/**
+ * One sparing protection grant behind a `PROTECTION_FROM_*` keyword: the permanent whose effect
+ * granted it and which attachments that effect doesn't remove. See [ProjectedValues.protectionSpares].
+ */
+data class ProtectionSparing(
+    val sourceId: EntityId,
+    val spares: com.wingedsheep.sdk.scripting.ProtectionSpares
+)
+
 data class ProjectedValues(
     val power: Int? = null,
     val toughness: Int? = null,
@@ -78,6 +87,13 @@ data class ProjectedValues(
      */
     val staticAbilitySourceIds: List<EntityId> = emptyList(),
     val enchantmentRestrictions: List<ActiveEnchantmentRestriction> = emptyList(),
+    /**
+     * For each `PROTECTION_FROM_*` keyword in [keywords] held *only* by grants that spare some
+     * attachments ("This effect doesn't remove this Aura"), those grants. A keyword absent here
+     * has at least one ordinary holder — printed, or a grant that spares nothing — and removes
+     * every attachment with its quality. Read through [ProjectedState.protectionSpares].
+     */
+    val protectionSpares: Map<String, List<ProtectionSparing>> = emptyMap(),
     val colors: Set<String> = emptySet(),
     val types: Set<String> = emptySet(),
     val subtypes: Set<String> = emptySet(),
@@ -324,6 +340,29 @@ class ProjectedState(
         getKeywords(entityId).contains(keyword)
 
     /**
+     * Whether [entityId]'s protection keyword [keyword] would remove [attachmentId] from it under
+     * the unattached-attachment state-based action (CR 704.5m/n): it has the keyword, and not
+     * every effect giving it spares this attachment ([com.wingedsheep.sdk.scripting.ProtectionSpares]).
+     * Sparing is per effect — one ordinary holder of the same keyword still removes it.
+     */
+    fun protectionRemovesAttachment(
+        entityId: EntityId,
+        keyword: String,
+        attachmentId: EntityId,
+        attachmentIsAura: Boolean
+    ): Boolean {
+        if (!hasKeyword(entityId, keyword)) return false
+        val grants = projectedValues[entityId]?.protectionSpares?.get(keyword) ?: return true
+        return grants.any { grant ->
+            when (grant.spares) {
+                com.wingedsheep.sdk.scripting.ProtectionSpares.NONE -> true
+                com.wingedsheep.sdk.scripting.ProtectionSpares.SELF -> grant.sourceId != attachmentId
+                com.wingedsheep.sdk.scripting.ProtectionSpares.AURAS -> !attachmentIsAura
+            }
+        }
+    }
+
+    /**
      * The number of instances of the granted keyword string [keyword] the object has — one per
      * continuous effect that granted it (see [ProjectedValues.grantedKeywordInstances]), zero when
      * the projected keywords don't hold it. A string present without a tally (put there by a path
@@ -544,6 +583,7 @@ internal fun buildIntermediateProjectedState(
             staticAbilities = v.staticAbilities.toList(),
             staticAbilitySourceIds = v.staticAbilitySourceIds.toList(),
             enchantmentRestrictions = v.enchantmentRestrictions.toList(),
+            protectionSpares = v.protectionSpares.mapValues { it.value.toList() },
             colors = v.colors.toSet(),
             types = v.types.toSet(),
             subtypes = v.subtypes.toSet(),

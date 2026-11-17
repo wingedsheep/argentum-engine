@@ -12,9 +12,6 @@ import com.wingedsheep.engine.state.components.battlefield.GainedEnchantRestrict
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.scripting.GrantProtection
-import com.wingedsheep.sdk.scripting.GrantProtectionFromChosenColorToGroup
-import com.wingedsheep.sdk.scripting.GrantProtectionFromControlledColors
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
@@ -75,7 +72,7 @@ object EnchantRestriction {
                 return false
             }
         }
-        return !hostProtectedFromAttachment(state, projected, cardRegistry, auraId, auraCard, hostId)
+        return !hostProtectedFromAttachment(state, projected, auraId, auraCard, hostId)
     }
 
     /**
@@ -138,18 +135,23 @@ object EnchantRestriction {
     /**
      * True when [hostId] has protection from one of the attachment's colors, CR 702.16c/d. The
      * attachment's colors are its projected ones while it is on the battlefield, else its card's
-     * (an Aura about to enter from a library or exile). An attachment whose own printed
-     * [GrantProtection] grants that color's protection is exempt — the Ward cycle's "This effect
-     * doesn't remove this Aura" — and one with a dynamic protection grant is exempt entirely
-     * (Pledge of Loyalty). (Approximation: the exemption is per-color rather than per-effect.)
+     * (an Aura about to enter from a library or exile).
+     *
+     * [alreadyAttached] asks the state-based-action question (CR 704.5m/n) about an attachment that
+     * is already on [hostId]: there, a color protection whose every granting effect spares it
+     * ([com.wingedsheep.sdk.scripting.ProtectionSpares] — the Ward cycle's "This effect doesn't
+     * remove this Aura", Spectra Ward's "doesn't remove Auras") doesn't remove it. The sparing is
+     * per effect: the same protection from any other source still does. Attaching anew (targeting,
+     * entering, moving) never consults the sparing — the protected permanent still can't *become*
+     * enchanted by an Aura with the quality.
      */
     fun hostProtectedFromAttachment(
         state: GameState,
         projected: ProjectedState,
-        cardRegistry: CardRegistry,
         attachmentId: EntityId,
         attachmentCard: CardComponent,
-        hostId: EntityId
+        hostId: EntityId,
+        alreadyAttached: Boolean = false
     ): Boolean {
         val battlefield = attachmentId in state.getBattlefield()
         val types = if (battlefield) projected.getTypes(attachmentId) else attachmentCard.typeLine.cardTypes.map { it.name }.toSet()
@@ -170,15 +172,14 @@ object EnchantRestriction {
         if (colors.isEmpty()) return projected.hasKeyword(hostId, ColorProtection.PROTECTION_FROM_COLORLESS)
         // A multicolored attachment meets protection from multicolored (CR 105.2b).
         if (colors.size >= 2 && projected.hasKeyword(hostId, ColorProtection.PROTECTION_FROM_MULTICOLORED)) return true
-        val statics = cardRegistry.getCard(attachmentCard.cardDefinitionId)?.staticAbilities.orEmpty()
-        if (statics.any { it is GrantProtectionFromControlledColors || it is GrantProtectionFromChosenColorToGroup }) {
-            return false
-        }
-        val selfGrantedColors: Set<Color> = statics.filterIsInstance<GrantProtection>().map { it.color }.toSet()
+        val isAura = "Aura" in subtypes
         return Color.entries.any { color ->
-            color.name in colors &&
-                color !in selfGrantedColors &&
-                projected.hasKeyword(hostId, "PROTECTION_FROM_${color.name}")
+            val keyword = "PROTECTION_FROM_${color.name}"
+            color.name in colors && if (alreadyAttached && battlefield) {
+                projected.protectionRemovesAttachment(hostId, keyword, attachmentId, isAura)
+            } else {
+                projected.hasKeyword(hostId, keyword)
+            }
         }
     }
 

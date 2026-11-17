@@ -1957,10 +1957,10 @@ Families:
 - `GrantMiracleToCardsInHand(filter: GameObjectFilter, cost: ManaCost)` — Grants miracle (CR 702.94) to cards in the granter's controller's hand that match filter.
 - `GrantOffspringToOwnSpells(cost: ManaCost, spellFilter: GameObjectFilter)` — Grants **offspring cost** (CR 702.175) to spells the controller casts that match spellFilter — Zinnia, Valley's Voice: "Creature spells you cast gain offspring {2} as you cast them." Both halves of…
 - `GrantOpponentsCantWinGame` — Your opponents can't win the game.
-- `GrantProtection(color: Color, filter: GroupFilter)` — Grants protection from a color to the target creature.
+- `GrantProtection(color: Color, filter: GroupFilter, spares: ProtectionSpares)` — Grants protection from a color to the target creature.
 - `GrantProtectionFromCardType(cardType: CardType, filter: GroupFilter)` — Grants protection from a card type (e.g. "from instants", "from sorceries") to a filtered set of creatures.
-- `GrantProtectionFromChosenColorToGroup(filter: GroupFilter)` — Grants protection from the chosen color to a group of creatures.
-- `GrantProtectionFromControlledColors(filter: GroupFilter)` — Grants each affected creature protection from the colors of permanents the source's controller currently controls.
+- `GrantProtectionFromChosenColorToGroup(filter: GroupFilter, spares: ProtectionSpares)` — Grants protection from the chosen color to a group of creatures.
+- `GrantProtectionFromControlledColors(filter: GroupFilter, spares: ProtectionSpares)` — Grants each affected creature protection from the colors of permanents the source's controller currently controls.
 - `GrantProtectionFromLinkedExiledCardTypes(filter: GroupFilter)` — Grants protection from **each card type of the cards exiled with this permanent** — the Imprint payoff (CR 702.15) behind Mirror Golem ("Mirror Golem has protection from each of the exiled card's c…
 - `GrantProtectionFromToGroup(scope: ProtectionScope, filter: GroupFilter)` — Grants each affected permanent "protection from scope" (CR 702.16) — the protection twin of GrantHexproofFromToGroup, for lords whose quality isn't a single color or card type.
 - `GrantProtectionToController(scope: ProtectionScope)` — You have protection from scope (CR 702.16).

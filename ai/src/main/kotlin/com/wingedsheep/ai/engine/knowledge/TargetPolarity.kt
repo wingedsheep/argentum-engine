@@ -20,6 +20,9 @@ import com.wingedsheep.sdk.scripting.GrantActivatedAbility
 import com.wingedsheep.sdk.scripting.GrantDynamicStats
 import com.wingedsheep.sdk.scripting.GrantProtection
 import com.wingedsheep.sdk.scripting.GrantProtectionFromCardType
+import com.wingedsheep.sdk.scripting.GrantProtectionFromChosenColorToGroup
+import com.wingedsheep.sdk.scripting.GrantProtectionFromControlledColors
+import com.wingedsheep.sdk.scripting.GrantProtectionFromToGroup
 import com.wingedsheep.sdk.scripting.LoseAllAbilities
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantAttackOrBlockUnlessPay
@@ -2736,6 +2739,11 @@ object TargetPolarityAnalyzer {
         is GrantWard -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.BENEFICIAL
         is GrantProtection -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.BENEFICIAL
         is GrantProtectionFromCardType -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.BENEFICIAL
+        is GrantProtectionFromToGroup -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.BENEFICIAL
+        // Protection from the chosen color (Flickering Ward), or from the colors of permanents you
+        // control (Pledge of Loyalty): a shield for the host, whatever the quality turns out to be.
+        is GrantProtectionFromChosenColorToGroup -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.BENEFICIAL
+        is GrantProtectionFromControlledColors -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.BENEFICIAL
         is CantBeBlocked -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.BENEFICIAL
         is GrantDynamicStats -> if (static.filter.scope != Scope.AttachedTo) null
             else statsPolarity(static.powerBonus, static.toughnessBonus)

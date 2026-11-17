@@ -9431,7 +9431,10 @@
     "oracleText": "Enchant creature\nEnchanted creature has protection from the colors of permanents you control. This effect doesn't remove this Aura.",
     "script": {
         "staticAbilities": [
-            "GrantProtectionFromControlledColors"
+            {
+                "type": "GrantProtectionFromControlledColors",
+                "spares": "SELF"
+            }
         ],
         "auraTarget": {
             "type": "TargetObject",

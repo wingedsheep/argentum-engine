@@ -16,6 +16,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.KeywordCardPool
 import com.wingedsheep.sdk.scripting.KeywordFamily
+import com.wingedsheep.sdk.scripting.ProtectionSpares
 import com.wingedsheep.sdk.model.EntityId
 
 /**
@@ -48,7 +49,21 @@ internal class EffectApplicator(
      * because the set alone can't tell one "has renown 1" grant from two — and unlike crew, the
      * number of renown instances matters.
      */
+    /**
+     * Adds a protection keyword from a grant that spares some attachments, keeping
+     * [MutableProjectedValues.protectionSpares] to the keywords no ordinary source holds: a sparing
+     * grant of a keyword already held by an ordinary source changes nothing, and an ordinary grant
+     * ([addKeyword]) drops the keyword's sparing record.
+     */
+    private fun addProtection(values: MutableProjectedValues, keyword: String, spares: ProtectionSpares, sourceId: EntityId) {
+        if (spares == ProtectionSpares.NONE) return addKeyword(values, keyword)
+        val sparing = ProtectionSparing(sourceId, spares)
+        if (values.keywords.add(keyword)) values.protectionSpares[keyword] = mutableListOf(sparing)
+        else values.protectionSpares[keyword]?.add(sparing)
+    }
+
     private fun addKeyword(values: MutableProjectedValues, keyword: String) {
+        values.protectionSpares.remove(keyword)
         val keywords = values.keywords
         val split = keyword.lastIndexOf('_')
         val n = if (split > 0) keyword.substring(split + 1).toIntOrNull() else null
@@ -176,6 +191,7 @@ internal class EffectApplicator(
                 }
                 is Modification.RemoveKeyword -> {
                     values.keywords.remove(mod.keyword)
+                    values.protectionSpares.remove(mod.keyword)
                     values.grantedKeywordInstances.remove(mod.keyword)
                     // CR 702.22b: losing banding loses every "bands with other" ability too, and
                     // the family name itself means "loses all 'bands with other' abilities".
@@ -346,7 +362,7 @@ internal class EffectApplicator(
                     }
                 }
                 is Modification.GrantProtectionFromColor -> {
-                    values.keywords.add("PROTECTION_FROM_${mod.color}")
+                    addProtection(values, "PROTECTION_FROM_${mod.color}", mod.spares, effect.sourceId)
                 }
                 is Modification.GrantProtectionFromCardType -> {
                     values.keywords.add("PROTECTION_FROM_CARDTYPE_${mod.cardType.uppercase()}")
@@ -355,7 +371,7 @@ internal class EffectApplicator(
                     val chosenColor = state.getEntity(effect.sourceId)
                         ?.chosenColor()
                     if (chosenColor != null) {
-                        values.keywords.add("PROTECTION_FROM_${chosenColor.name}")
+                        addProtection(values, "PROTECTION_FROM_${chosenColor.name}", mod.spares, effect.sourceId)
                     }
                 }
                 is Modification.GrantHexproofFromOwnColors -> {
@@ -367,7 +383,10 @@ internal class EffectApplicator(
                     values.keywords.addAll(mod.keywords)
                 }
                 is Modification.GrantProtectionFrom -> {
+                    // addAll, not addKeyword: a numbered protection (mana value other than N) is
+                    // one quality, never summed. An ordinary holder still ends any sparing record.
                     values.keywords.addAll(mod.keywords)
+                    mod.keywords.forEach(values.protectionSpares::remove)
                 }
                 is Modification.GrantProtectionFromChosenCardType -> {
                     com.wingedsheep.engine.mechanics.targeting.ProtectionKeywords
@@ -385,7 +404,7 @@ internal class EffectApplicator(
                         for (other in projectedValues.values) {
                             if (other.controllerId != sourceController) continue
                             for (colorName in other.colors) {
-                                values.keywords.add("PROTECTION_FROM_$colorName")
+                                addProtection(values, "PROTECTION_FROM_$colorName", mod.spares, effect.sourceId)
                             }
                         }
                     }
@@ -515,6 +534,7 @@ internal class EffectApplicator(
                 }
                 is Modification.RemoveAllAbilities -> {
                     values.keywords.clear()
+                    values.protectionSpares.clear()
                     values.grantedKeywordInstances.clear()
                     values.staticAbilities.clear()
                     values.staticAbilitySourceIds.clear()

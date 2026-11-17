@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordCardPool
 import com.wingedsheep.sdk.scripting.KeywordFamily
+import com.wingedsheep.sdk.scripting.ProtectionSpares
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -615,8 +616,12 @@ sealed interface Modification {
         override val layer get() = Layer.ABILITY
     }
 
+    /** [spares]: which attachments this protection doesn't remove — see [ProjectedState.protectionSpares]. */
     @Serializable
-    data class GrantProtectionFromColor(val color: String) : Modification {
+    data class GrantProtectionFromColor(
+        val color: String,
+        val spares: ProtectionSpares = ProtectionSpares.NONE
+    ) : Modification {
         override val layer get() = Layer.ABILITY
     }
 
@@ -632,9 +637,10 @@ sealed interface Modification {
     /**
      * Grants protection from the chosen color (resolved dynamically from source's CastChoicesComponent).
      * Used for Ward Sliver: "All Slivers have protection from the chosen color."
+     * [spares]: which attachments this protection doesn't remove (Flickering Ward).
      */
     @Serializable
-    data object GrantProtectionFromChosenColor : Modification {
+    data class GrantProtectionFromChosenColor(val spares: ProtectionSpares = ProtectionSpares.NONE) : Modification {
         override val layer get() = Layer.ABILITY
     }
 
@@ -703,9 +709,10 @@ sealed interface Modification {
      * battlefield permanent controlled by the source's (projected) controller, then adds
      * `PROTECTION_FROM_<COLOR>` for each. Applied in Layer 6 (ABILITY) after Layer 5 colors
      * are final, so it tracks the controller's board in real time. Used for Pledge of Loyalty.
+     * [spares]: which attachments this protection doesn't remove.
      */
     @Serializable
-    data object GrantProtectionFromControlledColors : Modification {
+    data class GrantProtectionFromControlledColors(val spares: ProtectionSpares = ProtectionSpares.NONE) : Modification {
         override val layer get() = Layer.ABILITY
     }
 
@@ -949,6 +956,8 @@ internal data class MutableProjectedValues(
     /** Parallel to [staticAbilities]: the source of the effect that gave each entry. */
     val staticAbilitySourceIds: MutableList<EntityId> = mutableListOf(),
     val enchantmentRestrictions: MutableList<ActiveEnchantmentRestriction> = mutableListOf(),
+    /** See [com.wingedsheep.engine.mechanics.layers.ProjectedValues.protectionSpares]. */
+    val protectionSpares: MutableMap<String, MutableList<ProtectionSparing>> = mutableMapOf(),
     val colors: MutableSet<String> = mutableSetOf(),
     val types: MutableSet<String> = mutableSetOf(),
     val subtypes: MutableSet<String> = mutableSetOf(),

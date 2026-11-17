@@ -97,7 +97,7 @@ class PutOntoBattlefieldAsAuraExecutor(
             host != cardId &&
                 evaluator.matches(preview, projected, host, entry.enchant, context) &&
                 EnchantRestriction.hostAllowsAura(preview, projected, evaluator, cardId, host) &&
-                !EnchantRestriction.hostProtectedFromAttachment(preview, projected, cardRegistry, cardId, aura, host)
+                !EnchantRestriction.hostProtectedFromAttachment(preview, projected, cardId, aura, host)
         }
     }
 }
