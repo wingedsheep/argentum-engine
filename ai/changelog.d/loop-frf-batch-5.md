@@ -1,1 +1,1 @@
-- #TBD Statics gated on "as long as you control a <colour/kind> permanent" (Battle Brawler, the FRF Runemarks) now ask the deckbuilder for that kind of permanent
+- #4715 Statics gated on "as long as you control a <colour/kind> permanent" (Battle Brawler, the FRF Runemarks) now ask the deckbuilder for that kind of permanent
