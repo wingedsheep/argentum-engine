@@ -4279,6 +4279,60 @@
     ]
 }
 
+// Grim Contest
+{
+    "name": "Grim Contest",
+    "manaCost": "{1}{B}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Choose target creature you control and target creature an opponent controls. Each of those creatures deals damage equal to its toughness to the other.",
+    "script": {
+        "spellEffect": {
+            "type": "MutualDamage",
+            "target1": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "target2": {
+                "type": "BoundVariable",
+                "name": "t1"
+            },
+            "stat": "TOUGHNESS"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "artist": "Phill Simmer",
+        "flavorText": "The invader hoped he could survive the beast's jaws and emerge through its rotting skin.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/24c44722-c65a-41ae-92a9-9c9d7d759a8e.jpg?1783938673",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "If either target is an illegal target as Grim Contest tries to resolve, neither creature will deal or be dealt damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Gurmag Angler
 {
     "name": "Gurmag Angler",

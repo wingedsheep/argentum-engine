@@ -36,11 +36,7 @@ class FightEffectExecutor(private val zones: ZoneTransitionService) : EffectExec
         // neither fights or deals damage. "It fights" (Mind Meanderer) names the source, which may
         // have left — or left and come back as a new object — before its trigger resolves.
         val projected = state.projectedState
-        val battlefield = state.getBattlefield()
-        val canFight = listOf(effect.target1 to target1Id, effect.target2 to target2Id).all { (ref, id) ->
-            id in battlefield && projected.isCreature(id) && !context.isUnavailableBattlefieldSource(ref, state)
-        }
-        if (!canFight) {
+        if (!bothStillCreatures(state, context, effect.target1 to target1Id, effect.target2 to target2Id)) {
             return EffectResult.success(state)
                 .copy(updatedStoredNumbers = effect.excessDamageVariable?.let { mapOf(it to 0) } ?: emptyMap())
         }
@@ -67,5 +63,25 @@ class FightEffectExecutor(private val zones: ZoneTransitionService) : EffectExec
         val excess = result.events.filterIsInstance<DamageDealtEvent>()
             .filter { it.sourceId == target1Id && it.targetId == target2Id }.sumOf { it.excessAmount }
         return result.copy(updatedStoredNumbers = effect.excessDamageVariable?.let { mapOf(it to excess) } ?: emptyMap())
+    }
+
+    companion object {
+        /**
+         * Whether both creatures that would deal damage to each other are still creatures on the
+         * battlefield — a fight (CR 701.14b) and a fight-shaped exchange ([MutualDamageEffectExecutor])
+         * deal no damage at all otherwise. A `Self` reference that left (or left and came back as a new
+         * object) before the ability resolves counts as gone.
+         */
+        internal fun bothStillCreatures(
+            state: GameState,
+            context: EffectContext,
+            vararg creatures: Pair<com.wingedsheep.sdk.scripting.targets.EffectTarget, com.wingedsheep.sdk.model.EntityId>
+        ): Boolean {
+            val projected = state.projectedState
+            val battlefield = state.getBattlefield()
+            return creatures.all { (ref, id) ->
+                id in battlefield && projected.isCreature(id) && !context.isUnavailableBattlefieldSource(ref, state)
+            }
+        }
     }
 }
