@@ -462,6 +462,101 @@
     ]
 }
 
+// Alesha, Who Smiles at Death
+{
+    "name": "Alesha, Who Smiles at Death",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Creature — Human Warrior",
+    "oracleText": "First strike\nWhenever Alesha attacks, you may pay {W/B}{W/B}. If you do, return target creature card with power 2 or less from your graveyard to the battlefield tapped and attacking.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Alesha, Who Smiles at Death:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{W/B}{W/B}"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": "ChosenTargets",
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield",
+                                    "placement": "TappedAndAttacking"
+                                },
+                                "attackDefender": "CONTROLLER_CHOOSES"
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature pow<=2 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "rarity": "RARE",
+        "artist": "Anastasia Ovchinnikova",
+        "flavorText": "\"Greet death with sword in hand.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/09ac9669-d0ee-4df8-af77-12dfccac774f.jpg?1783938691",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "While resolving Alesha's triggered ability, you can't pay the cost multiple times to return more than one creature card."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "Alesha's triggered ability checks the card's power only in your graveyard. The creature will still be tapped and attacking if its power is greater than 2 after it's on the battlefield."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "You choose which player or planeswalker the returned creature is attacking. It doesn't have to be attacking the same player or planeswalker Alesha is attacking."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "Although the returned creature is an attacking creature, it was never declared as an attacking creature. This means that abilities that trigger whenever a creature attacks won't trigger when it enters the battlefield attacking."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "Any effects that say that the returned creature can't attack (such as that of Propaganda, or if the creature has defender) affect only the declaration of attackers. They won't stop the returned creature from entering the battlefield attacking."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Ambush Krotiq
 {
     "name": "Ambush Krotiq",
@@ -707,6 +802,99 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Arcbond
+{
+    "name": "Arcbond",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Choose target creature. Whenever that creature is dealt damage this turn, it deals that much damage to each other creature and each player.",
+    "script": {
+        "spellEffect": {
+            "type": "CreateDelayedTrigger",
+            "effect": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature",
+                                "excludeTriggeringEntity": true
+                            }
+                        },
+                        "body": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "ContextProperty",
+                                "key": "TRIGGER_DAMAGE_AMOUNT"
+                            },
+                            "target": "IterationEntity",
+                            "damageSource": "TriggeringEntity"
+                        }
+                    },
+                    {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Players",
+                            "players": "Each"
+                        },
+                        "body": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "ContextProperty",
+                                "key": "TRIGGER_DAMAGE_AMOUNT"
+                            },
+                            "target": "Controller",
+                            "damageSource": "TriggeringEntity"
+                        }
+                    }
+                ]
+            },
+            "trigger": {
+                "event": "DamageReceivedEvent"
+            },
+            "watchedTarget": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "flavorText": "\"If you must die today, make your death worthy of legend.\"\n—Alesha, Who Smiles at Death",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/b/9bc397d1-50a8-46cd-98b2-7104f2241420.jpg?1783938692",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "The creature is the source of the new damage."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "The delayed triggered ability Arcbond creates will trigger even if the target creature is dealt lethal damage. For example, if a 3/3 creature is targeted by Arcbond and later in the turn it blocks a 7/7 creature, the 3/3 creature will deal 7 damage each other creature and each player."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "Damage dealt by the creature because of the ability Arcbond creates isn't combat damage, even if it was combat damage that caused the ability to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -1052,6 +1240,157 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Bloodfire Enforcers
+{
+    "name": "Bloodfire Enforcers",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Human Monk",
+    "oracleText": "This creature has first strike and trample as long as an instant card and a sorcery card are in your graveyard.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Graveyard",
+                            "filter": "instant"
+                        },
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Graveyard",
+                            "filter": "sorcery"
+                        }
+                    ]
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Graveyard",
+                            "filter": "instant"
+                        },
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Graveyard",
+                            "filter": "sorcery"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "rarity": "UNCOMMON",
+        "artist": "Yefim Kligerman",
+        "flavorText": "Bloodfire practitioners train to focus their rage, building it deep inside themselves until they are ready to release it as a devastating attack.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e72f0a37-32d6-4c1f-858d-7eec096dd42a.jpg?1783938690"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Break Through the Line
+{
+    "name": "Break Through the Line",
+    "manaCost": "{1}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "{R}: Target creature with power 2 or less gains haste until end of turn and can't be blocked this turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Break Through the Line:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "CANT_BE_BLOCKED",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature pow<=2"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{R}: Target creature with power 2 or less gains haste until end of turn and can't be blocked this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "UNCOMMON",
+        "artist": "Clint Cearley",
+        "flavorText": "\"If the Mardu were more in tune with their beasts, they would not scare so easily.\"\n—Jilaya, Temur whisperer",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/81c1cdbe-5ddb-4cc6-975b-42f3f1ee4749.jpg?1783938690",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "If the creature's power is greater than 2 as the activated ability tries to resolve, the ability won't resolve and none of its effects will happen. However, if the creature's power is raised above 2 after the ability resolves, it will still have haste and can't be blocked that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -1966,6 +2305,78 @@
     ]
 }
 
+// Dragonrage
+{
+    "name": "Dragonrage",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Add {R} for each attacking creature you control. Until end of turn, attacking creatures you control gain \"{R}: This creature gets +1/+0 until end of turn.\"",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddMana",
+                    "color": "RED",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature attacking"
+                    }
+                },
+                {
+                    "type": "GrantActivatedAbilityToGroup",
+                    "ability": {
+                        "id": "Dragonrage:1",
+                        "cost": {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{R}"
+                            }
+                        },
+                        "effect": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "Self"
+                        }
+                    },
+                    "filter": {
+                        "baseFilter": "creature attacking ctrl:you"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "rarity": "UNCOMMON",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "\"Dragons in the skies of Tarkir—for the first time, it feels like my home.\"\n—Sarkhan Vol",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/7/77b7bf2a-9d68-4aa8-a0b1-5df22a5a3c1b.jpg?1783938689",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "Even though it can generate mana, Dragonrage isn't a mana ability. It uses the stack and can be responded to."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "Only creatures that are attacking as Dragonrage resolves will count toward how much mana is generated, and only those creatures will gain the \"firebreathing\" activated ability. In other words, casting Dragonrage before you've declared attackers usually won't do anything."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Elite Scaleguard
 {
     "name": "Elite Scaleguard",
@@ -2248,6 +2659,141 @@
     ]
 }
 
+// Fierce Invocation
+{
+    "name": "Fierce Invocation",
+    "manaCost": "{4}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Manifest the top card of your library, then put two +1/+1 counters on it. (To manifest a card, put it onto the battlefield face down as a 2/2 creature. Turn it face up any time for its mana cost if it's a creature card.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeAs": "manifested"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "manifested",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    },
+                    "faceDown": "MANIFEST"
+                },
+                {
+                    "type": "AddCountersToCollection",
+                    "collectionName": "manifested",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "98",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/0137de04-9fd7-41b0-b497-163e6e93432b.jpg?1783938688",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "A permanent that turns face up or face down changes characteristics but is otherwise the same permanent. Spells and abilities that were targeting that permanent, as well as Auras and Equipment that were attached to the permanent, aren't affected."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "Unlike a face-down creature that was cast using the morph ability, a manifested creature may still be turned face up after it loses its abilities if it's a creature card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Flamerush Rider
+{
+    "name": "Flamerush Rider",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Whenever this creature attacks, create a token that's a copy of another target attacking creature and that's tapped and attacking. Exile the token at end of combat.\nDash {2}{R}{R} (You may cast this spell for its dash cost. If you do, it gains haste, and it's returned from the battlefield to its owner's hand at the beginning of the next end step.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DASH"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Dash",
+            "cost": "{2}{R}{R}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Flamerush Rider:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tapped": true,
+                    "attacking": true,
+                    "exileAtStep": "END_COMBAT",
+                    "attackDefender": "CONTROLLER_CHOOSES"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature attacking",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature attacks, create a token that's a copy of another target attacking creature and that's tapped and attacking. Exile the token at end of combat."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "RARE",
+        "artist": "Min Yum",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/304107d6-d096-43a1-956f-5a3b6ed6dc60.jpg?1783938689",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "You choose which opponent or opposing planeswalker the token is attacking as you put it onto the battlefield. It doesn't have to be the same player or planeswalker Flamerush Rider is attacking."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "Although the token is attacking, it was never declared as an attacking creature (for purposes of abilities that trigger whenever a creature attacks, for example)."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "The token copies exactly what was printed on the original creature and nothing else (unless that permanent is copying something else or is a token). It doesn't copy counters, Auras, Equipment, or non-copy effects. If the token isn't a creature as it enters the battlefield, it won't be attacking."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "If another creature becomes or enters the battlefield as a copy of the token, you won't exile that creature at end of combat. However, if Flamerush Rider creates multiple tokens due to a replacement effect (like the one Doubling Season creates), you'll exile each of those tokens."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Flamewake Phoenix
 {
     "name": "Flamewake Phoenix",
@@ -2367,6 +2913,97 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Friendly Fire
+{
+    "name": "Friendly Fire",
+    "manaCost": "{3}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature's controller reveals a card at random from their hand. Friendly Fire deals damage to that creature and that player equal to the revealed card's mana value.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "ControllerOf",
+                            "targetDescription": "target creature"
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "Random",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected1"
+                },
+                {
+                    "type": "RevealCollection",
+                    "from": "selected1"
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "ManaValueSumOfCollection",
+                        "collectionName": "selected1"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "ManaValueSumOfCollection",
+                        "collectionName": "selected1"
+                    },
+                    "target": "TargetController"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "UNCOMMON",
+        "artist": "Anthony Palumbo",
+        "flavorText": "\"Never tell goblins to 'fire at will.'\"\n—Urut Barzeel, Mardu hordechief",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac4272ca-bb15-415c-a589-a472953a0dd9.jpg?1783938688",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "Cards that don't have mana costs, such as land cards, have a mana value of 0."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "If the card has {X} in its mana cost, X is 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -3218,6 +3855,42 @@
     ]
 }
 
+// Hungering Yeti
+{
+    "name": "Hungering Yeti",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Yeti",
+    "oracleText": "As long as you control a green or blue permanent, you may cast this spell as though it had flash. (You may cast it any time you could cast an instant.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "conditionalFlash": {
+            "type": "Exists",
+            "player": "You",
+            "zone": "Battlefield",
+            "filter": "permanent green|blue"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "rarity": "UNCOMMON",
+        "artist": "Tyler Jacobson",
+        "flavorText": "No clan is as adept at saying \"go away\" as the Temur.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/02f7c596-5633-41e8-adcd-d4dc6eae5c88.jpg?1783938687",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "Hungering Yeti checks if you control a green or blue permanent only as you begin to cast it. Once you begin to cast Hungering Yeti as though it had flash, it doesn't matter what happens to the green or blue permanents you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Jeskai Barricade
 {
     "name": "Jeskai Barricade",
@@ -3598,6 +4271,59 @@
     ]
 }
 
+// Lightning Shrieker
+{
+    "name": "Lightning Shrieker",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying, trample, haste\nAt the beginning of the end step, this creature's owner shuffles it into their library.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lightning Shrieker:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Library",
+                    "placement": "Shuffled",
+                    "fromZone": "Battlefield"
+                },
+                "descriptionOverride": "At the beginning of the end step, this creature's owner shuffles it into their library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "artist": "Slawomir Maniak",
+        "flavorText": "Dragonslayers learned to keep silent about their deeds after seeing the terrible vengeance wrought by Kolaghan and her brood.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/0071bf6e-a78b-4286-b3e7-acf44631a001.jpg?1783938687",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "Lightning Shrieker's owner shuffles it into their library only if it's on the battlefield as its ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Lotus Path Djinn
 {
     "name": "Lotus Path Djinn",
@@ -3880,6 +4606,50 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Mardu Runemark
+{
+    "name": "Mardu Runemark",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+2.\nEnchanted creature has first strike as long as you control a white or black permanent.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE"
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent white|black"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "artist": "Viktor Titov",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/333df10b-7db4-4f8a-a754-e8a630b26cac.jpg?1783938687"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -4358,6 +5128,112 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Mob Rule
+{
+    "name": "Mob Rule",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Gain control of all creatures with power 4 or greater until end of turn. Untap those creatures. They gain haste until end of turn.\n• Gain control of all creatures with power 3 or less until end of turn. Untap those creatures. They gain haste until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature pow>=4"
+                            }
+                        },
+                        "body": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GainControl",
+                                    "target": "IterationEntity",
+                                    "duration": "EndOfTurn"
+                                },
+                                {
+                                    "type": "TapUntap",
+                                    "target": "IterationEntity",
+                                    "tap": false
+                                },
+                                {
+                                    "type": "GrantKeyword",
+                                    "keyword": "HASTE",
+                                    "target": "IterationEntity"
+                                }
+                            ]
+                        }
+                    },
+                    "description": "Gain control of all creatures with power 4 or greater until end of turn"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature pow<=3"
+                            }
+                        },
+                        "body": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GainControl",
+                                    "target": "IterationEntity",
+                                    "duration": "EndOfTurn"
+                                },
+                                {
+                                    "type": "TapUntap",
+                                    "target": "IterationEntity",
+                                    "tap": false
+                                },
+                                {
+                                    "type": "GrantKeyword",
+                                    "keyword": "HASTE",
+                                    "target": "IterationEntity"
+                                }
+                            ]
+                        }
+                    },
+                    "description": "Gain control of all creatures with power 3 or less until end of turn"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "RARE",
+        "artist": "Jakub Kasper",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1d76845f-c827-4cb4-b2d0-3f2cf5ee0e81.jpg?1783938686",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "You choose which mode you're using as you cast Mob Rule. Once it's cast, you can't change its mode, even if creatures' powers change in response."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "Once you gain control of a creature, it doesn't matter what happens to its power."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "Mob Rule can affect creatures you already control or ones that are already untapped. It will untap them if applicable and give them haste."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "Gaining control of a creature doesn't cause you to gain control of any Auras or Equipment attached to it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -5953,6 +6829,77 @@
     ]
 }
 
+// Shaman of the Great Hunt
+{
+    "name": "Shaman of the Great Hunt",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Orc Shaman",
+    "oracleText": "Haste\nWhenever a creature you control deals combat damage to a player, put a +1/+1 counter on it.\nFerocious — {2}{G/U}{G/U}: Draw a card for each creature you control with power 4 or greater.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shaman of the Great Hunt:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    },
+                    "sourceFilter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "TriggeringEntity"
+                },
+                "descriptionOverride": "Whenever a creature you control deals combat damage to a player, put a +1/+1 counter on it."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Shaman of the Great Hunt:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G/U}{G/U}"
+                    }
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature pow>=4"
+                    }
+                },
+                "descriptionOverride": "Draw a card for each creature you control with power 4 or greater."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "rarity": "MYTHIC",
+        "artist": "Ryan Alexander Lee",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bfbd8cd1-465c-4501-94ba-5a3402f30ded.jpg?1783938685"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Shamanic Revelation
 {
     "name": "Shamanic Revelation",
@@ -5995,6 +6942,74 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Shockmaw Dragon
+{
+    "name": "Shockmaw Dragon",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nWhenever this creature deals combat damage to a player, it deals 1 damage to each creature that player controls.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shockmaw Dragon:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "controllerPredicate": {
+                                    "type": "ControlledByReferencedPlayer",
+                                    "target": {
+                                        "type": "PlayerRef",
+                                        "player": "TriggeringPlayer"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "UNCOMMON",
+        "artist": "Alejandro Mirabal",
+        "flavorText": "Dragons of the Kolaghan brood are always on the move. They are the driving force behind the Mardu's nomadic way of life.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/4/e4810919-b379-40db-a68b-a769dd3ee32d.jpg?1783938684"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -7637,6 +8652,71 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Wild Slash
+{
+    "name": "Wild Slash",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Ferocious — If you control a creature with power 4 or greater, damage can't be prevented this turn.\nWild Slash deals 2 damage to any target.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "creature pow>=4"
+                        }
+                    },
+                    "then": "DamageCantBePreventedThisTurn"
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "rarity": "UNCOMMON",
+        "artist": "Raymond Swanland",
+        "flavorText": "Never mistake deception for cleverness.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/6975490f-7679-48b3-ba34-04dec97a29c2.jpg?1783938683",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "Wild Slash's ferocious ability applies to all damage that would be dealt that turn, including the damage Wild Slash deals."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "If you control a creature with power 4 or greater as Wild Slash resolves, the ferocious ability will apply. Damage dealt that turn can't be prevented, even if you no longer control a creature with power 4 or greater as that damage would be dealt."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

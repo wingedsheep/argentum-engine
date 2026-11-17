@@ -672,6 +672,11 @@ object TargetPolarityAnalyzer {
                 perSlot[offenceWatch] += TargetPolarity.BENEFICIAL
                 continue
             }
+            val damageWatch = damageWatchSlot(leaf, requirements)
+            if (damageWatch != null) {
+                perSlot[damageWatch] += TargetPolarity.FLEXIBLE
+                continue
+            }
             val recursion = recursionSlot(leaf, requirements)
             val copy = ownCopySlot(leaf, requirements)
             val gift = tokenGiftSlot(leaf, requirements)
@@ -2521,6 +2526,25 @@ object TargetPolarityAnalyzer {
         // On a slot kept to our own creatures, a harm the payoff sets on the watched one is its
         // price (Delif's Cone: "if you do, it assigns no combat damage"), and still ours to pick.
         return if (!harmsWatched || isOwnSide(requirements[slot])) slot else null
+    }
+
+    /**
+     * "Choose target creature. Whenever that creature is dealt damage this turn, it deals that much
+     * damage to each other creature and each player" (Arcbond): a delayed trigger that watches a
+     * target and fires on that object being dealt damage, firing nothing that helps or harms the
+     * watched object itself. The object only says *when* it fires — whichever creature is about to
+     * take the most damage, an attacker of ours walking into a block or their creature our burn is
+     * aimed at — so either side's can be the one to name: open for the simulation to compare.
+     */
+    private fun damageWatchSlot(leaf: Effect, requirements: List<TargetRequirement>): Int? {
+        if (leaf !is CreateDelayedTriggerEffect) return null
+        val watched = leaf.watchedTarget ?: return null
+        if (leaf.trigger?.event !is EventPattern.DamageReceivedEvent) return null
+        val touchesWatched = EffectWalker.firedLeaves(leaf).any { fired ->
+            classify(fired).any { (target, _) -> target == EffectTarget.TriggeringEntity || target == watched }
+        }
+        if (touchesWatched) return null
+        return slotOf(watched, requirements)?.takeIf { it in objectSlots(requirements) }
     }
 
     private fun returnsItselfFromAGraveyard(leaf: Effect): Boolean =

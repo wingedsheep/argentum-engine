@@ -978,9 +978,13 @@ object CardIntentAnalyzer {
      * graveyards. An opponent separates those cards into two piles. Put all cards from the pile of
      * your choice onto the battlefield under your control" (Boneyard Parley). Whatever the pile
      * steps in between (Fact or Fiction's split, a tracked exile), the chosen cards end up ours.
+     *
+     * Read through a gate we decide ([EffectWalker.payoffLeaves]): "you may pay {W/B}{W/B}. If you
+     * do, return target creature card … from your graveyard to the battlefield tapped and
+     * attacking" (Alesha, Who Smiles at Death) is the same return behind its price.
      */
     internal fun putsChosenTargetsOntoOurBattlefield(effect: Effect): Boolean {
-        val leaves = EffectWalker.leaves(effect)
+        val leaves = EffectWalker.payoffLeaves(effect)
         val chosen = leaves.mapNotNullTo(HashSet()) { leaf ->
             (leaf as? GatherCardsEffect)?.takeIf { it.source == CardSource.ChosenTargets }?.storeAs
         }
@@ -3468,8 +3472,15 @@ object CardIntentAnalyzer {
      * until end of turn" (Waxing Moon), first strike, double strike, deathtouch — is the same trick
      * without the stats (`Patterns.Group.grantKeywordToAll` lowers it the same way): spent in this
      * turn's combat, or not at all.
+     *
+     * So is a team grant of a fight trick — "until end of turn, attacking creatures you control gain
+     * '{R}: This creature gets +1/+0 until end of turn'" (Dragonrage, Shade's Breath): the pump each
+     * member can buy for itself ([grantsOwnFightTrick]) is gone at cleanup, spent in this turn's
+     * combat or not at all. A grant to an opponent's group is theirs to fight with, not ours.
      */
     private fun isExpiringGroupPump(effect: Effect): Boolean =
+        (effect is GrantActivatedAbilityToGroupEffect && effect.duration == Duration.EndOfTurn &&
+            !opponentsOnly(effect.filter.baseFilter.controllerPredicate) && grantsOwnFightTrick(effect.ability)) ||
         effect is ForEachEffect && effect.space is IterationSpace.Group &&
             readingLeaves(effect.body).any { leaf ->
                 when (leaf) {
