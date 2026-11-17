@@ -1,1 +1,1 @@
-- #TBD Grim Contest-style mutual toughness damage (MutualDamageEffect) reads as removal: the opponent's creature is the victim, ours lends its toughness like a fighter
+- #4717 Grim Contest-style mutual toughness damage (MutualDamageEffect) reads as removal: the opponent's creature is the victim, ours lends its toughness like a fighter
