@@ -35,9 +35,11 @@ import com.wingedsheep.sdk.scripting.TimingRule
  *   Urban Retreat's "{2}, Return a tapped creature you control: put this onto the battlefield".
  * - **Command zone** — the Momir Basic avatar, Derevi's "put Derevi onto the battlefield from the
  *   command zone", and commander ninjutsu (a `ReturnToHand` cost, like hand ninjutsu).
- * - **Exile** — an ability a resolving effect granted to one exiled card (Q, Stacking the Deck's
- *   "Exile a card from your hand: Create a copy of this card. You may cast the copy. Activate only
- *   if this card is exiled."). The grant ends as the card leaves exile (CR 400.7).
+ * - **Exile** — a printed exile-zone ability (Torrent Elemental's "{3}{B/G}{B/G}: Put this card
+ *   from exile onto the battlefield tapped"), or one a resolving effect granted to one exiled card
+ *   (Q, Stacking the Deck's "Exile a card from your hand: Create a copy of this card. You may cast
+ *   the copy. Activate only if this card is exiled."). The grant ends as the card leaves exile
+ *   (CR 400.7). A card exiled face down has no printed abilities (CR 406.3a).
  *
  * Handles cost checking for Mana, Discard, DiscardSelf, ExileSelf, Blight, Sacrifice (one or several
  * atoms, jointly — [SacrificeCostAssignment]), and Composite (with
@@ -76,7 +78,11 @@ class ZoneActivatedAbilityEnumerator(
             val grantedZoneAbilities = state.grantedActivatedAbilities
                 .filter { it.entityId == entityId && it.ability.activateFromZone == zone }
                 .map { it.ability }
-            val printedZoneAbilities = context.cardRegistry.getCard(cardComponent.name)
+            // A card exiled face down has no characteristics (CR 406.3a), so its printed
+            // exile-zone ability (Torrent Elemental's "put this card from exile onto the
+            // battlefield") isn't there to activate. Abilities an effect grants it still are.
+            val printedZoneAbilities = if (hasNoPrintedAbilities(state, entityId)) emptyList()
+            else context.cardRegistry.getCard(cardComponent.name)
                 ?.script?.activatedAbilities
                 ?.filter { it.activateFromZone == zone }
                 .orEmpty()
@@ -364,6 +370,9 @@ class ZoneActivatedAbilityEnumerator(
 
         return result
     }
+
+    private fun hasNoPrintedAbilities(state: com.wingedsheep.engine.state.GameState, entityId: EntityId): Boolean =
+        zone == Zone.EXILE && com.wingedsheep.engine.state.isFaceDownInExile(state, entityId)
 
     /**
      * Whether [playerId] has enough cards to pay an exile-from-zone cost of the ability on
