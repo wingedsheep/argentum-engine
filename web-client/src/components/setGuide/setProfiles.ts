@@ -472,6 +472,27 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Outlast', inPlay: 'Sorcery-speed +1/+1 counters give Abzan a mana sink that slowly out-grows the board.' },
     ],
   },
+  DTK: {
+    tagline: 'Two-colour dragonlord decks, megamorphs and Dragons overhead. Each clan has its own plan, and a well-timed flip or exploit swings the board.',
+    setting: 'Tarkir rewritten, where the dragons survived and five dragonlords rule the clans that once fought them.',
+    gameplay: 'Each enemy colour pair is a dragonlord\'s clan with its own mechanic: Dromoka bolsters, Ojutai rebounds spells, Silumgar exploits its own creatures, Kolaghan dashes in hasty attackers and Atarka gets formidable bonuses from big boards. Megamorph keeps the face-down guessing game alive, now with a +1/+1 counter when a creature flips. Games are faster than Khans, with less fixing and two-colour decks, and Dragons plus the cards that reward controlling one decide many of them.',
+    tips: [
+      'Stay in two colours: there is far less fixing than in Khans, and the payoffs reward a clan\'s pair.',
+      'Exploit turns a chump blocker into value: plan which creature you\'ll sacrifice before you cast the exploiter.',
+      'Dash creatures dodge sorcery-speed removal and summoning sickness; recast them each turn when the board is hostile.',
+    ],
+    tryIf: 'two-colour clan decks, Dragons and face-down megamorph mind games',
+    power: 3, speed: 3, complexity: 4,
+    themes: ['flyers', 'counters', 'sacrifice'],
+    mechanics: [
+      { name: 'Megamorph', inPlay: 'Face-down 2/2s that gain a +1/+1 counter when flipped, so every morph is a threat to read and a bigger body later.' },
+      { name: 'Exploit', inPlay: 'Silumgar creatures may sacrifice a creature as they enter for a bonus, turning tokens and spent creatures into removal or cards.' },
+      { name: 'Dash', inPlay: 'Kolaghan creatures can be cast for a dash cost with haste and return to hand at end of turn, dodging sorcery-speed answers.' },
+      { name: 'Bolster', inPlay: 'Put +1/+1 counters on your weakest creature, so Dromoka\'s boards grow wide and hard to block profitably.' },
+      { name: 'Formidable', inPlay: 'Atarka\'s cards unlock bonuses when your creatures\' total power is 8 or more, rewarding big bodies.' },
+      { name: 'Rebound', inPlay: 'Ojutai spells cast from hand are cast again next upkeep, so cheap tricks and removal count twice.' },
+    ],
+  },
   XLN: {
     tagline: 'A tribal format where Dinosaurs, Merfolk, Pirates and Vampires fight over a new world. Pick a tribe, curve out and win the combat step.',
     setting: 'The jungles and seas of Ixalan, where conquistadors, pirates, river folk and dinosaur riders hunt for the golden city of Orazca.',
