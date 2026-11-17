@@ -588,7 +588,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Ojutai Spells',
         colors: ['W', 'U'],
         keyCard: 'Cunning Breezedancer',
-        description: 'Cheap fliers and noncreature spells trigger each other, with rebound spells coming back for a second use. A tempo deck that pecks from the air and keeps blockers tapped down.',
+        description: 'Fliers and payoffs grow whenever you cast a noncreature spell, with rebound spells coming back for a second use. A tempo deck that pecks from the air and keeps blockers tapped down.',
       },
       {
         name: 'Silumgar Exploit',
@@ -606,7 +606,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Atarka Formidable',
         colors: ['R', 'G'],
         keyCard: 'Savage Ventmaw',
-        description: "Ramp into big creatures and turn on formidable once your team's power reaches 8. A stompy deck that outsizes every blocker and fights its way past the rest.",
+        description: "Curve into big creatures and turn on formidable once your team's power reaches 8. A stompy deck that outsizes every blocker and fights its way past the rest.",
       },
     ],
   },
