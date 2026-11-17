@@ -113,6 +113,9 @@ internal object CardAsks {
                 if (ability.binding == TriggerBinding.SELF) continue
                 triggerFilters(ability.trigger).forEach { (filter, spells) -> add(filter, DeckSynergy.FEEDERS_WANTED, spells) }
             }
+            // "As long as you control a red or white permanent, …" (Battle Brawler, the Runemarks) is
+            // switched on only by the deck's own permanents of that kind, like an intervening "if".
+            script.staticAbilities.flatMap(::conditionsOf).forEach { controlCheck(it)?.let(::addPayers) }
             for (static in script.staticAbilities.flatMap(::unwrap)) {
                 groupFilter(static)?.let { add(it, DeckSynergy.TRIBE_MEMBERS_WANTED, spells = false) }
                 spellFilter(static)?.let { add(it, DeckSynergy.FEEDERS_WANTED, spells = true) }
@@ -302,6 +305,13 @@ internal object CardAsks {
         is ConditionalStaticAbility -> unwrap(ability.ability)
         is CompositeStaticAbility -> ability.abilities.flatMap(::unwrap)
         else -> listOf(ability)
+    }
+
+    /** The conditions gating [ability], outermost first, through nested and composite statics. */
+    private fun conditionsOf(ability: StaticAbility): List<Condition> = when (ability) {
+        is ConditionalStaticAbility -> listOf(ability.condition) + conditionsOf(ability.ability)
+        is CompositeStaticAbility -> ability.abilities.flatMap(::conditionsOf)
+        else -> emptyList()
     }
 
     /** The group a static helps, when it helps a group on the battlefield rather than one creature. */
