@@ -153,7 +153,18 @@ object MechanicPatterns {
      *
      * @param amount Number of +1/+1 counters to place
      */
-    fun bolster(amount: Int): CompositeEffect = CompositeEffect(
+    fun bolster(amount: Int): CompositeEffect =
+        bolsterPipeline("Bolster $amount", AddCountersToCollectionEffect("bolstered", CounterType.PLUS_ONE_PLUS_ONE, amount))
+
+    /**
+     * Bolster X, where X is a [DynamicAmount] read as the counters are placed (Sunbringer's
+     * Touch: "Bolster X, where X is the number of cards in your hand"). Same choice as
+     * [bolster] with a fixed N.
+     */
+    fun bolster(amount: DynamicAmount): CompositeEffect =
+        bolsterPipeline("Bolster X", AddCountersToCollectionEffect("bolstered", CounterType.PLUS_ONE_PLUS_ONE, amount = amount))
+
+    private fun bolsterPipeline(label: String, placeCounters: AddCountersToCollectionEffect): CompositeEffect = CompositeEffect(
         listOf(
             GatherCardsEffect(
                 source = CardSource.ControlledPermanents(Player.You, GameObjectFilter.Creature),
@@ -169,10 +180,10 @@ object MechanicPatterns {
                 selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
                 chooser = Chooser.Controller,
                 storeSelected = "bolstered",
-                prompt = "Bolster $amount — choose a creature with the least toughness",
+                prompt = "$label — choose a creature with the least toughness",
                 useTargetingUI = true
             ),
-            AddCountersToCollectionEffect("bolstered", CounterType.PLUS_ONE_PLUS_ONE, amount)
+            placeCounters
         )
     )
 

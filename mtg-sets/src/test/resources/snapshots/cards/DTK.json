@@ -14322,17 +14322,17 @@
                         "type": "ControlledPermanents",
                         "filter": "creature"
                     },
-                    "storeAs": "gathered0"
+                    "storeAs": "bolsterCreatures"
                 },
                 {
                     "type": "FilterCollection",
-                    "from": "gathered0",
+                    "from": "bolsterCreatures",
                     "collectionFilter": "LeastToughness",
-                    "storeMatching": "matching1"
+                    "storeMatching": "bolsterLeastToughness"
                 },
                 {
                     "type": "SelectFromCollection",
-                    "from": "matching1",
+                    "from": "bolsterLeastToughness",
                     "selection": {
                         "type": "ChooseExactly",
                         "count": {
@@ -14340,13 +14340,13 @@
                             "amount": 1
                         }
                     },
-                    "storeSelected": "selected2",
-                    "prompt": "Bolster X (X = cards in your hand) — choose a creature with the least toughness",
+                    "storeSelected": "bolstered",
+                    "prompt": "Bolster X — choose a creature with the least toughness",
                     "useTargetingUI": true
                 },
                 {
                     "type": "AddCountersToCollection",
-                    "collectionName": "selected2",
+                    "collectionName": "bolstered",
                     "counterType": "PLUS_ONE_PLUS_ONE",
                     "amount": {
                         "type": "Count",

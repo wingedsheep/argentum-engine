@@ -4,13 +4,11 @@ import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.CollectionFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -21,9 +19,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * counter on it gains trample until end of turn. (To bolster X, choose a creature with the least
  * toughness among creatures you control and put X +1/+1 counters on it.)
  *
- * `Patterns.Mechanic.bolster` takes a fixed count, so the bolster is spelled out as its own
- * pipeline (gather your creatures → keep the least toughness → choose one → put X counters on it)
- * with X read when the counters are placed — at resolution, with this spell already off your hand.
+ * X is read when the counters are placed — at resolution, with this spell already off your hand.
  * The trample group is gathered only after the bolster, so the bolstered creature is in it; it is
  * fixed at that moment, so a creature that gets a counter later in the turn doesn't gain trample.
  */
@@ -36,23 +32,7 @@ val SunbringersTouch = card("Sunbringer's Touch") {
         "least toughness among creatures you control and put X +1/+1 counters on it.)"
 
     spell {
-        effect = Effects.Pipeline {
-            val creatures = gather(CardSource.ControlledPermanents(Player.You, GameObjectFilter.Creature))
-            val leastToughness = filter(creatures, CollectionFilter.LeastToughness)
-            val bolstered = chooseExactly(
-                1,
-                from = leastToughness,
-                prompt = "Bolster X (X = cards in your hand) — choose a creature with the least toughness",
-                useTargetingUI = true,
-            )
-            run(
-                Effects.AddCountersToCollection(
-                    bolstered,
-                    CounterType.PLUS_ONE_PLUS_ONE,
-                    DynamicAmounts.cardsInYourHand(),
-                )
-            )
-        } then Effects.ForEachInGroup(
+        effect = Patterns.Mechanic.bolster(DynamicAmounts.cardsInYourHand()) then Effects.ForEachInGroup(
             GroupFilter(GameObjectFilter.Creature.withCounter(CounterType.PLUS_ONE_PLUS_ONE).youControl()),
             Effects.GrantKeyword(Keyword.TRAMPLE, EffectTarget.IterationEntity),
         )
