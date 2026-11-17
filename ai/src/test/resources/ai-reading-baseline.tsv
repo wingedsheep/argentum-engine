@@ -6170,6 +6170,7 @@ Farseek
 Farsight Adept
 Farsight Mask
 Farsight Ritual
+Fascination
 Fastbond
 Fasting
 Fatal Fissure	polarity: CreateDelayedTriggerEffect
@@ -6902,6 +6903,7 @@ Frost Giant
 Frost Lynx
 Frost Ogre
 Frost Trickster
+Frost Walker
 Frostbite Pyromental
 Frostboil Snarl
 Frostbridge Guard
@@ -9604,6 +9606,8 @@ Jeskai Elder
 Jeskai Infiltrator
 Jeskai Monument
 Jeskai Revelation
+Jeskai Runemark
+Jeskai Sage
 Jeskai Shrinekeeper
 Jeskai Student
 Jeskai Windscout
@@ -10843,6 +10847,7 @@ Lotus Bloom
 Lotus Cobra
 Lotus Field
 Lotus Guardian
+Lotus Path Djinn
 Lotus Petal
 Lotus Ring
 Lotus-Eye Mystics
@@ -11172,6 +11177,7 @@ Map the Wastes
 Maraleaf Pixie
 Maraleaf Rider
 Maralen, Fae Ascendant
+Marang River Prowler
 Marang River Regent	intent: Pipeline(ChosenTargets→hand)
 Marang River Skeleton
 Marauder's Axe
@@ -11633,6 +11639,7 @@ Mindless Conscription
 Mindlink Mech
 Mindmelter
 Mindmoil
+Mindscour Dragon
 Mindseeker Oculus
 Mindslaver	intent: HijackNextTurnEffect; polarity: HijackNextTurnEffect
 Mindsparker
@@ -12370,6 +12377,7 @@ Neurok Replica
 Neurok Spy
 Neutralize
 Neutralize the Guards
+Neutralizing Blast
 Neva, Stalked by Nightmares
 Never // Return
 Never Happened
@@ -14211,6 +14219,7 @@ Rakshasa Deathdealer
 Rakshasa Gravecaller
 Rakshasa Vizier
 Rakshasa's Bargain
+Rakshasa's Disdain
 Rakshasa's Secret
 Ral Zarek, Guest Lecturer	intent: FlipCoinsEffect; intent: SkipNextTurnEffect; polarity: SkipNextTurnEffect
 Ral and the Implicit Maze
@@ -14533,6 +14542,7 @@ Reflective Golem
 Reflector Mage
 Reflex Sliver
 Reflexes
+Refocus
 Reforge the Soul
 Refurbish
 Refurbished Familiar
@@ -14953,6 +14963,7 @@ Rite of Harmony
 Rite of Oblivion
 Rite of Renewal
 Rite of Replication
+Rite of Undoing
 Rite of the Dragoncaller
 Rite of the Moth
 Rite of the Serpent
@@ -15361,6 +15372,7 @@ Sage's Nouliths
 Sage's Reverie
 Sage's Row Denizen
 Sage's Row Savant
+Sage-Eye Avengers
 Sage-Eye Harrier
 Sagittars' Volley
 Sagu Archer
@@ -17948,6 +17960,7 @@ Supernatural Rescue
 Supernatural Stamina
 Suplex
 Supper for Spiders	intent: ForEach>BecomeArtifactEffect; intent: Pipeline(graveyard→battlefield)
+Supplant Form
 Supply Caravan
 Supply Drop
 Support Mission
@@ -21061,6 +21074,7 @@ Will Riker, First in the Field
 Will of the All-Hunter
 Will of the Jeskai
 Will of the Mardu	polarity: CreateTokenEffect
+Will of the Naga
 Will of the Sultai
 Will of the Temur
 Will, Scion of Peace
@@ -21339,6 +21353,7 @@ Wretched Gryff
 Wretched Throng
 Wriggling Grub
 Wring Flesh
+Write into Being
 Writhing Chrysalis
 Writhing Necromass
 Wu Admiral
