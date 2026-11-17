@@ -280,6 +280,22 @@ object SetArchetypes {
                     "Ferocious abilities activate when you control a creature with power 4 or greater. Ramp into the biggest threats in the format."),
             )
         ),
+        "DTK" to SetSynergies(
+            setCode = "DTK",
+            setName = "Dragons of Tarkir",
+            archetypes = listOf(
+                Archetype("Dromoka Counters", listOf(Color.GREEN, Color.WHITE),
+                    "Bolster and megamorph pile +1/+1 counters onto your team, and payoffs grow every time a creature picks one up. A sturdy go-tall midrange deck that wins long combats."),
+                Archetype("Ojutai Spells", listOf(Color.WHITE, Color.BLUE),
+                    "Fliers and payoffs grow whenever you cast a noncreature spell, with rebound spells coming back for a second use. A tempo deck that pecks from the air and keeps blockers tapped down."),
+                Archetype("Silumgar Exploit", listOf(Color.BLUE, Color.BLACK),
+                    "Exploit creatures sacrifice themselves or a spare body for removal, card draw and drain. A patient control deck that trades one-for-one and grinds the opponent out."),
+                Archetype("Kolaghan Dash", listOf(Color.BLACK, Color.RED),
+                    "Dash hasty creatures in, swing, and return them to hand before sorcery-speed removal can catch them. An aggressive deck that keeps attacking every turn and finishes with burn."),
+                Archetype("Atarka Formidable", listOf(Color.RED, Color.GREEN),
+                    "Curve into big creatures and turn on formidable once your team's power reaches 8. A stompy deck that outsizes every blocker and fights its way past the rest."),
+            )
+        ),
         "TDM" to SetSynergies(
             setCode = "TDM",
             setName = "Tarkir: Dragonstorm",

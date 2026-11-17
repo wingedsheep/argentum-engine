@@ -574,6 +574,42 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  DTK: {
+    setCode: 'DTK',
+    setName: 'Dragons of Tarkir',
+    archetypes: [
+      {
+        name: 'Dromoka Counters',
+        colors: ['G', 'W'],
+        keyCard: 'Enduring Scalelord',
+        description: 'Bolster and megamorph pile +1/+1 counters onto your team, and payoffs grow every time a creature picks one up. A sturdy go-tall midrange deck that wins long combats.',
+      },
+      {
+        name: 'Ojutai Spells',
+        colors: ['W', 'U'],
+        keyCard: 'Cunning Breezedancer',
+        description: 'Fliers and payoffs grow whenever you cast a noncreature spell, with rebound spells coming back for a second use. A tempo deck that pecks from the air and keeps blockers tapped down.',
+      },
+      {
+        name: 'Silumgar Exploit',
+        colors: ['U', 'B'],
+        keyCard: 'Ruthless Deathfang',
+        description: 'Exploit creatures sacrifice themselves or a spare body for removal, card draw and drain. A patient control deck that trades one-for-one and grinds the opponent out.',
+      },
+      {
+        name: 'Kolaghan Dash',
+        colors: ['B', 'R'],
+        keyCard: 'Swift Warkite',
+        description: 'Dash hasty creatures in, swing, and return them to hand before sorcery-speed removal can catch them. An aggressive deck that keeps attacking every turn and finishes with burn.',
+      },
+      {
+        name: 'Atarka Formidable',
+        colors: ['R', 'G'],
+        keyCard: 'Savage Ventmaw',
+        description: "Curve into big creatures and turn on formidable once your team's power reaches 8. A stompy deck that outsizes every blocker and fights its way past the rest.",
+      },
+    ],
+  },
   TDM: {
     setCode: 'TDM',
     setName: 'Tarkir: Dragonstorm',
