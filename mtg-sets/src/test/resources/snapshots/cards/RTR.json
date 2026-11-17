@@ -4070,6 +4070,58 @@
     ]
 }
 
+// Stab Wound
+{
+    "name": "Stab Wound",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets -2/-2.\nAt the beginning of the upkeep of enchanted creature's controller, that player loses 2 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Stab Wound:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": -2,
+                "toughnessBonus": -2
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "artist": "Scott Chou",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b562269-e6ec-4f8d-844e-26b272248d9d.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Stealer of Secrets
 {
     "name": "Stealer of Secrets",

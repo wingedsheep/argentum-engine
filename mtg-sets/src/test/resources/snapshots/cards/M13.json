@@ -1058,6 +1058,76 @@
     ]
 }
 
+// Roaring Primadox
+{
+    "name": "Roaring Primadox",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "At the beginning of your upkeep, return a creature you control to its owner's hand.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Roaring Primadox:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "creature",
+                                "player": "You"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Return a creature you control to its owner's hand",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "188",
+        "rarity": "UNCOMMON",
+        "artist": "James Ryman",
+        "flavorText": "\"They're easy enough to find. Question is, are you sure you want to find one?\"\n—Juruk, Kalonian tracker",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19529b2f-03f0-469d-92d4-e2a2a933d5dc.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Rummaging Goblin
 {
     "name": "Rummaging Goblin",

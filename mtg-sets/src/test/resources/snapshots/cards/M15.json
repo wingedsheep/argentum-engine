@@ -88,6 +88,68 @@
     ]
 }
 
+// Altac Bloodseeker
+{
+    "name": "Altac Bloodseeker",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Berserker",
+    "oracleText": "Whenever a creature an opponent controls dies, this creature gets +2/+0 and gains first strike and haste until end of turn. (It deals combat damage before creatures without first strike, and it can attack and {T} as soon as it comes under your control.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Altac Bloodseeker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:opponent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FIRST_STRIKE",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "UNCOMMON",
+        "artist": "Cynthia Sheppard",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f5dacedc-f532-43b3-a783-e1dc7ccea53b.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Amphin Pathmage
 {
     "name": "Amphin Pathmage",
@@ -338,6 +400,59 @@
         "artist": "Jung Park",
         "imageUri": "https://cards.scryfall.io/normal/front/e/d/eddc4ee6-7855-4dc7-9488-5e019609bd09.jpg?1783939159"
     }
+}
+
+// Burning Anger
+{
+    "name": "Burning Anger",
+    "manaCost": "{4}{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature has \"{T}: This creature deals damage equal to its power to any target.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Burning Anger:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "Self",
+                            "numericProperty": "Power"
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "AnyTarget",
+                            "id": "t0"
+                        }
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "RARE",
+        "artist": "Anthony Palumbo",
+        "flavorText": "\"With rage as your forge, your hammer can smite anything.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/2058a7eb-0f78-46a4-bea5-afdfe920264f.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Carnivorous Moss-Beast
@@ -1775,6 +1890,61 @@
     ]
 }
 
+// Living Totem
+{
+    "name": "Living Totem",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Plant Elemental",
+    "oracleText": "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nWhen this creature enters, you may put a +1/+1 counter on another target creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "CONVOKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Living Totem:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "184",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca21890c-68be-4929-913e-d28ace6b40a7.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Marked by Honor
 {
     "name": "Marked by Honor",
@@ -1982,6 +2152,63 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Necromancer's Assistant
+{
+    "name": "Necromancer's Assistant",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "When this creature enters, mill three cards.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Necromancer's Assistant:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "artist": "Svetlin Velinov",
+        "flavorText": "Zombies and necromancers agree: easy access to brains is preferred.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b6a8b3e-2709-4036-838b-56cc82b0d917.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -2217,6 +2444,392 @@
     ]
 }
 
+// Obelisk of Urd
+{
+    "name": "Obelisk of Urd",
+    "manaCost": "{6}",
+    "typeLine": "Artifact",
+    "oracleText": "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nAs this artifact enters, choose a creature type.\nCreatures you control of the chosen type get +2/+2.",
+    "keywords": [
+        "CONVOKE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2,
+                "filter": {
+                    "baseFilter": "creature ctrl:you",
+                    "chosenSubtypeKey": "chosenCreatureType"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CREATURE_TYPE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "RARE",
+        "artist": "John Severin Brassell",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/ed7865a7-8fe2-4b5d-a625-91585d1b7d4a.jpg"
+    }
+}
+
+// Paragon of Eternal Wilds
+{
+    "name": "Paragon of Eternal Wilds",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Human Druid",
+    "oracleText": "Other green creatures you control get +1/+1.\n{G}, {T}: Another target green creature you control gains trample until end of turn. (It can deal excess combat damage to the player or planeswalker it's attacking.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Paragon of Eternal Wilds:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{G}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature green ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature green ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "rarity": "UNCOMMON",
+        "artist": "Winona Nelson",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/97c3fcca-480f-4acf-b74f-0f37b46fa799.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Paragon of Fierce Defiance
+{
+    "name": "Paragon of Fierce Defiance",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Other red creatures you control get +1/+1.\n{R}, {T}: Another target red creature you control gains haste until end of turn. (It can attack and {T} this turn.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Paragon of Fierce Defiance:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{R}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature red ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature red ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3ad97067-2b6b-4e60-817c-6414e2739806.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Paragon of Gathering Mists
+{
+    "name": "Paragon of Gathering Mists",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Other blue creatures you control get +1/+1.\n{U}, {T}: Another target blue creature you control gains flying until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Paragon of Gathering Mists:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature blue ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature blue ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "rarity": "UNCOMMON",
+        "artist": "Michael C. Hayes",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5afc32ed-c1a9-4c37-bfe0-562818c046fc.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Paragon of New Dawns
+{
+    "name": "Paragon of New Dawns",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Other white creatures you control get +1/+1.\n{W}, {T}: Another target white creature you control gains vigilance until end of turn. (Attacking doesn't cause it to tap.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Paragon of New Dawns:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "VIGILANCE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature white ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature white ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "UNCOMMON",
+        "artist": "John Stanko",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/361c66c3-b4eb-48aa-a967-255a8db60977.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Paragon of Open Graves
+{
+    "name": "Paragon of Open Graves",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Skeleton Warrior",
+    "oracleText": "Other black creatures you control get +1/+1.\n{2}{B}, {T}: Another target black creature you control gains deathtouch until end of turn. (Any amount of damage it deals to a creature is enough to destroy it.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Paragon of Open Graves:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "DEATHTOUCH",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature black ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature black ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "rarity": "UNCOMMON",
+        "artist": "Min Yum",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/33d7de75-b6e1-44f5-ae1c-e095b41e8d0b.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Perilous Vault
 {
     "name": "Perilous Vault",
@@ -2265,6 +2878,42 @@
         "flavorText": "The spirit dragon Ugin arranged the hedrons of Zendikar to direct leylines of energy. To disrupt one is to unleash devastation and chaos.",
         "imageUri": "https://cards.scryfall.io/normal/front/9/a/9a5f1810-a852-454f-b1d6-eb40ea4e0148.jpg?1783939156"
     }
+}
+
+// Pillar of Light
+{
+    "name": "Pillar of Light",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target creature with toughness 4 or greater.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Exile"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature tou>=4"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "artist": "Erica Yang",
+        "flavorText": "\"The vaulted ceiling of our faith rests upon such pillars.\"\n—Darugand, banisher priest",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/018ff99e-a23d-4440-8c5c-cfb4942f1906.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Radiant Fountain
@@ -2943,6 +3592,290 @@
         "RED",
         "BLUE",
         "WHITE"
+    ]
+}
+
+// Soul of New Phyrexia
+{
+    "name": "Soul of New Phyrexia",
+    "manaCost": "{6}",
+    "typeLine": "Artifact Creature — Phyrexian Avatar",
+    "oracleText": "Trample\n{5}: Permanents you control gain indestructible until end of turn.\n{5}, Exile this card from your graveyard: Permanents you control gain indestructible until end of turn.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Soul of New Phyrexia:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "permanent ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "INDESTRUCTIBLE",
+                        "target": "IterationEntity"
+                    }
+                }
+            },
+            {
+                "id": "Soul of New Phyrexia:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "permanent ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "INDESTRUCTIBLE",
+                        "target": "IterationEntity"
+                    }
+                },
+                "activateFromZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "231",
+        "rarity": "MYTHIC",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4d37dec-98d6-4815-8f3e-7de26817990c.jpg"
+    }
+}
+
+// Soul of Theros
+{
+    "name": "Soul of Theros",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Creature — Avatar",
+    "oracleText": "Vigilance\n{4}{W}{W}: Creatures you control get +2/+2 and gain first strike and lifelink until end of turn.\n{4}{W}{W}, Exile this card from your graveyard: Creatures you control get +2/+2 and gain first strike and lifelink until end of turn.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Soul of Theros:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{W}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "FIRST_STRIKE",
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "LIFELINK",
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "id": "Soul of Theros:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}{W}{W}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "FIRST_STRIKE",
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "LIFELINK",
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                },
+                "activateFromZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "MYTHIC",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/63e391d3-cf19-4f73-9d39-22587e0f3c0d.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Soul of Zendikar
+{
+    "name": "Soul of Zendikar",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Avatar",
+    "oracleText": "Reach\n{3}{G}{G}: Create a 3/3 green Beast creature token.\n{3}{G}{G}, Exile this card from your graveyard: Create a 3/3 green Beast creature token.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Soul of Zendikar:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{G}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Beast"
+                    ]
+                }
+            },
+            {
+                "id": "Soul of Zendikar:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{G}{G}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Beast"
+                    ]
+                },
+                "activateFromZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "rarity": "MYTHIC",
+        "artist": "Vincent Proce",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/875a2514-3c36-463a-bc0a-67ab4fb2666e.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
