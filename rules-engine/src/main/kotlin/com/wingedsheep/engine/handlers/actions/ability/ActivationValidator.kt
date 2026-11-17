@@ -148,14 +148,6 @@ internal class ActivationValidator(
     }
 
     /**
-     * `opponentTargetsChosen` is an internal resume marker for "… of an opponent's choice"
-     * targets (Cuombajj Witches). Only the engine's resumer sets it, and the resumer re-enters
-     * via execute() directly — never through validate() — so any action carrying it here came
-     * from a player/client. Reject it: otherwise a client could set it to skip the
-     * opponent-target pause and resolve the opponent-chosen damage with no target. See
-     * [com.wingedsheep.sdk.scripting.targets.TargetChooser].
-     */
-    /**
      * A card exiled face down has no characteristics (CR 406.3a): the abilities its definition
      * prints don't exist there, though one an effect granted it still does. The enumerator offers
      * none of them; this rejects a client that names one anyway.
@@ -172,6 +164,14 @@ internal class ActivationValidator(
         return "A card exiled face down has no abilities"
     }
 
+    /**
+     * `opponentTargetsChosen` is an internal resume marker for "… of an opponent's choice"
+     * targets (Cuombajj Witches). Only the engine's resumer sets it, and the resumer re-enters
+     * via execute() directly — never through validate() — so any action carrying it here came
+     * from a player/client. Reject it: otherwise a client could set it to skip the
+     * opponent-target pause and resolve the opponent-chosen damage with no target. See
+     * [com.wingedsheep.sdk.scripting.targets.TargetChooser].
+     */
     private fun rejectClientResumeFlag(action: ActivateAbility): String? =
         if (action.opponentTargetsChosen) "Internal resume flag cannot be set by a player" else null
 
