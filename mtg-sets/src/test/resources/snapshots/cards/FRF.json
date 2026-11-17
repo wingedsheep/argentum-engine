@@ -2158,6 +2158,76 @@
     ]
 }
 
+// Fascination
+{
+    "name": "Fascination",
+    "manaCost": "{X}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Each player draws X cards.\n• Each player mills X cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Players",
+                            "players": "Each"
+                        },
+                        "body": {
+                            "type": "DrawCards",
+                            "count": "XValue"
+                        }
+                    },
+                    "description": "Each player draws X cards"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Players",
+                            "players": "Each"
+                        },
+                        "body": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": "XValue",
+                                        "isMill": true
+                                    },
+                                    "storeAs": "milled"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "milled",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "description": "Each player mills X cards"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/37c96615-0dcb-4108-978a-b41b43e12f38.jpg?1783938707"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Feral Krushok
 {
     "name": "Feral Krushok",
@@ -2477,6 +2547,46 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Frost Walker
+{
+    "name": "Frost Walker",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "When this creature becomes the target of a spell or ability, sacrifice it.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Frost Walker:1",
+                "trigger": "BecomesTargetEvent",
+                "effect": {
+                    "type": "SacrificeTarget",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "rarity": "UNCOMMON",
+        "artist": "Mike Bierek",
+        "flavorText": "\"As the clans carved out their territories, we saw allies where the Mardu saw only obstacles.\"\n—Yasova Dragonclaw",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/ebb2c83d-48db-4d0b-8c3a-f4b0353eeb86.jpg?1783938707",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "If Frost Walker becomes the target of a spell or ability, its ability triggers and is put on the stack on top of that spell or ability. Frost Walker's ability will resolve (causing it to be sacrificed) first. Unless the spell or ability has another target, it won't resolve as it tries to resolve for having no legal targets."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3288,6 +3398,117 @@
     ]
 }
 
+// Jeskai Runemark
+{
+    "name": "Jeskai Runemark",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+2.\nEnchanted creature has flying as long as you control a red or white permanent.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING"
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent red|white"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "artist": "Jaime Jones",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2ada6302-326b-4ab1-a9a3-ae4fa6a9001c.jpg?1783938706"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Jeskai Sage
+{
+    "name": "Jeskai Sage",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Monk",
+    "oracleText": "Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\nWhen this creature dies, draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "PROWESS"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jeskai Sage:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Jeskai Sage:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "artist": "Craig J Spearing",
+        "flavorText": "\"The one who conquers the mind is greater than the one who conquers the world.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6dff4734-7b2a-4089-a78a-46199818f39d.jpg?1783938705"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Lightform
 {
     "name": "Lightform",
@@ -3374,6 +3595,59 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Lotus Path Djinn
+{
+    "name": "Lotus Path Djinn",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Djinn Monk",
+    "oracleText": "Flying\nProwess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "PROWESS"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lotus Path Djinn:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "artist": "Steve Argyle",
+        "flavorText": "\"The lotus takes root where body and mind intersect. It blooms when body and mind become one.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/197ec248-70d9-47f4-a53b-99b23f021116.jpg?1783938707"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3556,6 +3830,56 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Marang River Prowler
+{
+    "name": "Marang River Prowler",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "This creature can't block and can't be blocked.\nYou may cast this card from your graveyard as long as you control a black or green permanent.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            "CantBlock",
+            "CantBeBlocked",
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Graveyard"
+                ],
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent black|green"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "rarity": "UNCOMMON",
+        "artist": "Yefim Kligerman",
+        "flavorText": "The currents of the Marang wash away both tracks and blood.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1bc8174c-da93-414e-b89c-c588a2c4ed0c.jpg?1783938707",
+        "rulings": [
+            {
+                "date": "2018-12-07",
+                "text": "You must follow the normal timing permissions and restrictions and pay its cost to cast Marang River Prowler from your graveyard."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "Marang River Prowler checks if you control a black or green permanent only as you begin to cast it. Once you begin to cast Marang River Prowler from your graveyard, it doesn't matter what happens to the black or green permanents you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3880,6 +4204,83 @@
     ]
 }
 
+// Mindscour Dragon
+{
+    "name": "Mindscour Dragon",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nWhenever this creature deals combat damage to an opponent, target player mills four cards.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mindscour Dragon:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "EachOpponent"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "rarity": "UNCOMMON",
+        "artist": "Wesley Burt",
+        "flavorText": "\"The bells may one day ring as an anthem of our own end.\"\n—Kyu, Sage-Eye mystic",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c5708290-60ae-400c-b149-2a63153c2890.jpg?1783938705"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Mistfire Adept
 {
     "name": "Mistfire Adept",
@@ -4171,6 +4572,41 @@
         "rarity": "RARE",
         "artist": "Mark Winters",
         "imageUri": "https://cards.scryfall.io/normal/front/e/e/eef398b5-38f7-4a11-8fcf-d4e0d27267cf.jpg?1783938706"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Neutralizing Blast
+{
+    "name": "Neutralizing Blast",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target multicolored spell.",
+    "script": {
+        "spellEffect": "Counter",
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsMulticolored"
+                        ]
+                    },
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "\"To defeat your enemies, you must remove their ability to make war against you.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/5/e549a8fc-6001-43db-88b1-ce8ed42a3443.jpg?1783938704"
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -4556,6 +4992,52 @@
     ]
 }
 
+// Rakshasa's Disdain
+{
+    "name": "Rakshasa's Disdain",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell unless its controller pays {1} for each card in your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "condition": {
+                "type": "CounterCondition.UnlessPaysDynamic",
+                "amount": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Graveyard"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "artist": "Seb McKinnon",
+        "flavorText": "\"Every failure, every death only makes my strength greater.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bd9e8a25-2e71-431b-897f-8b62520a3ce9.jpg?1783938704",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "Count the number of cards in your graveyard as Rakshasa's Disdain resolves to determine how much mana the controller of the target spell must pay to avoid the spell being countered. Rakshasa's Disdain is still on the stack at this time and won't count toward this number."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Reality Shift
 {
     "name": "Reality Shift",
@@ -4629,6 +5111,54 @@
                 "text": "Unlike a face-down creature that was cast using the morph ability, a manifested creature may still be turned face up after it loses its abilities if it's a creature card."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Refocus
+{
+    "name": "Refocus",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Untap target creature.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "artist": "Kev Walker",
+        "flavorText": "\"Before you can open your third eye, you must prove you can open the first two.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/35c78973-f2ae-4c76-802f-793d1022fcbd.jpg?1783938704"
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -4820,6 +5350,74 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Rite of Undoing
+{
+    "name": "Rite of Undoing",
+    "manaCost": "{4}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Delve (Each card you exile from your graveyard while casting this spell pays for {1}.)\nReturn target nonland permanent you control and target nonland permanent you don't control to their owners' hands.",
+    "keywords": [
+        "DELVE"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Hand"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsNonland",
+                            "IsPermanent"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerNot",
+                            "predicate": "ControlledByYou"
+                        }
+                    }
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "UNCOMMON",
+        "artist": "Anastasia Ovchinnikova",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/20afe614-a367-461a-a67b-02d5ed634cc5.jpg?1783938705"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -5055,6 +5653,104 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Sage-Eye Avengers
+{
+    "name": "Sage-Eye Avengers",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Creature — Djinn Monk",
+    "oracleText": "Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\nWhenever this creature attacks, you may return target creature to its owner's hand if its power is less than this creature's power.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "PROWESS"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sage-Eye Avengers:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Sage-Eye Avengers:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "numericProperty": "Power"
+                            },
+                            "operator": "LT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Power"
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Hand"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/8050bb72-4fd4-4acd-ab21-e83f8503dcc1.jpg?1783938702"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -5845,6 +6541,69 @@
         "artist": "Ryan Barger",
         "flavorText": "A skullkeeper is the first to arrive after the palace archers strike down intruders, probing their brains for choice bits of knowledge.",
         "imageUri": "https://cards.scryfall.io/normal/front/2/1/21a93355-553c-456b-999b-e9f826a1f572.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Supplant Form
+{
+    "name": "Supplant Form",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Return target creature to its owner's hand. You create a token that's a copy of that creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "RARE",
+        "artist": "Adam Paquette",
+        "flavorText": "\"Ice can be shaped to any form, even the whisper of a memory.\"\n—Mytha, Temur shaman",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3df927c0-9aa9-450b-ab2a-ae12c5489d57.jpg?1783938701",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "If you return a face-down creature to its owner's hand, the token will be a face-up colorless 2/2 creature with no name, no abilities, and no creature types."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "If the copied creature was copying something else, the token enters the battlefield as whatever that creature was copying."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "The token copies exactly what was printed on the creature and nothing else. It doesn't copy whether that creature was tapped or untapped, whether it had any counters on it or Auras and/or Equipment attached to it, or any non-copy effects that changed its power, toughness, types, color, and so on."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -6878,5 +7637,180 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Will of the Naga
+{
+    "name": "Will of the Naga",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Delve (Each card you exile from your graveyard while casting this spell pays for {1}.)\nTap up to two target creatures. Those creatures don't untap during their controller's next untap step.",
+    "keywords": [
+        "DELVE"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    {
+                        "type": "GrantKeyword",
+                        "keyword": "DOESNT_UNTAP",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "duration": "UntilAfterAffectedControllersNextUntap"
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "artist": "Wayne Reynolds",
+        "flavorText": "The charm of a naga is undeniable.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9fed1c4d-f11e-476a-bbb2-06ffc6e261f3.jpg?1783938700",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "Will of the Naga can target creatures that are already tapped. Those creatures won't untap during their controller's next untap step."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "Will of the Naga tracks the creatures, but not their controllers. If any of those creatures changes controllers before its first controller's next untap step, then it won't untap during its new controller's next untap step."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "If you chose two targets and one is an illegal target as Will of the Naga resolves, that creature won't become tapped and it won't be stopped from untapping during its controller's next untap step. It won't be affected by Will of the Naga in any way."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Write into Being
+{
+    "name": "Write into Being",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Look at the top two cards of your library. Manifest one of those cards, then put the other on the top or bottom of your library. (To manifest a card, put it onto the battlefield face down as a 2/2 creature. Turn it face up any time for its mana cost if it's a creature card.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "storeRemainder": "remainder1",
+                    "prompt": "Choose a card to manifest",
+                    "selectedLabel": "Manifest (put onto the battlefield face down)",
+                    "remainderLabel": "Put on the top or bottom of your library"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    },
+                    "faceDown": "MANIFEST"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "remainder1",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected3",
+                    "storeRemainder": "remainder3",
+                    "prompt": "You may put the other card on the bottom of your library",
+                    "selectedLabel": "Put on bottom",
+                    "remainderLabel": "Put on top"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected3",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "remainder3",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Top"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "artist": "Yeong-Hao Han",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a85e6fbe-cda0-4fbf-853c-c03c567a7de9.jpg?1783938701",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "Other players won't know whether the card you manifest is the top card or second card of that library."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "If you're playing with the top card of your library revealed, you'll manifest one of the cards, then the other one will be revealed, then you can choose to put that card on the bottom of your library or leave it on top."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
