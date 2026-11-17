@@ -471,6 +471,7 @@ Alquist Proft, Master Sleuth
 Alrund's Epiphany
 Alrund, God of the Cosmos
 Alseid of Life's Bounty
+Altac Bloodseeker
 Altanak, the Thrice-Called
 Altar of Bone
 Altar of Dementia
@@ -2466,6 +2467,7 @@ Burn from Within
 Burn the Accursed
 Burn, Burn, Tree and Fern
 Burner Rocket
+Burning Anger
 Burning Cloak	polarity: mixed(DealDamageEffect+ModifyStatsEffect)
 Burning Curiosity
 Burning Fields
@@ -8410,6 +8412,7 @@ Heartwood Crafter
 Heartwood Giant
 Heartwood Shard
 Heartwood Treefolk
+Heat Ray
 Heat Shimmer
 Heated Argument
 Heated Debate
@@ -10734,6 +10737,7 @@ Living Lore
 Living Phone
 Living Plane
 Living Tempest
+Living Totem
 Living Twister
 Living Wall
 Livonya Silone
@@ -12312,6 +12316,7 @@ Necrogen Mists
 Necrogen Rotpriest
 Necrogen Scudder
 Necrogen Spellbomb
+Necromancer's Assistant
 Necromancer's Stockpile
 Necromantic Summons
 Necromantic Thirst	polarity: Aura>MoveToZoneEffect
@@ -12705,6 +12710,7 @@ Obelisk of Grixis
 Obelisk of Jund
 Obelisk of Naya
 Obelisk of Undoing
+Obelisk of Urd
 Oberth-Class Starship
 Oblation
 Obliterate
@@ -13170,7 +13176,12 @@ Paradox Haze	intent: AddAdditionalUpkeepStepsEffect; polarity: Aura>AddAdditiona
 Paradox Shaper
 Paradox Surveyor
 Paradoxical Outcome
+Paragon of Eternal Wilds
+Paragon of Fierce Defiance
+Paragon of Gathering Mists
 Paragon of Modernity
+Paragon of New Dawns
+Paragon of Open Graves
 Parallel Lives
 Parallel Thoughts
 Paralyze	intent: GatedEffect
@@ -13477,6 +13488,7 @@ Pillage the Bog
 Pillaging Horde
 Pillar Launch
 Pillar of Flame
+Pillar of Light
 Pillar of Origins
 Pillardrop Rescuer
 Pillardrop Warden
@@ -15052,6 +15064,7 @@ Roar of the Kha
 Roar of the Wurm
 Roaring Earth
 Roaring Furnace // Steaming Sauna
+Roaring Primadox
 Roaring Slagwurm
 Roast
 Rob the Archives
@@ -17053,7 +17066,10 @@ Soul Warden
 Soul of Emancipation
 Soul of Magma
 Soul of Migration
+Soul of New Phyrexia
+Soul of Theros
 Soul of Windgrace	intent: Pipeline(graveyard→battlefield)
+Soul of Zendikar
 Soul of the Harvest
 Soul of the Rapids
 Soul's Attendant
@@ -17418,6 +17434,7 @@ Squirrelanoids
 Sram's Expertise
 Sram, Senior Edificer
 Stab
+Stab Wound
 Stabbing Pain
 Stabilizer
 Stable Wormhole
