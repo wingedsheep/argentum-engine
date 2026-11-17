@@ -574,6 +574,42 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  FRF: {
+    setCode: 'FRF',
+    setName: 'Fate Reforged',
+    archetypes: [
+      {
+        name: 'Abzan Bolster',
+        colors: ['W', 'B', 'G'],
+        keyCard: 'Daghatar the Adamant',
+        description: 'Bolster drops +1/+1 counters on your smallest creature while manifests pad the board with spare bodies. A grindy midrange deck that wins long games one counter at a time.',
+      },
+      {
+        name: 'Jeskai Prowess',
+        colors: ['U', 'R', 'W'],
+        keyCard: 'Shu Yun, the Silent Tempest',
+        description: 'Cheap instants and sorceries trigger prowess on fliers and monks, turning each spell into a combat trick. A tempo deck that chips in through the air and burns out the last points.',
+      },
+      {
+        name: 'Sultai Delve',
+        colors: ['B', 'G', 'U'],
+        keyCard: 'Tasigur, the Golden Fang',
+        description: 'Fill your graveyard, then delve it away to cast big threats and removal for a fraction of their cost. A patient control deck that out-values the opponent late.',
+      },
+      {
+        name: 'Mardu Dash',
+        colors: ['R', 'W', 'B'],
+        keyCard: 'Alesha, Who Smiles at Death',
+        description: 'Dash hasty attackers in and back to hand, swinging every turn while Warriors and removal clear the way. An aggressive deck that keeps sorcery-speed removal from ever catching up.',
+      },
+      {
+        name: 'Temur Ferocious',
+        colors: ['G', 'U', 'R'],
+        keyCard: 'Yasova Dragonclaw',
+        description: 'Land a creature with power 4 or greater to switch on ferocious bonuses, and steal or outsize every blocker. A ramp-and-stomp deck built around the biggest bodies in the format.',
+      },
+    ],
+  },
   DTK: {
     setCode: 'DTK',
     setName: 'Dragons of Tarkir',

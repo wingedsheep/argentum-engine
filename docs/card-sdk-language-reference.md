@@ -547,6 +547,13 @@ remove nonbasics; basics remain available as they do in deck building. Used by e
 common duals or gain lands — e.g. Foundations (gain lands, 50%), Tarkir: Dragonstorm (gain lands, 100/115), The Lost
 Caverns of Ixalan (common Caves, 70%), Reality Fracture (6/11).
 
+**Guest cards from another set** — `MtgSet.boosterGuestCards: Map<String, String>` (card name → source set code)
+names cards another set printed that this set's packs open anyway. The server resolves each from its source set's
+booster pool (that set's art and rarity), stamps it `inBooster`, and adds it to this set's pool only; it is not one of
+this set's cards, so it stays out of the implemented count. The `boosterStrategy` places it — Fate Reforged's land
+slot is a `DedicatedSlot(Named(gain lands + fetchlands), rarityWeights = COMMON 230 / RARE 10)` with the five Khans of
+Tarkir fetchlands as `KTK` guests, so the slot opens a gain land or, one pack in 24, a fetchland and never a basic.
+
 **Echoed-pair boosters** — override `MtgSet.boosterStrategy` with
 `EchoedPairsPlayBooster(echoedPairs = listOf("First half" to "Second half", ...))`.
 Both halves must be in the pool to open as a pair; the third echoed card excludes the selected pair.

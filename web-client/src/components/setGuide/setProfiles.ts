@@ -472,6 +472,27 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Outlast', inPlay: 'Sorcery-speed +1/+1 counters give Abzan a mana sink that slowly out-grows the board.' },
     ],
   },
+  FRF: {
+    tagline: 'Three-colour clan decks, face-down manifests and the first Dragons. Bolster and dash push the pace, and a well-timed manifest flip swings the board.',
+    setting: 'Tarkir 1,280 years in the past, where the five clans still fight the dragon broods.',
+    gameplay: 'Each clan keeps its tool: Abzan bolsters its smallest creature, Jeskai turns cheap spells into prowess triggers, Sultai delves its graveyard for big spells, Mardu dashes in hasty attackers and Temur gets ferocious bonuses from a 4-power creature. Manifest replaces morph as the face-down game: any card off the top of your library can become a 2/2, and a manifested creature card can flip for its mana cost. Fixing comes from a gain land in nearly every pack, so three-colour decks are still the norm, and Sieges, the khans and the five Dragons are the bombs to build around.',
+    tips: [
+      'Take the gain lands: one comes in nearly every pack, and they are what let a three-colour clan deck cast its spells on time.',
+      'Manifest is card advantage on a body. A manifested creature card can flip at instant speed, so keep the mana open when you attack into one.',
+      'Bolster always hits your creature with the least toughness: sequence your plays so the counter lands where you want it.',
+    ],
+    tryIf: 'wedge-coloured clan decks, face-down mind games and Dragons',
+    power: 3, speed: 3, complexity: 4,
+    themes: ['multicolor', 'counters', 'graveyard'],
+    mechanics: [
+      { name: 'Manifest', inPlay: 'Put the top card of your library onto the battlefield face down as a 2/2; creature cards can flip for their mana cost, so every manifest is a bluff or a threat.' },
+      { name: 'Bolster', inPlay: 'Put +1/+1 counters on your creature with the least toughness, so Abzan boards grow evenly and resist removal.' },
+      { name: 'Dash', inPlay: 'Mardu creatures can be cast for a dash cost with haste and return to hand at end of turn, dodging sorcery-speed answers.' },
+      { name: 'Delve', inPlay: 'Exile cards from your graveyard to pay, so Sultai cast big spells cheaply after a few trades.' },
+      { name: 'Prowess', inPlay: 'Creatures grow with each noncreature spell, so Jeskai\'s cheap spells double as combat tricks.' },
+      { name: 'Ferocious', inPlay: 'Bonuses while you control a creature with power 4 or greater, so Temur wants a big body down early.' },
+    ],
+  },
   DTK: {
     tagline: 'Two-colour dragonlord decks, megamorphs and Dragons overhead. Each clan has its own plan, and a well-timed flip or exploit swings the board.',
     setting: 'Tarkir rewritten, where the dragons survived and five dragonlords rule the clans that once fought them.',

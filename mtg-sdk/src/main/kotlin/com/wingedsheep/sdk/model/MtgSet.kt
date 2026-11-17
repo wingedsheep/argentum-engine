@@ -100,6 +100,16 @@ interface MtgSet {
     val boosterVariantChance: Double get() = 0.0
 
     /**
+     * Cards printed in *another* set that this set's packs open anyway, keyed by card name and
+     * valued by the code of the set whose printing (art, rarity) they open as — Fate Reforged's
+     * land slot opens a Khans of Tarkir fetchland in one pack in 24. They join the booster pool
+     * only: they are not this set's cards, so they never count toward its implemented total. The
+     * [boosterStrategy] decides where they open (usually a [com.wingedsheep.sdk.limited.DedicatedSlot]).
+     * A code rather than the set object, as with [basicLandsFallbackCode], so era modules stay independent.
+     */
+    val boosterGuestCards: Map<String, String> get() = emptyMap()
+
+    /**
      * Per-printing rows this set contributes to [com.wingedsheep.engine.registry.PrintingRegistry].
      *
      * Most printings are synthesised at startup from each registered [CardDefinition]'s
