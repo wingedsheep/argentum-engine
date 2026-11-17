@@ -1189,6 +1189,69 @@
     ]
 }
 
+// Battle Brawler
+{
+    "name": "Battle Brawler",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Orc Warrior",
+    "oracleText": "As long as you control a red or white permanent, this creature gets +1/+0 and has first strike.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "CompositeStaticAbility",
+                    "abilities": [
+                        {
+                            "type": "ModifyStats",
+                            "powerBonus": 1,
+                            "toughnessBonus": 0,
+                            "filter": {
+                                "baseFilter": "permanent",
+                                "scope": "Self"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FIRST_STRIKE",
+                            "filter": {
+                                "baseFilter": "permanent",
+                                "scope": "Self"
+                            }
+                        }
+                    ]
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent red|white"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "UNCOMMON",
+        "artist": "Karl Kopinski",
+        "flavorText": "Every time he returns from battle unscathed, he feels a tinge of disappointment.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c9b5baf-6163-48a9-b58d-195edfeb437d.jpg?1783938700",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "If Battle Brawler assigns combat damage during the first combat damage step, and then it loses first strike before the second combat damage step (perhaps because you no longer control a red or white permanent), it won't assign combat damage again in the second combat damage step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Battlefront Krushok
 {
     "name": "Battlefront Krushok",
@@ -2252,6 +2315,114 @@
     ]
 }
 
+// Diplomacy of the Wastes
+{
+    "name": "Diplomacy of the Wastes",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent reveals their hand. You choose a nonland card from it. That player discards that card. If you control a Warrior, that player loses 2 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RevealHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "nonland",
+                    "storeSelected": "selected2",
+                    "prompt": "Choose a nonland card to discard",
+                    "showAllCards": true,
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "moveType": "Discard"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "permanent Warrior"
+                        }
+                    },
+                    "then": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "UNCOMMON",
+        "artist": "Jack Wang",
+        "flavorText": "\"Our emissaries are gifted negotiators.\"\n—Alesha, Who Smiles at Death",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/69faf63b-f39b-4005-a35d-1204faaa6d57.jpg?1783938698",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "If you control a Warrior as Diplomacy of the Wastes resolves, the target opponent will lose 2 life even if that player didn't discard a card (perhaps because they had no cards in hand)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Dragon Bell Monk
 {
     "name": "Dragon Bell Monk",
@@ -2374,6 +2545,101 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Dragonscale General
+{
+    "name": "Dragonscale General",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "At the beginning of your end step, bolster X, where X is the number of tapped creatures you control. (Choose a creature with the least toughness among creatures you control and put X +1/+1 counters on it.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dragonscale General:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "ControlledPermanents",
+                                "filter": "creature"
+                            },
+                            "storeAs": "bolsterCreatures"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "bolsterCreatures",
+                            "collectionFilter": "LeastToughness",
+                            "storeMatching": "bolsterLeastToughness"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "bolsterLeastToughness",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "bolstered",
+                            "prompt": "Bolster X — choose a creature with the least toughness",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "AddCountersToCollection",
+                            "collectionName": "bolstered",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "amount": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "creature tapped"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "rarity": "RARE",
+        "artist": "Volkan Baǵa",
+        "flavorText": "\"Dragons seek war. I bring it to them.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/df904cc6-3ee0-4326-a854-818695aa2890.jpg?1783938713",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "Count the number of tapped creatures you control as the ability resolves to determine the value of X."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "The creature you put the counters on doesn't have to be one of the tapped creatures."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "Bolster itself doesn't target any creature, though some spells and abilities that bolster may have other effects that target creatures. For example, you could put counters on a creature with protection from white with Abzan Skycaptain's bolster ability."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "You determine which creature to put counters on as the spell or ability that instructs you to bolster resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -2636,6 +2902,79 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Fearsome Awakening
+{
+    "name": "Fearsome Awakening",
+    "manaCost": "{4}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target creature card from your graveyard to the battlefield. If it's a Dragon, put two +1/+1 counters on it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": "creature Dragon"
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 2,
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "UNCOMMON",
+        "artist": "Véronique Meignaud",
+        "flavorText": "On Tarkir, dragons emerge from enormous tempests, phenomena tied to Ugin's very presence on the plane.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5a672979-024a-4f69-91ae-a2cf4055e0a8.jpg?1783938697",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "No player can cast spells or activate abilities between returning the creature card to the battlefield and checking whether it's a Dragon."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -3292,6 +3631,81 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Ghastly Conscription
+{
+    "name": "Ghastly Conscription",
+    "manaCost": "{5}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile all creature cards from target player's graveyard in a face-down pile, shuffle that pile, then manifest those cards. (To manifest a card, put it onto the battlefield face down as a 2/2 creature. Turn it face up any time for its mana cost if it's a creature card.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "player": "TargetPlayer",
+                        "filter": "creature"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    },
+                    "faceDown": "HIDDEN"
+                },
+                {
+                    "type": "ShufflePile",
+                    "from": [
+                        "gathered0"
+                    ],
+                    "storeAs": "pile2"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "pile2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    },
+                    "faceDown": "MANIFEST"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "rarity": "MYTHIC",
+        "artist": "YW Tang",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/120f7d4a-27b3-43e8-a301-c81d4d403a8f.jpg?1783938696",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "The pile is shuffled to disguise from your opponents which manifested creature is which. After you manifest the cards, you can look at them."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "If you manifest a card owned by an opponent and you leave the game, that card is exiled."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -5712,6 +6126,118 @@
     ]
 }
 
+// Palace Siege
+{
+    "name": "Palace Siege",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "As this enchantment enters, choose Khans or Dragons.\n• Khans — At the beginning of your upkeep, return target creature card from your graveyard to your hand.\n• Dragons — At the beginning of your upkeep, each opponent loses 2 life and you gain 2 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Palace Siege:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "triggerRestriction": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "khans"
+                },
+                "descriptionOverride": "At the beginning of your upkeep, return target creature card from your graveyard to your hand."
+            },
+            {
+                "id": "Palace Siege:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                },
+                "triggerRestriction": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "dragons"
+                },
+                "descriptionOverride": "At the beginning of your upkeep, each opponent loses 2 life and you gain 2 life."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "khans",
+                        "label": "Khans",
+                        "description": "At the beginning of your upkeep, return target creature card from your graveyard to your hand.",
+                        "iconKey": "khans"
+                    },
+                    {
+                        "id": "dragons",
+                        "label": "Dragons",
+                        "description": "At the beginning of your upkeep, each opponent loses 2 life and you gain 2 life.",
+                        "iconKey": "dragons"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d9ee5a83-7096-4cbd-ad16-eb839d293d88.jpg?1783938695",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "If a permanent enters the battlefield as a copy of one of the Sieges, its controller will make a new choice for that Siege. Which ability the copy has won't depend on the choice made for the original permanent."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Pilgrim of the Fires
 {
     "name": "Pilgrim of the Fires",
@@ -5780,6 +6306,82 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Qarsi High Priest
+{
+    "name": "Qarsi High Priest",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "{1}{B}, {T}, Sacrifice another creature: Manifest the top card of your library. (Put that card onto the battlefield face down as a 2/2 creature. Turn it face up any time for its mana cost if it's a creature card.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Qarsi High Priest:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "manifested"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "manifested",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "faceDown": "MANIFEST"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{1}{B}, {T}, Sacrifice another creature: Manifest the top card of your library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "UNCOMMON",
+        "artist": "Viktor Titov",
+        "flavorText": "\"Hear me, nameless, and obey.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/58c1bdbc-2bf4-4036-bf83-669c27458c6e.jpg?1783938695"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -5911,6 +6513,131 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Rally the Ancestors
+{
+    "name": "Rally the Ancestors",
+    "manaCost": "{X}{W}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Return each creature card with mana value X or less from your graveyard to the battlefield. Exile those creatures at the beginning of your next upkeep. Exile Rally the Ancestors.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "CompareNumericProperty",
+                                    "property": "MANA_VALUE",
+                                    "operator": "LTE",
+                                    "amount": "XValue"
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    },
+                    "storeMovedAs": "rallyTheAncestorsReturned"
+                },
+                {
+                    "type": "ConditionalOnCollection",
+                    "collection": "rallyTheAncestorsReturned",
+                    "ifNotEmpty": {
+                        "type": "CreateDelayedTrigger",
+                        "step": "UPKEEP",
+                        "effect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "rallyTheAncestorsReturned",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Exile"
+                                    }
+                                }
+                            ]
+                        },
+                        "timing": "NextTurn",
+                        "fireOnPlayer": {
+                            "type": "PlayerRef",
+                            "player": "You"
+                        },
+                        "carryCollections": [
+                            "rallyTheAncestorsReturned"
+                        ]
+                    }
+                }
+            ]
+        },
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "RARE",
+        "artist": "Nils Hamm",
+        "flavorText": "\"The family is a tree, and in times of need, every branch can be a weapon.\"\n—Daghatar the Adamant",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6d9efacb-9d7c-41f4-9b11-59df1be50e11.jpg?1783938710"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Reach of Shadows
+{
+    "name": "Reach of Shadows",
+    "manaCost": "{4}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature that's one or more colors.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsColored"
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "artist": "Daarken",
+        "flavorText": "\"Is it better to be a fool or a coward? Fools may get things done occasionally, but cowards live longer.\"\n—Ghelesh Shadowmane, rakshasa mage",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bbf9a803-473a-4c38-b352-d47c4fd93d5e.jpg?1783938693"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -7104,6 +7831,66 @@
     ]
 }
 
+// Sibsig Host
+{
+    "name": "Sibsig Host",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "When this creature enters, each player mills three cards.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sibsig Host:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "player": "Each",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "Each"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, each player mills three cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "artist": "Steve Prescott",
+        "flavorText": "\"They were your friends, your family, your clan. They want only to welcome you.\"\n—Tasigur, the Golden Fang",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/2791f1a5-bf29-48ac-8a41-88b7f97ede41.jpg?1783938694"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Sibsig Muckdraggers
 {
     "name": "Sibsig Muckdraggers",
@@ -7267,6 +8054,50 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Soul Summons
+{
+    "name": "Soul Summons",
+    "manaCost": "{1}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Manifest the top card of your library. (Put it onto the battlefield face down as a 2/2 creature. Turn it face up any time for its mana cost if it's a creature card.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeAs": "manifested"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "manifested",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    },
+                    "faceDown": "MANIFEST"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "artist": "Johann Bodin",
+        "flavorText": "Ugin's magic reaches beyond the dragons. The clans have adapted it for war.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fb884ac2-c990-4ab0-8610-e07d93da2f13.jpg?1783938709"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -7505,6 +8336,109 @@
     ]
 }
 
+// Sultai Emissary
+{
+    "name": "Sultai Emissary",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Zombie Warrior",
+    "oracleText": "When this creature dies, manifest the top card of your library. (Put that card onto the battlefield face down as a 2/2 creature. Turn it face up any time for its mana cost if it's a creature card.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sultai Emissary:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "manifested"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "manifested",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "faceDown": "MANIFEST"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Sultai Emissary dies, manifest the top card of your library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "artist": "Mathias Kollros",
+        "flavorText": "To the Sultai, Ugin's power was just one more resource to be exploited.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/12421e1c-5144-4391-abf2-a2fb864920e9.jpg?1783938692"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Sultai Runemark
+{
+    "name": "Sultai Runemark",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+2.\nEnchanted creature has deathtouch as long as you control a green or blue permanent. (Any amount of damage it deals to a creature is enough to destroy it.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "DEATHTOUCH"
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent green|blue"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "artist": "Volkan Baǵa",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/98d73ae0-de01-4a70-a51c-b990687561a1.jpg?1783938693"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Sultai Skullkeeper
 {
     "name": "Sultai Skullkeeper",
@@ -7685,6 +8619,120 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Tasigur, the Golden Fang
+{
+    "name": "Tasigur, the Golden Fang",
+    "manaCost": "{5}{B}",
+    "typeLine": "Legendary Creature — Human Shaman",
+    "oracleText": "Delve (Each card you exile from your graveyard while casting this spell pays for {1}.)\n{2}{G/U}{G/U}: Mill two cards, then return a nonland card of an opponent's choice from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "DELVE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tasigur, the Golden Fang:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G/U}{G/U}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        },
+                                        "isMill": true
+                                    },
+                                    "storeAs": "milled"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "milled",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "nonland"
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "Opponent",
+                            "storeSelected": "selected2",
+                            "prompt": "Choose a nonland card from your opponent's graveyard for them to return to their hand",
+                            "selectedLabel": "Return to hand",
+                            "remainderLabel": "Leave in graveyard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Mill two cards, then return a nonland card of an opponent's choice from your graveyard to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/81f93ac5-d149-4ccf-8b99-13ecf3190c29.jpg?1783938691",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "The chosen opponent can choose any nonland card in your graveyard, not just one of the milled cards."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "Tasigur's last ability doesn't target any card or player. You choose an opponent and that player chooses a nonland card only after you mill two cards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "GREEN"
     ]
 }
 
@@ -8355,6 +9403,115 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Wandering Champion
+{
+    "name": "Wandering Champion",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Monk",
+    "oracleText": "Whenever this creature deals combat damage to a player, if you control a blue or red permanent, you may discard a card. If you do, draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wandering Champion:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    }
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent blue|red"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "UNCOMMON",
+        "artist": "Willian Murai",
+        "flavorText": "\"Learn from your enemies, but do not tolerate them.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/59086792-c048-455f-ac0d-1a4a994bd621.jpg?1783938709",
+        "rulings": [
+            {
+                "date": "2018-12-07",
+                "text": "Wandering Champion's ability doesn't trigger if you don't control a blue or red permanent immediately after it deals combat damage to a player."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "If the only blue or red permanent you control is a creature that's dealt lethal damage at the same time as Wandering Champion deals combat damage, Wandering Champion's ability triggers."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "If you don't control a blue or red permanent as Wandering Champion's ability resolves, you can't discard and draw a card. The blue or red permanent you control as the ability resolves doesn't have to be one you controlled as the ability triggered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
