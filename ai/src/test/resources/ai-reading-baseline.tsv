@@ -71,6 +71,7 @@ Abyssal Gorestalker
 Abyssal Harvester
 Abyssal Horror
 Abyssal Nightstalker
+Abzan Advantage
 Abzan Ascendancy
 Abzan Banner
 Abzan Battle Priest
@@ -79,6 +80,8 @@ Abzan Devotee
 Abzan Falconer
 Abzan Guide
 Abzan Monument
+Abzan Runemark
+Abzan Skycaptain
 Academic Ascent
 Academic Dispute	timing: GrantKeywordEffect
 Academic Probation
@@ -3139,6 +3142,7 @@ Circuit Mender
 Circuitous Route
 Cirith Ungol Patrol
 Citadel Castellan
+Citadel Siege
 Citadel of Pain
 Citanul Druid
 Citanul Hierophants
@@ -3997,6 +4001,7 @@ Daggerdrome Imp
 Daggerfang Duo
 Daggermaw Megalodon
 Daggersail Aeronaut
+Daghatar the Adamant
 Dahar Master
 Dai Li Agents
 Dai Li Indoctrination
@@ -4887,6 +4892,7 @@ Drag the Canal
 Drag to the Bottom
 Drag to the Roots
 Drag to the Underworld
+Dragon Bell Monk
 Dragon Blood
 Dragon Breath
 Dragon Egg
@@ -5456,6 +5462,7 @@ Elite Inquisitor
 Elite Instructor
 Elite Interceptor
 Elite Javelineer
+Elite Scaleguard
 Elite Skirmisher
 Elite Spellbinder	intent: ExileAndGrantOwnerPlayPermissionEffect; intent: LookAtTargetHandEffect; intent: Pipeline(hand→?)
 Elite Vanguard
@@ -8673,6 +8680,7 @@ Honor Guard
 Honor Troll
 Honor of the Pure
 Honor the God-Pharaoh
+Honor's Reward
 Honor-Worn Shaku
 Honorable Scout	polarity: GainLifeEffect
 Honorbound Page
@@ -10570,6 +10578,7 @@ Light-Paws, Emperor's Voice
 Lightbringer
 Lightfoot Rogue
 Lightfoot Technique
+Lightform
 Lightless Evangel
 Lightning Angel
 Lightning Axe
@@ -10828,6 +10837,7 @@ Lotus Field
 Lotus Guardian
 Lotus Petal
 Lotus Ring
+Lotus-Eye Mystics
 Lotusguard Disciple
 Lotuslight Dancers
 Louisoix's Sacrifice
@@ -11198,6 +11208,7 @@ Mardu Siegebreaker
 Mardu Skullhunter
 Mardu Strike Leader
 Mardu Warshrieker
+Mardu Woe-Reaper
 Marhault Elsdragon
 Marina Vendrell	intent: LockDoorEffect; intent: UnlockDoorEffect; polarity: LockDoorEffect; polarity: UnlockDoorEffect
 Marina Vendrell's Grimoire
@@ -11308,6 +11319,7 @@ Masterful Flourish
 Masterful Replication
 Mastermind's Acquisition
 Masterwork of Ingenuity
+Mastery of the Unseen
 Masticore
 Matca Rioters
 Mathemagics
