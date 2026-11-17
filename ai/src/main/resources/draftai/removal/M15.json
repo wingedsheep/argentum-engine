@@ -1,0 +1,206 @@
+{
+  "Aetherspouts": [
+    "removal",
+    "creature-removal"
+  ],
+  "Back to Nature": [
+    "removal",
+    "enchantment-removal"
+  ],
+  "Blastfire Bolt": [
+    "removal",
+    "creature-removal"
+  ],
+  "Burning Anger": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Chandra, Pyromaster": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Chronostutter": [
+    "removal",
+    "creature-removal"
+  ],
+  "Clear a Path": [
+    "removal",
+    "creature-removal"
+  ],
+  "Cone of Flame": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Constricting Sliver": [
+    "removal",
+    "creature-removal"
+  ],
+  "Covenant of Blood": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Crippling Blight": [
+    "removal",
+    "creature-removal"
+  ],
+  "Cruel Sadist": [
+    "removal",
+    "creature-removal"
+  ],
+  "Devouring Light": [
+    "removal",
+    "creature-removal"
+  ],
+  "Divine Verdict": [
+    "removal",
+    "creature-removal"
+  ],
+  "Encrust": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Festergloom": [
+    "removal",
+    "creature-removal"
+  ],
+  "Flesh to Dust": [
+    "removal",
+    "creature-removal"
+  ],
+  "Forge Devil": [
+    "removal",
+    "creature-removal"
+  ],
+  "Garruk, Apex Predator": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Heat Ray": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hunt the Weak": [
+    "removal",
+    "creature-removal"
+  ],
+  "In Garruk's Wake": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Inferno Fist": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Into the Void": [
+    "removal",
+    "creature-removal"
+  ],
+  "Jace, the Living Guildpact": [
+    "removal",
+    "creature-removal"
+  ],
+  "Lightning Strike": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Mass Calcify": [
+    "removal",
+    "creature-removal"
+  ],
+  "Meteorite": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Naturalize": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Nightfire Giant": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Oppressive Rays": [
+    "removal",
+    "creature-removal"
+  ],
+  "Peel from Reality": [
+    "removal",
+    "creature-removal"
+  ],
+  "Perilous Vault": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Pillar of Light": [
+    "removal",
+    "creature-removal"
+  ],
+  "Plummet": [
+    "removal",
+    "creature-removal"
+  ],
+  "Reclamation Sage": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Seismic Strike": [
+    "removal",
+    "creature-removal"
+  ],
+  "Shrapnel Blast": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Siege Dragon": [
+    "removal",
+    "creature-removal"
+  ],
+  "Solemn Offering": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Soul of Shandalar": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Stab Wound": [
+    "removal",
+    "creature-removal"
+  ],
+  "Stoke the Flames": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Torch Fiend": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Ulcerate": [
+    "removal",
+    "creature-removal"
+  ],
+  "Void Snare": [
+    "removal",
+    "creature-removal"
+  ]
+}

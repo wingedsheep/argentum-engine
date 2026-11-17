@@ -3032,6 +3032,42 @@
     ]
 }
 
+// Heat Ray
+{
+    "name": "Heat Ray",
+    "manaCost": "{X}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Heat Ray deals X damage to target creature.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": "XValue",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "199",
+        "artist": "Brian Snõddy",
+        "flavorText": "It's not known whether the Thran built the device to forge their wonders or to defend them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6a27f90e-d156-439c-b5e5-6d53bd510fe7.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Hollow Dogs
 {
     "name": "Hollow Dogs",
