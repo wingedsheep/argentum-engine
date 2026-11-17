@@ -30,6 +30,15 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-dtk',
+    date: '2026-11-17',
+    kind: 'set',
+    setCode: 'DTK',
+    title: 'Dragons of Tarkir is complete',
+    body: "Tarkir's dragons survived, and five dragonlords now rule its clans. Draft one of five two-colour clans: Dromoka's bolster counters, Ojutai's spells and fliers, Silumgar's exploit sacrifices, Kolaghan's hasty dash attackers or Atarka's formidable stompers, with megamorph creatures hiding face down.",
+    tryIf: 'two-colour clan decks, morph mind games and big Dragons',
+  },
+  {
     id: 'set-ori',
     date: '2026-11-14',
     kind: 'set',
