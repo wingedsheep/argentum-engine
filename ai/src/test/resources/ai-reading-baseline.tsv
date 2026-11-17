@@ -1460,6 +1460,7 @@ Battering Sliver
 Battershield Warrior
 Battery Bearer
 Battle Angels of Tyr
+Battle Brawler
 Battle Cry Goblin
 Battle Hymn
 Battle Mammoth
@@ -4637,6 +4638,7 @@ Dinosaur Stampede
 Dinotomaton
 Dion, Bahamut's Dominant
 Dionus, Elvish Archdruid
+Diplomacy of the Wastes
 Diplomatic Immunity
 Diplomatic Relations
 Dire Downdraft
@@ -4958,6 +4960,7 @@ Dragonmaster Outcast
 Dragonologist
 Dragonrage
 Dragonscale Boon
+Dragonscale General
 Dragonsguard Elite
 Dragonskull Summit
 Dragonspark Reactor
@@ -6239,6 +6242,7 @@ Fearless Liberator
 Fearless Pup
 Fearless Skald
 Fearless Swashbuckler
+Fearsome Awakening
 Fearsome Goblin Pair
 Feast of Blood
 Feast of Worms
@@ -7229,6 +7233,7 @@ Ghalta the Unstoppable
 Ghalta, Primal Hunger
 Ghalta, Stampede Tyrant
 Ghastbark Twins
+Ghastly Conscription
 Ghastly Discovery
 Ghastly Gloomhunter
 Ghastly Remains
@@ -13120,6 +13125,7 @@ Painter's Studio // Defaced Gallery
 Painwracker Oni
 Paired Tactician
 Palace Familiar
+Palace Siege
 Paladin Class
 Paladin Danse, Steel Maverick
 Paladin Elizabeth Taggerdy
@@ -14018,6 +14024,7 @@ Q, Stacking the Deck	intent: GatherUntilMatchEffect; intent: GrantActivatedAbili
 Qal Sisma Behemoth
 Qala, Ajani's Pridemate
 Qarsi Deceiver
+Qarsi High Priest
 Qarsi Revenant
 Qarsi Sadist
 Qasali Slingers
@@ -14249,6 +14256,7 @@ Rally Maneuver
 Rally at the Hornburg
 Rally for the Throne
 Rally of Wings
+Rally the Ancestors
 Rally the Monastery
 Rally the Peasants
 Rally the Ranks
@@ -14422,6 +14430,7 @@ Razorverge Thicket
 Razzle-Dazzler
 Reach Through Mists
 Reach for the Sky
+Reach of Shadows
 Reach the Horizon
 Read the Bones
 Read the Runes
@@ -16395,6 +16404,7 @@ Shuri, Wakandan Inventor
 Shuttle Ace
 Sibling Rivalry
 Sibsig Appraiser
+Sibsig Host
 Sibsig Icebreakers
 Sibsig Muckdraggers
 Sickbay
@@ -17025,6 +17035,7 @@ Soul Search
 Soul Separator
 Soul Shatter
 Soul Shred
+Soul Summons
 Soul Swallower
 Soul Transfer
 Soul Warden
@@ -17832,8 +17843,10 @@ Sultai Ascendancy
 Sultai Banner
 Sultai Charm
 Sultai Devotee
+Sultai Emissary
 Sultai Flayer
 Sultai Monument
+Sultai Runemark
 Sultai Scavenger
 Sultai Skullkeeper
 Sultai Soothsayer
@@ -18330,6 +18343,7 @@ Tarrian's Soulcleaver
 Tasha Yar, Out of Time
 Tasha's Hideous Laughter	intent: ExileLibraryUntilManaValueEffect
 Tasigur's Cruelty
+Tasigur, the Golden Fang
 Task Force
 Taskmaster, Mercenary Mimic
 Tasseled Dromedary
@@ -20678,6 +20692,7 @@ Wanderer's Strike
 Wanderer's Twig
 Wanderguard Sentry	intent: LookAtTargetHandEffect
 Wandering Archaic	intent: PayOrSufferEffect
+Wandering Champion
 Wandering Fumarole
 Wandering Mind
 Wandering Musicians
