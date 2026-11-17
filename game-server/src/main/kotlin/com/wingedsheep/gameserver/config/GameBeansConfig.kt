@@ -122,7 +122,12 @@ class GameBeansConfig(
                 val extrasByProduct = setCoverageService.limitedProducts(set.code)
                     .mapValues { (_, names) -> names.mapNotNull(extrasByName::get) }
                     .filterValues { it.isNotEmpty() }
-                if (pool.isEmpty()) null else set.code to set.toBoosterSetConfig(pool, extrasByProduct)
+                if (pool.isEmpty()) {
+                    null
+                } else {
+                    val guests = set.boosterGuestPool(cardRegistry)
+                    set.code to set.toBoosterSetConfig(pool + guests, extrasByProduct, guests.mapTo(hashSetOf()) { it.name })
+                }
             }
             .toMap()
     )
@@ -254,9 +259,26 @@ private fun MtgSet.boosterCardPool(
     return (eligibleOwnCards + packOnlyBasics + resolvedReprints).sortedBy { it.name }
 }
 
+/**
+ * The [MtgSet.boosterGuestCards] this set's packs open: each resolved from its source set's own
+ * booster pool, so it carries that set's art and rarity, and stamped `inBooster` — it is in this
+ * set's pack even where the source set's flag would say otherwise. A guest whose source set or
+ * card isn't implemented is skipped, like an unimplemented reprint.
+ */
+private fun MtgSet.boosterGuestPool(registry: CardRegistry): List<CardDefinition> =
+    boosterGuestCards.entries
+        .groupBy({ it.value }, { it.key })
+        .flatMap { (sourceCode, names) ->
+            val source = MtgSetCatalog.byCode(sourceCode) ?: return@flatMap emptyList()
+            source.boosterCardPool(registry, limitedCardNames = null)
+                .filter { it.name in names }
+                .map { it.copy(metadata = it.metadata.copy(inBooster = true)) }
+        }
+
 private fun MtgSet.toBoosterSetConfig(
     cards: List<CardDefinition>,
     extraCardsByProduct: Map<String, List<CardDefinition>>,
+    guestCardNames: Set<String>,
 ): BoosterGenerator.SetConfig {
     val defaultPoolNames = cards.mapTo(hashSetOf()) { it.name }
     return BoosterGenerator.SetConfig(
@@ -275,5 +297,6 @@ private fun MtgSet.toBoosterSetConfig(
         // default booster pool; optional product printings are counted in their product rows.
         printings = printings.filter { it.name in defaultPoolNames },
         variantChance = boosterVariantChance,
+        guestCardNames = guestCardNames,
     )
 }

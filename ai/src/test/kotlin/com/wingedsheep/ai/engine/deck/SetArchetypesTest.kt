@@ -26,6 +26,27 @@ class SetArchetypesTest : StringSpec({
         synergies.archetypes.map { it.colors.toSet() } shouldContainExactly ALL_COLOR_PAIRS.toList()
     }
 
+    "Fate Reforged exposes its five clan wedge archetypes, none tribal" {
+        val synergies = requireNotNull(SetArchetypes.getForSet("frf"))
+
+        synergies.setName shouldBe "Fate Reforged"
+        synergies.archetypes.map { it.name } shouldContainExactly listOf(
+            "Abzan Bolster",
+            "Jeskai Prowess",
+            "Sultai Delve",
+            "Mardu Dash",
+            "Temur Ferocious",
+        )
+        synergies.archetypes.map { it.colors.toSet() } shouldContainExactly listOf(
+            setOf(Color.WHITE, Color.BLACK, Color.GREEN),
+            setOf(Color.BLUE, Color.RED, Color.WHITE),
+            setOf(Color.BLACK, Color.GREEN, Color.BLUE),
+            setOf(Color.RED, Color.WHITE, Color.BLACK),
+            setOf(Color.GREEN, Color.BLUE, Color.RED),
+        )
+        synergies.archetypes.all { it.creatureTypes.isEmpty() } shouldBe true
+    }
+
     "Dragons of Tarkir exposes its five dragonlord-clan signpost archetypes, none tribal" {
         val synergies = requireNotNull(SetArchetypes.getForSet("dtk"))
 

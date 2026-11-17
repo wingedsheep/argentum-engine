@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Rarity
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.doubles.plusOrMinus
@@ -441,6 +442,69 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
                 pack.size shouldBe 14
                 pack.none { it.name in banned } shouldBe true
                 pack.count { it.metadata.rarity == Rarity.COMMON } shouldBe 10
+            }
+        }
+    }
+
+    test("Fate Reforged draft pack is 10 commons, 3 uncommons, a rare or mythic and a gain land or KTK fetchland") {
+        // Draft Booster (mtg.wtf/pack/frf): 10 commons, 3 uncommons, a rare or mythic (35 rares 2/80, 10 mythics
+        // 1/80) and a land slot that never holds a basic: a gain land (23/240 each) or a Khans of Tarkir
+        // fetchland (1/120 each). The foil replacing a common in 9 packs of 40 is cosmetic.
+        val frf = boosterGenerator.availableSets["FRF"].shouldNotBeNull()
+        frf.fullyImplemented shouldBe true
+        frf.block shouldBe "Khans of Tarkir"
+        frf.boosterStrategy.shouldBeInstanceOf<DedicatedSlotBooster>()
+        val gainLands = setOf(
+            "Bloodfell Caves", "Blossoming Sands", "Dismal Backwater", "Jungle Hollow", "Rugged Highlands",
+            "Scoured Barrens", "Swiftwater Cliffs", "Thornwood Falls", "Tranquil Cove", "Wind-Scarred Crag",
+        )
+        val fetchlands = setOf("Bloodstained Mire", "Flooded Strand", "Polluted Delta", "Windswept Heath", "Wooded Foothills")
+        frf.guestCardNames shouldBe fetchlands
+        // The fetchlands open as their Khans of Tarkir printing, at rare.
+        frf.cards.filter { it.name in fetchlands }.forEach { fetch ->
+            fetch.metadata.rarity shouldBe Rarity.RARE
+            fetch.metadata.inBooster shouldBe true
+        }
+        frf.cards.filter { it.name in fetchlands }.map { it.setCode }.toSet() shouldBe setOf("KTK")
+        val eligible = frf.cards.filter { it.metadata.inBooster && !it.typeLine.isFreelyAddedBasicLand }
+        // Scryfall `set:frf is:booster -t:basic` (70 / 60 / 35 / 10), plus the five guest fetchlands at rare.
+        eligible.filterNot { it.name in fetchlands }.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 70, Rarity.UNCOMMON to 60, Rarity.RARE to 35, Rarity.MYTHIC to 10,
+        )
+        // The guests never count as Fate Reforged cards.
+        frf.distinctCardCount shouldBe frf.cards.map { it.name }.toSet().size - fetchlands.size
+        val eligibleNames = eligible.mapTo(hashSetOf()) { it.name }
+        var mythics = 0
+        var fetches = 0
+        val packs = 6000
+        repeat(packs) {
+            val pack = boosterGenerator.generateBooster("FRF")
+            withClue("pack ${pack.map { it.name }}") {
+                pack.size shouldBe 15
+                pack.map { it.name }.toSet().size shouldBe 15
+                pack.all { it.name in eligibleNames } shouldBe true
+                pack.none { it.typeLine.isFreelyAddedBasicLand } shouldBe true
+                // Exactly one land-slot card, and it is the last one.
+                pack.count { it.name in gainLands || it.name in fetchlands } shouldBe 1
+                (pack.last().name in gainLands || pack.last().name in fetchlands) shouldBe true
+                val body = pack.dropLast(1)
+                body.count { it.metadata.rarity == Rarity.COMMON } shouldBe 10
+                body.count { it.metadata.rarity == Rarity.UNCOMMON } shouldBe 3
+                body.count { it.metadata.rarity == Rarity.RARE || it.metadata.rarity == Rarity.MYTHIC } shouldBe 1
+                mythics += body.count { it.metadata.rarity == Rarity.MYTHIC }
+            }
+            if (pack.last().name in fetchlands) fetches++
+        }
+        (mythics.toDouble() / packs) shouldBe (0.125 plusOrMinus 0.02)
+        // 10 of 240 land-slot sheet positions are fetchlands.
+        (fetches.toDouble() / packs) shouldBe ((10.0 / 240) plusOrMinus 0.012)
+
+        // Banning the fetchlands leaves the land slot to the gain lands.
+        repeat(200) {
+            val pack = boosterGenerator.generateBooster("FRF", bannedCardNames = fetchlands)
+            withClue("pack ${pack.map { it.name }}") {
+                pack.size shouldBe 15
+                pack.last().name shouldBeIn gainLands
             }
         }
     }
@@ -1451,7 +1515,7 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         // foil/List/Special Guest/bonus-sheet cards).
         val expected = mapOf(
             "ARN" to 8, "ATQ" to 8, "DRK" to 8, "FEM" to 8, "LEG" to 15, "PTK" to 8,
-            "POR" to 13, "P02" to 13, "S99" to 13, "VOW" to 14, "SOI" to 14, "EMN" to 14, "OGW" to 14, "ORI" to 14, "DTK" to 14, "KHM" to 15, "IKO" to 15, "M20" to 15, "RNA" to 15, "GRN" to 15, "LCI" to 15, "MOM" to 14,
+            "POR" to 13, "P02" to 13, "S99" to 13, "VOW" to 14, "SOI" to 14, "EMN" to 14, "OGW" to 14, "ORI" to 14, "FRF" to 15, "DTK" to 14, "KHM" to 15, "IKO" to 15, "M20" to 15, "RNA" to 15, "GRN" to 15, "LCI" to 15, "MOM" to 14,
             "MKM" to 13, "OTJ" to 13, "MH3" to 13, "BLB" to 13, "DSK" to 14, "FDN" to 14, "INR" to 13,
             "DFT" to 14, "TDM" to 14, "FIN" to 14, "EOE" to 13, "SPM" to 14, "TLA" to 14, "ECL" to 13,
             "TMT" to 14, "SOS" to 13, "MSH" to 14, "HOB" to 14, "ZNR" to 14, "STX" to 15,

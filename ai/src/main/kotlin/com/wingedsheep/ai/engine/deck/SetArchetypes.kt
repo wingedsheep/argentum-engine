@@ -280,6 +280,22 @@ object SetArchetypes {
                     "Ferocious abilities activate when you control a creature with power 4 or greater. Ramp into the biggest threats in the format."),
             )
         ),
+        "FRF" to SetSynergies(
+            setCode = "FRF",
+            setName = "Fate Reforged",
+            archetypes = listOf(
+                Archetype("Abzan Bolster", listOf(Color.WHITE, Color.BLACK, Color.GREEN),
+                    "Bolster drops +1/+1 counters on your smallest creature while manifests pad the board with spare bodies. A grindy midrange deck that wins long games one counter at a time."),
+                Archetype("Jeskai Prowess", listOf(Color.BLUE, Color.RED, Color.WHITE),
+                    "Cheap instants and sorceries trigger prowess on fliers and monks, turning each spell into a combat trick. A tempo deck that chips in through the air and burns out the last points."),
+                Archetype("Sultai Delve", listOf(Color.BLACK, Color.GREEN, Color.BLUE),
+                    "Fill your graveyard, then delve it away to cast big threats and removal for a fraction of their cost. A patient control deck that out-values the opponent late."),
+                Archetype("Mardu Dash", listOf(Color.RED, Color.WHITE, Color.BLACK),
+                    "Dash hasty attackers in and back to hand, swinging every turn while Warriors and removal clear the way. An aggressive deck that keeps sorcery-speed removal from ever catching up."),
+                Archetype("Temur Ferocious", listOf(Color.GREEN, Color.BLUE, Color.RED),
+                    "Land a creature with power 4 or greater to switch on ferocious bonuses, and steal or outsize every blocker. A ramp-and-stomp deck built around the biggest bodies in the format."),
+            )
+        ),
         "DTK" to SetSynergies(
             setCode = "DTK",
             setName = "Dragons of Tarkir",

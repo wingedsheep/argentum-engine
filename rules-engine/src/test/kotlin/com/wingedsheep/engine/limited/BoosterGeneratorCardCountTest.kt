@@ -66,5 +66,12 @@ class BoosterGeneratorCardCountTest : DescribeSpec({
                 printings = listOf(reprint("Abrade", frame = true), reprint("Command Tower")),
             ).distinctCardCount shouldBe 2
         }
+
+        it("leaves out another set's guest cards that only join the booster pool") {
+            // Fate Reforged's packs open Khans of Tarkir fetchlands; they are not Fate Reforged cards.
+            config(listOf(card("Abrade"), card("Flooded Strand")), listOf(reprint("Command Tower")))
+                .copy(guestCardNames = setOf("Flooded Strand"))
+                .distinctCardCount shouldBe 2
+        }
     }
 })

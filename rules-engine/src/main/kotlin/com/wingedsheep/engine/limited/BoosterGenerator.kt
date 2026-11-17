@@ -80,6 +80,12 @@ class BoosterGenerator(
         val printings: List<Printing> = emptyList(),
         /** See [com.wingedsheep.sdk.model.MtgSet.boosterVariantChance]. 0.0 disables the variant slot. */
         val variantChance: Double = 0.0,
+        /**
+         * Names in [cards] that are another set's cards this set's packs open
+         * ([com.wingedsheep.sdk.model.MtgSet.boosterGuestCards]). They stay in the pool but not in
+         * [distinctCardCount]: they are not this set's cards.
+         */
+        val guestCardNames: Set<String> = emptySet(),
     ) {
         /**
          * A set is "fully implemented" — and therefore shown by default in set pickers — only when
@@ -98,6 +104,7 @@ class BoosterGenerator(
          */
         val distinctCardCount: Int
             get() = (cards.asSequence().map { it.name } + printings.asSequence().map { it.name })
+                .filter { it !in guestCardNames }
                 .distinct().count()
     }
 
