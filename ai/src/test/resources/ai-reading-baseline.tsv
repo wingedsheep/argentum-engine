@@ -3813,6 +3813,7 @@ Crown of Suspicion	intent: GrantToEnchantedCreatureTypeGroupEffect; timing: Gran
 Crown of Vigor	intent: GrantToEnchantedCreatureTypeGroupEffect; timing: GrantToEnchantedCreatureTypeGroupEffect
 Crucible of Fire
 Crucible of Worlds
+Crucible of the Spirit Dragon
 Crude Bent Blade
 Crude Rampart
 Cruel Administrator
@@ -3924,6 +3925,7 @@ Cunning Giant
 Cunning Lethemancer
 Cunning Maneuver
 Cunning Nightbonder
+Cunning Strike
 Cunning Survivor
 Cuombajj Witches
 Curate
@@ -5096,6 +5098,7 @@ Dromoka Monument
 Dromoka Warrior
 Dromoka's Command
 Dromoka's Gift
+Dromoka, the Eternal
 Drooling Groodion
 Drop of Honey
 Dropkick Bomber	polarity: GrantTriggeredAbilityEffect
@@ -5853,6 +5856,7 @@ Eternal of Harsh Truths
 Eternity Snare
 Ether
 Ethereal Absolution
+Ethereal Ambush
 Ethereal Armor
 Ethereal Guidance
 Ethereal Haze
@@ -8297,6 +8301,7 @@ Harsh Justice
 Harsh Mentor
 Harsh Mercy
 Harsh Scrutiny
+Harsh Sustenance
 Haru, Hidden Talent
 Harvest Hand
 Harvest Season
@@ -8541,6 +8546,7 @@ Heron of Hope
 Heron's Grace Champion
 Heron-Blessed Geist
 Hew the Entwood
+Hewed Stone Retainers
 Hex
 Hex Magic
 Hexbane Tortoise
@@ -10167,6 +10173,7 @@ Kolaghan Skirmisher
 Kolaghan Stormsinger
 Kolaghan Warmonger
 Kolaghan's Command
+Kolaghan, the Storm's Fury
 Kolinahr Priest
 Koll, the Forgemaster
 Kolodin, Triumph Caster	intent: AddCardTypeEffect; intent: BecomeSaddledEffect
@@ -12770,6 +12777,7 @@ Ojutai Monument
 Ojutai's Breath
 Ojutai's Command
 Ojutai's Summons
+Ojutai, Soul of Winter
 Oketra the True
 Oketra's Attendant
 Oketra's Avenger
@@ -14997,7 +15005,7 @@ Ritual of Hope
 Ritual of Rejuvenation
 Ritual of Restoration
 Ritual of Soot
-Rivaz of the Claw	intent: GrantTriggeredAbilityEffect
+Rivaz of the Claw
 Riven Turnbull
 Rivendell
 River Bear
@@ -15781,6 +15789,7 @@ Scroll Rack
 Scroll Thief
 Scroll of Avacyn
 Scroll of Isildur	polarity: DrawCardsEffect
+Scroll of the Masters
 Scrollshift
 Scrounge for Eternity
 Scrounger of Souls
@@ -16280,6 +16289,7 @@ Shields Up!
 Shields of Velis Vel
 Shifting Ceratops
 Shifting Grift
+Shifting Loyalties
 Shifting Sliver
 Shifting Woodland
 Shigeki, Jukai Visionary
@@ -19733,6 +19743,7 @@ Uba Mask
 Uchbenbak, the Great Mistake
 Ugin's Binding
 Ugin's Conjurant
+Ugin's Construct
 Ugin's Insight
 Ugin's Labyrinth	intent: Pipeline(FromLinkedExile→hand); intent: Pipeline(hand→exile)
 Ugin's Nexus
@@ -20718,6 +20729,7 @@ War Chariot
 War Effort
 War Elemental
 War Elephant
+War Flare
 War Historian
 War Horn
 War Machine, Legacy of Iron
@@ -21012,6 +21024,7 @@ Whispering Snitch
 Whispering Wizard
 Whispers of Emrakul
 Whispersilk Cloak
+Whisperwood Elemental
 White Auracite
 White Dragon
 White Glove Gourmand
@@ -21078,6 +21091,7 @@ Wild Wanderer
 Wild Wasteland
 Wild-Field Scarecrow
 Wildborn Preserver
+Wildcall
 Wilderland Scrounger
 Wilderness Reclamation
 Wildest Dreams
@@ -21434,6 +21448,7 @@ Yarok's Wavecrasher
 Yarok, the Desecrated
 Yarus, Roar of the Old Gods
 Yasharn, Implacable Earth
+Yasova Dragonclaw
 Yathan Roadwatcher
 Yathan Tombguard
 Yavimaya Barbarian
