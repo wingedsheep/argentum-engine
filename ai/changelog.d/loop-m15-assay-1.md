@@ -1,1 +1,1 @@
-- #PR Drafts and builds Magic 2015 decks from a first-party pick-rating and removal table instead of guessing every M15 card from the effect heuristic
+- #4721 Drafts and builds Magic 2015 decks from a first-party pick-rating and removal table instead of guessing every M15 card from the effect heuristic
