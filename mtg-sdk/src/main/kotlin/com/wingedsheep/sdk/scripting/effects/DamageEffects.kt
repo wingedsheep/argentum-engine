@@ -357,7 +357,7 @@ data class MutualDamageEffect(
     val stat: CreatureStat
 ) : Effect {
     override val description: String =
-        "${target1.description} and ${target2.description} each deal damage equal to its ${stat.displayName} to the other"
+        "each of ${target1.description} and ${target2.description} deals damage equal to its ${stat.displayName} to the other"
 }
 
 /**

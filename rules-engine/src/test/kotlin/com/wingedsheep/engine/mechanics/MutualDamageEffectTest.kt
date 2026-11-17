@@ -70,13 +70,23 @@ class MutualDamageEffectTest : FunSpec({
         }
     }
 
+    /** "Target creature gains hexproof until end of turn." */
+    val Veil = card("Mutual Test Veil") {
+        manaCost = "{G}"
+        typeLine = "Instant"
+        spell {
+            val creature = target(TargetFilter.Creature)
+            effect = Effects.GrantKeyword(Keyword.HEXPROOF, creature)
+        }
+    }
+
     val ToughnessContest = contest("Mutual Test Toughness Contest", CreatureStat.TOUGHNESS)
     val PowerContest = contest("Mutual Test Power Contest", CreatureStat.POWER)
 
     fun newDriver(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(
-            TestCards.all + listOf(Turtle, Giant, Withering, Bear, Healer, Watcher, ToughnessContest, PowerContest)
+            TestCards.all + listOf(Turtle, Giant, Withering, Bear, Healer, Watcher, Veil, ToughnessContest, PowerContest)
         )
         driver.initMirrorMatch(deck = Deck.of("Forest" to 60), startingLife = 20)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -201,6 +211,29 @@ class MutualDamageEffectTest : FunSpec({
         cast(driver, me, "Mutual Test Toughness Contest", turtle, giant) { driver.moveToGraveyard(turtle) }
 
         damageOn(driver, giant) shouldBe 0
+        driver.events.drop(eventsBefore).filterIsInstance<DamageDealtEvent>() shouldBe emptyList()
+    }
+
+    test("an illegal target still on the battlefield: neither creature deals or is dealt damage") {
+        val driver = newDriver()
+        val me = driver.activePlayer!!
+        val opp = driver.getOpponent(me)
+        val turtle = driver.putCreatureOnBattlefield(me, "Mutual Test Turtle")
+        val giant = driver.putCreatureOnBattlefield(opp, "Mutual Test Giant")
+        val eventsBefore = driver.events.size
+
+        cast(driver, me, "Mutual Test Toughness Contest", turtle, giant) {
+            // The opponent answers by giving its Giant hexproof: still a creature on the battlefield,
+            // but no longer a legal target as the contest resolves.
+            val veil = driver.putCardInHand(opp, "Mutual Test Veil")
+            driver.giveMana(opp, Color.GREEN, 1)
+            driver.passPriority(me)
+            driver.castSpell(opp, veil, listOf(giant)).outcome shouldBe Outcome.Done
+        }
+
+        (giant in driver.state.getBattlefield()) shouldBe true
+        damageOn(driver, giant) shouldBe 0
+        damageOn(driver, turtle) shouldBe 0
         driver.events.drop(eventsBefore).filterIsInstance<DamageDealtEvent>() shouldBe emptyList()
     }
 })
