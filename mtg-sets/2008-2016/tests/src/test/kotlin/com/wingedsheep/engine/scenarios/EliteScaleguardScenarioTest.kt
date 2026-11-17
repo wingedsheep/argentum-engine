@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
@@ -9,7 +10,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * Scenario tests for Elite Scaleguard (Fate Reforged #12) — {4}{W} Creature — Human Soldier, 2/3.
@@ -83,7 +84,8 @@ class EliteScaleguardScenarioTest : ScenarioTestBase() {
                 game.declareAttackers(mapOf("Grizzly Bears" to 2)).error shouldBe null
 
                 withClue("the attack trigger must announce a target creature the defending player controls") {
-                    game.state.pendingDecision shouldNotBe null
+                    val decision = game.state.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+                    decision.legalTargets[0] shouldBe listOf(giant)
                 }
                 game.selectTargets(listOf(giant)).error shouldBe null
                 game.resolveStack()
