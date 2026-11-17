@@ -69,6 +69,7 @@ import com.wingedsheep.sdk.scripting.effects.AddCountersToCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.GrantStaticAbilityEffect
+import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityToGroupEffect
 import com.wingedsheep.sdk.scripting.effects.GrantLoyaltyActivationPermissionEffect
 import com.wingedsheep.sdk.scripting.AdditionalManaOnSourceTap
 import com.wingedsheep.sdk.scripting.effects.IterationSpace
@@ -408,7 +409,9 @@ object AiReadingAudit {
                     timing(spell, sink) { leaf ->
                         ExpiringGrantWindow.hasExpiringReading(leaf, creatureGrants = false) || wholeRead ||
                             (heldWhole || (leaf is ModifyStatsEffect && IntentTag.COMBAT_TRICK in intent.tags)) ||
-                            (leaf is ForEachEffect && intent.expiringGroupPump) ||
+                            // A team pump, or a fight trick handed to the team (Dragonrage): HoldPolicy
+                            // holds it as a combat trick until the team is in the fight.
+                            ((leaf is ForEachEffect || leaf is GrantActivatedAbilityToGroupEffect) && intent.expiringGroupPump) ||
                             // Haste until end of turn on a creature: all it buys is a fresh creature
                             // attacking now, and the cast's own simulation in our precombat main runs
                             // that attack. Anywhere else it changes nothing the leaf would score, so a
