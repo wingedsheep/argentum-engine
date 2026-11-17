@@ -1,2 +1,2 @@
-- #TBD Reads a "you may pay …; if you do, return target creature card from your graveyard to the battlefield" pipeline (Alesha, Who Smiles at Death) as reanimation: it names its best graveyard creature and knows the trigger is recursion
-- #TBD Holds a team fight-trick grant until end of turn (Dragonrage, Shade's Breath) as a combat trick: no longer cast before attackers are declared or with no creature in the fight
+- #4714 Reads a "you may pay …; if you do, return target creature card from your graveyard to the battlefield" pipeline (Alesha, Who Smiles at Death) as reanimation: it names its best graveyard creature and knows the trigger is recursion
+- #4714 Holds a team fight-trick grant until end of turn (Dragonrage, Shade's Breath) as a combat trick: no longer cast before attackers are declared or with no creature in the fight
