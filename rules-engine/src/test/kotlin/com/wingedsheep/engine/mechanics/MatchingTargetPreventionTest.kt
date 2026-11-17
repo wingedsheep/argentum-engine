@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.mechanics
 
+import com.wingedsheep.engine.core.ChooseColorDecision
+import com.wingedsheep.engine.core.ColorChosenResponse
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.support.GameTestDriver
@@ -21,12 +23,14 @@ import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * A `PreventionSourceFilter.Matching` prevent-all shield on one target — "prevent all damage that
  * would be dealt to that creature this turn by colorless sources" (Lithomancer's Focus). Only the
  * target is protected and only from matching sources; `combatOnly` narrows it to combat damage; a
- * player recipient works too; a capped shape still has no lowering. Both a protected creature and a
+ * player recipient works too; a color chosen on resolution (`ChooseColorThen`) is pinned into the
+ * shield; a capped shape still has no lowering. Both a protected creature and a
  * protected player show what the shield stops.
  */
 class MatchingTargetPreventionTest : FunSpec({
@@ -73,6 +77,16 @@ class MatchingTargetPreventionTest : FunSpec({
             effect = Effects.DealDamage(2, t)
         }
     }
+    val chosenColorWard = card("Test Chosen Color Ward") {
+        manaCost = "{W}"
+        typeLine = "Instant"
+        spell {
+            val t = target(Targets.Any)
+            effect = Effects.ChooseColorThen(
+                Effects.PreventDamage(target = t, sources = PreventionSourceFilter.Matching(GameObjectFilter.Any.withChosenColor()))
+            )
+        }
+    }
     val blackBlast = card("Test Black Blast") {
         manaCost = "{B}"
         typeLine = "Instant"
@@ -84,7 +98,7 @@ class MatchingTargetPreventionTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + redWard + redCombatWard + redWardYou + cappedWard + redBlast + blackBlast)
+        driver.registerCards(TestCards.all + redWard + redCombatWard + redWardYou + cappedWard + chosenColorWard + redBlast + blackBlast)
         driver.initMirrorMatch(deck = Deck.of("Plains" to 40), skipMulligans = true)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
@@ -180,6 +194,45 @@ class MatchingTargetPreventionTest : FunSpec({
             badges.any { it.effectId == "prevent_all_damage" } shouldBe false
             badges.single { it.effectId.startsWith("prevent_all_damage_from_") }.description!! shouldContain "by red sources"
         }
+    }
+
+    test("a color chosen on resolution is pinned into the shield that outlives it") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+        val warded = driver.putCreatureOnBattlefield(player, "Centaur Courser")
+
+        val ward = driver.putCardInHand(player, "Test Chosen Color Ward")
+        driver.giveMana(player, Color.WHITE, 1)
+        driver.castSpell(player, ward, listOf(warded)).error shouldBe null
+        driver.bothPass()
+        val decision = driver.pendingDecision.shouldBeInstanceOf<ChooseColorDecision>()
+        driver.submitDecision(player, ColorChosenResponse(decision.id, Color.BLACK)).error shouldBe null
+
+        driver.cast(player, "Test Black Blast", Color.BLACK, warded)
+        withClue("a source of the chosen color, cast after the ward resolved, is prevented") { driver.damageOn(warded) shouldBe 0 }
+        driver.cast(player, "Test Red Blast", Color.RED, warded)
+        withClue("another color isn't covered") { driver.damageOn(warded) shouldBe 2 }
+
+        val descriptions = driver.view(player).cards[warded]!!.activeEffects.mapNotNull { it.description }
+        withClue("$descriptions") { descriptions.joinToString() shouldContain "black sources" }
+    }
+
+    test("a chosen-color shield protects a player too") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+
+        val ward = driver.putCardInHand(player, "Test Chosen Color Ward")
+        driver.giveMana(player, Color.WHITE, 1)
+        driver.castSpell(player, ward, listOf(player)).error shouldBe null
+        driver.bothPass()
+        val decision = driver.pendingDecision.shouldBeInstanceOf<ChooseColorDecision>()
+        driver.submitDecision(player, ColorChosenResponse(decision.id, Color.RED)).error shouldBe null
+
+        val life = driver.getLifeTotal(player)
+        driver.cast(player, "Test Red Blast", Color.RED, player)
+        withClue("red damage to the player is prevented") { driver.getLifeTotal(player) shouldBe life }
+        driver.cast(player, "Test Black Blast", Color.BLACK, player)
+        withClue("black damage isn't") { driver.getLifeTotal(player) shouldBe life - 2 }
     }
 
     test("a capped matching shield on one target still has no lowering") {

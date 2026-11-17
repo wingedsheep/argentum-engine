@@ -62,7 +62,7 @@ class PreventDamageExecutor(
             val baked = ResolutionFilterBaker.bake(sources.filter, context, state)
             val filter = bindChosenValues(state, baked, context)
             if (filter == null) {
-                EffectResult.error(state, "No chosen creature type on source ${context.sourceId} for a prevention shield")
+                EffectResult.error(state, "No chosen creature type or color for a prevention shield from ${context.sourceId}")
             } else {
                 createFloatingEffect(state, effect, filter, context)
             }
@@ -152,20 +152,33 @@ class PreventDamageExecutor(
 
     /**
      * A [PreventionSourceFilter.Matching] filter outlives the resolution that installs it, so a
-     * predicate reading a choice off the ability's source — "a creature of the chosen type"
-     * (Circle of Solace) — is bound to that choice now, and the shield keeps working after the
-     * source leaves the battlefield. Null when the filter asks for a choice the source never made.
+     * predicate reading a choice is bound to that choice now and the shield keeps working after
+     * the resolving context (and the ability's source) is gone:
+     * - "a creature of the chosen type" (Circle of Solace) reads the type chosen off the source;
+     * - "sources of the color of your choice" (Avacyn, Guardian Angel) reads the color chosen while
+     *   this effect resolves (an enclosing `ChooseColorThen`). Only the color is pinned: whether
+     *   a source has it is read when the damage would be dealt, so a source that turns that
+     *   color later is covered.
+     * Null when the filter asks for a choice that was never made.
      */
     private fun bindChosenValues(
         state: GameState,
         filter: GameObjectFilter,
         context: EffectContext
     ): GameObjectFilter? {
-        if (CardPredicate.HasChosenSubtype !in filter.cardPredicates) return filter
-        val chosenType = context.sourceId?.let { state.getEntity(it) }?.chosenSubtype() ?: return null
+        val predicates = filter.cardPredicates
+        val needsType = CardPredicate.HasChosenSubtype in predicates
+        val needsColor = CardPredicate.HasChosenColor in predicates
+        if (!needsType && !needsColor) return filter
+        val chosenType = if (needsType) context.sourceId?.let { state.getEntity(it) }?.chosenSubtype() ?: return null else null
+        val chosenColor = if (needsColor) context.chosenColor ?: return null else null
         return filter.copy(
-            cardPredicates = filter.cardPredicates.map {
-                if (it == CardPredicate.HasChosenSubtype) CardPredicate.HasSubtype(Subtype(chosenType)) else it
+            cardPredicates = predicates.map {
+                when {
+                    it == CardPredicate.HasChosenSubtype && chosenType != null -> CardPredicate.HasSubtype(Subtype(chosenType))
+                    it == CardPredicate.HasChosenColor && chosenColor != null -> CardPredicate.HasColor(chosenColor)
+                    else -> it
+                }
             }
         )
     }

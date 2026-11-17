@@ -202,6 +202,129 @@
     ]
 }
 
+// Avacyn, Guardian Angel
+{
+    "name": "Avacyn, Guardian Angel",
+    "manaCost": "{2}{W}{W}{W}",
+    "typeLine": "Legendary Creature — Angel",
+    "oracleText": "Flying, vigilance\n{1}{W}: Prevent all damage that would be dealt to another target creature this turn by sources of the color of your choice.\n{5}{W}{W}: Prevent all damage that would be dealt to target player or planeswalker this turn by sources of the color of your choice.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Avacyn, Guardian Angel:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "ChooseColorThen",
+                    "then": {
+                        "type": "PreventDamageShield",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "sourceFilter": {
+                            "type": "PreventFromMatching",
+                            "filter": {
+                                "cardPredicates": [
+                                    "HasChosenColor"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ]
+            },
+            {
+                "id": "Avacyn, Guardian Angel:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{W}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "ChooseColorThen",
+                    "then": {
+                        "type": "PreventDamageShield",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "sourceFilter": {
+                            "type": "PreventFromMatching",
+                            "filter": {
+                                "cardPredicates": [
+                                    "HasChosenColor"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayerOrPlaneswalker",
+                        "id": "t1"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "rarity": "RARE",
+        "artist": "Winona Nelson",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a79662d5-3b6f-4c5a-8540-63c201027b66.jpg?1783939204",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "Neither activated ability has any effect on damage that's already been dealt."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "The possible color choices are white, blue, black, red, and green. You can't choose artifact, colorless, or any other word."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "For each activated ability, you choose the color as the ability resolves. However, the color of a source that would deal damage to the permanent or player is checked only when it would deal that damage, not as Avacyn's ability resolves. For example, if you choose blue, damage a blue creature would deal is prevented, even if that creature wasn't blue (or wasn't on the battlefield) when Avacyn's ability resolved."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Whether the target permanent or player is still a legal target is no longer checked after the appropriate ability resolves. For example, if a creature targeted by the first ability gains protection from white after the ability resolves but before it prevents damage, the effect will still prevent damage."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Both activated abilities prevent all damage of the chosen color, not just combat damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Belligerent Sliver
 {
     "name": "Belligerent Sliver",
