@@ -3,6 +3,7 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.mtg.sets.definitions.m15.cards.SoulOfZendikar
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
@@ -29,7 +30,10 @@ class SoulOfZendikarScenarioTest : ScenarioTestBase() {
             ).error shouldBe null
             game.resolveStack()
             withClue("the effect applied") {
-                game.findPermanents("Beast Token").size shouldBe 1
+                val beast = game.findPermanents("Beast Token").single()
+                game.state.projectedState.getPower(beast) shouldBe 3
+                game.state.projectedState.getToughness(beast) shouldBe 3
+                game.state.projectedState.getColors(beast) shouldBe setOf(Color.GREEN.name)
             }
             game.isOnBattlefield("Soul of Zendikar") shouldBe true
         }
@@ -57,7 +61,10 @@ class SoulOfZendikarScenarioTest : ScenarioTestBase() {
             }
             game.resolveStack()
             withClue("the effect applied") {
-                game.findPermanents("Beast Token").size shouldBe 1
+                val beast = game.findPermanents("Beast Token").single()
+                game.state.projectedState.getPower(beast) shouldBe 3
+                game.state.projectedState.getToughness(beast) shouldBe 3
+                game.state.projectedState.getColors(beast) shouldBe setOf(Color.GREEN.name)
             }
         }
     }

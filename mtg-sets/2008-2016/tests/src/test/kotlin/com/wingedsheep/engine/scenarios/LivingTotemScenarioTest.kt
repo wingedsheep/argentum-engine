@@ -34,12 +34,33 @@ class LivingTotemScenarioTest : ScenarioTestBase() {
             }
             game.selectTargets(listOf(bears)).error shouldBe null
             game.resolveStack()
-            if (game.state.pendingDecision is YesNoDecision) {
-                game.answerYesNo(true).error shouldBe null
-                game.resolveStack()
+            withClue("the counter is optional") {
+                (game.state.pendingDecision is YesNoDecision) shouldBe true
             }
+            game.answerYesNo(true).error shouldBe null
+            game.resolveStack()
             game.state.getEntity(bears)?.get<CountersComponent>()?.getCount(CounterType.PLUS_ONE_PLUS_ONE) shouldBe 1
             game.state.projectedState.getPower(bears) shouldBe 3
+        }
+
+        test("declining the may leaves the target without a counter") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .withCardInHand(1, "Living Totem")
+                .withCardOnBattlefield(1, "Grizzly Bears")
+                .withLandsOnBattlefield(1, "Forest", 4)
+                .build()
+            game.castSpell(1, "Living Totem").error shouldBe null
+            game.resolveStack()
+            val bears = game.findPermanent("Grizzly Bears")!!
+            game.selectTargets(listOf(bears)).error shouldBe null
+            game.resolveStack()
+            (game.state.pendingDecision is YesNoDecision) shouldBe true
+            game.answerYesNo(false).error shouldBe null
+            game.resolveStack()
+            (game.state.getEntity(bears)?.get<CountersComponent>()?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0) shouldBe 0
         }
     }
 }

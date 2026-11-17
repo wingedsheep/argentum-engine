@@ -99,6 +99,10 @@
     "creature-removal",
     "planeswalker-removal"
   ],
+  "Into the Void": [
+    "removal",
+    "creature-removal"
+  ],
   "Jace, the Living Guildpact": [
     "removal",
     "creature-removal"

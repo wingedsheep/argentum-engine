@@ -53,6 +53,14 @@ class ParagonOfGatheringMistsScenarioTest : ScenarioTestBase() {
             }
             val abilityId = ParagonOfGatheringMists.activatedAbilities.single().id
 
+            withClue("the Paragon can't target itself (\"another target\")") {
+                game.execute(
+                    ActivateAbility(
+                        playerId = game.player1Id, sourceId = paragon, abilityId = abilityId,
+                        targets = listOf(ChosenTarget.Permanent(paragon))
+                    )
+                ).error shouldNotBe null
+            }
             withClue("an off-colour creature is not a legal target") {
                 game.execute(
                     ActivateAbility(
