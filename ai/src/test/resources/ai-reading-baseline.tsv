@@ -1255,7 +1255,7 @@ Back to Nature
 Backdraft
 Backfire
 Backlash
-Backslide	intent: TurnFaceDownEffect; polarity: TurnFaceDownEffect
+Backslide
 Backstreet Bruiser
 Backup Agent
 Backwoods Survivalists
@@ -4277,6 +4277,7 @@ Deathless Knight
 Deathless Pilot
 Deathmark
 Deathmark Prelate
+Deathmist Raptor
 Deathrender
 Deathrite Shaman
 Deathspore Thallid
@@ -11297,7 +11298,7 @@ Master of Pearls
 Master of Winds
 Master of the Feast
 Master of the Hunt
-Master of the Veil	intent: TurnFaceDownEffect; polarity: TurnFaceDownEffect
+Master of the Veil
 Master of the Wild Hunt
 Master the Way
 Master's Councillors
@@ -11704,7 +11705,7 @@ Mischievous Catgeist
 Mischievous Chimera
 Mischievous Mystic
 Mischievous Pup
-Mischievous Quanar	intent: TurnFaceDownEffect
+Mischievous Quanar
 Mischievous Sneakling
 Misdirection
 Misery Charm
@@ -12666,6 +12667,7 @@ Obscura Charm
 Obscura Initiate
 Obscura Interceptor
 Obscura Storefront
+Obscuring Aether
 Obsessive Astronomer
 Obsessive Pursuit
 Obsessive Skinner
@@ -17646,6 +17648,7 @@ Stormfront Pegasus
 Stormkeld Prowler
 Stormkeld Vanguard
 Stormplain Detainment
+Stormrider Rig
 Stormrider Spirit
 Stormscale Scion
 Stormscape Apprentice
@@ -17846,6 +17849,7 @@ Sunblade Angel
 Sunblade Elf
 Sunblade Samurai
 Sunblast Angel
+Sunbringer's Touch
 Suncleanser	intent: ModalEffect; polarity: GrantKeywordEffect
 Sunder Shaman
 Sunder the Gateway
@@ -18257,6 +18261,7 @@ Tanufel Rimespeaker
 Taoist Hermit
 Taoist Mystic
 Tapestry Warden
+Tapestry of the Ages
 Tapping at the Window
 Tar Pitcher
 Tar Snare
@@ -20569,7 +20574,7 @@ Wall of Blossoms
 Wall of Bone
 Wall of Brambles
 Wall of Caltrops	intent: GrantKeywordEffect
-Wall of Deceit	intent: TurnFaceDownEffect
+Wall of Deceit
 Wall of Distortion
 Wall of Dust	intent: CantAttackEffect
 Wall of Earth
@@ -20832,7 +20837,7 @@ Weave Fate
 Weaver of Blossoms
 Weaver of Currents
 Weaver of Harmony
-Weaver of Lies	intent: ForEach>TurnFaceDownEffect; polarity: ForEachEffect
+Weaver of Lies
 Weaver of Lightning
 Web
 Web Up
