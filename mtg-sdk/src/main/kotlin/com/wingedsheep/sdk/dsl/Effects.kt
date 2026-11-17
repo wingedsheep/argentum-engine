@@ -1931,9 +1931,14 @@ object Effects {
 
     /**
      * Put onto the battlefield.
+     *
+     * [fromZone] gates the move on the card still being in that zone — "put this card from exile
+     * onto the battlefield" (Torrent Elemental) does nothing if the card left exile before the
+     * ability resolved (CR 400.7: it would be a new object). The graveyard case has its own facade,
+     * [PutOntoBattlefieldFromGraveyard].
      */
-    fun PutOntoBattlefield(target: EffectTarget, tapped: Boolean = false): Effect =
-        MoveToZoneEffect(target, Zone.BATTLEFIELD, if (tapped) ZonePlacement.Tapped else ZonePlacement.Default)
+    fun PutOntoBattlefield(target: EffectTarget, tapped: Boolean = false, fromZone: Zone? = null): Effect =
+        MoveToZoneEffect(target, Zone.BATTLEFIELD, if (tapped) ZonePlacement.Tapped else ZonePlacement.Default, fromZone = fromZone)
 
     /**
      * Assimilate (Star Trek): "Put it onto the battlefield under your control with a +1/+1 counter.

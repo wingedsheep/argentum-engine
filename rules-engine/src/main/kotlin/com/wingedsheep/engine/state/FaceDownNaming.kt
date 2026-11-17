@@ -99,6 +99,13 @@ internal fun faceDownZone(state: GameState, entityId: EntityId): Zone? {
 }
 
 /**
+ * Whether [entityId] is a card exiled face down — an object with no characteristics (CR 406.3a), so
+ * none of its printed abilities exist while it stays that way. Effects can still grant it one.
+ */
+internal fun isFaceDownInExile(state: GameState, entityId: EntityId): Boolean =
+    faceDownZone(state, entityId) == Zone.EXILE
+
+/**
  * The one player entitled to look at [entityId] merely because they control the face-down object.
  *
  * This is only the *controller* baseline, and CR 708.5 scopes it to the stack and the battlefield —

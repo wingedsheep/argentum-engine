@@ -101,6 +101,7 @@ internal class ActivationValidator(
         val abilityLookup = abilityResolver.lookup(state, action.sourceId, action.abilityId)
             ?: return "Ability not found on this card"
         val ability = abilityLookup.ability
+        checkFaceDownInExile(state, action, abilityLookup)?.let { return it }
 
         checkManaPaymentWindow(state, action, ability, manaPaymentWindow)?.let { return it }
         checkSplitSecond(state, ability)?.let { return it }
@@ -144,6 +145,23 @@ internal class ActivationValidator(
             ?: checkActivationRestrictions(state, action, ability)
             ?: checkTargets(state, targetAction, cardComponent, effectiveCost, effectiveTargetReqs)
             ?: checkDamageDistribution(state, action, ability)
+    }
+
+    /**
+     * A card exiled face down has no characteristics (CR 406.3a): the abilities its definition
+     * prints don't exist there, though one an effect granted it still does. The enumerator offers
+     * none of them; this rejects a client that names one anyway.
+     */
+    private fun checkFaceDownInExile(
+        state: GameState,
+        action: ActivateAbility,
+        lookup: ActivatedAbilityLookup,
+    ): String? {
+        val printed = lookup is ActivatedAbilityLookup.DirectDefinition ||
+            lookup is ActivatedAbilityLookup.DefinitionDerivedClass ||
+            lookup is ActivatedAbilityLookup.CopyException
+        if (!printed || !com.wingedsheep.engine.state.isFaceDownInExile(state, action.sourceId)) return null
+        return "A card exiled face down has no abilities"
     }
 
     /**

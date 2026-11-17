@@ -14416,7 +14416,7 @@ already on the stack (CR 601.2a/601.2g), so sorcery timing can't hold mid-paymen
 activates it at priority first and pays from the floating mana.
 
 **`activateFromZone` — where the ability can be activated (default `Zone.BATTLEFIELD`).** An ability
-whose source functions from another zone sets `activateFromZone` to that zone. Four zones are
+whose source functions from another zone sets `activateFromZone` to that zone. Five zones are
 enumerated as legal actions today, each by its own `ActionEnumerator`:
 - `Zone.BATTLEFIELD` — `ActivatedAbilityEnumerator` (the default).
 - `Zone.GRAVEYARD` and `Zone.HAND` — `ZoneActivatedAbilityEnumerator` (one instance per zone).
@@ -14444,6 +14444,14 @@ enumerated as legal actions today, each by its own `ActionEnumerator`:
   activation.
 - `Zone.COMMAND` — the same `ZoneActivatedAbilityEnumerator` (Momir Basic avatar, Derevi, commander ninjutsu),
   so a command-zone ability gets every cost the hand and graveyard do (a `ReturnToHand` bounce, sacrifice, X).
+- `Zone.EXILE` — the same `ZoneActivatedAbilityEnumerator`, for a printed exile ability — Torrent Elemental's
+  "{3}{B/G}{B/G}: Put this card from exile onto the battlefield tapped. Activate only as a sorcery." is
+  `effect = Effects.PutOntoBattlefield(EffectTarget.Self, tapped = true, fromZone = Zone.EXILE);
+  activateFromZone = Zone.EXILE; timing = TimingRule.SorcerySpeed` (`fromZone` drops the move if the card
+  left exile first, CR 400.7) — or one an effect granted an exiled card (Q, Stacking the Deck). **A card
+  exiled face down has no characteristics (CR 406.3a)**, so its printed abilities aren't offered there
+  (foretold, hideaway, Jeskai Infiltrator's pile — any exiled card carrying `FaceDownComponent`), and
+  `ActivationValidator` rejects a client that names one; an ability an effect granted it still works.
 
 `ActivateAbilityHandler` accepts any non-battlefield `activateFromZone` generically (it just checks
 the source is in that zone), so adding an ability in an already-enumerated zone needs no engine
