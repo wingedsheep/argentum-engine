@@ -170,6 +170,7 @@ Aegis Angel
 Aegis Automaton
 Aegis Sculptor
 Aegis Turtle
+Aegis of the Gods
 Aegis of the Heavens
 Aeolipile
 Aerathi Berserker
@@ -900,6 +901,7 @@ Armageddon Clock
 Armaggon, Future Shark
 Armament Corps
 Armament Dragon
+Armament of Nyx
 Armasaur Guide
 Armed and Armored	timing: ForEach>AddCardTypeEffect
 Armguard Familiar	intent: UnattachEquipmentEffect
@@ -924,6 +926,7 @@ Armorer Guildmage
 Armory Mice
 Armory Paladin
 Armory Veteran
+Armory of Iroas
 Arms Dealer
 Arms Race
 Armus, Skin of Evil
@@ -2635,7 +2638,7 @@ Candlelight Vigil
 Candlelit Cavalry
 Candles' Glow
 Candlestick
-Candletrap	polarity: Aura>GrantKeyword; polarity: Aura>MoveToZoneEffect
+Candletrap
 Candy Grapple
 Candy Trail
 Cankerbloom
@@ -3688,6 +3691,7 @@ Counsel of the Soratami
 Count on Luck
 Counterbalance
 Counterintelligence
+Countermand
 Countersculpt
 Counterspell
 Countervailing Winds
@@ -4202,6 +4206,7 @@ Dawn of a New Age
 Dawn's Light Archer
 Dawn's Truce
 Dawn-Blessed Pennant
+Dawnbringer Charioteers
 Dawnbringer Cleric
 Dawnfeather Eagle
 Dawnfluke
@@ -4436,6 +4441,7 @@ Deftblade Elite	intent: ProvokeEffect; polarity: ProvokeEffect; timing: PreventD
 Defy Death
 Defy Gravity
 Dega Disciple
+Deicide
 Deification
 Deliberate
 Delif's Cone
@@ -4479,7 +4485,7 @@ Demonic Junker	intent: Pipeline(ChosenTargets→graveyard)
 Demonic Pact
 Demonic Ruckus
 Demonic Taskmaster
-Demonic Torment	polarity: Aura>CantAttack
+Demonic Torment
 Demonic Tutor
 Demonic Vigor
 Demonlord Belzenlok	intent: ExileFromTopRepeatingEffect
@@ -4487,7 +4493,7 @@ Demonmail Hauberk
 Demotion
 Demystify
 Den Protector
-Den of the Bugbear	intent: GrantTriggeredAbilityEffect
+Den of the Bugbear
 Denethor, Ruling Steward
 Denizen of the Deep
 Dennick, Pious Apprentice
@@ -4539,6 +4545,7 @@ Desert's Hold
 Deserted Beach
 Deserted Temple
 Deserter's Disciple
+Deserter's Quarters
 Desiccated Naga
 Desolate Lighthouse
 Desolate Mire
@@ -7749,6 +7756,7 @@ God-Pharaoh's Faithful
 God-Pharaoh's Gift
 God-Pharaoh's Statue
 Goddric, Cloaked Reveler
+Godhunter Octopus
 Godless Shrine
 Godo, Bandit Warlord	intent: AddCombatPhaseEffect
 Gods Willing
@@ -8242,6 +8250,7 @@ Hall of Heliod's Generosity
 Hall of Oracles
 Hall of Storm Giants	intent: GrantStaticAbilityEffect; timing: GrantStaticAbilityEffect
 Hall of Tagsin
+Hall of Triumph
 Hall of the Bandit Lord
 Hallar, the Firefletcher
 Hallowed Fountain
@@ -8692,7 +8701,7 @@ Hitchclaw Recluse
 Hithlain Knots
 Hive Mind Coprocessor
 Hive Stirrings
-Hive of the Eye Tyrant	intent: GrantTriggeredAbilityEffect
+Hive of the Eye Tyrant
 Hiveheart Shaman
 Hivespine Wolverine
 Hixus, Prison Warden
@@ -10412,6 +10421,7 @@ Lagac Lizard
 Lagomos, Hand of Hatred
 Lagonna-Band Elder
 Lagonna-Band Storyteller
+Lagonna-Band Trailblazer
 Lagorin, Soul of Alacria
 Lagrella, the Magpie	intent: AddCountersToCollectionEffect; intent: Pipeline(FromLinkedExile→battlefield)
 Laid to Rest
@@ -10481,6 +10491,7 @@ Lattice-Blade Mantis
 Laughing Jasper Flint
 Laughing Mad
 Launch Mishap
+Launch the Fleet
 Lava Axe
 Lava Coil
 Lava Dart
@@ -10578,6 +10589,7 @@ Leonin Battlemage
 Leonin Bladetrap
 Leonin Den-Guard
 Leonin Elder
+Leonin Iconoclast
 Leonin Lightbringer
 Leonin Lightscribe
 Leonin Scimitar
@@ -12081,6 +12093,7 @@ Morophon, the Boundless
 Morphic Pool
 Morphling
 Morselhoarder
+Mortal Obstinacy
 Mortality Spear
 Mortify
 Mortipede
@@ -13441,6 +13454,7 @@ Petrify
 Petrifying Meddler
 Pewter Golem
 Phage the Untouchable
+Phalanx Formation
 Phalanx Tactics
 Phalanx Vanguard
 Phantasmal Forces
@@ -14281,7 +14295,7 @@ Raging Kavu
 Raging Kronch
 Raging Minotaur
 Raging Poltergeist
-Raging Ravine	intent: GrantTriggeredAbilityEffect
+Raging Ravine
 Raging Redcap
 Raging Regisaur
 Raging River	intent: ForEach>ChoosePileEffect; intent: ForEach>GrantCantBeBlockedExceptByCollectionEffect; intent: ForEach>Pipeline(BattlefieldMatching→?)
@@ -16016,7 +16030,7 @@ Secret Invasion
 Secret Plans
 Secret Rendezvous
 Secret Salvage
-Secret Tunnel	timing: ForEach>GrantKeywordEffect
+Secret Tunnel
 Secret of Bloodbending	intent: HijackNextTurnEffect; polarity: HijackNextTurnEffect
 Secrets of the Dead
 Secrets of the Golden City
@@ -16809,6 +16823,7 @@ Sky Weaver
 Sky-Blessed Samurai
 Sky-Eel School
 Skybeast Tracker
+Skybind
 Skyblade of the Legion
 Skybox Ferry
 Skybridge Towers
