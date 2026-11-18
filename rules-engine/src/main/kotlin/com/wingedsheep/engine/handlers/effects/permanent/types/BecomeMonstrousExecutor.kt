@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.effects.permanent.types
 
 import com.wingedsheep.engine.core.BecameMonstrousEvent
 import com.wingedsheep.engine.core.EffectResult
+import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -21,8 +22,15 @@ import kotlin.reflect.KClass
  *
  * Making an already-monstrous permanent monstrous is a no-op that emits no event, so a "when this
  * becomes monstrous" trigger fires only once per permanent.
+ *
+ * A "monstrosity X" ability's X ([BecomeMonstrousEffect.x]) is evaluated here, as the permanent
+ * becomes monstrous, and carried on the event: CR 701.37c has the permanent's other abilities that
+ * refer to X use the value of X as it became monstrous, so a becomes-monstrous trigger reads it as
+ * its own X.
  */
-class BecomeMonstrousExecutor : EffectExecutor<BecomeMonstrousEffect> {
+class BecomeMonstrousExecutor(
+    private val amountEvaluator: DynamicAmountEvaluator
+) : EffectExecutor<BecomeMonstrousEffect> {
 
     override val effectType: KClass<BecomeMonstrousEffect> = BecomeMonstrousEffect::class
 
@@ -50,8 +58,9 @@ class BecomeMonstrousExecutor : EffectExecutor<BecomeMonstrousEffect> {
         val controller = state.projectedState.getController(targetId)
             ?: container.get<ControllerComponent>()?.playerId
             ?: context.controllerId
+        val x = effect.x?.let { amountEvaluator.evaluate(state, it, context).coerceAtLeast(0) }
         val newState = state.updateEntity(targetId) { it.with(MonstrousComponent) }
 
-        return EffectResult.success(newState, listOf(BecameMonstrousEvent(targetId, name, controller)))
+        return EffectResult.success(newState, listOf(BecameMonstrousEvent(targetId, name, controller, x)))
     }
 }

@@ -993,6 +993,11 @@ object AiReadingAudit {
         // no spell to time: its payoff is the face it becomes, which the simulation sees on the board.
         // Transforming another permanent stays flagged.
         if (leaf is TransformEffect && leaf.target == EffectTarget.Self) return true
+        // A permanent becoming monstrous itself (CR 701.37b, the designation half of monstrosity) has
+        // no target and nothing to hold: the counters beside it are read on their own leaf, and what
+        // the designation unlocks — "as long as it's monstrous" statics, becomes-monstrous
+        // triggers — is read on those abilities. Making another permanent monstrous stays flagged.
+        if (leaf is com.wingedsheep.sdk.scripting.effects.BecomeMonstrousEffect && leaf.target == EffectTarget.Self) return true
         if (leaf is ReturnSelfFromExileTransformedEffect) return true
         // "Exile this, then return it transformed" (the FIN eikons, Conqueror's Galleon's end-of-combat
         // flip into a land) is the same self-transform as a new object: no target, nothing to time.

@@ -1650,6 +1650,111 @@
     ]
 }
 
+// Hydra Broodmaster
+{
+    "name": "Hydra Broodmaster",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Hydra",
+    "oracleText": "{X}{X}{G}: Monstrosity X. (If this creature isn't monstrous, put X +1/+1 counters on it and it becomes monstrous.)\nWhen this creature becomes monstrous, create X X/X green Hydra creature tokens.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hydra Broodmaster:2",
+                "trigger": "BecameMonstrousEvent",
+                "effect": {
+                    "type": "CreateToken",
+                    "count": "XValue",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Hydra"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/d/9d1af553-ec9f-46fd-9c6d-49436e93e682.jpg?1783939392",
+                    "dynamicPower": "XValue",
+                    "dynamicToughness": "XValue"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Hydra Broodmaster:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{X}{X}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        "IsMonstrous"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddDynamicCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": "XValue",
+                                "target": "Self"
+                            },
+                            {
+                                "type": "BecomeMonstrous",
+                                "x": "XValue"
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "Monstrosity X. (If this creature isn't monstrous, put X +1/+1 counters on it and it becomes monstrous.)"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "RARE",
+        "artist": "Steve Prescott",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6b465289-676d-4c34-84d3-ce8daf0fd40e.jpg?1783939412",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "The value of each X in Hydra Broodmaster's last ability is equal to the value chosen for X when its monstrosity ability was activated."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Once a creature becomes monstrous, it can't become monstrous again. If the creature is already monstrous when the monstrosity ability resolves, nothing happens."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Monstrous isn't an ability that a creature has. It's just something true about that creature. If the creature stops being a creature or loses its abilities, it will continue to be monstrous."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "An ability that triggers when a creature becomes monstrous won't trigger if that creature isn't on the battlefield when its monstrosity ability resolves."
+            }
+        ]
+    }
+}
+
 // Interpret the Signs
 {
     "name": "Interpret the Signs",

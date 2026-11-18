@@ -362,11 +362,17 @@ data class BecomeRenownedEffect(
  * parameterized so an outside effect could reuse it.
  *
  * @property target The permanent to give the monstrous designation
+ * @property x The "X" of a "monstrosity X" ability (CR 701.37c: the permanent's other abilities
+ *   that refer to X use the value of X as it became monstrous). Evaluated as the permanent becomes
+ *   monstrous and carried on the becomes-monstrous event, so a "when this becomes monstrous"
+ *   trigger reads it as its own [DynamicAmount.XValue] (Hydra Broodmaster: "create X X/X …
+ *   tokens"). Null for a fixed "monstrosity N", which defines no X.
  */
 @SerialName("BecomeMonstrous")
 @Serializable
 data class BecomeMonstrousEffect(
-    val target: EffectTarget = EffectTarget.Self
+    val target: EffectTarget = EffectTarget.Self,
+    val x: DynamicAmount? = null
 ) : Effect {
     override val description: String = "${target.description} becomes monstrous"
 }

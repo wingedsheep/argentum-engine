@@ -47,6 +47,9 @@ import io.kotest.matchers.shouldBe
  *  - Monstrosity X with X = 0 still makes the permanent monstrous (the designation doesn't depend
  *    on any counters being placed).
  *  - "When this creature becomes monstrous" fires exactly once.
+ *  - **701.37c** — a "monstrosity X" permanent's other abilities that refer to X use the value of X
+ *    as it became monstrous: its becomes-monstrous trigger reads that X as its own. A fixed
+ *    "monstrosity N" defines no X.
  */
 class MonstrosityTest : FunSpec({
 
@@ -97,6 +100,23 @@ class MonstrosityTest : FunSpec({
         }
     }
 
+    /** `{X}: Monstrosity X.` with a becomes-monstrous trigger that refers to X (CR 701.37c). */
+    val broodkeeper = card("Test Monstrous Broodkeeper") {
+        manaCost = "{3}{G}"
+        typeLine = "Creature — Hydra"
+        power = 2
+        toughness = 2
+        oracleText = "{X}: Monstrosity X.\nWhen this creature becomes monstrous, you gain X life."
+        activatedAbility {
+            cost = Costs.Mana("{X}")
+            effect = Effects.Monstrosity(DynamicAmount.XValue)
+        }
+        triggeredAbility {
+            trigger = Triggers.self.becomesMonstrous()
+            effect = Effects.GainLife(DynamicAmount.XValue)
+        }
+    }
+
     val recall = card("Test Monstrous Recall") {
         manaCost = "{U}"
         typeLine = "Instant"
@@ -109,7 +129,7 @@ class MonstrosityTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(brute, hydra, swallower, recall))
+        driver.registerCards(TestCards.all + listOf(brute, hydra, swallower, broodkeeper, recall))
         driver.initMirrorMatch(deck = Deck.of("Forest" to 40))
         return driver
     }
@@ -214,6 +234,39 @@ class MonstrosityTest : FunSpec({
         driver.bothPass()
         driver.state.stack.size shouldBe 0
         driver.getLifeTotal(player) shouldBe startingLife + 3
+    }
+
+    test("CR 701.37c — a becomes-monstrous trigger reads the X of the monstrosity X that made it monstrous") {
+        val (driver, player, keeper) = setUp("Test Monstrous Broodkeeper")
+        val startingLife = driver.getLifeTotal(player)
+
+        activate(driver, player, keeper, xValue = 3)
+        val result = driver.bothPass()
+        result.events.filterIsInstance<BecameMonstrousEvent>().single().xValue shouldBe 3
+        driver.bothPass() // the trigger resolves
+
+        plusOneCounters(driver, keeper) shouldBe 3
+        driver.getLifeTotal(player) shouldBe startingLife + 3
+    }
+
+    test("CR 701.37c — X = 0 still triggers, and the trigger's X is 0") {
+        val (driver, player, keeper) = setUp("Test Monstrous Broodkeeper")
+        val startingLife = driver.getLifeTotal(player)
+        val abilityId = driver.cardRegistry.getCard("Test Monstrous Broodkeeper")!!.activatedAbilities.first().id
+        driver.submit(ActivateAbility(player, keeper, abilityId, xValue = 0)).outcome shouldBe Outcome.Done
+        val result = driver.bothPass()
+        result.events.filterIsInstance<BecameMonstrousEvent>().single().xValue shouldBe 0
+        driver.bothPass()
+
+        isMonstrous(driver, keeper) shouldBe true
+        driver.getLifeTotal(player) shouldBe startingLife
+    }
+
+    test("CR 701.37c — a fixed monstrosity N defines no X on the event") {
+        val (driver, player, swallower) = setUp("Test Monstrous Swallower")
+        activate(driver, player, swallower)
+        val result = driver.bothPass()
+        result.events.filterIsInstance<BecameMonstrousEvent>().single().xValue shouldBe null
     }
 
     test("CR 701.37b — only permanents become monstrous: a source bounced in response gets nothing") {

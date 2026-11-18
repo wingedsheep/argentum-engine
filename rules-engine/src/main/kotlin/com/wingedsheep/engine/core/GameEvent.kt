@@ -1702,7 +1702,12 @@ data class BecameMonstrousEvent(
     val entityId: EntityId,
     val entityName: String,
     /** The monstrous permanent's controller as the ability resolved, for "you control" filters. */
-    val controllerId: EntityId
+    val controllerId: EntityId,
+    /**
+     * The X of the "monstrosity X" ability that made it monstrous (CR 701.37c), read by its
+     * becomes-monstrous triggers as their own X. Null for a fixed "monstrosity N".
+     */
+    val xValue: Int? = null
 ) : GameEvent
 
 /**

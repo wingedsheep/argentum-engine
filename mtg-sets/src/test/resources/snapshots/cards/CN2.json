@@ -45,7 +45,10 @@
                                 "amount": "XValue",
                                 "target": "Self"
                             },
-                            "BecomeMonstrous"
+                            {
+                                "type": "BecomeMonstrous",
+                                "x": "XValue"
+                            }
                         ]
                     },
                     "descriptionOverride": "Monstrosity X. (If this creature isn't monstrous, put X +1/+1 counters on it and it becomes monstrous.)"
