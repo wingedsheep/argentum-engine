@@ -193,7 +193,7 @@ class PermanentExecutors(
         BecomeSaddledExecutor(),
         BecomeCrewedExecutor(),
         BecomeRenownedExecutor(),
-        BecomeMonstrousExecutor(),
+        BecomeMonstrousExecutor(amountEvaluator),
         BecomeSolvedExecutor(),
         BecomePreparedExecutor(cardRegistry),
         UnprepareExecutor(),

@@ -571,10 +571,12 @@ data class TriggerContext(
                     triggeringEntityId = event.creatureId,
                     triggeringPlayerId = event.controllerId
                 )
-                // Monstrosity (CR 701.37b): same shape as renown.
+                // Monstrosity (CR 701.37b): same shape as renown, plus the "monstrosity X" value
+                // its triggers read as their own X (CR 701.37c — Hydra Broodmaster).
                 is com.wingedsheep.engine.core.BecameMonstrousEvent -> TriggerContext(
                     triggeringEntityId = event.entityId,
-                    triggeringPlayerId = event.controllerId
+                    triggeringPlayerId = event.controllerId,
+                    xValue = event.xValue
                 )
                 // Manifest dread (CR 701.60): the cards put into the graveyard this way are
                 // carried as capturedEntityIds, seeded into the resolving trigger's pipeline under

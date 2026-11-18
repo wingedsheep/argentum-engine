@@ -7917,9 +7917,10 @@ object Effects {
     /**
      * Target permanent becomes monstrous (CR 701.37b). Sticky and one-way; see
      * [com.wingedsheep.sdk.scripting.effects.BecomeMonstrousEffect]. Cards write [Monstrosity].
+     * [x] is the "monstrosity X" value its becomes-monstrous triggers read back (CR 701.37c).
      */
-    fun BecomeMonstrous(target: EffectTarget = EffectTarget.Self): Effect =
-        BecomeMonstrousEffect(target)
+    fun BecomeMonstrous(target: EffectTarget = EffectTarget.Self, x: DynamicAmount? = null): Effect =
+        BecomeMonstrousEffect(target, x)
 
     /**
      * "Monstrosity N" (CR 701.37a): "If this permanent isn't monstrous, put N +1/+1 counters on it
@@ -7931,7 +7932,9 @@ object Effects {
 
     /**
      * "Monstrosity X" — [amount] is usually [DynamicAmount.XValue], the X paid in the ability's
-     * cost (Domesticated Hydra). A permanent still becomes monstrous when X is 0.
+     * cost (Domesticated Hydra). A permanent still becomes monstrous when X is 0. A non-fixed
+     * [amount] is also the X the permanent's "when this becomes monstrous" triggers read as their
+     * own [DynamicAmount.XValue] (CR 701.37c — Hydra Broodmaster's "create X X/X tokens").
      */
     fun Monstrosity(amount: DynamicAmount): Effect {
         val counters = (amount as? DynamicAmount.Fixed)?.amount
@@ -7943,7 +7946,7 @@ object Effects {
         return If(
             condition = Conditions.Not(Conditions.SourceIsMonstrous),
             then = AddDynamicCounters(CounterType.PLUS_ONE_PLUS_ONE, amount, EffectTarget.Self) then
-                BecomeMonstrous(EffectTarget.Self),
+                BecomeMonstrous(EffectTarget.Self, x = amount.takeUnless { counters != null }),
             descriptionOverride = "Monstrosity ${counters ?: "X"}. (If this creature isn't monstrous, " +
                 "put $counterText on it and it becomes monstrous.)",
         )

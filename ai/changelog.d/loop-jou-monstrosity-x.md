@@ -1,0 +1,1 @@
+- #4740 Rates "X/X" tokens and "put X +1/+1 counters on it" self-growth (monstrosity X, Hydra Broodmaster) instead of pricing them at zero, and reads becoming monstrous as needing no intent, so it drafts and values monstrosity X payoffs

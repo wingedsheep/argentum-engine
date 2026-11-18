@@ -788,7 +788,11 @@ object LimitedCardRater {
             // Tokens — board presence
             is CreateTokenEffect -> {
                 val count = (effect.count as? com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed)?.amount ?: 1
-                val statValue = (effect.power + effect.toughness) / 3.0
+                // An "X/X" token's printed 0/0 is a placeholder: price its dynamic P/T like any
+                // other unknown "+X" (Hydra Broodmaster's X/X Hydras, Kin-Tree Invocation's wall).
+                val power = effect.dynamicPower?.let(::dynamicStat) ?: effect.power
+                val toughness = effect.dynamicToughness?.let(::dynamicStat) ?: effect.toughness
+                val statValue = (power + toughness) / 3.0
                 count * statValue * 0.5
             }
 
@@ -867,6 +871,11 @@ object LimitedCardRater {
 
             // Counter manipulation
             is AddCountersEffect -> 0.4
+            // "Put X +1/+1 counters on it" (monstrosity X, Domesticated Hydra): the source growing
+            // itself, priced like a fixed counter. Other dynamic counters stay with the intent reader.
+            is AddDynamicCountersEffect ->
+                if (effect.target == EffectTarget.Self && effect.counterType == com.wingedsheep.sdk.core.CounterType.PLUS_ONE_PLUS_ONE) 0.4
+                else tagValue(CardIntentAnalyzer.leafTags(effect))
             is AdaptEffect -> 0.4
 
             // Keyword grants
