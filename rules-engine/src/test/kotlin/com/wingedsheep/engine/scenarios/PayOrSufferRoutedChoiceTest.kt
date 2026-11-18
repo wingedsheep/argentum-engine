@@ -144,4 +144,47 @@ class PayOrSufferRoutedChoiceTest : FunSpec({
             followUp.prompt.contains("draw 2 cards", ignoreCase = true) shouldBe false
         }
     }
+
+    test("declining the chosen cost's follow-up hands the consequence to the controller, not the payer") {
+        val driver = createDriver()
+        val (me, victim) = openTheChoice(driver)
+        val myHand = driver.getHandSize(me)
+        val theirHand = driver.getHandSize(victim)
+
+        val choice = driver.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>()
+        driver.submitDecision(victim, OptionChosenResponse(choice.id, 0))
+        driver.submitYesNo(victim, false)
+
+        // The single-cost effect rebuilt behind the continuation used to run with the payer as
+        // its controller, so "you draw two cards" drew for the opponent who refused to pay.
+        withClue("the ability's controller draws") { driver.getHandSize(me) shouldBe myHand + 2 }
+        withClue("the player who declined draws nothing") { driver.getHandSize(victim) shouldBe theirHand }
+    }
+
+    test("a life option is offered and payable at exactly that much life (CR 119.4)") {
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 20), skipMulligans = true)
+        val me = driver.activePlayer!!
+        val victim = driver.getOpponent(me)
+        driver.passPriorityUntil(com.wingedsheep.sdk.core.Step.PRECOMBAT_MAIN)
+        driver.setLifeTotal(victim, 1)
+        val myHand = driver.getHandSize(me)
+
+        val card = driver.putCardInHand(me, "Toll Collector")
+        driver.giveMana(me, Color.GREEN, 2)
+        driver.castSpell(me, card).outcome shouldBe Outcome.Done
+        driver.bothPass()
+        driver.bothPass()
+
+        val choice = driver.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>()
+        withClue("no mana to pay, so only the life option and the consequence") {
+            choice.options.size shouldBe 2
+            choice.options.first().startsWith("Pay 1 life") shouldBe true
+        }
+        driver.submitDecision(victim, OptionChosenResponse(choice.id, 0))
+        driver.submitYesNo(victim, true)
+
+        withClue("paid down to 0") { driver.getLifeTotal(victim) shouldBe 0 }
+        withClue("so nothing was drawn") { driver.getHandSize(me) shouldBe myHand }
+    }
 })

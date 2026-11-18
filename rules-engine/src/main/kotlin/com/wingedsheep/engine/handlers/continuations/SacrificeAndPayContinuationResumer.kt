@@ -35,6 +35,7 @@ import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 class SacrificeAndPayContinuationResumer(
     private val services: com.wingedsheep.engine.core.EngineServices
@@ -250,18 +251,24 @@ class SacrificeAndPayContinuationResumer(
             return if (result.outcome is Outcome.Paused) result else checkForMore(result.state, result.events.toList())
         }
 
-        // Player chose a cost option — create a single-cost PayOrSufferEffect and execute it
+        // Player chose a cost option — lower it to a single-cost PayOrSufferEffect and execute it.
+        // The ability keeps its controller: the payer is pinned by id as the effect's `player`,
+        // never smuggled in as the context's controller. Swapping the controller would make the
+        // payer the one who suffers ("draw a card unless target opponent sacrifices a creature or
+        // pays 3 life" — a declined follow-up handed the draw to the opponent) and would check a
+        // compelled-action immunity against the wrong player.
         val chosenCost = continuation.options[chosenIndex]
         val singleCostEffect = PayOrSufferEffect(
             cost = chosenCost,
             suffer = continuation.sufferEffect,
+            player = EffectTarget.SpecificEntity(continuation.playerId),
             consequenceDescription = continuation.consequenceDescription
         )
         val context = EffectContext(
             resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
             sourceId = continuation.sourceId,
             objectReferences = continuation.objectReferences,
-            controllerId = continuation.playerId,
+            controllerId = continuation.abilityControllerId ?: continuation.playerId,
             targets = continuation.targets,
             pipeline = PipelineState(
                 namedTargets = continuation.namedTargets,
