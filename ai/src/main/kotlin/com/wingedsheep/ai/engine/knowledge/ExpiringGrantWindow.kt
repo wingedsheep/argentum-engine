@@ -1378,6 +1378,15 @@ internal object ExpiringGrantWindow {
                     val group = (leaf.space as IterationSpace.Group).filter
                     payoffs += body.map { if (it.kind == PayoffKind.STRIP) it.copy(group = group) else it }
                 }
+                // "Any number of target creatures each gain double strike until end of turn" (Phalanx
+                // Formation): the body runs once per declared target, each seeing it as
+                // `ContextTarget(0)`, so every chosen target gets the same grant — read as the
+                // single-target grant over all of them, the spell's chosen targets [affectedBy] reads.
+                leaf is ForEachEffect && leaf.space == IterationSpace.Targets -> {
+                    val body = expiringPayoffs(leaf.body, readShrinks, source = source) ?: return null
+                    if (body.any { it.target != EffectTarget.ContextTarget(0) }) return null
+                    payoffs += body
+                }
                 leaf is SetLandTypeEffect && leaf.duration == Duration.EndOfTurn ->
                     payoffs += Payoff(PayoffKind.LAND, leaf.target)
                 // "Until end of turn, target creature loses all abilities and becomes a green Elephant
@@ -1561,7 +1570,7 @@ internal object ExpiringGrantWindow {
      * about the creature it equips (Vorpal Sword's) names a different creature than the grant's
      * target, and "is dealt damage" can be spent outside combat, so both stay unread.
      */
-    private fun firesOnlyInAFight(ability: TriggeredAbility): Boolean {
+    internal fun firesOnlyInAFight(ability: TriggeredAbility): Boolean {
         if (ability.binding != TriggerBinding.SELF) return false
         return when (val pattern = ability.trigger) {
             is EventPattern.AttackEvent, is EventPattern.BlockEvent, is EventPattern.BecomesBlockedEvent,

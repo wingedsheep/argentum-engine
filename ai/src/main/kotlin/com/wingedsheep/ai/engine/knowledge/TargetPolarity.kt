@@ -1,11 +1,16 @@
 package com.wingedsheep.ai.engine.knowledge
 
+import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
+import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.PreventDamage
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.AdditionalManaOnTap
 import com.wingedsheep.sdk.scripting.AdditionalSourceTriggers
@@ -213,13 +218,30 @@ enum class TargetPolarity {
 }
 
 /**
- * An Aura whose gift or curse turns on the creature type of what it enchants — Sea Legs' "+0/+2 as
- * long as it's a Pirate. Otherwise, it gets -2/-0", Gift of Fangs' Vampire, Bonds of Faith's Human.
+ * An Aura whose gift or curse turns on what it enchants — the creature type (Sea Legs' "+0/+2 as
+ * long as it's a Pirate. Otherwise, it gets -2/-0", Gift of Fangs' Vampire, Bonds of Faith's Human)
+ * or the card type (Armament of Nyx's "double strike as long as it's an enchantment. Otherwise,
+ * prevent all damage that would be dealt by enchanted creature").
  * Its enchant slot is [TargetPolarity.FLEXIBLE] as a whole, but each candidate has one side:
- * [whenIs] for a creature that has [subtype], [otherwise] for one that doesn't.
+ * [whenIs] for a creature that has [trait], [otherwise] for one that doesn't.
  */
-data class HostSplit(val subtype: Subtype, val whenIs: TargetPolarity, val otherwise: TargetPolarity) {
-    fun polarityFor(hostHasSubtype: Boolean): TargetPolarity = if (hostHasSubtype) whenIs else otherwise
+data class HostSplit(val trait: HostTrait, val whenIs: TargetPolarity, val otherwise: TargetPolarity) {
+    fun polarityFor(hostHasTrait: Boolean): TargetPolarity = if (hostHasTrait) whenIs else otherwise
+}
+
+/** What a [HostSplit] asks of a candidate host, read off its projected characteristics. */
+sealed interface HostTrait {
+    fun of(projected: ProjectedState, entityId: EntityId): Boolean
+
+    /** "As long as enchanted creature is a Pirate." */
+    data class CreatureType(val subtype: Subtype) : HostTrait {
+        override fun of(projected: ProjectedState, entityId: EntityId) = projected.hasSubtype(entityId, subtype.value)
+    }
+
+    /** "As long as it's an enchantment" — [type] as [ProjectedState.hasType] spells it ("ENCHANTMENT"). */
+    data class CardType(val type: String) : HostTrait {
+        override fun of(projected: ProjectedState, entityId: EntityId) = projected.hasType(entityId, type)
+    }
 }
 
 /**
@@ -261,7 +283,8 @@ data class HostSplit(val subtype: Subtype, val whenIs: TargetPolarity, val other
  * a creature that survives the damage, removal on one that doesn't, which the simulation compares.
  *
  * An Aura whose statics turn on the enchanted creature's type ("as long as it's a Pirate …
- * Otherwise, …") is read twice, once for a host of that type and once for any other host. Two
+ * Otherwise, …"), or on its card type ("double strike as long as it's an enchantment. Otherwise,
+ * prevent all damage it would deal" — Armament of Nyx), is read twice, once for a host of that type and once for any other host. Two
  * opposite one-sided readings make the slot [TargetPolarity.FLEXIBLE] and give it a [HostSplit],
  * which the target selector resolves per candidate; a world in which nothing applies ("+2/+2 as
  * long as it's a Vampire", no otherwise) reads as the other world.
@@ -319,7 +342,7 @@ object TargetPolarityAnalyzer {
 
     /**
      * The per-candidate reading of an Aura whose enchant slot reads [TargetPolarity.FLEXIBLE]
-     * because what it does turns on the host's creature type — see [HostSplit]. Null for every
+     * because what it does turns on the host's creature type or card type — see [HostSplit]. Null for every
      * other card.
      */
     fun hostSplit(card: CardDefinition, definitions: CardLookup = NO_DEFINITIONS): HostSplit? =
@@ -328,11 +351,11 @@ object TargetPolarityAnalyzer {
             if (card.cardFaces.isNotEmpty() || script.auraTarget == null || script.targetRequirements.isNotEmpty()) {
                 return@getOrPut emptyList()
             }
-            val subtype = hostSubtype(card) ?: return@getOrPut emptyList()
+            val trait = hostTrait(card) ?: return@getOrPut emptyList()
             val (whenIs, otherwise) = hostWorlds(card, definitions)
             val oneSided = setOf(TargetPolarity.BENEFICIAL, TargetPolarity.HARMFUL)
             if (whenIs in oneSided && otherwise in oneSided && whenIs != otherwise) {
-                listOf(HostSplit(subtype, whenIs!!, otherwise!!))
+                listOf(HostSplit(trait, whenIs!!, otherwise!!))
             } else emptyList()
         }.singleOrNull()
 
@@ -2283,7 +2306,7 @@ object TargetPolarityAnalyzer {
     }
 
     private fun hostReading(card: CardDefinition, definitions: CardLookup): TargetPolarity {
-        if (hostSubtype(card) == null) {
+        if (hostTrait(card) == null) {
             val readings = attachmentReadings(card, definitions, hostIs = null)
             // "When this Aura enters, it deals 1 damage to enchanted creature. Enchanted creature
             // gets +3/+0 and has trample" (Tilonalli's Crown): the lasting gift is the point on a
@@ -2307,7 +2330,7 @@ object TargetPolarityAnalyzer {
     }
 
     /**
-     * [card]'s attachment reading for a host of its [hostSubtype], and for any other host — null
+     * [card]'s attachment reading for a host with its [hostTrait], and for any other host — null
      * for a world in which none of its abilities applies.
      */
     private fun hostWorlds(card: CardDefinition, definitions: CardLookup): Pair<TargetPolarity?, TargetPolarity?> {
@@ -2328,6 +2351,68 @@ object TargetPolarityAnalyzer {
         return subtypes.distinct().singleOrNull()
     }
 
+    /**
+     * What [card]'s abilities turn on about the host: its creature type ([hostSubtype]), or the one
+     * card type every host-type gate of its statics and replacements names ([hostTypeGate]) — Armament
+     * of Nyx's double strike "as long as it's an enchantment" and its prevention "otherwise". Null when
+     * neither, or when its gates name more than one card type.
+     */
+    private fun hostTrait(card: CardDefinition): HostTrait? {
+        hostSubtype(card)?.let { return HostTrait.CreatureType(it) }
+        if (card.script.staticAbilities.any { it is ConditionalStaticAbility }) return null
+        val gates = card.script.staticAbilities.mapNotNull { hostTypeGate(it) } +
+            card.script.replacementEffects.mapNotNull { hostTypeGate(it) }
+        return gates.map { it.first }.distinct().singleOrNull()?.let(HostTrait::CardType)
+    }
+
+    /**
+     * The card type a host-scoped static is gated on, and whether it applies to a host of that type
+     * (true) or to any other (false): "enchanted creature has double strike as long as it's an
+     * enchantment" is a grant over `Enchantment.attachedToBySource()`. Null when ungated.
+     */
+    private fun hostTypeGate(static: StaticAbility): Pair<String, Boolean>? = when (static) {
+        is GrantKeyword -> static.filter.takeIf(::reachesHost)?.baseFilter?.let(::typeGate)
+        else -> null
+    }
+
+    /** [hostTypeGate] for a [hostDamagePrevention] replacement, gated by the damage source's type. */
+    private fun hostTypeGate(replacement: ReplacementEffect): Pair<String, Boolean>? =
+        if (!hostDamagePrevention(replacement)) null
+        else typeGate(((replacement as PreventDamage).appliesTo as EventPattern.DamageEvent).source)
+
+    private fun typeGate(filter: GameObjectFilter): Pair<String, Boolean>? =
+        filter.cardPredicates.firstNotNullOfOrNull { predicate ->
+            HOST_GATE_TYPES[predicate]?.let { it to true }
+                ?: (predicate as? CardPredicate.Not)?.predicate?.let { HOST_GATE_TYPES[it] }?.let { it to false }
+        }
+
+    /** The card-type predicates a [hostTypeGate] reads, as [ProjectedState.hasType] spells the type. */
+    private val HOST_GATE_TYPES: Map<CardPredicate, String> = mapOf(
+        CardPredicate.IsEnchantment to "ENCHANTMENT",
+        CardPredicate.IsArtifact to "ARTIFACT",
+    )
+
+    /**
+     * Whether a group filter names the permanent its source is attached to — [Scope.AttachedTo], or
+     * a battlefield group narrowed to it with `attachedToBySource()` (the form a type-gated grant
+     * takes, so the layer system re-checks the gate as the host's types change).
+     */
+    private fun reachesHost(filter: GroupFilter): Boolean =
+        filter.scope == Scope.AttachedTo ||
+            (filter.scope == Scope.Battlefield && StatePredicate.IsAttachedToBySource in filter.baseFilter.statePredicates)
+
+    /**
+     * "Prevent all damage that would be dealt by enchanted creature" (Armament of Nyx's otherwise
+     * half): every point the host deals — in a fight or by its abilities — comes to nothing, so it
+     * attacks, blocks and burns for no effect. A curse on the host, as "can't attack or block" is.
+     */
+    private fun hostDamagePrevention(replacement: ReplacementEffect): Boolean {
+        if (replacement !is PreventDamage || replacement.amount != null || replacement.half || replacement.allBut != null) return false
+        val event = replacement.appliesTo as? EventPattern.DamageEvent ?: return false
+        return StatePredicate.IsAttachedToBySource in event.source.statePredicates && event.recipient == Recipient.Any &&
+            event.source.controllerPredicate == null
+    }
+
     private fun hostSubtypeOf(condition: Condition): Subtype? = when (condition) {
         is EnchantedCreatureHasSubtype -> condition.subtype
         is NotCondition -> (condition.condition as? EnchantedCreatureHasSubtype)?.subtype
@@ -2336,7 +2421,8 @@ object TargetPolarityAnalyzer {
 
     /**
      * Every reading [attachmentPolarity] combines. With [hostIs] set, a static gated on the host's
-     * creature type ([hostSubtype]) counts only in the world where its condition holds.
+     * creature type ([hostSubtype]) or card type ([hostTypeGate]) counts only in the world where its
+     * condition holds.
      */
     private fun attachmentReadings(card: CardDefinition, definitions: CardLookup, hostIs: Boolean?): List<TargetPolarity> {
         val readings = mutableListOf<TargetPolarity>()
@@ -2367,6 +2453,7 @@ object TargetPolarityAnalyzer {
                 }
                 if (!holds) continue
             }
+            if (hostIs != null && hostTypeGate(static)?.second?.let { it != hostIs } == true) continue
             val reading = staticPolarity(static) ?: continue
             when {
                 static is GrantActivatedAbility -> consolations += reading
@@ -2407,7 +2494,19 @@ object TargetPolarityAnalyzer {
         // for an entry choice (Traveler's Cloak's land type), which only parameterises a static.
         // A self-only zone redirect (disturb's "if this would be put into a graveyard, exile it
         // instead") moves the Aura itself and never touches the creature, so it is no veto either.
-        if (card.script.replacementEffects.any { !it.affectsOnlyTheAuraItself() }) readings += TargetPolarity.UNKNOWN
+        // Preventing all damage the host would deal ([hostDamagePrevention]) reads as a curse, and
+        // when its source filter is gated on the host's card type (Armament of Nyx's "otherwise")
+        // it counts only for the side of the HostSplit whose host it can apply to.
+        for (replacement in card.script.replacementEffects) {
+            when {
+                replacement.affectsOnlyTheAuraItself() -> Unit
+                hostDamagePrevention(replacement) ->
+                    if (hostIs == null || hostTypeGate(replacement)?.second?.let { it != hostIs } != true) {
+                        readings += TargetPolarity.HARMFUL
+                    }
+                else -> readings += TargetPolarity.UNKNOWN
+            }
+        }
         // A price needs a gift the Aura gives outright, so judge it before any consolation joins.
         val payPrices = TargetPolarity.BENEFICIAL !in readings || TargetPolarity.HARMFUL in readings
         if (TargetPolarity.HARMFUL !in readings) readings += consolations
@@ -2781,7 +2880,7 @@ object TargetPolarityAnalyzer {
         is ModifyStats -> if (static.filter.scope != Scope.AttachedTo) null
             else statsPolarity(DynamicAmount.Fixed(static.powerBonus), DynamicAmount.Fixed(static.toughnessBonus))
                 ?: lastingTradePolarity(static.powerBonus, static.toughnessBonus)
-        is GrantKeyword -> if (static.filter.scope != Scope.AttachedTo) null else keywordPolarity(static.keyword)
+        is GrantKeyword -> if (!reachesHost(static.filter)) null else keywordPolarity(static.keyword)
         is GrantLandwalkOfChosenType -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.BENEFICIAL
         is CantAttack -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.HARMFUL
         is CantBlock -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.HARMFUL

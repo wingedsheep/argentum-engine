@@ -1,0 +1,1 @@
+- #4744 The AI reads "you have hexproof/shroud" as protection, splits Auras gated on the host's card type (Armament of Nyx: double strike on our enchantment creatures, damage prevention on theirs), reads granted "whenever this attacks" triggers as combat enhancements, and stops wasting per-target keyword grants (Phalanx Formation) where no fight is left this turn
