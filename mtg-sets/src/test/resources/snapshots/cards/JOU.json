@@ -3024,6 +3024,47 @@
     ]
 }
 
+// Rollick of Abandon
+{
+    "name": "Rollick of Abandon",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "All creatures get +2/-2 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            },
+            "body": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": -2
+                },
+                "target": "IterationEntity"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "flavorText": "\"Embrace every moment, for it could be your last.\"\n—Xenagos, god of revels",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/f/3f1a80c4-8119-437d-bf5b-549c5679c90a.jpg?1783939420"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Rotted Hulk
 {
     "name": "Rotted Hulk",
@@ -3041,6 +3082,54 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Satyr Grovedancer
+{
+    "name": "Satyr Grovedancer",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Satyr Shaman",
+    "oracleText": "When this creature enters, put a +1/+1 counter on target creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Satyr Grovedancer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "artist": "Jason A. Engle",
+        "flavorText": "\"Some of my kin dance for themselves, without greater purpose. Nylea gives me purpose, and with it strength.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d46febca-f3c0-4467-aef4-4dfcdf3009fe.jpg?1783939410"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -3100,6 +3189,39 @@
     ]
 }
 
+// Sigiled Skink
+{
+    "name": "Sigiled Skink",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Lizard",
+    "oracleText": "Whenever this creature attacks, scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sigiled Skink:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "The runes seem to come alive as it moves, rippling like slow flames across its scales.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/37f84b4d-82db-4e3a-a099-2e438c0a6418.jpg?1783939419"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Sigiled Starfish
 {
     "name": "Sigiled Starfish",
@@ -3131,6 +3253,228 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Skyspear Cavalry
+{
+    "name": "Skyspear Cavalry",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Flying\nDouble strike (This creature deals both first-strike and regular combat damage.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "DOUBLE_STRIKE"
+    ],
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "UNCOMMON",
+        "artist": "Wayne Reynolds",
+        "flavorText": "Pray her spear reaches you first. Her griffin is less kind.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c86ab26f-0959-476f-9f83-939e9138ca8d.jpg?1783939454"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Spawn of Thraxes
+{
+    "name": "Spawn of Thraxes",
+    "manaCost": "{5}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nWhen this creature enters, it deals damage to any target equal to the number of Mountains you control.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spawn of Thraxes:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land Mountain"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "flavorText": "Sparks from Purphoros's forge fill the belly of every dragon.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/1/e13aa40e-c626-486d-8abc-10aa68542c5b.jpg?1783939418"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Squelching Leeches
+{
+    "name": "Squelching Leeches",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Leech",
+    "oracleText": "Squelching Leeches's power and toughness are each equal to the number of Swamps you control.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land Swamp"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land Swamp"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "Leeches are sacred to followers of Pharika for drawing poison from a wound, but feared by everyone else for drawing blood from the flesh.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/af3fff48-ebc9-4fca-a098-77d973e7d238.jpg?1783939430"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Strength from the Fallen
+{
+    "name": "Strength from the Fallen",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Constellation — Whenever this enchantment or another enchantment you control enters, target creature gets +X/+X until end of turn, where X is the number of creature cards in your graveyard.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Strength from the Fallen:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "creature"
+                    },
+                    "toughnessModifier": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "creature"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Constellation — Whenever this enchantment or another enchantment you control enters, target creature gets +X/+X until end of turn, where X is the number of creature cards in your graveyard."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "rarity": "UNCOMMON",
+        "artist": "Min Yum",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c76b3a8e-3cbb-47c4-9535-dfdeece7ee02.jpg?1783939407"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Supply-Line Cranes
+{
+    "name": "Supply-Line Cranes",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying\nWhen this creature enters, put a +1/+1 counter on target creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Supply-Line Cranes:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "They are trained from hatching to deliver aid where it is needed most.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/764bd86e-4156-4c58-9ce0-ca3dffbc7298.jpg?1783939452"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -3321,6 +3665,228 @@
     ]
 }
 
+// Thassa's Devourer
+{
+    "name": "Thassa's Devourer",
+    "manaCost": "{4}{U}",
+    "typeLine": "Enchantment Creature — Elemental",
+    "oracleText": "Constellation — Whenever this creature or another enchantment you control enters, target player mills two cards.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thassa's Devourer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Constellation — Whenever this creature or another enchantment you control enters, target player mills two cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "artist": "David Palumbo",
+        "flavorText": "When mortals claim there are places Thassa cannot reach, the sea god laughs.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d4ebd8c0-bb03-434d-b669-d9b35d07b2c6.jpg?1783939442"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Thassa's Ire
+{
+    "name": "Thassa's Ire",
+    "manaCost": "{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "{3}{U}: You may tap or untap target creature.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Thassa's Ire:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Modal",
+                        "modes": [
+                            {
+                                "effect": {
+                                    "type": "TapUntap",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "description": "Tap that creature"
+                            },
+                            {
+                                "effect": {
+                                    "type": "TapUntap",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "tap": false
+                                },
+                                "description": "Untap that creature"
+                            }
+                        ],
+                        "countsAsModalSpell": false
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{3}{U}: You may tap or untap target creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rahn",
+        "flavorText": "The sailor had never seen a god before. Now she had gazed upon Thassa. Shortly she would see Athreos, and then she would meet Erebos.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4cc6245f-c60f-4674-8c6d-24fe3b78e00e.jpg?1783939441"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Thoughtrender Lamia
+{
+    "name": "Thoughtrender Lamia",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Enchantment Creature — Lamia",
+    "oracleText": "Constellation — Whenever this creature or another enchantment you control enters, each opponent discards a card.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thoughtrender Lamia:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "discarded"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Constellation — Whenever this creature or another enchantment you control enters, each opponent discards a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "rarity": "UNCOMMON",
+        "artist": "Magali Villeneuve",
+        "flavorText": "Some predators can sense fear in their prey, but the lamia is drawn to madness.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/69799971-6e24-4b90-ba72-44c6393fc3c4.jpg?1783939429"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Tormented Thoughts
 {
     "name": "Tormented Thoughts",
@@ -3433,6 +3999,140 @@
         "artist": "Svetlin Velinov",
         "flavorText": "\"Who will miss you, drywalker? A wife? A child? Perhaps they will blame the sea for your fate, and teach future generations to stay far away from it.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/8/8/881c554e-2324-41e2-89f1-db9f4017bc31.jpg?1783939440"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Underworld Coinsmith
+{
+    "name": "Underworld Coinsmith",
+    "manaCost": "{W}{B}",
+    "typeLine": "Enchantment Creature — Human Cleric",
+    "oracleText": "Constellation — Whenever this creature or another enchantment you control enters, you gain 1 life.\n{W}{B}, Pay 1 life: Each opponent loses 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Underworld Coinsmith:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Constellation — Whenever this creature or another enchantment you control enters, you gain 1 life."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Underworld Coinsmith:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{W}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "descriptionOverride": "{W}{B}, Pay 1 life: Each opponent loses 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "157",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Winters",
+        "flavorText": "Coins of the Underworld are shaped from clay funerary masks.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ea5346e3-3fe4-47ea-a184-e237091cc4a1.jpg?1783939400"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
+// Whitewater Naiads
+{
+    "name": "Whitewater Naiads",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Enchantment Creature — Nymph",
+    "oracleText": "Constellation — Whenever this creature or another enchantment you control enters, target creature can't be blocked this turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Whitewater Naiads:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "CANT_BE_BLOCKED",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Constellation — Whenever this creature or another enchantment you control enters, target creature can't be blocked this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "rarity": "UNCOMMON",
+        "artist": "William Wu",
+        "flavorText": "Stand against the crash of the river's rapids and you will know the power of the naiads.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/f/3f61c85c-03cf-411a-aa66-cbe178aeaa02.jpg?1783939440"
     },
     "colorIdentityOverride": [
         "BLUE"
