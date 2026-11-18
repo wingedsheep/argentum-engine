@@ -3,6 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.inv.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GrantProtectionFromControlledColors
+import com.wingedsheep.sdk.scripting.ProtectionSpares
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 
@@ -17,9 +18,8 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * The protection set is board-derived: [GrantProtectionFromControlledColors] reads the projected
  * colors of every permanent the Aura's controller controls (after Layer 5) and grants the enchanted
  * creature protection from each. Because the white Aura is itself a permanent you control, the
- * enchanted creature gains protection from white — the printed "This effect doesn't remove this
- * Aura" clause is a no-op in this engine, which never detaches an Aura for protection (704.5n only
- * detaches Auras whose object is gone or that are unattached).
+ * enchanted creature gains protection from white; [ProtectionSpares.SELF] keeps that protection from
+ * removing this Aura, while other Auras of those colors still fall off (CR 704.5m).
  */
 val PledgeOfLoyalty = card("Pledge of Loyalty") {
     manaCost = "{1}{W}"
@@ -32,7 +32,7 @@ val PledgeOfLoyalty = card("Pledge of Loyalty") {
     auraTarget = TargetObject(filter = TargetFilter.Creature)
 
     staticAbility {
-        ability = GrantProtectionFromControlledColors()
+        ability = GrantProtectionFromControlledColors(spares = ProtectionSpares.SELF)
     }
 
     metadata {

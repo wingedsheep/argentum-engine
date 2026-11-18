@@ -878,7 +878,7 @@ class StaticAbilityHandler(
             }
             is GrantProtectionFromChosenColorToGroup -> {
                 ContinuousEffectData(
-                    modification = Modification.GrantProtectionFromChosenColor,
+                    modification = Modification.GrantProtectionFromChosenColor(ability.spares),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
@@ -912,7 +912,7 @@ class StaticAbilityHandler(
             }
             is GrantProtectionFromControlledColors -> {
                 ContinuousEffectData(
-                    modification = Modification.GrantProtectionFromControlledColors,
+                    modification = Modification.GrantProtectionFromControlledColors(ability.spares),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
@@ -1156,7 +1156,7 @@ class StaticAbilityHandler(
             }
             is GrantProtection -> {
                 ContinuousEffectData(
-                    modification = Modification.GrantProtectionFromColor(ability.color.name),
+                    modification = Modification.GrantProtectionFromColor(ability.color.name, ability.spares),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }

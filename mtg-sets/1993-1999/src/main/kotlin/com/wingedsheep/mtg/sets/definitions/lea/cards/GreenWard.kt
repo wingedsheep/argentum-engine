@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GrantProtection
+import com.wingedsheep.sdk.scripting.ProtectionSpares
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 
@@ -26,7 +27,7 @@ val GreenWard = card("Green Ward") {
     oracleText = "Enchant creature\nEnchanted creature has protection from green. This effect doesn't remove this Aura."
     auraTarget = TargetObject(filter = TargetFilter.Creature)
     staticAbility {
-        ability = GrantProtection(Color.GREEN)
+        ability = GrantProtection(Color.GREEN, spares = ProtectionSpares.SELF)
     }
     metadata {
         rarity = Rarity.UNCOMMON

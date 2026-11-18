@@ -4072,6 +4072,73 @@
     ]
 }
 
+// Spectra Ward
+{
+    "name": "Spectra Ward",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+2 and has protection from each color. This effect doesn't remove Auras. (It can't be blocked, targeted, or dealt damage by anything that's white, blue, black, red, or green.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantProtection",
+                "color": "WHITE",
+                "spares": "AURAS"
+            },
+            {
+                "type": "GrantProtection",
+                "color": "BLUE",
+                "spares": "AURAS"
+            },
+            {
+                "type": "GrantProtection",
+                "color": "BLACK",
+                "spares": "AURAS"
+            },
+            {
+                "type": "GrantProtection",
+                "color": "RED",
+                "spares": "AURAS"
+            },
+            {
+                "type": "GrantProtection",
+                "color": "GREEN",
+                "spares": "AURAS"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "RARE",
+        "artist": "Ryan Alexander Lee",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/69c1b7a2-a4ff-485c-9fe5-04c88e5e8886.jpg?1783939198",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "The protection granted by Spectra Ward won't cause any Aura to be put into its owner's graveyard, including Spectra Ward itself. However, if the enchanted creature gains protection from white in another way, Spectra Ward will be put into its owner's graveyard as a state-based action."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Although Auras that are already attached to the creature aren't affected by Spectra Ward, the enchanted creature can't be the target of further Aura spells that have one or more colors."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Spirit Bonds
 {
     "name": "Spirit Bonds",

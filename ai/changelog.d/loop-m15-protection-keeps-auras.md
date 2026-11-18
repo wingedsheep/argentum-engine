@@ -1,0 +1,1 @@
+- #4724 Reads protection-granting Auras (from a color, the chosen color, or the colors of permanents you control) as shields for their host: the AI aims them at its own creatures and tags them as protection.

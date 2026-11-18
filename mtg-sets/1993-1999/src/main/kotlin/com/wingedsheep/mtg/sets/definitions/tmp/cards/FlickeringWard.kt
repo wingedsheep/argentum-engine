@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ChoiceType
 import com.wingedsheep.sdk.scripting.EntersWithChoice
 import com.wingedsheep.sdk.scripting.GrantProtectionFromChosenColorToGroup
+import com.wingedsheep.sdk.scripting.ProtectionSpares
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
@@ -22,11 +23,9 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * doesn't remove this Aura.
  * {W}: Return this Aura to its owner's hand.
  *
- * The self-exempt clause ("This effect doesn't remove this Aura") is currently
- * moot in the engine: UnattachedAurasCheck only sends Auras to the graveyard
- * when the attached target is missing, not when it's an illegal attachment per
- * Rule 704.5n (color protection). If 704.5n is ever wired up, this clause will
- * need explicit support.
+ * "This effect doesn't remove this Aura" is `spares = ProtectionSpares.SELF`: the
+ * chosen-color protection removes other Auras of that color (CR 704.5m) but not
+ * this one.
  */
 val FlickeringWard = card("Flickering Ward") {
     manaCost = "{W}"
@@ -43,7 +42,8 @@ val FlickeringWard = card("Flickering Ward") {
 
     staticAbility {
         ability = GrantProtectionFromChosenColorToGroup(
-            filter = GroupFilter.attachedCreature()
+            filter = GroupFilter.attachedCreature(),
+            spares = ProtectionSpares.SELF
         )
     }
 

@@ -13,19 +13,48 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
+ * Which attachments a granted protection *doesn't remove* — the "This effect doesn't remove …"
+ * clause some protection-granting Auras print. CR 702.16c/d make a permanent with protection from
+ * a quality unable to be enchanted or equipped by attachments with that quality, so the
+ * unattached-Aura state-based action (CR 704.5m/n) would knock them off; a sparing grant opts its
+ * own protection out of that leg, and only that leg — targeting, blocking and damage are still
+ * prevented, and an Aura can't newly become attached to the protected permanent.
+ *
+ * The sparing is per effect, not per quality: if the host also has the same protection from a
+ * source that doesn't spare an attachment (printed, or another grant), that attachment still falls
+ * off ("if the enchanted creature gains protection from white in another way, Spectra Ward will be
+ * put into its owner's graveyard").
+ */
+@Serializable
+enum class ProtectionSpares(val clause: String?) {
+    /** The ordinary protection: every attachment with the quality is removed. */
+    NONE(null),
+    /** "This effect doesn't remove this Aura" — the Ward cycle, Pledge of Loyalty. */
+    SELF("This effect doesn't remove this Aura."),
+    /** "This effect doesn't remove Auras" — Spectra Ward (one [GrantProtection] per color). */
+    AURAS("This effect doesn't remove Auras.");
+
+    /** [base] with this sparing's clause appended, for a static ability's description. */
+    fun describe(base: String): String = clause?.let { "$base. $it" } ?: base
+}
+
+/**
  * Grants protection from a color to the target creature.
  * Used for auras like Crown of Awe: "Enchanted creature has protection from black and from red."
  *
  * @property color The color to grant protection from
  * @property filter What this ability applies to (typically AttachedCreature for auras)
+ * @property spares Which attachments this protection doesn't remove (the Ward cycle's [ProtectionSpares.SELF])
  */
 @SerialName("GrantProtection")
 @Serializable
 data class GrantProtection(
     val color: Color,
-    val filter: GroupFilter = GroupFilter.attachedCreature()
+    val filter: GroupFilter = GroupFilter.attachedCreature(),
+    val spares: ProtectionSpares = ProtectionSpares.NONE
 ) : StaticAbility {
-    override val description: String = "${filter.description} have protection from ${color.displayName.lowercase()}"
+    override val description: String =
+        spares.describe("${filter.description} have protection from ${color.displayName.lowercase()}")
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this
@@ -69,13 +98,16 @@ data class GrantProtectionFromCardType(
  * Example: Ward Sliver (all Slivers have protection from the chosen color)
  *
  * @property filter The group of creatures that gain protection
+ * @property spares Which attachments this protection doesn't remove (Flickering Ward's [ProtectionSpares.SELF])
  */
 @SerialName("GrantProtectionFromChosenColorToGroup")
 @Serializable
 data class GrantProtectionFromChosenColorToGroup(
-    val filter: GroupFilter = GroupFilter(GameObjectFilter.Companion.Creature.youControl())
+    val filter: GroupFilter = GroupFilter(GameObjectFilter.Companion.Creature.youControl()),
+    val spares: ProtectionSpares = ProtectionSpares.NONE
 ) : StaticAbility {
-    override val description: String = "Creatures of the chosen group have protection from the chosen color"
+    override val description: String =
+        spares.describe("Creatures of the chosen group have protection from the chosen color")
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this
@@ -227,10 +259,12 @@ data class GrantProtectionFromToGroup(
 @SerialName("GrantProtectionFromControlledColors")
 @Serializable
 data class GrantProtectionFromControlledColors(
-    val filter: GroupFilter = GroupFilter.attachedCreature()
+    val filter: GroupFilter = GroupFilter.attachedCreature(),
+    /** Which attachments this protection doesn't remove (Pledge of Loyalty's [ProtectionSpares.SELF]). */
+    val spares: ProtectionSpares = ProtectionSpares.NONE
 ) : StaticAbility {
     override val description: String =
-        "${filter.description} have protection from the colors of permanents you control"
+        spares.describe("${filter.description} have protection from the colors of permanents you control")
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this

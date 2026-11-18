@@ -2002,7 +2002,8 @@
                 "filter": {
                     "baseFilter": "permanent",
                     "scope": "AttachedTo"
-                }
+                },
+                "spares": "SELF"
             }
         ],
         "replacementEffects": [

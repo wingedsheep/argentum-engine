@@ -114,7 +114,7 @@ class PutOntoBattlefieldAttachedToChosenExecutor(
                 legalHosts = legalHosts.filter { host ->
                     host in auraLegal &&
                         EnchantRestriction.hostAllowsAura(state, projected, zones.predicateEvaluator, cardId, host) &&
-                        !EnchantRestriction.hostProtectedFromAttachment(state, projected, cardRegistry, cardId, cardComponent, host)
+                        !EnchantRestriction.hostProtectedFromAttachment(state, projected, cardId, cardComponent, host)
                 }
             } else {
                 // No enchant target defined — the Aura can't be attached to anything.

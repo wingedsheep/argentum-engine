@@ -1082,7 +1082,8 @@
         "staticAbilities": [
             {
                 "type": "GrantProtection",
-                "color": "BLACK"
+                "color": "BLACK",
+                "spares": "SELF"
             }
         ],
         "auraTarget": {
@@ -1294,7 +1295,8 @@
         "staticAbilities": [
             {
                 "type": "GrantProtection",
-                "color": "BLUE"
+                "color": "BLUE",
+                "spares": "SELF"
             }
         ],
         "auraTarget": {
@@ -5410,7 +5412,8 @@
         "staticAbilities": [
             {
                 "type": "GrantProtection",
-                "color": "GREEN"
+                "color": "GREEN",
+                "spares": "SELF"
             }
         ],
         "auraTarget": {
@@ -10141,7 +10144,8 @@
         "staticAbilities": [
             {
                 "type": "GrantProtection",
-                "color": "RED"
+                "color": "RED",
+                "spares": "SELF"
             }
         ],
         "auraTarget": {
@@ -13720,7 +13724,8 @@
         "staticAbilities": [
             {
                 "type": "GrantProtection",
-                "color": "WHITE"
+                "color": "WHITE",
+                "spares": "SELF"
             }
         ],
         "auraTarget": {

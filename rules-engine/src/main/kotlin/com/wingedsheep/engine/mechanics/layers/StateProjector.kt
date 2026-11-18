@@ -605,6 +605,7 @@ class StateProjector {
                 staticAbilities = v.staticAbilities.toList(),
                 staticAbilitySourceIds = v.staticAbilitySourceIds.toList(),
                 enchantmentRestrictions = v.enchantmentRestrictions.toList(),
+                protectionSpares = if (v.protectionSpares.isEmpty()) emptyMap() else v.protectionSpares.mapValues { it.value.toList() },
                 colors = v.colors,
                 types = v.types,
                 subtypes = v.subtypes,

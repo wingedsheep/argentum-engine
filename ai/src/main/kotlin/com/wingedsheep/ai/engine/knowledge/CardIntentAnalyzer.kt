@@ -3623,6 +3623,14 @@ object CardIntentAnalyzer {
         }
 
         is GrantKeyword -> keywordTags(static.keyword)
+        // "Enchanted creature has protection from white" (the Ward cycle, Spectra Ward), from a card
+        // type, from the chosen color or from the colors of permanents you control: the static form
+        // of the one-shot protection grants [leafTagsOf] reads as a shield, as a granted hexproof is.
+        is com.wingedsheep.sdk.scripting.GrantProtection,
+        is com.wingedsheep.sdk.scripting.GrantProtectionFromCardType,
+        is com.wingedsheep.sdk.scripting.GrantProtectionFromToGroup,
+        is com.wingedsheep.sdk.scripting.GrantProtectionFromChosenColorToGroup,
+        is com.wingedsheep.sdk.scripting.GrantProtectionFromControlledColors -> setOf(IntentTag.PROTECTION)
         // "As long as a creature card with flying is in a graveyard, this creature has flying. The same
         // is true for …" (Cairn Wanderer, Eater of Virtue, Soulflayer's delved cards): each listed
         // keyword reads as the grant it may become; a "landwalk" family is evasion, a "protection" or
