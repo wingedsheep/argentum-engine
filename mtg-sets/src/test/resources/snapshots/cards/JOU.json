@@ -1,3 +1,96 @@
+// Akroan Mastiff
+{
+    "name": "Akroan Mastiff",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Dog",
+    "oracleText": "{W}, {T}: Tap target creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Akroan Mastiff:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "artist": "Zoltan Boros",
+        "flavorText": "Even when many of the soldiers who guarded Akros were called away, its safety was never in doubt.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7e21938b-46b1-4b2f-8269-0cd0e998cddc.jpg?1783939463"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Aspect of Gorgon
+{
+    "name": "Aspect of Gorgon",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +1/+3 and has deathtouch. (Any amount of damage it deals to a creature is enough to destroy it.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 3
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "DEATHTOUCH"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "artist": "Willian Murai",
+        "flavorText": "\"My adopted children are loved no less.\"\n—Pharika, god of affliction",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/e/be8956d0-5502-415d-bead-d8bbddf9871d.jpg?1783939440"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Athreos, God of Passage
 {
     "name": "Athreos, God of Passage",
@@ -187,6 +280,214 @@
     ]
 }
 
+// Bassara Tower Archer
+{
+    "name": "Bassara Tower Archer",
+    "manaCost": "{G}{G}",
+    "typeLine": "Creature — Human Archer",
+    "oracleText": "Reach, hexproof",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "REACH",
+        "HEXPROOF"
+    ],
+    "metadata": {
+        "collectorNumber": "117",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "flavorText": "Setessan warriors of Bassara Tower are known for their guerrilla tactics and skill with the bow. Interlopers into the Nessian Wood do not get far.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/95a1e5c2-7f5b-4ae4-83d9-06e334ba57ea.jpg?1783939417"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Bearer of the Heavens
+{
+    "name": "Bearer of the Heavens",
+    "manaCost": "{7}{R}",
+    "typeLine": "Creature — Giant",
+    "oracleText": "When this creature dies, destroy all permanents at the beginning of the next end step.",
+    "creatureStats": {
+        "power": 10,
+        "toughness": 10
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bearer of the Heavens:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "step": "END",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": "permanent"
+                                },
+                                "storeAs": "destroyAll_gathered"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "destroyAll_gathered",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Destroy"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "When this creature dies, destroy all permanents at the beginning of the next end step."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "rarity": "RARE",
+        "artist": "Ryan Alexander Lee",
+        "flavorText": "To hold the heavens from the earth is no curse, but a titanic responsibility.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/061d9fa5-a8e0-4263-9804-22d648554eba.jpg?1783939428"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Chariot of Victory
+{
+    "name": "Chariot of Victory",
+    "manaCost": "{3}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature has first strike, trample, and haste.\nEquip {1}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Chariot of Victory:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FIRST_STRIKE"
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE"
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE"
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "UNCOMMON",
+        "artist": "John Stanko",
+        "flavorText": "The greatest heroes are the first to stand, the first to take up arms, and the first to meet the enemy.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c2dd03d2-05ef-4929-b973-3dbe49fc7592.jpg?1783939402"
+    },
+    "colorIdentityOverride": []
+}
+
+// Cloaked Siren
+{
+    "name": "Cloaked Siren",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Siren",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nFlying",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "metadata": {
+        "collectorNumber": "32",
+        "artist": "Mark Zug",
+        "flavorText": "\"That is not the voice of the wind singing on the stones.\"\n—Callaphe the mariner",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/9/79a639aa-91f4-49df-8671-122710073084.jpg?1783939450"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Cyclops of Eternal Fury
+{
+    "name": "Cyclops of Eternal Fury",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Enchantment Creature — Cyclops",
+    "oracleText": "Creatures you control have haste.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "flavorText": "\"The anger that festers inside this one is contagious.\"\n—Anthousa of Setessa",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/44a92b7a-7119-45b3-b9ed-5dbf5abca818.jpg?1783939427"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Dictate of Erebos
 {
     "name": "Dictate of Erebos",
@@ -242,6 +543,39 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Dictate of Heliod
+{
+    "name": "Dictate of Heliod",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Flash\nCreatures you control get +2/+2.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2,
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "rarity": "RARE",
+        "artist": "Terese Nielsen",
+        "flavorText": "\"In our war Heliod gave mortals some favor, yet other times he withheld aid. Are we still no more than game pieces to him?\"\n—Polyxene the Doubter",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/95602d52-988c-472b-ba8e-cf25aa92f1fc.jpg?1783939462"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -347,6 +681,55 @@
                 "text": "A constellation ability triggers whenever an enchantment enters the battlefield under your control for any reason. Enchantments with other card types, such as enchantment creatures, will also cause constellation abilities to trigger."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Dreadbringer Lampads
+{
+    "name": "Dreadbringer Lampads",
+    "manaCost": "{4}{B}",
+    "typeLine": "Enchantment Creature — Nymph",
+    "oracleText": "Constellation — Whenever this creature or another enchantment you control enters, target creature gains intimidate until end of turn. (It can't be blocked except by artifact creatures and/or creatures that share a color with it.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dreadbringer Lampads:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "INTIMIDATE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Constellation — Whenever this creature or another enchantment you control enters, target creature gains intimidate until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "artist": "Willian Murai",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a2b4819-8aeb-49c0-b40a-3ff280604970.jpg?1783939436"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -510,6 +893,43 @@
     ]
 }
 
+// Felhide Petrifier
+{
+    "name": "Felhide Petrifier",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Minotaur Warrior",
+    "oracleText": "Deathtouch\nOther Minotaur creatures you control have deathtouch.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DEATHTOUCH",
+                "filter": {
+                    "baseFilter": "creature Minotaur ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "rarity": "UNCOMMON",
+        "artist": "James Ryman",
+        "flavorText": "It's common practice among minotaurs to collect the heads of their victims as trophies. Sometimes the trophies prove more than ornamental.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4d6cce01-a0cb-4059-a0ad-fbf7d9b998b8.jpg?1783939435"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Flurry of Horns
 {
     "name": "Flurry of Horns",
@@ -541,6 +961,282 @@
         "artist": "Phill Simmer",
         "flavorText": "A minotaur does not distinguish between human, satyr, and triton. They are all meat.",
         "imageUri": "https://cards.scryfall.io/normal/front/3/3/333ff270-4bc7-48ee-9738-f8c70b8a7e40.jpg?1783939424"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Font of Fertility
+{
+    "name": "Font of Fertility",
+    "manaCost": "{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "{1}{G}, Sacrifice this enchantment: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Font of Fertility:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{G}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a basic land card to put onto the battlefield tapped",
+                            "selectedLabel": "Put onto the battlefield tapped"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "artist": "Jack Wang",
+        "flavorText": "Drink deep, and know the path to the heart of the wilds.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac8d1ecb-de7c-4641-81da-13117820195c.jpg?1783939415"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Font of Fortunes
+{
+    "name": "Font of Fortunes",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "{1}{U}, Sacrifice this enchantment: Draw two cards.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Font of Fortunes:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{U}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "artist": "Jonas De Ro",
+        "flavorText": "Drink deep, and your thoughts will flow freely.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/25de3481-9b0d-4747-a97b-171b6aa41073.jpg?1783939448"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Font of Ire
+{
+    "name": "Font of Ire",
+    "manaCost": "{1}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "{3}{R}, Sacrifice this enchantment: It deals 5 damage to target player or planeswalker.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Font of Ire:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{R}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayerOrPlaneswalker",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "artist": "Zack Stella",
+        "flavorText": "Drink deep, and find your vengeance fulfilled.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/41509414-9faf-472d-8d38-391d9594cd56.jpg?1783939424"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Font of Vigor
+{
+    "name": "Font of Vigor",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "{2}{W}, Sacrifice this enchantment: You gain 7 life.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Font of Vigor:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{W}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "artist": "Noah Bradley",
+        "flavorText": "Drink deep, and be restored.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d4ef3a8e-ef8b-417a-a3a9-cb0ce88cb0c9.jpg?1783939461"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Forgeborn Oreads
+{
+    "name": "Forgeborn Oreads",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Enchantment Creature — Nymph",
+    "oracleText": "Constellation — Whenever this creature or another enchantment you control enters, this creature deals 1 damage to any target.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Forgeborn Oreads:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Constellation — Whenever this creature or another enchantment you control enters, this creature deals 1 damage to any target."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "98",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Yee",
+        "flavorText": "Purphoros shaped the oreads out of stray coals from his forge.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/8/b80038ed-4206-4e44-943e-f332e4ce2f14.jpg?1783939424",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "A constellation ability triggers whenever an enchantment enters the battlefield under your control for any reason. Enchantments with other card types, such as enchantment creatures, will also cause constellation abilities to trigger."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED"
@@ -704,6 +1400,148 @@
     }
 }
 
+// Golden Hind
+{
+    "name": "Golden Hind",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Elk",
+    "oracleText": "{T}: Add {G}.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Golden Hind:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "artist": "Cyril Van Der Haegen",
+        "flavorText": "\"It is not yours to hunt, mortal. Be content with its beauty alone.\"\n—Nylea, god of the hunt",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1ae883ea-191e-4571-be3d-1e3149e6965e.jpg?1783939414"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Grim Guardian
+{
+    "name": "Grim Guardian",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment Creature — Zombie",
+    "oracleText": "Constellation — Whenever this creature or another enchantment you control enters, each opponent loses 1 life.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Grim Guardian:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "descriptionOverride": "Constellation — Whenever this creature or another enchantment you control enters, each opponent loses 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "artist": "Ryan Barger",
+        "flavorText": "Occasionally the living wander to the Rivers, but the wardens of Athreos ensure that only the dead pass.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/732b5444-0410-430b-87ca-cf2d9f165bd7.jpg?1783939434",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "A constellation ability triggers whenever an enchantment enters the battlefield under your control for any reason. Enchantments with other card types, such as enchantment creatures, will also cause constellation abilities to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Harvestguard Alseids
+{
+    "name": "Harvestguard Alseids",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment Creature — Nymph",
+    "oracleText": "Constellation — Whenever this creature or another enchantment you control enters, prevent all damage that would be dealt to target creature this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Harvestguard Alseids:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "PreventDamageShield",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Constellation — Whenever this creature or another enchantment you control enters, prevent all damage that would be dealt to target creature this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "artist": "Igor Kieryluk",
+        "flavorText": "Not all shields are forged of iron or bronze.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b9256e2-b59c-4997-91c1-4c565746d53d.jpg?1783939459",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "A constellation ability triggers whenever an enchantment enters the battlefield under your control for any reason. Enchantments with other card types, such as enchantment creatures, will also cause constellation abilities to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Heroes' Bane
 {
     "name": "Heroes' Bane",
@@ -751,6 +1589,61 @@
         "artist": "Raymond Swanland",
         "flavorText": "Travelers' tales claim that hydras bite off their own heads to make themselves deadlier.",
         "imageUri": "https://cards.scryfall.io/normal/front/3/8/380e82f6-30ee-49c5-b5a2-85c5cf3e9bb1.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Humbler of Mortals
+{
+    "name": "Humbler of Mortals",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Enchantment Creature — Elemental",
+    "oracleText": "Constellation — Whenever this creature or another enchantment you control enters, creatures you control gain trample until end of turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Humbler of Mortals:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "TRAMPLE",
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Constellation — Whenever this creature or another enchantment you control enters, creatures you control gain trample until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "artist": "Jason Felix",
+        "flavorText": "The anger of the gods multiplied in Nyx, and the land awoke in dark echoes of their rage.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f12149b9-b450-4ad6-ab5d-9a0eeb36997e.jpg?1783939413",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "A constellation ability triggers whenever an enchantment enters the battlefield under your control for any reason. Enchantments with other card types, such as enchantment creatures, will also cause constellation abilities to trigger."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -1024,6 +1917,74 @@
     "colorIdentityOverride": [
         "BLUE",
         "RED"
+    ]
+}
+
+// Kruphix's Insight
+{
+    "name": "Kruphix's Insight",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Reveal the top six cards of your library. Put up to three enchantment cards from among them into your hand and the rest of the revealed cards into your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 6
+                        }
+                    },
+                    "storeAs": "looked",
+                    "revealed": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "looked",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    },
+                    "filter": "enchantment",
+                    "storeSelected": "kept",
+                    "storeRemainder": "rest",
+                    "prompt": "Put up to three enchantment cards from among them into your hand",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "kept",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "rest",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "artist": "Igor Kieryluk",
+        "flavorText": "The horizon is tantalizing in both its uncertainty and its potential.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/94e14f09-9629-443a-bc55-03152eabb2e7.jpg?1783939413"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -1391,6 +2352,63 @@
     ]
 }
 
+// Oakheart Dryads
+{
+    "name": "Oakheart Dryads",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment Creature — Nymph Dryad",
+    "oracleText": "Constellation — Whenever this creature or another enchantment you control enters, target creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Oakheart Dryads:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Constellation — Whenever this creature or another enchantment you control enters, target creature gets +1/+1 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "artist": "Johann Bodin",
+        "flavorText": "\"I do not know if the forest was different after they passed. But I know I was.\"\n—Ianthe, Setessan hunter",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d8ef63b9-c021-40fe-910e-93c06d660c20.jpg?1783939411"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Oppressive Rays
 {
     "name": "Oppressive Rays",
@@ -1499,6 +2517,220 @@
     ]
 }
 
+// Pheres-Band Warchief
+{
+    "name": "Pheres-Band Warchief",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Centaur Warrior",
+    "oracleText": "Vigilance, trample\nOther Centaur creatures you control get +1/+1 and have vigilance and trample.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE",
+        "TRAMPLE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature Centaur ctrl:you",
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE",
+                "filter": {
+                    "baseFilter": "creature Centaur ctrl:you",
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE",
+                "filter": {
+                    "baseFilter": "creature Centaur ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "rarity": "RARE",
+        "artist": "James Ryman",
+        "flavorText": "The renowned warchiefs of Pheres Band fight with the might of minotaurs and the sagacity of sphinxes.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/8456730a-607c-44c0-b18e-0df8f35b0634.jpg?1783939409"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Pin to the Earth
+{
+    "name": "Pin to the Earth",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets -6/-0.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": -6,
+                "toughnessBonus": 0
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "artist": "Johann Bodin",
+        "flavorText": "\"Mortal strength, like mortal hope, is so easily crushed.\"\n—Thassa, god of the sea",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c04e6915-39b0-4fbc-9114-2ecf371b6f72.jpg?1783939446"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Prophetic Flamespeaker
+{
+    "name": "Prophetic Flamespeaker",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "Double strike, trample\nWhenever this creature deals combat damage to a player, exile the top card of your library. You may play it this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "DOUBLE_STRIKE",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Prophetic Flamespeaker:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "impulseExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "impulseExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "impulseExiled"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, exile the top card of your library. You may play it this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "MYTHIC",
+        "artist": "Cynthia Sheppard",
+        "flavorText": "Fire to destroy. Fire to create.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/73326c79-f884-42d5-8546-3db46ce4fe52.jpg?1783939422"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Renowned Weaver
+{
+    "name": "Renowned Weaver",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "{1}{G}, Sacrifice this creature: Create a 1/3 green Spider enchantment creature token with reach. (It can block creatures with flying.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Renowned Weaver:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{G}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 3,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Spider"
+                    ],
+                    "keywords": [
+                        "REACH"
+                    ],
+                    "enchantmentToken": true
+                },
+                "descriptionOverride": "{1}{G}, Sacrifice this creature: Create a 1/3 green Spider enchantment creature token with reach."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "artist": "Yohann Schepacz",
+        "flavorText": "\"You think your weaving as beautiful as mine? Let me show you the true meaning of the craft.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/240830be-53f8-4f46-a0fb-6ecc439d1349.jpg?1783939409"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Returned Reveler
 {
     "name": "Returned Reveler",
@@ -1557,6 +2789,238 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Revel of the Fallen God
+{
+    "name": "Revel of the Fallen God",
+    "manaCost": "{3}{R}{R}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create four 2/2 red and green Satyr creature tokens with haste.",
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "count": {
+                "type": "Fixed",
+                "amount": 4
+            },
+            "power": 2,
+            "toughness": 2,
+            "colors": [
+                "RED",
+                "GREEN"
+            ],
+            "creatureTypes": [
+                "Satyr"
+            ],
+            "keywords": [
+                "HASTE"
+            ],
+            "imageUri": "https://cards.scryfall.io/normal/front/b/a/baa93038-2849-4c26-ab4f-1d50d276659f.jpg?1783939699"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "rarity": "RARE",
+        "artist": "Adam Paquette",
+        "flavorText": "\"Xenagos has fallen, and the world grows dark without him. What can ever fill that darkness but our rage?\"\n—Guruthes, disciple of Xenagos",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/1/e1d2c774-aab9-4747-af91-da792ed7cfe1.jpg?1783939402"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
+// Reviving Melody
+{
+    "name": "Reviving Melody",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one or both —\n• Return target creature card from your graveyard to your hand.\n• Return target enchantment card from your graveyard to your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature own:you",
+                                "zone": "Graveyard"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Return target creature card from your graveyard to your hand"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Hand"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "enchantment own:you",
+                                "zone": "Graveyard"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Return target enchantment card from your graveyard to your hand"
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1
+        }
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "rarity": "UNCOMMON",
+        "artist": "Cynthia Sheppard",
+        "flavorText": "\"Listen to my song, and you need never forge a golden mask to return to me.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/49b152cc-d39f-470e-8b62-e4a833db7b88.jpg?1783939409"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Riptide Chimera
+{
+    "name": "Riptide Chimera",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment Creature — Chimera",
+    "oracleText": "Flying\nAt the beginning of your upkeep, return an enchantment you control to its owner's hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Riptide Chimera:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "enchantment",
+                                "player": "You"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Return an enchantment you control to its owner's hand",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, return an enchantment you control to its owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Barger",
+        "flavorText": "\"I want one.\"\n—Kiora",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/9/e9f88da5-b013-478a-8a0b-da9d1e8eb2c9.jpg?1783939443"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Rise of Eagles
+{
+    "name": "Rise of Eagles",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create two 2/2 blue Bird enchantment creature tokens with flying. Scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Bird"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca6ce21f-2a29-480e-91f9-b089232863ff.jpg?1783939516",
+                    "enchantmentToken": true
+                },
+                {
+                    "type": "Scry",
+                    "count": 1
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "artist": "Noah Bradley",
+        "flavorText": "An offering to the sea brings an insight from the stars.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c3b5b278-b883-4703-9bfa-bab5a6da4660.jpg?1783939443"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
