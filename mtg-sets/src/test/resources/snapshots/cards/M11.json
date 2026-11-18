@@ -2573,6 +2573,79 @@
     "colorIdentityOverride": []
 }
 
+// Stormtide Leviathan
+{
+    "name": "Stormtide Leviathan",
+    "manaCost": "{5}{U}{U}{U}",
+    "typeLine": "Creature — Leviathan",
+    "oracleText": "Islandwalk (This creature can't be blocked as long as defending player controls an Island.)\nAll lands are Islands in addition to their other types.\nCreatures without flying or islandwalk can't attack.",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 8
+    },
+    "keywords": [
+        "ISLANDWALK"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantAdditionalTypesToGroup",
+                "filter": {
+                    "baseFilter": "land"
+                },
+                "addSubtypes": [
+                    "Island"
+                ]
+            },
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotKeyword",
+                                "keyword": "FLYING"
+                            },
+                            {
+                                "type": "NotKeyword",
+                                "keyword": "ISLANDWALK"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "rarity": "RARE",
+        "artist": "Karl Kopinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e7f3fb6-93ce-4bc9-8efd-11af5a46218f.jpg?1783941820",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "Stormtide Leviathan's second ability causes each land on the battlefield to have the land type Island. Each land thus has the ability \"{T}: Add {U}.\" Nothing else changes about those lands, including their names, other subtypes, other abilities, and whether they're legendary or basic."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If Stormtide Leviathan loses its abilities, all lands on the battlefield (including those that enter the battlefield later on) will still be Islands in addition to their other types and will still be able to tap to produce {U}. The way continuous effects work, Stormtide Leviathan's type-changing ability is applied before the effect that removes that ability is applied."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Stormtide Leviathan's third ability affects all creatures with neither flying nor islandwalk, regardless of who controls them. They can't attack any player or planeswalker."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Islandwalk cares about lands with the land type Island, not necessarily lands named Island."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Sun Titan
 {
     "name": "Sun Titan",

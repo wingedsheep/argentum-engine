@@ -1,0 +1,1 @@
+- #4730 The AI reads a block trigger's "that creature doesn't untap" (Wall of Frost, Cleric of Chill Depths) as a tapper, an Aura animating its host (Ensoul Artifact) as a pump, "all lands are Islands" beside islandwalk as evasion, and a Moat-style "creatures without flying can't attack" as protection

@@ -514,6 +514,62 @@
     ]
 }
 
+// Encrust
+{
+    "name": "Encrust",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant artifact or creature\nEnchanted permanent doesn't untap during its controller's untap step and its activated abilities can't be activated.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            },
+            {
+                "type": "PreventActivatedAbilities",
+                "filter": {
+                    "cardPredicates": [
+                        "IsPermanent"
+                    ],
+                    "statePredicates": [
+                        "IsAttachedToBySource"
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature|artifact"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "artist": "Jason Felix",
+        "flavorText": "\"Barnacles are the sea's final defense.\"\n—Garild, merfolk mage",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/dfd05474-5cec-4c71-85e7-79cf25958525.jpg?1783940509",
+        "rulings": [
+            {
+                "date": "2016-06-08",
+                "text": "Activated abilities contain a colon. They're generally written \"[Cost]: [Effect].\" Some keywords are activated abilities and will have colons in their reminder text."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Static and triggered abilities are unaffected by Encrust."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "The permanent can be untapped by other spells and abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Flames of the Firebrand
 {
     "name": "Flames of the Firebrand",
@@ -936,6 +992,70 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Mind Sculpt
+{
+    "name": "Mind Sculpt",
+    "manaCost": "{1}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent mills seven cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 7
+                        },
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "isMill": true
+                    },
+                    "storeAs": "milled"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "milled",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "artist": "Michael C. Hayes",
+        "flavorText": "\"Your mind was a curious mix of madness and genius. I just took away the genius.\"\n—Jace Beleren",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/5870d18e-0303-4722-b7f2-a751f8e372be.jpg?1783940504",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "You can cast Mind Sculpt no matter how many cards are in the opponent's library. If there are fewer than seven, the opponent will put all of them into their graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

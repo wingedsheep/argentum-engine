@@ -892,6 +892,81 @@
     }
 }
 
+// Chief Engineer
+{
+    "name": "Chief Engineer",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Vedalken Artificer",
+    "oracleText": "Artifact spells you cast have convoke. (Your creatures can help cast those spells. Each creature you tap while casting an artifact spell pays for {1} or one mana of that creature's color.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeywordToOwnSpells",
+                "keyword": "CONVOKE",
+                "spellFilter": {
+                    "cardPredicates": [
+                        "IsArtifact"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "RARE",
+        "artist": "Steven Belledin",
+        "flavorText": "An eye for detail, a mind for numbers, a soul of clockwork.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/8/483189ed-d3d9-4612-ab95-f4ae4e091238.jpg?1783939194",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "Multiple instances of convoke on a single spell are redundant."
+            }
+        ]
+    }
+}
+
+// Chronostutter
+{
+    "name": "Chronostutter",
+    "manaCost": "{5}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Put target creature into its owner's library second from the top.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Library",
+            "positionFromTop": 1
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "artist": "Seb McKinnon",
+        "flavorText": "Timing is everything.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bbef107d-c19f-4af3-9236-c66123075b41.jpg?1783939194"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Constricting Sliver
 {
     "name": "Constricting Sliver",
@@ -1308,6 +1383,110 @@
     ]
 }
 
+// Diffusion Sliver
+{
+    "name": "Diffusion Sliver",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Sliver",
+    "oracleText": "Whenever a Sliver creature you control becomes the target of a spell or ability an opponent controls, counter that spell or ability unless its controller pays {2}.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Diffusion Sliver:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "targetFilter": "creature Sliver ctrl:you",
+                    "byOpponent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "WardCounter",
+                    "cost": {
+                        "type": "WardCost.Mana",
+                        "manaCost": "{2}"
+                    }
+                },
+                "descriptionOverride": "Whenever a Sliver creature you control becomes the target of a spell or ability an opponent controls, counter that spell or ability unless its controller pays {2}."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "rarity": "UNCOMMON",
+        "artist": "Trevor Claxton",
+        "flavorText": "\"The hive shimmered, and its walls seemed a living mirror.\"\n—Hastric, Thunian scout",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fb110a55-c8f9-4627-82c2-edb10db4f380.jpg?1783939194",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "The ability applies to any spell (including Aura spells), activated ability, or triggered ability that's controlled by an opponent that targets a Sliver you control."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Slivers in this set affect only Sliver creatures you control. They don't grant bonuses to your opponents' Slivers."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Ensoul Artifact
+{
+    "name": "Ensoul Artifact",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant artifact\nEnchanted artifact is a creature with base power and toughness 5/5 in addition to its other types.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantCardType",
+                "cardType": "CREATURE",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "SetBasePowerToughnessStatic",
+                "power": 5,
+                "toughness": 5
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "artifact"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "UNCOMMON",
+        "artist": "Jasper Sandner",
+        "flavorText": "Too often, some self-described genius comes up with a \"labor-saving device\" that ends up creating far more work.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/3/8351efc5-a392-4ec8-877f-15d5b3dc0929.jpg?1783939194",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "The artifact retains any types, subtypes, or supertypes it has. Notably, if an Equipment becomes an artifact creature, it usually can't be attached to another creature. If it was attached to a creature, it becomes unattached."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If the artifact was already a creature, its base power and toughness will each become 5. This overwrites any previous effects that set the creature's base power and toughness to specific values. Any power- or toughness-setting effects that start to apply after Ensoul Artifact becomes attached to the artifact will overwrite this effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ephemeral Shields
 {
     "name": "Ephemeral Shields",
@@ -1633,6 +1812,52 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Glacial Crasher
+{
+    "name": "Glacial Crasher",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Trample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)\nThis creature can't attack unless there is a Mountain on the battlefield.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "Exists",
+                    "player": "Each",
+                    "zone": "Battlefield",
+                    "filter": "land Mountain"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "artist": "Mark Winters",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e8bf55bf-ee38-4e68-81ca-0fdb8af779ef.jpg?1783939193",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "It doesn't matter who controls the Mountain."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If the only Mountains on the battlefield leave the battlefield after Glacial Crasher attacks, it stays attacking."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -2152,6 +2377,280 @@
     ]
 }
 
+// Jace, the Living Guildpact
+{
+    "name": "Jace, the Living Guildpact",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Legendary Planeswalker — Jace",
+    "oracleText": "+1: Look at the top two cards of your library. Put one of them into your graveyard.\n−3: Return another target nonland permanent to its owner's hand.\n−8: Each player shuffles their hand and graveyard into their library. You draw seven cards.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Jace, the Living Guildpact:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "selectedLabel": "Put in graveyard",
+                            "remainderLabel": "Put on top"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Look at the top two cards of your library. Put one of them into your graveyard."
+            },
+            {
+                "id": "Jace, the Living Guildpact:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "nonland permanent",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Return another target nonland permanent to its owner's hand."
+            },
+            {
+                "id": "Jace, the Living Guildpact:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -8
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "Each"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Hand",
+                                                "Graveyard"
+                                            ]
+                                        },
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "gathered0",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Library",
+                                            "placement": "Shuffled"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 7
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Each player shuffles their hand and graveyard into their library. You draw seven cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "MYTHIC",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/99713bb4-186f-42b6-aa66-e94ec8858e6a.jpg?1783939191",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "When the first ability resolves, the card you don't put into your graveyard stays on top of your library."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Jalira, Master Polymorphist
+{
+    "name": "Jalira, Master Polymorphist",
+    "manaCost": "{3}{U}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "{2}{U}, {T}, Sacrifice another creature: Reveal cards from the top of your library until you reveal a nonlegendary creature card. Put that card onto the battlefield and the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Jalira, Master Polymorphist:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{U}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherUntilMatch",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsNonlegendary"
+                                ]
+                            },
+                            "storeMatch": "matched0",
+                            "storeRevealed": "revealed0"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "revealed0",
+                            "fromZone": "Library",
+                            "toZone": "Battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matched0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "revealed0",
+                            "collectionFilter": {
+                                "type": "ExcludeOtherCollection",
+                                "otherCollectionName": "matched0"
+                            },
+                            "storeMatching": "matching3"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matching3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Reveal cards from the top of your library until you reveal a nonlegendary creature card. Put that card onto the battlefield and the rest on the bottom of your library in a random order."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "RARE",
+        "artist": "Steve Prescott",
+        "flavorText": "\"You can become anything if I just put my mind to it.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/425da4aa-4374-41b0-a665-568a04f57c38.jpg?1783939191",
+        "rulings": [
+            {
+                "date": "2018-03-16",
+                "text": "If your library has no nonlegendary creature cards in it, you'll reveal all the cards in your library, then put them in a random order. Although this is not technically shuffling your library, no player is allowed to know the order of those cards and you will randomize the cards in your deck."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Jorubai Murk Lurker
 {
     "name": "Jorubai Murk Lurker",
@@ -2512,6 +3011,78 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Mercurial Pretender
+{
+    "name": "Mercurial Pretender",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Shapeshifter",
+    "oracleText": "You may have this creature enter as a copy of a creature you control, except it has \"{2}{U}{U}: Return this creature to its owner's hand.\"",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersAsCopy",
+                "copyFilter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ],
+                    "controllerPredicate": "ControlledByYou"
+                },
+                "exceptions": {
+                    "addedActivatedAbilities": [
+                        {
+                            "id": "Mercurial Pretender:1",
+                            "cost": {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{2}{U}{U}"
+                                }
+                            },
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": "Self",
+                                "destination": "Hand"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "rarity": "RARE",
+        "artist": "Izzy",
+        "flavorText": "The king went off to find himself. Imagine his terror when he succeeded.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b3160d28-230d-4bce-9050-6ab5895302ee.jpg?1783939190",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "The activated ability Mercurial Pretender gives itself becomes part of its copiable values. Unless the ability is overwritten by another copy effect, a creature that's a copy of Mercurial Pretender will have that ability."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If the chosen creature is copying something else (for example, if the chosen creature is another Mercurial Pretender), then Mercurial Pretender enters the battlefield as whatever the chosen creature is copying (plus any abilities it gained as part of the copying process, if applicable)."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If Mercurial Pretender somehow enters the battlefield at the same time as another creature, Mercurial Pretender can't become a copy of that creature. You may choose only a creature that's already on the battlefield."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "You can choose not to copy anything. In that case, Mercurial Pretender enters the battlefield as a 0/0 Shapeshifter creature, and is probably put into the graveyard immediately."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3421,6 +3992,111 @@
     ]
 }
 
+// Polymorphist's Jest
+{
+    "name": "Polymorphist's Jest",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Until end of turn, each creature target player controls loses all abilities and becomes a blue Frog with base power and toughness 1/1.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControlledByReferencedPlayer",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    }
+                }
+            },
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "RemoveAllAbilities",
+                        "target": "IterationEntity"
+                    },
+                    {
+                        "type": "SetCreatureSubtypes",
+                        "subtypes": [
+                            "Frog"
+                        ],
+                        "target": "IterationEntity",
+                        "duration": "EndOfTurn"
+                    },
+                    {
+                        "type": "ChangeColor",
+                        "target": "IterationEntity",
+                        "colors": [
+                            "BLUE"
+                        ]
+                    },
+                    {
+                        "type": "SetBaseStats",
+                        "target": "IterationEntity",
+                        "power": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughness": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "duration": "EndOfTurn"
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "rarity": "RARE",
+        "artist": "Craig J Spearing",
+        "flavorText": "\"The flies were bothering me.\"\n—Jalira, master polymorphist",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a83f369b-515a-43ba-8905-bc12e148beeb.jpg?1783939188",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "If one of the affected creatures gains an ability after Polymorphist's Jest resolves, it will keep that ability."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Creatures that enter the battlefield or come under the target player's control after Polymorphist's Jest resolves won't be affected."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "The creatures will lose all other colors and creature types, but they will retain any other card types (such as artifact) or supertypes (such as legendary) they may have."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Polymorphist's Jest overwrites all previous effects that set the creatures' base power and toughness to specific values. Any power- or toughness-setting effects that start to apply after Polymorphist's Jest resolves will overwrite this effect."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Effects that modify a creature's power and/or toughness, such as the effect of Titanic Growth, will apply to the creatures no matter when they started to take effect. The same is true for any counters that change their power and/or toughness and effects that switch power and toughness."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Profane Memento
 {
     "name": "Profane Memento",
@@ -3456,6 +4132,59 @@
         "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2c97632-3cf1-4b79-9d18-d8991654dcca.jpg?1783939156"
     },
     "colorIdentityOverride": []
+}
+
+// Quickling
+{
+    "name": "Quickling",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Faerie Rogue",
+    "oracleText": "Flash\nFlying\nWhen this creature enters, sacrifice it unless you return another creature you control to its owner's hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Quickling:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomReturnToHand",
+                            "filter": "creature"
+                        }
+                    },
+                    "suffer": "SacrificeSelf"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "rarity": "UNCOMMON",
+        "artist": "Clint Cearley",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/278fbdb9-51e3-4ed6-bcc5-c5b86f06c216.jpg?1783939188",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "If you control no other creatures when the enters-the-battlefield ability resolves, you must sacrifice Quickling."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Radiant Fountain
@@ -4407,6 +5136,85 @@
         "artist": "Daarken",
         "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4d37dec-98d6-4815-8f3e-7de26817990c.jpg"
     }
+}
+
+// Soul of Ravnica
+{
+    "name": "Soul of Ravnica",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Creature — Avatar",
+    "oracleText": "Flying\n{5}{U}{U}: Draw a card for each color among permanents you control.\n{5}{U}{U}, Exile this card from your graveyard: Draw a card for each color among permanents you control.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Soul of Ravnica:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{U}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent",
+                        "aggregation": "DISTINCT_COLORS"
+                    }
+                }
+            },
+            {
+                "id": "Soul of Ravnica:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}{U}{U}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent",
+                        "aggregation": "DISTINCT_COLORS"
+                    }
+                },
+                "activateFromZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "MYTHIC",
+        "artist": "Stephan Martiniere",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a7332471-c052-4a24-abf1-a5805d685658.jpg?1783939188",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "To determine how many cards to draw, count the number of colors among permanents you control as either activated ability resolves. You'll draw between zero and five cards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Soul of Theros

@@ -2403,7 +2403,7 @@ object TargetPolarityAnalyzer {
      * Whether [statics] make the attached permanent a creature with a real body: a "CREATURE"
      * [GrantCardType] on the host beside a [SetBasePowerToughnessStatic] of at least 2/2 on it.
      */
-    private fun animatesHost(statics: List<StaticAbility>): Boolean =
+    internal fun animatesHost(statics: List<StaticAbility>): Boolean =
         statics.any { it is GrantCardType && it.cardType == "CREATURE" && it.filter.scope == Scope.AttachedTo } &&
             statics.any {
                 it is SetBasePowerToughnessStatic && it.filter.scope == Scope.AttachedTo &&
