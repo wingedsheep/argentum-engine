@@ -179,6 +179,7 @@ Aerial Boost
 Aerial Caravan
 Aerial Doombot
 Aerial Engineer
+Aerial Formation
 Aerial Guide
 Aerial Modification
 Aerial Predation
@@ -3412,6 +3413,7 @@ Colossal Dreadmask
 Colossal Dreadmaw
 Colossal Grave-Reaver	intent: Pipeline(?→battlefield)
 Colossal Growth
+Colossal Heroics
 Colossal Majesty
 Colossal Plow
 Colossal Rattlewurm
@@ -3543,6 +3545,7 @@ Conservator
 Consider
 Consider the Prime Directive
 Consign // Oblivion
+Consign to Dust
 Consign to Memory
 Consign to the Pit
 Conspicuous Snoop
@@ -3852,6 +3855,7 @@ Cruel Celebrant
 Cruel Deceiver	intent: GrantTriggeredAbilityEffect; intent: Pipeline(TopOfLibrary→?); timing: GrantTriggeredAbilityEffect
 Cruel Edict
 Cruel Fate	intent: Pipeline(TopOfLibrary→graveyard|library)
+Cruel Feeding
 Cruel Finality
 Cruel Grimnarch
 Cruel Reality
@@ -4565,6 +4569,7 @@ Desperate Ravings
 Desperate Research
 Desperate Ritual
 Desperate Sentry
+Desperate Stand
 Despise
 Despoil
 Despoiler of Souls
@@ -7597,6 +7602,7 @@ Gnarled Effigy
 Gnarled Mass
 Gnarled Professor
 Gnarled Sage
+Gnarled Scarhide
 Gnarlid Colony
 Gnarlroot Pallbearer
 Gnarlroot Trapper
@@ -8340,6 +8346,7 @@ Harmonized Crescendo
 Harmonized Trio
 Harmony of Nature
 Harness Infinity
+Harness by Force
 Harness the Storm
 Harnessed Lightning
 Harnessed Snubhorn
@@ -8856,6 +8863,7 @@ Hour of Defeat
 Hour of Devastation
 Hour of Eternity
 Hour of Glory
+Hour of Need
 Hour of Promise
 Hour of Reckoning
 Hour of Revelation
@@ -11943,6 +11951,7 @@ Mogg Raider
 Mogg War Marshal
 Moggcatcher
 Mogis's Favor
+Mogis's Warhound
 Mogis, God of Slaughter
 Moira Brown, Guide Author	intent: AddCountersEffect; polarity: AddCountersEffect
 Mold Adder
@@ -12366,6 +12375,7 @@ Nature's Claim
 Nature's Cloak
 Nature's Embrace
 Nature's Lore
+Nature's Panoply
 Nature's Rhythm
 Nature's Ruin
 Nature's Spiral
@@ -12739,6 +12749,7 @@ Nylea, God of the Hunt
 Nylea, Keen-Eyed
 Nyota Uhura, Communications
 Nyx Herald
+Nyx Infusion
 Nyx Lotus
 Nyx Weaver
 Nyx-Fleece Ram
@@ -15309,6 +15320,7 @@ Rotting Regisaur
 Rough Rhino Cavalry
 Roughshod Duo
 Roughshod Mentor
+Rouse the Mob
 Rousing Read
 Rout
 Rover Blades
@@ -16606,6 +16618,7 @@ Sigrid, God-Favored
 Sigurd, Jarl of Ravensthorpe	intent: AddCountersEffect; intent: RemoveCountersEffect; polarity: AddCountersEffect; polarity: RemoveCountersEffect
 Silburlind Snapper
 Silence
+Silence the Believers
 Silence the Echo
 Silent Artisan
 Silent Attendant
@@ -17089,6 +17102,7 @@ Solemn Simulacrum
 Solemnity
 Solid Footing
 Solidarity
+Solidarity of Heroes
 Solitary Camel
 Solitary Cell
 Solitary Hunter
@@ -19832,6 +19846,7 @@ Twinblade Blessing
 Twinblade Geist
 Twinblade Paladin
 Twinferno
+Twinflame
 Twinflame Travelers
 Twinflame Tyrant
 Twining Twins
