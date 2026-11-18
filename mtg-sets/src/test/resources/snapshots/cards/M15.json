@@ -118,7 +118,7 @@
                         "selection": "ChooseAnyNumber",
                         "storeSelected": "selected1",
                         "storeRemainder": "remainder1",
-                        "prompt": "Choose attacking creatures you own to put on top of your library; the rest go on the bottom",
+                        "prompt": "Choose attackers to put on top of your library — the rest go on the bottom",
                         "selectedLabel": "Top of library",
                         "remainderLabel": "Bottom of library",
                         "useTargetingUI": true
@@ -143,7 +143,8 @@
                         },
                         "order": "OwnerChooses"
                     }
-                ]
+                ],
+                "descriptionOverride": "each attacking creature they own goes on their choice of the top or bottom of their library"
             }
         }
     },

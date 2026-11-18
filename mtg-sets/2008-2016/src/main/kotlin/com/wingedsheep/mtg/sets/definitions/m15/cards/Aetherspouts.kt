@@ -26,13 +26,15 @@ val Aetherspouts = card("Aetherspouts") {
     spell {
         effect = Effects.ForEachPlayer(
             Player.ActivePlayerFirst,
-            Effects.Pipeline {
+            Effects.Pipeline(
+                descriptionOverride = "each attacking creature they own goes on their choice of the top or bottom of their library"
+            ) {
                 val owned = gather(
                     CardSource.BattlefieldMatching(GameObjectFilter.Creature.attacking().ownedByYou())
                 )
                 val (top, bottom) = chooseAnyNumberSplit(
                     owned,
-                    prompt = "Choose attacking creatures you own to put on top of your library; the rest go on the bottom",
+                    prompt = "Choose attackers to put on top of your library — the rest go on the bottom",
                     selectedLabel = "Top of library",
                     remainderLabel = "Bottom of library",
                     useTargetingUI = true,
