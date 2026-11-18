@@ -686,9 +686,9 @@ object CardIntentAnalyzer {
                     else listOf(leaf)
                 // Taking a +1/+1 counter off our own creature is the same price; off an opponent's
                 // (Bloodcrazed Hoplite) it is the shrink [tagsOf] reads as removal.
-                is RemoveCountersEffect ->
-                    if (TargetPolarityAnalyzer.counterPolarity(leaf.counterType) == TargetPolarity.BENEFICIAL &&
-                        TargetPolarityAnalyzer.targetsOwnSide(leaf.target, requirements)) emptyList()
+                is RemoveCountersEffect -> if (losesOwnBenefit(leaf.counterType, leaf.target, requirements)) emptyList()
+                    else listOf(leaf)
+                is RemoveAllCountersOfTypeEffect -> if (losesOwnBenefit(leaf.counterType, leaf.target, requirements)) emptyList()
                     else listOf(leaf)
                 // "Create a Cursed Role token attached to target creature you control" (Spiteful
                 // Hexmage): the same price paid on our own board. On anyone's creature it is the
@@ -2168,6 +2168,11 @@ object CardIntentAnalyzer {
         TargetPolarityAnalyzer.counterPolarity(type) == TargetPolarity.HARMFUL &&
             TargetPolarityAnalyzer.targetsOwnSide(target, requirements)
 
+    /** Taking a beneficial counter (+1/+1) off a creature on our own side: a price, never removal. */
+    private fun losesOwnBenefit(type: CounterType, target: EffectTarget, requirements: List<TargetRequirement>): Boolean =
+        TargetPolarityAnalyzer.counterPolarity(type) == TargetPolarity.BENEFICIAL &&
+            TargetPolarityAnalyzer.targetsOwnSide(target, requirements)
+
     /**
      * Whether every removal step of a group loop's [body] lands on a declared target — "each
      * creature you control with a +1/+1 counter on it deals damage equal to its power to that
@@ -2597,7 +2602,8 @@ object CardIntentAnalyzer {
         is CreateAuraTokenEffect -> auraTokenTags(effect)
         // "Remove a -1/-1 counter from another target creature you control" (Defiant Greatmaw),
         // "remove all -1/-1 counters from it" (Hapatra's Mark): the stats the counter took come
-        // back, a lasting pump. Removing a +1/+1 or a keyword counter names no purpose a tag holds.
+        // back, a lasting pump. Taking a +1/+1 counter off another creature (Bloodcrazed Hoplite) is
+        // removal; a keyword counter names no purpose a tag holds.
         is RemoveCountersEffect -> removedCounterTags(effect.counterType, effect.target)
         is RemoveAllCountersOfTypeEffect -> removedCounterTags(effect.counterType, effect.target)
         // Divided among the targets (each a permanent), and doubling what one holds: the counter
