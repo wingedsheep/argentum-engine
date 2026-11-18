@@ -374,6 +374,55 @@
     ]
 }
 
+// Reprisal
+{
+    "name": "Reprisal",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature with power 4 or greater. It can't be regenerated.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CantBeRegenerated",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature pow>=4"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13a",
+        "artist": "Randy Asplund-Faith",
+        "flavorText": "\"The meek shall fight as one, and they shall overcome even the greatest of foes.\"\n—Halvor Arensson, Kjeldoran Priest",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/179f50be-6658-42f4-b9b9-c97c7d3f239a.jpg?1783947200"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Storm Crow
 {
     "name": "Storm Crow",
