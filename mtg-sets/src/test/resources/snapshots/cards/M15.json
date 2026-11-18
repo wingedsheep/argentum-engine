@@ -926,6 +926,173 @@
     ]
 }
 
+// Boonweaver Giant
+{
+    "name": "Boonweaver Giant",
+    "manaCost": "{6}{W}",
+    "typeLine": "Creature — Giant Monk",
+    "oracleText": "When this creature enters, you may search your graveyard, hand, and/or library for an Aura card and put it onto the battlefield attached to this creature. If you search your library this way, shuffle.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Boonweaver Giant:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Search your graveyard, hand, and library",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Graveyard",
+                                                "Hand",
+                                                "Library"
+                                            ],
+                                            "filter": {
+                                                "cardPredicates": [
+                                                    "IsEnchantment",
+                                                    {
+                                                        "type": "HasSubtype",
+                                                        "subtype": "Aura"
+                                                    },
+                                                    {
+                                                        "type": "CouldAttachTo",
+                                                        "reference": "Self"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "storeAs": "gathered0",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered0",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected1",
+                                        "prompt": "Choose an Aura card to put onto the battlefield attached to Boonweaver Giant"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "selected1",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield"
+                                        },
+                                        "attachTo": "Self"
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Search your graveyard and hand",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromMultipleZones",
+                                            "zones": [
+                                                "Graveyard",
+                                                "Hand"
+                                            ],
+                                            "filter": {
+                                                "cardPredicates": [
+                                                    "IsEnchantment",
+                                                    {
+                                                        "type": "HasSubtype",
+                                                        "subtype": "Aura"
+                                                    },
+                                                    {
+                                                        "type": "CouldAttachTo",
+                                                        "reference": "Self"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered0",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected1",
+                                        "prompt": "Choose an Aura card to put onto the battlefield attached to Boonweaver Giant"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "selected1",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield"
+                                        },
+                                        "attachTo": "Self"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Don't search",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": []
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, you may search your graveyard, hand, and/or library for an Aura card and put it onto the battlefield attached to this creature. If you search your library this way, shuffle."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "rarity": "UNCOMMON",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/5/85003365-7c5f-4283-995d-e466deef444b.jpg?1783939204",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "The Aura card must be able to legally enchant Boonweaver Giant. For example, you can't put an Aura with enchant land onto the battlefield this way."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If Boonweaver Giant isn't on the battlefield when its ability resolves, you can't put any Aura onto the battlefield. You may still search the appropriate zones and shuffle your library, if applicable."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Borderland Marauder
 {
     "name": "Borderland Marauder",
@@ -2478,6 +2645,113 @@
     ]
 }
 
+// Genesis Hydra
+{
+    "name": "Genesis Hydra",
+    "manaCost": "{X}{G}{G}",
+    "typeLine": "Creature — Plant Hydra",
+    "oracleText": "When you cast this spell, reveal the top X cards of your library. You may put a nonland permanent card with mana value X or less from among them onto the battlefield. Then shuffle the rest into your library.\nThis creature enters with X +1/+1 counters on it.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Genesis Hydra:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "ContextProperty",
+                                    "key": "X_VALUE_OF_TRIGGERING_SPELL"
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsNonland",
+                                    "IsPermanent",
+                                    {
+                                        "type": "ManaValueAtMostDynamic",
+                                        "amount": {
+                                            "type": "ContextProperty",
+                                            "key": "X_VALUE_OF_TRIGGERING_SPELL"
+                                        }
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may put a nonland permanent card with mana value X or less onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        "ShuffleLibrary"
+                    ]
+                },
+                "descriptionOverride": "When you cast this spell, reveal the top X cards of your library. You may put a nonland permanent card with mana value X or less from among them onto the battlefield. Then shuffle the rest into your library."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": "CastX"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "rarity": "RARE",
+        "artist": "Peter Mohrbacher",
+        "flavorText": "Designed by George Fan",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/659eb716-bf21-4c0f-9a9a-906236ef536c.jpg?1783939166",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "Genesis Hydra's first ability will resolve before Genesis Hydra does. Notably, if you put an Aura card onto the battlefield this way, it can't enchant Genesis Hydra."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "If you have fewer than X cards in your library, you reveal all of them."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "If a card in a player's library has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "If \"the rest\" is zero cards, either because X was 0 or because X was 1 and that card was put onto the battlefield, the library is still shuffled."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Glacial Crasher
 {
     "name": "Glacial Crasher",
@@ -2815,6 +3089,65 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Hornet Nest
+{
+    "name": "Hornet Nest",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "Defender (This creature can't attack.)\nWhenever this creature is dealt damage, create that many 1/1 green Insect creature tokens with flying and deathtouch. (Any amount of damage a creature with deathtouch deals to a creature is enough to destroy it.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hornet Nest:1",
+                "trigger": "DamageReceivedEvent",
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Insect"
+                    ],
+                    "keywords": [
+                        "FLYING",
+                        "DEATHTOUCH"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/e/1/e101a5b1-614e-43a0-9e7e-de5a248e2e43.jpg?1783939140"
+                },
+                "descriptionOverride": "Whenever this creature is dealt damage, create that many 1/1 green Insect creature tokens with flying and deathtouch."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "rarity": "RARE",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/4784dbd3-8ae0-45a0-8cde-908fba6af9d2.jpg?1783939166",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "Hornet Nest's triggered ability will trigger even if it's dealt lethal damage. For example, if it's dealt 7 damage, its ability will trigger and you'll put seven Insect creature tokens onto the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -3184,6 +3517,82 @@
     ]
 }
 
+// Invasive Species
+{
+    "name": "Invasive Species",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "When this creature enters, return another permanent you control to its owner's hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasive Species:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "permanent",
+                                "player": "You",
+                                "excludeSelf": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Return another permanent you control to its owner's hand",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, return another permanent you control to its owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "artist": "Christopher Moeller",
+        "flavorText": "It's easier to relocate a village that lies in their path than to turn the bugs aside.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/1/c1fb5a98-94f4-419f-850b-e3a01f17080f.jpg?1783939166",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "The ability doesn't target any permanent. You choose which one to return when the ability resolves. No player can respond to this choice once the ability starts resolving."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Jace, the Living Guildpact
 {
     "name": "Jace, the Living Guildpact",
@@ -3531,6 +3940,90 @@
     ]
 }
 
+// Kalonian Twingrove
+{
+    "name": "Kalonian Twingrove",
+    "manaCost": "{5}{G}",
+    "typeLine": "Creature — Treefolk Warrior",
+    "oracleText": "Kalonian Twingrove's power and toughness are each equal to the number of Forests you control.\nWhen this creature enters, create a green Treefolk Warrior creature token with \"This token's power and toughness are each equal to the number of Forests you control.\"",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land Forest"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land Forest"
+            }
+        }
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kalonian Twingrove:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Treefolk",
+                        "Warrior"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/2/5/2569593a-d2f2-414c-9e61-2c34e8a5832d.jpg?1783939140",
+                    "staticAbilities": [
+                        {
+                            "type": "SetBasePowerToughnessDynamicStatic",
+                            "power": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "land Forest"
+                            },
+                            "toughness": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "land Forest"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "182",
+        "rarity": "RARE",
+        "artist": "Todd Lockwood",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/dabe0865-5420-463e-9138-ccd805be8b31.jpg?1783939166",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "The ability that defines Kalonian Twingrove's power and toughness works in all zones, not just the battlefield."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "The power and toughness of both Kalonian Twingrove and the token it creates will change as the number of Forests you control changes."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Kapsho Kitefins
 {
     "name": "Kapsho Kitefins",
@@ -3833,6 +4326,53 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Life's Legacy
+{
+    "name": "Life's Legacy",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, sacrifice a creature.\nDraw cards equal to the sacrificed creature's power.",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "EntityProperty",
+                "entity": "SacrificedAsCost",
+                "numericProperty": "Power"
+            }
+        },
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "183",
+        "rarity": "RARE",
+        "artist": "Howard Lyon",
+        "flavorText": "At the instant of death, the mystery of life.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5d964629-6d1d-4253-ac23-92f2199323b4.jpg?1783939165",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "You must sacrifice exactly one creature to cast this spell; you can't cast it without sacrificing a creature, and you can't sacrifice additional creatures."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Players can only respond once this spell has been cast and all its costs have been paid. No one can try to destroy the creature you sacrificed to prevent you from casting this spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -4742,6 +5282,243 @@
     ]
 }
 
+// Nissa's Expedition
+{
+    "name": "Nissa's Expedition",
+    "manaCost": "{4}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nSearch your library for up to two basic land cards, put them onto the battlefield tapped, then shuffle.",
+    "keywords": [
+        "CONVOKE"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "basicland"
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for up to two basic land cards to put onto the battlefield tapped",
+                    "selectedLabel": "Put onto the battlefield tapped"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "188",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b6c5cdd-9075-4bb7-88ae-9dc77a637700.jpg?1783939165"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Nissa, Worldwaker
+{
+    "name": "Nissa, Worldwaker",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Legendary Planeswalker — Nissa",
+    "oracleText": "+1: Target land you control becomes a 4/4 Elemental creature with trample. It's still a land.\n+1: Untap up to four target Forests.\n−7: Search your library for any number of basic land cards, put them onto the battlefield, then shuffle. Those lands become 4/4 Elemental creatures with trample. They're still lands.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nissa, Worldwaker:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "keywords": [
+                        "TRAMPLE"
+                    ],
+                    "creatureTypes": [
+                        "Elemental"
+                    ],
+                    "duration": "Permanent"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "land ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Target land you control becomes a 4/4 Elemental creature with trample. It's still a land."
+            },
+            {
+                "id": "Nissa, Worldwaker:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "tap": false
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 4,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "land Forest"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Untap up to four target Forests."
+            },
+            {
+                "id": "Nissa, Worldwaker:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland"
+                            },
+                            "storeAs": "gathered0",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected1",
+                            "prompt": "Search your library for any number of basic land cards to put onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "storeMovedAs": "moved2"
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent",
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "moved2"
+                            },
+                            "body": {
+                                "type": "BecomeCreature",
+                                "target": "IterationEntity",
+                                "power": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "toughness": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "keywords": [
+                                    "TRAMPLE"
+                                ],
+                                "creatureTypes": [
+                                    "Elemental"
+                                ],
+                                "duration": "Permanent"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Search your library for any number of basic land cards, put them onto the battlefield, then shuffle. Those lands become 4/4 Elemental creatures with trample. They're still lands."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "rarity": "MYTHIC",
+        "artist": "Peter Mohrbacher",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/07eb2476-488b-4610-8567-f0456601f7fd.jpg?1783939164",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "The type-changing effects of the first and third abilities don't have a duration. They last indefinitely."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If the land targeted by the first ability entered the battlefield this turn, it won't be able to attack and its activated abilities with {T} in the cost (including its mana ability) can't be activated (unless something gives it haste). The same is true for the lands put onto the battlefield with the third ability."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Ob Nixilis, Unshackled
 {
     "name": "Ob Nixilis, Unshackled",
@@ -5255,6 +6032,62 @@
         "flavorText": "The spirit dragon Ugin arranged the hedrons of Zendikar to direct leylines of energy. To disrupt one is to unleash devastation and chaos.",
         "imageUri": "https://cards.scryfall.io/normal/front/9/a/9a5f1810-a852-454f-b1d6-eb40ea4e0148.jpg?1783939156"
     }
+}
+
+// Phytotitan
+{
+    "name": "Phytotitan",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Plant Elemental",
+    "oracleText": "When this creature dies, return it to the battlefield tapped under its owner's control at the beginning of their next upkeep.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Phytotitan:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "step": "UPKEEP",
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Battlefield",
+                        "placement": "Tapped",
+                        "fromZone": "Graveyard"
+                    },
+                    "fireOnPlayer": {
+                        "type": "PlayerRef",
+                        "player": "OwnerOfSource"
+                    }
+                },
+                "descriptionOverride": "When this creature dies, return it to the battlefield tapped under its owner's control at the beginning of their next upkeep."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "rarity": "RARE",
+        "artist": "Marco Nelor",
+        "flavorText": "Its root system spans the entire floor of the jungle, making eradication impossible.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0e6eedf-8f5a-407e-b15b-48e19df20bed.jpg?1783939163",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "Phytotitan's ability will return it to the battlefield only if it's still in the graveyard when the delayed triggered ability resolves. If it's not, it won't return to the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Pillar of Light
@@ -8566,5 +9399,115 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Yisan, the Wanderer Bard
+{
+    "name": "Yisan, the Wanderer Bard",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Human Rogue Bard",
+    "oracleText": "{2}{G}, {T}, Put a verse counter on Yisan: Search your library for a creature card with mana value equal to the number of verse counters on Yisan, put it onto the battlefield, then shuffle.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Yisan, the Wanderer Bard:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{G}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPutCountersOnSelf",
+                                "counterType": "VERSE"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "ManaValueEqualsDynamic",
+                                            "amount": {
+                                                "type": "EntityProperty",
+                                                "entity": "Self",
+                                                "numericProperty": {
+                                                    "type": "CounterCount",
+                                                    "counterType": "VERSE"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a creature card with mana value equal to this creature's the number of verse counters to put onto the battlefield",
+                            "selectedLabel": "Put onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "descriptionOverride": "{2}{G}, {T}, Put a verse counter on Yisan: Search your library for a creature card with mana value equal to the number of verse counters on Yisan, put it onto the battlefield, then shuffle."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "rarity": "RARE",
+        "artist": "Chase Stone",
+        "flavorText": "Designed by Brian Fargo",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/65cd97cd-6d6e-4512-a050-6851b7527567.jpg?1783939160",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "If Yisan isn't on the battlefield when its ability resolves, use the number of verse counters on it when it left the battlefield to determine which creature cards may be put onto the battlefield. This number will include the counter you put on Yisan to activate the ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }

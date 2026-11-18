@@ -3738,6 +3738,10 @@ object CardIntentAnalyzer {
         is AdditionalManaOnSourceTap ->
             if (static.sourceFilter.controllerPredicate == ControllerPredicate.ControlledByOpponent) emptySet()
             else setOf(IntentTag.RAMP)
+        // "Whenever enchanted land is tapped for mana, its controller adds an additional one mana of
+        // any color" (Fertile Ground, Verdant Haven, Wild Growth): the Aura's polarity names our own
+        // land, so every tap of it makes extra mana — [IntentTag.RAMP], as the global bonus above.
+        is com.wingedsheep.sdk.scripting.AdditionalManaOnTap -> setOf(IntentTag.RAMP)
         // "Enchanted creature has 'Whenever this creature deals combat damage to a player, you may
         // draw a card'" (Sixth Sense): a trigger handed to the host for good that serves whoever
         // controls it is that creature's own ability from then on — read as if printed, as the
