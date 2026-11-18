@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -22,26 +23,37 @@ import io.kotest.matchers.shouldBe
  * to whoever searched — not to no one.
  */
 class LibrarySearchTriggeringPlayerTest : FunSpec({
-    val opponentPunisher = card("Search Punisher") { typeLine = "Enchantment"
+    val opponentPunisher = card("Search Punisher") {
+        typeLine = "Enchantment"
         triggeredAbility {
             trigger = Triggers.anOpponent.searchesLibrary()
             effect = Effects.LoseLife(3, EffectTarget.PlayerRef(Player.TriggeringPlayer))
-        } }
-    val anySearchPunisher = card("Any Search Punisher") { typeLine = "Enchantment"
+        }
+    }
+    val anySearchPunisher = card("Any Search Punisher") {
+        typeLine = "Enchantment"
         triggeredAbility {
             trigger = Triggers.anyPlayer.searchesLibrary()
             effect = Effects.LoseLife(2, EffectTarget.PlayerRef(Player.TriggeringPlayer))
-        } }
-    val tutor = card("Plain Tutor") { manaCost = "{0}"; typeLine = "Sorcery"
-        spell { effect = Patterns.Library.searchLibrary(GameObjectFilter.Any) } }
-    val everyoneTutors = card("Everyone Tutors") { manaCost = "{0}"; typeLine = "Sorcery"
-        spell { effect = Patterns.Library.eachPlayerSearchesLibrary(GameObjectFilter.Any, DynamicAmount.Fixed(1)) } }
+        }
+    }
+    val tutor = card("Plain Tutor") {
+        manaCost = "{0}"
+        typeLine = "Sorcery"
+        spell { effect = Patterns.Library.searchLibrary(GameObjectFilter.Any) }
+    }
+    val everyoneTutors = card("Everyone Tutors") {
+        manaCost = "{0}"
+        typeLine = "Sorcery"
+        spell { effect = Patterns.Library.eachPlayerSearchesLibrary(GameObjectFilter.Any, DynamicAmount.Fixed(1)) }
+    }
 
     fun driver() = GameTestDriver().apply {
         registerCards(TestCards.all + listOf(opponentPunisher, anySearchPunisher, tutor, everyoneTutors))
-        initMirrorMatch(Deck.of("Island" to 40), skipMulligans = true); passPriorityUntil(Step.PRECOMBAT_MAIN)
+        initMirrorMatch(Deck.of("Island" to 40), skipMulligans = true)
+        passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
-    fun GameTestDriver.castAndResolve(p: com.wingedsheep.sdk.model.EntityId, name: String) {
+    fun GameTestDriver.castAndResolve(p: EntityId, name: String) {
         castSpell(p, putCardInHand(p, name)).error shouldBe null
         var guard = 0
         while ((pendingDecision != null || stackSize > 0) && guard++ < 40) {

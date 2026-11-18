@@ -62,6 +62,21 @@ class ObNixilisUnshackledScenarioTest : FunSpec({
         withClue("another creature died") { d.plusOneCounters(ob) shouldBe 1 }
     }
 
+    test("a searcher with no creature still loses 10 life") {
+        val d = driver()
+        val searcher = d.activePlayer!!
+        val me = d.getOpponent(searcher)
+        val ob = d.putCreatureOnBattlefield(me, "Ob Nixilis, Unshackled")
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        d.giveMana(searcher, Color.GREEN, 1)
+        d.castSpell(searcher, d.putCardInHand(searcher, "Lay of the Land")).outcome shouldBe Outcome.Done
+        d.resolveAll()
+
+        d.getLifeTotal(searcher) shouldBe 10
+        withClue("nothing died") { d.plusOneCounters(ob) shouldBe 0 }
+    }
+
     test("the controller's own search does not trigger it") {
         val d = driver()
         val me = d.activePlayer!!
