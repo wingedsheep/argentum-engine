@@ -17,8 +17,8 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * • Return target enchantment card from your graveyard to your hand.
  *
  * "Choose one or both" is the mode *count* — `chooseCount = 2, minChooseCount = 1` (CR 700.2),
- * not a third "both" mode. Each mode carries its own graveyard target. An enchantment creature
- * card fits either mode, but one card can't be chosen for both (CR 115.3).
+ * not a third "both" mode. Each mode carries its own graveyard target, and an enchantment
+ * creature card fits either one.
  */
 val RevivingMelody = card("Reviving Melody") {
     manaCost = "{2}{G}"
