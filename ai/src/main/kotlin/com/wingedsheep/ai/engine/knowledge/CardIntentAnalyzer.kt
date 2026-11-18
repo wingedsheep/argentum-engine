@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.scripting.CascadeMayPutOntoBattlefield
 import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.sdk.scripting.CostModification
 import com.wingedsheep.sdk.scripting.IncreaseActivatedAbilityCost
+import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
 import com.wingedsheep.sdk.scripting.MayCastFromGraveyard
 import com.wingedsheep.sdk.scripting.MayCastSelfFromZones
 import com.wingedsheep.sdk.scripting.MayCastWithoutPayingManaCost
@@ -409,9 +410,13 @@ object CardIntentAnalyzer {
         for (script in scripts) for (static in script.staticAbilities) {
             // A curse Aura's granted ability is the opponent's consolation, not our payoff.
             if (static is GrantActivatedAbility && TargetPolarityAnalyzer.cursesHost(script.staticAbilities)) continue
-            // On an Aura the tax lands on what it enchants (Brainwash): a price on the host's
-            // attacks, not a drawback of the card's own body — the polarity reader's question.
-            if (static is CantAttackOrBlockUnlessPay && script.isAura) continue
+            // On an Aura the tax lands on what it enchants (Brainwash, Oppressive Rays): a price on
+            // the host's attacks, not a drawback of the card's own body — a soft Pacifism, aimed by
+            // the polarity reader.
+            if (static is CantAttackOrBlockUnlessPay && script.isAura) {
+                tags += IntentTag.NEUTRALIZE
+                continue
+            }
             tags += tagsOf(static)
             anthemBonus = maxOf(anthemBonus, anthemBonusOf(static))
         }
@@ -3768,10 +3773,22 @@ object CardIntentAnalyzer {
         // controller's own permanents or activations, so only an opponents' reach is excluded.
         is ReduceActivatedAbilityCost ->
             if (static.reach != ActivatedAbilityReach.ACTIVATED_BY_OPPONENTS) setOf(IntentTag.COST_REDUCER) else emptySet()
-        is IncreaseActivatedAbilityCost ->
-            if (static.targeting != null && static.reach == ActivatedAbilityReach.ACTIVATED_BY_OPPONENTS) {
+        is IncreaseActivatedAbilityCost -> when {
+            static.targeting != null && static.reach == ActivatedAbilityReach.ACTIVATED_BY_OPPONENTS ->
                 setOf(IntentTag.PROTECTION)
-            } else emptySet()
+            // "Activated abilities of enchanted creature cost {3} more to activate" (Oppressive
+            // Rays): the Aura prices the host's abilities — mana ones included — out of reach, the
+            // ability half of a Pacifism. Which creature it belongs on is the polarity reader's call.
+            static.filter.scope == Scope.AttachedTo -> setOf(IntentTag.NEUTRALIZE)
+            else -> emptySet()
+        }
+        // "Activated abilities of sources with the chosen name can't be activated" (Phyrexian
+        // Revoker, Pithing Needle), "…of creatures" (Cursed Totem): a standing activation lock. On an
+        // Aura ("its activated abilities can't be activated", Arrest) it is the ability half of
+        // neutralizing what it enchants.
+        is PreventActivatedAbilities ->
+            if (StatePredicate.IsAttachedToBySource in static.filter.statePredicates) setOf(IntentTag.NEUTRALIZE)
+            else setOf(IntentTag.ACTIVATION_LOCK)
         // "Creatures entering the battlefield don't cause abilities to trigger" (Torpor Orb, Tocatli
         // Honor Guard, Hushbringer) and its opponents-only form (Elesh Norn, Mother of Machines).
         is GrantChosenSubtype -> if (static.filter == GroupFilter.AllCreaturesYouControl)

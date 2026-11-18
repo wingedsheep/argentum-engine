@@ -964,6 +964,9 @@ object LimitedCardRater {
         // A trigger lock shuts off enter triggers on both sides — in Limited, where most decks run
         // a few, it is a sideboard hoser more than a maindeck card.
         IntentTag.TRIGGER_LOCK to 0.1,
+        // An activation lock answers only abilities — a named one only the card it names, a
+        // symmetric one (Cursed Totem) our own mana creatures too: a hoser, priced like the trigger lock.
+        IntentTag.ACTIVATION_LOCK to 0.1,
         // A counter lock blanks poison, -1/-1 and +1/+1 plans on both sides — a sideboard hoser
         // against a counters deck, priced like the trigger lock.
         IntentTag.COUNTER_LOCK to 0.1,

@@ -1422,6 +1422,20 @@ class CastPermissionUtils(
     }
 
     /**
+     * True when the mana abilities of [sourceId], activated by [activatorId], cost more mana than
+     * printed — an [com.wingedsheep.sdk.scripting.IncreaseActivatedAbilityCost] that reaches mana
+     * abilities (Oppressive Rays: "Activated abilities of enchanted creature cost {3} more to
+     * activate") and isn't cancelled by a reduction. The same net [applyActivatedAbilityCostReduction]
+     * charges a manual activation, asked for a mana ability with no targets (CR 605.1a: a mana ability
+     * never targets).
+     */
+    fun taxesManaAbilities(state: GameState, sourceId: EntityId, activatorId: EntityId): Boolean =
+        sumActivatedAbilityCostModifications(
+            state, sourceId, activatorId, onceOnlyKind = null, isManaAbility = true,
+            chosenTargetIds = emptyList(), abilityKeyword = null, isLoyaltyAbility = false,
+        ).first < 0
+
+    /**
      * True when either kind of activation prohibition forbids [activatingPlayerId] from activating
      * an ability of [sourceId]: a who-blind [PreventActivatedAbilities] lock
      * ([isActivationPrevented] — Pithing Needle, Cursed Totem) or a who/when-scoped
@@ -1522,8 +1536,8 @@ class CastPermissionUtils(
      * (own-permanent and any-player-may paths), `ManaAbilityEnumerator`, `ZoneActivatedAbilityEnumerator`
      * (graveyard, hand and command zone) — the enumerators that construct an `ActivateAbility`.
      * Not literally every path: `ManaSolver`'s auto-tap payment search filters on `isManaAbility`
-     * with no permission check, so a power-up *mana* ability (none is printed today) could still be
-     * auto-tapped for a cost.
+     * and its `ManaAbilityActivationGate` (activation locks and taxes) but not on this check, so a
+     * power-up *mana* ability (none is printed today) could still be auto-tapped for a cost.
      */
     fun isPowerUpActivationRestricted(state: GameState, ability: ActivatedAbility): Boolean =
         ability.isPowerUp && state.turnNumber in state.powerUpRestrictedTurns

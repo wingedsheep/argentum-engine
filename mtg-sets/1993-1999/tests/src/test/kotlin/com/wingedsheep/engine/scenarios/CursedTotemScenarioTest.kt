@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.CycleCard
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
@@ -89,6 +90,30 @@ class CursedTotemScenarioTest : ScenarioTestBase() {
                 }
                 withClue("Without Cursed Totem, Llanowar Elves' mana ability should be available") {
                     (elvesActivation != null) shouldBe true
+                }
+            }
+        }
+
+        context("Cursed Totem and auto-pay") {
+            // Auto-pay must ask the same lock the enumerator does: one Forest + Llanowar Elves
+            // would pay Grizzly Bears' {1}{G}, but the Elves can't be activated.
+            test("auto-pay doesn't tap a locked mana creature") {
+                val game = scenario()
+                    .withPlayers("P1", "P2")
+                    .withCardOnBattlefield(1, "Cursed Totem")
+                    .withCardOnBattlefield(1, "Llanowar Elves", summoningSickness = false)
+                    .withLandsOnBattlefield(1, "Forest", 1)
+                    .withCardInHand(1, "Grizzly Bears")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val bears = game.getLegalActions(1).firstOrNull { it.action is CastSpell }
+                withClue("Grizzly Bears needs the locked Elves, so it isn't affordable") {
+                    (bears?.isAffordable ?: false) shouldBe false
+                }
+                withClue("casting it is refused rather than tapping the Elves") {
+                    (game.castSpell(1, "Grizzly Bears").error != null) shouldBe true
                 }
             }
         }
