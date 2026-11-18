@@ -2677,6 +2677,63 @@
     ]
 }
 
+// Wall of Frost
+{
+    "name": "Wall of Frost",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Creature — Wall",
+    "oracleText": "Defender\nWhenever this creature blocks a creature, that creature doesn't untap during its controller's next untap step.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 7
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wall of Frost:1",
+                "trigger": {
+                    "type": "BlockEvent",
+                    "attackerFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "DOESNT_UNTAP",
+                    "target": "TriggeringEntity",
+                    "duration": "UntilAfterAffectedControllersNextUntap"
+                },
+                "descriptionOverride": "Whenever this creature blocks a creature, that creature doesn't untap during its controller's next untap step."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "UNCOMMON",
+        "artist": "Mike Bierek",
+        "flavorText": "\"I welcome it. The pasture is cleared of weeds and the wolves are frozen solid.\"\n—Lumi, goatherd",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/17bc35a7-e38b-4c15-889a-d58c8b360315.jpg?1783942386",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "Wall of Frost's ability tracks the creature, not the creature's controller. That is, if the creature changes controllers before its first controller's next untap step, then it won't untap during its new controller's next untap step."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If the creature isn't tapped during its controller's next untap step (perhaps because it was untapped by a spell), Wall of Frost's ability has no effect at that time. It won't try to keep the creature tapped on subsequent turns."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Warpath Ghoul
 {
     "name": "Warpath Ghoul",

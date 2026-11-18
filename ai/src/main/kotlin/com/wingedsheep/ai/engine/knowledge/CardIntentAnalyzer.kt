@@ -55,6 +55,7 @@ import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.sdk.scripting.GrantDynamicStats
+import com.wingedsheep.sdk.scripting.GrantAdditionalTypesToGroup
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.AdditionalManaOnSourceTap
@@ -456,6 +457,16 @@ object CardIntentAnalyzer {
         // when it raises it: Dead Weight's -2/-2 is removal ([tagsOf]).
         if (scripts.any { it.isAura && it.staticAbilities.any { static -> static is ModifyStats && (static.powerBonus > 0 || static.toughnessBonus > 0) } }) {
             tags += IntentTag.PUMP
+        }
+        // "Enchanted artifact is a creature with base power and toughness 5/5" (Ensoul Artifact,
+        // Mightstone's Animation): the Aura's point is the body it raises on our permanent — a pump
+        // of the host, as the polarity reader already aims it ([TargetPolarityAnalyzer.animatesHost]).
+        if (scripts.any { it.isAura && TargetPolarityAnalyzer.animatesHost(it.staticAbilities) }) tags += IntentTag.PUMP
+        // "All lands are Islands in addition to their other types" beside the card's own islandwalk
+        // (Stormtide Leviathan): every defending player now controls an Island, so the landwalk it
+        // carries makes it unblockable — evasion the printed keyword alone wouldn't promise.
+        if (scripts.any { script -> script.staticAbilities.any { grantsOwnLandwalkLand(it, card.keywords) } }) {
+            tags += IntentTag.EVASION_GRANT
         }
         // "Enchanted permanent doesn't untap during its controller's untap step" (Ice Over, Dehydration):
         // the standing form of the one-shot lock [GrantKeywordEffect] reads — the tapper's payoff on
@@ -2653,7 +2664,10 @@ object CardIntentAnalyzer {
         // the source or its host ("it doesn't untap", Stitcher's Graft's attacker) it is a price.
         is GrantKeywordEffect ->
             if (effect.keyword in LOCKED_TAPPED_FLAGS &&
-                (effect.target is EffectTarget.BoundVariable || effect.target is EffectTarget.ContextTarget)
+                (effect.target is EffectTarget.BoundVariable || effect.target is EffectTarget.ContextTarget ||
+                    // "Whenever this blocks a creature, that creature doesn't untap…" (Wall of Frost,
+                    // Cleric of Chill Depths): the trigger's own object is the creature it fought.
+                    effect.target == EffectTarget.TriggeringEntity)
             ) setOf(IntentTag.TAPPER)
             else keywordTags(effect.keyword)
         // "It gains rebound" / "that spell gains lifelink" (Narset Transcendent's −2, Ojer Pakpatiq):
@@ -3566,6 +3580,15 @@ object CardIntentAnalyzer {
     // Static abilities
     // ═════════════════════════════════════════════════════════════════════════
 
+    /**
+     * A static that gives lands a basic land type the card's own landwalk names ("all lands are
+     * Islands" beside islandwalk) — see the evasion read in [analyze].
+     */
+    private fun grantsOwnLandwalkLand(static: StaticAbility, keywords: Set<Keyword>): Boolean =
+        static is GrantAdditionalTypesToGroup &&
+            CardPredicate.IsLand in static.filter.baseFilter.cardPredicates &&
+            static.addSubtypes.any { subtype -> runCatching { Keyword.valueOf("${subtype.uppercase()}WALK") }.getOrNull() in keywords }
+
     /** An Aura's "enchanted permanent doesn't untap" — see [analyze]. */
     private fun locksEnchantedTapped(static: StaticAbility): Boolean =
         static is GrantKeyword && static.keyword in LOCKED_TAPPED_FLAGS && static.filter.scope == Scope.AttachedTo
@@ -3697,7 +3720,14 @@ object CardIntentAnalyzer {
                     .let { if (isRummage(static.ability)) asRummage(it) else it }
             else -> emptySet()
         }
-        is CantAttack -> neutralizeTags(static.filter)
+        // "Creatures without flying can't attack" (Moat, Stormtide Leviathan): a battlefield-wide
+        // attack lock that reaches the opponent's creatures shields its controller from every
+        // ground attack, as a can't-lose static shields them from the game.
+        is CantAttack ->
+            if (static.filter.scope == Scope.Battlefield &&
+                static.filter.baseFilter.controllerPredicate != ControllerPredicate.ControlledByYou
+            ) setOf(IntentTag.PROTECTION)
+            else neutralizeTags(static.filter)
         // "Your opponents can't block with creatures with even mana values" (Void Winnower), "creatures
         // your opponents control can't block": a lasting [CantBlockGroupEffect] on their side of the
         // table — evasion for every attacker you have, as the one-shot form reads.
