@@ -57,13 +57,13 @@ class BattlefieldThaumaturgeScenarioTest : ScenarioTestBase() {
             val game = scenario().withPlayers("Player1", "Player2")
                 .withCardOnBattlefield(1, "Battlefield Thaumaturge")
                 .withCardInHand(1, "Titanic Growth")
-                .withLandsOnBattlefield(1, "Forest", 2)
+                .withLandsOnBattlefield(1, "Forest", 1)
                 .withActivePlayer(1)
                 .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                 .build()
             val thaumaturge = game.findPermanent("Battlefield Thaumaturge")!!
 
-            // Titanic Growth's {1}{G}{G} less {1} is {G}{G}: two Forests.
+            // Titanic Growth's {1}{G} less {1} is {G}: one Forest.
             game.castSpell(1, "Titanic Growth", thaumaturge).error shouldBe null
             game.resolveStack()
 

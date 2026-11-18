@@ -46,9 +46,11 @@ class LegalActionEnricher(
     }
 
     /**
-     * Which objects count toward [LegalAction.manaCostByTargetCount]'s key, when a per-target
-     * modifier counts only matching targets ("for each creature it targets" — Battlefield
-     * Thaumaturge). Null for every other action, and for a table keyed by different targets.
+     * Which objects count as matching targets in [LegalAction.manaCostByTargetCount]'s key, when a
+     * per-target modifier counts only matching targets ("for each creature it targets" —
+     * Battlefield Thaumaturge). Null for every other action, and for a table keyed by different
+     * targets alone. Derived from the state like the table's own key
+     * ([CostCalculator.targetPriceCountedIds]), so the two agree.
      */
     private fun targetPriceCountedIds(state: GameState, action: LegalAction): List<EntityId>? {
         if (action.manaCostByTargetCount == null) return null

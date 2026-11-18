@@ -12844,9 +12844,10 @@ staticAbility {
   costs {1} less to cast for each creature it targets" is `ModifySpellCost(YouCast(InstantOrSorcery),
   ReduceGenericBy(ChosenTargets(filter = GameObjectFilter.Creature.onBattlefield())))` (a player or
   a creature card in a graveyard is a target, not a creature); a battlefield modifier's filter reads
-  relative to its permanent. When every per-target modifier in play shares one filter, the
-  client's `manaCostByTargetCount` is keyed by matching targets and the action carries
-  `targetPriceCountedIds`, the objects that match. It reads the spell's own
+  relative to its permanent. With a filtered per-target modifier in play, the client's
+  `manaCostByTargetCount` is keyed by both the different targets and the matching ones
+  (`CostCalculator.targetPriceKey`), and the action carries `targetPriceCountedIds`, the objects
+  that match. It reads the spell's own
   chosen targets on a `SelfCast` modifier and on a battlefield one alike — Hinata, Dawn-Crowned's
   "Spells you cast cost {1} less to cast for each target" is `ModifySpellCost(YouCast(Any),
   ReduceGenericBy(ChosenTargets()))`, and its opponents' tax is `OpponentsCast(Any)` +

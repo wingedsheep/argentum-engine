@@ -2,6 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.Outcome
+import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -32,8 +33,8 @@ import io.kotest.matchers.shouldNotBe
  * A per-target cost modifier that counts only the targets matching a filter —
  * `CostReductionSource.ChosenTargets(filter = …)`, Battlefield Thaumaturge's "costs {1} less to
  * cast for each creature it targets". A player or a creature *card* in a graveyard is a target but
- * not a creature, so it earns nothing. Under one shared filter the client's per-count price table
- * is keyed by matching targets, and the action names the objects that match.
+ * not a creature, so it earns nothing. With a filtered modifier in play the client's price table
+ * is keyed by different targets *and* matching ones, and the action names the objects that match.
  */
 class FilteredPerTargetSpellCostTest : FunSpec({
 
@@ -89,6 +90,8 @@ class FilteredPerTargetSpellCostTest : FunSpec({
         return driver
     }
 
+    fun key(distinct: Int, matched: Int) = CostCalculator.targetPriceKey(distinct, matched)
+
     fun GameTestDriver.castAction(me: EntityId, spell: EntityId) =
         legalActions(me).firstOrNull { (it.action as? CastSpell)?.cardId == spell }
 
@@ -136,7 +139,7 @@ class FilteredPerTargetSpellCostTest : FunSpec({
             .outcome shouldBe Outcome.Done
     }
 
-    test("affordability prices the most creature targets, and the table is keyed by creatures") {
+    test("affordability prices the most creature targets, and the table is keyed by both counts") {
         val driver = newGame()
         val me = driver.activePlayer!!
         driver.putPermanentOnBattlefield(me, "Creature Target Discounter")
@@ -148,8 +151,12 @@ class FilteredPerTargetSpellCostTest : FunSpec({
         val action = driver.castAction(me, spell).shouldNotBeNull()
         action.affordable shouldBe true
         ManaCost.parse(action.manaCostString!!) shouldBe ManaCost.parse("{1}{R}")
-        action.manaCostByTargetCount.shouldNotBeNull().mapValues { ManaCost.parse(it.value).cmc } shouldBe
-            mapOf(0 to 4, 1 to 3, 2 to 2)
+        // Keyed by (different targets, creatures among them): one or two targets — two phrases may
+        // share one — with up to that many creatures; each creature takes {1} off {3}{R}.
+        action.manaCostByTargetCount.shouldNotBeNull().mapValues { ManaCost.parse(it.value).cmc } shouldBe mapOf(
+            key(1, 0) to 4, key(1, 1) to 3,
+            key(2, 0) to 4, key(2, 1) to 3, key(2, 2) to 2,
+        )
 
         val info = LegalActionEnricher(driver.services.manaSolver, driver.cardRegistry, driver.services.costCalculator)
             .enrich(listOf(action), driver.state, me).single()
@@ -157,17 +164,52 @@ class FilteredPerTargetSpellCostTest : FunSpec({
         info.targetPriceCountedIds.shouldNotBeNull() shouldContainExactlyInAnyOrder listOf(bears, lions)
     }
 
-    test("a modifier counting every target alongside keys the table by different targets") {
+    test("beside a modifier counting every target, the table prices both counts") {
         val driver = newGame()
         val me = driver.activePlayer!!
         driver.putPermanentOnBattlefield(me, "Creature Target Discounter")
         driver.putPermanentOnBattlefield(driver.getOpponent(me), "Any Target Taxer")
+        val bears = driver.putCreatureOnBattlefield(driver.getOpponent(me), "Grizzly Bears")
+        val spell = driver.putCardInHand(me, "Twin Zap")
+        repeat(6) { driver.putLandOnBattlefield(me, "Mountain") }
+
+        // {3}{R}, {1} more per target, {1} less per creature: a creature and a player is {4}{R},
+        // two creature-free targets {5}{R} — the count of different targets alone can't say which.
+        val action = driver.castAction(me, spell).shouldNotBeNull()
+        action.manaCostByTargetCount.shouldNotBeNull().mapValues { ManaCost.parse(it.value).cmc } shouldBe mapOf(
+            key(1, 0) to 5, key(1, 1) to 4,
+            key(2, 0) to 6, key(2, 1) to 5,
+        )
+        LegalActionEnricher(driver.services.manaSolver, driver.cardRegistry, driver.services.costCalculator)
+            .enrich(listOf(action), driver.state, me).single()
+            .targetPriceCountedIds shouldBe listOf(bears)
+    }
+
+    test("a creature targeted twice earns {1} once") {
+        val driver = newGame()
+        val me = driver.activePlayer!!
+        driver.putPermanentOnBattlefield(me, "Creature Target Discounter")
+        val bears = driver.putCreatureOnBattlefield(driver.getOpponent(me), "Grizzly Bears")
+        val spell = driver.putCardInHand(me, "Twin Zap")
+
+        val twice = listOf(ChosenTarget.Permanent(bears), ChosenTarget.Permanent(bears))
+        driver.giveMana(me, Color.RED, 2)
+        driver.submit(CastSpell(me, spell, twice)).outcome shouldNotBe Outcome.Done
+        driver.giveMana(me, Color.RED, 1)
+        driver.submit(CastSpell(me, spell, twice)).outcome shouldBe Outcome.Done
+    }
+
+    test("with no filtered modifier in play the table stays keyed by different targets") {
+        val driver = newGame()
+        val me = driver.activePlayer!!
+        driver.putPermanentOnBattlefield(driver.getOpponent(me), "Any Target Taxer")
         driver.putCreatureOnBattlefield(driver.getOpponent(me), "Grizzly Bears")
         val spell = driver.putCardInHand(me, "Twin Zap")
-        repeat(5) { driver.putLandOnBattlefield(me, "Mountain") }
+        repeat(6) { driver.putLandOnBattlefield(me, "Mountain") }
 
         val action = driver.castAction(me, spell).shouldNotBeNull()
-        action.manaCostByTargetCount.shouldNotBeNull()
+        action.manaCostByTargetCount.shouldNotBeNull().mapValues { ManaCost.parse(it.value).cmc } shouldBe
+            mapOf(1 to 5, 2 to 6)
         LegalActionEnricher(driver.services.manaSolver, driver.cardRegistry, driver.services.costCalculator)
             .enrich(listOf(action), driver.state, me).single()
             .targetPriceCountedIds.shouldBeNull()

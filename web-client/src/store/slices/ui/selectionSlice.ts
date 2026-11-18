@@ -34,6 +34,9 @@ import {
   defaultPhyrexianLifePips,
 } from '@/utils/manaCost'
 
+/** Mirrors `CostCalculator.TARGET_PRICE_MATCHED_STRIDE`: how a per-target price key packs matched targets. */
+const TARGET_PRICE_MATCHED_STRIDE = 1000
+
 
 /** Every colour (WUBRG pip letter) the player's sources or floating mana could pay a pip with. */
 function availableManaColors(
@@ -710,12 +713,13 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
     // knowable here — look up the price for the different targets chosen. Same shape as the
     // emerge/harmonize adjustments around it: the server owns the rule, the client only applies
     // the choice the player has since made.
-    // Under a filtered per-target modifier ("for each creature it targets") the server keys the
-    // table by the chosen targets among `targetPriceCountedIds` instead.
+    // Under a filtered per-target modifier ("for each creature it targets") the key also packs
+    // how many of them are among `targetPriceCountedIds` — see that field.
+    const chosenIds = [...new Set((action.targets ?? []).map(targetEntityId))]
     const countedIds = actionInfo.targetPriceCountedIds ? new Set(actionInfo.targetPriceCountedIds) : null
-    const distinctTargets = [...new Set((action.targets ?? []).map(targetEntityId))]
-      .filter((id) => countedIds == null || countedIds.has(id)).length
-    const targetPricedCost = actionInfo.manaCostByTargetCount?.[distinctTargets]
+    const priceKey = chosenIds.length +
+      (countedIds ? TARGET_PRICE_MATCHED_STRIDE * chosenIds.filter((id) => countedIds.has(id)).length : 0)
+    const targetPricedCost = actionInfo.manaCostByTargetCount?.[priceKey]
     const manaCost = emergeCost ?? targetPricedCost ?? actionInfo.manaCostString ?? ''
     // A preceding delve or convoke phase materializes {X} as generic in the cost it hands on, so
     // its exiles/taps can pay the X down (CR 601.2f). Once that has happened the X is already in
