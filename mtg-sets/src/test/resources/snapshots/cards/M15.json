@@ -96,60 +96,55 @@
     "oracleText": "For each attacking creature, its owner puts it on their choice of the top or bottom of their library.",
     "script": {
         "spellEffect": {
-            "type": "Composite",
-            "effects": [
-                {
-                    "type": "ForEach",
-                    "space": {
-                        "type": "IterationSpace.Players",
-                        "players": "ActivePlayerFirst"
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Players",
+                "players": "ActivePlayerFirst"
+            },
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "BattlefieldMatching",
+                            "filter": "creature attacking own:you"
+                        },
+                        "storeAs": "gathered0"
                     },
-                    "body": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "GatherCards",
-                                "source": {
-                                    "type": "BattlefieldMatching",
-                                    "filter": "creature attacking own:you"
-                                },
-                                "storeAs": "gathered1"
-                            },
-                            {
-                                "type": "SelectFromCollection",
-                                "from": "gathered1",
-                                "selection": "ChooseAnyNumber",
-                                "storeSelected": "selected2",
-                                "storeRemainder": "remainder2",
-                                "prompt": "Choose attacking creatures you own to put on top of your library; the rest go on the bottom",
-                                "selectedLabel": "Top of library",
-                                "remainderLabel": "Bottom of library",
-                                "useTargetingUI": true
-                            },
-                            {
-                                "type": "MoveCollection",
-                                "from": "selected2",
-                                "destination": {
-                                    "type": "ToZone",
-                                    "zone": "Library",
-                                    "placement": "Top"
-                                },
-                                "order": "OwnerChooses"
-                            },
-                            {
-                                "type": "MoveCollection",
-                                "from": "remainder2",
-                                "destination": {
-                                    "type": "ToZone",
-                                    "zone": "Library",
-                                    "placement": "Bottom"
-                                },
-                                "order": "OwnerChooses"
-                            }
-                        ]
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "gathered0",
+                        "selection": "ChooseAnyNumber",
+                        "storeSelected": "selected1",
+                        "storeRemainder": "remainder1",
+                        "prompt": "Choose attacking creatures you own to put on top of your library; the rest go on the bottom",
+                        "selectedLabel": "Top of library",
+                        "remainderLabel": "Bottom of library",
+                        "useTargetingUI": true
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "selected1",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Library",
+                            "placement": "Top"
+                        },
+                        "order": "OwnerChooses"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "remainder1",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Library",
+                            "placement": "Bottom"
+                        },
+                        "order": "OwnerChooses"
                     }
-                }
-            ]
+                ]
+            }
         }
     },
     "metadata": {
