@@ -54,6 +54,7 @@ class ProfaneMementoScenarioTest : FunSpec({
         driver.castSpell(me, bolt2, targets = listOf(mine)).outcome shouldBe Outcome.Done
         driver.bothPass()
         withClue("my own creature card is not in an opponent's graveyard") {
+            driver.state.stack.isEmpty() shouldBe true
             driver.getLifeTotal(me) shouldBe 21
         }
     }
