@@ -684,6 +684,12 @@ object CardIntentAnalyzer {
                     else listOf(leaf)
                 is AddDynamicCountersEffect -> if (harmsOwnTarget(leaf.counterType, leaf.target, requirements)) emptyList()
                     else listOf(leaf)
+                // Taking a +1/+1 counter off our own creature is the same price; off an opponent's
+                // (Bloodcrazed Hoplite) it is the shrink [tagsOf] reads as removal.
+                is RemoveCountersEffect ->
+                    if (TargetPolarityAnalyzer.counterPolarity(leaf.counterType) == TargetPolarity.BENEFICIAL &&
+                        TargetPolarityAnalyzer.targetsOwnSide(leaf.target, requirements)) emptyList()
+                    else listOf(leaf)
                 // "Create a Cursed Role token attached to target creature you control" (Spiteful
                 // Hexmage): the same price paid on our own board. On anyone's creature it is the
                 // answer [auraTokenTags] reads.
@@ -3309,7 +3315,13 @@ object CardIntentAnalyzer {
     private fun removedCounterTags(type: CounterType, target: EffectTarget): Set<IntentTag> {
         if (!hitsAnotherPermanent(target)) return emptySet()
         val (power, toughness) = type.ptDelta ?: return emptySet()
-        return if (power <= 0 && toughness <= 0 && (power < 0 || toughness < 0)) setOf(IntentTag.PUMP) else emptySet()
+        return when {
+            power <= 0 && toughness <= 0 && (power < 0 || toughness < 0) -> setOf(IntentTag.PUMP)
+            // Taking a +1/+1 counter off another creature (Bloodcrazed Hoplite) shrinks it for good —
+            // the mirror of putting a -1/-1 counter on it, which [counterTags] reads as removal.
+            toughness > 0 && power >= 0 -> removalTags(target)
+            else -> emptySet()
+        }
     }
 
     /**

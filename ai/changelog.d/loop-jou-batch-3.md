@@ -1,0 +1,1 @@
+- #TBD The AI reads taking a +1/+1 counter off an opponent's creature (Bloodcrazed Hoplite) as removal, and off its own as no removal

@@ -12,12 +12,14 @@ import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.akh.cards.DefiantGreatmaw
 import com.wingedsheep.mtg.sets.definitions.akh.cards.ExemplarOfStrength
+import com.wingedsheep.mtg.sets.definitions.jou.cards.BloodcrazedHoplite
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -27,6 +29,8 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  * does to its holder the opposite of putting it on: Defiant Greatmaw's "remove a -1/-1 counter from
  * another target creature you control" is a gift — a pump that lasts. And the -1/-1 counters
  * Greatmaw and Exemplar of Strength put on a creature *you control* are their drawback, not removal.
+ * The mirror: Bloodcrazed Hoplite's "remove a +1/+1 counter from target creature an opponent
+ * controls" shrinks that creature for good — removal, as a -1/-1 counter on it would read.
  */
 class RemoveCountersReadingAiTest : FunSpec({
     test("removing a -1/-1 counter reads as a gift, and -1/-1 counters on our own creature as no removal") {
@@ -70,5 +74,14 @@ class RemoveCountersReadingAiTest : FunSpec({
         withClue("Savannah Lions has no counter to lose; the Courser gets back to 2/2") {
             response.selectedTargets.values.flatten() shouldBe listOf(wounded)
         }
+    }
+
+    test("removing a +1/+1 counter from an opponent's creature reads as removal") {
+        val trigger = BloodcrazedHoplite.script.triggeredAbilities[1]
+        TargetPolarityAnalyzer.forRequirements(trigger.effect, trigger.allTargetRequirements) shouldBe
+            listOf(TargetPolarity.HARMFUL)
+        CardIntentAnalyzer.analyzeEffect(trigger.effect, trigger.allTargetRequirements).tags shouldContain IntentTag.REMOVAL
+        val reading = AiReadingAudit.read(BloodcrazedHoplite)
+        withClue("$reading") { reading.readFully shouldBe true }
     }
 })
