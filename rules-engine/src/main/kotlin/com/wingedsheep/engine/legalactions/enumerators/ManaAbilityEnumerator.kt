@@ -418,7 +418,13 @@ class ManaAbilityEnumerator(
                 }
 
                 // Compute runtime description for abilities with dynamic mana amounts
-                val description = runtimeDescription(ability, state, entityId, playerId, context)
+                // A re-priced ability (Oppressive Rays' tax) names the cost the player will pay —
+                // "{3}, {T}: Add {G}" — the same splice the non-mana enumerator makes.
+                val description = if (effectiveCost != printedCost) {
+                    com.wingedsheep.engine.legalactions.utils.AbilityCostReduction.describe(ability, effectiveCost, printedCost)
+                } else {
+                    runtimeDescription(ability, state, entityId, playerId, context)
+                }
 
                 val availableManaColors = constrainedColors(ability.effect, state, entityId, playerId, context)
 

@@ -47,7 +47,10 @@ class OppressiveRaysScenarioTest : ScenarioTestBase() {
                 val elves = game.findPermanent("Llanowar Elves")!!
 
                 val offer = game.getLegalActions(1).first { (it.action as? ActivateAbility)?.sourceId == elves }
-                withClue("the offer shows the taxed total") { offer.manaCostString shouldBe "{3}" }
+                withClue("the offer shows the taxed total") {
+                    offer.manaCostString shouldBe "{3}"
+                    offer.description shouldBe "{3}, {T}: Add {G}"
+                }
                 withClue("three untapped Plains pay the tax") { offer.isAffordable shouldBe true }
 
                 val result = game.execute(ActivateAbility(game.player1Id, elves, elvesManaAbilityId()))
