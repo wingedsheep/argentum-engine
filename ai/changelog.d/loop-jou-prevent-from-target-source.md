@@ -1,0 +1,1 @@
+- #TBD The AI reads a shield against one target creature's damage (Stonewise Fortifier) as harmful to that creature, and an Aura that burns its host's controller each upkeep (Feedback, Wanderlust, Cursed Land, Power Leak) as a curse to cast on an opponent's permanent.

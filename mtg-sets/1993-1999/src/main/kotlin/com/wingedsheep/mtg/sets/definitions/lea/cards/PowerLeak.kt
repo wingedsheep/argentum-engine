@@ -42,7 +42,7 @@ val PowerLeak = card("Power Leak") {
         effect = Effects.MayPayX(
             then = Effects.PreventDamage(
                 target = thatPlayer,
-                sources = PreventionSourceFilter.ThisSource,
+                sources = PreventionSourceFilter.Specific(EffectTarget.Self),
                 amount = DynamicAmounts.xValue(),
                 nextInstanceOnly = true
             ),

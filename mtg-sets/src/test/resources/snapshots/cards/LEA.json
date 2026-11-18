@@ -9569,7 +9569,10 @@
                                     "player": "TriggeringPlayer"
                                 },
                                 "amount": "XValue",
-                                "sourceFilter": "PreventFromThisSource",
+                                "sourceFilter": {
+                                    "type": "PreventFromSpecific",
+                                    "source": "Self"
+                                },
                                 "nextInstanceOnly": true
                             },
                             "decisionMaker": {

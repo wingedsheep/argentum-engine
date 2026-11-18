@@ -3621,6 +3621,58 @@
     ]
 }
 
+// Stonewise Fortifier
+{
+    "name": "Stonewise Fortifier",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{4}{W}: Prevent all damage that would be dealt to this creature by target creature this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Stonewise Fortifier:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "PreventDamageShield",
+                    "target": "Self",
+                    "sourceFilter": {
+                        "type": "PreventFromSpecific",
+                        "source": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "artist": "Ryan Alexander Lee",
+        "flavorText": "Ephara taught some mortals to feel every vein in marble as though it flows with their own blood.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b1cd291-92a0-4f0f-b73a-64fc498da1ef.jpg?1783939454"
+    }
+}
+
 // Strength from the Fallen
 {
     "name": "Strength from the Fallen",

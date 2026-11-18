@@ -73,14 +73,24 @@ sealed interface PreventionSourceFilter {
     data class Chosen(val eligible: GameObjectFilter = GameObjectFilter.Any) : PreventionSourceFilter
 
     /**
-     * Only damage dealt by the effect's own source — "~ deals 2 damage to that player. Prevent X of
-     * that damage" (Power Leak). Bound to the source's id at resolution, so it is the *object* that
-     * is covered (CR 400.7), not anything matching it. Needs `nextInstanceOnly` and a single
-     * recipient: the shield covers just the next instance from this source and is spent by it, so a
-     * paid amount larger than that instance never lingers to soften later damage.
+     * Only damage dealt by the one object [source] names, bound to that object's id at resolution
+     * — so it is the *object* that is covered (CR 400.7: once it changes zones it is a new object
+     * the shield never sees), not anything matching it. Two readings, both on a single recipient
+     * ([PreventDamageEffect.target], `direction = ToTarget`):
+     * - all damage from it for the shield's duration — "prevent all damage that would be dealt to
+     *   this creature by target creature this turn" (Stonewise Fortifier: `source =
+     *   ContextTarget(0)`, `target = Self`);
+     * - with `nextInstanceOnly`, just the next instance from it, capped at an `amount` when one is
+     *   given and spent by that instance either way — "~ deals 2 damage to that player. Prevent X
+     *   of that damage" (Power Leak: `source = Self`), so a paid surplus never lingers.
+     *
+     * The [Chosen] cousin picks the object at resolution instead of reading it off a target or
+     * the ability's source; [Matching] re-judges every source by a filter. Any other shape (a
+     * group, a reaction, halving) fails at resolution. Resolves to nothing — no shield — when
+     * [source] names no object.
      */
-    @SerialName("PreventFromThisSource") @Serializable
-    data object ThisSource : PreventionSourceFilter
+    @SerialName("PreventFromSpecific") @Serializable
+    data class Specific(val source: EffectTarget) : PreventionSourceFilter
 
     /**
      * Only damage that a spell or ability targeting the recipient would cause a source to deal —
@@ -187,7 +197,7 @@ data class PreventDamageEffect(
      * of Solace). When false (default), an amount-less chosen-source shield prevents **all** damage
      * from that source for its [duration] (Samite Ministration). This is orthogonal to which
      * sources are covered ([sourceFilter]) — set it explicitly rather than inferring it from the
-     * filter. With [PreventionSourceFilter.ThisSource] an [amount] caps what the single instance
+     * filter. With [PreventionSourceFilter.Specific] an [amount] caps what the single instance
      * loses ("prevent X of that damage" — Power Leak); the shield is spent by that instance either way.
      */
     val nextInstanceOnly: Boolean = false,
@@ -261,7 +271,7 @@ data class PreventDamageEffect(
             }
             is PreventionSourceFilter.Matching ->
                 append(" by ${sourceFilter.filter.description.replaceFirstChar { it.lowercase() }}")
-            PreventionSourceFilter.ThisSource -> append(" by this source")
+            is PreventionSourceFilter.Specific -> append(" by ${sourceFilter.source.description}")
             PreventionSourceFilter.TargetingRecipient -> append(" by spells or abilities that target it")
         }
         append(" this turn")
@@ -291,7 +301,7 @@ data class PreventDamageEffect(
                 val newObjFilter = sourceFilter.eligible.applyTextReplacement(replacer)
                 if (newObjFilter !== sourceFilter.eligible) PreventionSourceFilter.Chosen(newObjFilter) else sourceFilter
             }
-            PreventionSourceFilter.AnySource, PreventionSourceFilter.ThisSource,
+            PreventionSourceFilter.AnySource, is PreventionSourceFilter.Specific,
             PreventionSourceFilter.TargetingRecipient -> sourceFilter
         }
         val newOnPrevented = onPrevented?.applyTextReplacement(replacer)
