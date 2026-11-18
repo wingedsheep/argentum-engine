@@ -324,6 +324,7 @@ Aisling Leprechaun	intent: ChangeColorEffect
 Ajani Fells the Godsire
 Ajani Goldmane
 Ajani Resolute
+Ajani Steadfast
 Ajani Unrelenting
 Ajani Unyielding
 Ajani's Aid
@@ -1061,7 +1062,7 @@ Atarka Pummeler
 Atarka's Command
 Atarka, World Render
 Atemsis, All-Seeing
-Athreos, God of Passage	intent: PayOrSufferEffect; polarity: PayOrSufferEffect
+Athreos, God of Passage	polarity: PayOrSufferEffect
 Athreos, Shroud-Veiled	intent: AddCountersEffect; intent: MoveToZoneEffect; polarity: AddCountersEffect
 Atlantean Cavalry
 Atlantis Attacks
@@ -2215,7 +2216,7 @@ Brackish Blunder
 Brackish Trudge
 Brad Boimler, Eager Ensign	intent: GrantCounterPlacementModifierEffect
 Braided Net
-Braids's Frightful Return	intent: PayOrSufferEffect
+Braids's Frightful Return
 Braids, Arisen Nightmare
 Braids, Cabal Minion
 Braidwood Cup
@@ -2815,6 +2816,7 @@ Cauldron's Gift
 Caustic Bronco
 Caustic Caterpillar
 Caustic Exhale
+Caustic Tar
 Cautious Survivor
 Cavalcade of Calamity
 Cavalier of Dawn
@@ -3782,6 +3784,7 @@ Crimson Kobolds
 Crimson Manticore
 Crimson Operative
 Crimson Wisps
+Crippling Blight
 Crippling Chill
 Crippling Fear
 Critical Hit
@@ -4436,7 +4439,7 @@ Deluge Virtuoso
 Delver of Secrets	intent: Pipeline(TopOfLibrary→?)
 Delver's Torch
 Demand Answers
-Demanding Dragon	intent: PayOrSufferEffect
+Demanding Dragon
 Dematerialize
 Demilich
 Demogorgon's Clutches
@@ -5672,6 +5675,7 @@ Endbringer
 Endemic Plague
 Endless Cockroaches
 Endless Detour
+Endless Obedience
 Endless One
 Endless Ranks of the Dead
 Endless Sands
@@ -5861,6 +5865,7 @@ Eternal Scourge
 Eternal Skylord
 Eternal Student
 Eternal Taskmaster
+Eternal Thirst
 Eternal Warrior
 Eternal Witness
 Eternal of Harsh Truths
@@ -6522,6 +6527,7 @@ Firja, Judge of Valor
 Firmament Sage
 First Contact
 First Day of Class
+First Response
 First-Time Flyer
 Fisher's Talent
 Fishing Pole
@@ -9046,6 +9052,7 @@ Illusionary Mask
 Illusionist's Gambit	timing: ForEach>GrantStaticAbilityEffect
 Illusionist's Stratagem
 Illusory Ambusher
+Illusory Angel
 Illusory Gains
 Illusory Wrappings
 Illustrious Historian
@@ -9869,7 +9876,7 @@ Karn's Temporal Sundering	polarity: TakeExtraTurnEffect
 Karn, Argent Defender
 Karn, Gilded Guardian
 Karn, Legacy Reforged
-Karn, Living Legacy	intent: CreatePermanentEmblemEffect
+Karn, Living Legacy
 Karn, Scion of Urza	intent: Pipeline(exile→hand)
 Karn, the Great Creator
 Karok Wrangler
@@ -10502,6 +10509,7 @@ Ledger Shredder
 Leech Collector
 Leech Fanatic
 Leech Gauntlet	intent: UnattachEquipmentEffect
+Leeching Sliver
 Leechridden Swamp
 Leering Onlooker
 Leery Fogbeast
@@ -10670,7 +10678,7 @@ Lignify
 Likeness Looter
 Lilah, Undefeated Slickshot	intent: MarkSpellExileOnResolveEffect
 Liliana Vess	intent: Pipeline(graveyard→battlefield)
-Liliana of the Dark Realms	intent: CreatePermanentEmblemEffect; polarity: mixed(ModifyStatsEffect)
+Liliana of the Dark Realms	polarity: mixed(ModifyStatsEffect)
 Liliana of the Veil
 Liliana the Faultless
 Liliana the Repentant
@@ -11365,6 +11373,7 @@ Master of Cruelties	intent: GrantKeywordEffect
 Master of Dark Rites
 Master of Etherium
 Master of Pearls
+Master of Predicaments
 Master of Winds
 Master of the Feast
 Master of the Hunt
@@ -11421,7 +11430,7 @@ Meandering River
 Meandering Towershell
 Meanders Guide
 Meat Locker // Drowned Diner
-Meathook Massacre II	intent: PayOrSufferEffect
+Meathook Massacre II
 Mech Hangar	intent: AddCardTypeEffect; polarity: AddCardTypeEffect; timing: AddCardTypeEffect
 Mechan Assembler
 Mechan Navigator
@@ -12099,7 +12108,7 @@ Ms. Bumbleflower
 Ms. Marvel, Kamala Khan
 Mtenda Herder
 Mu Yanling, Celestial Wind
-Mu Yanling, Sky Dancer	intent: CreatePermanentEmblemEffect
+Mu Yanling, Sky Dancer
 Mu Yanling, Wind Rider
 Muck Rats
 Mudbrawler Raiders
@@ -13758,6 +13767,7 @@ Predatory Nightstalker
 Predatory Sliver
 Predatory Wurm
 Predictive Preparations
+Preeminent Captain
 Preemptive Strike
 Preening Champion
 Prehistoric Pet
@@ -14839,6 +14849,7 @@ Return to Battle
 Return to Nature
 Return to the Earth
 Return to the Light Realms
+Return to the Ranks
 Return to the Sewers
 Returned Centaur
 Returned Pastcaller
@@ -15213,6 +15224,7 @@ Rot Shambler
 Rot-Curse Rakshasa	intent: ForEach>AddCountersEffect; polarity: ForEachEffect
 Rot-Tide Gargantua
 Rotcrown Ghoul
+Rotfeaster Maggot
 Rotisserie Elemental
 Rotlung Reanimator
 Rotted Hulk
@@ -18169,7 +18181,7 @@ Swirling Torrent
 Switcheroo
 Swooping Lookout
 Swooping Protector
-Swooping Talon	combat: RemoveKeywordEffect; intent: ProvokeEffect; intent: RemoveKeywordEffect; polarity: ProvokeEffect; timing: RemoveKeywordEffect
+Swooping Talon	intent: ProvokeEffect; intent: RemoveKeywordEffect; polarity: ProvokeEffect; timing: RemoveKeywordEffect
 Sword Dancer
 Sword of Forge and Frontier
 Sword of Kaldra
@@ -19973,6 +19985,7 @@ Unliving Legionnaire
 Unlucky Cabbage Merchant
 Unlucky Drop
 Unlucky Witness
+Unmake the Graves
 Unmoored Ego
 Unnatural Aggression
 Unnatural Endurance
@@ -20720,6 +20733,7 @@ Wall of Hope
 Wall of Ice
 Wall of Lava
 Wall of Light
+Wall of Limbs
 Wall of Lost Thoughts
 Wall of Mist
 Wall of Mulch
@@ -21479,6 +21493,7 @@ Xande, Dark Mage
 Xander's Lounge
 Xantid Swarm
 Xathrid Necromancer
+Xathrid Slyblade
 Xenagos, God of Revels
 Xenic Poltergeist
 Xenobotanist
