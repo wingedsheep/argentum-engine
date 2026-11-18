@@ -690,7 +690,9 @@ class MoveCollectionExecutor(
             // One card has no order to choose. The prompt still runs where it is the player's only
             // *look* at the card ("look at the top card of your library", lookAtTopAndReorder), and
             // is skipped only when a selection in this same pipeline just displayed it to the
-            // chooser (scry 1 / surveil 1 keeping it on top). Skipping therefore never hides
+            // chooser (scry 1 / surveil 1 keeping it on top), or when it is a permanent still on
+            // the battlefield — public until it lands (Aetherspouts putting one attacker on
+            // top). Skipping therefore never hides
             // anything the chooser wouldn't otherwise see. Two or more cards are always asked
             // about, even copies of one card: every seat sees whether a question is pending but
             // not which cards are going back, so skipping for copies would tell the other players
@@ -703,8 +705,6 @@ class MoveCollectionExecutor(
                 ]
             }.orEmpty()
             val noOrderToChoose = cards.size == 1
-            // A permanent heading for a library is public until it lands there, so a lone one has
-            // nothing to look at either (Aetherspouts putting one attacker on top).
             val alreadySeen = cards.isNotEmpty() &&
                 cards.all { it in shown || it in state.getBattlefield() }
             if (countHidden || ((!isBottom || cards.size > 1) && !(alreadySeen && noOrderToChoose))) {

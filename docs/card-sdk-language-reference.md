@@ -2321,9 +2321,9 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   - **A group, each owner choosing** ("for each attacking creature, its owner puts it on their
     choice of the top or bottom of their library" — Aetherspouts) is a pipeline, not a
     `ForEachInGroup` over this effect (that would fix the order of cards sharing an end):
-    `forEachPlayerCollecting(Player.ActivePlayerFirst) { gather(BattlefieldMatching(filter.ownedByYou()));
+    `Effects.ForEachPlayer(Player.ActivePlayerFirst, Effects.Pipeline { gather(BattlefieldMatching(filter.ownedByYou()));
     chooseAnyNumberSplit(…, useTargetingUI = true)` into a top and a bottom pile, then
-    `toLibraryTop(top, order = CardOrder.OwnerChooses)` / `toLibraryBottom(bottom, order = OwnerChooses)` `}`.
+    `toLibraryTop(top, order = CardOrder.OwnerChooses)` / `toLibraryBottom(bottom, order = CardOrder.OwnerChooses)` `})`.
     The active player chooses first (APNAP), and each owner orders the cards sharing an end. A
     lone permanent going on top asks nothing — it is public until it lands.
 - `PutSecondFromTopOrBottomOfLibrary(target)` — second-from-top or bottom.

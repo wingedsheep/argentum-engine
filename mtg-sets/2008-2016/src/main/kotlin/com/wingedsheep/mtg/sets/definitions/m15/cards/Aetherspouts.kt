@@ -24,8 +24,9 @@ val Aetherspouts = card("Aetherspouts") {
     oracleText = "For each attacking creature, its owner puts it on their choice of the top or bottom of their library."
 
     spell {
-        effect = Effects.Pipeline {
-            forEachPlayerCollecting(Player.ActivePlayerFirst) {
+        effect = Effects.ForEachPlayer(
+            Player.ActivePlayerFirst,
+            Effects.Pipeline {
                 val owned = gather(
                     CardSource.BattlefieldMatching(GameObjectFilter.Creature.attacking().ownedByYou())
                 )
@@ -38,9 +39,8 @@ val Aetherspouts = card("Aetherspouts") {
                 )
                 toLibraryTop(top, order = CardOrder.OwnerChooses)
                 toLibraryBottom(bottom, order = CardOrder.OwnerChooses)
-                emptyList()
             }
-        }
+        )
     }
 
     metadata {

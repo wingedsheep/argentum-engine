@@ -68,6 +68,9 @@ class AetherspoutsScenarioTest : ScenarioTestBase() {
                 order.prompt shouldBe "Put these permanents on the top of your library in any order."
             }
             game.submitDecision(OrderedResponse(order.id, listOf(lions, bears))).error shouldBe null
+            withClue("Hill Giant alone on the bottom, and the defender owns no attackers: nothing else is asked") {
+                game.getPendingDecision() shouldBe null
+            }
             game.resolveStack()
 
             val library = game.state.getLibrary(game.player1Id)
