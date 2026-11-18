@@ -49,19 +49,6 @@ internal class EffectApplicator(
      * because the set alone can't tell one "has renown 1" grant from two — and unlike crew, the
      * number of renown instances matters.
      */
-    /**
-     * Adds a protection keyword from a grant that spares some attachments, keeping
-     * [MutableProjectedValues.protectionSpares] to the keywords no ordinary source holds: a sparing
-     * grant of a keyword already held by an ordinary source changes nothing, and an ordinary grant
-     * ([addKeyword]) drops the keyword's sparing record.
-     */
-    private fun addProtection(values: MutableProjectedValues, keyword: String, spares: ProtectionSpares, sourceId: EntityId) {
-        if (spares == ProtectionSpares.NONE) return addKeyword(values, keyword)
-        val sparing = ProtectionSparing(sourceId, spares)
-        if (values.keywords.add(keyword)) values.protectionSpares[keyword] = mutableListOf(sparing)
-        else values.protectionSpares[keyword]?.add(sparing)
-    }
-
     private fun addKeyword(values: MutableProjectedValues, keyword: String) {
         values.protectionSpares.remove(keyword)
         val keywords = values.keywords
@@ -80,6 +67,29 @@ internal class EffectApplicator(
             keywords.remove(existing)
             keywords.add(prefix + (existing.substring(prefix.length).toInt() + n))
         }
+    }
+
+    /**
+     * Adds a protection keyword from a grant that spares some attachments, keeping
+     * [MutableProjectedValues.protectionSpares] to the keywords no ordinary source holds: a sparing
+     * grant of a keyword already held by an ordinary source changes nothing, and an ordinary grant
+     * ([addKeyword]) drops the keyword's sparing record.
+     */
+    private fun addProtection(values: MutableProjectedValues, keyword: String, spares: ProtectionSpares, sourceId: EntityId) {
+        if (spares == ProtectionSpares.NONE) return addKeyword(values, keyword)
+        val sparing = ProtectionSparing(sourceId, spares)
+        if (values.keywords.add(keyword)) values.protectionSpares[keyword] = mutableListOf(sparing)
+        else values.protectionSpares[keyword]?.add(sparing)
+    }
+
+    /**
+     * Adds protection keywords from an ordinary source — one that spares nothing — as a set: a
+     * numbered protection ("mana value other than N") is one quality, never summed as [addKeyword]
+     * would. An ordinary holder ends any sparing record for those keywords.
+     */
+    private fun addOrdinaryProtections(values: MutableProjectedValues, keywords: Collection<String>) {
+        values.keywords.addAll(keywords)
+        keywords.forEach(values.protectionSpares::remove)
     }
 
     fun applyEffect(
@@ -383,10 +393,7 @@ internal class EffectApplicator(
                     values.keywords.addAll(mod.keywords)
                 }
                 is Modification.GrantProtectionFrom -> {
-                    // addAll, not addKeyword: a numbered protection (mana value other than N) is
-                    // one quality, never summed. An ordinary holder still ends any sparing record.
-                    values.keywords.addAll(mod.keywords)
-                    mod.keywords.forEach(values.protectionSpares::remove)
+                    addOrdinaryProtections(values, mod.keywords)
                 }
                 is Modification.GrantProtectionFromChosenCardType -> {
                     com.wingedsheep.engine.mechanics.targeting.ProtectionKeywords
@@ -401,11 +408,13 @@ internal class EffectApplicator(
                     val sourceController = projectedValues[effect.sourceId]?.controllerId
                         ?: state.getEntity(effect.sourceId)?.get<ControllerComponent>()?.playerId
                     if (sourceController != null) {
+                        val colors = mutableSetOf<String>()
                         for (other in projectedValues.values) {
-                            if (other.controllerId != sourceController) continue
-                            for (colorName in other.colors) {
-                                addProtection(values, "PROTECTION_FROM_$colorName", mod.spares, effect.sourceId)
-                            }
+                            if (other.controllerId == sourceController) colors.addAll(other.colors)
+                        }
+                        // One grant per color, however many permanents share it.
+                        for (colorName in colors) {
+                            addProtection(values, "PROTECTION_FROM_$colorName", mod.spares, effect.sourceId)
                         }
                     }
                 }
@@ -459,7 +468,9 @@ internal class EffectApplicator(
                             }
                         }
                         if (KeywordFamily.PROTECTION in mod.families) {
-                            PrintedKeywordQualities.protections(container, values.keywords)
+                            val protections = mutableSetOf<String>()
+                            PrintedKeywordQualities.protections(container, protections)
+                            addOrdinaryProtections(values, protections)
                         }
                         if (hexproof) PrintedKeywordQualities.hexproofFroms(container, values.keywords)
                     }

@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -61,6 +62,7 @@ class SpectraWardScenarioTest : ScenarioTestBase() {
                     .withPlayers("Player1", "Player2")
                     .withCardOnBattlefield(1, "Grizzly Bears")
                     .withCardAttachedTo(1, "Spectra Ward", "Grizzly Bears")
+                    .withCardOnBattlefield(1, "Savannah Lions")
                     .withCardInHand(1, "Holy Strength")
                     .withLandsOnBattlefield(1, "Plains", 1)
                     .withActivePlayer(1)
@@ -70,6 +72,33 @@ class SpectraWardScenarioTest : ScenarioTestBase() {
                 val bears = game.findPermanent("Grizzly Bears")!!
                 withClue("Holy Strength (white) can't target a creature with protection from white") {
                     game.castSpell(1, "Holy Strength", bears).error shouldNotBe null
+                }
+                withClue("the same cast is legal on an unprotected creature, so protection is what refused it") {
+                    game.castSpell(1, "Holy Strength", game.findPermanent("Savannah Lions")!!).error shouldBe null
+                }
+            }
+
+            test("spares Auras only: a colored Equipment still becomes unattached") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withCardAttachedTo(1, "Spectra Ward", "Grizzly Bears")
+                    .withCardAttachedTo(1, "Behemoth Sledge", "Grizzly Bears") // green-white Equipment, +2/+2
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.checkStateBasedActions().error shouldBe null
+
+                val bears = game.findPermanent("Grizzly Bears")!!
+                val sledge = game.findPermanent("Behemoth Sledge")!!
+                withClue("Spectra Ward stays; Behemoth Sledge unattaches but stays on the battlefield (CR 704.5n)") {
+                    game.isOnBattlefield("Spectra Ward") shouldBe true
+                    game.state.getEntity(sledge)?.get<AttachedToComponent>() shouldBe null
+                }
+                withClue("only Spectra Ward's +2/+2 remains") {
+                    game.state.projectedState.getPower(bears) shouldBe 4
+                    game.state.projectedState.getToughness(bears) shouldBe 4
                 }
             }
 

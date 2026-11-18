@@ -91,7 +91,7 @@ data class ProjectedValues(
      * For each `PROTECTION_FROM_*` keyword in [keywords] held *only* by grants that spare some
      * attachments ("This effect doesn't remove this Aura"), those grants. A keyword absent here
      * has at least one ordinary holder — printed, or a grant that spares nothing — and removes
-     * every attachment with its quality. Read through [ProjectedState.protectionSpares].
+     * every attachment with its quality. Read through [ProjectedState.protectionRemovesAttachment].
      */
     val protectionSpares: Map<String, List<ProtectionSparing>> = emptyMap(),
     val colors: Set<String> = emptySet(),
@@ -583,7 +583,7 @@ internal fun buildIntermediateProjectedState(
             staticAbilities = v.staticAbilities.toList(),
             staticAbilitySourceIds = v.staticAbilitySourceIds.toList(),
             enchantmentRestrictions = v.enchantmentRestrictions.toList(),
-            protectionSpares = v.protectionSpares.mapValues { it.value.toList() },
+            protectionSpares = if (v.protectionSpares.isEmpty()) emptyMap() else v.protectionSpares.mapValues { it.value.toList() },
             colors = v.colors.toSet(),
             types = v.types.toSet(),
             subtypes = v.subtypes.toSet(),

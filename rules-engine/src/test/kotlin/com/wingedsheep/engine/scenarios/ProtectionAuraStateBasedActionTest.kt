@@ -108,6 +108,24 @@ class ProtectionAuraStateBasedActionTest : ScenarioTestBase() {
                 }
             }
 
+            test("protection from white copied from a graveyard card removes White Ward") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Cairn Wanderer")
+                    .withCardAttachedTo(1, "White Ward", "Cairn Wanderer")
+                    // A creature card with protection from white in a graveyard: Cairn Wanderer has it too.
+                    .withCardInGraveyard(2, "Black Knight")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.checkStateBasedActions().error shouldBe null
+
+                withClue("Cairn Wanderer's ordinary protection from white doesn't spare White Ward") {
+                    game.isInGraveyard(1, "White Ward") shouldBe true
+                }
+            }
+
             test("two self-sparing Auras each remove the other") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")

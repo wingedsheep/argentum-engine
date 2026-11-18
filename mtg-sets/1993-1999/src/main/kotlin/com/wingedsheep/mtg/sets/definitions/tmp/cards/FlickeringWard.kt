@@ -23,11 +23,9 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * doesn't remove this Aura.
  * {W}: Return this Aura to its owner's hand.
  *
- * The self-exempt clause ("This effect doesn't remove this Aura") is currently
- * moot in the engine: UnattachedAurasCheck only sends Auras to the graveyard
- * when the attached target is missing, not when it's an illegal attachment per
- * Rule 704.5n (color protection). If 704.5n is ever wired up, this clause will
- * need explicit support.
+ * "This effect doesn't remove this Aura" is `spares = ProtectionSpares.SELF`: the
+ * chosen-color protection removes other Auras of that color (CR 704.5m) but not
+ * this one.
  */
 val FlickeringWard = card("Flickering Ward") {
     manaCost = "{W}"

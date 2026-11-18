@@ -616,7 +616,7 @@ sealed interface Modification {
         override val layer get() = Layer.ABILITY
     }
 
-    /** [spares]: which attachments this protection doesn't remove — see [ProjectedState.protectionSpares]. */
+    /** [spares]: which attachments this protection doesn't remove — see [ProjectedState.protectionRemovesAttachment]. */
     @Serializable
     data class GrantProtectionFromColor(
         val color: String,
