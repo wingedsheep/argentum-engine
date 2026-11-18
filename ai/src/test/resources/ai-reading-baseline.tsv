@@ -275,6 +275,7 @@ Agents of S.H.I.E.L.D.
 Aggravated Assault
 Aggressive Instinct
 Aggressive Mammoth
+Aggressive Mining
 Aggressive Negotiations
 Aggressive Sabotage
 Aggressive Urge
@@ -1777,6 +1778,7 @@ Blasphemous Edict
 Blast Zone
 Blasted Landscape
 Blaster Mage
+Blastfire Bolt
 Blasting Station
 Blastoneuron
 Blatant Thievery
@@ -2389,6 +2391,7 @@ Bronze Walrus
 Bronzehide Lion	intent: PutOntoBattlefieldAsAuraEffect
 Bronzeplate Boar	intent: UnattachEquipmentEffect
 Brood Butcher
+Brood Keeper
 Brood Monitor
 Brood Sliver
 Brood Weaver
@@ -2977,6 +2980,7 @@ Chandra, Heart of Fire
 Chandra, Hope's Beacon
 Chandra, Novice Pyromancer
 Chandra, Pyrogenius
+Chandra, Pyromaster
 Chandra, Spark Hunter
 Chandra, Torch of Defiance
 Change of Fortune
@@ -6784,6 +6788,7 @@ Forever Young
 Forge Anew
 Forge Armor
 Forge Boss
+Forge Devil
 Forgehammer Centurion
 Forging the Anchor
 Forging the Tyrite Sword
@@ -7200,6 +7205,7 @@ General Tazri
 General Traag, Heart of Stone
 General's Enforcer
 General's Kabuto
+Generator Servant
 Generous Ent
 Generous Gift
 Generous Patron
@@ -7651,6 +7657,7 @@ Goblin Heelcutter
 Goblin Hero
 Goblin Instigator
 Goblin Javelineer
+Goblin Kaboomist
 Goblin King
 Goblin Kites
 Goblin Lackey
@@ -10331,6 +10338,7 @@ Kumena, Tyrant of Orazca
 Kunoros, Hound of Athreos
 Kura, the Boundless Sky
 Kurgadon
+Kurkesh, Onakke Ancient
 Kuro, Pitlord
 Kusari-Gama
 Kutzil's Flanker
@@ -11620,6 +11628,7 @@ Midnight Scavengers
 Midnight Snack
 Midnight Tilling
 Might Beyond Reason
+Might Makes Right
 Might Sliver
 Might Weaver
 Might of Murasa
@@ -16488,6 +16497,7 @@ Sidisi's Pet
 Sidisi, Brood Tyrant
 Sidisi, Regent of the Mire
 Sidisi, Undead Vizier
+Siege Dragon
 Siege Mastodon
 Siege Modification
 Siege Rhino
@@ -17104,10 +17114,12 @@ Soul Swallower
 Soul Transfer
 Soul Warden
 Soul of Emancipation
+Soul of Innistrad
 Soul of Magma
 Soul of Migration
 Soul of New Phyrexia
 Soul of Ravnica
+Soul of Shandalar
 Soul of Theros
 Soul of Windgrace	intent: Pipeline(graveyard→battlefield)
 Soul of Zendikar
@@ -17495,6 +17507,7 @@ Stagecoach Security
 Staggering Insight
 Staggering Size
 Staggershock
+Stain the Mind
 Stalactite Dagger
 Stalactite Stalker
 Stalked Researcher
