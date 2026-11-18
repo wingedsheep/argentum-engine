@@ -6616,7 +6616,7 @@ Flick a Coin
 Flicker of Fate
 Flickerform	intent: Pipeline(AttachedTo|BattlefieldMatching→battlefield|exile); polarity: Aura>CreateDelayedTriggerEffect; polarity: Aura>GatherCardsEffect; polarity: Aura>MoveCollectionEffect
 Flickering Hound
-Flickering Ward	polarity: Aura>GrantProtectionFromChosenColorToGroup; polarity: Aura>MoveToZoneEffect
+Flickering Ward
 Flight
 Flight of Equenauts
 Flight of Fancy
@@ -13608,7 +13608,7 @@ Play with Fire
 Playful Shove
 Plaza of Harmony
 Plaza of Heroes
-Pledge of Loyalty	polarity: Aura>GrantProtectionFromControlledColors
+Pledge of Loyalty
 Pledge of Unity
 Plover Knights
 Plow Through
@@ -17163,6 +17163,7 @@ Spectator Seating
 Specter of Mortality	intent: ForEach>ModifyStatsEffect
 Specter of the Fens
 Specter's Shriek
+Spectra Ward
 Spectral Adversary	intent: ForEach>PhaseOutEffect
 Spectral Cloak
 Spectral Denial
