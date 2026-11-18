@@ -1,0 +1,1 @@
+- #TBD Reads a token or Clue count sized by targeted players (Call the Coppercoats, Officious Interrogation) as a counted, not affected, target slot instead of an unread one.

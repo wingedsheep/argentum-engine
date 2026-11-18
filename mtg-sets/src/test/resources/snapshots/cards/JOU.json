@@ -25,6 +25,97 @@
     ]
 }
 
+// Ajani's Presence
+{
+    "name": "Ajani's Presence",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Strive — This spell costs {2}{W} more to cast for each target beyond the first.\nAny number of target creatures each get +1/+1 and gain indestructible until end of turn. (Damage and effects that say \"destroy\" don't destroy them.)",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    {
+                        "type": "GrantKeyword",
+                        "keyword": "INDESTRUCTIBLE",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "IncreaseManaPerUnit",
+                    "symbols": "{2}{W}",
+                    "countSource": {
+                        "type": "ChosenTargets",
+                        "beyond": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e77e2fd5-5c46-4f6b-ac43-ec23fab57a1a.jpg?1783939464",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "You choose how many targets each spell with a strive ability has and what those targets are as you cast it. It's legal to cast such a spell with no targets, although this is rarely a good idea. You can't choose the same target more than once for a single strive spell."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "The mana cost and mana value of strive spells don't change no matter how many targets they have. Strive abilities affect only what you pay."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If all of the spell's targets are illegal when the spell tries to resolve, it won't resolve and none of its effects will happen. If one or more of its targets are legal when it tries to resolve, the spell will resolve and affect only those legal targets. It will have no effect on any illegal targets."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If a spell or ability allows you to cast a strive spell without paying its mana cost, you must pay the additional costs for any targets beyond the first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Akroan Mastiff
 {
     "name": "Akroan Mastiff",
@@ -3631,19 +3722,8 @@
                 "type": "ModifySpellCost",
                 "target": "SelfCast",
                 "modification": {
-                    "type": "IncreaseGenericBy",
-                    "source": {
-                        "type": "ChosenTargets",
-                        "beyond": 1
-                    }
-                }
-            },
-            {
-                "type": "ModifySpellCost",
-                "target": "SelfCast",
-                "modification": {
-                    "type": "IncreaseColoredPerUnit",
-                    "symbols": "{W}",
+                    "type": "IncreaseManaPerUnit",
+                    "symbols": "{1}{W}",
                     "countSource": {
                         "type": "ChosenTargets",
                         "beyond": 1

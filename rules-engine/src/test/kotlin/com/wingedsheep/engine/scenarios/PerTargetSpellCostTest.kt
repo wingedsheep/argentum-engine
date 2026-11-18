@@ -22,6 +22,7 @@ import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.sdk.core.Zone
@@ -213,12 +214,33 @@ class PerTargetSpellCostTest : FunSpec({
         }
     }
 
+    // Strive-shaped: one per-target tax with a generic and a colored part ({2}{G} per extra target).
+    val striveRally = card("Strive Rally") {
+        manaCost = "{G}"
+        typeLine = "Instant"
+        oracleText = "This spell costs {2}{G} more to cast for each target beyond the first.\n" +
+            "Any number of target creatures each get +1/+1 until end of turn."
+        staticAbility {
+            ability = ModifySpellCost(
+                target = SpellCostTarget.SelfCast,
+                modification = CostModification.IncreaseManaPerUnit("{2}{G}", CostReductionSource.ChosenTargets(beyond = 1)),
+            )
+        }
+        spell {
+            target = TargetObject(filter = TargetFilter.Creature, unlimited = true)
+            effect = Effects.ForEachTarget(
+                Effects.ModifyStats(1, 1, EffectTarget.ContextTarget(0)),
+            )
+        }
+    }
+
     fun newGame(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(
             TestCards.all + listOf(
                 discounter, taxer, twinBoost, spreadBoost, flashbackBoost, twoWayCharm, biteTest,
                 graveGrant, gravePump, escapePump, pumpAdventurer, webPump, kickerPump, pairCharm, graveyardTaxer,
+                striveRally,
             )
         )
         driver.initMirrorMatch(deck = Deck.of("Forest" to 40), skipMulligans = true)
@@ -526,5 +548,34 @@ class PerTargetSpellCostTest : FunSpec({
         action.affordable shouldBe true
         ManaCost.parse(action.manaCostString!!).cmc shouldBe 5
         flashback().outcome shouldBe Outcome.Done
+    }
+
+    test("a per-unit tax adds both its generic and its colored part for each extra target") {
+        val driver = newGame()
+        val me = driver.activePlayer!!
+        val bears = driver.putCreatureOnBattlefield(me, "Grizzly Bears")
+        val lions = driver.putCreatureOnBattlefield(me, "Savannah Lions")
+        val spell = driver.putCardInHand(me, "Strive Rally")
+
+        // Two targets: {G} + {2}{G} = {2}{G}{G}. Three green is short by the generic {2}'s half.
+        driver.giveMana(me, Color.GREEN, 3)
+        driver.castOn(me, spell, listOf(bears, lions)).outcome shouldNotBe Outcome.Done
+        driver.giveMana(me, Color.GREEN, 1)
+        driver.castOn(me, spell, listOf(bears, lions)).outcome shouldBe Outcome.Done
+    }
+
+    test("a per-unit tax's colored part still needs its color") {
+        val driver = newGame()
+        val me = driver.activePlayer!!
+        val bears = driver.putCreatureOnBattlefield(me, "Grizzly Bears")
+        val lions = driver.putCreatureOnBattlefield(me, "Savannah Lions")
+        val spell = driver.putCardInHand(me, "Strive Rally")
+
+        // Four mana but only one green: the tax's {G} can't be paid with the colorless.
+        driver.giveMana(me, Color.GREEN, 1)
+        driver.giveColorlessMana(me, 3)
+        driver.castOn(me, spell, listOf(bears, lions)).outcome shouldNotBe Outcome.Done
+        // A single target owes nothing extra.
+        driver.castOn(me, spell, listOf(bears)).outcome shouldBe Outcome.Done
     }
 })

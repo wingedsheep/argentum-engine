@@ -12783,11 +12783,13 @@ staticAbility {
   in once targets are announced), `IncreaseGeneric(amount)`,
   `IncreaseColored(symbols)` (colored tax — adds colored pips, e.g. the Invasion Leeches'
   "White spells you cast cost {W} more"),
-  `IncreaseColoredPerUnit(symbols, countSource)` (the exact tax mirror of `ReduceColoredPerUnit`:
-  appends one copy of `symbols` per unit of `countSource`. Unlike the reduction side there is no
-  overflow question — added pips always land. Officious Interrogation's "This spell costs {W}{U}
-  more to cast for each target beyond the first" is
-  `SelfCast` + `IncreaseColoredPerUnit("{W}{U}", ChosenTargets(beyond = 1))`; Fireball's generic
+  `IncreaseManaPerUnit(symbols, countSource)` (the per-unit tax: adds one copy of `symbols` —
+  generic and colored parts alike — per unit of `countSource`, so one modifier carries a whole
+  printed strive tax. Unlike the reduction side there is no overflow question — added mana always
+  lands. Officious Interrogation's "This spell costs {W}{U} more to cast for each target beyond
+  the first" is `SelfCast` + `IncreaseManaPerUnit("{W}{U}", ChosenTargets(beyond = 1))`; Ajani's
+  Presence's strive "{2}{W} more … for each target beyond the first" is
+  `IncreaseManaPerUnit("{2}{W}", ChosenTargets(beyond = 1))`; Fireball's purely generic
   "{1} more … for each target beyond the first" is `IncreaseGenericBy(ChosenTargets(beyond = 1))`),
   `IncreaseGenericPerOtherSpellThisTurn(amountPerSpell)`,
   `IncreaseGenericIfAnyTargetMatches(amount, filter)` (target-gated tax — "{N} more if it targets
@@ -12867,8 +12869,8 @@ staticAbility {
   reachable mode combination; its targets and mana are taken once the modes are submitted. Emerge
   gates on the cheapest count but sends no table (its price is already keyed by the sacrificed
   creature). Pair
-  with `ReduceGenericBy` / `IncreaseGenericBy` for a generic amount or `IncreaseColoredPerUnit` for
-  a colored tax. Note that a per-target *increase* survives a free cast: "without paying
+  with `ReduceGenericBy` / `IncreaseGenericBy` for a generic amount or `IncreaseManaPerUnit` for
+  a mana-cost tax (generic and/or colored). Note that a per-target *increase* survives a free cast: "without paying
   its mana cost" waives the mana cost, not the increases applied to the total cost (CR 601.2f), which
   Officious Interrogation's 2024-02-02 ruling states outright — a free cast is priced as a {0} base
   through the whole modifier pipeline (`CostCalculator.calculateFreeCastCost`), so every increase,

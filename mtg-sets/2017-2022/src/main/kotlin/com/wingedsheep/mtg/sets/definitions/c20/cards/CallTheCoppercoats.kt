@@ -24,10 +24,8 @@ import com.wingedsheep.sdk.scripting.targets.TargetOpponent
  * is the number of creatures those opponents control.
  *
  * Strive is Officious Interrogation's per-target tax ([CostReductionSource.ChosenTargets] with
- * `beyond = 1`) split across its two halves: the generic {1} through
- * [CostModification.IncreaseGenericBy] (Fireball's tax) and the {W} through
- * [CostModification.IncreaseColoredPerUnit], which only adds colored symbols. Both are cost
- * increases, so a free cast still owes them and the mana value stays 3.
+ * `beyond = 1`) through [CostModification.IncreaseManaPerUnit], which adds the {1} and the {W}
+ * per extra target. It is a cost increase, so a free cast still owes it and the mana value stays 3.
  *
  * "Those opponents" is [Player.EachTargetedPlayer]: the count sums every targeted opponent still
  * legal on resolution, so an opponent that became an illegal target isn't counted (ruling).
@@ -43,15 +41,8 @@ val CallTheCoppercoats = card("Call the Coppercoats") {
     staticAbility {
         ability = ModifySpellCost(
             target = SpellCostTarget.SelfCast,
-            modification = CostModification.IncreaseGenericBy(CostReductionSource.ChosenTargets(beyond = 1)),
-        )
-    }
-
-    staticAbility {
-        ability = ModifySpellCost(
-            target = SpellCostTarget.SelfCast,
-            modification = CostModification.IncreaseColoredPerUnit(
-                symbols = "{W}",
+            modification = CostModification.IncreaseManaPerUnit(
+                symbols = "{1}{W}",
                 countSource = CostReductionSource.ChosenTargets(beyond = 1),
             ),
         )

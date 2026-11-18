@@ -522,12 +522,12 @@ Families:
 ## CostModification
 
 - `CostModification.IncreaseColored(symbols: String)` — Add specific colored mana symbols to the cost (e.g. `"{W}"`), a colored tax effect.
-- `CostModification.IncreaseColoredPerUnit(symbols: String, countSource: CostReductionSource)` — Add symbols to the cost once per unit of countSource — the tax mirror of ReduceColoredPerUnit, reading the same CostReductionSource vocabulary.
 - `CostModification.IncreaseGeneric(amount: Int)` — Increase generic mana by a fixed amount (tax effect).
 - `CostModification.IncreaseGenericBy(source: CostReductionSource)` — Increase generic mana by a dynamic amount sourced from the game state — the tax mirror of ReduceGenericBy, reading the same CostReductionSource vocabulary.
 - `CostModification.IncreaseGenericIfAnyTargetMatches(amount: Int, filter: GameObjectFilter)` — Increase generic mana by a fixed amount if the spell targets any object matching the filter.
 - `CostModification.IncreaseGenericPerOtherSpellThisTurn(amountPerSpell: Int)` — Damping-Sphere-style scaling tax: increase by `amountPerSpell` for each spell the casting player has already cast this turn.
 - `CostModification.IncreaseLife(amount: Int)` — Pay amount additional life as part of the casting cost (CR 601.2f).
+- `CostModification.IncreaseManaPerUnit(symbols: String, countSource: CostReductionSource)` — Add symbols — generic and colored alike — to the cost once per unit of countSource: the per-unit tax, reading the same CostReductionSource vocabulary as ReduceColoredPerUnit.
 - `CostModification.ReduceColored(symbols: String)` — Remove specific colored mana symbols from the cost (e.g. `"{W}{B}"`).
 - `CostModification.ReduceColoredIfAnyTargetMatches(symbols: String, filter: GameObjectFilter)` — Remove specific colored mana symbols from the cost if the spell targets any object matching filter.
 - `CostModification.ReduceColoredPerUnit(symbols: String, countSource: CostReductionSource)` — Remove `symbols` per unit of countSource.

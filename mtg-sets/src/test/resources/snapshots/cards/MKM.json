@@ -16005,7 +16005,7 @@
                 "type": "ModifySpellCost",
                 "target": "SelfCast",
                 "modification": {
-                    "type": "IncreaseColoredPerUnit",
+                    "type": "IncreaseManaPerUnit",
                     "symbols": "{W}{U}",
                     "countSource": {
                         "type": "ChosenTargets",

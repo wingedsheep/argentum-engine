@@ -29,7 +29,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetPlayer
  * [ModifySpellCost] / [SpellCostTarget.SelfCast] static that already prices a spell against its own
  * chosen targets — the same machinery behind Dragon's Prey ("costs {2} more if it targets a
  * Dragon"). Two additions: [CostReductionSource.ChosenTargets], a count source, and
- * [CostModification.IncreaseColoredPerUnit], the exact tax mirror of the long-standing
+ * [CostModification.IncreaseManaPerUnit], the exact tax mirror of the long-standing
  * `ReduceColoredPerUnit`. Phyrexian Purge's "3 life more for each target" is the life-side sibling
  * that already worked (`AdditionalCost.PayLifePerTarget`); this is the mana side.
  *
@@ -65,7 +65,7 @@ val OfficiousInterrogation = card("Officious Interrogation") {
     staticAbility {
         ability = ModifySpellCost(
             target = SpellCostTarget.SelfCast,
-            modification = CostModification.IncreaseColoredPerUnit(
+            modification = CostModification.IncreaseManaPerUnit(
                 symbols = "{W}{U}",
                 countSource = CostReductionSource.ChosenTargets(beyond = 1)
             )

@@ -36,19 +36,8 @@
                 "type": "ModifySpellCost",
                 "target": "SelfCast",
                 "modification": {
-                    "type": "IncreaseGenericBy",
-                    "source": {
-                        "type": "ChosenTargets",
-                        "beyond": 1
-                    }
-                }
-            },
-            {
-                "type": "ModifySpellCost",
-                "target": "SelfCast",
-                "modification": {
-                    "type": "IncreaseColoredPerUnit",
-                    "symbols": "{W}",
+                    "type": "IncreaseManaPerUnit",
+                    "symbols": "{1}{W}",
                     "countSource": {
                         "type": "ChosenTargets",
                         "beyond": 1
