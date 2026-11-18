@@ -536,6 +536,16 @@ object DamageReplacementChain {
                 evaluator.matchesSnapshot(viewState, it, filter, PredicateContext(controllerId = floating.controllerId, sourceId = floating.sourceId), zone = com.wingedsheep.sdk.core.Zone.BATTLEFIELD)
             } ?: evaluator.matches(viewState, projected, d.sourceId, filter,
                 PredicateContext(controllerId = floating.controllerId, sourceId = floating.sourceId)))
+        // A shield keyed to one source covers that *object* (CR 400.7): once the source has left
+        // and returned it is a new object the shield never saw. The damage's own identity (its
+        // source as it last existed, for a departed source) is compared with the one the shield
+        // recorded; either side unknown falls back to the id.
+        fun fromShieldSource(floating: ActiveFloatingEffect, sourceId: EntityId): Boolean {
+            if (d.sourceId != sourceId) return false
+            val shieldRef = floating.referencedObjects.firstOrNull { it.entityId == sourceId } ?: return true
+            val damageRef = d.sourceRef ?: state.objectRef(sourceId) ?: return true
+            return damageRef == shieldRef
+        }
         fun replace(floating: ActiveFloatingEffect, replacement: SerializableModification?): GameState = state.copy(
             floatingEffects = state.floatingEffects.mapNotNull { old ->
                 if (old.id != floating.id) old else replacement?.let { old.copy(effect = old.effect.copy(modification = it)) }
@@ -611,7 +621,7 @@ object DamageReplacementChain {
                         riderTargets = mod.onPreventedTargets,
                         riderNamedTargets = mod.onPreventedNamedTargets, riderBound = mod.onPreventedBound)
                 is SerializableModification.PreventNextDamageFromMatching -> if (targetMatches && sourceMatches(floating, mod.filter)) preventAll(consume = true)
-                is SerializableModification.PreventAllDamageFromSource -> if (targetMatches && d.sourceId == mod.damageSourceId) {
+                is SerializableModification.PreventAllDamageFromSource -> if (targetMatches && fromShieldSource(floating, mod.damageSourceId)) {
                     val gains = d.sourceId != null && (d.sourceSnapshot?.colors ?: if (d.sourceSnapshot == null) projected.colorsOf(d.sourceId) else emptySet()).any { it in mod.gainLifeFromColors }
                     preventAll(gainTo = if (gains) d.targetId else null)
                 }
@@ -622,7 +632,7 @@ object DamageReplacementChain {
                 SerializableModification.PreventAllCombatDamage -> if (d.isCombatDamage) preventAll()
                 SerializableModification.PreventCombatDamageToAndBy -> if (d.isCombatDamage && (targetMatches || d.sourceId in floating.effect.affectedEntities)) preventAll()
                 is SerializableModification.PreventAllDamageDealtBy -> if ((!mod.combatOnly || d.isCombatDamage) && d.sourceId in floating.effect.affectedEntities) preventAll()
-                is SerializableModification.PreventNextDamageInstanceFromSource -> if (!disabled && targetMatches && d.sourceId == mod.damageSourceId) {
+                is SerializableModification.PreventNextDamageInstanceFromSource -> if (!disabled && targetMatches && fromShieldSource(floating, mod.damageSourceId)) {
                     val prevented = when { mod.halveRoundedDown -> d.amount / 2; mod.maxAmount != null -> minOf(d.amount, mod.maxAmount!!); else -> d.amount }
                     out += Candidate(key, "$hostName — prevent $prevented damage", floating.sourceId) {
                         Step(replace(floating, null), listOf(d.copy(amount = d.amount - prevented)))

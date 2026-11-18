@@ -1339,13 +1339,19 @@ object TargetPolarityAnalyzer {
     /**
      * "Prevent all combat damage that would be dealt this turn by creatures target opponent
      * controls" (Encircling Fissure): a shield over the sources a target player controls muzzles
-     * that player's side, so the player slot it names reads harmful. Null when the shield names
-     * no player slot through its source filter.
+     * that player's side, so the player slot it names reads harmful. "Prevent all damage that
+     * would be dealt to this creature by target creature this turn" (Stonewise Fortifier,
+     * `PreventionSourceFilter.Specific`) muzzles the targeted creature itself, so that object
+     * slot reads harmful too. Null when the shield names no slot through its source filter.
      */
     private fun preventionSourceOwnerSlot(leaf: Effect, requirements: List<TargetRequirement>): Int? {
         if (leaf !is PreventDamageEffect || !leaf.preventDamage) return null
-        val sources = leaf.sourceFilter as? PreventionSourceFilter.Matching ?: return null
-        return controllingPlayerSlot(sources.filter, requirements)
+        return when (val sources = leaf.sourceFilter) {
+            is PreventionSourceFilter.Matching -> controllingPlayerSlot(sources.filter, requirements)
+            is PreventionSourceFilter.Specific -> slotOf(sources.source, requirements)
+            PreventionSourceFilter.AnySource, is PreventionSourceFilter.Chosen,
+            PreventionSourceFilter.TargetingRecipient -> null
+        }
     }
 
     /** The target-player slot whose permanents [filter] confines itself to, or null. */
@@ -2374,6 +2380,7 @@ object TargetPolarityAnalyzer {
         // creature it can shrink as well as grow — and the type alone could leave a 0/0.
         if (animatesHost(card.script.staticAbilities)) readings += TargetPolarity.BENEFICIAL
         for (ability in card.script.triggeredAbilities) readings += hostDamageTriggerReadings(ability)
+        for (ability in card.script.triggeredAbilities) readings += hostStepTriggerReadings(ability)
         for (ability in card.script.triggeredAbilities) readings += hostAttackCopyReadings(ability)
         val abilityEffects = card.script.triggeredAbilities.map { it.effect } +
             card.script.activatedAbilities.map { it.effect }
@@ -2694,6 +2701,25 @@ object TargetPolarityAnalyzer {
                 is GainLifeEffect -> TargetPolarity.BENEFICIAL.takeIf {
                     dealsDamage && leaf.target == EffectTarget.Controller
                 }
+                else -> null
+            }
+        }
+    }
+
+    /**
+     * What an attachment's "at the beginning of the upkeep of enchanted permanent's controller"
+     * trigger does to that player (`Triggers.attached.beginningOf`): the step is the host
+     * controller's, bound as [Player.TriggeringPlayer], so burning or draining "that player" is a
+     * curse on the host's side — Feedback, Wanderlust, Cursed Land, Power Leak ("this Aura deals 2
+     * damage to that player", whatever X they pay to prevent).
+     */
+    private fun hostStepTriggerReadings(ability: TriggeredAbility): List<TargetPolarity> {
+        if (ability.binding != TriggerBinding.ATTACHED || ability.trigger !is EventPattern.StepEvent) return emptyList()
+        val thatPlayer = EffectTarget.PlayerRef(Player.TriggeringPlayer)
+        return EffectWalker.payoffLeaves(ability.effect).mapNotNull { leaf ->
+            when (leaf) {
+                is LoseLifeEffect -> TargetPolarity.HARMFUL.takeIf { leaf.target == thatPlayer }
+                is DealDamageEffect -> TargetPolarity.HARMFUL.takeIf { leaf.target == thatPlayer }
                 else -> null
             }
         }

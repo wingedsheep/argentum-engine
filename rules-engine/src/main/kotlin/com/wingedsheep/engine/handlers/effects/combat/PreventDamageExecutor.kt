@@ -17,6 +17,9 @@ import com.wingedsheep.engine.handlers.effects.ResolutionFilterBaker
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
+import com.wingedsheep.engine.mechanics.layers.addFloatingEffects
+import com.wingedsheep.engine.mechanics.layers.createFloatingEffect
+import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.chosenSubtype
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -68,7 +71,7 @@ class PreventDamageExecutor(
             }
         }
         PreventionSourceFilter.AnySource -> createFloatingEffect(state, effect, sourceFilter = null, context)
-        PreventionSourceFilter.ThisSource -> handleThisSource(state, effect, context)
+        is PreventionSourceFilter.Specific -> handleSpecificSource(state, effect, sources.source, context)
         PreventionSourceFilter.TargetingRecipient -> handleTargetingRecipient(state, effect, context)
     }
 
@@ -108,17 +111,22 @@ class PreventDamageExecutor(
     }
 
     /**
-     * "~ deals 2 damage to that player. Prevent X of that damage" (Power Leak): a single-instance
-     * shield on the recipient covering only damage from this effect's own source, capped at
-     * [PreventDamageEffect.amount] when one is given. Only the next-instance, single-recipient,
-     * prevent-only shape has a lowering; anything else fails rather than guess a scope.
+     * A shield on one recipient covering only the one object [source] names, bound to its id now:
+     * - all damage from it for the shield's duration — "prevent all damage that would be dealt to
+     *   this creature by target creature this turn" (Stonewise Fortifier);
+     * - with `nextInstanceOnly`, the next instance only, capped at [PreventDamageEffect.amount] when
+     *   given and spent either way — "~ deals 2 damage to that player. Prevent X of that damage"
+     *   (Power Leak, `source = Self`).
+     * Anything else fails rather than guess a scope. No object (a target that vanished) — no shield.
      */
-    private fun handleThisSource(
+    private fun handleSpecificSource(
         state: GameState,
         effect: PreventDamageEffect,
+        source: EffectTarget,
         context: EffectContext
     ): EffectResult {
-        if (!effect.nextInstanceOnly || effect.direction != PreventionDirection.ToTarget ||
+        val allFromSource = !effect.nextInstanceOnly && effect.amount == null
+        if ((!effect.nextInstanceOnly && !allFromSource) || effect.direction != PreventionDirection.ToTarget ||
             effect.recipientGroup != null || effect.recipientGroupIncludesController ||
             effect.onPrevented != null || effect.gainLifeFromPrevented || effect.gainLifeFromColors.isNotEmpty() ||
             effect.toPlayersOnly || !effect.preventDamage || effect.halvePreventedDamage ||
@@ -126,28 +134,43 @@ class PreventDamageExecutor(
         ) {
             return EffectResult.error(
                 state,
-                "PreventDamageEffect with ThisSource supports only a next-instance shield on one recipient"
+                "PreventDamageEffect with a Specific source supports only an all-damage or next-instance shield on one recipient"
             )
         }
-        val sourceId = context.sourceId
-            ?: return EffectResult.error(state, "PreventDamageEffect with ThisSource has no source")
+        // The source is read as a value, not acted on: a source that has already left (Power
+        // Leak's Aura destroyed in response) still deals its damage through last-known
+        // information, so the shield must still name it.
+        val sourceId = (source as? EffectTarget.SingleEntity)?.let { TargetResolutionUtils.resolveEntity(it, context, state) }
+            ?: context.resolveTarget(source, state)
+            ?: return EffectResult.success(state)
         val targetId = context.resolveTarget(effect.target, state)
             ?: return EffectResult.success(state)
-        val amount = effect.amount?.let { amountEvaluator.evaluate(state, it, context) }
-        if (amount != null && amount <= 0) return EffectResult.success(state)
-
-        val newState = state.addFloatingEffect(
+        val modification = if (allFromSource) {
+            SerializableModification.PreventAllDamageFromSource(damageSourceId = sourceId)
+        } else {
+            val amount = effect.amount?.let { amountEvaluator.evaluate(state, it, context) }
+            if (amount != null && amount <= 0) return EffectResult.success(state)
+            SerializableModification.PreventNextDamageInstanceFromSource(damageSourceId = sourceId, maxAmount = amount)
+        }
+        // Pin the shield to the object (CR 400.7). The ability's own source is the incarnation
+        // the ability came from — the identity its damage carries (DealDamageExecutor), even
+        // after it has left — and anything else is the object as it is now.
+        val sourceRef = (if (source == EffectTarget.Self) context.objectReferences.origin else null)
+            ?: state.objectRef(sourceId)
+        val (effectId, withId) = state.newEntity()
+        val floating = withId.createFloatingEffect(
+            id = effectId,
             layer = Layer.ABILITY,
-            modification = SerializableModification.PreventNextDamageInstanceFromSource(
-                damageSourceId = sourceId,
-                maxAmount = amount
-            ),
+            modification = modification,
             affectedEntities = setOf(targetId),
             duration = effect.duration,
             context = context,
             timestamp = state.timestamp
         )
-        return EffectResult.success(newState)
+        val pinned = floating.copy(
+            referencedObjects = floating.referencedObjects.filter { it.entityId != sourceId } + listOfNotNull(sourceRef)
+        )
+        return EffectResult.success(withId.addFloatingEffects(listOf(pinned)))
     }
 
     /**
