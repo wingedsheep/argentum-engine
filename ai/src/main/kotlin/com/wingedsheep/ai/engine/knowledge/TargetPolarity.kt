@@ -1716,7 +1716,8 @@ object TargetPolarityAnalyzer {
      * per target: the single-target exile it is, spelled as gather + tracked move so the payoff can
      * ask what left. The move usually sits in an "if you do" gate's action, which the payoff walk
      * leaves out as a price; here it is the card's removal, not a cost paid with our own things,
-     * so the gate's interior is read too ([CardIntentAnalyzer.gateInteriorLeaves]).
+     * so the gate's interior is read too ([CardIntentAnalyzer.gateInteriorLeaves]). A slot that
+     * can only hold our own permanents is skipped: exiling our own thing is a price, not removal.
      */
     private fun pipelineRemovalSlots(effect: Effect, requirements: List<TargetRequirement>): Set<Int> =
         pipelineRemovals(effect, requirements).mapTo(HashSet()) { it.first }
@@ -1731,7 +1732,7 @@ object TargetPolarityAnalyzer {
         val removed = mutableListOf<Pair<Int, MoveCollectionEffect>>()
         for (gather in leaves.filterIsInstance<GatherCardsEffect>()) {
             val entity = (gather.source as? CardSource.Entity)?.entity ?: continue
-            val slot = slotOf(entity, requirements)?.takeIf { it in permanent } ?: continue
+            val slot = slotOf(entity, requirements)?.takeIf { it in permanent && !isOwnSide(requirements[it]) } ?: continue
             leaves.firstOrNull { it is MoveCollectionEffect && it.from == gather.storeAs && removesForGood(it, effect) }
                 ?.let { removed += slot to (it as MoveCollectionEffect) }
         }

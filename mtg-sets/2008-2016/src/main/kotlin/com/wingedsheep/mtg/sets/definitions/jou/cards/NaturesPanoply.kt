@@ -51,6 +51,7 @@ val NaturesPanoply = card("Nature's Panoply") {
         rarity = Rarity.COMMON
         collectorNumber = "131"
         artist = "John Avon"
+        flavorText = "Nature protects its own."
         imageUri = "https://cards.scryfall.io/normal/front/3/2/32177b9c-eef3-4eea-b623-74bfea1afad6.jpg?1783939411"
         ruling("2014-04-26", "You choose how many targets each spell with a strive ability has and what those targets are as you cast it. It's legal to cast such a spell with no targets, although this is rarely a good idea. You can't choose the same target more than once for a single strive spell.")
         ruling("2014-04-26", "The mana cost and mana value of strive spells don't change no matter how many targets they have. Strive abilities affect only what you pay.")

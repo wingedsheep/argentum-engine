@@ -14,7 +14,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
 
 /**
  * Solidarity of Heroes — Journey into Nyx #141 (canonical printing)
- * {2}{G} · Instant
+ * {1}{G} · Instant
  *
  * Strive — This spell costs {1}{G} more to cast for each target beyond the first.
  * Choose any number of target creatures. Double the number of +1/+1 counters on each of them.
@@ -26,7 +26,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * [Effects.DoubleCounters]; illegal ones are skipped.
  */
 val SolidarityOfHeroes = card("Solidarity of Heroes") {
-    manaCost = "{2}{G}"
+    manaCost = "{1}{G}"
     colorIdentity = "G"
     typeLine = "Instant"
     oracleText = "Strive — This spell costs {1}{G} more to cast for each target beyond the first.\n" +

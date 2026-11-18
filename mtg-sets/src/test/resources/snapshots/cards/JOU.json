@@ -1613,6 +1613,7 @@
         "collectorNumber": "147",
         "rarity": "UNCOMMON",
         "artist": "Raymond Swanland",
+        "flavorText": "At the Akroan gates, hoplites revived the tactics of Kytheon Iora's infamous irregulars.",
         "imageUri": "https://cards.scryfall.io/normal/front/e/8/e8a4fb8d-8ddd-4d1d-92c7-2bf6b0e6c488.jpg?1783939406",
         "rulings": [
             {
@@ -4338,6 +4339,7 @@
     "metadata": {
         "collectorNumber": "131",
         "artist": "John Avon",
+        "flavorText": "Nature protects its own.",
         "imageUri": "https://cards.scryfall.io/normal/front/3/2/32177b9c-eef3-4eea-b623-74bfea1afad6.jpg?1783939411",
         "rulings": [
             {
@@ -5966,7 +5968,7 @@
 // Solidarity of Heroes
 {
     "name": "Solidarity of Heroes",
-    "manaCost": "{2}{G}",
+    "manaCost": "{1}{G}",
     "typeLine": "Instant",
     "oracleText": "Strive — This spell costs {1}{G} more to cast for each target beyond the first.\nChoose any number of target creatures. Double the number of +1/+1 counters on each of them.",
     "script": {

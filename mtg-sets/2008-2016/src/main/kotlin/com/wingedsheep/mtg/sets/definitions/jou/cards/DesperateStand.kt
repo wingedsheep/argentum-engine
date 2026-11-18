@@ -53,6 +53,7 @@ val DesperateStand = card("Desperate Stand") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "147"
         artist = "Raymond Swanland"
+        flavorText = "At the Akroan gates, hoplites revived the tactics of Kytheon Iora's infamous irregulars."
         imageUri = "https://cards.scryfall.io/normal/front/e/8/e8a4fb8d-8ddd-4d1d-92c7-2bf6b0e6c488.jpg?1783939406"
         ruling("2014-04-26", "You choose how many targets each spell with a strive ability has and what those targets are as you cast it. It's legal to cast such a spell with no targets, although this is rarely a good idea. You can't choose the same target more than once for a single strive spell.")
         ruling("2014-04-26", "The mana cost and mana value of strive spells don't change no matter how many targets they have. Strive abilities affect only what you pay.")

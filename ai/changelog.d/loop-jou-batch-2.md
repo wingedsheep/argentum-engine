@@ -1,3 +1,2 @@
 - #TBD Auras whose "as long as it's an enchantment/artifact … otherwise …" statics are conditions on the enchanted permanent (Nyx Infusion) now aim the gift at its own enchantment creatures and the curse at the opponent's other creatures, instead of guessing.
-- #TBD Per-target "exile it; if you do, …" pipelines (Hour of Need) now read as exile removal, so the AI aims them at the opponent's creatures rather than its own.
-- #TBD Per-target "exile it; if you do, …" pipelines (Hour of Need) now carry the Removal / Exile removal intent, so the AI values and holds them as removal rather than as a token maker.
+- #TBD Per-target "exile it; if you do, …" pipelines (Hour of Need) now read as exile removal — aimed at the opponent's creatures and valued as removal rather than as a token maker.

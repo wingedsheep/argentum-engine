@@ -88,6 +88,35 @@ class HourOfNeedScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("a stolen creature's Sphinx goes to its controller, not its owner") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Act of Treason")
+                    .withCardInHand(1, "Hour of Need")
+                    .withCardOnBattlefield(2, "Grizzly Bears")
+                    .withLandsOnBattlefield(1, "Mountain", 3)
+                    .withLandsOnBattlefield(1, "Island", 3)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                val bears = game.findPermanent("Grizzly Bears")!!
+
+                game.castSpell(1, "Act of Treason", targetId = bears).error shouldBe null
+                game.resolveStack()
+                game.state.projectedState.getController(bears) shouldBe game.player1Id
+
+                game.castHourOfNeed(listOf(bears)).error shouldBe null
+                game.resolveStack()
+
+                withClue("the Bears are exiled to their owner's exile") {
+                    game.isInExile(2, "Grizzly Bears") shouldBe true
+                }
+                withClue("the player who controlled the Bears gets the Sphinx; the owner gets none") {
+                    game.tokensControlledBy(game.player1Id) shouldHaveSize 1
+                    game.tokensControlledBy(game.player2Id) shouldHaveSize 0
+                }
+            }
+
             test("a second target is rejected when only four mana is available") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
