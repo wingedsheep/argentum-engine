@@ -16,4 +16,5 @@ val FurnaceWhelpReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/d/4/d44f74e9-aaa6-41d3-8070-bf0ead4a7d77.jpg",
     releaseDate = "2014-07-18",
     rarity = Rarity.UNCOMMON,
+    inBooster = false,
 )

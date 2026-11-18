@@ -68,6 +68,26 @@ class SetArchetypesTest : StringSpec({
         synergies.archetypes.all { it.creatureTypes.isEmpty() } shouldBe true
     }
 
+    "Magic 2015 models ten colour-pair archetypes from its mechanics, none of them tribal" {
+        val synergies = requireNotNull(SetArchetypes.getForSet("m15"))
+
+        synergies.setName shouldBe "Magic 2015"
+        synergies.archetypes.map { it.name } shouldContainExactly listOf(
+            "Fliers",
+            "Control",
+            "Intimidate Aggro",
+            "Big Creatures",
+            "Convoke Tokens",
+            "Lifegain",
+            "Artifacts",
+            "Graveyard Value",
+            "Auras",
+            "Enters Value",
+        )
+        synergies.archetypes.map { it.colors.toSet() } shouldContainExactly ALL_COLOR_PAIRS.toList()
+        synergies.archetypes.all { it.creatureTypes.isEmpty() } shouldBe true
+    }
+
     "Magic Origins exposes its ten signpost colour-pair archetypes, one of them Elf tribal" {
         val synergies = requireNotNull(SetArchetypes.getForSet("ori"))
 

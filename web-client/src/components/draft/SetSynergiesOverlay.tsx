@@ -3354,6 +3354,72 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  M15: {
+    setCode: 'M15',
+    setName: 'Magic 2015',
+    archetypes: [
+      {
+        name: 'Fliers',
+        colors: ['W', 'U'],
+        keyCard: 'Dauntless River Marshal',
+        description: 'Take to the air with Razorfoot Griffin, Welkin Tern and Nimbus of the Isles, and tap down blockers with Frost Lynx and Dauntless River Marshal. A tempo deck that races in the sky while the ground stays locked.',
+      },
+      {
+        name: 'Control',
+        colors: ['U', 'B'],
+        keyCard: 'Jorubai Murk Lurker',
+        description: 'Trade off with Flesh to Dust, Ulcerate and counterspells, refill with Divination and Sign in Blood, and finish with fliers. A grindy control deck that wins once the opponent runs out of threats.',
+      },
+      {
+        name: 'Intimidate Aggro',
+        colors: ['B', 'R'],
+        keyCard: 'Nightfire Giant',
+        description: 'Attack early with intimidate creatures like Accursed Spirit and Krenko\'s Enforcer, clear blockers with burn and -X/-X removal, and finish with Lava Axe. A fast deck that keeps the opponent on the back foot.',
+      },
+      {
+        name: 'Big Creatures',
+        colors: ['R', 'G'],
+        keyCard: 'Kird Chieftain',
+        description: 'Ramp with Elvish Mystic into oversized bodies like Charging Rhino and Thundering Giant, then push damage through with Hammerhand, Hunt the Weak and trample. A stompy midrange deck that wins on the ground.',
+      },
+      {
+        name: 'Convoke Tokens',
+        colors: ['G', 'W'],
+        keyCard: 'Sunblade Elf',
+        description: 'Go wide with Raise the Alarm and other cheap creatures, then tap them to convoke out Triplicate Spirits, Siege Wurm and Seraph of the Masses early. A go-wide deck that turns a crowd of small bodies into big threats and team pumps.',
+      },
+      {
+        name: 'Lifegain',
+        colors: ['W', 'B'],
+        keyCard: 'Ajani\'s Pridemate',
+        description: 'Gain life with Soulmender, Tireless Missionaries, lifelinkers and the Staffs, and grow Ajani\'s Pridemate and Wall of Limbs every time. A durable midrange deck that outlasts aggression and grows its board.',
+      },
+      {
+        name: 'Artifacts',
+        colors: ['U', 'R'],
+        keyCard: 'Ensoul Artifact',
+        description: 'Fill the board with cheap artifacts like Ornithopter, Bronze Sable and Darksteel Citadel, then turn them on with Aeronaut Tinkerer and Scrapyard Mongrel or make one a 5/5 with Ensoul Artifact. An aggressive tempo deck built around artifact payoffs.',
+      },
+      {
+        name: 'Graveyard Value',
+        colors: ['B', 'G'],
+        keyCard: 'Undergrowth Scavenger',
+        description: 'Fill graveyards with Necromancer\'s Assistant and Satyr Wayfinder, then cash them in with Undergrowth Scavenger, Gravedigger and Restock. A grindy midrange deck that out-values the opponent with recursion and deathtouch blockers.',
+      },
+      {
+        name: 'Auras',
+        colors: ['R', 'W'],
+        keyCard: 'Brood Keeper',
+        description: 'Find Auras with Heliod\'s Pilgrim and Boonweaver Giant, suit up creatures with Marked by Honor, Hammerhand and Battle Mastery, and make Dragons with Brood Keeper. An aggressive deck that bets on one big attacker at a time.',
+      },
+      {
+        name: 'Enters Value',
+        colors: ['G', 'U'],
+        keyCard: 'Roaring Primadox',
+        description: 'Play creatures with enters-the-battlefield effects like Frost Lynx, Kapsho Kitefins and Shaman of Spring, then rebuy them with Roaring Primadox and Invasive Species. A value midrange deck that gets two uses out of every creature.',
+      },
+    ],
+  },
   ORI: {
     setCode: 'ORI',
     setName: 'Magic Origins',

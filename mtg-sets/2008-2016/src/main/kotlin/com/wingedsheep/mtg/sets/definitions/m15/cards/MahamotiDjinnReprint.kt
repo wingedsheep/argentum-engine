@@ -16,4 +16,5 @@ val MahamotiDjinnReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/c/9/c9d241c7-d753-411e-9456-667fb015ee28.jpg",
     releaseDate = "2014-07-18",
     rarity = Rarity.RARE,
+    inBooster = false,
 )

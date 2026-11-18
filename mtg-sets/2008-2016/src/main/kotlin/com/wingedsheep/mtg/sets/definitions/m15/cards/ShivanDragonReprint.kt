@@ -16,4 +16,5 @@ val ShivanDragonReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/b/0/b0c76430-c5c9-46a4-9a3b-9bbf259e4b38.jpg",
     releaseDate = "2014-07-18",
     rarity = Rarity.RARE,
+    inBooster = false,
 )

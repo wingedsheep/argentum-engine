@@ -16,4 +16,5 @@ val SengirVampireReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/b/3/b3da28be-091d-47f9-b41e-8926cd182a63.jpg",
     releaseDate = "2014-07-18",
     rarity = Rarity.UNCOMMON,
+    inBooster = false,
 )

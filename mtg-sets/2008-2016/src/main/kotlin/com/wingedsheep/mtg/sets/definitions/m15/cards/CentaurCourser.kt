@@ -20,4 +20,5 @@ val CentaurCourserReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/3/b/3b625203-6c50-4b14-928c-6b0aec1375a2.jpg?1783939144",
     releaseDate = "2014-07-18",
     rarity = Rarity.COMMON,
+    inBooster = false,
 )

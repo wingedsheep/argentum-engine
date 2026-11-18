@@ -16,4 +16,5 @@ val SerraAngelReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/5/f/5fe2d063-a9b1-4693-9841-923210bf09d7.jpg",
     releaseDate = "2014-07-18",
     rarity = Rarity.UNCOMMON,
+    inBooster = false,
 )
