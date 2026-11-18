@@ -1,0 +1,165 @@
+{
+  "Banishing Light": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Consign to Dust": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Deicide": [
+    "removal",
+    "enchantment-removal"
+  ],
+  "Desecration Plague": [
+    "removal",
+    "enchantment-removal"
+  ],
+  "Deserter's Quarters": [
+    "removal",
+    "creature-removal"
+  ],
+  "Dictate of Erebos": [
+    "removal",
+    "creature-removal"
+  ],
+  "Doomwake Giant": [
+    "removal",
+    "creature-removal"
+  ],
+  "Extinguish All Hope": [
+    "removal",
+    "creature-removal"
+  ],
+  "Feast of Dreams": [
+    "removal",
+    "creature-removal",
+    "enchantment-removal"
+  ],
+  "Flamespeaker's Will": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Forgeborn Oreads": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Hour of Need": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hubris": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hypnotic Siren": [
+    "removal",
+    "creature-removal"
+  ],
+  "Keranos, God of Storms": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "King Macar, the Gold-Cursed": [
+    "removal",
+    "creature-removal"
+  ],
+  "Kiora's Dismissal": [
+    "removal",
+    "enchantment-removal"
+  ],
+  "Knowledge and Power": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Leonin Iconoclast": [
+    "removal",
+    "creature-removal"
+  ],
+  "Lightning Diadem": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Magma Spray": [
+    "removal",
+    "creature-removal"
+  ],
+  "Mortal Obstinacy": [
+    "removal",
+    "enchantment-removal"
+  ],
+  "Nightmarish End": [
+    "removal",
+    "creature-removal"
+  ],
+  "Nyx Infusion": [
+    "removal",
+    "creature-removal"
+  ],
+  "Oppressive Rays": [
+    "removal",
+    "creature-removal"
+  ],
+  "Pin to the Earth": [
+    "removal",
+    "creature-removal"
+  ],
+  "Quarry Colossus": [
+    "removal",
+    "creature-removal"
+  ],
+  "Reprisal": [
+    "removal",
+    "creature-removal"
+  ],
+  "Riddle of Lightning": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Rollick of Abandon": [
+    "removal",
+    "creature-removal"
+  ],
+  "Scourge of Fleets": [
+    "removal",
+    "creature-removal"
+  ],
+  "Setessan Tactics": [
+    "removal",
+    "creature-removal"
+  ],
+  "Silence the Believers": [
+    "removal",
+    "creature-removal"
+  ],
+  "Spawn of Thraxes": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Spite of Mogis": [
+    "removal",
+    "creature-removal"
+  ],
+  "Spiteful Blow": [
+    "removal",
+    "creature-removal"
+  ],
+  "Starfall": [
+    "removal",
+    "creature-removal"
+  ],
+  "Wildfire Cerberus": [
+    "removal",
+    "creature-removal"
+  ]
+}
