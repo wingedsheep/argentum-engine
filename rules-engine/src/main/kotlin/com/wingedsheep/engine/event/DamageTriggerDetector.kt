@@ -276,7 +276,6 @@ class DamageTriggerDetector(
         }
     }
 
-
     /**
      * Detect general damage observer triggers (DealsDamageEvent with ANY binding)
      * that aren't handled by the specialized detectDamageToControllerTriggers or

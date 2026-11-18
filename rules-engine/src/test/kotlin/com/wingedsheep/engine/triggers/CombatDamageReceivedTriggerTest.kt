@@ -75,6 +75,16 @@ class CombatDamageReceivedTriggerTest : FunSpec({
         }
     }
 
+    // "Whenever a creature you control is dealt combat damage, you gain 1 life."
+    val combatWatcher = card("Test Combat Watcher") {
+        manaCost = "{1}"
+        typeLine = "Enchantment"
+        triggeredAbility {
+            trigger = Triggers.a(GameObjectFilter.Creature.youControl()).isDealtDamage(damageType = DamageType.Combat)
+            effect = Effects.GainLife(1)
+        }
+    }
+
     val bear = card("Test Bear") {
         manaCost = "{1}"
         typeLine = "Creature — Bear"
@@ -92,7 +102,7 @@ class CombatDamageReceivedTriggerTest : FunSpec({
     }
 
     fun createDriver(): GameTestDriver = GameTestDriver().apply {
-        registerCards(TestCards.all + listOf(combatSponge, noncombatSponge, perSourceCombat, combatLink, bear, ping))
+        registerCards(TestCards.all + listOf(combatSponge, noncombatSponge, perSourceCombat, combatLink, combatWatcher, bear, ping))
         initMirrorMatch(deck = Deck.of("Mountain" to 40), startingLife = 20)
         passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -169,6 +179,22 @@ class CombatDamageReceivedTriggerTest : FunSpec({
         d.passPriorityUntil(Step.POSTCOMBAT_MAIN)
         d.pingAndResolve(me, wall)
         d.getLifeTotal(me) shouldBe 22
+    }
+
+    test("the observer combat form watches each creature's combat damage only") {
+        val d = createDriver()
+        val me = d.activePlayer!!
+        val them = d.getOpponent(me)
+        d.putPermanentOnBattlefield(me, "Test Combat Watcher")
+        val pinged = d.putCreatureOnBattlefield(me, "Test Combat Sponge")
+        d.pingAndResolve(me, pinged)
+        d.getLifeTotal(me) shouldBe 20
+
+        val attacker = d.putCreatureOnBattlefield(me, "Test Bear")
+        val blocker = d.putCreatureOnBattlefield(them, "Test Bear")
+        d.attackIntoBlockers(attacker, listOf(blocker))
+        // Only my attacking bear counts; their blocker, also dealt combat damage, isn't mine.
+        d.getLifeTotal(me) shouldBe 21
     }
 
     test("the attached combat form reads the host's combat damage only") {
