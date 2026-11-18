@@ -5,6 +5,7 @@ import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
@@ -23,8 +24,8 @@ import io.kotest.matchers.shouldBe
  * (`Specific(Self)`, Power Leak) is pinned by PowerLeakScenarioTest.
  *
  * Covered: only that source's damage, only to that recipient, for the whole turn (several
- * instances), gone after cleanup; unpreventable damage beats it; a shape with no lowering
- * installs nothing.
+ * instances), gone after cleanup, and not following its source through a zone change;
+ * unpreventable damage beats it; a shape with no lowering installs nothing.
  */
 class SpecificSourcePreventionTest : FunSpec({
 
@@ -139,6 +140,21 @@ class SpecificSourcePreventionTest : FunSpec({
         driver.cast(player, "Test Ward", Color.WHITE, listOf(wall, brute))
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN, activePlayer = opponent)
         driver.cast(opponent, "Test Shove", Color.RED, listOf(brute, wall))
+
+        driver.damageOn(wall) shouldBe 1
+    }
+
+    test("a source that leaves and returns is a new object the shield doesn't cover (CR 400.7)") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+        val wall = driver.putCreatureOnBattlefield(player, "Centaur Courser")
+        val brute = driver.putCreatureOnBattlefield(player, "Centaur Courser")
+
+        driver.cast(player, "Test Ward", Color.WHITE, listOf(wall, brute))
+        val exiled = driver.zones.moveToZone(driver.state, brute, Zone.EXILE).state
+        driver.replaceState(driver.zones.moveToZone(exiled, brute, Zone.BATTLEFIELD).state)
+        withClue("the flickered creature is back") { driver.state.getBattlefield().contains(brute) shouldBe true }
+        driver.cast(player, "Test Shove", Color.RED, listOf(brute, wall))
 
         driver.damageOn(wall) shouldBe 1
     }

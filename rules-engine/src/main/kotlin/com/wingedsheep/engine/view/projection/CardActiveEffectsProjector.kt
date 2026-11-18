@@ -352,6 +352,19 @@ internal class CardActiveEffectsProjector(
         state: GameState,
         modification: SerializableModification
     ): ClientCardEffect? = when (modification) {
+        // "Prevent all damage that would be dealt to this creature by target creature this turn"
+        // (Stonewise Fortifier), or by a source chosen on resolution: name the muzzled source.
+        is SerializableModification.PreventAllDamageFromSource -> {
+            val sourceId = modification.damageSourceId
+            val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name
+                ?.let { nameVisibleToAll(state, sourceId, it) } ?: "a chosen source"
+            ClientCardEffect(
+                effectId = "prevent_damage_from_${sourceId.value}",
+                name = "Shielded from $sourceName",
+                description = "Damage $sourceName would deal to this is prevented",
+                icon = "prevent-damage"
+            )
+        }
         is SerializableModification.CantBeBlockedExceptByColor -> {
             val colorName = modification.color.lowercase().replaceFirstChar { it.uppercase() }
             ClientCardEffect(

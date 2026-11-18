@@ -10,6 +10,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
@@ -124,6 +125,25 @@ class PowerLeakScenarioTest : FunSpec({
         board.driver.getLifeTotal(board.victim) shouldBe 20
         tappedIslands(board) shouldBe 2
         noShieldLeft(board) shouldBe true
+    }
+
+    test("the Aura destroyed before its trigger resolves still deals 2, and X of it is still prevented") {
+        val board = setUp(islands = 2)
+        val driver = board.driver
+        val leak = driver.findPermanent(board.me, "Power Leak")!!
+        val disenchant = driver.putCardInHand(board.victim, "Disenchant")
+        driver.giveMana(board.victim, Color.WHITE, 2)
+        driver.castSpell(board.victim, disenchant, listOf(leak)).error shouldBe null
+        driver.bothPass()
+        withClue("Disenchant resolved; the upkeep trigger is still waiting") {
+            driver.findPermanent(board.me, "Power Leak") shouldBe null
+            driver.state.stack.size shouldBe 1
+        }
+
+        resolveAndPay(board, 1)
+        withClue("the departed Aura deals its damage as it last existed, and the shield names that object") {
+            driver.getLifeTotal(board.victim) shouldBe 19
+        }
     }
 
     test("overpaying — all prevented, and the surplus does not linger as a shield") {

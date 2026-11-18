@@ -1349,7 +1349,8 @@ object TargetPolarityAnalyzer {
         return when (val sources = leaf.sourceFilter) {
             is PreventionSourceFilter.Matching -> controllingPlayerSlot(sources.filter, requirements)
             is PreventionSourceFilter.Specific -> slotOf(sources.source, requirements)
-            else -> null
+            PreventionSourceFilter.AnySource, is PreventionSourceFilter.Chosen,
+            PreventionSourceFilter.TargetingRecipient -> null
         }
     }
 

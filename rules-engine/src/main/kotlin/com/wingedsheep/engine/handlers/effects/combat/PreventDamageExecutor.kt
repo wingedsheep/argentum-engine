@@ -17,6 +17,9 @@ import com.wingedsheep.engine.handlers.effects.ResolutionFilterBaker
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
+import com.wingedsheep.engine.mechanics.layers.addFloatingEffects
+import com.wingedsheep.engine.mechanics.layers.createFloatingEffect
+import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.chosenSubtype
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -134,7 +137,12 @@ class PreventDamageExecutor(
                 "PreventDamageEffect with a Specific source supports only an all-damage or next-instance shield on one recipient"
             )
         }
-        val sourceId = context.resolveTarget(source, state) ?: return EffectResult.success(state)
+        // The source is read as a value, not acted on: a source that has already left (Power
+        // Leak's Aura destroyed in response) still deals its damage through last-known
+        // information, so the shield must still name it.
+        val sourceId = (source as? EffectTarget.SingleEntity)?.let { TargetResolutionUtils.resolveEntity(it, context, state) }
+            ?: context.resolveTarget(source, state)
+            ?: return EffectResult.success(state)
         val targetId = context.resolveTarget(effect.target, state)
             ?: return EffectResult.success(state)
         val modification = if (allFromSource) {
@@ -144,7 +152,14 @@ class PreventDamageExecutor(
             if (amount != null && amount <= 0) return EffectResult.success(state)
             SerializableModification.PreventNextDamageInstanceFromSource(damageSourceId = sourceId, maxAmount = amount)
         }
-        val newState = state.addFloatingEffect(
+        // Pin the shield to the object (CR 400.7). The ability's own source is the incarnation
+        // the ability came from — the identity its damage carries (DealDamageExecutor), even
+        // after it has left — and anything else is the object as it is now.
+        val sourceRef = (if (source == EffectTarget.Self) context.objectReferences.origin else null)
+            ?: state.objectRef(sourceId)
+        val (effectId, withId) = state.newEntity()
+        val floating = withId.createFloatingEffect(
+            id = effectId,
             layer = Layer.ABILITY,
             modification = modification,
             affectedEntities = setOf(targetId),
@@ -152,7 +167,10 @@ class PreventDamageExecutor(
             context = context,
             timestamp = state.timestamp
         )
-        return EffectResult.success(newState)
+        val pinned = floating.copy(
+            referencedObjects = floating.referencedObjects.filter { it.entityId != sourceId } + listOfNotNull(sourceRef)
+        )
+        return EffectResult.success(withId.addFloatingEffects(listOf(pinned)))
     }
 
     /**
