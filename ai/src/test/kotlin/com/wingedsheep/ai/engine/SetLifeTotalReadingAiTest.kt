@@ -48,6 +48,18 @@ class SetLifeTotalReadingAiTest : ScenarioTestBase() {
             }
         }
 
+        test("our own life total reset to our starting life total reads as life gain") {
+            // Resolute Archangel's "if your life total is less than your starting life total, it
+            // becomes equal to your starting life total", Oketra's Last Mercy: the format's total.
+            for (name in listOf("Resolute Archangel", "Oketra's Last Mercy")) {
+                withClue(name) {
+                    val card = cardRegistry.requireCard(name)
+                    CardIntentAnalyzer.analyze(card).tags shouldContain IntentTag.LIFEGAIN
+                    SynergyAxes.of(card).feeds shouldContain SynergyAxis.LIFEGAIN
+                }
+            }
+        }
+
         test("Vraska's −10 sets the opponent's life to 1, not ours") {
             val game = scenario().withPlayers()
                 .withActivePlayer(1)

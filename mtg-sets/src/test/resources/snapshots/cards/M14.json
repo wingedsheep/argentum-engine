@@ -1370,6 +1370,104 @@
     ]
 }
 
+// Haunted Plate Mail
+{
+    "name": "Haunted Plate Mail",
+    "manaCost": "{4}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +4/+4.\n{0}: Until end of turn, this permanent becomes a 4/4 Spirit artifact creature that's no longer an Equipment. Activate only if you control no creatures.\nEquip {4} ({4}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Haunted Plate Mail:1",
+                "cost": "CostFree",
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "removeSubtypes": [
+                        "Equipment"
+                    ]
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "creature",
+                            "negate": true
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "Haunted Plate Mail:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 4,
+                "toughnessBonus": 4
+            }
+        ]
+    },
+    "equipCost": "{4}",
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "RARE",
+        "artist": "Izzy",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e2dc1e07-7894-4f22-936d-bf5df3f8d5a5.jpg?1783939895",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "Although you must control no creatures to activate the \"animation\" ability, having a creature somehow come under your control in response to that ability won't stop it from resolving."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "You can activate the equip ability of Haunted Plate Mail while it isn't an Equipment, but the ability will have no effect. Haunted Plate Mail won't become attached to any creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Hive Stirrings
 {
     "name": "Hive Stirrings",
@@ -2483,6 +2581,336 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Staff of the Death Magus
+{
+    "name": "Staff of the Death Magus",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever you cast a black spell or a Swamp you control enters, you gain 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Staff of the Death Magus:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "HasColor",
+                                        "color": "BLACK"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "ZoneChangeEvent",
+                            "filter": "land Swamp ctrl:you",
+                            "to": "Battlefield"
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "219",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "A symbol of ambition in ruthless times.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/624fe171-8bd8-4156-b40e-74e2a847d380.jpg?1783939893",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "Each of these artifacts cares about any land with the appropriate basic land type. For example, Staff of the Sun Magus's ability triggers when any land with the subtype Plains enters the battlefield under your control, not just lands named Plains."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Most nonbasic lands don't have basic land types, even if they produce colored mana. For example, Caves of Koilos is neither a Plains nor a Swamp. Having one enter the battlefield under your control won't cause Staff of the Sun Magus's ability to trigger."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If you cast a copy of a card that's a certain color, the appropriate Staff's ability will trigger. However, if you copy a spell on the stack without casting that copy, it will not."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Staff of the Flame Magus
+{
+    "name": "Staff of the Flame Magus",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever you cast a red spell or a Mountain you control enters, you gain 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Staff of the Flame Magus:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "HasColor",
+                                        "color": "RED"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "ZoneChangeEvent",
+                            "filter": "land Mountain ctrl:you",
+                            "to": "Battlefield"
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "220",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "A symbol of passion in indifferent times.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6d6befbd-4fe3-4338-b8ea-13b8b70a7664.jpg?1783939893",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "Each of these artifacts cares about any land with the appropriate basic land type. For example, Staff of the Sun Magus's ability triggers when any land with the subtype Plains enters the battlefield under your control, not just lands named Plains."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Most nonbasic lands don't have basic land types, even if they produce colored mana. For example, Caves of Koilos is neither a Plains nor a Swamp. Having one enter the battlefield under your control won't cause Staff of the Sun Magus's ability to trigger."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If you cast a copy of a card that's a certain color, the appropriate Staff's ability will trigger. However, if you copy a spell on the stack without casting that copy, it will not."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Staff of the Mind Magus
+{
+    "name": "Staff of the Mind Magus",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever you cast a blue spell or an Island you control enters, you gain 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Staff of the Mind Magus:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "HasColor",
+                                        "color": "BLUE"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "ZoneChangeEvent",
+                            "filter": "land Island ctrl:you",
+                            "to": "Battlefield"
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "221",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "A symbol of sagacity in bewildering times.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f86bf36b-b83f-4451-8cdc-2a4ccffb93c7.jpg?1783939891",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "Each of these artifacts cares about any land with the appropriate basic land type. For example, Staff of the Sun Magus's ability triggers when any land with the subtype Plains enters the battlefield under your control, not just lands named Plains."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Most nonbasic lands don't have basic land types, even if they produce colored mana. For example, Caves of Koilos is neither a Plains nor a Swamp. Having one enter the battlefield under your control won't cause Staff of the Sun Magus's ability to trigger."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If you cast a copy of a card that's a certain color, the appropriate Staff's ability will trigger. However, if you copy a spell on the stack without casting that copy, it will not."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Staff of the Sun Magus
+{
+    "name": "Staff of the Sun Magus",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever you cast a white spell or a Plains you control enters, you gain 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Staff of the Sun Magus:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "HasColor",
+                                        "color": "WHITE"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "ZoneChangeEvent",
+                            "filter": "land Plains ctrl:you",
+                            "to": "Battlefield"
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "A symbol of conviction in uncertain times.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/90a1f830-d19a-4ebf-9573-09b677693dd6.jpg?1783939894",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "Each of these artifacts cares about any land with the appropriate basic land type. For example, Staff of the Sun Magus's ability triggers when any land with the subtype Plains enters the battlefield under your control, not just lands named Plains."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Most nonbasic lands don't have basic land types, even if they produce colored mana. For example, Caves of Koilos is neither a Plains nor a Swamp. Having one enter the battlefield under your control won't cause Staff of the Sun Magus's ability to trigger."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If you cast a copy of a card that's a certain color, the appropriate Staff's ability will trigger. However, if you copy a spell on the stack without casting that copy, it will not."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Staff of the Wild Magus
+{
+    "name": "Staff of the Wild Magus",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever you cast a green spell or a Forest you control enters, you gain 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Staff of the Wild Magus:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "HasColor",
+                                        "color": "GREEN"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "ZoneChangeEvent",
+                            "filter": "land Forest ctrl:you",
+                            "to": "Battlefield"
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "A symbol of ferocity in oppressive times.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d207f03d-4c7b-444f-bf95-e63f7004d525.jpg?1783939892",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "Each of these artifacts cares about any land with the appropriate basic land type. For example, Staff of the Sun Magus's ability triggers when any land with the subtype Plains enters the battlefield under your control, not just lands named Plains."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Most nonbasic lands don't have basic land types, even if they produce colored mana. For example, Caves of Koilos is neither a Plains nor a Swamp. Having one enter the battlefield under your control won't cause Staff of the Sun Magus's ability to trigger."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If you cast a copy of a card that's a certain color, the appropriate Staff's ability will trigger. However, if you copy a spell on the stack without casting that copy, it will not."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Steelform Sliver

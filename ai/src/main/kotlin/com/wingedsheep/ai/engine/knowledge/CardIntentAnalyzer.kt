@@ -2119,6 +2119,10 @@ object CardIntentAnalyzer {
         else -> null
     }
 
+    /** A battlefield group only our own permanents fill — "Sliver creatures you control", "Ninjas you control". */
+    private fun grantsOnlyToOwnGroup(group: GroupFilter): Boolean =
+        group.scope == Scope.Battlefield && group.baseFilter.controllerPredicate == ControllerPredicate.ControlledByYou
+
     private fun groupHitsYou(group: GroupFilter): Boolean =
         !opponentsOnly(group.baseFilter.controllerPredicate) && SynergyAxes.couldBeCreature(group.baseFilter)
 
@@ -3253,12 +3257,18 @@ object CardIntentAnalyzer {
 
     /**
      * Whether [effect] sets its controller's own life total to a fixed number above the starting 20
-     * (Providence's 26) — the gain [leafTagsOf] reads it as.
+     * (Providence's 26), or back up to their own starting life total (Resolute Archangel, Oketra's
+     * Last Mercy, Long Rest: "your life total becomes your starting life total") — the gain
+     * [leafTagsOf] reads it as. The reset is cast or triggered when behind, where it restores the
+     * life lost; a format's starting total (40 in Commander) is the game's, never a hard-coded 20.
      */
     private fun setsOwnLifeAboveStart(effect: SetLifeTotalEffect): Boolean {
         val ours = effect.target == EffectTarget.Controller || effect.target == EffectTarget.PlayerRef(Player.You)
-        val amount = effect.amount as? DynamicAmount.Fixed ?: return false
-        return ours && amount.amount > STARTING_LIFE
+        return ours && when (val amount = effect.amount) {
+            is DynamicAmount.Fixed -> amount.amount > STARTING_LIFE
+            is DynamicAmount.StartingLifeTotal -> amount.player == Player.You
+            else -> false
+        }
     }
 
     /**
@@ -3654,8 +3664,15 @@ object CardIntentAnalyzer {
         // controls it is that creature's own ability from then on — read as if printed, as the
         // one-shot [GrantTriggeredAbilityEffect] is. A harmful grant (a curse's upkeep drain) is
         // read by the Aura's polarity instead, and tags nothing here.
+        // "Sliver creatures you control have 'When this creature enters, you may exile target
+        // creature an opponent controls until this creature leaves the battlefield'" (Constricting
+        // Sliver), "Ninjas you control have 'whenever this creature deals combat damage to a player,
+        // draw a card'" (Ingenious Infiltrator): a lord's helpful trigger handed to each of our own
+        // creatures is the same ability printed on each of them — read as the Aura's grant above.
+        // A grant reaching the opponent's creatures too ("all Slivers have …") is symmetric, and
+        // stays unread.
         is GrantTriggeredAbility ->
-            if (static.filter.scope == Scope.AttachedTo &&
+            if ((static.filter.scope == Scope.AttachedTo || grantsOnlyToOwnGroup(static.filter)) &&
                 TargetPolarityAnalyzer.grantedTriggerPolarity(static.ability) == TargetPolarity.BENEFICIAL
             ) analyzeEffect(static.ability.effect, static.ability.allTargetRequirements).tags
             else emptySet()
