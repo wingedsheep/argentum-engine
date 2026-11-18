@@ -1,0 +1,1 @@
+- #4735 The AI reads land Auras that add mana when the land is tapped (Fertile Ground, Wild Growth, Verdant Haven) as ramp.

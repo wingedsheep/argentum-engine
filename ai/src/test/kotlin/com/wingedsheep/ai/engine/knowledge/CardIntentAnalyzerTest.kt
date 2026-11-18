@@ -131,6 +131,13 @@ class CardIntentAnalyzerTest : ScenarioTestBase() {
             intentOf("Mirari's Wake").tags shouldContain IntentTag.RAMP
         }
 
+        test("an Aura that adds mana whenever its land is tapped is ramp") {
+            // Verdant Haven / Fertile Ground: "whenever enchanted land is tapped for mana, its
+            // controller adds an additional one mana of any color".
+            intentOf("Verdant Haven").tags shouldContain IntentTag.RAMP
+            intentOf("Fertile Ground").tags shouldContain IntentTag.RAMP
+        }
+
         test("a mana rock is ramp, and is worth about a land plus the card it can still cash in") {
             val intent = intentOf("Mind Stone")
             intent.tags shouldContain IntentTag.RAMP
