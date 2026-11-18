@@ -112,6 +112,85 @@
     ]
 }
 
+// Agent of Erebos
+{
+    "name": "Agent of Erebos",
+    "manaCost": "{3}{B}",
+    "typeLine": "Enchantment Creature — Zombie",
+    "oracleText": "Constellation — Whenever this creature or another enchantment you control enters, exile target player's graveyard.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Agent of Erebos:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Constellation — Whenever this creature or another enchantment you control enters, exile target player's graveyard."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "UNCOMMON",
+        "artist": "Cyril Van Der Haegen",
+        "flavorText": "Erebos's minions hunt the Returned and warn those who consider the same folly.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e07a595-5579-4d5a-b07c-84239d690459.jpg?1783939439",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "The constellation ability is mandatory. If you are the only legal target (perhaps because your opponent has hexproof), you must target yourself and exile all the cards from your graveyard."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "A constellation ability triggers whenever an enchantment enters the battlefield under your control for any reason. Enchantments with other card types, such as enchantment creatures, will also cause constellation abilities to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Ajani's Presence
 {
     "name": "Ajani's Presence",
@@ -200,6 +279,79 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Akroan Line Breaker
+{
+    "name": "Akroan Line Breaker",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Heroic — Whenever you cast a spell that targets this creature, this creature gets +2/+0 and gains intimidate until end of turn. (It can't be blocked except by artifact creatures and/or creatures that share a color with it.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Akroan Line Breaker:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "INTIMIDATE",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, this creature gets +2/+0 and gains intimidate until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "rarity": "UNCOMMON",
+        "artist": "Marco Nelor",
+        "flavorText": "The enemies' shields are the first to shatter, and their battle line is never far behind.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a5114db5-b545-43dc-85a3-c0e68ab22a95.jpg?1783939428",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -799,6 +951,323 @@
     ]
 }
 
+// Blinding Flare
+{
+    "name": "Blinding Flare",
+    "manaCost": "{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Strive — This spell costs {R} more to cast for each target beyond the first.\nAny number of target creatures can't block this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "CantBlockTargetCreatures",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "IncreaseManaPerUnit",
+                    "symbols": "{R}",
+                    "countSource": {
+                        "type": "ChosenTargets",
+                        "beyond": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "rarity": "UNCOMMON",
+        "artist": "Evan Shipard",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e07f43b6-e07f-4d0c-90d2-e5b0d23ba0f9.jpg?1783939427",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Blinding Flare can target any creature, including those you control."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "You choose how many targets each spell with a strive ability has and what those targets are as you cast it. It's legal to cast such a spell with no targets, although this is rarely a good idea. You can't choose the same target more than once for a single strive spell."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "The mana cost and mana value of strive spells don't change no matter how many targets they have. Strive abilities affect only what you pay."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If all of the spell's targets are illegal when the spell tries to resolve, it won't resolve and none of its effects will happen. If one or more of its targets are legal when it tries to resolve, the spell will resolve and affect only those legal targets. It will have no effect on any illegal targets."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If such a spell is copied, and the effect that copies the spell allows a player to choose new targets for the copy, the number of targets can't be changed. The player may change any number of the targets, including all of them or none of them. If, for one of the targets, the player can't choose a new legal target, then it remains unchanged (even if the current target is illegal)."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If a spell or ability allows you to cast a strive spell without paying its mana cost, you must pay the additional costs for any targets beyond the first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Bloodcrazed Hoplite
+{
+    "name": "Bloodcrazed Hoplite",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Heroic — Whenever you cast a spell that targets this creature, put a +1/+1 counter on it.\nWhenever a +1/+1 counter is put on this creature, remove a +1/+1 counter from target creature an opponent controls.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bloodcrazed Hoplite:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, put a +1/+1 counter on it."
+            },
+            {
+                "id": "Bloodcrazed Hoplite:2",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "perCounter": true
+                },
+                "effect": {
+                    "type": "RemoveCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever a +1/+1 counter is put on this creature, remove a +1/+1 counter from target creature an opponent controls."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "artist": "Jeff Simpson",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2a6556b-a4f1-4ff5-8e6e-a47618c8c66e.jpg?1783939439",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Bloodcrazed Hoplite's last ability will trigger whenever any +1/+1 counter is placed on it, not just ones due to its heroic ability."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If multiple +1/+1 counters are placed on Bloodcrazed Hoplite simultaneously, it last ability will trigger once for each of those counters."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If Bloodcrazed Hoplite enters the battlefield with +1/+1 counters on it, its last ability will trigger once for each of those counters."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Brain Maggot
+{
+    "name": "Brain Maggot",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment Creature — Insect",
+    "oracleText": "When this creature enters, target opponent reveals their hand and you choose a nonland card from it. Exile that card until this creature leaves the battlefield.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Brain Maggot:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RevealHand",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "nonland",
+                            "storeSelected": "selected2",
+                            "prompt": "Choose a nonland card to exile until Brain Maggot leaves the battlefield",
+                            "selectedLabel": "Exile",
+                            "showAllCards": true,
+                            "alwaysPrompt": true
+                        },
+                        {
+                            "type": "MoveUntilSourceLeaves",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "selected2"
+                            },
+                            "destination": "Exile"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, target opponent reveals their hand and you choose a nonland card from it. Exile that card until this creature leaves the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "UNCOMMON",
+        "artist": "Min Yum",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/acdc31d5-6726-453e-94e0-69d2fe9447af.jpg?1783939439",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Brain Maggot's ability causes a zone change with a duration, a new style of ability that's somewhat reminiscent of older cards like Tidehollow Sculler. However, unlike Tidehollow Sculler, Brain Maggot has a single ability that creates two one-shot effects: one that exiles the nonland card when the ability resolves, and another that returns the exiled card to its owner's hand immediately after Brain Maggot leaves the battlefield."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If Brain Maggot leaves the battlefield before its enters-the-battlefield ability resolves, the opponent will reveal their hand, but no card will be exiled."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "The exiled card returns to its owner's hand immediately after Brain Maggot leaves the battlefield. Nothing happens between the two events, including state-based actions."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "In a multiplayer game, if Brain Maggot's owner leaves the game, the exiled card will return to its owner's hand. Because the one-shot effect that returns the card isn't an ability that goes on the stack, it won't cease to exist along with the leaving player's spells and abilities on the stack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Cast into Darkness
+{
+    "name": "Cast into Darkness",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets -2/-0 and can't block.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": -2,
+                "toughnessBonus": 0
+            },
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "artist": "Clint Cearley",
+        "flavorText": "In desperation the soldier prayed to Phenax, begging for the power to cheat the gorgon's gaze.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0c1880d4-90c7-46a2-bbc9-d2b52971d11c.jpg?1783939438"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Chariot of Victory
 {
     "name": "Chariot of Victory",
@@ -1225,6 +1694,85 @@
     ]
 }
 
+// Crystalline Nautilus
+{
+    "name": "Crystalline Nautilus",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment Creature — Nautilus",
+    "oracleText": "Bestow {3}{U}{U} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nWhen this permanent becomes the target of a spell or ability, sacrifice it.\nEnchanted creature gets +4/+4 and has \"When this creature becomes the target of a spell or ability, sacrifice it.\"",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{3}{U}{U}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Crystalline Nautilus:1",
+                "trigger": "BecomesTargetEvent",
+                "effect": {
+                    "type": "SacrificeTarget",
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 4,
+                "toughnessBonus": 4
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Crystalline Nautilus:2",
+                    "trigger": "BecomesTargetEvent",
+                    "effect": {
+                        "type": "SacrificeTarget",
+                        "target": "Self"
+                    },
+                    "descriptionOverride": "When this creature becomes the target of a spell or ability, sacrifice it."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "UNCOMMON",
+        "artist": "Brad Rigney",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/88a60d25-b97f-40e7-a5ac-c456cee02aeb.jpg?1783939449",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Crystalline Nautilus's middle ability functions as long as Crystalline Nautilus is on the battlefield, whether it's a creature or an Aura."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Unlike other Aura spells, an Aura spell with bestow isn't countered if its target is illegal as it begins to resolve. Rather, the effect making it an Aura spell ends, it loses enchant creature, it returns to being an enchantment creature spell, and it resolves and enters the battlefield as an enchantment creature."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Unlike other Auras, an Aura with bestow isn't put into its owner's graveyard if it becomes unattached. Rather, the effect making it an Aura ends, it loses enchant creature, and it remains on the battlefield as an enchantment creature."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If a permanent with bestow enters the battlefield by any method other than being cast, it will be an enchantment creature. You can't choose to pay the bestow cost and have it become an Aura."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Cyclops of Eternal Fury
 {
     "name": "Cyclops of Eternal Fury",
@@ -1255,6 +1803,194 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Dakra Mystic
+{
+    "name": "Dakra Mystic",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Merfolk Wizard",
+    "oracleText": "{U}, {T}: Each player reveals the top card of their library. You may put the revealed cards into their owners' graveyards. If you don't, each player draws a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Dakra Mystic:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": "Each"
+                            },
+                            "storeAs": "gathered0",
+                            "revealed": true
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.MayDecide",
+                                "prompt": "Put the revealed cards into their owners' graveyards? If you don't, each player draws a card."
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "gathered0",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        }
+                                    }
+                                ]
+                            },
+                            "otherwise": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Players",
+                                    "players": "Each"
+                                },
+                                "body": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "rarity": "UNCOMMON",
+        "artist": "Wesley Burt",
+        "flavorText": "Choices are rarely as simple as they seem.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8e5f71ca-e7d9-4f9a-adf1-40353693deea.jpg?1783939449",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "You make the decision after all the cards are revealed. If you decide not to put the cards into their owners' graveyards, the card each player draws will be the revealed card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Daring Thief
+{
+    "name": "Daring Thief",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Inspired — Whenever this creature becomes untapped, you may exchange control of target nonland permanent you control and target permanent an opponent controls that shares a card type with it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Daring Thief:1",
+                "trigger": "UntapEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "ExchangeControl",
+                        "target1": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "target2": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "nonland permanent ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "additionalTargetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsPermanent",
+                                    {
+                                        "type": "SharesCardTypeWith",
+                                        "entity": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByOpponent"
+                            }
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "Inspired — Whenever this creature becomes untapped, you may exchange control of target nonland permanent you control and target permanent an opponent controls that shares a card type with it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "RARE",
+        "artist": "Johann Bodin",
+        "flavorText": "Honesty is the first casualty of war.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c9d9378d-e553-48b5-8a23-59a35329eda2.jpg?1783939448",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "The exchange of control lasts indefinitely. It doesn't expire when Daring Thief leaves the battlefield."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If the full exchange can't happen, perhaps because one of the targets is illegal as the inspired ability tries to resolve, then nothing happens. No permanents change controllers."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Although the permanent you control can't be a land, the other target can, provided it shares a card type with the first target. For example, you could target an artifact you control and an artifact land controlled by an opponent."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -1452,6 +2188,43 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Desecration Plague
+{
+    "name": "Desecration Plague",
+    "manaCost": "{3}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target enchantment or land.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "enchantment|land"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "artist": "Ralph Horsley",
+        "flavorText": "\"The gods think of us as insects. Perhaps there is wisdom in that.\"\n—Perisophia the philosopher",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/42dbc5e5-5d46-47f7-a700-b65781a13c7a.jpg?1783939415"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -1735,6 +2508,35 @@
     ]
 }
 
+// Dictate of Karametra
+{
+    "name": "Dictate of Karametra",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Flash\nWhenever a player taps a land for mana, that player adds one mana of any type that land produced.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "AdditionalManaOnSourceTap",
+                "sourceFilter": "land"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "RARE",
+        "artist": "Noah Bradley",
+        "flavorText": "\"I refuse to let the folly of mortals endanger the home I made for them.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d5114607-df8f-4e44-8ef5-b6af89964bbc.jpg?1783939415"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Dictate of Kruphix
 {
     "name": "Dictate of Kruphix",
@@ -1777,6 +2579,201 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Dictate of the Twin Gods
+{
+    "name": "Dictate of the Twin Gods",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Flash\nIf a source would deal damage to a permanent or player, it deals double that damage to that permanent or player instead.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "DoubleDamage",
+                "appliesTo": "DamageEvent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "rarity": "RARE",
+        "artist": "Jaime Jones",
+        "flavorText": "Iroas and Mogis are as different in appearance as they are in personality.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/69cc93f2-8198-45b1-9193-7cfd1cf7ced4.jpg?1783939427",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Dictate of the Twin Gods applies to any damage, not just combat damage. It also doesn't matter who controls the source of the damage that's being dealt."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If more than one Dictate of the Twin Gods is on the battlefield, damage dealt will double for each one (two of them will end up multiplying the damage by four, three of them by eight, and four of them by sixteen)."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If multiple effects modify how damage will be dealt, the player being dealt damage or the controller of the permanent being dealt damage chooses the order to apply the effects."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Disciple of Deceit
+{
+    "name": "Disciple of Deceit",
+    "manaCost": "{U}{B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Inspired — Whenever this creature becomes untapped, you may discard a nonland card. If you do, search your library for a card with the same mana value as that card, reveal it, put it into your hand, then shuffle.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Disciple of Deceit:1",
+                "trigger": "UntapEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "nonland"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may discard a nonland card"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "selected1"
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Library",
+                                            "filter": {
+                                                "cardPredicates": [
+                                                    {
+                                                        "type": "ManaValueEqualsDynamic",
+                                                        "amount": {
+                                                            "type": "StoredCardManaValue",
+                                                            "collectionName": "selected1"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "storeAs": "gathered3",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered3",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected4",
+                                        "prompt": "Search your library for a card with the same mana value as the discarded card"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "selected4",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Inspired — Whenever this creature becomes untapped, you may discard a nonland card. If you do, search your library for a card with the same mana value as that card, reveal it, put it into your hand, then shuffle."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fbfe88fd-9bb9-42af-8134-96fd264b8405.jpg?1783939405",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "The mana value of a split card is determined by the combined mana cost of its two halves."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If there's an {X} in the mana cost of the card you discarded or the card you wish to search for, X is 0."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Inspired abilities trigger no matter how the creature becomes untapped: by the turn-based action at the beginning of the untap step or by a spell or ability."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If an inspired ability triggers during your untap step, the ability will be put on the stack at the beginning of your upkeep. If the ability creates one or more token creatures, those creatures won't be able to attack that turn (unless they gain haste)."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Inspired abilities don't trigger when the creature enters the battlefield."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If the inspired ability includes an optional cost, you decide whether to pay that cost as the ability resolves. You can do this even if the creature leaves the battlefield in response to the ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
@@ -1999,6 +2996,69 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Eidolon of the Great Revel
+{
+    "name": "Eidolon of the Great Revel",
+    "manaCost": "{R}{R}",
+    "typeLine": "Enchantment Creature — Spirit",
+    "oracleText": "Whenever a player casts a spell with mana value 3 or less, this creature deals 2 damage to that player.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Eidolon of the Great Revel:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "ManaValueAtMost",
+                                "max": 3
+                            }
+                        ]
+                    },
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "RARE",
+        "artist": "Cyril Van Der Haegen",
+        "flavorText": "Xenagos reveled while Theros burned.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6c10816-e825-452a-90b0-80eb9f20bd6d.jpg?1783939426",
+        "rulings": [
+            {
+                "date": "2018-03-16",
+                "text": "Casting Eidolon of the Great Revel doesn't cause its own ability to trigger. It must be on the battlefield when the spell is cast for its ability to trigger."
+            },
+            {
+                "date": "2018-03-16",
+                "text": "The mana value of a spell with {X} in its mana cost includes the value chosen for X."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -3559,6 +4619,82 @@
     "colorIdentityOverride": [
         "BLUE",
         "RED"
+    ]
+}
+
+// Kiora's Dismissal
+{
+    "name": "Kiora's Dismissal",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Strive — This spell costs {U} more to cast for each target beyond the first.\nReturn any number of target enchantments to their owners' hands.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                },
+                "destination": "Hand"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "enchantment"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "IncreaseManaPerUnit",
+                    "symbols": "{U}",
+                    "countSource": {
+                        "type": "ChosenTargets",
+                        "beyond": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/21b040e5-651b-42ca-b487-66cf1d8180f9.jpg?1783939447",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "You choose how many targets each spell with a strive ability has and what those targets are as you cast it. It's legal to cast such a spell with no targets, although this is rarely a good idea. You can't choose the same target more than once for a single strive spell."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "The mana cost and mana value of strive spells don't change no matter how many targets they have. Strive abilities affect only what you pay."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If all of the spell's targets are illegal when the spell tries to resolve, it won't resolve and none of its effects will happen. If one or more of its targets are legal when it tries to resolve, the spell will resolve and affect only those legal targets. It will have no effect on any illegal targets."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If such a spell is copied, and the effect that copies the spell allows a player to choose new targets for the copy, the number of targets can't be changed. The player may change any number of the targets, including all of them or none of them. If, for one of the targets, the player can't choose a new legal target, then it remains unchanged (even if the current target is illegal)."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If a spell or ability allows you to cast a strive spell without paying its mana cost, you must pay the additional costs for any targets beyond the first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
