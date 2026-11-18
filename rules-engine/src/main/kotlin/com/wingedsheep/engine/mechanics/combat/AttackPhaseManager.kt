@@ -801,7 +801,7 @@ internal class AttackPhaseManager(
     private fun coAttackerRestrictions(
         state: GameState,
         attackerId: EntityId,
-        scan: List<CombatStaticScan.Entry<CantAttackUnlessCoAttacker>> = coAttackerScan(state),
+        scan: List<CombatStaticScan.Entry<CantAttackUnlessCoAttacker>>,
     ): List<CantAttackUnlessCoAttacker> = scan
         .filter { CombatStaticScan.covers(state, predicateEvaluator, it.holder, it.controller, it.ability.filter, attackerId) }
         .map { it.ability }
@@ -1069,6 +1069,7 @@ internal class AttackPhaseManager(
         val validAttackers = getValidAttackers(state, attackingPlayer)
         val goad = goadRules ?: GoadRules(state, cardRegistry, predicateEvaluator)
         val bound = mutableMapOf<EntityId, Set<EntityId>>()
+        val coAttackers by lazy { coAttackerScan(state) }
         // A named planeswalker binds only while it can be attacked at all: still on the
         // battlefield, still a planeswalker, controlled by a player this attacker may attack.
         val attackTargets by lazy { CombatDefenders.attackTargets(state, projected, attackingPlayer).toSet() }
@@ -1079,7 +1080,7 @@ internal class AttackPhaseManager(
                 val player = defenderControllerOf(state, projected, defender)
                 player in opponents && (defender == player || defender in attackTargets) && canAttackFreely(
                     state, projected, attackingPlayer, attackerId, listOf(defender), player, opponents,
-                    validAttackers, goad,
+                    validAttackers, goad, coAttackers,
                 )
             }
             if (defenders.isNotEmpty()) bound[attackerId] = defenders
@@ -1208,6 +1209,7 @@ internal class AttackPhaseManager(
         val validAttackers by lazy { getValidAttackers(state, attackingPlayer) }
         val goadRules by lazy { GoadRules(state, cardRegistry, predicateEvaluator) }
         val directed by lazy { boundAttackDefenders(state, attackingPlayer, projected, opponents, goadRules) }
+        val coAttackers by lazy { coAttackerScan(state) }
         for (player in requiring) {
             if (attackers.values.any { OpponentsMustAttackYouRequirement.isAttackOn(state, projected, it, player) }) {
                 continue
@@ -1218,7 +1220,7 @@ internal class AttackPhaseManager(
             // obeying one requirement by breaking another gains nothing, as with goad.
             val able = validAttackers.any { attackerId ->
                 directed[attackerId].let { it == null || player in it } &&
-                    canAttackFreely(state, projected, attackingPlayer, attackerId, defenders, player, opponents, validAttackers, goadRules)
+                    canAttackFreely(state, projected, attackingPlayer, attackerId, defenders, player, opponents, validAttackers, goadRules, coAttackers)
             }
             if (able) {
                 val name = state.getEntity(player)?.get<PlayerComponent>()?.name ?: "that player"
@@ -1244,10 +1246,11 @@ internal class AttackPhaseManager(
         player: EntityId,
         opponents: List<EntityId>,
         validAttackers: List<EntityId>,
-        goadRules: GoadRules
+        goadRules: GoadRules,
+        coAttackers: List<CombatStaticScan.Entry<CantAttackUnlessCoAttacker>>,
     ): Boolean {
         if (AttackSacrificeCosts.requirementFor(state, attackerId, cardRegistry) != null) return false
-        if (coAttackerRestrictions(state, attackerId).any {
+        if (coAttackerRestrictions(state, attackerId, coAttackers).any {
                 !coAttackerAvailable(state, projected, attackerId, it, validAttackers)
             }) return false
         val avoided = goadRules.playersToAttackOtherThan(attackerId)

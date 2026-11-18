@@ -3,10 +3,10 @@ package com.wingedsheep.mtg.sets.definitions.jou.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.scripting.GameObjectFilter
 
 /**
  * Sightless Brawler — "can't attack alone" twice: on its own body while it's a creature, and on the
