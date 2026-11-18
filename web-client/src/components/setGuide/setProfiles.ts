@@ -455,10 +455,10 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
   M15: {
     tagline: 'A classic core set with a twist: convoke lets your creatures help cast spells, Slivers share abilities across the hive and Paragons lead mono-colour armies.',
     setting: 'A core set gathered from across the Multiverse, with Garruk hunting planeswalkers and a Soul for each colour.',
-    gameplay: 'Games are straightforward and creature-driven, as in a classic core set, with plenty of removal at common. Convoke lets you tap your creatures to help pay for spells, so a wide board casts Triplicate Spirits or Siege Wurm turns early. Slivers grant their abilities to every Sliver you control, the Paragon lords reward a deck heavy in one colour, and a cycle of cross-colour uncommons nudges you into allied pairs. Artifact decks turn cheap artifacts into fliers and 5/5s.',
+    gameplay: 'Games are straightforward and creature-driven, as in a classic core set, with plenty of removal at common. Convoke lets you tap your creatures to help pay for spells, so a wide board casts Triplicate Spirits or Siege Wurm turns early. Slivers grant their abilities to every Sliver you control, the Paragon lords reward a deck heavy in one colour, and a cycle of cross-colour uncommons nudges you into allied pairs. Artifact decks give Aeronaut Tinkerer flying and make an Ornithopter a 5/5 with Ensoul Artifact.',
     tips: [
       'Count your untapped creatures before you attack: tapping them for convoke after combat means they could not block.',
-      'Play Slivers in one colour pair where possible: every extra Sliver makes the rest bigger or harder to block.',
+      'Play Slivers in one colour pair where possible: every extra Sliver adds another shared ability, like menace, deathtouch or a life drain.',
       'A Paragon wants a deck that is mostly its colour, so take it early only if you are already heavily in that colour.',
     ],
     tryIf: 'straightforward core-set Limited, go-wide token decks and Slivers',
