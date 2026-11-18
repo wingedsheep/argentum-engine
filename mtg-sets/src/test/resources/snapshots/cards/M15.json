@@ -4090,6 +4090,85 @@
     ]
 }
 
+// Ob Nixilis, Unshackled
+{
+    "name": "Ob Nixilis, Unshackled",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Legendary Creature — Demon",
+    "oracleText": "Flying, trample\nWhenever an opponent searches their library, that player sacrifices a creature of their choice and loses 10 life.\nWhenever another creature dies, put a +1/+1 counter on Ob Nixilis.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ob Nixilis, Unshackled:1",
+                "trigger": {
+                    "type": "SearchLibraryEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForceSacrifice",
+                            "filter": "creature",
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "TriggeringPlayer"
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 10
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "TriggeringPlayer"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "That player sacrifices a creature of their choice and loses 10 life."
+            },
+            {
+                "id": "Ob Nixilis, Unshackled:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Put a +1/+1 counter on Ob Nixilis."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "rarity": "RARE",
+        "artist": "Karl Kopinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/0/109b28dc-c0d1-4b88-b18e-074ac0464e03.jpg?1783939181"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Obelisk of Urd
 {
     "name": "Obelisk of Urd",

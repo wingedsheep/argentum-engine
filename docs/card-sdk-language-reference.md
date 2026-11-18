@@ -10568,7 +10568,9 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   searcher. Since searching is the act of looking through the zone (CR 701.23a) and finding a card is
   not required (CR 701.23b), the trigger fires even when no card was found. The opponent-scoped
   variant is used by **Wan Shi Tong, Librarian** ("Whenever an opponent searches their library, put a
-  +1/+1 counter on him and draw a card").
+  +1/+1 counter on him and draw a card"). The searcher is the triggering player, so "that player …"
+  is `Player.TriggeringPlayer` — **Ob Nixilis, Unshackled** ("that player sacrifices a creature of
+  their choice and loses 10 life").
 
 ### Library shuffle (CR 701.24)
 

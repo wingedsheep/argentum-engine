@@ -684,6 +684,12 @@ data class TriggerContext(
                     triggeringPlayerId = event.targetEntityId.takeIf { event.targetIsPlayer },
                     targetingSourceEntityId = event.sourceEntityId
                 )
+                // A library search (CR 701.23): the searcher is "that player", so a payoff on
+                // "whenever an opponent searches their library, that player …" (Ob Nixilis,
+                // Unshackled) resolves Player.TriggeringPlayer to them.
+                is com.wingedsheep.engine.core.LibrarySearchedEvent -> TriggerContext(
+                    triggeringPlayerId = event.playerId
+                )
                 is com.wingedsheep.engine.core.LibraryShuffledEvent -> TriggerContext(
                     // "…deals 2 damage to that player" — the shuffler is the triggering player.
                     triggeringPlayerId = event.playerId
