@@ -3054,6 +3054,7 @@ Chelonian Tackle
 Chemister's Insight
 Cherished Hatchling
 Chevill, Bane of Monsters	intent: AddCountersEffect; polarity: AddCountersEffect
+Chief Engineer
 Chief Warg's Company
 Chief of the Edge
 Chief of the Foundry
@@ -3122,6 +3123,7 @@ Chromium
 Chromium, the Mutable	timing: RemoveAllAbilitiesEffect; timing: SetCreatureSubtypesEffect
 Chronicle of Victory
 Chronosavant
+Chronostutter
 Chthonian Nightmare
 Chulane, Teller of Tales
 Chupacabra Echo
@@ -3232,7 +3234,7 @@ Cleon, Merry Champion
 Clergy en-Vec
 Clergy of the Holy Nimbus	intent: CantBeRegeneratedEffect
 Cleric Class
-Cleric of Chill Depths	intent: GrantKeywordEffect
+Cleric of Chill Depths
 Cleric of Life's Bond
 Cleric of the Forward Order
 Cleveland Booker, Empath
@@ -4613,6 +4615,7 @@ Dictate of Kruphix
 Didact Echo
 Didn't Say Please
 Die Young
+Diffusion Sliver
 Dig Site Inventory
 Dig Through Time
 Dig Up
@@ -5658,6 +5661,7 @@ Encouraging Aviator	timing: GrantKeywordEffect
 Encroaching Dragonstorm
 Encroaching Mycosynth
 Encroaching Wastes
+Encrust
 Encumbered Reejerey
 End Hostilities
 End of the Hunt
@@ -5723,6 +5727,7 @@ Enraged Huorn
 Enshrouding Mist
 Ensign Pavel Chekov	intent: ForEach>GrantMayPlayFromExileEffect; intent: ForEach>Pipeline(TopOfLibrary→exile)
 Enslaved Dwarf
+Ensoul Artifact
 Ent's Fury
 Ent-Draught Basin
 Entangler	polarity: Aura>CanBlockAnyNumber
@@ -7412,6 +7417,7 @@ Gix, Yawgmoth Praetor	intent: GatedEffect
 Gixian Infiltrator
 Gixian Puppeteer
 Gixian Skullflayer
+Glacial Crasher
 Glacial Dragonhunt
 Glacial Floodplain
 Glacial Fortress
@@ -9551,6 +9557,7 @@ Jace, Reality Sculptor	intent: ForEach>Pipeline(TopOfLibrary→exile)
 Jace, Unraveler of Secrets
 Jace, Vryn's Prodigy
 Jace, Wielder of Mysteries
+Jace, the Living Guildpact
 Jace, the Mind Sculptor	intent: Pipeline(TopOfLibrary→library); polarity: Pipeline(TopOfLibrary→library)
 Jace, the Perfected Mind
 Jack-o'-Lantern
@@ -9587,6 +9594,7 @@ Jagged-Scar Archers
 Jaheira, Friend of the Forest
 Jailbreak Scheme
 Jake Sisko, War Correspondent
+Jalira, Master Polymorphist
 Jalum Tome
 James, Wandering Dad
 Jan Jansen, Chaos Crafter
@@ -11499,6 +11507,7 @@ Merciless Repurposing
 Merciless Resolve
 Mercurial Geists
 Mercurial Kite
+Mercurial Pretender
 Mercurial Spelldancer
 Mercurial Transformation
 Meren of Clan Nel Toth
@@ -11655,6 +11664,7 @@ Mind Meanderer
 Mind Raker
 Mind Roots
 Mind Rot
+Mind Sculpt
 Mind Sludge
 Mind Spiral
 Mind Spring
@@ -13659,6 +13669,7 @@ Polukranos Reborn
 Polukranos, Unchained
 Polygraph Orb
 Polymorph
+Polymorphist's Jest
 Polyraptor
 Pompous Battlemage
 Pompous Gadabout
@@ -14109,6 +14120,7 @@ Quick-Draw Dagger
 Quick-Draw Katana
 Quickbeam, Upstart Ent
 Quickchange	polarity: ChangeColorToChosenEffect
+Quickling
 Quicksand
 Quicksand Whirlpool
 Quicksilver Dragon	intent: ChangeSpellTargetEffect; polarity: ChangeSpellTargetEffect
@@ -17081,6 +17093,7 @@ Soul of Emancipation
 Soul of Magma
 Soul of Migration
 Soul of New Phyrexia
+Soul of Ravnica
 Soul of Theros
 Soul of Windgrace	intent: Pipeline(graveyard→battlefield)
 Soul of Zendikar
@@ -17763,6 +17776,7 @@ Stormscape Apprentice
 Stormscape Master
 Stormshriek Feral
 Stormsplitter
+Stormtide Leviathan
 Stormwatch Eagle
 Stormwild Capridor
 Stormwing Dragon
@@ -20698,6 +20712,7 @@ Wall of Earth
 Wall of Essence
 Wall of Fire
 Wall of Forgotten Pharaohs
+Wall of Frost
 Wall of Glare
 Wall of Granite
 Wall of Heat
