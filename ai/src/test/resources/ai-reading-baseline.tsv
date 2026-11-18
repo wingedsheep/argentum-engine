@@ -268,6 +268,7 @@ Agent Maria Hill
 Agent Phil Coulson
 Agent Venom
 Agent of Atlas
+Agent of Erebos
 Agent of Horizons
 Agent of Kotis
 Agent of Shauku
@@ -372,6 +373,7 @@ Akoum Stonewaker
 Akoum Warrior
 Akroan Crusader
 Akroan Jailer
+Akroan Line Breaker
 Akroan Mastiff
 Akroan Sergeant
 Akroan Skyguard
@@ -1859,6 +1861,7 @@ Blind-Spot Giant
 Blindblast
 Blinding Beam
 Blinding Drone
+Blinding Flare
 Blinding Fog	timing: ForEach>GrantKeywordEffect
 Blinding Light
 Blinding Mage
@@ -1935,6 +1938,7 @@ Bloodbraid Elf
 Bloodbriar
 Bloodchief Ascension
 Bloodchief's Thirst
+Bloodcrazed Hoplite
 Bloodcrazed Paladin
 Bloodcrazed Socialite
 Bloodcurdling Scream
@@ -2235,6 +2239,7 @@ Braids, Cabal Minion
 Braidwood Cup
 Braidwood Sextant
 Brain Freeze
+Brain Maggot
 Brain in a Jar
 Braingeyser
 Brainspoil
@@ -2777,6 +2782,7 @@ Cass, Hand of Vengeance
 Cast Away Doubt
 Cast Down
 Cast Out
+Cast into Darkness
 Cast into the Fire
 Castaway's Despair
 Castle
@@ -3926,6 +3932,7 @@ Crystal Spray	polarity: ChangeWordInTextEffect; timing: ChangeWordInTextEffect
 Crystal Vein
 Crystalline Entity
 Crystalline Giant
+Crystalline Nautilus
 Cuboid Colony
 Cubwarden
 Cudgel Troll
@@ -4061,6 +4068,7 @@ Dakmor Plague
 Dakmor Salvage
 Dakmor Scorpion
 Dakmor Sorceress
+Dakra Mystic
 Dal R'El, Augment Orphan
 Dalakos, Crafter of Wonders
 Dalkovan Encampment
@@ -4112,6 +4120,7 @@ Daring Mechanic
 Daring Piracy
 Daring Saboteur
 Daring Sleuth
+Daring Thief
 Daring Thunder-Thief
 Daring Waverider
 Dark Banishing
@@ -4533,6 +4542,7 @@ Desdemona, Freedom's Edge	intent: GrantEscapeEffect; polarity: GrantEscapeEffect
 Desecrated Tomb
 Desecration Demon	intent: AnyPlayerMayPayEffect
 Desecration Elemental
+Desecration Plague
 Desert
 Desert Cerodon
 Desert Drake
@@ -4641,7 +4651,9 @@ Diaochan, Artful Beauty
 Diary of Dreams
 Dictate of Erebos
 Dictate of Heliod
+Dictate of Karametra
 Dictate of Kruphix
+Dictate of the Twin Gods
 Didact Echo
 Didn't Say Please
 Die Young
@@ -4715,6 +4727,7 @@ Disappearing Act
 Disarm	intent: ForEach>UnattachEquipmentEffect; intent: Pipeline(AttachedTo→?); polarity: Pipeline(AttachedTo→?)
 Discerning Financier
 Discerning Peddler
+Disciple of Deceit
 Disciple of Freyalise
 Disciple of Grace
 Disciple of Law
@@ -5424,6 +5437,7 @@ Eidolon of Inspiration
 Eidolon of Obstruction
 Eidolon of Philosophy
 Eidolon of Rhetoric
+Eidolon of the Great Revel
 Eiganjo Castle
 Eiganjo Exemplar
 Eiganjo Uprising
@@ -10136,6 +10150,7 @@ Kiora Bests the Sea God
 Kiora of Fire and Ashes
 Kiora of Salt and Sand
 Kiora's Dambreaker
+Kiora's Dismissal
 Kiora's Follower
 Kiora, Behemoth Beckoner
 Kiora, Master of the Depths
