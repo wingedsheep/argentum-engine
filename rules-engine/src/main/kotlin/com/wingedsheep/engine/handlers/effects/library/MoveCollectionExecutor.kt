@@ -690,7 +690,9 @@ class MoveCollectionExecutor(
             // One card has no order to choose. The prompt still runs where it is the player's only
             // *look* at the card ("look at the top card of your library", lookAtTopAndReorder), and
             // is skipped only when a selection in this same pipeline just displayed it to the
-            // chooser (scry 1 / surveil 1 keeping it on top). Skipping therefore never hides
+            // chooser (scry 1 / surveil 1 keeping it on top), or when it is a permanent still on
+            // the battlefield — public until it lands (Aetherspouts putting one attacker on
+            // top). Skipping therefore never hides
             // anything the chooser wouldn't otherwise see. Two or more cards are always asked
             // about, even copies of one card: every seat sees whether a question is pending but
             // not which cards are going back, so skipping for copies would tell the other players
@@ -703,7 +705,8 @@ class MoveCollectionExecutor(
                 ]
             }.orEmpty()
             val noOrderToChoose = cards.size == 1
-            val alreadySeen = cards.isNotEmpty() && cards.all { it in shown }
+            val alreadySeen = cards.isNotEmpty() &&
+                cards.all { it in shown || it in state.getBattlefield() }
             if (countHidden || ((!isBottom || cards.size > 1) && !(alreadySeen && noOrderToChoose))) {
                 return pauseForOrderDecision(state, context, cards, destZone, destPlayerId, destination.placement, chooserId, revealed, storeMovedAs)
             }
@@ -767,10 +770,18 @@ class MoveCollectionExecutor(
 
         val isOwnLibrary = destPlayerId == playerId
         val libraryOwner = if (isOwnLibrary) "your" else "their"
-        val promptText = when (placement) {
-            ZonePlacement.Bottom -> "Put the revealed cards on the bottom of $libraryOwner library in any order."
-            else -> if (cards.size == 1) "Look at the top card of $libraryOwner library."
-                else "Look at the top ${cards.size} cards of $libraryOwner library. Put them back in any order."
+        // Permanents headed for a library (Aetherspouts) aren't "the top cards" yet.
+        val fromBattlefield = cards.isNotEmpty() && cards.all { it in state.getBattlefield() }
+        val promptText = when {
+            fromBattlefield -> {
+                val end = if (placement == ZonePlacement.Bottom) "bottom" else "top"
+                "Put these permanents on the $end of $libraryOwner library in any order."
+            }
+            else -> when (placement) {
+                ZonePlacement.Bottom -> "Put the revealed cards on the bottom of $libraryOwner library in any order."
+                else -> if (cards.size == 1) "Look at the top card of $libraryOwner library."
+                    else "Look at the top ${cards.size} cards of $libraryOwner library. Put them back in any order."
+            }
         }
 
         val decision = { decisionId: String -> ReorderLibraryDecision(
