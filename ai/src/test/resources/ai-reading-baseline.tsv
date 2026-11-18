@@ -1152,6 +1152,7 @@ Avacynian Priest
 Avalanche Caller
 Avalanche Tusker
 Avarax
+Avarice Amulet
 Avaricious Dragon
 Avatar Aang
 Avatar Destiny
@@ -1661,7 +1662,7 @@ Bilbo, Retired Burglar
 Bilbo, Thief in the Night	intent: GrantStaticAbilityEffect
 Bile-Vial Boggart
 Bilious Skulldweller
-Bill Ferny, Bree Swindler	polarity: GiveControlToTargetPlayerEffect
+Bill Ferny, Bree Swindler
 Bill the Pony
 Billowing Shriekmass
 Bind
@@ -3528,6 +3529,7 @@ Conspicuous Snoop
 Conspiracy Theorist	intent: GrantMayPlayFromExileEffect; intent: Pipeline(?→exile)
 Conspiracy Unraveler
 Constable Odo
+Constricting Sliver
 Constricting Tendrils
 Constrictor Sage
 Construct a Cosmic Cube	intent: HijackNextTurnEffect
@@ -4678,7 +4680,7 @@ Dirtwater Wraith
 Disallow
 Disappearing Act
 Disarm	intent: ForEach>UnattachEquipmentEffect; intent: Pipeline(AttachedTo→?); polarity: Pipeline(AttachedTo→?)
-Discerning Financier	polarity: GiveControlToTargetPlayerEffect
+Discerning Financier
 Discerning Peddler
 Disciple of Freyalise
 Disciple of Grace
@@ -6200,7 +6202,7 @@ Fated Firepower
 Fateful Absence
 Fateful Discovery
 Fateful End
-Fateful Handoff	polarity: DrawCardsEffect; polarity: GiveControlToTargetPlayerEffect
+Fateful Handoff
 Fateful Showdown
 Fatehold Annex
 Fatehold Charm
@@ -7999,6 +8001,7 @@ Grimclaw Bats
 Grimdancer
 Grimgrin, Corpse-Born
 Grind // Dust
+Grindclock
 Grinning Demon
 Grinning Ignus
 Grip of Chaos	intent: ReselectTargetRandomlyEffect
@@ -8277,7 +8280,7 @@ Hardy Veteran
 Hare Apparent
 Harmattan Efreet
 Harmless Assault
-Harmless Offering	intent: GiveControlToTargetPlayerEffect; polarity: GiveControlToTargetPlayerEffect
+Harmless Offering	intent: GiveControlToTargetPlayerEffect
 Harmonic Prodigy
 Harmonious Archon
 Harmonious Emergence	polarity: Aura>AnimateLandGroup; polarity: Aura>GrantKeyword
@@ -8332,6 +8335,7 @@ Haunted Dead
 Haunted Guardian
 Haunted Hellride
 Haunted Mire
+Haunted Plate Mail
 Haunted Ridge
 Haunted Screen
 Haunting Figment
@@ -8789,6 +8793,7 @@ Hostile Negotiations
 Hostile Takeover
 Hostility
 Hot Dog Cart
+Hot Soup
 Hotfoot Gnome
 Hotshot Investigators
 Hotshot Mechanic
@@ -8858,7 +8863,7 @@ Hum of the Radix
 Human Frailty
 Human Torch, Johnny Storm
 Humble Budoka
-Humble Defector	polarity: GiveControlToTargetPlayerEffect
+Humble Defector
 Humble Naturalist
 Humble the Brute
 Humbling Elder
@@ -8919,6 +8924,7 @@ Hurricane
 Hurska Sweet-Tooth
 Hush
 Hushbringer
+Hushwing Gryff
 Hushwood Verge
 Huskburster Swarm
 Hussar Patrol
@@ -9668,8 +9674,8 @@ Jin-Gitaxias
 Jin-Gitaxias, Core Augur
 Jin-Gitaxias, Progress Tyrant
 Jinnie Fay, Jetmir's Second
-Jinxed Choker	intent: GiveControlToTargetPlayerEffect; polarity: GiveControlToTargetPlayerEffect
-Jinxed Idol	intent: GiveControlToTargetPlayerEffect; polarity: GiveControlToTargetPlayerEffect
+Jinxed Choker
+Jinxed Idol
 Jirina, Dauntless General
 Jodah's Codex
 Jodah, Archmage Eternal
@@ -14746,6 +14752,7 @@ Resistance Is Futile
 Resistance Reunited
 Resistance Skywarden
 Resistance Squad
+Resolute Archangel
 Resolute Blademaster
 Resolute Reinforcements
 Resolute Rider
@@ -15485,6 +15492,7 @@ Samwise Gamgee
 Samwise the Stouthearted
 Sanar, Innovative First-Year
 Sanar, Unfinished Genius
+Sanctified Charge
 Sanctifier of Souls
 Sanctify
 Sanctuary Cat
@@ -17447,6 +17455,11 @@ Stadium Tidalmage
 Staff of Compleation
 Staff of Domination
 Staff of Zegon
+Staff of the Death Magus
+Staff of the Flame Magus
+Staff of the Mind Magus
+Staff of the Sun Magus
+Staff of the Wild Magus
 Stag Beetle
 Stagecoach Security
 Staggering Insight
@@ -20778,6 +20791,7 @@ Ward Sliver
 Warded Battlements
 Warden of Evos Isle
 Warden of Geometries
+Warden of the Beyond
 Warden of the Chained
 Warden of the Eye
 Warden of the First Tree
@@ -21260,7 +21274,7 @@ Wispmare
 Wispweaver Angel
 Wistfulness
 Witch Enchanter
-Witch Engine	polarity: GiveControlToTargetPlayerEffect
+Witch Engine
 Witch Hunter
 Witch of the Moors
 Witch's Cauldron
