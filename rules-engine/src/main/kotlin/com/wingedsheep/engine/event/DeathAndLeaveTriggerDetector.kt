@@ -131,10 +131,13 @@ class DeathAndLeaveTriggerDetector(
      * leaving. The main battlefield loop misses these because the sources are already gone.
      *
      * Checks departed permanents' non-self triggers (OTHER/ANY binding) against the batch's other
-     * battlefield departures. Death-to-death pairs match any trigger, as they always have; a pair
-     * where either side left for a zone other than the graveyard only fires abilities that are
-     * themselves leaves-the-battlefield abilities ([TriggerMatcher.battlefieldExitAtoms]), the
-     * class CR 603.10a names — Slagstone Refinery exiled alongside another artifact still sees it.
+     * battlefield departures. Only abilities that are themselves leaves-the-battlefield abilities
+     * ([TriggerMatcher.battlefieldExitAtoms]) look back — the class CR 603.10a names — whichever
+     * zone either side went to: Slagstone Refinery exiled alongside another artifact still sees it.
+     * A "put into a graveyard from anywhere" ability is never a leaves-the-battlefield ability
+     * (CR 603.6c), so it doesn't see cards that left together with its source, even when both
+     * died: Profane Memento or Bloodchief Ascension destroyed alongside an opponent's creature
+     * doesn't trigger.
      */
     fun detectSimultaneousDepartureTriggers(
         state: GameState,
@@ -162,11 +165,9 @@ class DeathAndLeaveTriggerDetector(
             val controllerId = departedEvent.lastKnown?.controllerId ?: departedEvent.ownerId
 
             for (ability in abilities) {
-                val isLeaveAbility = matcher.battlefieldExitAtoms(ability.trigger).isNotEmpty()
+                if (matcher.battlefieldExitAtoms(ability.trigger).isEmpty()) continue
                 for (otherEvent in departures) {
                     if (otherEvent.entityId == departedId) continue // Skip self
-                    val bothDied = departedEvent.toZone == Zone.GRAVEYARD && otherEvent.toZone == Zone.GRAVEYARD
-                    if (!bothDied && !isLeaveAbility) continue
 
                     if (matcher.matchesTrigger(ability.trigger, ability.binding, otherEvent, departedId, controllerId, state)) {
                         triggers.add(
