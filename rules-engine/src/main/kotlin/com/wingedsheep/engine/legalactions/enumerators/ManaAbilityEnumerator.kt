@@ -189,7 +189,10 @@ class ManaAbilityEnumerator(
                 // charges, so the offer and the payment agree.
                 val effectiveCost = if (manaCostsMayChange) {
                     context.castPermissionUtils.applyActivatedAbilityCostReduction(
-                        printedCost, state, entityId, playerId, isManaAbility = true
+                        printedCost, state, entityId, playerId, ability.onceOnlyKind,
+                        isManaAbility = true,
+                        abilityKeyword = ability.keyword,
+                        isLoyaltyAbility = ability.isPlaneswalkerAbility,
                     )
                 } else {
                     printedCost

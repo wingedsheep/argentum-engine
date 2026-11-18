@@ -464,9 +464,16 @@ class ManaSolver private constructor(
         CastPermissionUtils(cardRegistry, predicateEvaluator, conditionEvaluator)
     }
 
-    /** The per-walk "may auto-pay tap this source" check — see [ManaAbilityActivationGate]. */
-    private fun manaActivationGate(state: GameState, playerId: EntityId) =
-        ManaAbilityActivationGate(state, playerId, cardRegistry, predicateEvaluator) { castPermissions }
+    // One payment check runs several source walks over the same state; they share one gate so its
+    // battlefield scan and per-source verdicts are paid once per (state, player), not once per walk.
+    @Volatile private var lastActivationGate: ManaAbilityActivationGate? = null
+
+    /** The "may auto-pay tap this source" check — see [ManaAbilityActivationGate]. */
+    private fun manaActivationGate(state: GameState, playerId: EntityId): ManaAbilityActivationGate {
+        lastActivationGate?.takeIf { it.isFor(state, playerId) }?.let { return it }
+        return ManaAbilityActivationGate(state, playerId, cardRegistry, predicateEvaluator) { castPermissions }
+            .also { lastActivationGate = it }
+    }
 
     /** The five subtypes that grant a land its intrinsic `{T}: Add …` mana ability (CR 305.6). */
     private val basicLandSubtypeNames = setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
@@ -3359,10 +3366,10 @@ class ManaSolver private constructor(
 
         val gate = manaActivationGate(state, playerId)
         for (entityId in battlefieldCards) {
-            if (!gate.allows(entityId)) continue
             val container = state.getEntity(entityId) ?: continue
             val card = container.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            if (!gate.allows(entityId)) continue
 
             // Skip own abilities that have been stripped by a continuous effect (Humility, Noggle the Mind, etc.)
             if (projected.hasLostManaAbilities(entityId)) continue
@@ -3457,10 +3464,10 @@ class ManaSolver private constructor(
 
         val gate = manaActivationGate(state, playerId)
         for (entityId in projected.getBattlefieldControlledBy(playerId)) {
-            if (!gate.allows(entityId)) continue
             val container = state.getEntity(entityId) ?: continue
             // Face-down permanents have no abilities (CR 708.2).
             if (container.has<FaceDownComponent>()) continue
+            if (!gate.allows(entityId)) continue
             val card = container.get<CardComponent>() ?: continue
 
             val ownAbilities = if (projected.hasLostManaAbilities(entityId)) emptyList()
@@ -3675,11 +3682,11 @@ class ManaSolver private constructor(
 
         val gate = manaActivationGate(state, playerId)
         for (entityId in battlefieldCards) {
-            if (!gate.allows(entityId)) continue
             val container = state.getEntity(entityId) ?: continue
 
             // Already tapped → can't pay the {T} sub-cost.
             if (container.has<TappedComponent>()) continue
+            if (!gate.allows(entityId)) continue
 
             val card = container.get<CardComponent>() ?: continue
             // Own abilities stripped by Humility / similar — skip the printed mana ability; an
@@ -3804,9 +3811,9 @@ class ManaSolver private constructor(
 
         val gate = manaActivationGate(state, playerId)
         for (entityId in battlefieldCards) {
-            if (!gate.allows(entityId)) continue
             val container = state.getEntity(entityId) ?: continue
             if (container.has<TappedComponent>()) continue
+            if (!gate.allows(entityId)) continue
             val card = container.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
             if (projected.hasLostManaAbilities(entityId)) continue

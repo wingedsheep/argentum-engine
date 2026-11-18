@@ -1,7 +1,9 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.AttackTaxManaSelectionContinuation
 import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.core.Suspension
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
@@ -103,6 +105,30 @@ class OppressiveRaysScenarioTest : ScenarioTestBase() {
                 game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
                 game.declareAttackers(mapOf("Grizzly Bears" to 2)).error shouldBe null
                 withClue("the Aura's tax stopped the declaration to charge for it") {
+                    game.hasPendingDecision() shouldBe true
+                }
+                withClue("and the charge is {3}") {
+                    ((game.state.peekContinuation() as Suspension).answer as AttackTaxManaSelectionContinuation)
+                        .manaCost.cmc shouldBe 3
+                }
+            }
+
+            test("blocking with the enchanted creature costs {3} too") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(2, "Craw Wurm", summoningSickness = false)
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withCardAttachedTo(2, "Oppressive Rays", "Grizzly Bears")
+                    .withLandsOnBattlefield(1, "Plains", 3)
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Craw Wurm" to 1)).error shouldBe null
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.declareBlockers(mapOf("Grizzly Bears" to listOf("Craw Wurm"))).error shouldBe null
+                withClue("\"can't attack or block unless\" — the block stops to be paid for") {
                     game.hasPendingDecision() shouldBe true
                 }
             }

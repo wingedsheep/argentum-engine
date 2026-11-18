@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.scripting.PlayersCantActivateAbilities
 import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
 import com.wingedsheep.sdk.scripting.ReduceActivatedAbilityCost
 import com.wingedsheep.sdk.scripting.StaticAbility
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Whether the auto-payer may tap a permanent's mana abilities for [playerId] — the one question
@@ -33,10 +34,12 @@ import com.wingedsheep.sdk.scripting.StaticAbility
  * the tax on top, which the solver's free-tap model can't bill, and paying {3} to make one mana is
  * a choice the player makes by activating the ability by hand, after which its mana floats.
  *
- * Built once per walk. The battlefield scan behind [restricted] runs lazily, on the first source
- * that passes the walk's own checks, and is one pass over the statics; only when it finds a lock
- * or tax that could reach a mana ability does any per-source check run, so a board without one
- * (nearly all of them) pays a single scan per walk and nothing per source.
+ * Built once per (state, player) and shared by every walk of a payment check (`ManaSolver` keeps
+ * the last one). The battlefield scan behind [restricted] runs lazily, on the first source that
+ * passes a walk's own cheap checks (untapped, has abilities), and is one pass over the statics;
+ * only when it finds a lock or tax that could reach a mana ability does the per-source check run,
+ * once per source, memoized in [verdicts]. A board without one (nearly all of them) pays a single
+ * scan and nothing per source.
  */
 internal class ManaAbilityActivationGate(
     private val state: GameState,
@@ -45,15 +48,23 @@ internal class ManaAbilityActivationGate(
     private val predicateEvaluator: PredicateEvaluator,
     private val permissions: () -> CastPermissionUtils,
 ) {
-    private val restricted by lazy(LazyThreadSafetyMode.NONE) { mayRestrictManaAbilities(state, cardRegistry) }
+    private val restricted by lazy(LazyThreadSafetyMode.PUBLICATION) { mayRestrictManaAbilities(state, cardRegistry) }
+
+    /** Per-source lock/tax verdicts, filled only once [restricted] is true. */
+    private val verdicts = ConcurrentHashMap<EntityId, Boolean>()
+
+    /** Whether this gate answers for [state] (by identity — states are immutable) and [playerId]. */
+    fun isFor(state: GameState, playerId: EntityId): Boolean = this.state === state && this.playerId == playerId
 
     /** True when [playerId] may activate [sourceId]'s mana abilities at their printed cost. */
     fun allows(sourceId: EntityId): Boolean {
         if (!state.manaAbilitySourceAllowed(playerId, sourceId, predicateEvaluator)) return false
         if (!restricted) return true
-        val utils = permissions()
-        return !utils.isActivationForbidden(state, sourceId, playerId, abilityIsManaAbility = true) &&
-            !utils.taxesManaAbilities(state, sourceId, playerId)
+        return verdicts.getOrPut(sourceId) {
+            val utils = permissions()
+            !utils.isActivationForbidden(state, sourceId, playerId, abilityIsManaAbility = true) &&
+                !utils.taxesManaAbilities(state, sourceId, playerId)
+        }
     }
 
     companion object {

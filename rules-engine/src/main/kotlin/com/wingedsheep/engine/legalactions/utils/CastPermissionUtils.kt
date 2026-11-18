@@ -1536,8 +1536,8 @@ class CastPermissionUtils(
      * (own-permanent and any-player-may paths), `ManaAbilityEnumerator`, `ZoneActivatedAbilityEnumerator`
      * (graveyard, hand and command zone) — the enumerators that construct an `ActivateAbility`.
      * Not literally every path: `ManaSolver`'s auto-tap payment search filters on `isManaAbility`
-     * with no permission check, so a power-up *mana* ability (none is printed today) could still be
-     * auto-tapped for a cost.
+     * and its `ManaAbilityActivationGate` (activation locks and taxes) but not on this check, so a
+     * power-up *mana* ability (none is printed today) could still be auto-tapped for a cost.
      */
     fun isPowerUpActivationRestricted(state: GameState, ability: ActivatedAbility): Boolean =
         ability.isPowerUp && state.turnNumber in state.powerUpRestrictedTurns
