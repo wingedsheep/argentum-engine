@@ -55,6 +55,7 @@ import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.sdk.scripting.GrantDynamicStats
+import com.wingedsheep.sdk.scripting.GrantAdditionalTypesToGroup
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.AdditionalManaOnSourceTap
@@ -3579,16 +3580,16 @@ object CardIntentAnalyzer {
     // Static abilities
     // ═════════════════════════════════════════════════════════════════════════
 
-    /** An Aura's "enchanted permanent doesn't untap" — see [analyze]. */
     /**
      * A static that gives lands a basic land type the card's own landwalk names ("all lands are
      * Islands" beside islandwalk) — see the evasion read in [analyze].
      */
     private fun grantsOwnLandwalkLand(static: StaticAbility, keywords: Set<Keyword>): Boolean =
-        static is com.wingedsheep.sdk.scripting.GrantAdditionalTypesToGroup &&
-            static.filter.baseFilter.cardPredicates.contains(com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsLand) &&
+        static is GrantAdditionalTypesToGroup &&
+            CardPredicate.IsLand in static.filter.baseFilter.cardPredicates &&
             static.addSubtypes.any { subtype -> runCatching { Keyword.valueOf("${subtype.uppercase()}WALK") }.getOrNull() in keywords }
 
+    /** An Aura's "enchanted permanent doesn't untap" — see [analyze]. */
     private fun locksEnchantedTapped(static: StaticAbility): Boolean =
         static is GrantKeyword && static.keyword in LOCKED_TAPPED_FLAGS && static.filter.scope == Scope.AttachedTo
 
