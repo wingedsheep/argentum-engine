@@ -1,0 +1,2 @@
+- #4747 Auras whose "as long as it's an enchantment/artifact … otherwise …" statics are conditions on the enchanted permanent (Nyx Infusion) now aim the gift at its own enchantment creatures and the curse at the opponent's other creatures, instead of guessing.
+- #4747 Per-target "exile it; if you do, …" pipelines (Hour of Need) now read as exile removal — aimed at the opponent's creatures and valued as removal rather than as a token maker.

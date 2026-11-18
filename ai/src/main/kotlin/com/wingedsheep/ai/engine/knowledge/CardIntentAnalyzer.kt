@@ -759,6 +759,24 @@ object CardIntentAnalyzer {
                     leaf.space == IterationSpace.Targets && requirements.size == 1 &&
                         EffectWalker.payoffLeaves(leaf.body).all { it is MoveToZoneEffect } ->
                         readingLeaves(leaf.body, requirements)
+                    // "Exile any number of target creatures. For each creature exiled this way, its
+                    // controller creates a 4/4 Sphinx" (Hour of Need) gathers each target as
+                    // `ContextTarget(0)` and exiles it behind an "if you do" gate, to ask what left:
+                    // the single-target exile or destroy it amounts to, beside whatever the gate pays
+                    // off (the token). [TargetPolarityAnalyzer.pipelineRemovals] reads the same shape.
+                    leaf.space == IterationSpace.Targets && requirements.size == 1 &&
+                        TargetPolarityAnalyzer.pipelineRemovals(leaf.body, requirements).isNotEmpty() ->
+                        TargetPolarityAnalyzer.pipelineRemovals(leaf.body, requirements).flatMap { (slot, move) ->
+                            readingLeaves(
+                                MoveToZoneEffect(
+                                    target = EffectTarget.ContextTarget(slot),
+                                    destination = (move.destination as CardDestination.ToZone).zone,
+                                    byDestruction = move.moveType == MoveType.Destroy,
+                                    fromZone = Zone.BATTLEFIELD,
+                                ),
+                                requirements,
+                            )
+                        } + readingLeaves(leaf.body, requirements).filter { it !is GatedEffect }
                     // "One or two target creatures each get +2/+1 until end of turn" (Appeal to
                     // Eirdu, Coordinated Assault's "+1/+0 and gain first strike") runs its pump once
                     // per target, each seeing it as `ContextTarget(0)`: every target gets the same
