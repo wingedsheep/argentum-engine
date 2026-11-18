@@ -21,7 +21,8 @@ import io.kotest.matchers.shouldBe
 /**
  * CR 603.10a: leaves-the-battlefield abilities look back in time, so a permanent that leaves the
  * battlefield alongside others still sees them leave — whichever zone either one went to, not only
- * when both died.
+ * when both died. A "put into a graveyard from anywhere" ability is never a leaves-the-battlefield
+ * ability (CR 603.6c), so it doesn't look back, not even when its source died alongside.
  */
 class SimultaneousDepartureLookBackTest : FunSpec({
     val otherArtifact = GameObjectFilter.Artifact.youControl()
@@ -49,12 +50,19 @@ class SimultaneousDepartureLookBackTest : FunSpec({
             effect = Effects.GainLife(1)
         }
     }
+    val watchesGraveyardFromAnywhere = card("Test Artifact To Graveyard From Anywhere") {
+        typeLine = "Artifact"
+        triggeredAbility {
+            trigger = Triggers.another(otherArtifact).changesZone(to = Zone.GRAVEYARD)
+            effect = Effects.GainLife(1)
+        }
+    }
     val plainArtifact = card("Test Plain Artifact") {
         typeLine = "Artifact"
     }
 
     fun driver() = GameTestDriver().also {
-        it.registerCards(TestCards.all + listOf(watchesOthersDieOrExiled, watchesOthersDie, watchesOthersLeave, plainArtifact))
+        it.registerCards(TestCards.all + listOf(watchesOthersDieOrExiled, watchesOthersDie, watchesOthersLeave, watchesGraveyardFromAnywhere, plainArtifact))
         it.initMirrorMatch(Deck.of("Mountain" to 40))
     }
 
@@ -124,5 +132,28 @@ class SimultaneousDepartureLookBackTest : FunSpec({
         val b = d.putPermanentOnBattlefield(d.player1, plainArtifact.name)
         detectTogether(d, watcher, listOf(watcher to Zone.GRAVEYARD, a to Zone.GRAVEYARD, b to Zone.GRAVEYARD))
             .size shouldBe 2
+    }
+
+    test("a from-anywhere graveyard watcher that dies alongside another artifact doesn't look back") {
+        val d = driver()
+        val watcher = d.putPermanentOnBattlefield(d.player1, watchesGraveyardFromAnywhere.name)
+        val other = d.putPermanentOnBattlefield(d.player1, plainArtifact.name)
+        detectTogether(d, watcher, listOf(watcher to Zone.GRAVEYARD, other to Zone.GRAVEYARD)).shouldBeEmpty()
+    }
+
+    test("a from-anywhere graveyard watcher exiled alongside a dying artifact doesn't look back either") {
+        val d = driver()
+        val watcher = d.putPermanentOnBattlefield(d.player1, watchesGraveyardFromAnywhere.name)
+        val other = d.putPermanentOnBattlefield(d.player1, plainArtifact.name)
+        detectTogether(d, watcher, listOf(watcher to Zone.EXILE, other to Zone.GRAVEYARD)).shouldBeEmpty()
+    }
+
+    test("a from-anywhere graveyard watcher that stays on the battlefield still sees the death") {
+        val d = driver()
+        val watcher = d.putPermanentOnBattlefield(d.player1, watchesGraveyardFromAnywhere.name)
+        val other = d.putPermanentOnBattlefield(d.player1, plainArtifact.name)
+        val fired = detectTogether(d, watcher, listOf(other to Zone.GRAVEYARD))
+        fired.size shouldBe 1
+        fired.single().triggerContext.triggeringEntityId shouldBe other
     }
 })

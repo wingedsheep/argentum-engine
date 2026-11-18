@@ -3421,6 +3421,43 @@
     ]
 }
 
+// Profane Memento
+{
+    "name": "Profane Memento",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever a creature card is put into an opponent's graveyard from anywhere, you gain 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Profane Memento:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken own:opponent",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Whenever a creature card is put into an opponent's graveyard from anywhere, you gain 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "226",
+        "rarity": "UNCOMMON",
+        "artist": "Franz Vohwinkel",
+        "flavorText": "\"An angel's skull is left too plain by death. I made a few aesthetic modifications.\"\n—Dommique, blood artist",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2c97632-3cf1-4b79-9d18-d8991654dcca.jpg?1783939156"
+    },
+    "colorIdentityOverride": []
+}
+
 // Radiant Fountain
 {
     "name": "Radiant Fountain",

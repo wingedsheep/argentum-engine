@@ -10308,7 +10308,11 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   `Triggers.or(Triggers.self.transforms(true), Triggers.self.dies())` (Blightsower Thallid).
   The look-back also covers `another`/`a` leave triggers on a permanent that leaves *together* with
   others (CR 603.10a), whichever zone each went to: Slagstone Refinery exiled alongside another
-  nontoken artifact triggers once for that artifact as well as for itself.
+  nontoken artifact triggers once for that artifact as well as for itself. Only leaves-the-battlefield
+  abilities look back: a "put into a graveyard from anywhere" trigger
+  (`Triggers.a(filter).changesZone(to = Zone.GRAVEYARD)`, no `from`) is never one (CR 603.6c), so it
+  doesn't see cards that left together with its source, even when both died — Profane Memento or
+  Bloodchief Ascension destroyed alongside an opponent's creature doesn't trigger.
 - `Triggers.<subject>.becomesAttached(to, controller)`
   — "whenever an Aura/Equipment becomes attached to a permanent" (CR 603.2f). Fires from
   `PermanentAttachedEvent`, emitted at every attach site (aura ETB onto its enchant target, equip
