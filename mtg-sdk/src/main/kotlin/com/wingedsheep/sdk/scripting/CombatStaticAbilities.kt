@@ -488,7 +488,8 @@ data class CantAttackUnless(
  * declaration time. The creature itself is never counted as its own co-attacker.
  *
  * @property coAttackerFilter The filter a *different* attacking creature must match.
- * @property filter What this ability applies to.
+ * @property filter The creatures it binds: itself by default, or e.g. the enchanted creature
+ *   ([GroupFilter.attachedCreature], Sightless Brawler bestowed).
  */
 @SerialName("CantAttackUnlessCoAttacker")
 @Serializable
@@ -515,7 +516,7 @@ data class CantAttackUnlessCoAttacker(
  * that obeys more requirements wins — another creature that must attack does, and this one stays
  * home (the card's ruling).
  *
- * Like that one, the engine reads it with [filter] scoped to the creature itself — printed on
+ * The engine reads it with [filter] scoped to the creature itself — printed on
  * it, or on a token through its granted static abilities. A face-down creature or one that has
  * lost its abilities is unrestricted.
  *

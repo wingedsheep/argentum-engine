@@ -1170,9 +1170,9 @@ internal class BlockPhaseManager(
      * color/type-changing effects are honored). The co-blocker need not block the same attacker —
      * it just has to be declared as a blocker this combat. Self never counts as its own co-blocker.
      *
-     * Restrictions are read from both the card definition (printed) and grantedStaticAbilities, so
-     * the form arrives on a token without a CardDefinition (Toby's Beast token — "This token can't
-     * attack or block alone").
+     * Restrictions are read through [CombatStaticScan]: printed or granted (Toby's Beast token —
+     * "This token can't attack or block alone" — has no CardDefinition), and from any permanent
+     * whose filter covers the blocker, so an Aura's "enchanted creature can't block alone" binds too.
      */
     private fun validateCoBlockerRequirements(
         state: GameState,
@@ -1181,17 +1181,12 @@ internal class BlockPhaseManager(
         /** Whose restrictions to check; co-blockers are always drawn from all of [blockerIds]. */
         restrictionBlockerIds: Set<EntityId> = blockerIds,
     ): String? {
+        val scan = CombatStaticScan.collect(state, cardRegistry, predicateEvaluator) { it as? CantBlockUnlessCoBlocker }
+        if (scan.isEmpty()) return null
         for (blockerId in restrictionBlockerIds) {
-            val cardComponent = state.getEntity(blockerId)?.get<CardComponent>() ?: continue
-            if (state.getEntity(blockerId)?.has<FaceDownComponent>() == true || projected.hasLostAllAbilities(blockerId)) continue
-            val printed = cardRegistry.getCard(cardComponent.cardDefinitionId)
-                ?.staticAbilities.orEmpty()
-            val granted = state.grantedStaticAbilities
-                .filter { it.entityId == blockerId }
-                .map { it.ability }
-            val restrictions = (printed + granted)
-                .filterIsInstance<CantBlockUnlessCoBlocker>()
-                .filter { it.filter.scope is Scope.Self }
+            val restrictions = scan.filter {
+                CombatStaticScan.covers(state, predicateEvaluator, it.holder, it.controller, it.ability.filter, blockerId)
+            }.map { it.ability }
             for (restriction in restrictions) {
                 val context = PredicateContext(controllerId = projected.getController(blockerId) ?: blockerId)
                 val satisfied = blockerIds.any { otherId ->

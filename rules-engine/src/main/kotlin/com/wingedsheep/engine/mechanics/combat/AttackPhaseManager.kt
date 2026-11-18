@@ -772,9 +772,11 @@ internal class AttackPhaseManager(
         projected: ProjectedState,
         attackerIds: Set<EntityId>
     ): String? {
+        val scan = coAttackerScan(state)
+        if (scan.isEmpty()) return null
         for (attackerId in attackerIds) {
             val cardComponent = state.getEntity(attackerId)?.get<CardComponent>() ?: continue
-            for (restriction in coAttackerRestrictions(state, attackerId)) {
+            for (restriction in coAttackerRestrictions(state, attackerId, scan)) {
                 if (!coAttackerAvailable(state, projected, attackerId, restriction, attackerIds)) {
                     return "${cardComponent.name} ${restriction.description}"
                 }
@@ -784,22 +786,25 @@ internal class AttackPhaseManager(
     }
 
     /**
-     * The self-scoped [CantAttackUnlessCoAttacker] restrictions on [attackerId]. Tokens have no
-     * CardDefinition, so their restrictions arrive via grantedStaticAbilities (CreateTokenExecutor);
-     * both sources are unioned so the "can't attack alone" half of Toby's Beast token is enforced
-     * alongside printed restrictions (Scarred Puma).
+     * Every live [CantAttackUnlessCoAttacker] on the battlefield, read through [CombatStaticScan]:
+     * printed on a permanent or granted to it (a token's abilities arrive as granted statics),
+     * text changes applied, conditions evaluated, a face-down or ability-stripped holder skipped.
      */
-    private fun coAttackerRestrictions(state: GameState, attackerId: EntityId): List<CantAttackUnlessCoAttacker> {
-        val cardComponent = state.getEntity(attackerId)?.get<CardComponent>() ?: return emptyList()
-        val printed = cardRegistry.getCard(cardComponent.cardDefinitionId)
-            ?.staticAbilities.orEmpty()
-        val granted = state.grantedStaticAbilities
-            .filter { it.entityId == attackerId }
-            .map { it.ability }
-        return (printed + granted)
-            .filterIsInstance<CantAttackUnlessCoAttacker>()
-            .filter { it.filter.scope is Scope.Self }
-    }
+    private fun coAttackerScan(state: GameState): List<CombatStaticScan.Entry<CantAttackUnlessCoAttacker>> =
+        CombatStaticScan.collect(state, cardRegistry, predicateEvaluator) { it as? CantAttackUnlessCoAttacker }
+
+    /**
+     * The [CantAttackUnlessCoAttacker] restrictions that reach [attackerId]: its own ("This creature
+     * can't attack alone", Scarred Puma) and any whose filter covers it from another permanent —
+     * "Enchanted creature can't attack alone" on a bestowed Aura (Sightless Brawler).
+     */
+    private fun coAttackerRestrictions(
+        state: GameState,
+        attackerId: EntityId,
+        scan: List<CombatStaticScan.Entry<CantAttackUnlessCoAttacker>> = coAttackerScan(state),
+    ): List<CantAttackUnlessCoAttacker> = scan
+        .filter { CombatStaticScan.covers(state, predicateEvaluator, it.holder, it.controller, it.ability.filter, attackerId) }
+        .map { it.ability }
 
     /** Whether some creature in [candidates] other than [attackerId] satisfies [restriction]. */
     private fun coAttackerAvailable(
