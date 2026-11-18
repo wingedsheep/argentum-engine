@@ -369,6 +369,7 @@ Akoum Stonewaker
 Akoum Warrior
 Akroan Crusader
 Akroan Jailer
+Akroan Mastiff
 Akroan Sergeant
 Akroan Skyguard
 Akroma's Blessing
@@ -1017,6 +1018,7 @@ Ashnod, Flesh Mechanist
 Ashroot Animist
 Asinine Antics
 Asmodeus the Archfiend	intent: Pipeline(FromLinkedExile→hand)
+Aspect of Gorgon
 Aspect of Lamprey
 Aspect of Manticore
 Aspect of Wolf
@@ -1448,6 +1450,7 @@ Basri's Lieutenant
 Basri's Solidarity
 Basri, Devoted Paladin
 Basri, Tomorrow's Champion
+Bassara Tower Archer
 Bastion Enforcer
 Bastion Inventor
 Bastion Mastodon
@@ -1526,6 +1529,7 @@ Bearded Axe
 Bearer of Glory
 Bearer of Memory
 Bearer of Silence
+Bearer of the Heavens
 Beast Attack
 Beast Hunt
 Beast Whisperer
@@ -3030,6 +3034,7 @@ Charging Strifeknight
 Charging Troll
 Charging Tuskodon
 Charging War Boar
+Chariot of Victory
 Charisma Bobblehead
 Charismatic Conqueror
 Charismatic Vanguard
@@ -3269,6 +3274,7 @@ Cloak of Feathers
 Cloak of Mists
 Cloak of the Bat
 Cloaked Cadet
+Cloaked Siren
 Clockspinning
 Clockwork Avian	intent: ChooseNumberThenEffect
 Clockwork Beast	intent: ChooseNumberThenEffect
@@ -4010,6 +4016,7 @@ Cyclopean Snare
 Cyclopean Tomb	intent: ForEach>RecordSourceObjectsEffect; intent: Pipeline(ChosenTargets→?); intent: Pipeline(SourceLinkedBattlefield→?); intent: RecordSourceObjectsEffect; intent: SetLandTypeEffect; polarity: SetLandTypeEffect
 Cyclops Electromancer
 Cyclops Superconductor
+Cyclops of Eternal Fury
 Cyclops of One-Eyed Pass
 Cylian Elf
 Cynette, Jelly Drover
@@ -4619,6 +4626,7 @@ Diamond Weapon
 Diaochan, Artful Beauty
 Diary of Dreams
 Dictate of Erebos
+Dictate of Heliod
 Dictate of Kruphix
 Didact Echo
 Didn't Say Please
@@ -5034,6 +5042,7 @@ Dread Summons
 Dread Wanderer
 Dread of Night
 Dreadbore
+Dreadbringer Lampads
 Dreaded Bat-Cloud
 Dreadfeast Demon
 Dreadful Apathy
@@ -6303,6 +6312,7 @@ Feisty Spikeling
 Feldon's Cane	intent: Pipeline(graveyard→library)
 Feldon, Ronom Excavator
 Felhide Minotaur
+Felhide Petrifier
 Felidar Cub
 Felidar Guardian
 Felidar Retreat
@@ -6731,8 +6741,12 @@ Followed Footsteps
 Fomori Nomad
 Fomori Vault
 Font of Agonies
+Font of Fertility
+Font of Fortunes
+Font of Ire
 Font of Mythos
 Font of Progress
+Font of Vigor
 Food Coma
 Food Fight
 Fool's Tome
@@ -6790,6 +6804,7 @@ Forge Anew
 Forge Armor
 Forge Boss
 Forge Devil
+Forgeborn Oreads
 Forgehammer Centurion
 Forging the Anchor
 Forging the Tyrite Sword
@@ -7754,6 +7769,7 @@ Golden Bear
 Golden Demise
 Golden Egg
 Golden Guardian
+Golden Hind
 Golden Ratio
 Golden-Scale Aeronaut
 Golden-Tail Disciple
@@ -8007,6 +8023,7 @@ Grim Contest
 Grim Discovery
 Grim Draugr
 Grim Flayer
+Grim Guardian
 Grim Haruspex
 Grim Initiate
 Grim Javelineer
@@ -8338,6 +8355,7 @@ Harvest Season
 Harvester Troll
 Harvester of Misery
 Harvester of Souls
+Harvestguard Alseids
 Harvestrite Host
 Harvesttide Infiltrator
 Harvesttide Sentry	intent: GrantStaticAbilityEffect
@@ -8889,6 +8907,7 @@ Humble Budoka
 Humble Defector
 Humble Naturalist
 Humble the Brute
+Humbler of Mortals
 Humbling Elder
 Humiliate
 Humongulus
@@ -10322,6 +10341,7 @@ Kruin Outlaw
 Kruin Striker
 Krumar Bond-Kin
 Krumar Initiate
+Kruphix's Insight
 Kruphix, God of Horizons
 Kry Shield	polarity: mixed(ModifyStatsEffect+PreventDamageEffect)
 Krydle of Baldur's Gate
@@ -12721,6 +12741,7 @@ Oakenform
 Oakgnarl Warrior
 Oakhame Adversary
 Oakhame Ranger
+Oakheart Dryads
 Oakhollow Village	intent: AddCountersToCollectionEffect; intent: Pipeline(battlefield→?)
 Oakshade Stalker
 Oashra Cultivator
@@ -13442,6 +13463,7 @@ Phase Dolphin
 Phelia, Exuberant Shepherd	intent: Pipeline(ChosenTargets→battlefield|exile); polarity: CreateDelayedTriggerEffect; polarity: Pipeline(ChosenTargets→exile)
 Pheres-Band Brawler
 Pheres-Band Centaurs
+Pheres-Band Warchief
 Phial of Galadriel
 Phlage, Titan of Fire's Fury
 Phlox, Unorthodox Doctor
@@ -13543,6 +13565,7 @@ Pillar of Origins
 Pillardrop Rescuer
 Pillardrop Warden
 Pillarfield Ox
+Pin to the Earth
 Pincer Spider
 Pincher Beetles
 Pine Barrens
@@ -13937,6 +13960,7 @@ Prophesied End
 Prophet of Distortion
 Prophet of the Peak
 Prophetic Bolt
+Prophetic Flamespeaker
 Prophetic Prism
 Prophetic Ravings
 Prosperity
@@ -14745,6 +14769,7 @@ Renewing Dawn	polarity: GainLifeEffect
 Renewing Touch	intent: Pipeline(ChosenTargets→library)
 Reno and Rude
 Renowned Weaponsmith
+Renowned Weaver
 Rent Is Due
 Repair and Recharge
 Repeal
@@ -14762,6 +14787,7 @@ Replication Specialist
 Replicator
 Repository Skaab
 Reprieve
+Reprisal
 Reptil, Dinomorpher
 Reptilian Recruiter
 Reptilian Reflection
@@ -14879,6 +14905,7 @@ Rev, Tithe Extractor
 Revealing Wind
 Revel Ruiner
 Revel in Riches
+Revel of the Fallen God
 Revelation
 Revelation of Power
 Revelsong Horn
@@ -14904,6 +14931,7 @@ Revival of the Ancestors
 Revive
 Revive the Shire
 Reviving Dose
+Reviving Melody
 Reviving Vapors
 Revoke Demise
 Revoke Existence
@@ -15013,6 +15041,7 @@ Ripples of Undeath
 Ripscale Predator
 Riptide
 Riptide Biologist
+Riptide Chimera
 Riptide Chronologist	intent: ChooseOptionEffect; intent: ForEach>TapUntapEffect
 Riptide Crab
 Riptide Director
@@ -15029,6 +15058,7 @@ Rise Again
 Rise from the Grave
 Rise from the Tides
 Rise from the Wreck
+Rise of Eagles
 Rise of Extus
 Rise of the Ants
 Rise of the Dark Realms	intent: Pipeline(graveyard→battlefield)
