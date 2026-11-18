@@ -25,6 +25,93 @@
     ]
 }
 
+// Aerial Formation
+{
+    "name": "Aerial Formation",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Strive — This spell costs {2}{U} more to cast for each target beyond the first.\nAny number of target creatures each get +1/+1 and gain flying until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    {
+                        "type": "GrantKeyword",
+                        "keyword": "FLYING",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "IncreaseManaPerUnit",
+                    "symbols": "{2}{U}",
+                    "countSource": {
+                        "type": "ChosenTargets",
+                        "beyond": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fce86785-bc03-451e-8422-8bb53082cc12.jpg?1783939451",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "You choose how many targets each spell with a strive ability has and what those targets are as you cast it. It's legal to cast such a spell with no targets, although this is rarely a good idea. You can't choose the same target more than once for a single strive spell."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "The mana cost and mana value of strive spells don't change no matter how many targets they have. Strive abilities affect only what you pay."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If a spell or ability allows you to cast a strive spell without paying its mana cost, you must pay the additional costs for any targets beyond the first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ajani's Presence
 {
     "name": "Ajani's Presence",
@@ -800,6 +887,175 @@
     ]
 }
 
+// Colossal Heroics
+{
+    "name": "Colossal Heroics",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Strive — This spell costs {1}{G} more to cast for each target beyond the first.\nAny number of target creatures each get +2/+2 until end of turn. Untap those creatures.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "tap": false
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "IncreaseManaPerUnit",
+                    "symbols": "{1}{G}",
+                    "countSource": {
+                        "type": "ChosenTargets",
+                        "beyond": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "rarity": "UNCOMMON",
+        "artist": "Seb McKinnon",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c6139443-e31c-4eea-a99e-df9498fe18a8.jpg?1783939416",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Colossal Heroics can target any creatures, not just ones that are tapped."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "You choose how many targets each spell with a strive ability has and what those targets are as you cast it. It's legal to cast such a spell with no targets, although this is rarely a good idea. You can't choose the same target more than once for a single strive spell."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "The mana cost and mana value of strive spells don't change no matter how many targets they have. Strive abilities affect only what you pay."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If all of the spell's targets are illegal when the spell tries to resolve, it won't resolve and none of its effects will happen. If one or more of its targets are legal when it tries to resolve, the spell will resolve and affect only those legal targets. It will have no effect on any illegal targets."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If a spell or ability allows you to cast a strive spell without paying its mana cost, you must pay the additional costs for any targets beyond the first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Consign to Dust
+{
+    "name": "Consign to Dust",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Strive — This spell costs {2}{G} more to cast for each target beyond the first.\nDestroy any number of target artifacts and/or enchantments.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                },
+                "destination": "Graveyard",
+                "byDestruction": true
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "artifact|enchantment"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "IncreaseManaPerUnit",
+                    "symbols": "{2}{G}",
+                    "countSource": {
+                        "type": "ChosenTargets",
+                        "beyond": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "rarity": "UNCOMMON",
+        "artist": "Andreas Rocha",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/ee28c0ba-7305-4b64-8cb8-3ecd9c284c4a.jpg?1783939415",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "You choose how many targets each spell with a strive ability has and what those targets are as you cast it. It's legal to cast such a spell with no targets, although this is rarely a good idea. You can't choose the same target more than once for a single strive spell."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "The mana cost and mana value of strive spells don't change no matter how many targets they have. Strive abilities affect only what you pay."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If all of the spell's targets are illegal when the spell tries to resolve, it won't resolve and none of its effects will happen. If one or more of its targets are legal when it tries to resolve, the spell will resolve and affect only those legal targets. It will have no effect on any illegal targets."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If a spell or ability allows you to cast a strive spell without paying its mana cost, you must pay the additional costs for any targets beyond the first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Countermand
 {
     "name": "Countermand",
@@ -871,6 +1127,101 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Cruel Feeding
+{
+    "name": "Cruel Feeding",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "Strive — This spell costs {2}{B} more to cast for each target beyond the first.\nAny number of target creatures each get +1/+0 and gain lifelink until end of turn. (Damage dealt by a creature with lifelink also causes its controller to gain that much life.)",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    {
+                        "type": "GrantKeyword",
+                        "keyword": "LIFELINK",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "IncreaseManaPerUnit",
+                    "symbols": "{2}{B}",
+                    "countSource": {
+                        "type": "ChosenTargets",
+                        "beyond": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "artist": "Jason A. Engle",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a53624ee-2925-4a56-8706-e278db5d963d.jpg?1783939437",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "You choose how many targets each spell with a strive ability has and what those targets are as you cast it. It's legal to cast such a spell with no targets, although this is rarely a good idea. You can't choose the same target more than once for a single strive spell."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "The mana cost and mana value of strive spells don't change no matter how many targets they have. Strive abilities affect only what you pay."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If all of the spell's targets are illegal when the spell tries to resolve, it won't resolve and none of its effects will happen. If one or more of its targets are legal when it tries to resolve, the spell will resolve and affect only those legal targets. It will have no effect on any illegal targets."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If such a spell is copied, and the effect that copies the spell allows a player to choose new targets for the copy, the number of targets can't be changed. The player may change any number of the targets, including all of them or none of them. If, for one of the targets, the player can't choose a new legal target, then it remains unchanged (even if the current target is illegal)."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If a spell or ability allows you to cast a strive spell without paying its mana cost, you must pay the additional costs for any targets beyond the first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -1185,6 +1536,111 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Desperate Stand
+{
+    "name": "Desperate Stand",
+    "manaCost": "{R}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Strive — This spell costs {R}{W} more to cast for each target beyond the first.\nAny number of target creatures each get +2/+0 and gain first strike and vigilance until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    {
+                        "type": "GrantKeyword",
+                        "keyword": "FIRST_STRIKE",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    {
+                        "type": "GrantKeyword",
+                        "keyword": "VIGILANCE",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "IncreaseManaPerUnit",
+                    "symbols": "{R}{W}",
+                    "countSource": {
+                        "type": "ChosenTargets",
+                        "beyond": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "rarity": "UNCOMMON",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e8a4fb8d-8ddd-4d1d-92c7-2bf6b0e6c488.jpg?1783939406",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "You choose how many targets each spell with a strive ability has and what those targets are as you cast it. It's legal to cast such a spell with no targets, although this is rarely a good idea. You can't choose the same target more than once for a single strive spell."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "The mana cost and mana value of strive spells don't change no matter how many targets they have. Strive abilities affect only what you pay."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If all of the spell's targets are illegal when the spell tries to resolve, it won't resolve and none of its effects will happen. If one or more of its targets are legal when it tries to resolve, the spell will resolve and affect only those legal targets. It will have no effect on any illegal targets."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If such a spell is copied, and the effect that copies the spell allows a player to choose new targets for the copy, the number of targets can't be changed. The player may change any number of the targets, including all of them or none of them. If, for one of the targets, the player can't choose a new legal target, then it remains unchanged (even if the current target is illegal)."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If a spell or ability allows you to cast a strive spell without paying its mana cost, you must pay the additional costs for any targets beyond the first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
 }
 
 // Dictate of Erebos
@@ -1942,6 +2398,67 @@
     ]
 }
 
+// Gnarled Scarhide
+{
+    "name": "Gnarled Scarhide",
+    "manaCost": "{B}",
+    "typeLine": "Enchantment Creature — Minotaur",
+    "oracleText": "Bestow {3}{B} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nThis creature can't block.\nEnchanted creature gets +2/+1 and can't block.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{3}{B}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            "CantBlock",
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Staples",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/040af9b9-1e94-4dd1-b347-b54b6b9e0275.jpg?1783939434",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Unlike other Auras, an Aura with bestow isn't put into its owner's graveyard if it becomes unattached. Rather, the effect making it an Aura ends, it loses enchant creature, and it remains on the battlefield as an enchantment creature."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If a permanent with bestow enters the battlefield by any method other than being cast, it will be an enchantment creature. You can't choose to pay the bestow cost and have it become an Aura."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "You still control the Aura, even if it's enchanting a creature controlled by another player."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Godhunter Octopus
 {
     "name": "Godhunter Octopus",
@@ -2282,6 +2799,111 @@
     "colorIdentityOverride": []
 }
 
+// Harness by Force
+{
+    "name": "Harness by Force",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Strive — This spell costs {2}{R} more to cast for each target beyond the first.\nGain control of any number of target creatures until end of turn. Untap those creatures. They gain haste until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GainControl",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "duration": "EndOfTurn"
+                    },
+                    {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "tap": false
+                    },
+                    {
+                        "type": "GrantKeyword",
+                        "keyword": "HASTE",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "IncreaseManaPerUnit",
+                    "symbols": "{2}{R}",
+                    "countSource": {
+                        "type": "ChosenTargets",
+                        "beyond": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "rarity": "RARE",
+        "artist": "Yefim Kligerman",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/b/9bde89c1-aafa-43d9-adbf-671fa2b52d4f.jpg?1783939426",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Harness by Force can target any creature, even one that's untapped or one you already control."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Gaining control of a creature doesn't cause you to gain control of any Auras or Equipment attached to it."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "You choose how many targets each spell with a strive ability has and what those targets are as you cast it. It's legal to cast such a spell with no targets, although this is rarely a good idea. You can't choose the same target more than once for a single strive spell."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "The mana cost and mana value of strive spells don't change no matter how many targets they have. Strive abilities affect only what you pay."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If all of the spell's targets are illegal when the spell tries to resolve, it won't resolve and none of its effects will happen. If one or more of its targets are legal when it tries to resolve, the spell will resolve and affect only those legal targets. It will have no effect on any illegal targets."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If such a spell is copied, and the effect that copies the spell allows a player to choose new targets for the copy, the number of targets can't be changed. The player may change any number of the targets, including all of them or none of them. If, for one of the targets, the player can't choose a new legal target, then it remains unchanged (even if the current target is illegal)."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If a spell or ability allows you to cast a strive spell without paying its mana cost, you must pay the additional costs for any targets beyond the first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Harvestguard Alseids
 {
     "name": "Harvestguard Alseids",
@@ -2387,6 +3009,125 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Hour of Need
+{
+    "name": "Hour of Need",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Strive — This spell costs {1}{U} more to cast for each target beyond the first.\nExile any number of target creatures. For each creature exiled this way, its controller creates a 4/4 blue Sphinx creature token with flying.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Gated",
+                "gate": {
+                    "type": "Gate.DoAction",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "Entity",
+                                    "entity": {
+                                        "type": "ContextTarget",
+                                        "index": 0
+                                    }
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                },
+                                "storeMovedAs": "exiled"
+                            }
+                        ]
+                    },
+                    "successCriterion": {
+                        "type": "SuccessCriterion.CollectionNonEmpty",
+                        "name": "exiled"
+                    }
+                },
+                "then": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Sphinx"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/7/b74f1983-e9ac-47f0-836d-843a53c054cc.jpg?1783939394",
+                    "controller": "TargetController"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "IncreaseManaPerUnit",
+                    "symbols": "{1}{U}",
+                    "countSource": {
+                        "type": "ChosenTargets",
+                        "beyond": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Ejsing",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/737b859d-d81e-4da3-a8bf-9a8f23c75a50.jpg?1783939448",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "You choose how many targets each spell with a strive ability has and what those targets are as you cast it. It's legal to cast such a spell with no targets, although this is rarely a good idea. You can't choose the same target more than once for a single strive spell."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "The mana cost and mana value of strive spells don't change no matter how many targets they have. Strive abilities affect only what you pay."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If all of the spell's targets are illegal when the spell tries to resolve, it won't resolve and none of its effects will happen. If one or more of its targets are legal when it tries to resolve, the spell will resolve and affect only those legal targets. It will have no effect on any illegal targets."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If such a spell is copied, and the effect that copies the spell allows a player to choose new targets for the copy, the number of targets can't be changed. The player may change any number of the targets, including all of them or none of them. If, for one of the targets, the player can't choose a new legal target, then it remains unchanged (even if the current target is illegal)."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If a spell or ability allows you to cast a strive spell without paying its mana cost, you must pay the additional costs for any targets beyond the first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -2817,6 +3558,82 @@
     "colorIdentityOverride": [
         "BLUE",
         "RED"
+    ]
+}
+
+// Kiora's Dismissal
+{
+    "name": "Kiora's Dismissal",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Strive — This spell costs {U} more to cast for each target beyond the first.\nReturn any number of target enchantments to their owners' hands.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                },
+                "destination": "Hand"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "enchantment"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "IncreaseManaPerUnit",
+                    "symbols": "{U}",
+                    "countSource": {
+                        "type": "ChosenTargets",
+                        "beyond": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/21b040e5-651b-42ca-b487-66cf1d8180f9.jpg?1783939447",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "You choose how many targets each spell with a strive ability has and what those targets are as you cast it. It's legal to cast such a spell with no targets, although this is rarely a good idea. You can't choose the same target more than once for a single strive spell."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "The mana cost and mana value of strive spells don't change no matter how many targets they have. Strive abilities affect only what you pay."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If all of the spell's targets are illegal when the spell tries to resolve, it won't resolve and none of its effects will happen. If one or more of its targets are legal when it tries to resolve, the spell will resolve and affect only those legal targets. It will have no effect on any illegal targets."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If such a spell is copied, and the effect that copies the spell allows a player to choose new targets for the copy, the number of targets can't be changed. The player may change any number of the targets, including all of them or none of them. If, for one of the targets, the player can't choose a new legal target, then it remains unchanged (even if the current target is illegal)."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If a spell or ability allows you to cast a strive spell without paying its mana cost, you must pay the additional costs for any targets beyond the first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3330,6 +4147,71 @@
     ]
 }
 
+// Mogis's Warhound
+{
+    "name": "Mogis's Warhound",
+    "manaCost": "{1}{R}",
+    "typeLine": "Enchantment Creature — Dog",
+    "oracleText": "Bestow {2}{R} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nThis creature attacks each combat if able.\nEnchanted creature gets +2/+2 and attacks each combat if able.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{2}{R}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            "MustAttack",
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "MustAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "rarity": "UNCOMMON",
+        "artist": "John Severin Brassell",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2e73e06-d708-41dc-b20c-1f71651230e1.jpg?1783939422",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "The controller of Mogis's Warhound or the creature it's enchanting chooses which player or planeswalker to attack."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If, during your declare attackers step, Mogis's Warhound (or the creature it enchants) is tapped, is affected by a spell or ability that says it can't attack, or hasn't been under its controller's control continuously since the turn began (and doesn't have haste), then it doesn't attack. If there's a cost associated with having a creature attack, its controller isn't forced to pay that cost, so it doesn't have to attack in that case either."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Unlike other Auras, an Aura with bestow isn't put into its owner's graveyard if it becomes unattached. Rather, the effect making it an Aura ends, it loses enchant creature, and it remains on the battlefield as an enchantment creature. It can attack (and its {T} abilities can be activated, if it has any) on the turn it becomes unattached if it's been under your control continuously, even as an Aura, since your most recent turn began."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "You still control the Aura, even if it's enchanting a creature controlled by another player."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Mortal Obstinacy
 {
     "name": "Mortal Obstinacy",
@@ -3406,6 +4288,138 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Nature's Panoply
+{
+    "name": "Nature's Panoply",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Strive — This spell costs {2}{G} more to cast for each target beyond the first.\nChoose any number of target creatures. Put a +1/+1 counter on each of them.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "IncreaseManaPerUnit",
+                    "symbols": "{2}{G}",
+                    "countSource": {
+                        "type": "ChosenTargets",
+                        "beyond": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "artist": "John Avon",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/32177b9c-eef3-4eea-b623-74bfea1afad6.jpg?1783939411",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "You choose how many targets each spell with a strive ability has and what those targets are as you cast it. It's legal to cast such a spell with no targets, although this is rarely a good idea. You can't choose the same target more than once for a single strive spell."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "The mana cost and mana value of strive spells don't change no matter how many targets they have. Strive abilities affect only what you pay."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If all of the spell's targets are illegal when the spell tries to resolve, it won't resolve and none of its effects will happen. If one or more of its targets are legal when it tries to resolve, the spell will resolve and affect only those legal targets. It will have no effect on any illegal targets."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If such a spell is copied, and the effect that copies the spell allows a player to choose new targets for the copy, the number of targets can't be changed. The player may change any number of the targets, including all of them or none of them. If, for one of the targets, the player can't choose a new legal target, then it remains unchanged (even if the current target is illegal)."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If a spell or ability allows you to cast a strive spell without paying its mana cost, you must pay the additional costs for any targets beyond the first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Nyx Infusion
+{
+    "name": "Nyx Infusion",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+2 as long as it's an enchantment. Otherwise, it gets -2/-2.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 2
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "enchantment"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": -2,
+                    "toughnessBonus": -2
+                },
+                "condition": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "EntityMatches",
+                        "entity": "EnchantedPermanent",
+                        "filter": "enchantment"
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "artist": "Jason A. Engle",
+        "flavorText": "A balm or a poison depending on how it is administered, and to whom.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/1910d072-1660-4918-a338-d9f87926541d.jpg?1783939434"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -4401,6 +5415,101 @@
     ]
 }
 
+// Rouse the Mob
+{
+    "name": "Rouse the Mob",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Strive — This spell costs {2}{R} more to cast for each target beyond the first.\nAny number of target creatures each get +2/+0 and gain trample until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    {
+                        "type": "GrantKeyword",
+                        "keyword": "TRAMPLE",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "IncreaseManaPerUnit",
+                    "symbols": "{2}{R}",
+                    "countSource": {
+                        "type": "ChosenTargets",
+                        "beyond": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "artist": "John Stanko",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/64a07e7d-e203-4ecd-98bf-f8ef08c38d78.jpg?1783939421",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "You choose how many targets each spell with a strive ability has and what those targets are as you cast it. It's legal to cast such a spell with no targets, although this is rarely a good idea. You can't choose the same target more than once for a single strive spell."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "The mana cost and mana value of strive spells don't change no matter how many targets they have. Strive abilities affect only what you pay."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If all of the spell's targets are illegal when the spell tries to resolve, it won't resolve and none of its effects will happen. If one or more of its targets are legal when it tries to resolve, the spell will resolve and affect only those legal targets. It will have no effect on any illegal targets."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If such a spell is copied, and the effect that copies the spell allows a player to choose new targets for the copy, the number of targets can't be changed. The player may change any number of the targets, including all of them or none of them. If, for one of the targets, the player can't choose a new legal target, then it remains unchanged (even if the current target is illegal)."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If a spell or ability allows you to cast a strive spell without paying its mana cost, you must pay the additional costs for any targets beyond the first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Satyr Grovedancer
 {
     "name": "Satyr Grovedancer",
@@ -4653,6 +5762,107 @@
     ]
 }
 
+// Silence the Believers
+{
+    "name": "Silence the Believers",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Strive — This spell costs {2}{B} more to cast for each target beyond the first.\nExile any number of target creatures and all Auras attached to them.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "AttachedToTarget",
+                            "host": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "filter": "permanent Aura"
+                        },
+                        "storeAs": "gathered0"
+                    },
+                    {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Exile"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "gathered0",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Exile"
+                        }
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "IncreaseManaPerUnit",
+                    "symbols": "{2}{B}",
+                    "countSource": {
+                        "type": "ChosenTargets",
+                        "beyond": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d6dc2bd1-a980-4eab-8bb3-1ce28c3f9ef4.jpg?1783939430",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "The creatures and Auras are exiled at the same time. Specifically, if an Aura is a permanent with bestow, it will be exiled. It won't stop being an Aura and remain on the battlefield."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "You choose how many targets each spell with a strive ability has and what those targets are as you cast it. It's legal to cast such a spell with no targets, although this is rarely a good idea. You can't choose the same target more than once for a single strive spell."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "The mana cost and mana value of strive spells don't change no matter how many targets they have. Strive abilities affect only what you pay."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If all of the spell's targets are illegal when the spell tries to resolve, it won't resolve and none of its effects will happen. If one or more of its targets are legal when it tries to resolve, the spell will resolve and affect only those legal targets. It will have no effect on any illegal targets."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If a spell or ability allows you to cast a strive spell without paying its mana cost, you must pay the additional costs for any targets beyond the first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Skybind
 {
     "name": "Skybind",
@@ -4750,6 +5960,79 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Solidarity of Heroes
+{
+    "name": "Solidarity of Heroes",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Strive — This spell costs {1}{G} more to cast for each target beyond the first.\nChoose any number of target creatures. Double the number of +1/+1 counters on each of them.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": "DoubleCounters"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "IncreaseManaPerUnit",
+                    "symbols": "{1}{G}",
+                    "countSource": {
+                        "type": "ChosenTargets",
+                        "beyond": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "rarity": "UNCOMMON",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/b/9ba88e10-d306-44df-bdbf-f5ba85887fe8.jpg?1783939408",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Solidarity of Heroes can target any creatures, not just ones with +1/+1 counters on them. Notably, heroic abilities of any target creatures that put +1/+1 counters on that creature will resolve before Solidarity of Heroes."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "You choose how many targets each spell with a strive ability has and what those targets are as you cast it. It's legal to cast such a spell with no targets, although this is rarely a good idea. You can't choose the same target more than once for a single strive spell."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "The mana cost and mana value of strive spells don't change no matter how many targets they have. Strive abilities affect only what you pay."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If all of the spell's targets are illegal when the spell tries to resolve, it won't resolve and none of its effects will happen. If one or more of its targets are legal when it tries to resolve, the spell will resolve and affect only those legal targets. It will have no effect on any illegal targets."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If such a spell is copied, and the effect that copies the spell allows a player to choose new targets for the copy, the number of targets can't be changed. The player may change any number of the targets, including all of them or none of them. If, for one of the targets, the player can't choose a new legal target, then it remains unchanged (even if the current target is illegal)."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If a spell or ability allows you to cast a strive spell without paying its mana cost, you must pay the additional costs for any targets beyond the first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -5526,6 +6809,89 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Twinflame
+{
+    "name": "Twinflame",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Strive — This spell costs {2}{R} more to cast for each target beyond the first.\nChoose any number of target creatures you control. For each of them, create a token that's a copy of that creature, except it has haste. Exile those tokens at the beginning of the next end step.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "CreateTokenCopyOfTarget",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                },
+                "addedKeywords": [
+                    "HASTE"
+                ],
+                "exileAtStep": "END"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "IncreaseManaPerUnit",
+                    "symbols": "{2}{R}",
+                    "countSource": {
+                        "type": "ChosenTargets",
+                        "beyond": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "rarity": "RARE",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/207128b3-2de3-495a-bf29-eec50c3bd752.jpg?1783939418",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "You choose how many targets each spell with a strive ability has and what those targets are as you cast it. It's legal to cast such a spell with no targets, although this is rarely a good idea. You can't choose the same target more than once for a single strive spell."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "The mana cost and mana value of strive spells don't change no matter how many targets they have. Strive abilities affect only what you pay."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If all of the spell's targets are illegal when the spell tries to resolve, it won't resolve and none of its effects will happen. If one or more of its targets are legal when it tries to resolve, the spell will resolve and affect only those legal targets. It will have no effect on any illegal targets."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If a spell or ability allows you to cast a strive spell without paying its mana cost, you must pay the additional costs for any targets beyond the first."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If another creature becomes or enters the battlefield as a copy of the token, that creature will have haste, but you won't exile it. However, if Twinflame creates multiple tokens copying a single creature due to a replacement effect (like the one Doubling Season creates), you'll exile each of them."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "The tokens copy exactly what was printed on the original creature and nothing else (unless that permanent is copying something else or is a token; see below). It doesn't copy whether that creature is tapped or untapped, whether it has any counters on it or Auras and Equipment attached to it, or any non-copy effects that have changed its power, toughness, types, color, and so on."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

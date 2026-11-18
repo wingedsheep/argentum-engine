@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureHasSubtype
+import com.wingedsheep.sdk.scripting.conditions.EntityMatches
 import com.wingedsheep.sdk.scripting.conditions.NotCondition
 import com.wingedsheep.sdk.scripting.ControlEnchantedPermanent
 import com.wingedsheep.sdk.scripting.GrantActivatedAbility
@@ -845,6 +846,7 @@ object TargetPolarityAnalyzer {
         // with the same name as that card … put them into your hand" (Secret Salvage): a tutor keyed on
         // a card of ours, so the slot is our own pick — the name with copies left to find.
         for (slot in namedTutorSlots(effect, requirements)) perSlot[slot] += TargetPolarity.BENEFICIAL
+        for (slot in pipelineRemovalSlots(effect, requirements)) perSlot[slot] += TargetPolarity.HARMFUL
         for (slot in lossSlots(leaves, requirements)) {
             if (TargetPolarity.BENEFICIAL !in perSlot[slot]) perSlot[slot] += TargetPolarity.HARMFUL
         }
@@ -1587,8 +1589,14 @@ object TargetPolarityAnalyzer {
      * owner recast ([ownerRecastsChosenTargets]) and no later step, now or in a delayed trigger,
      * returning what it moved to the battlefield (a pipeline blink).
      */
-    internal fun removesChosenTargets(move: MoveCollectionEffect, effect: Effect): Boolean {
-        if (move.from !in allChosenTargets(effect)) return false
+    internal fun removesChosenTargets(move: MoveCollectionEffect, effect: Effect): Boolean =
+        move.from in allChosenTargets(effect) && removesForGood(move, effect)
+
+    /**
+     * Whether [move] puts what it moves into a graveyard or exile for good — [removesChosenTargets]
+     * without asking where the moved collection came from.
+     */
+    private fun removesForGood(move: MoveCollectionEffect, effect: Effect): Boolean {
         val zone = (move.destination as? CardDestination.ToZone)?.zone
         if (zone != Zone.GRAVEYARD && zone != Zone.EXILE) return false
         if (zone == Zone.EXILE && ownerRecastsChosenTargets(effect)) return false
@@ -1699,6 +1707,35 @@ object TargetPolarityAnalyzer {
             if (comesBack) returned += slots
         }
         return returned
+    }
+
+    /**
+     * The permanent slots a pipeline gathers one at a time and removes for good — "exile any number
+     * of target creatures. For each creature exiled this way, its controller creates a 4/4 Sphinx"
+     * (Hour of Need) as `IfYouDo(moveTracked(gather(CardSource.Entity(t)), ToZone(EXILE)), then = …)`
+     * per target: the single-target exile it is, spelled as gather + tracked move so the payoff can
+     * ask what left. The move usually sits in an "if you do" gate's action, which the payoff walk
+     * leaves out as a price; here it is the card's removal, not a cost paid with our own things,
+     * so the gate's interior is read too ([CardIntentAnalyzer.gateInteriorLeaves]).
+     */
+    private fun pipelineRemovalSlots(effect: Effect, requirements: List<TargetRequirement>): Set<Int> =
+        pipelineRemovals(effect, requirements).mapTo(HashSet()) { it.first }
+
+    /**
+     * Each [pipelineRemovalSlots] slot with the move that removes it — what the intent reader
+     * ([CardIntentAnalyzer]) reads as the single-target destroy or exile it amounts to.
+     */
+    internal fun pipelineRemovals(effect: Effect, requirements: List<TargetRequirement>): List<Pair<Int, MoveCollectionEffect>> {
+        val permanent = permanentSlots(requirements).toSet()
+        val leaves = CardIntentAnalyzer.gateInteriorLeaves(effect)
+        val removed = mutableListOf<Pair<Int, MoveCollectionEffect>>()
+        for (gather in leaves.filterIsInstance<GatherCardsEffect>()) {
+            val entity = (gather.source as? CardSource.Entity)?.entity ?: continue
+            val slot = slotOf(entity, requirements)?.takeIf { it in permanent } ?: continue
+            leaves.firstOrNull { it is MoveCollectionEffect && it.from == gather.storeAs && removesForGood(it, effect) }
+                ?.let { removed += slot to (it as MoveCollectionEffect) }
+        }
+        return removed
     }
 
     /** The permanent slots a pipeline blinks ([blinksChosenTargets]). */
@@ -2373,25 +2410,26 @@ object TargetPolarityAnalyzer {
     }
 
     /**
-     * The one creature type every conditional static of [card] turns on — "as long as enchanted
-     * creature is a Pirate" or its "otherwise" — or null when it has none, or any conditional
-     * static reads something else.
+     * The one host trait every conditional static of [card] turns on — "as long as enchanted
+     * creature is a Pirate" (its creature type), "as long as it's an enchantment" (Nyx Infusion's
+     * card type, an `EntityMatches` on the enchanted permanent), or their "otherwise" — or null when
+     * it has none, or any conditional static reads something else.
      */
-    private fun hostSubtype(card: CardDefinition): Subtype? {
+    private fun conditionalHostTrait(card: CardDefinition): HostTrait? {
         val conditional = card.script.staticAbilities.filterIsInstance<ConditionalStaticAbility>()
         if (conditional.isEmpty()) return null
-        val subtypes = conditional.map { hostSubtypeOf(it.condition) ?: return null }
-        return subtypes.distinct().singleOrNull()
+        val traits = conditional.map { hostTraitOf(it.condition) ?: return null }
+        return traits.distinct().singleOrNull()
     }
 
     /**
-     * What [card]'s abilities turn on about the host: its creature type ([hostSubtype]), or the one
+     * What [card]'s abilities turn on about the host: the trait its conditional statics name ([conditionalHostTrait]), or the one
      * card type every host-type gate of its statics and replacements names ([hostTypeGate]) — Armament
      * of Nyx's double strike "as long as it's an enchantment" and its prevention "otherwise". Null when
      * neither, or when its gates name more than one card type.
      */
     private fun hostTrait(card: CardDefinition): HostTrait? {
-        hostSubtype(card)?.let { return HostTrait.CreatureType(it) }
+        conditionalHostTrait(card)?.let { return it }
         if (card.script.staticAbilities.any { it is ConditionalStaticAbility }) return null
         val gates = card.script.staticAbilities.mapNotNull { hostTypeGate(it) } +
             card.script.replacementEffects.mapNotNull { hostTypeGate(it) }
@@ -2446,15 +2484,26 @@ object TargetPolarityAnalyzer {
             event.source.controllerPredicate == null
     }
 
-    private fun hostSubtypeOf(condition: Condition): Subtype? = when (condition) {
-        is EnchantedCreatureHasSubtype -> condition.subtype
-        is NotCondition -> (condition.condition as? EnchantedCreatureHasSubtype)?.subtype
+    /**
+     * The host trait a conditional static's condition (or its "otherwise", a [NotCondition]) asks
+     * about: the enchanted creature's subtype, or the enchanted permanent being exactly one of the
+     * [HOST_GATE_TYPES] card types ("as long as it's an enchantment").
+     */
+    private fun hostTraitOf(condition: Condition): HostTrait? = when (val inner = (condition as? NotCondition)?.condition ?: condition) {
+        is EnchantedCreatureHasSubtype -> HostTrait.CreatureType(inner.subtype)
+        is EntityMatches -> inner.filter
+            .takeIf {
+                inner.entity == EffectTarget.EnchantedPermanent && it.cardPredicates.size == 1 &&
+                    it.statePredicates.isEmpty() && it.controllerPredicate == null && it.anyOf.isEmpty()
+            }
+            ?.let { HOST_GATE_TYPES[it.cardPredicates.single()] }
+            ?.let(HostTrait::CardType)
         else -> null
     }
 
     /**
      * Every reading [attachmentPolarity] combines. With [hostIs] set, a static gated on the host's
-     * creature type ([hostSubtype]) or card type ([hostTypeGate]) counts only in the world where its
+     * creature or card type ([conditionalHostTrait]) or card type ([hostTypeGate]) counts only in the world where its
      * condition holds.
      */
     private fun attachmentReadings(card: CardDefinition, definitions: CardLookup, hostIs: Boolean?): List<TargetPolarity> {
