@@ -165,8 +165,8 @@ object TargetSelection {
 
     /**
      * The polarity of each candidate for [action]'s enchant slot, when it casts an Aura whose effect
-     * turns on the host's creature type ([HostSplit]) — read off the candidate's projected subtypes,
-     * so a changeling or a granted type counts. Null for any other action.
+     * turns on the host's creature or card type ([HostSplit]) — read off the candidate's projected
+     * types, so a changeling or a granted type counts. Null for any other action.
      */
     fun hostSplitPolarity(state: GameState, action: LegalAction, intents: IntentCatalog): ((EntityId) -> TargetPolarity)? {
         if (!intents.isEnabled) return null
@@ -175,7 +175,7 @@ object TargetSelection {
         val name = state.getEntity(cast.cardId)?.get<CardComponent>()?.name ?: return null
         val split = intents.spellHostSplit(name) ?: return null
         val projected = state.projectedState
-        return { entityId -> split.polarityFor(projected.hasSubtype(entityId, split.subtype.value)) }
+        return { entityId -> split.polarityFor(split.trait.of(projected, entityId)) }
     }
 
     /** [rank] read for a candidate of one-sided [polarity], [RIGHT_SIDE] ahead when it sits on that side. */

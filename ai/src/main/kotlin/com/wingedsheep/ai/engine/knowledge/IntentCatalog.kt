@@ -342,7 +342,8 @@ class IntentCatalog private constructor(private val registry: CardRegistry?) {
 
     /**
      * The per-candidate side of the Aura called [cardName] when what it does turns on the
-     * creature type of what it enchants (Sea Legs) — see [HostSplit]. Null for every other card.
+     * creature or card type of what it enchants (Sea Legs, Armament of Nyx) — see [HostSplit]. Null
+     * for every other card.
      */
     fun spellHostSplit(cardName: String): HostSplit? =
         registry?.getCard(cardName)?.let { TargetPolarityAnalyzer.hostSplit(it, ::tokenDefinition) }

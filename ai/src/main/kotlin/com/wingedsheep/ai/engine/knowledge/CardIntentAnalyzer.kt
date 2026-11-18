@@ -612,10 +612,6 @@ object CardIntentAnalyzer {
     }
 
     /** A trigger its holder fires by dealing combat damage itself ("whenever this creature deals combat damage to a player"). */
-    private fun dealsCombatDamage(trigger: TriggeredAbility): Boolean =
-        trigger.binding == TriggerBinding.SELF &&
-            (trigger.trigger as? EventPattern.DealsDamageEvent)?.damageType == com.wingedsheep.sdk.scripting.events.DamageType.Combat
-
     private fun tapsOrUntapsItself(cost: AbilityCost): Boolean = when (cost) {
         AbilityCost.Tap, AbilityCost.Untap -> true
         is AbilityCost.Composite -> cost.costs.any { tapsOrUntapsItself(it) }
@@ -2958,8 +2954,10 @@ object CardIntentAnalyzer {
             // a card' until end of turn" (Sygg, Wanderwine Wisdom; Commando Raid): a payoff for
             // this turn's attack connecting — a combat enhancement, like a keyword that pays off on
             // a hit. The granted effect itself waits on combat damage, so it is not read as a draw
-            // the HoldPolicy card-flow windows could cash.
-            else if (helpful && dealsCombatDamage(ability)) add(IntentTag.COMBAT_ENHANCEMENT)
+            // the HoldPolicy card-flow windows could cash. Any trigger only a fight fires is the
+            // same — "whenever this creature attacks, create a 1/1 Soldier that's tapped and
+            // attacking" (Launch the Fleet): this turn's attack is what pays it off.
+            else if (helpful && ExpiringGrantWindow.firesOnlyInAFight(ability)) add(IntentTag.COMBAT_ENHANCEMENT)
             // "Until end of turn, face-up nontoken creatures you control gain 'When this creature
             // dies, manifest the top card of your library'" (Whisperwood Elemental): the death it
             // waits on is the creature's own, so what the trigger does is what the grant is for —
@@ -3673,6 +3671,11 @@ object CardIntentAnalyzer {
         // the Trials' emblem): a shield over its controller rather than any permanent — the game
         // can't be taken from them while it holds.
         is GrantCantLoseGame, is GrantOpponentsCantWinGame -> setOf(IntentTag.PROTECTION)
+        // "You have hexproof" (Leyline of Sanctity, Aegis of the Gods, Shalai) and "you have shroud"
+        // (True Believer): the same shield over its controller — no burn, discard or drain aimed at
+        // them gets through. The player-level form of the hexproof [keywordTags] reads on a creature.
+        com.wingedsheep.sdk.scripting.GrantHexproofToController,
+        com.wingedsheep.sdk.scripting.GrantShroudToController -> setOf(IntentTag.PROTECTION)
         is CanBlockAdditionalForCreatureGroup ->
             if (static.count > 0) setOf(IntentTag.EXTRA_BLOCKING) else emptySet()
         // "This creature can block Dragons as though it had reach" (Dragon Hunter): attackers it
