@@ -160,6 +160,193 @@
     ]
 }
 
+// Ajani Steadfast
+{
+    "name": "Ajani Steadfast",
+    "manaCost": "{3}{W}",
+    "typeLine": "Legendary Planeswalker — Ajani",
+    "oracleText": "+1: Until end of turn, up to one target creature gets +1/+1 and gains first strike, vigilance, and lifelink.\n−2: Put a +1/+1 counter on each creature you control and a loyalty counter on each other planeswalker you control.\n−7: You get an emblem with \"If a source would deal damage to you or a planeswalker you control, prevent all but 1 of that damage.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ajani Steadfast:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FIRST_STRIKE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "VIGILANCE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "LIFELINK",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Ajani Steadfast:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:you"
+                                }
+                            },
+                            "body": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "IterationEntity"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "planeswalker ctrl:you",
+                                    "excludeSelf": true
+                                }
+                            },
+                            "body": {
+                                "type": "AddCounters",
+                                "counterType": "LOYALTY",
+                                "count": 1,
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Ajani Steadfast:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "CreatePermanentEmblem",
+                    "ownedReplacementEffects": [
+                        {
+                            "type": "PreventDamage",
+                            "appliesTo": {
+                                "type": "DamageEvent",
+                                "recipient": {
+                                    "type": "RecipientAnyOf",
+                                    "options": [
+                                        {
+                                            "type": "RecipientPlayer",
+                                            "player": "You"
+                                        },
+                                        {
+                                            "type": "RecipientObject",
+                                            "filter": "planeswalker ctrl:you"
+                                        }
+                                    ]
+                                }
+                            },
+                            "allBut": 1
+                        }
+                    ],
+                    "emblemDescription": "If a source would deal damage to you or a planeswalker you control, prevent all but 1 of that damage."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f9302ba8-7ff2-4eaa-a32d-eedd94f0bb79.jpg?1783939205",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "You may activate the first ability with no targets. If you do, you simply put a loyalty counter on Ajani to pay the cost of the ability."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If a permanent you control is both a creature and a planeswalker, Ajani's second ability will put both a +1/+1 counter and a loyalty counter on it."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "The emblem's ability doesn't consider who controls the source dealing damage to you or a planeswalker you control."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Each attacking creature is a separate source of damage. For example, if two 3/3 creatures attack you and are unblocked, the emblem will prevent 2 damage from each creature. You'll be dealt a total of 2 damage."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If multiple effects modify how damage is dealt, the player being dealt damage or the controller of the permanent being dealt damage chooses the order to apply the effects. For example, Dictate of the Twin Gods says, \"If a source would deal damage to a permanent or player, it deals double that damage to that permanent or player instead.\" Suppose you would be dealt 3 damage while Dictate of the Twin Gods is on the battlefield and you control Ajani's emblem. You can either (a) prevent all but 1 damage first and then let Dictate of the Twin Gods's effect double that, for a result of being dealt 2 damage, or (b) double the damage to 6 and then prevent all but 1 of that damage."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Altac Bloodseeker
 {
     "name": "Altac Bloodseeker",
@@ -1436,6 +1623,48 @@
     ]
 }
 
+// Endless Obedience
+{
+    "name": "Endless Obedience",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nPut target creature card from a graveyard onto the battlefield under your control.",
+    "keywords": [
+        "CONVOKE"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Battlefield",
+            "controllerOverride": "Controller",
+            "fromZone": "Graveyard"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "UNCOMMON",
+        "artist": "Karl Kopinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c70ceae6-8b25-4ce2-b89b-45300401fec5.jpg?1783939184"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Ensoul Artifact
 {
     "name": "Ensoul Artifact",
@@ -1522,6 +1751,62 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Eternal Thirst
+{
+    "name": "Eternal Thirst",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature has lifelink and \"Whenever a creature an opponent controls dies, put a +1/+1 counter on this creature.\" (Damage dealt by a creature with lifelink also causes its controller to gain that much life.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "LIFELINK"
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Eternal Thirst:1",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "filter": "creature ctrl:opponent",
+                        "from": "Battlefield",
+                        "to": "Graveyard"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "Self"
+                    },
+                    "descriptionOverride": "Whenever a creature an opponent controls dies, put a +1/+1 counter on this creature."
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "artist": "Clint Cearley",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/9228ea53-4aea-45f5-bec5-4a0629ec8825.jpg?1783939184",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "If the enchanted creature is dealt lethal damage at the same time as a creature an opponent controls, they're destroyed at the same time. It won't receive a +1/+1 counter from its ability in time to save it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -1678,6 +1963,75 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// First Response
+{
+    "name": "First Response",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of each upkeep, if you lost life last turn, create a 1/1 white Soldier creature token.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "First Response:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "LIFE_LOST_LAST_TURN"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "flavorText": "\"There's never a good time for a disaster or an attack. That's why we're here.\"\n—Oren, militia captain",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/36341d37-064e-449e-8be7-a2716ae7e317.jpg?1783939203",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "First Response looks at the entire previous turn to determine whether its ability triggers or not. It doesn't matter whether First Response was on the battlefield when you lost life."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "First Response checks only if you lost life during the turn, not whether your life total decreased over the course of the turn. For example, if you lost 2 life and then gained 8 life last turn, First Response's ability will trigger."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "Only one Soldier will be created no matter how much life was lost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -2310,6 +2664,94 @@
     ]
 }
 
+// Indulgent Tormentor
+{
+    "name": "Indulgent Tormentor",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "Flying\nAt the beginning of your upkeep, draw a card unless target opponent sacrifices a creature of their choice or pays 3 life.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Indulgent Tormentor:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "Choice",
+                        "options": [
+                            {
+                                "type": "PayAtom",
+                                "atom": {
+                                    "type": "AtomSacrifice",
+                                    "filter": "creature"
+                                }
+                            },
+                            {
+                                "type": "PayAtom",
+                                "atom": {
+                                    "type": "AtomPayLife",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "suffer": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "player": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "consequenceDescription": "let Indulgent Tormentor's controller draw a card"
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "RARE",
+        "artist": "Wesley Burt",
+        "flavorText": "The promise of anguish is payment enough for services rendered.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4da8a4d8-6d18-4588-8da9-cd32658071f0.jpg?1783939183",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "The opponent chooses whether they sacrifice a creature, pays 3 life, or allows you to draw a card. That player can't make an impossible choice, such as sacrificing a creature while they control no creatures."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "If there are no legal targets to choose, perhaps because all your opponents have hexproof, the ability is removed from the stack with no effect. You won't draw a card. This is also true if the target opponent becomes an illegal target in response to the ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Inferno Fist
 {
     "name": "Inferno Fist",
@@ -2894,6 +3336,62 @@
     ]
 }
 
+// Leeching Sliver
+{
+    "name": "Leeching Sliver",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Sliver",
+    "oracleText": "Whenever a Sliver you control attacks, defending player loses 1 life.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Leeching Sliver:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "creature Sliver ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "DefendingPlayer"
+                    }
+                },
+                "descriptionOverride": "Whenever a Sliver you control attacks, defending player loses 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"Seeing one slowly devour one of my party begged the question—do they know what cruelty is?\"\n—Hastric, Thunian scout",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/888ca52b-1270-4587-804d-1d08b07d7c5d.jpg?1783939183",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "Slivers in this set affect only Sliver creatures you control. They don't grant bonuses to your opponents' Slivers. This is the same way Slivers from the Magic 2014 core set worked, while Slivers in earlier sets granted bonuses to all Slivers."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If you change the creature type of a Sliver you control so it's no longer a Sliver, it will no longer be affected by its own ability. Its ability will continue to affect other Sliver creatures you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Living Totem
 {
     "name": "Living Totem",
@@ -2982,6 +3480,166 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Master of Predicaments
+{
+    "name": "Master of Predicaments",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Sphinx",
+    "oracleText": "Flying\nWhenever this creature deals combat damage to a player, choose a card in your hand. That player guesses whether the card's mana value is greater than 4. If the player guessed wrong, you may cast the card without paying its mana cost.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Master of Predicaments:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Choose a card in your hand",
+                            "selectedLabel": "Chosen card"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "selected1",
+                            "ifNotEmpty": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "PlayerGuessesConditionEffect",
+                                        "condition": {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "StoredCardManaValue",
+                                                "collectionName": "selected1"
+                                            },
+                                            "operator": "GT",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 4
+                                            }
+                                        },
+                                        "prompt": "Is the mana value of the card your opponent chose from their hand greater than 4?",
+                                        "storeGuessedRightAs": "predicamentGuessedRight",
+                                        "guesser": "TriggeringPlayer"
+                                    },
+                                    {
+                                        "type": "Gated",
+                                        "gate": {
+                                            "type": "Gate.WhenCondition",
+                                            "condition": {
+                                                "type": "Compare",
+                                                "left": {
+                                                    "type": "VariableReference",
+                                                    "variableName": "predicamentGuessedRight"
+                                                },
+                                                "operator": "EQ",
+                                                "right": {
+                                                    "type": "Fixed",
+                                                    "amount": 0
+                                                }
+                                            }
+                                        },
+                                        "then": {
+                                            "type": "Composite",
+                                            "effects": [
+                                                {
+                                                    "type": "SelectFromCollection",
+                                                    "from": "selected1",
+                                                    "selection": "ChooseSpell",
+                                                    "storeSelected": "selected5",
+                                                    "prompt": "Your opponent guessed wrong. You may cast the chosen card without paying its mana cost.",
+                                                    "selectedLabel": "Cast without paying its mana cost"
+                                                },
+                                                {
+                                                    "type": "CastFromCollectionWithoutPayingCost",
+                                                    "from": "selected5"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, choose a card in your hand. That player guesses whether the card's mana value is greater than 4. If the player guessed wrong, you may cast the card without paying its mana cost."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "RARE",
+        "artist": "Matt Stewart",
+        "flavorText": "Designed by David Sirlin",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0b1720b-ab7a-4b52-a6d0-11c4fc573d17.jpg?1783939190",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "If the card is a split card, its mana value is determined by the combined mana cost of its two halves. If the player guesses wrong and you cast a split card this way, you may cast either half (or both halves if the card has fuse), no matter what its mana value is."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Although you may choose a land card in your hand, you won't be able to play it even if the player guessed wrong."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If you don't cast the card, either because the player guessed right or because you choose not to cast it, you don't have to reveal it. Your opponent won't know the reason you didn't cast the card."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "To choose a card in your hand, clearly separate it from the rest of your hand without revealing it."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "You cast the card in your hand as part of the resolution of the triggered ability. Timing restrictions based on the card's type (such as creature or sorcery) are ignored. Other restrictions, such as \"Cast [this card] only during combat,\" are not."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If you cast a card \"without paying its mana cost,\" you can't pay any alternative costs. Notably, you can't cast a card with bestow as an Aura this way. You can, however, pay additional costs, such as kicker costs. If the card has any mandatory additional costs, you must pay those."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If the card has {X} in its mana cost, X is 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4439,6 +5097,59 @@
     ]
 }
 
+// Return to the Ranks
+{
+    "name": "Return to the Ranks",
+    "manaCost": "{X}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nReturn X target creature cards with mana value 2 or less from your graveyard to the battlefield.",
+    "keywords": [
+        "CONVOKE"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                },
+                "destination": "Battlefield",
+                "fromZone": "Graveyard"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature mv<=2 own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0",
+                "dynamicMaxCount": "XValue",
+                "dynamicMinCount": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "RARE",
+        "artist": "Michael Komarck",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9fccce64-abac-4b90-bbe5-dbba8434b3b4.jpg?1783939198",
+        "rulings": [
+            {
+                "date": "2024-01-12",
+                "text": "When using convoke to cast a spell with {X} in its mana cost, first choose the value for X. That choice, plus any cost increases or decreases, will determine the spell's total cost. Then you can tap creatures you control to help pay that cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Rogue's Gloves
 {
     "name": "Rogue's Gloves",
@@ -4512,6 +5223,77 @@
         "imageUri": "https://cards.scryfall.io/normal/front/2/2/22a35bd7-8f0f-421a-948d-810513e6b0a0.jpg?1783939156"
     },
     "colorIdentityOverride": []
+}
+
+// Rotfeaster Maggot
+{
+    "name": "Rotfeaster Maggot",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "When this creature enters, exile target creature card from a graveyard. You gain life equal to that card's toughness.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rotfeaster Maggot:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "numericProperty": "Toughness"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, exile target creature card from a graveyard. You gain life equal to that card's toughness."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "Is it at the top of the food chain or the bottom?",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c8e2442-0677-4ea6-8d70-4c39fbb552ed.jpg?1783939180",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "Rotfeaster Maggot's ability is mandatory. If you are the only player with creature cards in your graveyard, you must target one of them."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Sacred Armory
@@ -6144,6 +6926,51 @@
     ]
 }
 
+// Unmake the Graves
+{
+    "name": "Unmake the Graves",
+    "manaCost": "{4}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nReturn up to two target creature cards from your graveyard to your hand.",
+    "keywords": [
+        "CONVOKE"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                },
+                "destination": "Hand"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "artist": "Aaron Miller",
+        "flavorText": "\"I'm raising an army. Any volunteers?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d6fd00bb-b247-45b7-9cb2-0d65b92c0360.jpg?1783939179"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Venom Sliver
 {
     "name": "Venom Sliver",
@@ -6261,6 +7088,92 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Wall of Limbs
+{
+    "name": "Wall of Limbs",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Zombie Wall",
+    "oracleText": "Defender (This creature can't attack.)\nWhenever you gain life, put a +1/+1 counter on this creature.\n{5}{B}{B}, Sacrifice this creature: Target player loses X life, where X is this creature's power.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wall of Limbs:1",
+                "trigger": "LifeGainEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Wall of Limbs:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}{B}{B}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{5}{B}{B}, Sacrifice this creature: Target player loses X life, where X is this creature's power."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66d46b81-3131-4561-beca-ccf4a0973610.jpg?1783939180",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "The ability triggers just once for each life-gaining event, whether it's 1 life from Soulmender or 8 life from Meditation Puzzle."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Use Wall of Limbs's power as it last existed on the battlefield, including any +1/+1 counters it had, to determine the value of X."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -6430,6 +7343,66 @@
         "artist": "Jack Wang",
         "flavorText": "Some bog witches practice the strange art of batrachomancy, reading portents in the number, size, and color of warts on a toad's hide.",
         "imageUri": "https://cards.scryfall.io/normal/front/8/c/8c9f3b3b-de16-4ae5-844e-1373e0f84469.jpg?1783939178"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Xathrid Slyblade
+{
+    "name": "Xathrid Slyblade",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Assassin",
+    "oracleText": "Hexproof (This creature can't be the target of spells or abilities your opponents control.)\n{3}{B}: Until end of turn, this creature loses hexproof and gains first strike and deathtouch. (It deals combat damage before creatures without first strike. Any amount of damage it deals to a creature is enough to destroy it.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "HEXPROOF"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Xathrid Slyblade:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RemoveKeyword",
+                            "keyword": "HEXPROOF",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FIRST_STRIKE",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DEATHTOUCH",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{3}{B}: Until end of turn, this creature loses hexproof and gains first strike and deathtouch."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Prescott",
+        "flavorText": "Designed by Rob Pardo",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/909a9252-1e97-4e85-9648-66050f301f8a.jpg?1783939178"
     },
     "colorIdentityOverride": [
         "BLACK"

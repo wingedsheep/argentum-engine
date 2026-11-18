@@ -422,31 +422,7 @@ object CardIntentAnalyzer {
             anthemBonus = maxOf(anthemBonus, anthemBonusOf(static))
         }
 
-        if (scripts.any { script -> script.replacementEffects.any(DamageAmplifiers::reads) }) {
-            tags += IntentTag.DAMAGE_AMPLIFIER
-        }
-        // A standing damage-prevention shield over us and our permanents (Protection of the Hekma,
-        // Gideon's Intervention) protects the way a protective static does ([DamageShields]).
-        if (scripts.any { script -> script.replacementEffects.any(DamageShields::reads) }) {
-            tags += IntentTag.PROTECTION
-        }
-        // "If you would lose the game, instead …" / "if your life total would be reduced to 0 or
-        // less, instead …" (Exquisite Archangel, Enduring Angel): a second life for us ([LossShields]).
-        if (scripts.any { script -> script.replacementEffects.any(LossShields::reads) }) {
-            tags += IntentTag.PROTECTION
-        }
-        // "If an effect causes you to discard a card, you may put it on top of your library instead"
-        // (Library of Leng, Nephalia Academy): the discarded card is our next draw ([DiscardShields]).
-        if (scripts.any { script -> script.replacementEffects.any(DiscardShields::reads) }) {
-            tags += IntentTag.DISCARD_SHIELD
-        }
-        // "Your opponents can't gain life" / "if an opponent would gain life, that player loses
-        // that much life instead" (Archfiend of Despair, Tainted Remedy — [LifeGainLocks]). What the
-        // opponent's gain becomes is read like any effect: Tainted Remedy's loss drains them.
-        for (script in scripts) for (replacement in script.replacementEffects.filter(LifeGainLocks::reads)) {
-            tags += IntentTag.LIFEGAIN_LOCK
-            if (replacement is ReplaceLifeGainWith) EffectWalker.leaves(replacement.replacementEffect).forEach { tags += tagsOf(it) }
-        }
+        for (script in scripts) for (replacement in script.replacementEffects) tags += standingReplacementTags(replacement)
 
         val activated = scripts.flatMap { it.activatedAbilities }
         if (activated.any { it.isManaAbility }) tags += IntentTag.RAMP
@@ -595,6 +571,26 @@ object CardIntentAnalyzer {
      * token making, the life is life gain. A self-only replacement's rider (Ugin's Nexus, Darigaaz)
      * is the card's own leave-play consolation and stays out.
      */
+    /**
+     * What a standing replacement effect — printed on a permanent, or held by an emblem — is for:
+     * damage amplified ([DamageAmplifiers]); a damage-prevention shield over us and our permanents
+     * (Protection of the Hekma, Gideon's Intervention, Ajani Steadfast's emblem — [DamageShields])
+     * or a second life for us ("if you would lose the game, instead …", Exquisite Archangel —
+     * [LossShields]), both protection the way a protective static is; a discarded card that becomes
+     * our next draw (Library of Leng — [DiscardShields]); and "your opponents can't gain life" /
+     * "if an opponent would gain life, that player loses that much life instead" (Archfiend of
+     * Despair, Tainted Remedy — [LifeGainLocks]), whose replacement is read like any effect.
+     */
+    private fun standingReplacementTags(replacement: ReplacementEffect): Set<IntentTag> = buildSet {
+        if (DamageAmplifiers.reads(replacement)) add(IntentTag.DAMAGE_AMPLIFIER)
+        if (DamageShields.reads(replacement) || LossShields.reads(replacement)) add(IntentTag.PROTECTION)
+        if (DiscardShields.reads(replacement)) add(IntentTag.DISCARD_SHIELD)
+        if (LifeGainLocks.reads(replacement)) {
+            add(IntentTag.LIFEGAIN_LOCK)
+            if (replacement is ReplaceLifeGainWith) EffectWalker.leaves(replacement.replacementEffect).forEach { addAll(tagsOf(it)) }
+        }
+    }
+
     private fun repeatingRiderOf(replacement: ReplacementEffect): Effect? =
         (replacement as? RedirectZoneChangeWith)?.takeUnless { it.selfOnly }?.additionalEffect
 
@@ -829,6 +825,7 @@ object CardIntentAnalyzer {
                 is GatedEffect -> punisherBranchLeaves(leaf, requirements) ?: listOf(leaf)
                 is ChooseActionEffect -> punisherChoiceLeaves(leaf, requirements) ?: listOf(leaf)
                 is AnyPlayerMayPayEffect -> opponentOfferLeaves(leaf, requirements) ?: listOf(leaf)
+                is PayOrSufferEffect -> opponentPunisherLeaves(leaf, requirements) ?: listOf(leaf)
                 else -> listOf(leaf)
             }
         }
@@ -867,6 +864,50 @@ object CardIntentAnalyzer {
             }.filterNotNull()
         }
         return branches.flatten().takeIf { it.isNotEmpty() }
+    }
+
+    /**
+     * The ways out of an unless-clause an opponent pays — "draw a card unless target opponent
+     * sacrifices a creature or pays 3 life" (Indulgent Tormentor), "target opponent loses 3 life
+     * unless they sacrifice a creature" — read as the branches of [punisherChoiceLeaves]: the
+     * payer either takes the suffer or pays one of the costs, and every one of those is ours. A
+     * sacrifice they pay is the edict ([ForceSacrificeEffect]) it amounts to, life they pay is the
+     * life they lose, and a suffer aimed at the payer reads as aimed at an opponent.
+     *
+     * Null — the clause stays an unread leaf — when it is paid by our controller (an upkeep cost),
+     * and when the suffer or any cost reads as nothing for us: a mana tax (Rhystic Study) the payer
+     * can always buy their way out of.
+     */
+    private fun opponentPunisherLeaves(punisher: PayOrSufferEffect, requirements: List<TargetRequirement>): List<Effect>? {
+        if (!paidByAnOpponent(punisher.player, null)) return null
+        val opponent = EffectTarget.PlayerRef(Player.EachOpponent)
+        val suffer = readingLeaves(punisher.suffer, requirements).map { leaf ->
+            when {
+                leaf is LoseLifeEffect && leaf.target == punisher.player -> leaf.copy(target = opponent)
+                leaf is DealDamageEffect && leaf.target == punisher.player -> leaf.copy(target = opponent)
+                else -> leaf
+            }
+        }
+        val payments = paymentOptions(punisher.cost).map { option -> paymentLeaf(option, opponent) ?: return null }
+        val branches = listOf(suffer) + payments.map(::listOf)
+        return if (branches.all { leaves -> leaves.any { tagsOf(it).isNotEmpty() } }) branches.flatten() else null
+    }
+
+    /** Each cost a payer may choose among: a [PayCost.Choice]'s options, flattened, or the one cost. */
+    private fun paymentOptions(cost: PayCost): List<PayCost> = when (cost) {
+        is PayCost.Choice -> cost.options.flatMap(::paymentOptions)
+        else -> listOf(cost)
+    }
+
+    /** What paying [cost] does to the [payer], as the effect it amounts to — null when it isn't one we read (mana). */
+    private fun paymentLeaf(cost: PayCost, payer: EffectTarget): Effect? = when (cost) {
+        is PayCost.DynamicLife -> LoseLifeEffect(cost.amount, payer)
+        is PayCost.Atom -> when (val atom = cost.atom) {
+            is CostAtom.PayLife -> LoseLifeEffect(atom.amount, payer)
+            is CostAtom.Sacrifice -> ForceSacrificeEffect(atom.filter, atom.count, payer)
+            else -> null
+        }
+        else -> null
     }
 
     /**
@@ -2879,11 +2920,21 @@ object CardIntentAnalyzer {
 
         // "You get an emblem with 'Creatures you control get +2/+2'" (Ajani Resolute) is an anthem
         // nothing can remove; its keywords and statics read as the same grants printed on a lord.
+        // Its replacement effects read as the same shields printed on a permanent (Ajani Steadfast's
+        // "prevent all but 1 of that damage" over us and our planeswalkers is protection), and an
+        // ability it holds or hands our permanents as that ability does: a mana ability ramps
+        // (Liliana of the Dark Realms' Swamps), any other reads as its effect (Karn's ping, Mu
+        // Yanling's Islands drawing).
         is CreatePermanentEmblemEffect -> buildSet {
             val bonus = effect.powerBonus >= 0 && effect.toughnessBonus >= 0 && effect.powerBonus + effect.toughnessBonus > 0
             if (bonus) add(IntentTag.ANTHEM)
             effect.grantedKeywords.forEach { addAll(keywordTags(it)) }
             effect.ownedStaticAbilities.forEach { addAll(tagsOf(it)) }
+            effect.ownedReplacementEffects.forEach { addAll(standingReplacementTags(it)) }
+            (effect.ownedActivatedAbilities + effect.grantedActivatedAbilities).forEach { ability ->
+                if (ability.isManaAbility) add(IntentTag.RAMP)
+                else addAll(analyzeEffect(ability.effect, ability.targetRequirements).tags)
+            }
         }
 
         // "Target creature gains 'When this creature dies, return it to the battlefield'" (Feign

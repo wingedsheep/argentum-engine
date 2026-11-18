@@ -1187,6 +1187,58 @@
     ]
 }
 
+// Caustic Tar
+{
+    "name": "Caustic Tar",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nEnchanted land has \"{T}: Target player loses 3 life.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Caustic Tar:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t0"
+                        }
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "UNCOMMON",
+        "artist": "John Avon",
+        "flavorText": "\"Twisted magic, twisted fate, Force the land to ooze with hate.\"\n—Cabal chant",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/3700a61f-76fe-42e6-be93-0ba319b7b543.jpg?1783945250"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Cephalid Broker
 {
     "name": "Cephalid Broker",
