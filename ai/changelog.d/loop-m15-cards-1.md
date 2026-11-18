@@ -1,0 +1,1 @@
+- #4727 The AI reads a lord's helpful trigger granted to its own creatures (Constricting Sliver's exile, Ingenious Infiltrator's draw) as removal/card draw, "your life total becomes your starting life total" as life gain, and "target opponent gains control of this" (Avarice Amulet, Jinxed Idol) as a priced hand-off instead of an unread target

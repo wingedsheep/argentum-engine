@@ -41,6 +41,7 @@ import com.wingedsheep.sdk.scripting.effects.ChangeColorEffect
 import com.wingedsheep.sdk.scripting.effects.AddCardTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.GrantHexproofFromChosenColorEffect
+import com.wingedsheep.sdk.scripting.effects.GiveControlToTargetPlayerEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.GrantProtectionFromChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
@@ -1002,6 +1003,12 @@ object AiReadingAudit {
         // Shieldback, Skulking Ghost's "when this becomes the target of a spell or ability"): its
         // drawback, which CardIntentAnalyzer reads as no answer.
         if (leaf is SacrificeTargetEffect && leaf.target == EffectTarget.Self) return true
+        // A permanent handing itself to an opponent — Avarice Amulet's "whenever equipped creature
+        // dies, target opponent gains control of this Equipment", Jinxed Idol's "sacrifice a
+        // creature: target opponent gains control of this" — is its drawback, or the shedding of
+        // one: nothing of ours is gained, and whether to pass it is the simulation's call on the
+        // board. Giving away another permanent stays flagged.
+        if (leaf is GiveControlToTargetPlayerEffect && leaf.permanent == EffectTarget.Self) return true
         // Its controller sacrificing permanents of its own choosing — Lotus Field's two lands, Korvold's
         // "sacrifice another permanent", forage's Food — is the same price with the pick left to
         // resolution: no target, nothing to time, and what is lost is the board the simulation sees.

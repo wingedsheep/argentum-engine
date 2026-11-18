@@ -397,6 +397,108 @@
     ]
 }
 
+// Avarice Amulet
+{
+    "name": "Avarice Amulet",
+    "manaCost": "{4}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +2/+0 and has vigilance and \"At the beginning of your upkeep, draw a card.\"\nWhenever equipped creature dies, target opponent gains control of this Equipment.\nEquip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Avarice Amulet:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "GiveControlToTargetPlayer",
+                    "permanent": "Self",
+                    "newController": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Avarice Amulet:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 0
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE"
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Avarice Amulet:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "descriptionOverride": "At the beginning of your upkeep, draw a card."
+                }
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "RARE",
+        "artist": "Steven Belledin",
+        "flavorText": "Designed by Penny Arcade",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ec56727f-6280-4625-96b9-9b599af0dada.jpg?1783939159"
+    },
+    "colorIdentityOverride": []
+}
+
 // Belligerent Sliver
 {
     "name": "Belligerent Sliver",
@@ -788,6 +890,86 @@
             }
         ]
     }
+}
+
+// Constricting Sliver
+{
+    "name": "Constricting Sliver",
+    "manaCost": "{5}{W}",
+    "typeLine": "Creature — Sliver",
+    "oracleText": "Sliver creatures you control have \"When this creature enters, you may exile target creature an opponent controls until this creature leaves the battlefield.\"",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Constricting Sliver:1",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "to": "Battlefield"
+                    },
+                    "effect": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "MoveUntilSourceLeaves",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        }
+                    },
+                    "targetRequirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        },
+                        "id": "t0"
+                    }
+                },
+                "filter": {
+                    "baseFilter": "creature Sliver ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "UNCOMMON",
+        "artist": "Karl Kopinski",
+        "flavorText": "Slivers are often seen toying with enemies they capture, not out of cruelty, but to fully learn their physical capabilities.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/e/ae9b4111-ca9f-435b-81c4-0abf65d1384b.jpg?1783939204",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "When Constricting Sliver enters the battlefield, the ability it gives itself will trigger."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "The Sliver that enters the battlefield is the source of the ability that exiles the creature."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If a Sliver leaves the battlefield before its enters-the-battlefield ability resolves, the target creature won't be exiled."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If a Sliver you control leaves the battlefield, only the card that particular Sliver exiled will return to the battlefield."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "The exiled card will return even if the Sliver whose ability exiled it doesn't have that ability at the time (perhaps because Constricting Sliver is no longer on the battlefield)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Coral Barrier
@@ -1683,6 +1865,77 @@
     ]
 }
 
+// Hot Soup
+{
+    "name": "Hot Soup",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature can't be blocked.\nWhenever equipped creature is dealt damage, destroy it.\nEquip {3} ({3}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hot Soup:1",
+                "trigger": "DamageReceivedEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "TriggeringEntity",
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Hot Soup:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantBeBlocked",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "219",
+        "rarity": "UNCOMMON",
+        "artist": "David Palumbo",
+        "flavorText": "\"Comin' through!\"\nDesigned by James Ernest",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc46f4b0-1992-4060-8f21-643698d476f7.jpg?1783939158"
+    },
+    "colorIdentityOverride": []
+}
+
 // Hunter's Ambush
 {
     "name": "Hunter's Ambush",
@@ -1716,6 +1969,63 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Hushwing Gryff
+{
+    "name": "Hushwing Gryff",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Hippogriff",
+    "oracleText": "Flash\nFlying\nCreatures entering don't cause abilities to trigger.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            "SuppressZoneChangeTriggers"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "RARE",
+        "artist": "John Severin Brassell",
+        "flavorText": "An overwhelming sense of calm accompanies the gryffs that wheel above the roofs of Gavony.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b44eb0d-5a3a-4624-aee4-11d6978fb4b0.jpg?1783939202",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "Abilities that create replacement effects, such as a permanent entering the battlefield tapped or with counters on it, are unaffected."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Abilities that apply \"as [this creature] enters the battlefield,\" such as choosing a creature to copy with Mercurial Pretender, are also unaffected."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Hushwing Gryff's ability stops a creature's own enters-the-battlefield triggered abilities as well as other triggered abilities that would trigger when a creature enters the battlefield."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "The trigger event doesn't have to specify \"creatures\" entering the battlefield. For example, Amulet of Vigor says \"Whenever a permanent enters the battlefield tapped and under your control, untap it.\" If a creature enters the battlefield tapped and under your control, Amulet of Vigor's ability would not trigger. If a land (that isn't also a creature) enters the battlefield tapped and under your control, Amulet of Vigor's ability would trigger."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Look at the permanent as it exists on the battlefield, taking into account continuous effects, to determine whether any triggered abilities will trigger. For example, if you control March of the Machines, which says, in part, \"Each noncreature artifact is an artifact creature,\" each artifact will be a creature at the time it enters the battlefield and will not cause triggered abilities to trigger."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If Hushwing Gryff and another creature enter the battlefield at the same time, neither creature entering the battlefield will cause triggered abilities to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -3300,6 +3610,69 @@
     ]
 }
 
+// Resolute Archangel
+{
+    "name": "Resolute Archangel",
+    "manaCost": "{5}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nWhen this creature enters, if your life total is less than your starting life total, it becomes equal to your starting life total.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Resolute Archangel:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "SetLifeTotal",
+                    "amount": {
+                        "type": "StartingLifeTotal",
+                        "player": "You"
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": "YourLifeTotal",
+                    "operator": "LT",
+                    "right": {
+                        "type": "StartingLifeTotal",
+                        "player": "You"
+                    }
+                },
+                "descriptionOverride": "When this creature enters, if your life total is less than your starting life total, it becomes equal to your starting life total."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "rarity": "RARE",
+        "artist": "Anthony Palumbo",
+        "flavorText": "Cut it down, bury it in snow, put it to the torch. The rose will still bloom again.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e37b31b8-d868-4dff-9ab0-723ce41ee7e4.jpg?1783939198",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "Your starting life total is the life total you began the game with. For most two-player formats, this is 20. For Two-Headed Giant, it's the life total your team started with, usually 30. In Commander games, your starting life total is 40."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If your life total is less than your starting life total, you actually gain the appropriate amount of life. Other effects that interact with life gain will interact with Resolute Archangel's ability accordingly."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Rogue's Gloves
 {
     "name": "Rogue's Gloves",
@@ -3426,6 +3799,65 @@
         "flavorText": "Arrive for worship. Leave for war.",
         "imageUri": "https://cards.scryfall.io/normal/front/b/0/b05fde97-ab24-40c9-a1db-8844c3e62fc3.jpg?1783939155"
     }
+}
+
+// Sanctified Charge
+{
+    "name": "Sanctified Charge",
+    "manaCost": "{4}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Creatures you control get +2/+1 until end of turn. White creatures you control also gain first strike until end of turn. (They deal combat damage before creatures without first strike.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature white ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "FIRST_STRIKE",
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "artist": "Dave Kendall",
+        "flavorText": "You need only raise your spear to receive this blessing.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/6481bf34-192c-4102-8336-4d2d007d9e3c.jpg?1783939197"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Scrapyard Mongrel
@@ -4984,6 +5416,58 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Warden of the Beyond
+{
+    "name": "Warden of the Beyond",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Vigilance (Attacking doesn't cause this creature to tap.)\nThis creature gets +2/+2 as long as an opponent owns a card in exile.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 2,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "EachOpponent",
+                    "zone": "Exile"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "rarity": "UNCOMMON",
+        "artist": "Raymond Swanland",
+        "flavorText": "He draws strength from a vast source few mortals can fathom.\nDesigned by Isaiah Cartwright",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d0a7406c-8c49-4ef6-a349-902833ea8ec5.jpg?1783939196",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "Warden of the Beyond can't get more than +2/+2 from its last ability, no matter how many opponents own a card in exile or how many exiled cards they own."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

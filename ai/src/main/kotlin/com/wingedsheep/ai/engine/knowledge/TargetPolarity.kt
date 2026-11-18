@@ -109,6 +109,7 @@ import com.wingedsheep.sdk.scripting.effects.ExileUntilLeavesEffect
 import com.wingedsheep.sdk.scripting.effects.ExploreEffect
 import com.wingedsheep.sdk.scripting.effects.ExchangeControlEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
+import com.wingedsheep.sdk.scripting.effects.GiveControlToTargetPlayerEffect
 import com.wingedsheep.sdk.scripting.effects.GrantEvasionKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.GrantHexproofFromChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
@@ -1764,6 +1765,16 @@ object TargetPolarityAnalyzer {
         if (leaf is DrainLifeEffect) return listOfNotNull(
             leaf.from.takeIf { it.isSlot() }?.let { it to TargetPolarity.HARMFUL },
             leaf.to.takeIf { it.isSlot() }?.let { it to TargetPolarity.BENEFICIAL },
+        )
+        // "Target opponent gains control of this Equipment" (Avarice Amulet, Jinxed Idol), "target
+        // opponent gains control of target permanent you control" (Harmless Offering): a hand-off
+        // whose worth to the receiver is the permanent's — a gift when it is an Equipment, a curse
+        // when it is Jinxed Idol — so the player slot is the simulation's to price. The permanent
+        // handed over is the price of it, read as an exchange's own side is: understood, pruning
+        // nothing, and the removal ranking still gives away our worst.
+        if (leaf is GiveControlToTargetPlayerEffect) return listOfNotNull(
+            leaf.permanent.takeIf { it.isSlot() }?.let { it to TargetPolarity.FLEXIBLE },
+            leaf.newController.takeIf { it.isSlot() }?.let { it to TargetPolarity.FLEXIBLE },
         )
         punisherReading(leaf, definitions, source)?.let { return it }
         val polarity: Pair<EffectTarget, TargetPolarity?> = when (leaf) {
