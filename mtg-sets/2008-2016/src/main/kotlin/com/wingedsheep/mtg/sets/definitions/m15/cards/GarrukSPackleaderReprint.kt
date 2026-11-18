@@ -16,4 +16,5 @@ val GarrukSPackleaderReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/b/9/b91725e5-9e36-461b-b523-8490418107f2.jpg",
     releaseDate = "2014-07-18",
     rarity = Rarity.UNCOMMON,
+    inBooster = false,
 )

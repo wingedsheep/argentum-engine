@@ -16,4 +16,5 @@ val CancelReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/d/0/d0bf9f71-c592-4064-b7b3-172c26e5605b.jpg",
     releaseDate = "2014-07-18",
     rarity = Rarity.COMMON,
+    inBooster = false,
 )

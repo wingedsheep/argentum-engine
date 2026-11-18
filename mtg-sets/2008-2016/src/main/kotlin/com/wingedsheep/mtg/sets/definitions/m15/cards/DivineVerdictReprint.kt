@@ -16,4 +16,5 @@ val DivineVerdictReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/1/5/1529d320-1240-429f-bf7a-4be29079b8bf.jpg",
     releaseDate = "2014-07-18",
     rarity = Rarity.COMMON,
+    inBooster = false,
 )

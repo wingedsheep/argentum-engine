@@ -1449,6 +1449,32 @@ object SetArchetypes {
                     "Play cheap creatures with value on entering or dying, then sacrifice them to emerge Eldrazi for a fraction of their cost. A ramp-flavoured value deck that cashes every body into a bigger threat."),
             )
         ),
+        "M15" to SetSynergies(
+            setCode = "M15",
+            setName = "Magic 2015",
+            archetypes = listOf(
+                Archetype("Fliers", listOf(Color.WHITE, Color.BLUE),
+                    "Take to the air with Razorfoot Griffin, Welkin Tern and Nimbus of the Isles, and tap down blockers with Frost Lynx and Dauntless River Marshal. A tempo deck that races in the sky while the ground stays locked."),
+                Archetype("Control", listOf(Color.BLUE, Color.BLACK),
+                    "Trade off with Flesh to Dust, Ulcerate and counterspells, refill with Divination and Sign in Blood, and finish with fliers. A grindy control deck that wins once the opponent runs out of threats."),
+                Archetype("Intimidate Aggro", listOf(Color.BLACK, Color.RED),
+                    "Attack early with intimidate creatures like Accursed Spirit and Krenko's Enforcer, clear blockers with burn and -X/-X removal, and finish with Lava Axe. A fast deck that keeps the opponent on the back foot."),
+                Archetype("Big Creatures", listOf(Color.RED, Color.GREEN),
+                    "Ramp with Elvish Mystic into oversized bodies like Charging Rhino and Thundering Giant, then push damage through with Hammerhand, Hunt the Weak and trample. A stompy midrange deck that wins on the ground."),
+                Archetype("Convoke Tokens", listOf(Color.GREEN, Color.WHITE),
+                    "Go wide with Raise the Alarm and other cheap creatures, then tap them to convoke out Triplicate Spirits, Siege Wurm and Seraph of the Masses early. A go-wide deck that turns a crowd of small bodies into big threats and team pumps."),
+                Archetype("Lifegain", listOf(Color.WHITE, Color.BLACK),
+                    "Gain life with Soulmender, Tireless Missionaries, lifelinkers and the Staffs, and grow Ajani's Pridemate and Wall of Limbs every time. A durable midrange deck that outlasts aggression and grows its board."),
+                Archetype("Artifacts", listOf(Color.BLUE, Color.RED),
+                    "Fill the board with cheap artifacts like Ornithopter, Bronze Sable and Darksteel Citadel, then turn them on with Aeronaut Tinkerer and Scrapyard Mongrel or make one a 5/5 with Ensoul Artifact. An aggressive tempo deck built around artifact payoffs."),
+                Archetype("Graveyard Value", listOf(Color.BLACK, Color.GREEN),
+                    "Fill graveyards with Necromancer's Assistant and Satyr Wayfinder, then cash them in with Undergrowth Scavenger, Gravedigger and Restock. A grindy midrange deck that out-values the opponent with recursion and deathtouch blockers."),
+                Archetype("Auras", listOf(Color.RED, Color.WHITE),
+                    "Find Auras with Heliod's Pilgrim and Boonweaver Giant, suit up creatures with Marked by Honor, Hammerhand and Battle Mastery, and make Dragons with Brood Keeper. An aggressive deck that bets on one big attacker at a time."),
+                Archetype("Enters Value", listOf(Color.GREEN, Color.BLUE),
+                    "Play creatures with enters-the-battlefield effects like Frost Lynx, Kapsho Kitefins and Shaman of Spring, then rebuy them with Roaring Primadox and Invasive Species. A value midrange deck that gets two uses out of every creature."),
+            )
+        ),
         "ORI" to SetSynergies(
             setCode = "ORI",
             setName = "Magic Origins",

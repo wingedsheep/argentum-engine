@@ -30,6 +30,15 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-m15',
+    date: '2026-11-18',
+    kind: 'set',
+    setCode: 'M15',
+    title: 'Magic 2015 is complete',
+    body: "The summer 2014 core set brings back the Slivers, each sharing its ability with the whole hive, and introduces convoke: tap your own creatures to help cast Triplicate Spirits, Siege Wurm or Stoke the Flames. Draft go-wide convoke tokens, artifact fliers, lifegain or a mono-colour deck pumped by its Paragon lord, with planeswalkers like Garruk, Apex Predator and the Souls at the top end.",
+    tryIf: 'straightforward core-set Limited, go-wide token decks and Slivers',
+  },
+  {
     id: 'set-frf',
     date: '2026-11-17',
     kind: 'set',

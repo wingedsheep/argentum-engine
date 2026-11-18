@@ -16,4 +16,5 @@ val WalkingCorpseReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/c/c/ccba369f-f4d1-493d-bc5f-271b7e4d8090.jpg",
     releaseDate = "2014-07-18",
     rarity = Rarity.COMMON,
+    inBooster = false,
 )

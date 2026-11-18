@@ -16,4 +16,5 @@ val InspiredChargeReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/1/a/1a28c4e2-7b9b-436d-95cf-9c757eacf091.jpg",
     releaseDate = "2014-07-18",
     rarity = Rarity.COMMON,
+    inBooster = false,
 )

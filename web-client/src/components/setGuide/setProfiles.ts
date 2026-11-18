@@ -452,6 +452,25 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Clash', inPlay: 'Both players reveal their top card for a bonus, which also lets you send bad draws to the bottom.' },
     ],
   },
+  M15: {
+    tagline: 'A classic core set with a twist: convoke lets your creatures help cast spells, Slivers share abilities across the hive and Paragons lead mono-colour armies.',
+    setting: 'A core set gathered from across the Multiverse, with Garruk hunting planeswalkers and a Soul for each colour.',
+    gameplay: 'Games are straightforward and creature-driven, as in a classic core set, with plenty of removal at common. Convoke lets you tap your creatures to help pay for spells, so a wide board casts Triplicate Spirits or Siege Wurm turns early. Slivers grant their abilities to every Sliver you control, the Paragon lords reward a deck heavy in one colour, and a cycle of cross-colour uncommons nudges you into allied pairs. Artifact decks turn cheap artifacts into fliers and 5/5s.',
+    tips: [
+      'Count your untapped creatures before you attack: tapping them for convoke after combat means they could not block.',
+      'Play Slivers in one colour pair where possible: every extra Sliver makes the rest bigger or harder to block.',
+      'A Paragon wants a deck that is mostly its colour, so take it early only if you are already heavily in that colour.',
+    ],
+    tryIf: 'straightforward core-set Limited, go-wide token decks and Slivers',
+    power: 3, speed: 3, complexity: 2,
+    themes: ['tokens', 'flyers', 'artifacts'],
+    mechanics: [
+      { name: 'Convoke', inPlay: 'Each creature you tap while casting the spell pays for {1} or one mana of its colour, so a wide board casts big spells early, at the cost of blockers or attackers.' },
+      { name: 'Slivers', inPlay: 'Each Sliver gives its ability to every Sliver you control, so the hive gets stronger with each one, and one removal spell can switch an ability off for all of them.' },
+      { name: 'Paragons', inPlay: 'Each colour\'s Paragon gives your other creatures of that colour +1/+1 and has a tap ability, rewarding a deck heavy in one colour.' },
+      { name: 'Cross-colour uncommons', inPlay: 'A creature of one colour gets +1/+1 while you control a land of an allied colour and has an ability that costs that colour, pushing you into allied pairs.' },
+    ],
+  },
   KTK: {
     tagline: 'Three-colour clan decks and boards full of morphs. Turns three to five decide most games, outlast and big flips stall the board, and evasion or reach breaks it.',
     setting: 'Tarkir, a dragonless plane ruled by five warring three-colour clans.',

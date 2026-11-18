@@ -16,4 +16,5 @@ val TerraStomperReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/c/d/cd192de8-12b7-4c3f-913c-de9f26fdbb20.jpg",
     releaseDate = "2014-07-18",
     rarity = Rarity.RARE,
+    inBooster = false,
 )

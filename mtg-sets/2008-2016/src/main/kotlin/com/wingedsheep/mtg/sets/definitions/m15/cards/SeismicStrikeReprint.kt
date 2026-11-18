@@ -16,4 +16,5 @@ val SeismicStrikeReprint = Printing(
     imageUri = "https://cards.scryfall.io/normal/front/9/7/972d0b03-8602-4ada-86b9-4262941bae67.jpg",
     releaseDate = "2014-07-18",
     rarity = Rarity.COMMON,
+    inBooster = false,
 )
