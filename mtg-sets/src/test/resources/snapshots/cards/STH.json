@@ -1334,6 +1334,55 @@
     ]
 }
 
+// Wall of Essence
+{
+    "name": "Wall of Essence",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Wall",
+    "oracleText": "Defender (This creature can't attack.)\nWhenever this creature is dealt combat damage, you gain that much life.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wall of Essence:1",
+                "trigger": {
+                    "type": "DamageReceivedEvent",
+                    "damageType": "DamageCombat"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "UNCOMMON",
+        "artist": "Adam Rex",
+        "flavorText": "The ceiling and the floor fell in love, but only the wall knew.\n—Dal saying",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2f237426-a657-4234-9f79-0a06558eeb39.jpg",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "Wall of Essence's triggered ability will trigger even if it's dealt lethal damage. For example, if it's dealt 7 combat damage, its ability will trigger and you'll gain 7 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Youthful Knight
 {
     "name": "Youthful Knight",

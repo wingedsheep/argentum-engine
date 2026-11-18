@@ -60,7 +60,7 @@ class DamageTriggerDetector(
             // Only the recipient form ("is dealt damage") here; the per-source form ("a source
             // deals damage to this") is handled, dead or alive, by detectDamagedBySourceTriggers.
             if (trigger is EventPattern.DamageReceivedEvent && trigger.source == null &&
-                ability.binding == TriggerBinding.SELF
+                ability.binding == TriggerBinding.SELF && matcher.matchesDamageType(trigger.damageType, event)
             ) {
                 triggers.add(
                     PendingTrigger(
@@ -198,6 +198,7 @@ class DamageTriggerDetector(
             val trigger = ability.trigger
             if (trigger !is EventPattern.DamageReceivedEvent || ability.binding != TriggerBinding.SELF) continue
             val sourceFilter = trigger.source ?: continue
+            if (!matcher.matchesDamageType(trigger.damageType, event)) continue
             // "A source" asks nothing of the source, so it needn't still exist (a token that
             // dealt the damage and died to the same combat exchange has ceased to exist).
             if (sourceFilter != GameObjectFilter.Any && (state.getEntity(sourceId) == null ||
@@ -251,7 +252,7 @@ class DamageTriggerDetector(
                 if (trigger is EventPattern.DealsDamageEvent &&
                     trigger.recipient == Recipient.You &&
                     ability.binding == TriggerBinding.ANY &&
-                    matchesDamageType(trigger.damageType, event) &&
+                    matcher.matchesDamageType(trigger.damageType, event) &&
                     matcher.matchesDamageSourceFilter(
                         trigger.sourceFilter, event, state, entry.controllerId, entry.entityId
                     )) {
@@ -274,12 +275,6 @@ class DamageTriggerDetector(
             }
         }
     }
-
-    /** Combat/noncombat gate for a [EventPattern.DealsDamageEvent]; [DamageType.Any] matches both. */
-    private fun matchesDamageType(damageType: DamageType, event: DamageDealtEvent): Boolean =
-        damageType == DamageType.Any ||
-            (damageType == DamageType.Combat && event.isCombatDamage) ||
-            (damageType == DamageType.NonCombat && !event.isCombatDamage)
 
     /**
      * Detect general damage observer triggers (DealsDamageEvent with ANY binding)

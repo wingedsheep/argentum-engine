@@ -343,19 +343,21 @@ class ObjectTriggerSubject internal constructor(
      * Obliterator). Under [Triggers.a] / [Triggers.another] the subject filter picks the damaged
      * permanent, which becomes the triggering entity ("whenever a creature an opponent controls
      * with a bounty counter on it is dealt damage, destroy it"); that observer form takes no [by].
+     * [damageType] keeps only combat or noncombat damage — "whenever this is dealt combat damage"
+     * (Wall of Essence) is `isDealtDamage(damageType = DamageType.Combat)`.
      */
-    fun isDealtDamage(by: GameObjectFilter? = null): TriggerSpec {
+    fun isDealtDamage(by: GameObjectFilter? = null, damageType: DamageType = DamageType.Any): TriggerSpec {
         if (binding == TriggerBinding.ANY || binding == TriggerBinding.OTHER) {
             require(by == null) {
                 "Triggers.a/another(…).isDealtDamage() can't filter the damage source"
             }
-            return spec(DamageReceivedEvent(recipient = filterOrAny))
+            return spec(DamageReceivedEvent(recipient = filterOrAny, damageType = damageType))
         }
         unfiltered("isDealtDamage")
         require(by == null || binding == TriggerBinding.SELF) {
             "Triggers.attached.isDealtDamage() can't filter the damage source"
         }
-        return spec(DamageReceivedEvent(source = by))
+        return spec(DamageReceivedEvent(source = by, damageType = damageType))
     }
 
     /**

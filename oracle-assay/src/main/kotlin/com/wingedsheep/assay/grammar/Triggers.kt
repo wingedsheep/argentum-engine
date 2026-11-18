@@ -950,6 +950,10 @@ object Triggers {
             spec = { SdkTriggers.self.dealsDamage(Recipient.Object(it)) },
         ),
         triggerRule("whenever ${Normalizer.SELF} is dealt damage", SdkTriggers.self.isDealtDamage()),
+        triggerRule(
+            "whenever ${Normalizer.SELF} is dealt combat damage",
+            SdkTriggers.self.isDealtDamage(damageType = DamageType.Combat),
+        ),
     ) + attachedDamagePrefixes() + listOf(
         // Valiant, and one row rather than a shape over `BecomesTargetEvent`'s six flags: the SDK
         // publishes the whole configuration as `Triggers.self.becomesTarget(byYou = true, firstTimeEachTurn = true)`, which is the lowering this file's

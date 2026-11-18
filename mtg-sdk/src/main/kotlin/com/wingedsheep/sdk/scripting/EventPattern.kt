@@ -1742,19 +1742,25 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * controls with a bounty counter on it is dealt damage" (Termination Facilitator). It is matched
      * against the damaged permanent as the damage is dealt, and the damaged permanent is the
      * triggering entity. `null` under ANY means any recipient, players included.
+     *
+     * [damageType] narrows either wording to combat or noncombat damage: "whenever this is dealt
+     * combat damage" (Wall of Essence) is `source = null, damageType = Combat` — still one trigger
+     * per combat damage step, "that much" the total.
      */
     @SerialName("DamageReceivedEvent")
     @Serializable
     data class DamageReceivedEvent(
         val source: GameObjectFilter? = null,
         val recipient: GameObjectFilter? = null,
+        val damageType: DamageType = DamageType.Any,
     ) : EventPattern {
         override val description: String = buildString {
             val damaged = recipient?.description ?: "this"
+            val damage = if (damageType == DamageType.Any) "damage" else "${damageType.description} damage"
             when (source) {
-                null -> append("$damaged is dealt damage")
-                GameObjectFilter.Any -> append("a source deals damage to $damaged")
-                else -> append("$damaged is dealt damage by ${source.description}")
+                null -> append("$damaged is dealt $damage")
+                GameObjectFilter.Any -> append("a source deals $damage to $damaged")
+                else -> append("$damaged is dealt $damage by ${source.description}")
             }
         }
     }

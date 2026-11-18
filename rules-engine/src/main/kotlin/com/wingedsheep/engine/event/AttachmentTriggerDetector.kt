@@ -244,7 +244,8 @@ class AttachmentTriggerDetector(
     ): Boolean {
         return when (trigger) {
             is EventPattern.DamageReceivedEvent -> {
-                event is DamageDealtEvent && event.targetId == attachedEntityId
+                event is DamageDealtEvent && event.targetId == attachedEntityId &&
+                    matcher.matchesDamageType(trigger.damageType, event)
             }
             is EventPattern.DealsDamageEvent -> {
                 event is DamageDealtEvent &&

@@ -1530,6 +1530,7 @@ class TriggerDetector(
             is com.wingedsheep.sdk.scripting.EventPattern.DamageReceivedEvent -> {
                 if (event !is com.wingedsheep.engine.core.DamageDealtEvent || specEvent.source != null) return false
                 if (watchedEntityId != null) {
+                    if (!matcher.matchesDamageType(specEvent.damageType, event)) return false
                     // Only the object the trigger was created for (CR 400.7): the same card back on
                     // the battlefield is a new object. One already gone (killed by this damage) stays it.
                     event.targetId == watchedEntityId && (watchedObject == null ||

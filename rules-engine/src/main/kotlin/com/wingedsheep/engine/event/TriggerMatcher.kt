@@ -289,7 +289,7 @@ class TriggerMatcher(
                 // The recipient form ("is dealt damage") matches in the main loop; the per-source
                 // form ("a source deals damage to this") is detectDamagedBySourceTriggers' alone.
                 if (trigger.source != null) return false
-                if (event !is DamageDealtEvent) return false
+                if (event !is DamageDealtEvent || !matchesDamageType(trigger.damageType, event)) return false
                 if (binding == TriggerBinding.SELF) return event.targetId == sourceId
                 if (binding == TriggerBinding.OTHER && event.targetId == sourceId) return false
                 // Observer form: the damaged permanent must match the recipient filter. A player
@@ -2330,6 +2330,12 @@ class TriggerMatcher(
         return predicateEvaluator.matchesSnapshot(state, lastKnown, sourceFilter, context, zone = com.wingedsheep.sdk.core.Zone.BATTLEFIELD)
     }
 
+    /** Combat/noncombat gate for a damage trigger; [DamageType.Any] matches both. */
+    fun matchesDamageType(damageType: DamageType, event: DamageDealtEvent): Boolean =
+        damageType == DamageType.Any ||
+            (damageType == DamageType.Combat && event.isCombatDamage) ||
+            (damageType == DamageType.NonCombat && !event.isCombatDamage)
+
     fun matchesDealsDamageTrigger(
         trigger: EventPattern.DealsDamageEvent,
         event: DamageDealtEvent,
@@ -2342,9 +2348,7 @@ class TriggerMatcher(
          */
         abilitySourceId: EntityId? = null
     ): Boolean {
-        val combatMatches = trigger.damageType == DamageType.Any ||
-            (trigger.damageType == DamageType.Combat && event.isCombatDamage) ||
-            (trigger.damageType == DamageType.NonCombat && !event.isCombatDamage)
+        val combatMatches = matchesDamageType(trigger.damageType, event)
         // The recipient is read as it was when the damage was dealt when it has since left the
         // battlefield — a creature destroyed by this very damage is still "a creature an opponent
         // controls" (CR 603.10), even a token already swept out of existence.
