@@ -427,6 +427,45 @@
     ]
 }
 
+// Crippling Blight
+{
+    "name": "Crippling Blight",
+    "manaCost": "{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets -1/-1 and can't block.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": -1,
+                "toughnessBonus": -1
+            },
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "artist": "Lucas Graciano",
+        "flavorText": "\"Still alive? No matter. I'll leave you as a warning to others who would oppose me.\"\n—Vish Kal, Blood Arbiter",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6a96a5d6-6527-4018-923e-7e850fda106a.jpg?1783940497"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Crusader of Odric
 {
     "name": "Crusader of Odric",

@@ -95,6 +95,7 @@ import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveAnyNumberOfCountersEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveAllCountersOfTypeEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersFromAmongEffect
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
@@ -742,6 +743,17 @@ object AiReadingAudit {
             val parts = if (leaf is ForEachEffect) EffectWalker.leaves(leaf.body).map { "ForEach>" to it } else listOf("" to leaf)
             for ((prefix, part) in parts) {
                 if (!combatShaped(part)) continue
+                // "This creature loses hexproof until end of turn" (Xathrid Slyblade): a keyword its
+                // own source gives up reaches no fight — it is the price of what rides beside it,
+                // which carries the ability's reach. Neutral, not a trick combat has to see coming. Losing
+                // defender is the exception: it lets the creature attack, a reach combat must see.
+                if (part is RemoveKeywordEffect && part.target == EffectTarget.Self && part.keyword != Keyword.DEFENDER.name) {
+                    sink += Finding(
+                        Check.COMBAT, read = true, reason = "combat needs nothing from a keyword its own source loses",
+                        effectType = prefix + label(part), step = step(leaves, leaf)?.index?.plus(1), stepText = stepText(leaf),
+                    )
+                    continue
+                }
                 if (CombatReach.of(part).isEmpty()) {
                     sink += gap(Check.COMBAT, "combat can't see this ${combatNoun(part)}", prefix + label(part), step(leaves, leaf))
                 } else {
@@ -795,7 +807,12 @@ object AiReadingAudit {
             // resolves, where the cast's simulation prices it; no later window buys it more. When
             // to cast it is the question of what it rides beside, which that leaf's reading answers.
             val colourOnly = expiring is ChangeColorEffect || expiring is ChangeColorToChosenEffect
-            if (isRead(leaf) || ridesOnRemoval || ridesOnCopy || spentWithCast || colourOnly) {
+            // "Until end of turn, this creature loses hexproof and gains first strike and deathtouch"
+            // (Xathrid Slyblade): the keyword its own source gives up rides on the grant beside it,
+            // so it is timed as the whole ability is.
+            val ridesOnGrant = expiring is RemoveKeywordEffect && expiring.target == EffectTarget.Self &&
+                expiring.keyword != Keyword.DEFENDER.name && isRead(effect)
+            if (isRead(leaf) || ridesOnRemoval || ridesOnCopy || spentWithCast || colourOnly || ridesOnGrant) {
                 sink += Finding(
                     Check.TIMING, read = true, reason = "knows when to spend this until-end-of-turn effect",
                     effectType = label, step = step(leaves, leaf)?.index?.plus(1), stepText = stepText(leaf),

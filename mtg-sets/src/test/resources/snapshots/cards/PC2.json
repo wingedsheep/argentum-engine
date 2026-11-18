@@ -138,6 +138,48 @@
     ]
 }
 
+// Illusory Angel
+{
+    "name": "Illusory Angel",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Angel Illusion",
+    "oracleText": "Cast this spell only if you've cast another spell this turn.\nFlying",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "castRestrictions": [
+            {
+                "type": "CastOnlyIfCondition",
+                "condition": {
+                    "type": "PlayerCastSpellsThisTurn",
+                    "atLeast": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "UNCOMMON",
+        "artist": "Allen Williams",
+        "flavorText": "\"Yes, she is made of pure belief—but I hardly see why that makes her unique.\"\n—Reith, master illusionist",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f7c0cb1-1102-4125-b9cd-a9a0478e3cb2.jpg?1783940631",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "It doesn't matter whether the other spell resolved. It could have been countered or, if you've somehow cast Illusory Angel as though it had flash, it could still be on the stack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Maelstrom Wanderer
 {
     "name": "Maelstrom Wanderer",

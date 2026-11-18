@@ -691,6 +691,85 @@
     ]
 }
 
+// Preeminent Captain
+{
+    "name": "Preeminent Captain",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Kithkin Soldier",
+    "oracleText": "First strike (This creature deals combat damage before creatures without first strike.)\nWhenever this creature attacks, you may put a Soldier creature card from your hand onto the battlefield tapped and attacking.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Preeminent Captain:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "creature Soldier"
+                            },
+                            "storeAs": "put_candidates"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "put_candidates",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "putting"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "putting",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "TappedAndAttacking"
+                            },
+                            "attackDefender": "CONTROLLER_CHOOSES"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "rarity": "RARE",
+        "artist": "Greg Staples",
+        "flavorText": "\"If you need an example to lead others to the front lines, consider the precedent set.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/41659773-8b26-41bf-afcc-805f373c0074.jpg?1783942802",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "You choose what the Soldier you put onto the battlefield is attacking. It doesn't have to attack the same player or planeswalker as Preeminent Captain."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Any abilities of the Soldier creature card that trigger \"Whenever [this creature] attacks\" won't trigger because the creature was never declared as an attacking creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Scapeshift
 {
     "name": "Scapeshift",

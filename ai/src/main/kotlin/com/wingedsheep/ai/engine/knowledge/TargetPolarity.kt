@@ -954,7 +954,8 @@ object TargetPolarityAnalyzer {
      * nonland permanent or discard a card" — written as an unless-clause that player pays
      * ([PayOrSufferEffect], Starseer Mentor) or as a choice of branches that player makes
      * ([ChooseActionEffect], Thornplate Intimidator). Every way out costs them something: a payment
-     * is a loss, so the slot is harmful whenever what they suffer for not paying is; a branch choice
+     * is a loss, so the slot is harmful whenever what they suffer for not paying is, or when the
+     * suffer is only a gift to our controller (Indulgent Tormentor's draw); a branch choice
      * is harmful when every branch read on that player hurts them (an unread branch — a discard
      * pipeline — doesn't make it a gift). Null when the shape isn't one, or its reading isn't known.
      */
@@ -967,13 +968,28 @@ object TargetPolarityAnalyzer {
         fun hurts(on: List<Pair<EffectTarget, TargetPolarity>>, player: EffectTarget) =
             on.filter { it.first == player }.let { mine -> mine.isNotEmpty() && mine.all { it.second == TargetPolarity.HARMFUL } }
         return when {
-            leaf is PayOrSufferEffect && leaf.player.isSlot() ->
-                readings(leaf.suffer).takeIf { hurts(it, leaf.player) }
+            leaf is PayOrSufferEffect && leaf.player.isSlot() -> readings(leaf.suffer).let { suffer ->
+                when {
+                    hurts(suffer, leaf.player) -> suffer
+                    // "Draw a card unless target opponent sacrifices a creature or pays 3 life"
+                    // (Indulgent Tormentor): the suffer never touches the payer — it is a gift to
+                    // our controller — so either way out is theirs to lose: a payment, or our card.
+                    suffer.none { it.first == leaf.player } && servesController(leaf.suffer) ->
+                        suffer + (leaf.player to TargetPolarity.HARMFUL)
+                    else -> null
+                }
+            }
             leaf is ChooseActionEffect && !EffectWalker.choosesOwnBranch(leaf) && leaf.player.isSlot() ->
                 leaf.choices.flatMap { readings(it.effect) }.takeIf { hurts(it, leaf.player) }
             else -> null
         }
     }
+
+    /** Whether every payoff leaf of [effect] is a known gift to the ability's controller ([controllerPolarity]). */
+    private fun servesController(effect: Effect): Boolean =
+        EffectWalker.payoffLeaves(effect).let { leaves ->
+            leaves.isNotEmpty() && leaves.all { controllerPolarity(it) == TargetPolarity.BENEFICIAL }
+        }
 
     /** A choose-one the controller makes whose modes declare no targets: they all act on the ability's own slots. */
     private fun sharesAbilityTargets(effect: ModalEffect): Boolean =
@@ -2692,8 +2708,7 @@ object TargetPolarityAnalyzer {
         if (ability.binding != TriggerBinding.ATTACHED) return emptyList()
         val dies = ability.trigger as? EventPattern.ZoneChangeEvent ?: return emptyList()
         if (dies.from != Zone.BATTLEFIELD || dies.to != Zone.GRAVEYARD) return emptyList()
-        val leaves = EffectWalker.payoffLeaves(ability.effect)
-        if (leaves.isEmpty() || !leaves.all { controllerPolarity(it) == TargetPolarity.BENEFICIAL }) return emptyList()
+        if (!servesController(ability.effect)) return emptyList()
         return listOf(TargetPolarity.BENEFICIAL)
     }
 

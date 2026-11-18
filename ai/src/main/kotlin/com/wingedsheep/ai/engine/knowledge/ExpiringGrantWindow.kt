@@ -1364,6 +1364,14 @@ internal object ExpiringGrantWindow {
                 // pump it rides on: spent only in that creature's attack this turn, so it watches the
                 // same payoff target a death rider does.
                 leaf is MustBeBlockedEffect -> watchRiders += leaf.target
+                // "Until end of turn, this creature loses hexproof and gains first strike and
+                // deathtouch" (Xathrid Slyblade): the keyword its own source gives up is the price of
+                // the grant beside it, gone at cleanup with it — spent in the grant's fight, so it
+                // watches the same payoff target and is timed as that grant is. Not defender: losing it
+                // opens an attack, which is reach of its own (Gargoyle Sentinel).
+                leaf is RemoveKeywordEffect && leaf.duration == Duration.EndOfTurn && leaf.target == EffectTarget.Self &&
+                    leaf.keyword != Keyword.DEFENDER.name ->
+                    watchRiders += leaf.target
                 leaf is ForEachEffect && leaf.space is IterationSpace.Group -> {
                     val body = expiringPayoffs(leaf.body, readShrinks, source = source) ?: return null
                     if (body.any { it.target != EffectTarget.IterationEntity }) return null
