@@ -226,9 +226,6 @@ enum class TargetPolarity {
  * [whenIs] for a creature that has [trait], [otherwise] for one that doesn't.
  */
 data class HostSplit(val trait: HostTrait, val whenIs: TargetPolarity, val otherwise: TargetPolarity) {
-    constructor(subtype: Subtype, whenIs: TargetPolarity, otherwise: TargetPolarity) :
-        this(HostTrait.CreatureType(subtype), whenIs, otherwise)
-
     fun polarityFor(hostHasTrait: Boolean): TargetPolarity = if (hostHasTrait) whenIs else otherwise
 }
 
@@ -345,7 +342,7 @@ object TargetPolarityAnalyzer {
 
     /**
      * The per-candidate reading of an Aura whose enchant slot reads [TargetPolarity.FLEXIBLE]
-     * because what it does turns on the host's creature type — see [HostSplit]. Null for every
+     * because what it does turns on the host's creature type or card type — see [HostSplit]. Null for every
      * other card.
      */
     fun hostSplit(card: CardDefinition, definitions: CardLookup = NO_DEFINITIONS): HostSplit? =
@@ -2358,7 +2355,7 @@ object TargetPolarityAnalyzer {
      * What [card]'s abilities turn on about the host: its creature type ([hostSubtype]), or the one
      * card type every host-type gate of its statics and replacements names ([hostTypeGate]) — Armament
      * of Nyx's double strike "as long as it's an enchantment" and its prevention "otherwise". Null when
-     * neither, or when the card mixes them.
+     * neither, or when its gates name more than one card type.
      */
     private fun hostTrait(card: CardDefinition): HostTrait? {
         hostSubtype(card)?.let { return HostTrait.CreatureType(it) }
@@ -2497,6 +2494,9 @@ object TargetPolarityAnalyzer {
         // for an entry choice (Traveler's Cloak's land type), which only parameterises a static.
         // A self-only zone redirect (disturb's "if this would be put into a graveyard, exile it
         // instead") moves the Aura itself and never touches the creature, so it is no veto either.
+        // Preventing all damage the host would deal ([hostDamagePrevention]) reads as a curse, and
+        // when its source filter is gated on the host's card type (Armament of Nyx's "otherwise")
+        // it counts only for the side of the HostSplit whose host it can apply to.
         for (replacement in card.script.replacementEffects) {
             when {
                 replacement.affectsOnlyTheAuraItself() -> Unit

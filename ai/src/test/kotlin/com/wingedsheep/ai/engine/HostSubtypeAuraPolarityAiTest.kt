@@ -3,6 +3,7 @@ package com.wingedsheep.ai.engine
 import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.CreatureTypeSynergy
 import com.wingedsheep.ai.engine.knowledge.HostSplit
+import com.wingedsheep.ai.engine.knowledge.HostTrait
 import com.wingedsheep.ai.engine.knowledge.IntentCatalog
 import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.ai.engine.knowledge.TargetPolarity
@@ -49,7 +50,7 @@ class HostSubtypeAuraPolarityAiTest : ScenarioTestBase() {
                 withClue("$name: a gift on a $type, a curse on anything else") {
                     TargetPolarityAnalyzer.forSpell(card) shouldBe listOf(TargetPolarity.FLEXIBLE)
                     TargetPolarityAnalyzer.hostSplit(card) shouldBe
-                        HostSplit(Subtype(type), TargetPolarity.BENEFICIAL, TargetPolarity.HARMFUL)
+                        HostSplit(HostTrait.CreatureType(Subtype(type)), TargetPolarity.BENEFICIAL, TargetPolarity.HARMFUL)
                 }
             }
         }

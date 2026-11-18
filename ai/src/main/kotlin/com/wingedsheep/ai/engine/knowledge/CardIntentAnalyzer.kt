@@ -611,7 +611,6 @@ object CardIntentAnalyzer {
         }
     }
 
-    /** A trigger its holder fires by dealing combat damage itself ("whenever this creature deals combat damage to a player"). */
     private fun tapsOrUntapsItself(cost: AbilityCost): Boolean = when (cost) {
         AbilityCost.Tap, AbilityCost.Untap -> true
         is AbilityCost.Composite -> cost.costs.any { tapsOrUntapsItself(it) }
