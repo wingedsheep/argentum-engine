@@ -41,6 +41,12 @@ export const SHORTCUTS: readonly Shortcut[] = [
     where: 'Multiplayer games, on the opponent board (focused camera)',
   },
   {
+    id: 'pass-priority',
+    keys: 'Space',
+    label: 'Press the pass button — Pass, Resolve, End Turn or skip ahead',
+    where: 'In a game, whenever the pass button is lit',
+  },
+  {
     id: 'deck-browser',
     keys: 'D',
     label: 'Open or close the deck browser',

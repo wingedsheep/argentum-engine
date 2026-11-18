@@ -269,6 +269,29 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
     if (!store.overviewMode) store.toggleOverviewMode()
   }, [isMulti, overviewFits, overviewDefaultKey])
 
+  // Space passes priority — the same as clicking the Pass button, so it follows whatever that
+  // button would do (resolve, pass, end turn) and is inert whenever the button is disabled or
+  // hidden. Skipped while typing, while a decision is open, and when focus sits on another
+  // control (Space already activates a focused button natively).
+  const passButtonRef = useRef<HTMLButtonElement | null>(null)
+  useEffect(() => {
+    if (spectatorMode) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code !== 'Space' || e.repeat || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return
+      if (e.defaultPrevented) return
+      const target = e.target as HTMLElement | null
+      if (target && target !== document.body &&
+        (target.isContentEditable || target.closest('input, textarea, select, button, a, [role="button"], [role="dialog"], [contenteditable="true"]'))) return
+      if (useGameStore.getState().pendingDecision) return
+      const button = passButtonRef.current
+      if (!button || button.disabled) return
+      e.preventDefault()
+      button.click()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [spectatorMode])
+
   // Grid row 1: keeps the battlefield clear of the fixed/absolute opponent hand.
   const oppHandReservation =
     responsive.smallCardHeight + effectiveTopOffset + responsive.opponentHandBattlefieldGap
@@ -1783,8 +1806,10 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
               <HelpDrawerButton />
             </div>
             <button
+              ref={passButtonRef}
               data-learn="pass"
               disabled={!passEnabled}
+              title={passEnabled ? 'Shortcut: Space' : undefined}
               onClick={() => {
                 submitAction({
                   type: 'PassPriority',

@@ -1196,8 +1196,10 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       ] },
       { kind: 'p', text: 'Its colour helps too: orange when it resolves the stack, blue on your own turn, amber when you are responding. Above it sit Undo, the Auto/Manual Tap toggle, the priority-mode button and ? Help, which opens this wiki in a drawer without leaving the game.' },
       { kind: 'p', text: 'During combat the button is replaced by combat controls: Attack All, Skip Attacking or Attack with N while declaring attackers; No Blocks or Confirm Blocks while declaring blockers.' },
+      { kind: 'p', text: 'Space presses the button for you — whatever its label says — so you can pass through an opponent’s turn without reaching for the mouse. It does nothing while the button is greyed out or while you are typing in chat.' },
     ],
     related: ['priority-modes', 'stops', 'targeting-and-combat', 'undo'],
+    shortcuts: ['pass-priority'],
   },
   {
     id: 'priority-modes',
