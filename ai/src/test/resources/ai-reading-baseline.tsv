@@ -458,7 +458,7 @@ Almost Perfect
 Alms of the Vein
 Aloe Alchemist
 Along the Crooked Way
-Alpha Deathclaw	intent: BecomeMonstrousEffect
+Alpha Deathclaw
 Alpha Kavu	timing: ModifyStatsEffect
 Alpha Myr
 Alpha Status
@@ -3082,7 +3082,7 @@ Chill
 Chill Haunting
 Chill of the Grave
 Chillbringer
-Chillerpillar	intent: BecomeMonstrousEffect
+Chillerpillar
 Chilling Grasp
 Chilling Trap
 Chimil, the Inner Sun
@@ -4836,7 +4836,7 @@ Dokuchi Silencer
 Dollhouse of Horrors
 Dollmaker's Shop // Porcelain Gallery
 Dolmen Gate
-Domesticated Hydra	intent: BecomeMonstrousEffect
+Domesticated Hydra
 Dominating Vampire
 Dominator Drone
 Domineer
@@ -8972,6 +8972,7 @@ Huskburster Swarm
 Hussar Patrol
 Hustle // Bustle
 Hyalopterous Lemure
+Hydra Broodmaster
 Hydra Trainer
 Hydra's Growth
 Hydraulic Helper
@@ -16695,7 +16696,7 @@ Sinkhole Surveyor
 Sins of the Past	intent: GrantFreeCastTargetFromExileEffect; polarity: GrantFreeCastTargetFromExileEffect
 Sinuous Benthisaur
 Sinuous Striker
-Sinuous Vermin	intent: BecomeMonstrousEffect
+Sinuous Vermin
 Siona, Captain of the Pyleas
 Siphon Insight
 Sir Shandlar of Eberyn
