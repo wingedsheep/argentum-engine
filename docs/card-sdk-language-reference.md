@@ -2318,6 +2318,14 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
 - `PutOnTopOfLibrary(target)` — place target on top of its owner's library.
 - `PutOnBottomOfLibrary(target)` — place target on the bottom of its owner's library (forced, no choice).
 - `PutOnTopOrBottomOfLibrary(target)` — player chooses top or bottom.
+  - **A group, each owner choosing** ("for each attacking creature, its owner puts it on their
+    choice of the top or bottom of their library" — Aetherspouts) is a pipeline, not a
+    `ForEachInGroup` over this effect (that would fix the order of cards sharing an end):
+    `forEachPlayerCollecting(Player.ActivePlayerFirst) { gather(BattlefieldMatching(filter.ownedByYou()));
+    chooseAnyNumberSplit(…, useTargetingUI = true)` into a top and a bottom pile, then
+    `toLibraryTop(top, order = CardOrder.OwnerChooses)` / `toLibraryBottom(bottom, order = OwnerChooses)` `}`.
+    The active player chooses first (APNAP), and each owner orders the cards sharing an end. A
+    lone permanent going on top asks nothing — it is public until it lands.
 - `PutSecondFromTopOrBottomOfLibrary(target)` — second-from-top or bottom.
 - `ShuffleIntoLibrary(target, fromZone?)` — shuffle target into owner's library. `fromZone` skips the move if the card has left that zone by resolution ("shuffle this card into your library from your graveyard" — Kogla and Yidaro).
 - `PutIntoLibraryNthFromTop(target, positionFromTop)` — place N from the top.

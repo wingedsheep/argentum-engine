@@ -703,7 +703,10 @@ class MoveCollectionExecutor(
                 ]
             }.orEmpty()
             val noOrderToChoose = cards.size == 1
-            val alreadySeen = cards.isNotEmpty() && cards.all { it in shown }
+            // A permanent heading for a library is public until it lands there, so a lone one has
+            // nothing to look at either (Aetherspouts putting one attacker on top).
+            val alreadySeen = cards.isNotEmpty() &&
+                cards.all { it in shown || it in state.getBattlefield() }
             if (countHidden || ((!isBottom || cards.size > 1) && !(alreadySeen && noOrderToChoose))) {
                 return pauseForOrderDecision(state, context, cards, destZone, destPlayerId, destination.placement, chooserId, revealed, storeMovedAs)
             }
@@ -767,10 +770,18 @@ class MoveCollectionExecutor(
 
         val isOwnLibrary = destPlayerId == playerId
         val libraryOwner = if (isOwnLibrary) "your" else "their"
-        val promptText = when (placement) {
-            ZonePlacement.Bottom -> "Put the revealed cards on the bottom of $libraryOwner library in any order."
-            else -> if (cards.size == 1) "Look at the top card of $libraryOwner library."
-                else "Look at the top ${cards.size} cards of $libraryOwner library. Put them back in any order."
+        // Permanents headed for a library (Aetherspouts) aren't "the top cards" yet.
+        val fromBattlefield = cards.isNotEmpty() && cards.all { it in state.getBattlefield() }
+        val promptText = when {
+            fromBattlefield -> {
+                val end = if (placement == ZonePlacement.Bottom) "bottom" else "top"
+                "Put these permanents on the $end of $libraryOwner library in any order."
+            }
+            else -> when (placement) {
+                ZonePlacement.Bottom -> "Put the revealed cards on the bottom of $libraryOwner library in any order."
+                else -> if (cards.size == 1) "Look at the top card of $libraryOwner library."
+                    else "Look at the top ${cards.size} cards of $libraryOwner library. Put them back in any order."
+            }
         }
 
         val decision = { decisionId: String -> ReorderLibraryDecision(

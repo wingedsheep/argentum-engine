@@ -88,6 +88,82 @@
     ]
 }
 
+// Aetherspouts
+{
+    "name": "Aetherspouts",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "For each attacking creature, its owner puts it on their choice of the top or bottom of their library.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "ActivePlayerFirst"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": "creature attacking own:you"
+                                },
+                                "storeAs": "gathered1"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered1",
+                                "selection": "ChooseAnyNumber",
+                                "storeSelected": "selected2",
+                                "storeRemainder": "remainder2",
+                                "prompt": "Choose attacking creatures you own to put on top of your library; the rest go on the bottom",
+                                "selectedLabel": "Top of library",
+                                "remainderLabel": "Bottom of library",
+                                "useTargetingUI": true
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected2",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "placement": "Top"
+                                },
+                                "order": "OwnerChooses"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "remainder2",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "placement": "Bottom"
+                                },
+                                "order": "OwnerChooses"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "\"Don't worry, there's plenty for everyone.\"\n—Vickon, Eleventh Company battlemage",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/46f1b48f-6528-46bd-a384-2358af25e500.jpg?1783939195"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Altac Bloodseeker
 {
     "name": "Altac Bloodseeker",
