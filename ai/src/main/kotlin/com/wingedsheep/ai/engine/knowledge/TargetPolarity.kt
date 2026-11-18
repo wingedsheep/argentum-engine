@@ -771,13 +771,16 @@ object TargetPolarityAnalyzer {
         if (perSlot[0].isEmpty() && decidedByTargetOpponent(leaves, requirements)) perSlot[0] += TargetPolarity.HARMFUL
         // "Target opponent gets an emblem with 'Whenever a player draws a card, you lose 2 life'"
         // (Ob Nixilis Reignited's −8): inside an iteration over the targeted player, `you` is that
-        // player, so the life the body costs them is harm aimed at the slot. Only when nothing else
+        // player, so the life the body costs them is harm aimed at the slot — as is an emblem that
+        // pumps each creature attacking them (Garruk, Apex Predator's −8). Only when nothing else
         // reads it.
         for (each in leaves.filterIsInstance<ForEachEffect>()) {
             val players = (each.space as? IterationSpace.Players)?.players ?: continue
             if (players != Player.TargetPlayer && players != Player.TargetOpponent) continue
             val slot = requirements.indices.filter { requirements[it] is TargetPlayer || requirements[it] is TargetOpponent }.singleOrNull() ?: continue
-            if (perSlot[slot].isEmpty() && CardIntentAnalyzer.visitedPlayerLosesLife(each.body)) perSlot[slot] += TargetPolarity.HARMFUL
+            if (perSlot[slot].isEmpty() && (CardIntentAnalyzer.visitedPlayerLosesLife(each.body) ||
+                    CardIntentAnalyzer.visitedPlayerArmsTheirAttackers(each.body))
+            ) perSlot[slot] += TargetPolarity.HARMFUL
         }
         // "Deals damage to target spell's controller equal to that spell's mana value" (Refuse),
         // "that creature deals damage equal to its power to its controller" (Backlash): harm aimed

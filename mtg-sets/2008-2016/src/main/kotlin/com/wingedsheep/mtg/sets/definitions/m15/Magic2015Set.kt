@@ -8,8 +8,8 @@ import com.wingedsheep.sdk.model.Printing
 /**
  * Magic 2015 (2014)
  *
- * mtgish-tooling auto-generated seed: only the cards relocated here as their canonical
- * earliest printing. Intentionally incomplete relative to the official set.
+ * Every card in the set is implemented; reprints are `Printing` rows pointing at their
+ * canonical earliest printing.
  *
  * Set Code: M15
  * Release Date: 2014-07-18
@@ -20,7 +20,6 @@ object Magic2015Set : MtgSet {
     override val displayName = "Magic 2015"
     override val releaseDate = "2014-07-18"
     override val sealedSupported = false
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)

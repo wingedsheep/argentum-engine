@@ -2548,6 +2548,222 @@
     ]
 }
 
+// Garruk, Apex Predator
+{
+    "name": "Garruk, Apex Predator",
+    "manaCost": "{5}{B}{G}",
+    "typeLine": "Legendary Planeswalker — Garruk",
+    "oracleText": "+1: Destroy another target planeswalker.\n+1: Create a 3/3 black Beast creature token with deathtouch.\n−3: Destroy target creature. You gain life equal to its toughness.\n−8: Target opponent gets an emblem with \"Whenever a creature attacks you, it gets +5/+5 and gains trample until end of turn.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Garruk, Apex Predator:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "planeswalker",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Destroy another target planeswalker."
+            },
+            {
+                "id": "Garruk, Apex Predator:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Beast"
+                    ],
+                    "keywords": [
+                        "DEATHTOUCH"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/f/c/fc48bf5f-5fe1-41ef-a63d-85daacd941f7.jpg?1783939142"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Create a 3/3 black Beast creature token with deathtouch."
+            },
+            {
+                "id": "Garruk, Apex Predator:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "StoreNumber",
+                            "name": "number0",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "numericProperty": "Toughness"
+                            }
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "VariableReference",
+                                "variableName": "number0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Destroy target creature. You gain life equal to its toughness."
+            },
+            {
+                "id": "Garruk, Apex Predator:5",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -8
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "TargetOpponent"
+                    },
+                    "body": {
+                        "type": "CreateGlobalTriggeredAbility",
+                        "ability": {
+                            "id": "Garruk, Apex Predator:4",
+                            "trigger": {
+                                "type": "AttackEvent",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "IsAttackingPlayer",
+                                            "player": "Controller"
+                                        }
+                                    ]
+                                }
+                            },
+                            "binding": "ANY",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "ModifyStats",
+                                        "powerModifier": {
+                                            "type": "Fixed",
+                                            "amount": 5
+                                        },
+                                        "toughnessModifier": {
+                                            "type": "Fixed",
+                                            "amount": 5
+                                        },
+                                        "target": "TriggeringEntity"
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "TRAMPLE",
+                                        "target": "TriggeringEntity"
+                                    }
+                                ]
+                            },
+                            "descriptionOverride": "Whenever a creature attacks you, it gets +5/+5 and gains trample until end of turn."
+                        },
+                        "descriptionOverride": "Whenever a creature attacks you, it gets +5/+5 and gains trample until end of turn.",
+                        "emblem": true
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t2"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Target opponent gets an emblem with \"Whenever a creature attacks you, it gets +5/+5 and gains trample until end of turn.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "210",
+        "rarity": "MYTHIC",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a3957b43-4d7e-41f9-b7a1-6f57d6603ab8.jpg?1783939159",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "The first ability can target and destroy a Garruk planeswalker controlled by another player."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If you activate the third ability, and the target creature is an illegal target when the ability tries to resolve, it won't resolve and none of its effects will happen. You won't gain any life."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "The emblem's ability won't trigger if a creature attacks a planeswalker."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "The emblem is owned and controlled by the target of the ability that created it. In a multiplayer game, if Garruk's owner leaves the game, the emblem does not."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Geist of the Moors
 {
     "name": "Geist of the Moors",

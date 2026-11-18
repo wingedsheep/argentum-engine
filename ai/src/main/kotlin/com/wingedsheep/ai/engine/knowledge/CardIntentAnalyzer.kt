@@ -3173,7 +3173,10 @@ object CardIntentAnalyzer {
      */
     private fun opponentIterationTags(body: Effect, inner: Set<IntentTag>): Set<IntentTag> =
         (inner - OPPONENT_GIFTS) + readingLeaves(body).filter(::giftsTheSourceController).flatMap { tagsOf(it) } +
-            visitedOpponentLossTags(body)
+            visitedOpponentLossTags(body) +
+            // An emblem pumping each creature attacking the visited opponent pumps *our* attackers
+            // (Garruk, Apex Predator's −8): the pump is ours, not a gift to them.
+            (if (visitedPlayerArmsTheirAttackers(body)) setOf(IntentTag.PUMP) else emptySet())
 
     /**
      * Life the opponent visited loses by its own `you`. Inside an iteration over players `you` is
@@ -3191,6 +3194,23 @@ object CardIntentAnalyzer {
         readingLeaves(body)
             .flatMap { leaf -> if (leaf is CreateGlobalTriggeredAbilityEffect) readingLeaves(leaf.ability.effect) else listOf(leaf) }
             .any { it is LoseLifeEffect && (it.target == EffectTarget.Controller || it.target == EffectTarget.PlayerRef(Player.You)) }
+
+    /**
+     * Whether [body] hands the player an iteration over players visits a rest-of-game trigger that
+     * pumps each creature attacking them — "target opponent gets an emblem with 'Whenever a creature
+     * attacks you, it gets +5/+5 and gains trample until end of turn'" (Garruk, Apex Predator's −8).
+     * Inside the iteration the trigger's `you` is that player, so every attack on them hits harder:
+     * harm to the visited player, as [visitedPlayerLosesLife] is.
+     */
+    internal fun visitedPlayerArmsTheirAttackers(body: Effect): Boolean =
+        readingLeaves(body).filterIsInstance<CreateGlobalTriggeredAbilityEffect>().any { grant ->
+            val attack = grant.ability.trigger as? EventPattern.AttackEvent ?: return@any false
+            val attacksThem = attack.filter?.statePredicates.orEmpty()
+                .any { it == StatePredicate.IsAttackingPlayer(EffectTarget.Controller) }
+            attacksThem && readingLeaves(grant.ability.effect).any {
+                it is ModifyStatsEffect && it.target == EffectTarget.TriggeringEntity
+            }
+        }
 
     /**
      * Whether [leaf] names the source's controller as the one who gains — "for each opponent,
