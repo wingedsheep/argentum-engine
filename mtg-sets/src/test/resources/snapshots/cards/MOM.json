@@ -2525,7 +2525,10 @@
                     "type": "MoveToZone",
                     "target": "Self",
                     "destination": "Library",
-                    "positionFromTop": 2
+                    "positionFromTop": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
                 },
                 "descriptionOverride": "{1}{U}: Put Borborygmos and Fblthp into its owner's library third from the top."
             }

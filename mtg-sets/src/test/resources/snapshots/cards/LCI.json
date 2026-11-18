@@ -2071,7 +2071,10 @@
                                 "type": "MoveToZone",
                                 "target": "Self",
                                 "destination": "Library",
-                                "positionFromTop": 2
+                                "positionFromTop": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
                             }
                         ]
                     },

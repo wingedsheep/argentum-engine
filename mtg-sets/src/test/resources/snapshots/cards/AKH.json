@@ -469,7 +469,10 @@
                         "target": "Self",
                         "destination": "Library",
                         "fromZone": "Stack",
-                        "positionFromTop": 6
+                        "positionFromTop": {
+                            "type": "Fixed",
+                            "amount": 6
+                        }
                     },
                     {
                         "type": "GainLife",
@@ -2524,7 +2527,10 @@
                         "name": "t0"
                     },
                     "destination": "Library",
-                    "positionFromTop": 1
+                    "positionFromTop": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
                 },
                 "targetRequirements": [
                     {

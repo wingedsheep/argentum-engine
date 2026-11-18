@@ -2873,6 +2873,58 @@
     ]
 }
 
+// Quarry Colossus
+{
+    "name": "Quarry Colossus",
+    "manaCost": "{5}{W}{W}",
+    "typeLine": "Creature — Giant",
+    "oracleText": "When this creature enters, put target creature into its owner's library just beneath the top X cards of that library, where X is the number of Plains you control.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Quarry Colossus:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Library",
+                    "positionFromTop": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land Plains"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "UNCOMMON",
+        "artist": "Todd Lockwood",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d921128a-ebfd-4e3c-8728-481a8c3c03f3.jpg?1783939455"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Renowned Weaver
 {
     "name": "Renowned Weaver",

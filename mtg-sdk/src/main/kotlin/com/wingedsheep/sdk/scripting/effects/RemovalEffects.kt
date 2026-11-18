@@ -492,11 +492,14 @@ data class MoveToZoneEffect(
     /** When true and destination is EXILE, the exiled card is linked to the source permanent via LinkedExileComponent. */
     val linkToSource: Boolean = false,
     /**
-     * When set and destination is LIBRARY, places the card at this position from the top (0-indexed).
-     * 0 = top, 1 = second from top, 2 = third from top, etc.
-     * Takes precedence over [placement] when destination is LIBRARY.
+     * When set and destination is LIBRARY, places the card at this position from the top (0-indexed),
+     * i.e. just beneath the top N cards: 0 = top, 1 = second from top, 2 = third from top, etc.
+     * Read as the effect resolves, so a dynamic depth spells "just beneath the top X cards of that
+     * library, where X is …" (Quarry Colossus). A depth at or past the library's size puts the card
+     * on the bottom; a negative one puts it on top. Takes precedence over [placement] when
+     * destination is LIBRARY.
      */
-    val positionFromTop: Int? = null,
+    val positionFromTop: DynamicAmount? = null,
     /**
      * Counters the card enters the battlefield with, [EntryCounter.count] per entry, honoring
      * counter-placement replacements and prevention. In other destinations they annotate the
@@ -533,11 +536,12 @@ data class MoveToZoneEffect(
             destination == Zone.HAND -> append("Return ${target.description} to its owner's hand")
             destination == Zone.EXILE -> append("Exile ${target.description}")
             destination == Zone.LIBRARY && positionFromTop != null -> {
-                val ordinal = when (positionFromTop) {
+                val ordinal = when (val depth = (positionFromTop as? DynamicAmount.Fixed)?.amount) {
+                    null -> "just beneath the top ${positionFromTop.description} cards"
                     0 -> "top"
                     1 -> "second from the top"
                     2 -> "third from the top"
-                    else -> "${positionFromTop + 1}th from the top"
+                    else -> "${depth + 1}th from the top"
                 }
                 append("Put ${target.description} into its owner's library $ordinal")
             }

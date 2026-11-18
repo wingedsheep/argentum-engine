@@ -23,6 +23,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
@@ -188,6 +189,42 @@ class MoveToZoneEffectExecutorTest : FunSpec({
         val library = result.state.getZone(libraryZone)
         library.last() shouldBe cardId
         library.first() shouldBe existingLibraryCard
+    }
+
+    // "Just beneath the top X cards of that library" (Quarry Colossus): the depth is a DynamicAmount
+    // read as the effect resolves; 0 is the top, a depth at or past the library's size is the bottom,
+    // and a negative one is clamped to the top.
+    fun libraryOf(size: Int): Pair<GameState, List<EntityId>> {
+        val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
+        val others = List(size) { EntityId.generate() }
+        val state = others.fold(battlefieldState(playerId, cardId, creatureCard(playerId))) { acc, id ->
+            acc.withEntity(id, ComponentContainer().with(creatureCard(playerId))).addToZone(libraryZone, id)
+        }
+        return state to others
+    }
+
+    fun depthOf(depth: DynamicAmount, librarySize: Int): Int {
+        val (state, _) = libraryOf(librarySize)
+        val effect = MoveToZoneEffect(EffectTarget.ContextTarget(0), Zone.LIBRARY, positionFromTop = depth)
+        val result = executor.execute(state, effect, context(cardId, playerId))
+        result.outcome shouldBe Outcome.Done
+        return result.state.getZone(ZoneKey(playerId, Zone.LIBRARY)).indexOf(cardId)
+    }
+
+    test("a dynamic library depth is evaluated as the effect resolves") {
+        depthOf(DynamicAmount.Add(DynamicAmount.Fixed(1), DynamicAmount.Fixed(2)), librarySize = 5) shouldBe 3
+    }
+
+    test("a library depth of zero puts the card on top") {
+        depthOf(DynamicAmount.Subtract(DynamicAmount.Fixed(2), DynamicAmount.Fixed(2)), librarySize = 4) shouldBe 0
+    }
+
+    test("a library depth past the library's size puts the card on the bottom") {
+        depthOf(DynamicAmount.Fixed(7), librarySize = 2) shouldBe 2
+    }
+
+    test("a negative library depth is clamped to the top") {
+        depthOf(DynamicAmount.Subtract(DynamicAmount.Fixed(0), DynamicAmount.Fixed(3)), librarySize = 3) shouldBe 0
     }
 
     test("move to library shuffled emits LibraryShuffledEvent") {

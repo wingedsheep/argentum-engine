@@ -6777,7 +6777,10 @@
                         "target": "Self",
                         "destination": "Library",
                         "fromZone": "Graveyard",
-                        "positionFromTop": 2
+                        "positionFromTop": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
                     }
                 },
                 "descriptionOverride": "When God-Eternal Bontu dies, you may put her into her owner's library third from the top."
@@ -6800,7 +6803,10 @@
                         "target": "Self",
                         "destination": "Library",
                         "fromZone": "Exile",
-                        "positionFromTop": 2
+                        "positionFromTop": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
                     }
                 },
                 "descriptionOverride": "When God-Eternal Bontu is put into exile from the battlefield, you may put her into her owner's library third from the top."
@@ -6895,7 +6901,10 @@
                         "target": "Self",
                         "destination": "Library",
                         "fromZone": "Graveyard",
-                        "positionFromTop": 2
+                        "positionFromTop": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
                     }
                 },
                 "descriptionOverride": "When God-Eternal Kefnet dies, you may put it into its owner's library third from the top."
@@ -6918,7 +6927,10 @@
                         "target": "Self",
                         "destination": "Library",
                         "fromZone": "Exile",
-                        "positionFromTop": 2
+                        "positionFromTop": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
                     }
                 },
                 "descriptionOverride": "When God-Eternal Kefnet is put into exile from the battlefield, you may put it into its owner's library third from the top."
@@ -7022,7 +7034,10 @@
                         "target": "Self",
                         "destination": "Library",
                         "fromZone": "Graveyard",
-                        "positionFromTop": 2
+                        "positionFromTop": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
                     }
                 },
                 "descriptionOverride": "When God-Eternal Oketra dies, you may put it into its owner's library third from the top."
@@ -7045,7 +7060,10 @@
                         "target": "Self",
                         "destination": "Library",
                         "fromZone": "Exile",
-                        "positionFromTop": 2
+                        "positionFromTop": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
                     }
                 },
                 "descriptionOverride": "When God-Eternal Oketra is put into exile from the battlefield, you may put it into its owner's library third from the top."
@@ -7147,7 +7165,10 @@
                         "target": "Self",
                         "destination": "Library",
                         "fromZone": "Graveyard",
-                        "positionFromTop": 2
+                        "positionFromTop": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
                     }
                 },
                 "descriptionOverride": "When God-Eternal Rhonas dies, you may put it into its owner's library third from the top."
@@ -7170,7 +7191,10 @@
                         "target": "Self",
                         "destination": "Library",
                         "fromZone": "Exile",
-                        "positionFromTop": 2
+                        "positionFromTop": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
                     }
                 },
                 "descriptionOverride": "When God-Eternal Rhonas is put into exile from the battlefield, you may put it into its owner's library third from the top."
@@ -7923,7 +7947,10 @@
                         "target": "Self",
                         "destination": "Library",
                         "fromZone": "Graveyard",
-                        "positionFromTop": 2
+                        "positionFromTop": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
                     }
                 },
                 "descriptionOverride": "When Ilharg dies, you may put it into its owner's library third from the top."
@@ -7946,7 +7973,10 @@
                         "target": "Self",
                         "destination": "Library",
                         "fromZone": "Exile",
-                        "positionFromTop": 2
+                        "positionFromTop": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
                     }
                 },
                 "descriptionOverride": "When Ilharg is put into exile from the battlefield, you may put it into its owner's library third from the top."

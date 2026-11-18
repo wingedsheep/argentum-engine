@@ -6785,7 +6785,10 @@
                         "type": "MoveToZone",
                         "target": "Self",
                         "destination": "Library",
-                        "positionFromTop": 4
+                        "positionFromTop": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
                     }
                 }
             }
@@ -9282,7 +9285,10 @@
                 "name": "t0"
             },
             "destination": "Library",
-            "positionFromTop": 1
+            "positionFromTop": {
+                "type": "Fixed",
+                "amount": 1
+            }
         },
         "targetRequirements": [
             {
@@ -10291,7 +10297,10 @@
                 "name": "t0"
             },
             "destination": "Library",
-            "positionFromTop": 3
+            "positionFromTop": {
+                "type": "Fixed",
+                "amount": 3
+            }
         },
         "targetRequirements": [
             {

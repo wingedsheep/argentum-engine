@@ -17296,7 +17296,10 @@
                     "type": "MoveToZone",
                     "target": "Self",
                     "destination": "Library",
-                    "positionFromTop": 1
+                    "positionFromTop": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
                 },
                 "activateFromZone": "Graveyard",
                 "descriptionOverride": "{2}{U}: Put this card from your graveyard into your library second from the top."
