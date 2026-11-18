@@ -31,7 +31,8 @@ val ThassasIre = card("Thassa's Ire") {
                 ),
                 chooseCount = 1,
                 countsAsModalSpell = false,
-            )
+            ),
+            descriptionOverride = "You may tap or untap that creature",
         )
         description = "{3}{U}: You may tap or untap target creature."
     }

@@ -3783,7 +3783,8 @@
                             }
                         ],
                         "countsAsModalSpell": false
-                    }
+                    },
+                    "descriptionOverride": "You may tap or untap that creature"
                 },
                 "targetRequirements": [
                     {

@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * Thoughtrender Lamia (JOU #85) — {4}{B}{B} Enchantment Creature — Lamia 5/3.
@@ -28,7 +29,7 @@ class ThoughtrenderLamiaScenarioTest : ScenarioTestBase() {
             game.castSpell(1, "Thoughtrender Lamia").error shouldBe null
             game.resolveStack()
 
-            val discard = game.getPendingDecision() as SelectCardsDecision
+            val discard = game.getPendingDecision().shouldBeInstanceOf<SelectCardsDecision>()
             withClue("the opponent chooses the discard") {
                 discard.playerId shouldBe game.player2Id
             }

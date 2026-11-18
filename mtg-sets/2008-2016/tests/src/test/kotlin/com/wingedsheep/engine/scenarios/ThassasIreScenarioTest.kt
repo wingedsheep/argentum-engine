@@ -59,6 +59,30 @@ class ThassasIreScenarioTest : ScenarioTestBase() {
             }
         }
 
+        test("you may untap the target creature") {
+            val game = scenario()
+                .withPlayers("P1", "P2")
+                .withCardOnBattlefield(1, "Thassa's Ire")
+                .withLandsOnBattlefield(1, "Island", 4)
+                .withCardOnBattlefield(1, "Grizzly Bears", tapped = true)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            val bears = game.findPermanent("Grizzly Bears")!!
+            activateOn(game, bears)
+
+            game.answerYesNo(true).error shouldBe null
+            val mode = game.getPendingDecision().shouldBeInstanceOf<ChooseOptionDecision>()
+            game.submitDecision(OptionChosenResponse(mode.id, mode.options.indexOfFirst { it.startsWith("Untap") }))
+                .error shouldBe null
+            game.resolveStack()
+
+            withClue("your tapped creature is untapped") {
+                game.state.getEntity(bears)?.has<TappedComponent>() shouldBe false
+            }
+        }
+
         test("declining the may leaves the creature as it was") {
             val game = scenario()
                 .withPlayers("P1", "P2")
