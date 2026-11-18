@@ -564,14 +564,6 @@ object CardIntentAnalyzer {
     }
 
     /**
-     * The rider of a zone-change replacement that watches other objects — "if a nontoken creature
-     * an opponent controls would die, instead exile that card and create a 2/2 black Zombie"
-     * (Kalitas, Traitor of Ghet), "… and you gain 2 life" (The Darkness Crystal). It happens each
-     * time a matching object moves, so it is read like a triggered ability's effect: the Zombie is
-     * token making, the life is life gain. A self-only replacement's rider (Ugin's Nexus, Darigaaz)
-     * is the card's own leave-play consolation and stays out.
-     */
-    /**
      * What a standing replacement effect — printed on a permanent, or held by an emblem — is for:
      * damage amplified ([DamageAmplifiers]); a damage-prevention shield over us and our permanents
      * (Protection of the Hekma, Gideon's Intervention, Ajani Steadfast's emblem — [DamageShields])
@@ -591,6 +583,14 @@ object CardIntentAnalyzer {
         }
     }
 
+    /**
+     * The rider of a zone-change replacement that watches other objects — "if a nontoken creature
+     * an opponent controls would die, instead exile that card and create a 2/2 black Zombie"
+     * (Kalitas, Traitor of Ghet), "… and you gain 2 life" (The Darkness Crystal). It happens each
+     * time a matching object moves, so it is read like a triggered ability's effect: the Zombie is
+     * token making, the life is life gain. A self-only replacement's rider (Ugin's Nexus, Darigaaz)
+     * is the card's own leave-play consolation and stays out.
+     */
     private fun repeatingRiderOf(replacement: ReplacementEffect): Effect? =
         (replacement as? RedirectZoneChangeWith)?.takeUnless { it.selfOnly }?.additionalEffect
 

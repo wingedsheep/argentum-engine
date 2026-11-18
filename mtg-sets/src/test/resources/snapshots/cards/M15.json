@@ -2664,94 +2664,6 @@
     ]
 }
 
-// Indulgent Tormentor
-{
-    "name": "Indulgent Tormentor",
-    "manaCost": "{3}{B}{B}",
-    "typeLine": "Creature — Demon",
-    "oracleText": "Flying\nAt the beginning of your upkeep, draw a card unless target opponent sacrifices a creature of their choice or pays 3 life.",
-    "creatureStats": {
-        "power": 5,
-        "toughness": 3
-    },
-    "keywords": [
-        "FLYING"
-    ],
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Indulgent Tormentor:1",
-                "trigger": {
-                    "type": "StepEvent",
-                    "step": "UPKEEP"
-                },
-                "binding": "ANY",
-                "effect": {
-                    "type": "PayOrSuffer",
-                    "cost": {
-                        "type": "Choice",
-                        "options": [
-                            {
-                                "type": "PayAtom",
-                                "atom": {
-                                    "type": "AtomSacrifice",
-                                    "filter": "creature"
-                                }
-                            },
-                            {
-                                "type": "PayAtom",
-                                "atom": {
-                                    "type": "AtomPayLife",
-                                    "amount": {
-                                        "type": "Fixed",
-                                        "amount": 3
-                                    }
-                                }
-                            }
-                        ]
-                    },
-                    "suffer": {
-                        "type": "DrawCards",
-                        "count": {
-                            "type": "Fixed",
-                            "amount": 1
-                        }
-                    },
-                    "player": {
-                        "type": "BoundVariable",
-                        "name": "t0"
-                    },
-                    "consequenceDescription": "let Indulgent Tormentor's controller draw a card"
-                },
-                "targetRequirement": {
-                    "type": "TargetOpponent",
-                    "id": "t0"
-                }
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "101",
-        "rarity": "RARE",
-        "artist": "Wesley Burt",
-        "flavorText": "The promise of anguish is payment enough for services rendered.",
-        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4da8a4d8-6d18-4588-8da9-cd32658071f0.jpg?1783939183",
-        "rulings": [
-            {
-                "date": "2017-11-17",
-                "text": "The opponent chooses whether they sacrifice a creature, pays 3 life, or allows you to draw a card. That player can't make an impossible choice, such as sacrificing a creature while they control no creatures."
-            },
-            {
-                "date": "2017-11-17",
-                "text": "If there are no legal targets to choose, perhaps because all your opponents have hexproof, the ability is removed from the stack with no effect. You won't draw a card. This is also true if the target opponent becomes an illegal target in response to the ability."
-            }
-        ]
-    },
-    "colorIdentityOverride": [
-        "BLACK"
-    ]
-}
-
 // Inferno Fist
 {
     "name": "Inferno Fist",
@@ -6923,6 +6835,51 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Unmake the Graves
+{
+    "name": "Unmake the Graves",
+    "manaCost": "{4}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nReturn up to two target creature cards from your graveyard to your hand.",
+    "keywords": [
+        "CONVOKE"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                },
+                "destination": "Hand"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "artist": "Aaron Miller",
+        "flavorText": "\"I'm raising an army. Any volunteers?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d6fd00bb-b247-45b7-9cb2-0d65b92c0360.jpg?1783939179"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

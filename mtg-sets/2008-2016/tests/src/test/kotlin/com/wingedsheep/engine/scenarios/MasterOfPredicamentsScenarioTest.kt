@@ -1,10 +1,12 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 
 /**
@@ -106,6 +108,16 @@ class MasterOfPredicamentsScenarioTest : ScenarioTestBase() {
             val game = connect("Island", "Grizzly Bears")
             game.chooseAndGuess("Island", guessGreater = true)
 
+            // The guess was wrong, but a land can't be cast: the cast choice either isn't asked at
+            // all or doesn't offer the Island.
+            val island = game.findCardsInHand(1, "Island").first()
+            val castChoice = game.getPendingDecision()
+            withClue("the land is not offered as a cast: $castChoice") {
+                if (castChoice != null) {
+                    (castChoice is SelectCardsDecision) shouldBe true
+                    (castChoice as SelectCardsDecision).options shouldNotContain island
+                }
+            }
             if (game.hasPendingDecision()) game.skipSelection().error shouldBe null
             game.resolveStack()
 
