@@ -1,3 +1,30 @@
+// Aegis of the Gods
+{
+    "name": "Aegis of the Gods",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment Creature — Human Soldier",
+    "oracleText": "You have hexproof. (You can't be the target of spells or abilities your opponents control.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            "GrantHexproofToController"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "RARE",
+        "artist": "Yefim Kligerman",
+        "flavorText": "Athreos cares little for the other gods' conflict with mortals. He is concerned only with safe passage for the dead.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2b2f381-86a2-42ac-b694-dcde437d574f.jpg?1783939463"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Akroan Mastiff
 {
     "name": "Akroan Mastiff",
@@ -53,6 +80,139 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Armament of Nyx
+{
+    "name": "Armament of Nyx",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature has double strike as long as it's an enchantment. Otherwise, prevent all damage that would be dealt by enchanted creature. (A creature with double strike deals both first-strike and regular combat damage.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOUBLE_STRIKE",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsEnchantment"
+                        ],
+                        "statePredicates": [
+                            "IsAttachedToBySource"
+                        ]
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "source": {
+                        "cardPredicates": [
+                            {
+                                "type": "Not",
+                                "predicate": "IsEnchantment"
+                            }
+                        ],
+                        "statePredicates": [
+                            "IsAttachedToBySource"
+                        ]
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/4203df15-dd44-496b-889a-d7a8fe320330.jpg?1783939463",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Armament of Nyx continuously checks to see whether the creature it's enchanting is an enchantment or not. If the creature isn't an enchantment and becomes one, or it is an enchantment and stops being one, the effect will change."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Armory of Iroas
+{
+    "name": "Armory of Iroas",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Whenever equipped creature attacks, put a +1/+1 counter on it.\nEquip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Armory of Iroas:1",
+                "trigger": "AttackEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "TriggeringEntity"
+                },
+                "descriptionOverride": "Whenever equipped creature attacks, put a +1/+1 counter on it."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Armory of Iroas:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "158",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "From a distance the weapons look pristine, but in fact they are tarnished and dented, each as unique as the champion who carried it to battle.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7ac44e4b-25ba-4b32-ad56-c87c202c310a.jpg?1783939400",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "If you move Armory of Iroas from one creature to another, any +1/+1 counters on the first creature remain where they are."
+            }
+        ]
+    }
 }
 
 // Aspect of Gorgon
@@ -549,6 +709,80 @@
     ]
 }
 
+// Countermand
+{
+    "name": "Countermand",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell. Its controller mills four cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                "Counter",
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "player": {
+                                    "type": "ControllerOf",
+                                    "targetDescription": "target spell"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "ControllerOf",
+                                    "targetDescription": "target spell"
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "artist": "Clint Cearley",
+        "flavorText": "The physical pain was nothing compared to the agony in his mind.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/07815e32-0b64-4c2b-84e6-a72336c45cf5.jpg?1783939449",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "You may target a spell that can't be countered with Countermand. If you do, when Countermand resolves, the target spell won't be countered, but its controller will still put the top four cards of their library into their graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Cyclops of Eternal Fury
 {
     "name": "Cyclops of Eternal Fury",
@@ -580,6 +814,286 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Dawnbringer Charioteers
+{
+    "name": "Dawnbringer Charioteers",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Flying, lifelink\nHeroic — Whenever you cast a spell that targets this creature, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dawnbringer Charioteers:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, put a +1/+1 counter on this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "RARE",
+        "artist": "Ryan Alexander Lee",
+        "flavorText": "\"Nyx may belong to the gods, but the skies of Theros are ours.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/eca7b7d9-8b69-411a-8a1d-9b7d0492e7d0.jpg?1783939463",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Deicide
+{
+    "name": "Deicide",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target enchantment. If the exiled card is a God card, search its controller's graveyard, hand, and library for any number of cards with the same name as that card and exile them. Then that player shuffles.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "StoreCardName",
+                    "from": "gathered0",
+                    "storeAs": "cardName1"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    },
+                    "storeMovedAs": "moved2"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "CollectionContainsMatch",
+                            "collection": "moved2",
+                            "filter": "God nontoken"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromMultipleZones",
+                                    "zones": [
+                                        "Graveyard",
+                                        "Hand",
+                                        "Library"
+                                    ],
+                                    "player": {
+                                        "type": "ControllerOf",
+                                        "targetDescription": "target enchantment"
+                                    },
+                                    "filter": {
+                                        "cardPredicates": [
+                                            {
+                                                "type": "NameEqualsChosen",
+                                                "variableName": "cardName1"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "storeAs": "gathered4",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered4",
+                                "selection": "ChooseAnyNumber",
+                                "storeSelected": "selected5",
+                                "prompt": "Choose any number of cards with that name to exile",
+                                "selectedLabel": "Exile",
+                                "showAllCards": true,
+                                "alwaysPrompt": true
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected5",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile",
+                                    "player": {
+                                        "type": "ControllerOf",
+                                        "targetDescription": "target enchantment"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "ShuffleLibrary",
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": {
+                                        "type": "ControllerOf",
+                                        "targetDescription": "target enchantment"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "enchantment"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "RARE",
+        "artist": "Jason Chan",
+        "flavorText": "\"It is done.\"\n—Elspeth",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/6012964c-eb76-4581-82ae-aec2d36f0d56.jpg?1783939462",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Deicide looks at the card in exile, not the permanent that was exiled, to determine if it is a God. For each of the Gods in the Theros block, it won't matter what your devotion to its color(s) was. The card is a God card when not on the battlefield."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "When you search the target's controller's graveyard, hand, and library, you may leave any cards with that name in the zones they're in. You don't have to exile them."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Deserter's Quarters
+{
+    "name": "Deserter's Quarters",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "You may choose not to untap this artifact during your untap step.\n{6}, {T}: Tap target creature. It doesn't untap during its controller's untap step for as long as this artifact remains tapped.",
+    "flags": [
+        "MAY_NOT_UNTAP"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Deserter's Quarters:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{6}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": {
+                                "type": "WhileSourceTapped",
+                                "sourceDescription": "this artifact"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{6}, {T}: Tap target creature. It doesn't untap during its controller's untap step for as long as this artifact remains tapped."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "In Akros, the penalty for running from battle is one night's stay in the Deserter's Quarters.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8f7d3b2d-e06e-4d30-9ed8-2a52aa7e31c6.jpg?1783939400",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "The activated ability can target any creature, not just one that's untapped."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "As long as Deserter's Quarters remains tapped, the effect stopping the creature from untapping during its controller's untap step remains even if that creature untaps some other way (for example, with Colossal Heroics)."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Dictate of Erebos
@@ -1337,6 +1851,62 @@
     ]
 }
 
+// Godhunter Octopus
+{
+    "name": "Godhunter Octopus",
+    "manaCost": "{5}{U}",
+    "typeLine": "Creature — Octopus",
+    "oracleText": "This creature can't attack unless defending player controls an enchantment or an enchanted permanent.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "Exists",
+                    "player": "DefendingPlayer",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "anyOf": [
+                            {
+                                "cardPredicates": [
+                                    "IsEnchantment"
+                                ]
+                            },
+                            {
+                                "cardPredicates": [
+                                    "IsPermanent"
+                                ],
+                                "statePredicates": [
+                                    "IsEnchanted"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "artist": "Tyler Jacobson",
+        "flavorText": "\"I will match Thassa drop for drop and show a god what true power is.\"\n—Kiora",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/da106c23-fd1c-461b-9301-159f93ef489b.jpg?1783939448",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Whether the defending player controls an enchantment or enchanted permanent is checked only as attackers are declared. Once Godhunter Octopus has been declared as an attacker, it will continue to attack even if the defending player loses control of each enchantment or enchanted permanent they controlled."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Godsend
 {
     "name": "Godsend",
@@ -1579,6 +2149,46 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Hall of Triumph
+{
+    "name": "Hall of Triumph",
+    "manaCost": "{3}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "As Hall of Triumph enters, choose a color.\nCreatures you control of the chosen color get +1/+1.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "HasChosenColor"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "COLOR"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "RARE",
+        "artist": "Ryan Yee",
+        "flavorText": "Heroes act without thought of glory or reward. Accolades are a consequence, not a goal.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/634fd988-5d5c-4637-b7fd-05a41798ead8.jpg?1783939399"
+    },
+    "colorIdentityOverride": []
 }
 
 // Harvestguard Alseids
@@ -2265,6 +2875,223 @@
     ]
 }
 
+// Lagonna-Band Trailblazer
+{
+    "name": "Lagonna-Band Trailblazer",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Centaur Scout",
+    "oracleText": "Heroic — Whenever you cast a spell that targets this creature, put a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lagonna-Band Trailblazer:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, put a +1/+1 counter on it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "artist": "James Zapata",
+        "flavorText": "Go forth with honor, return with glory.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/38a6f533-6acb-4c24-ae9d-fe4977230156.jpg?1783939457",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Launch the Fleet
+{
+    "name": "Launch the Fleet",
+    "manaCost": "{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Strive — This spell costs {1} more to cast for each target beyond the first.\nUntil end of turn, any number of target creatures each gain \"Whenever this creature attacks, create a 1/1 white Soldier creature token that's tapped and attacking.\"",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Launch the Fleet:1",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "WHITE"
+                        ],
+                        "creatureTypes": [
+                            "Soldier"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/3/1/31f320f4-baae-46cb-840e-421f010a0a20.jpg?1783939699",
+                        "tapped": true,
+                        "attacking": true,
+                        "attackDefender": "CONTROLLER_CHOOSES"
+                    },
+                    "descriptionOverride": "Whenever this creature attacks, create a 1/1 white Soldier creature token that's tapped and attacking."
+                },
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "IncreaseGenericBy",
+                    "source": {
+                        "type": "ChosenTargets",
+                        "beyond": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "RARE",
+        "artist": "Karl Kopinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bc3e52c0-2f79-4537-8f1c-70b68836bac0.jpg?1783939456",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "You declare which player or planeswalker each token is attacking as you put it onto the battlefield. It doesn't have to be the same player or planeswalker the original creature is attacking."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Although the tokens are attacking, they were never declared as attacking creatures (for purposes of abilities that trigger whenever a creature attacks, for example)."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "You choose how many targets each spell with a strive ability has and what those targets are as you cast it. It's legal to cast such a spell with no targets, although this is rarely a good idea. You can't choose the same target more than once for a single strive spell."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "The mana cost and mana value of strive spells don't change no matter how many targets they have. Strive abilities affect only what you pay."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If a spell or ability allows you to cast a strive spell without paying its mana cost, you must pay the additional costs for any targets beyond the first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Leonin Iconoclast
+{
+    "name": "Leonin Iconoclast",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Cat Monk",
+    "oracleText": "Heroic — Whenever you cast a spell that targets this creature, destroy target enchantment creature an opponent controls.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Leonin Iconoclast:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature enchantment ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, destroy target enchantment creature an opponent controls."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Prescott",
+        "flavorText": "\"The stars belong in the night sky. This is our world, and we are our own masters.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7dfaa12e-f1d9-4a39-804f-14cdaf382257.jpg?1783939457",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Lightning Diadem
 {
     "name": "Lightning Diadem",
@@ -2409,6 +3236,85 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Mortal Obstinacy
+{
+    "name": "Mortal Obstinacy",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature you control\nEnchanted creature gets +1/+1.\nWhenever enchanted creature deals combat damage to a player, you may sacrifice this Aura. If you do, destroy target enchantment.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mortal Obstinacy:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": "SacrificeSelf"
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "enchantment"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever enchanted creature deals combat damage to a player, you may sacrifice this Aura. If you do, destroy target enchantment."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature ctrl:you"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/67652df1-f2cc-44cd-ac66-9722d4cd86e9.jpg?1783939456",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "You decide whether to sacrifice Mortal Obstinacy as its triggered ability resolves. If it's not on the battlefield at that time, you can't sacrifice it and destroy the target enchantment."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If another player gains control of the enchanted creature, Mortal Obstinacy will be put into its owner's graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -2689,6 +3595,85 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Phalanx Formation
+{
+    "name": "Phalanx Formation",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Strive — This spell costs {1}{W} more to cast for each target beyond the first.\nAny number of target creatures each gain double strike until end of turn. (They deal both first-strike and regular combat damage.)",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "GrantKeyword",
+                "keyword": "DOUBLE_STRIKE",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "IncreaseGenericBy",
+                    "source": {
+                        "type": "ChosenTargets",
+                        "beyond": 1
+                    }
+                }
+            },
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "IncreaseColoredPerUnit",
+                    "symbols": "{W}",
+                    "countSource": {
+                        "type": "ChosenTargets",
+                        "beyond": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7e9aaba1-e480-4667-b3c9-d5665a3b4806.jpg?1783939455",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "You choose how many targets each spell with a strive ability has and what those targets are as you cast it. It's legal to cast such a spell with no targets, although this is rarely a good idea. You can't choose the same target more than once for a single strive spell."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "The mana cost and mana value of strive spells don't change no matter how many targets they have. Strive abilities affect only what you pay."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If a spell or ability allows you to cast a strive spell without paying its mana cost, you must pay the additional costs for any targets beyond the first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -3504,6 +4489,80 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Skybind
+{
+    "name": "Skybind",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Constellation — Whenever this enchantment or another enchantment you control enters, exile target nonenchantment permanent. Return that card to the battlefield under its owner's control at the beginning of the next end step.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skybind:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "step": "END",
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Battlefield"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsPermanent",
+                                "IsNonenchantment"
+                            ]
+                        }
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Constellation — Whenever this enchantment or another enchantment you control enters, exile target nonenchantment permanent. Return that card to the battlefield under its owner's control at the beginning of the next end step."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "rarity": "RARE",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/91e3117a-0955-47fc-81c0-7a662c8c487f.jpg?1783939455",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "A constellation ability triggers whenever an enchantment enters the battlefield under your control for any reason. Enchantments with other card types, such as enchantment creatures, will also cause constellation abilities to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

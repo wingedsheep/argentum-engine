@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.PreventDamage
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.targets.TargetObject
@@ -41,7 +40,7 @@ val ArmamentOfNyx = card("Armament of Nyx") {
     staticAbility {
         ability = GrantKeyword(
             Keyword.DOUBLE_STRIKE,
-            GroupFilter(GameObjectFilter.Enchantment, scope = Scope.AttachedTo),
+            GroupFilter(GameObjectFilter.Enchantment.attachedToBySource()),
         )
     }
 
