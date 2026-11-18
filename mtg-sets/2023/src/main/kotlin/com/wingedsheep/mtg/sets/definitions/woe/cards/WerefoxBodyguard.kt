@@ -63,7 +63,7 @@ val WerefoxBodyguard = card("Werefox Bodyguard") {
     }
 
     metadata {
-        rarity = Rarity.COMMON
+        rarity = Rarity.RARE
         collectorNumber = "39"
         artist = "Néstor Ossandón Leal"
         imageUri = "https://cards.scryfall.io/normal/front/4/4/4494dfa1-1343-417e-b0c5-2b096442dd0e.jpg?1783915124"
