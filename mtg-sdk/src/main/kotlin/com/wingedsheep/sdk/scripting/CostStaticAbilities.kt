@@ -768,16 +768,25 @@ sealed interface CostReductionSource {
      * targets are chosen, affordability prices the cheapest reachable count — the most distinct
      * legal targets under a reduction, the fewest the spell requires under an increase.
      *
+     * [filter] narrows the count to the targets that match it — "for each creature it targets"
+     * (Battlefield Thaumaturge: `ChosenTargets(filter = GameObjectFilter.Creature.onBattlefield())`,
+     * since a creature card in a graveyard is not a creature). On a battlefield modifier it is
+     * evaluated relative to that permanent, like [FixedIfAnyTargetMatches]'s. Null counts every
+     * target.
+     *
      * Pair with [CostModification.ReduceGenericBy] / [CostModification.IncreaseGenericBy] for a
      * generic amount per target and with [CostModification.IncreaseColoredPerUnit] for a colored one.
      */
     @SerialName("ChosenTargets")
     @Serializable
-    data class ChosenTargets(val beyond: Int = 0) : CostReductionSource {
-        override val description: String = when (beyond) {
-            0 -> "each target"
-            1 -> "each target beyond the first"
-            else -> "each target beyond the first $beyond"
+    data class ChosenTargets(val beyond: Int = 0, val filter: GameObjectFilter? = null) : CostReductionSource {
+        override val description: String = run {
+            val each = filter?.let { "each ${it.description} it targets" } ?: "each target"
+            when (beyond) {
+                0 -> each
+                1 -> "$each beyond the first"
+                else -> "$each beyond the first $beyond"
+            }
         }
     }
 

@@ -12839,7 +12839,14 @@ staticAbility {
   `ChosenTargets(beyond = 0)` (the number of *different* players and objects the spell targets,
   less `beyond` — "for each target" is `ChosenTargets()`, "for each target beyond the first" is
   `ChosenTargets(beyond = 1)`. It counts targets, not uses of the word "target": three "target
-  creature" phrases aimed at one creature are one target (Hinata's ruling). It reads the spell's own
+  creature" phrases aimed at one creature are one target (Hinata's ruling). `filter` narrows the
+  count to matching targets — Battlefield Thaumaturge's "Each instant and sorcery spell you cast
+  costs {1} less to cast for each creature it targets" is `ModifySpellCost(YouCast(InstantOrSorcery),
+  ReduceGenericBy(ChosenTargets(filter = GameObjectFilter.Creature.onBattlefield())))` (a player or
+  a creature card in a graveyard is a target, not a creature); a battlefield modifier's filter reads
+  relative to its permanent. When every per-target modifier in play shares one filter, the
+  client's `manaCostByTargetCount` is keyed by matching targets and the action carries
+  `targetPriceCountedIds`, the objects that match. It reads the spell's own
   chosen targets on a `SelfCast` modifier and on a battlefield one alike — Hinata, Dawn-Crowned's
   "Spells you cast cost {1} less to cast for each target" is `ModifySpellCost(YouCast(Any),
   ReduceGenericBy(ChosenTargets()))`, and its opponents' tax is `OpponentsCast(Any)` +

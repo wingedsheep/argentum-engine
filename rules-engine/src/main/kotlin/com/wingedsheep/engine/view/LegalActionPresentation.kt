@@ -170,6 +170,13 @@ data class LegalActionInfo(
      */
     val manaCostByTargetCount: Map<Int, String>? = null,
     /**
+     * When set, [manaCostByTargetCount] is keyed by how many of the chosen targets are among these
+     * objects, not by how many different targets there are: every per-target modifier in play
+     * counts only targets matching one filter ("for each creature it targets" — Battlefield
+     * Thaumaturge). Null keys the table by different targets.
+     */
+    val targetPriceCountedIds: List<EntityId>? = null,
+    /**
      * The cheapest [manaCostString] can end up being once the alternative payments this action
      * already offers are used to the maximum — convoke taps (CR 702.51a), delve exiles (CR 702.66a),
      * waterbend taps, a harmonize tap. Null when nothing can move the cost.

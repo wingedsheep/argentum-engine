@@ -1252,6 +1252,13 @@ export interface LegalActionInfo {
    * actually picked. The prices are the server's; the client only looks one up.
    */
   readonly manaCostByTargetCount?: Readonly<Record<number, string>>
+  /**
+   * When set, `manaCostByTargetCount` is keyed by how many of the chosen targets are among these
+   * objects rather than by how many different targets there are — every per-target modifier in
+   * play counts only targets matching one filter ("for each creature it targets", Battlefield
+   * Thaumaturge). The server decides which objects match; the client only counts.
+   */
+  readonly targetPriceCountedIds?: readonly EntityId[]
   /** Whether this spell requires damage distribution at cast time (for DividedDamageEffect) */
   readonly requiresDamageDistribution?: boolean
   /** Total damage to distribute for DividedDamageEffect spells */

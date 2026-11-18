@@ -710,7 +710,11 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
     // knowable here — look up the price for the different targets chosen. Same shape as the
     // emerge/harmonize adjustments around it: the server owns the rule, the client only applies
     // the choice the player has since made.
-    const distinctTargets = new Set((action.targets ?? []).map(targetEntityId)).size
+    // Under a filtered per-target modifier ("for each creature it targets") the server keys the
+    // table by the chosen targets among `targetPriceCountedIds` instead.
+    const countedIds = actionInfo.targetPriceCountedIds ? new Set(actionInfo.targetPriceCountedIds) : null
+    const distinctTargets = [...new Set((action.targets ?? []).map(targetEntityId))]
+      .filter((id) => countedIds == null || countedIds.has(id)).length
     const targetPricedCost = actionInfo.manaCostByTargetCount?.[distinctTargets]
     const manaCost = emergeCost ?? targetPricedCost ?? actionInfo.manaCostString ?? ''
     // A preceding delve or convoke phase materializes {X} as generic in the cost it hands on, so
