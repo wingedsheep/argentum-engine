@@ -1,1 +1,1 @@
-- #TBD The AI reads an emblem that pumps each creature attacking the targeted opponent (Garruk, Apex Predator's −8) as harm to that opponent and a pump for its own attackers.
+- #4736 The AI reads an emblem that pumps each creature attacking the targeted opponent (Garruk, Apex Predator's −8) as harm to that opponent and a pump for its own attackers.
