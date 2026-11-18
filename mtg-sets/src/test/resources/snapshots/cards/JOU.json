@@ -4505,6 +4505,87 @@
     ]
 }
 
+// Sightless Brawler
+{
+    "name": "Sightless Brawler",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment Creature — Human Warrior",
+    "oracleText": "Bestow {4}{W} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nThis creature can't attack alone.\nEnchanted creature gets +3/+2 and can't attack alone.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{4}{W}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnlessCoAttacker",
+                "coAttackerFilter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ]
+                }
+            },
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "CantAttackUnlessCoAttacker",
+                "coAttackerFilter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ]
+                },
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "rarity": "UNCOMMON",
+        "artist": "Johann Bodin",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7e2fcd27-c068-468f-9825-2825c0cf217d.jpg?1783939456",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Sightless Brawler or the creature it enchants can be declared as an attacker only if another creature is declared as an attacker at the same time."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If you control more than one creature that can't attack alone, they can both attack together, even if no other creatures attack."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Although Sightless Brawler or the creature it enchants can't attack alone, other attacking creatures don't have to attack the same player or planeswalker. For example, Sightless Brawler could attack an opponent and another creature could attack a planeswalker that opponent controls."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If a creature that can't attack alone also must attack if able, its controller must attack with it and another creature if able."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Unlike other Auras, an Aura with bestow isn't put into its owner's graveyard if it becomes unattached. Rather, the effect making it an Aura ends, it loses enchant creature, and it remains on the battlefield as an enchantment creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Sigiled Skink
 {
     "name": "Sigiled Skink",

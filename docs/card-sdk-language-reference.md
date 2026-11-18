@@ -12590,7 +12590,11 @@ in the declare-blockers step, even before the turn-based block action has comple
   unless [a creature matching coAttackerFilter] also attacks" (Scarred Puma). Unlike
   `CantAttackUnless` (which is defender-relative), this depends on the whole proposed attacker
   group, so it's validated against the other declared attackers at declaration time (CR 508.1c,
-  projected state; self never counts as its own co-attacker).
+  projected state; self never counts as its own co-attacker). `filter` reaches any creature it
+  covers, read through the combat static scan (printed or granted, conditions evaluated, a
+  face-down or ability-stripped holder imposing nothing): `GroupFilter.attachedCreature()` is
+  "Enchanted creature can't attack alone" — **Sightless Brawler** bestowed carries both forms. Two
+  creatures that can't attack alone may attack together.
 - `CanOnlyAttackAlone(filter = source)` — "This creature can only attack alone" (Master of
   Cruelties). A declaration with it and any other attacker is illegal (CR 508.1c); "alone" is the
   declared set (CR 506.5), so a creature put onto the battlefield attacking later changes nothing.
@@ -12599,8 +12603,8 @@ in the declare-blockers step, even before the turn-based block action has comple
   creature attacks and it stays home (the card's ruling); when it is, it attacks alone only if its
   own requirements outnumber the others', and equal counts tie (either declaration is legal).
   `mandatoryAttackers` lists only what every best declaration attacks with, and the
-  declare-attackers legal action lists the restricted creatures in `loneAttackers`. Like
-  `CantAttackUnlessCoAttacker`, read self-scoped off the card definition and
+  declare-attackers legal action lists the restricted creatures in `loneAttackers`. Read
+  self-scoped off the card definition and
   `grantedStaticAbilities` (tokens); a face-down creature or one that lost all abilities is free.
 - `CantBlockUnlessCoBlocker(coBlockerFilter, filter = source)` — the blocking sibling: "This
   creature can't block unless [a creature matching coBlockerFilter] also blocks." Validated against
@@ -12614,7 +12618,9 @@ in the declare-blockers step, even before the turn-based block action has comple
   `CantAttackUnlessCoAttacker` it models "can't attack or block alone" (Toby, Beastie Befriender's
   Beast token). Both restriction families are read from the card definition *and* from
   `grantedStaticAbilities`, so they work on tokens (which have no `CardDefinition`) —
-  `CreateTokenEffect.staticAbilities` are granted per-token for exactly this reason.
+  `CreateTokenEffect.staticAbilities` are granted per-token for exactly this reason. Like the attack side,
+  `filter` may reach beyond the holder: `GroupFilter.attachedCreature()` is "enchanted creature
+  can't block alone".
 - `AttackerCountLimit(maxAttackers)` / `BlockerCountLimit(maxBlockers)` — global combat caps
   (Dueling Grounds — "No more than one creature can attack/block each combat"). Constrain the
   *total* declared attacker/blocker set across all players, not a single creature, so they are
