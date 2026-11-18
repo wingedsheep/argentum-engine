@@ -1444,6 +1444,10 @@ controller** (not the payer), so `EffectTarget.Controller` inside it means *you*
 "whenever a creature an opponent controls dies, *they* may pay 3 life. If they don't, return that card
 under *your* control" is `PayOrSufferEffect(player = PlayerRef(TriggeringPlayer), cost = Costs.pay.PayLife(3),
 suffer = Composite(Move(TriggeringEntity → battlefield, controllerOverride = Controller), AddCounters(finality)))`.
+That holds on the `Costs.pay.Choice` path too, whichever question the payer declines — the list of
+options or the chosen cost's own prompt (Indulgent Tormentor: "draw a card unless target opponent
+sacrifices a creature of their choice or pays 3 life" draws for *you*). A life cost is payable while the
+payer's life total is **at least** the amount (CR 119.4), so a player at exactly 3 may pay 3 life.
 
 **`consequenceDescription`** is the prompt's words for what happens if the cost isn't paid ("Pay {2}
 or **…**?"), and every `Costs.pay` variant's prompt renders it. Null generates the clause from

@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.player
 
 import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
+import com.wingedsheep.engine.state.LifePaymentPurpose
 import com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality
 import com.wingedsheep.engine.mechanics.cost.SharedCreatureTypeTapCost
 import com.wingedsheep.engine.core.*
@@ -749,14 +750,12 @@ class PayOrSufferExecutor(
         sourceName: String,
         controllerId: EntityId
     ): EffectResult {
-        // Check if player has enough life to pay (must have more than the cost).
-        // CR 810.9a — affordability uses the team's shared total in Two-Headed Giant.
-        val playerLife = state.lifeTotal(controllerId)
+        // CR 119.4 — life can be paid while the life total is at least the payment, so a player
+        // at exactly 3 may pay 3 life (and then loses the game to state-based actions). CR 810.9a
+        // — the team's shared total in Two-Headed Giant; CR 119.8 — a player who can't lose life
+        // can't pay it. Any of those failing means the consequence is suffered.
         val life = CostAtomAmounts.life(state, cost, controllerId, predicateEvaluator, sourceId)
-
-        // If player doesn't have enough life to pay and survive, execute suffer effect
-        // CR 119.8 — a player who can't lose life can't pay it, so they suffer.
-        if (life >= CostAtomAmounts.UNPRICEABLE || playerLife <= life || state.isLifeLossLocked(controllerId)) {
+        if (!CostAtomAmounts.canPayLife(state, controllerId, life, LifePaymentPurpose.OTHER)) {
             return executeSufferEffect(state, effect.suffer, context)
         }
 
@@ -1108,11 +1107,12 @@ class PayOrSufferExecutor(
                 is CostAtom.Sacrifice -> findValidPermanentsOnBattlefield(
                     state, playerId, atom.filter, selfExclusion(atom.excludeSelf, sourceId), context
                 ).count { SacrificeCostLegality.canBeSacrificed(state, it) } >= atom.count
-                is CostAtom.PayLife -> {
-                    val life = state.lifeTotal(playerId) // CR 810.9a — team's shared total
-                    val price = CostAtomAmounts.life(state, atom, playerId, predicateEvaluator, sourceId)
-                    price < CostAtomAmounts.UNPRICEABLE && life > price
-                }
+                // CR 119.4 / 810.9a / 119.8 — the same affordability rule handlePayLifeCost applies.
+                is CostAtom.PayLife -> CostAtomAmounts.canPayLife(
+                    state, playerId,
+                    CostAtomAmounts.life(state, atom, playerId, predicateEvaluator, sourceId),
+                    LifePaymentPurpose.OTHER
+                )
                 is CostAtom.Mana -> ManaSolver(cardRegistry, predicateEvaluator).canPay(state, playerId, atom.cost)
                 // A processor-style move (destination = GRAVEYARD) isn't wired on this rail.
                 is CostAtom.ExileFrom -> atom.exiles &&
