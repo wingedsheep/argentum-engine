@@ -2141,6 +2141,7 @@ Boon of Emrakul
 Boon of Safety
 Boon of the Wish-Giver
 Boon-Bringer Valkyrie
+Boonweaver Giant
 Boosted Sloop
 Boot Nipper
 Bootleggers' Stash
@@ -7217,6 +7218,7 @@ Generous Visitor
 Genesis
 Genesis Device
 Genesis Effect
+Genesis Hydra
 Genesis Ultimatum
 Genesis Wave
 Genghis Frog
@@ -8788,6 +8790,7 @@ Horned Troll
 Horned Turtle
 Hornet Cobra
 Hornet Harasser
+Hornet Nest
 Hornet Queen
 Hornet Sting
 Hornswoggle
@@ -9403,6 +9406,7 @@ Invasion of Xerex
 Invasion of Zendikar
 Invasion of the Giants
 Invasive Maneuvers
+Invasive Species
 Invasive Surgery
 Inventive Iteration
 Inventive Wingsmith
@@ -9827,6 +9831,7 @@ Kalastria Nightwatch
 Kalitas, Traitor of Ghet
 Kalonian Hydra
 Kalonian Tusker
+Kalonian Twingrove
 Kamahl's Druidic Vow
 Kamahl's Summons
 Kamahl, Fist of Krosa	polarity: AnimateLandEffect; timing: AnimateLandEffect
@@ -10621,6 +10626,7 @@ Life Insurance
 Life Matrix	polarity: AddCountersEffect
 Life from the Loam
 Life of Toshiro Umezawa
+Life's Legacy
 Lifeblood
 Lifecraft Awakening
 Lifecraft Cavalry
@@ -12567,6 +12573,7 @@ Nishoba Brawler
 Nissa of Shadowed Boughs	intent: AddCountersToCollectionEffect; intent: Pipeline(FromMultipleZones→battlefield)
 Nissa's Defeat
 Nissa's Encouragement
+Nissa's Expedition
 Nissa's Judgment
 Nissa's Pilgrimage
 Nissa's Renewal
@@ -12582,6 +12589,7 @@ Nissa, Vastwood Seer
 Nissa, Vital Force
 Nissa, Voice of Zendikar
 Nissa, Who Shakes the World
+Nissa, Worldwaker
 Nita, Forum Conciliator
 Niv-Mizzet Reborn
 Niv-Mizzet, Ghost Counsel
@@ -13490,6 +13498,7 @@ Phyrexian Vivisector
 Phyrexian Walker
 Phyrexian Warhorse
 Phytohydra
+Phytotitan
 Pia Nalaar
 Pia Nalaar, Consul of Revival
 Pia and Kiran Nalaar
@@ -20322,6 +20331,7 @@ Verdant Catacombs
 Verdant Command
 Verdant Crescendo
 Verdant Force
+Verdant Haven
 Verdant Kraken
 Verdant Mastery
 Verdant Outrider	intent: GrantStaticAbilityEffect; timing: GrantStaticAbilityEffect
@@ -21566,6 +21576,7 @@ Yeva's Forcemage
 Ygra, Eater of All
 Yidaro, Wandering Monster
 Yip Yip!
+Yisan, the Wanderer Bard
 Yoked Ox
 Yoked Plowbeast
 Yorion, Sky Nomad
