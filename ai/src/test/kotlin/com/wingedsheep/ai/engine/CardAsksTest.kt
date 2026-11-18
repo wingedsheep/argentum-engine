@@ -136,4 +136,21 @@ class CardAsksTest : FunSpec({
             }
         }
     }
+    test("a trigger on activating your artifacts' abilities asks for artifacts") {
+        // Kurkesh, Onakke Ancient: "whenever you activate an ability of an artifact" is fired only
+        // by the deck's own artifacts.
+        answers("Kurkesh, Onakke Ancient", "Bonesplitter") shouldBe true
+        answers("Kurkesh, Onakke Ancient", "Grizzly Bears") shouldBe false
+    }
+
+    test("a trigger on an Aura becoming attached asks for Auras") {
+        // Brood Keeper / Bramble Elemental: "whenever an Aura becomes attached to this creature".
+        for (asker in listOf("Brood Keeper", "Bramble Elemental")) {
+            withClue("$asker asks ${read(asker).asks}") {
+                answers(asker, "Pacifism") shouldBe true
+                answers(asker, "Bonesplitter") shouldBe false
+                answers(asker, "Grizzly Bears") shouldBe false
+            }
+        }
+    }
 })

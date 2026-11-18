@@ -160,6 +160,65 @@
     ]
 }
 
+// Aggressive Mining
+{
+    "name": "Aggressive Mining",
+    "manaCost": "{3}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "You can't play lands.\nSacrifice a land: Draw two cards. Activate only once each turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Aggressive Mining:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "land"
+                    }
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "restrictions": [
+                    "OncePerTurn"
+                ],
+                "descriptionOverride": "Sacrifice a land: Draw two cards. Activate only once each turn."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "PlayersCantPlayLands",
+                "affected": "You"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "RARE",
+        "artist": "Franz Vohwinkel",
+        "flavorText": "Designed by Markus Persson",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/1/e15a3f1a-83af-4541-8d1c-bf7844f969c9.jpg?1783939177",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "You can activate the ability once on each player's turn, not just your own."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Aggressive Mining doesn't stop lands from being put onto the battlefield by a spell or ability. It only stops the special action of playing a land."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Ajani Steadfast
 {
     "name": "Ajani Steadfast",
@@ -719,6 +778,86 @@
     ]
 }
 
+// Blastfire Bolt
+{
+    "name": "Blastfire Bolt",
+    "manaCost": "{5}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Blastfire Bolt deals 5 damage to target creature. Destroy all Equipment attached to that creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "AttachedToTarget",
+                                "host": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "filter": "artifact Equipment"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "artist": "Phill Simmer",
+        "flavorText": "\"Encase yourself in the most elaborate armor, and cower behind the heaviest shield. I would hate for you to feel helpless.\"\n—Korig the Ruiner",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/4/34774f01-5976-4ed1-b0f4-71dc7a679999.jpg?1783939177",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "Blastfire Bolt can target any creature, not just one with Equipment attached to it. The damage will be dealt to the creature even if it doesn't have any Equipment attached to it."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If the target creature is an illegal target when Blastfire Bolt tries to resolve, it won't resolve and none of its effects will happen. No Equipment will be destroyed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Blood Host
 {
     "name": "Blood Host",
@@ -884,6 +1023,104 @@
         "artist": "Jung Park",
         "imageUri": "https://cards.scryfall.io/normal/front/e/d/eddc4ee6-7855-4dc7-9488-5e019609bd09.jpg?1783939159"
     }
+}
+
+// Brood Keeper
+{
+    "name": "Brood Keeper",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "Whenever an Aura becomes attached to this creature, create a 2/2 red Dragon creature token with flying. It has \"{R}: This creature gets +1/+0 until end of turn.\"",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Brood Keeper:2",
+                "trigger": {
+                    "type": "BecomesAttachedEvent",
+                    "attachmentFilter": {
+                        "cardPredicates": [
+                            "IsEnchantment",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Aura"
+                            }
+                        ]
+                    },
+                    "attachedToFilter": {
+                        "statePredicates": [
+                            "IsSource"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Dragon"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/6/9661e23a-8914-493b-a08a-e9cd29b4666e.jpg?1783939141",
+                    "activatedAbilities": [
+                        {
+                            "id": "Brood Keeper:1",
+                            "cost": {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{R}"
+                                }
+                            },
+                            "effect": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": "Self"
+                            },
+                            "descriptionOverride": "{R}: This creature gets +1/+0 until end of turn."
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever an Aura becomes attached to this creature, create a 2/2 red Dragon creature token with flying. It has \"{R}: This creature gets +1/+0 until end of turn.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "UNCOMMON",
+        "artist": "Scott Murphy",
+        "flavorText": "\"Come, little one. Unfurl your wings, fill your lungs, and release your first fiery breath.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a640a5b-c638-4ae6-ad02-eb5fe20f4662.jpg?1783939177",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "Brood Keeper's ability triggers both whenever an Aura enters the battlefield attached to Brood Keeper and whenever an Aura on the battlefield attached to a different object becomes attached to Brood Keeper."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If an Aura becomes attached to Brood Keeper that causes another player to gain control of it, that player will control the triggered ability that creates a Dragon."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Burning Anger
@@ -2169,6 +2406,78 @@
     ]
 }
 
+// Generator Servant
+{
+    "name": "Generator Servant",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "{T}, Sacrifice this creature: Add {C}{C}. If any of that mana is spent on a creature spell, it gains haste until end of turn. (That creature can attack and {T} as soon as it comes under your control.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Generator Servant:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "riders": [
+                        {
+                            "type": "GrantsKeywordWhenSpent",
+                            "keyword": "HASTE",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/74d0c422-4201-4d6f-9df7-659e8b78b541.jpg?1783939173",
+        "rulings": [
+            {
+                "date": "2018-12-07",
+                "text": "If the mana is spent on two different creature spells, each of those spells (and resulting creatures) will gain haste until end of turn."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "If a creature spell has generic mana only in its alternative or additional cost, the creature will still gain haste."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "An instant or sorcery spell is not a creature spell, even if that spell creates creature tokens."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "If the mana is spent on a noncreature spell that becomes a creature later in the turn, that creature won't have haste."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Glacial Crasher
 {
     "name": "Glacial Crasher",
@@ -2212,6 +2521,71 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Goblin Kaboomist
+{
+    "name": "Goblin Kaboomist",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Goblin Warrior",
+    "oracleText": "At the beginning of your upkeep, create a colorless artifact token named Land Mine with \"{R}, Sacrifice this token: This token deals 2 damage to target attacking creature without flying.\" Then flip a coin. If you lose the flip, this creature deals 2 damage to itself.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Goblin Kaboomist:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Land Mine"
+                        },
+                        {
+                            "type": "FlipCoin",
+                            "lostEffect": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, create a Land Mine token. Then flip a coin. If you lose the flip, this creature deals 2 damage to itself."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "144",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "flavorText": "Designed by Stone Librande",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/80e1d85a-18e5-4c6a-85fd-a009bd8fda38.jpg?1783939173",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "You flip the coin after the Land Mine token is created, not after you sacrifice a Land Mine. The token is created even if you lose the flip."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "The Land Mine tokens have the ability even if Goblin Kaboomist blows himself up or otherwise leaves the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -3327,6 +3701,85 @@
     ]
 }
 
+// Kurkesh, Onakke Ancient
+{
+    "name": "Kurkesh, Onakke Ancient",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Legendary Creature — Ogre Spirit",
+    "oracleText": "Whenever you activate an ability of an artifact, if it isn't a mana ability, you may pay {R}. If you do, copy that ability. You may choose new targets for the copy.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kurkesh, Onakke Ancient:1",
+                "trigger": {
+                    "type": "AbilityActivatedEvent",
+                    "sourceFilter": {
+                        "cardPredicates": [
+                            "IsArtifact"
+                        ],
+                        "statePredicates": [
+                            "IsOnBattlefield"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{R}"
+                        }
+                    },
+                    "then": {
+                        "type": "CopyTargetSpellOrAbility",
+                        "target": "TriggeringEntity"
+                    },
+                    "descriptionOverride": "Pay {R}? If you do, copy that ability. You may choose new targets for the copy."
+                },
+                "descriptionOverride": "Whenever you activate an ability of an artifact, if it isn't a mana ability, you may pay {R}. If you do, copy that ability. You may choose new targets for the copy."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "flavorText": "The Onakke were masters of dark arts and artifice. Their creations continue to spread foul magic, paving the way for their return.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e2a0e9e-0e45-4af1-9f03-6fd3652933f9.jpg?1783939173",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "A mana ability is an ability that (1) could add mana when it resolves, (2) isn't a loyalty ability, and (3) doesn't require a target."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "The copy will have the same targets as the ability it's copying unless you choose new ones. You may change any number of the targets, including all of them or none of them. If, for one of the targets, you can't choose a new legal target, then it remains unchanged (even if the current target is illegal)."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If the ability is modal (that is, it says \"Choose one —\" or the like), the copy will have the same mode. You can't choose a different one."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If the ability has {X} in its cost, the value of X is copied."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If paying the activation cost of the ability includes sacrificing Kurkesh, the ability won't be copied. At the time the ability is considered activated (after all costs are paid), Kurkesh is no longer on the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Leeching Sliver
 {
     "name": "Leeching Sliver",
@@ -3784,6 +4237,126 @@
         "imageUri": "https://cards.scryfall.io/normal/front/d/7/d7a39c1a-7615-4ac8-8984-b8459d201cb2.jpg?1783939157"
     },
     "colorIdentityOverride": []
+}
+
+// Might Makes Right
+{
+    "name": "Might Makes Right",
+    "manaCost": "{5}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of combat on your turn, if you control each creature on the battlefield with the greatest power, gain control of target creature an opponent controls until end of turn. Untap that creature. It gains haste until end of turn. (It can attack and {T} this turn.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Might Makes Right:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainControl",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "EndOfTurn"
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "tap": false
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "creature"
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "EachOtherPlayer",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "CompareNumericProperty",
+                                            "property": "POWER",
+                                            "operator": "GTE",
+                                            "amount": {
+                                                "type": "AggregateBattlefield",
+                                                "player": "You",
+                                                "filter": "creature",
+                                                "aggregation": "MAX",
+                                                "property": "POWER"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "operator": "EQ",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 0
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Winters",
+        "flavorText": "An oath of fealty sworn with a handshake.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/75c63c02-a75b-4880-b9fa-6f4bcf90ede5.jpg?1783939171",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "The ability will trigger only if you control each creature on the battlefield with the greatest power as the beginning of combat step begins. If another player controls a creature with the greatest power or tied for the greatest power at that time, the ability won't trigger at all."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "The ability will check its condition again as it tries to resolve. If, at that time, another player controls a creature with the greatest power or tied for the greatest power, the ability won't do anything."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Gaining control of a creature doesn't cause you to gain control of any Auras or Equipment attached to it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Military Intelligence
@@ -5791,6 +6364,112 @@
     "colorIdentityOverride": []
 }
 
+// Siege Dragon
+{
+    "name": "Siege Dragon",
+    "manaCost": "{5}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nWhen this creature enters, destroy all Walls your opponents control.\nWhenever this creature attacks, if defending player controls no Walls, it deals 2 damage to each creature without flying that player controls.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Siege Dragon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "permanent Wall ctrl:opponent"
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Siege Dragon:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NotKeyword",
+                                        "keyword": "FLYING"
+                                    }
+                                ],
+                                "controllerPredicate": {
+                                    "type": "ControlledByReferencedPlayer",
+                                    "target": {
+                                        "type": "PlayerRef",
+                                        "player": "DefendingPlayer"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "DefendingPlayer",
+                        "filter": "permanent Wall"
+                    },
+                    "operator": "EQ",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "RARE",
+        "artist": "Karl Kopinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/12dc18f7-f4d4-421e-869e-c2e7598a9c77.jpg?1783939169"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Sliver Hive
 {
     "name": "Sliver Hive",
@@ -5907,6 +6586,119 @@
         "RED",
         "BLUE",
         "WHITE"
+    ]
+}
+
+// Soul of Innistrad
+{
+    "name": "Soul of Innistrad",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Avatar",
+    "oracleText": "Deathtouch\n{3}{B}{B}: Return up to three target creature cards from your graveyard to your hand.\n{3}{B}{B}, Exile this card from your graveyard: Return up to three target creature cards from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Soul of Innistrad:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{B}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Hand"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 3,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            },
+            {
+                "id": "Soul of Innistrad:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{B}{B}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Hand"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 3,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "activateFromZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "rarity": "MYTHIC",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/9147b57e-e172-49ac-a556-91efbde0d325.jpg?1783939180",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "You can activate the last ability only if the Soul is in your graveyard."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Exiling the Soul from your graveyard is part of the last ability's activation cost. A player can't remove the Soul in response to prevent you from activating the ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -6066,6 +6858,207 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Soul of Shandalar
+{
+    "name": "Soul of Shandalar",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Creature — Avatar",
+    "oracleText": "First strike\n{3}{R}{R}: This creature deals 3 damage to target player or planeswalker and 3 damage to up to one target creature that player or that planeswalker's controller controls.\n{3}{R}{R}, Exile this card from your graveyard: It deals 3 damage to target player or planeswalker and 3 damage to up to one target creature that player or that planeswalker's controller controls.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Soul of Shandalar:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{R}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayerOrPlaneswalker",
+                        "id": "t0"
+                    },
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": {
+                                "anyOf": [
+                                    {
+                                        "cardPredicates": [
+                                            "IsCreature"
+                                        ],
+                                        "controllerPredicate": {
+                                            "type": "ControlledByReferencedPlayer",
+                                            "target": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "cardPredicates": [
+                                            "IsCreature"
+                                        ],
+                                        "controllerPredicate": {
+                                            "type": "ControlledByReferencedPlayer",
+                                            "target": "TargetController"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "{3}{R}{R}: This creature deals 3 damage to target player or planeswalker and 3 damage to up to one target creature that player or that planeswalker's controller controls."
+            },
+            {
+                "id": "Soul of Shandalar:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{R}{R}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t2"
+                            }
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t3"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayerOrPlaneswalker",
+                        "id": "t2"
+                    },
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": {
+                                "anyOf": [
+                                    {
+                                        "cardPredicates": [
+                                            "IsCreature"
+                                        ],
+                                        "controllerPredicate": {
+                                            "type": "ControlledByReferencedPlayer",
+                                            "target": {
+                                                "type": "BoundVariable",
+                                                "name": "t2"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "cardPredicates": [
+                                            "IsCreature"
+                                        ],
+                                        "controllerPredicate": {
+                                            "type": "ControlledByReferencedPlayer",
+                                            "target": "TargetController"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "t3"
+                    }
+                ],
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "{3}{R}{R}, Exile this card from your graveyard: It deals 3 damage to target player or planeswalker and 3 damage to up to one target creature that player or that planeswalker's controller controls."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "rarity": "MYTHIC",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/03543d10-202b-4b07-a34b-64216a745d84.jpg?1783939169",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "You can activate the last ability only if the Soul is in your graveyard."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Exiling the Soul from your graveyard is part of the last ability's activation cost. A player can't remove the Soul in response to prevent you from activating the ability."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "To activate either ability, you must target a player, but you can choose to not target any creatures."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -6442,6 +7435,103 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Stain the Mind
+{
+    "name": "Stain the Mind",
+    "manaCost": "{4}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nChoose a nonland card name. Search target player's graveyard, hand, and library for any number of cards with that name and exile them. Then that player shuffles.",
+    "keywords": [
+        "CONVOKE"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ChooseOption",
+                    "optionType": "CARD_NAME",
+                    "storeAs": "cardName0",
+                    "cardNamePool": "NONLAND"
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromMultipleZones",
+                        "zones": [
+                            "Graveyard",
+                            "Hand",
+                            "Library"
+                        ],
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "filter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "NameEqualsChosen",
+                                    "variableName": "cardName0"
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "gathered1",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": "ChooseAnyNumber",
+                    "storeSelected": "selected2",
+                    "prompt": "Choose any number of cards with that name to exile",
+                    "selectedLabel": "Exile"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                {
+                    "type": "ShuffleLibrary",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "rarity": "RARE",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c7d2b046-59bc-4e39-94ce-981179307bd3.jpg?1783939180",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "You can leave any cards with that name in the zone they're in. You don't have to exile them."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

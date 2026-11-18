@@ -602,6 +602,286 @@
     ]
 }
 
+// Chandra, Pyromaster
+{
+    "name": "Chandra, Pyromaster",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Legendary Planeswalker — Chandra",
+    "oracleText": "+1: Chandra deals 1 damage to target player or planeswalker and 1 damage to up to one target creature that player or that planeswalker's controller controls. That creature can't block this turn.\n0: Exile the top card of your library. You may play it this turn.\n−7: Exile the top ten cards of your library. Choose an instant or sorcery card exiled this way and copy it three times. You may cast the copies without paying their mana costs.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Chandra, Pyromaster:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        {
+                            "type": "CantBlockTargetCreatures",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayerOrPlaneswalker",
+                        "id": "t0"
+                    },
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": {
+                                "anyOf": [
+                                    {
+                                        "cardPredicates": [
+                                            "IsCreature"
+                                        ],
+                                        "controllerPredicate": {
+                                            "type": "ControlledByReferencedPlayer",
+                                            "target": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "cardPredicates": [
+                                            "IsCreature"
+                                        ],
+                                        "controllerPredicate": {
+                                            "type": "ControlledByReferencedPlayer",
+                                            "target": "TargetController"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Chandra deals 1 damage to target player or planeswalker and 1 damage to up to one target creature that player or that planeswalker's controller controls. That creature can't block this turn."
+            },
+            {
+                "id": "Chandra, Pyromaster:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 0
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "impulseExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "impulseExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "impulseExiled"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Exile the top card of your library. You may play it this turn."
+            },
+            {
+                "id": "Chandra, Pyromaster:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 10
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "storeMovedAs": "moved1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "moved1",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "instant|sorcery",
+                            "storeSelected": "selected2",
+                            "prompt": "Choose an instant or sorcery card to copy three times"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "selected2",
+                            "ifNotEmpty": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "CopyCollectionIntoCollection",
+                                        "from": "selected2",
+                                        "storeAs": "copies4"
+                                    },
+                                    {
+                                        "type": "Gated",
+                                        "gate": "Gate.MayDecide",
+                                        "then": {
+                                            "type": "CastFromCollectionWithoutPayingCost",
+                                            "from": "copies4"
+                                        },
+                                        "descriptionOverride": "You may cast copy 1 of 3 without paying its mana cost."
+                                    },
+                                    {
+                                        "type": "CopyCollectionIntoCollection",
+                                        "from": "selected2",
+                                        "storeAs": "copies6"
+                                    },
+                                    {
+                                        "type": "Gated",
+                                        "gate": "Gate.MayDecide",
+                                        "then": {
+                                            "type": "CastFromCollectionWithoutPayingCost",
+                                            "from": "copies6"
+                                        },
+                                        "descriptionOverride": "You may cast copy 2 of 3 without paying its mana cost."
+                                    },
+                                    {
+                                        "type": "CopyCollectionIntoCollection",
+                                        "from": "selected2",
+                                        "storeAs": "copies8"
+                                    },
+                                    {
+                                        "type": "Gated",
+                                        "gate": "Gate.MayDecide",
+                                        "then": {
+                                            "type": "CastFromCollectionWithoutPayingCost",
+                                            "from": "copies8"
+                                        },
+                                        "descriptionOverride": "You may cast copy 3 of 3 without paying its mana cost."
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Exile the top ten cards of your library. Choose an instant or sorcery card exiled this way and copy it three times. You may cast the copies without paying their mana costs."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "MYTHIC",
+        "artist": "Winona Nelson",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bcb4f983-a4b4-46df-830d-ab3d892c93bb.jpg?1783939916",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "To activate the first ability, you must target a player but you can choose to not target any creatures."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If the first ability resolves but the damage is prevented or redirected, the target creature still won't be able to block that turn."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "The card exiled by the second ability is exiled face up. Playing it follows the normal rules for playing that card. You must pay its costs, and you must follow all applicable timing rules. For example, if it's a creature card, you can cast it only during your main phase while the stack is empty."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If you exile a land card using the second ability, you may play that land only if you have any available land plays. Normally, this means you can play the land only if you haven't played a land yet that turn."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "In the third ability, \"exiled this way\" means the cards you just exiled because of that ability resolving. Cards exiled with the second ability or with previous activations of the third ability don't count."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "While resolving the third ability, you create the copies of the card in exile and cast them from exile. You can cast zero, one, two, or all three copies. The card itself isn't cast. It remains exiled."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "While casting the copies created by the third ability, timing restrictions based on the card's type (such as creature or sorcery) are ignored. Other restrictions, such as \"Cast [this spell] only during combat,\" are not."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "Because you're casting the copies \"without paying their mana costs,\" you can't pay any alternative costs for the copies. You can pay additional costs, such as kicker costs. If the copies have any mandatory additional costs, you must pay those."
+            },
+            {
+                "date": "2014-07-18",
+                "text": "If the copied card has {X} in its mana cost, you must choose 0 as its value when casting the copies."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Charging Griffin
 {
     "name": "Charging Griffin",
