@@ -1535,7 +1535,10 @@
                 "name": "t0"
             },
             "destination": "Library",
-            "positionFromTop": 1
+            "positionFromTop": {
+                "type": "Fixed",
+                "amount": 1
+            }
         },
         "targetRequirements": [
             {

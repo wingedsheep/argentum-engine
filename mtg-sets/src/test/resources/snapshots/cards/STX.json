@@ -2001,7 +2001,10 @@
                     "type": "MoveToZone",
                     "target": "Self",
                     "destination": "Library",
-                    "positionFromTop": 2
+                    "positionFromTop": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
                 },
                 "activateFromZone": "Graveyard",
                 "descriptionOverride": "{2}{G}: Put this card from your graveyard into your library third from the top."
@@ -2166,7 +2169,10 @@
                 "name": "t0"
             },
             "destination": "Library",
-            "positionFromTop": 1
+            "positionFromTop": {
+                "type": "Fixed",
+                "amount": 1
+            }
         },
         "targetRequirements": [
             {

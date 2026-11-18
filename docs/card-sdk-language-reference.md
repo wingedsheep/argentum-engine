@@ -2332,7 +2332,11 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
     lone permanent going on top asks nothing — it is public until it lands.
 - `PutSecondFromTopOrBottomOfLibrary(target)` — second-from-top or bottom.
 - `ShuffleIntoLibrary(target, fromZone?)` — shuffle target into owner's library. `fromZone` skips the move if the card has left that zone by resolution ("shuffle this card into your library from your graveyard" — Kogla and Yidaro).
-- `PutIntoLibraryNthFromTop(target, positionFromTop)` — place N from the top.
+- `PutIntoLibraryNthFromTop(target, positionFromTop)` — place N from the top (0-indexed: 1 is second from the top).
+- `PutIntoLibraryBeneathTop(target, cards: DynamicAmount)` — "put target creature into its owner's library just
+  beneath the top X cards of that library" (Quarry Colossus: X is the Plains you control). Both build
+  `MoveToZoneEffect.positionFromTop`, a `DynamicAmount` read as the effect resolves; a depth at or past the
+  library's size puts the card on the bottom, a negative one on top.
 - `PutOntoBattlefield(target, tapped?)` — put target on the battlefield.
 - `PutOntoBattlefieldUnderYourControl(target)` — under controller's control.
 - `PutOntoBattlefieldFromGraveyard(target, underYourControl = false, tapped = false)` — the *guarded* return:

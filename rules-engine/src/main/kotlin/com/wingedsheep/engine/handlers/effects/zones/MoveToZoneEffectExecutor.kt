@@ -225,8 +225,15 @@ class MoveToZoneEffectExecutor(
             if (count > 0) com.wingedsheep.engine.handlers.effects.SuppliedEntryCounter(entry.counterType, entry.onlyIf, count) else null
         }
 
+        // A library depth is read as the effect resolves — "just beneath the top X cards of that
+        // library, where X is the number of Plains you control" counts the Plains now (Quarry Colossus).
+        val libraryDepth = effect.positionFromTop?.takeIf { effect.destination == Zone.LIBRARY }?.let { depth ->
+            (depth as? com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed)?.amount
+                ?: zones.predicateEvaluator.amounts.evaluate(state, depth, context)
+        }
+
         // Build ZoneEntryOptions based on placement and effect properties
-        val entryOptions = buildEntryOptions(effect, cardComponent, controllerId, context.controllerId)
+        val entryOptions = buildEntryOptions(effect, libraryDepth, cardComponent, controllerId, context.controllerId)
             .copy(lookBackGrants = context.lookBackGrants[targetId], entryCopy = context.entryCopies[targetId], auraHostId = context.entryAuraHosts[targetId],
                 entryChoices = context.entryChoices[targetId]?.values.orEmpty(),
                 grantedRiotModes = context.entryChoices[targetId]?.riotModes.orEmpty(),
@@ -496,13 +503,13 @@ class MoveToZoneEffectExecutor(
      */
     private fun buildEntryOptions(
         effect: MoveToZoneEffect,
+        libraryDepth: Int?,
         cardComponent: CardComponent,
         controllerId: com.wingedsheep.sdk.model.EntityId,
         moverId: com.wingedsheep.sdk.model.EntityId
     ): ZoneEntryOptions {
         val libraryPlacement = when {
-            effect.positionFromTop != null && effect.destination == Zone.LIBRARY ->
-                LibraryPlacement.NthFromTop(effect.positionFromTop!!)
+            libraryDepth != null -> LibraryPlacement.NthFromTop(libraryDepth.coerceAtLeast(0))
             effect.placement == ZonePlacement.Top -> LibraryPlacement.Top
             effect.placement == ZonePlacement.Bottom -> LibraryPlacement.Bottom
             effect.placement == ZonePlacement.Shuffled -> LibraryPlacement.Shuffled

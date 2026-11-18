@@ -1758,7 +1758,15 @@ object Effects {
      * @param positionFromTop 0-indexed: 0 = top, 1 = second, 2 = third from top, etc.
      */
     fun PutIntoLibraryNthFromTop(target: EffectTarget, positionFromTop: Int): Effect =
-        MoveToZoneEffect(target, Zone.LIBRARY, positionFromTop = positionFromTop)
+        MoveToZoneEffect(target, Zone.LIBRARY, positionFromTop = DynamicAmount.Fixed(positionFromTop))
+
+    /**
+     * Put into owner's library "just beneath the top X cards of that library" — X read as the
+     * effect resolves (Quarry Colossus: X is the number of Plains you control). X at or past the
+     * library's size puts the card on the bottom; X = 0 puts it on top.
+     */
+    fun PutIntoLibraryBeneathTop(target: EffectTarget, cards: DynamicAmount): Effect =
+        MoveToZoneEffect(target, Zone.LIBRARY, positionFromTop = cards)
 
     /**
      * Grant "may play from exile" permission to all cards in a named collection.
@@ -5466,7 +5474,7 @@ object Effects {
             fromZone = fromZone,
             faceDown = faceDown,
             linkToSource = linkToSource,
-            positionFromTop = positionFromTop,
+            positionFromTop = positionFromTop?.let(DynamicAmount::Fixed),
             entryCounters = listOfNotNull(addCounterType?.let { EntryCounter(it, addCounterIf) }) + entryCounters,
             attackDefender = attackDefender
         )
