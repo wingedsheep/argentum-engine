@@ -12968,6 +12968,13 @@ staticAbility {
   `PreventActivatedAbilities(GameObjectFilter.Any.namedFromChosenComponent(), abilities = NON_MANA, anyZone = true)`).
   Leave it off for a permanent-scoped filter — Cursed Totem's "activated abilities of creatures"
   doesn't stop a creature card cycling from hand.
+  A lock that covers mana abilities holds on **every** path: the mana-ability enumerator drops the
+  source, `ActivateAbilityHandler` refuses it, and auto-pay (`ManaSolver`, through
+  `ManaAbilityActivationGate`) won't tap it — so a spell payable only through a locked mana creature
+  is neither highlighted castable nor auto-paid. Phyrexian Revoker, "Activated abilities of sources
+  with the chosen name can't be activated" (no mana carve-out) →
+  `PreventActivatedAbilities(GameObjectFilter.Any.namedFromChosenComponent(), anyZone = true)` with a
+  `CardNamePool.NONLAND` as-enters choice. `PlayersCantActivateAbilities` is gated the same way.
   Also grantable at runtime via `Effects.GrantStaticAbility` (read from `GameState.grantedStaticAbilities`
   by the same activation-legality check, anchored to the holder) — see the `GrantStaticAbility`
   entry in §3 for the durational, targeted form (Braided Net:
@@ -13659,6 +13666,13 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   more to activate unless they're mana abilities" →
   `IncreaseActivatedAbilityCost(GroupFilter(GameObjectFilter.Any), DynamicAmount.Fixed(2), excludeManaAbilities = true)`.
   Without it, every land's `{T}: Add …` would be taxed too.
+  Without the flag a mana ability **is** taxed (CR 605.1a: it is an activated ability): the mana-ability
+  enumerator prices it at its total — Oppressive Rays' "Activated abilities of enchanted creature cost
+  {3} more to activate" (`IncreaseActivatedAbilityCost(GroupFilter.attachedCreature(), DynamicAmounts.fixed(3))`)
+  offers an enchanted Llanowar Elves' `{T}: Add {G}` as `{3}, {T}` — `ActivateAbilityHandler` charges
+  it, and auto-pay never taps a taxed source (`ManaAbilityActivationGate`); the player activates it by
+  hand and spends the floating mana. A `ReduceActivatedAbilityCost` without `excludeManaAbilities`
+  reaches a mana ability's mana cost the same way.
   The tax reaches every activated ability of a matching source in any zone, keyword ones included:
   cycling and typecycling price through the `ManaCost` overload, and crew / saddle — whose printed
   cost is only "tap creatures with total power N" — gain the mana outright ("{2}, tap creatures …"),

@@ -14,6 +14,7 @@ import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.legalactions.utils.CastPermissionUtils
 import com.wingedsheep.engine.legalactions.utils.donorCardsActivatedAbilities
 import com.wingedsheep.engine.legalactions.utils.donorGrantReaches
 import com.wingedsheep.engine.registry.CardRegistry
@@ -456,6 +457,16 @@ class ManaSolver private constructor(
     // Auto-tap asks the same kernel the enumerators and ActivateAbilityHandler do, so it never taps
     // a mana ability they would refuse (or skips one they would allow).
     private val legality = LegalityKernel(cardRegistry, conditionEvaluator)
+
+    // The activation locks and taxes a mana ability obeys (Phyrexian Revoker, Oppressive Rays) are
+    // read by the same CastPermissionUtils the enumerators and ActivateAbilityHandler use.
+    private val castPermissions by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        CastPermissionUtils(cardRegistry, predicateEvaluator, conditionEvaluator)
+    }
+
+    /** The per-walk "may auto-pay tap this source" check — see [ManaAbilityActivationGate]. */
+    private fun manaActivationGate(state: GameState, playerId: EntityId) =
+        ManaAbilityActivationGate(state, playerId, cardRegistry, predicateEvaluator) { castPermissions }
 
     /** The five subtypes that grant a land its intrinsic `{T}: Add …` mana ability (CR 305.6). */
     private val basicLandSubtypeNames = setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
@@ -1618,12 +1629,13 @@ class ManaSolver private constructor(
         // (accounts for control-changing effects like Annex)
         val battlefieldCards = projected.getBattlefieldControlledBy(playerId) + borrowed.keys
 
+        val gate = manaActivationGate(state, playerId)
         return battlefieldCards.mapNotNull { entityId ->
-            if (!state.manaAbilitySourceAllowed(playerId, entityId, predicateEvaluator)) return@mapNotNull null
             val container = state.getEntity(entityId) ?: return@mapNotNull null
 
             // Must be untapped
             if (container.has<TappedComponent>()) return@mapNotNull null
+            if (!gate.allows(entityId)) return@mapNotNull null
 
             val card = container.get<CardComponent>() ?: return@mapNotNull null
 
@@ -3345,8 +3357,9 @@ class ManaSolver private constructor(
         // Track which non-source permanents have already been "consumed" by a TapPermanents activation
         val consumedIds = mutableSetOf<EntityId>()
 
+        val gate = manaActivationGate(state, playerId)
         for (entityId in battlefieldCards) {
-            if (!state.manaAbilitySourceAllowed(playerId, entityId, predicateEvaluator)) continue
+            if (!gate.allows(entityId)) continue
             val container = state.getEntity(entityId) ?: continue
             val card = container.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
@@ -3442,8 +3455,9 @@ class ManaSolver private constructor(
         val runtimeGrants = runtimeGrantedManaAbilities(state)
         var total = TapPermanentsBonusMana()
 
+        val gate = manaActivationGate(state, playerId)
         for (entityId in projected.getBattlefieldControlledBy(playerId)) {
-            if (!state.manaAbilitySourceAllowed(playerId, entityId, predicateEvaluator)) continue
+            if (!gate.allows(entityId)) continue
             val container = state.getEntity(entityId) ?: continue
             // Face-down permanents have no abilities (CR 708.2).
             if (container.has<FaceDownComponent>()) continue
@@ -3659,8 +3673,9 @@ class ManaSolver private constructor(
         val bySource = mutableMapOf<EntityId, TapPermanentsBonusMana>()
         val runtimeGrants = runtimeGrantedManaAbilities(state)
 
+        val gate = manaActivationGate(state, playerId)
         for (entityId in battlefieldCards) {
-            if (!state.manaAbilitySourceAllowed(playerId, entityId, predicateEvaluator)) continue
+            if (!gate.allows(entityId)) continue
             val container = state.getEntity(entityId) ?: continue
 
             // Already tapped → can't pay the {T} sub-cost.
@@ -3787,8 +3802,9 @@ class ManaSolver private constructor(
 
         val consumedIds = mutableSetOf<EntityId>()
 
+        val gate = manaActivationGate(state, playerId)
         for (entityId in battlefieldCards) {
-            if (!state.manaAbilitySourceAllowed(playerId, entityId, predicateEvaluator)) continue
+            if (!gate.allows(entityId)) continue
             val container = state.getEntity(entityId) ?: continue
             if (container.has<TappedComponent>()) continue
             val card = container.get<CardComponent>() ?: continue

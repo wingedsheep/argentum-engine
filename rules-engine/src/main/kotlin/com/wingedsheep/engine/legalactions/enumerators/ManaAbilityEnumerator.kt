@@ -67,6 +67,11 @@ class ManaAbilityEnumerator(
         // only their {T} mana abilities are offered (CR 106.12). Empty without a grant.
         val borrowed = BorrowedManaAbilities.borrowable(state, playerId, predicateEvaluator)
 
+        // One scan for a static that could re-price a mana ability (nearly every board has none).
+        val manaCostsMayChange by lazy(LazyThreadSafetyMode.NONE) {
+            com.wingedsheep.engine.mechanics.mana.ManaAbilityActivationGate.mayChangeManaAbilityCosts(state, context.cardRegistry)
+        }
+
         for (entityId in context.battlefieldPermanents + borrowed.keys) {
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
@@ -173,10 +178,21 @@ class ManaAbilityEnumerator(
                 ) continue
 
                 // Apply text replacement to cost filters
-                val effectiveCost = if (manaTextReplacement != null) {
+                val printedCost = if (manaTextReplacement != null) {
                     ability.cost.applyTextReplacement(manaTextReplacement)
                 } else {
                     ability.cost
+                }
+                // A mana ability is an activated ability (CR 605.1a), so a cost static that
+                // reaches it is part of its total cost — Oppressive Rays' "{3} more" makes a
+                // Llanowar Elves' {T} cost {3}, {T}. The same totalling ActivateAbilityHandler
+                // charges, so the offer and the payment agree.
+                val effectiveCost = if (manaCostsMayChange) {
+                    context.castPermissionUtils.applyActivatedAbilityCostReduction(
+                        printedCost, state, entityId, playerId, isManaAbility = true
+                    )
+                } else {
+                    printedCost
                 }
 
                 // Check if the ability can be activated and gather cost info

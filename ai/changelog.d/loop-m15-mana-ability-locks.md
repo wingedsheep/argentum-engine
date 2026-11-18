@@ -1,0 +1,1 @@
+- #PR Auto-pay no longer taps a mana source whose mana abilities are locked (Cursed Totem, Phyrexian Revoker) or taxed (Oppressive Rays), and the AI reads activation locks (Pithing Needle, Cursed Totem) as locks and Aura-borne locks or taxes (Arrest, Brainwash, Oppressive Rays) as neutralizing the creature.

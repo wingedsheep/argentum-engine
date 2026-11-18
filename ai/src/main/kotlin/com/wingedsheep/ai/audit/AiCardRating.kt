@@ -322,6 +322,7 @@ object AiCardRating {
         IntentTag.DAMAGE_AMPLIFIER to "Amplifies damage from our sources",
         IntentTag.DAMAGE_TO_PLAYERS to "Damages or drains players",
         IntentTag.TRIGGER_LOCK to "Locks out enter/dies triggers",
+        IntentTag.ACTIVATION_LOCK to "Locks out activated abilities",
         IntentTag.COUNTER_LOCK to "Stops counters being put on players or permanents",
         IntentTag.LIFEGAIN_LOCK to "Locks out opponents' life gain",
         IntentTag.TOKEN_THEFT to "Takes opponents' tokens",

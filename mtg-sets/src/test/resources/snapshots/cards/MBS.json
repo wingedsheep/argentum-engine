@@ -773,6 +773,46 @@
     ]
 }
 
+// Phyrexian Revoker
+{
+    "name": "Phyrexian Revoker",
+    "manaCost": "{2}",
+    "typeLine": "Artifact Creature — Phyrexian Horror",
+    "oracleText": "As this creature enters, choose a nonland card name.\nActivated abilities of sources with the chosen name can't be activated.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "PreventActivatedAbilities",
+                "filter": {
+                    "cardPredicates": [
+                        "NameEqualsChosenComponent"
+                    ]
+                },
+                "anyZone": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CARD_NAME",
+                "cardNamePool": "NONLAND"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "flavorText": "Basic senses like sight and taste are reserved for those in power.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c7bec21-61b0-4e72-848b-82f38e1910e0.jpg?1783941366"
+    },
+    "colorIdentityOverride": []
+}
+
 // Pierce Strider
 {
     "name": "Pierce Strider",

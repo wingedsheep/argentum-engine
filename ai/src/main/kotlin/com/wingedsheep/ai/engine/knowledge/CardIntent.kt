@@ -544,6 +544,16 @@ enum class IntentTag {
     TRIGGER_LOCK,
 
     /**
+     * Stops activated abilities being activated — Phyrexian Revoker's and Pithing Needle's "activated
+     * abilities of sources with the chosen name can't be activated", Cursed Totem's "…of creatures".
+     * Like [TRIGGER_LOCK], a lock moves nothing: its payoff is the activations that never happen,
+     * which no board simulation sees. A symmetric lock hits its controller's side too, and a named one
+     * only answers the card it names, so the draft heuristic prices it as a hoser. An Aura's lock on
+     * what it enchants (Arrest) reads [NEUTRALIZE] instead.
+     */
+    ACTIVATION_LOCK,
+
+    /**
      * Stops counters going on players or permanents — Solemnity's "Players can't get counters.
      * Counters can't be put on artifacts, creatures, enchantments, or lands", a battlefield-wide
      * "can't have +1/+1 counters put on them" (Blightbeetle's opponents-only form).

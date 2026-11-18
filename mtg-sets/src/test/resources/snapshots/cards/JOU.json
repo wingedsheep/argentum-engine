@@ -1391,6 +1391,50 @@
     ]
 }
 
+// Oppressive Rays
+{
+    "name": "Oppressive Rays",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature can't attack or block unless its controller pays {3}.\nActivated abilities of enchanted creature cost {3} more to activate.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackOrBlockUnlessPay",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 3
+                }
+            },
+            {
+                "type": "IncreaseActivatedAbilityCost",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 3
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "artist": "Mark Zug",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1eac995f-514d-4c65-8135-417f2b1a6fba.jpg?1783939457"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Oreskos Swiftclaw
 {
     "name": "Oreskos Swiftclaw",
