@@ -3981,7 +3981,7 @@ Cursebreak
 Cursecloth Wrappings	intent: GrantEmbalmEffect; polarity: GrantEmbalmEffect; timing: GrantEmbalmEffect
 Cursed Courtier
 Cursed Flesh	polarity: Aura>GrantKeyword; polarity: Aura>ModifyStats
-Cursed Land	polarity: Aura>DealDamageEffect
+Cursed Land
 Cursed Minotaur
 Cursed Mirror
 Cursed Rack
@@ -6303,7 +6303,7 @@ Feed the Infection
 Feed the Pack
 Feed the Serpent
 Feed the Swarm
-Feedback	polarity: Aura>DealDamageEffect
+Feedback
 Feedback Bolt
 Feeding Frenzy
 Feeling of Dread
@@ -13768,7 +13768,7 @@ Power Armor
 Power Artifact	polarity: Aura>ReduceActivatedAbilityCost
 Power Conduit	polarity: AddCountersEffect
 Power Fist
-Power Leak	polarity: Aura>DealDamageEffect; polarity: Aura>GatedEffect
+Power Leak
 Power Matrix
 Power Plant Worker
 Power Sink	polarity: ForEachEffect
@@ -17797,6 +17797,7 @@ Stonerise Spirit
 Stoneshaker Shaman
 Stoneskin
 Stonesplitter Bolt
+Stonewise Fortifier
 Stonewood Invoker
 Stonework Packbeast
 Stonework Puma
@@ -20852,7 +20853,7 @@ Wandering Stream
 Wandering Tombshell
 Wandering Troubadour
 Wanderlight Spirit
-Wanderlust	polarity: Aura>DealDamageEffect
+Wanderlust
 Wandermare
 Wandertale Mentor
 Wanderwine Distracter
@@ -20921,7 +20922,7 @@ Warm Welcome
 Warmaker Gunship
 Warmth
 Warning
-Warp Artifact	polarity: Aura>DealDamageEffect
+Warp Artifact
 Warp Core	intent: AddCountersEffect; polarity: AddCountersEffect
 Warp Speed
 Warp World
