@@ -274,6 +274,14 @@ internal object CardAsks {
         is EventPattern.PermanentsEnteredEvent -> listOf(pattern.filter to false)
         is EventPattern.CreaturesYouControlDiedEvent -> listOf(pattern.filter to false)
         is EventPattern.AttackEvent -> listOf(pattern.filter to false)
+        // "Whenever you activate an ability of an artifact" (Kurkesh, Onakke Ancient): fired only by
+        // the deck's own permanents of that kind.
+        is EventPattern.AbilityActivatedEvent -> listOf(pattern.sourceFilter.takeIf { pattern.player == Player.You } to false)
+        // "Whenever an Aura becomes attached to this creature" (Brood Keeper, Bramble Elemental):
+        // fed by the deck's own Auras. One that only an opponent's attachment fires isn't an ask.
+        is EventPattern.BecomesAttachedEvent -> listOf(
+            pattern.attachmentFilter.takeIf { pattern.attachmentController == Player.You || pattern.attachmentController == Player.Any } to false,
+        )
         else -> emptyList()
     }
 

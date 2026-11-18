@@ -1426,6 +1426,27 @@ object PredefinedTokens {
     }
 
     /**
+     * Land Mine — a colorless artifact token with "{R}, Sacrifice this token: This token deals 2
+     * damage to target attacking creature without flying." Created by Goblin Kaboomist (M15).
+     */
+    val LandMine = card("Land Mine") {
+        typeLine = "Artifact"
+        oracleText = "{R}, Sacrifice this token: This token deals 2 damage to target attacking creature without flying."
+
+        activatedAbility {
+            cost = Costs.Composite(Costs.Mana("{R}"), Costs.SacrificeSelf)
+            val attacker = target(TargetFilter.Creature.withoutKeyword(Keyword.FLYING).attacking())
+            effect = Effects.DealDamage(2, attacker)
+            description = "{R}, Sacrifice this token: This token deals 2 damage to target attacking creature without flying."
+        }
+
+        metadata {
+            imageUri = "https://cards.scryfall.io/normal/front/3/0/30093c6e-505e-4902-b535-707e364059b4.jpg?1783939138"
+            artist = "Kev Walker"
+        }
+    }
+
+    /**
      * Tamiyo's Notebook — a legendary colorless Book artifact token with
      * "Spells you cast cost {2} less to cast" and "{T}: Draw a card."
      * Created by Tamiyo, Compleated Sage's −7.
@@ -1526,6 +1547,7 @@ object PredefinedTokens {
         ReplicatedRing,
         TamiyosNotebook,
         Feather,
+        LandMine,
         Gold,
         EtheriumCell
     )

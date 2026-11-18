@@ -75,6 +75,9 @@ internal object CreatureTypeSynergy {
                 // ([SynergyStrength.punished]), it doesn't ask for it.
                 if (type == "ModifyStats" && (element.int("powerBonus") ?: 0) + (element.int("toughnessBonus") ?: 0) < 0) return
                 if ((element["controllerPredicate"] as? JsonObject)?.string("type") in OPPONENT_SCOPES) return
+                // "If defending player controls no Walls" (Siege Dragon): a count of an opponent's
+                // permanents names the tribe it fights, the way an opponent-scoped filter does.
+                if (type in PLAYER_SCOPED_COUNTS && (element["player"] as? JsonObject)?.string("type") in OPPONENT_PLAYERS) return
                 // "Must be blocked by an Eldrazi if able" (Slayer's Cleaver), "All Walls able to
                 // block it do so" (Marble Priest): the blocker filter always names the defending
                 // player's creatures — a tribe it fights, never one it asks for.
@@ -106,6 +109,13 @@ internal object CreatureTypeSynergy {
     private fun JsonObject.int(key: String): Int? = string(key)?.toIntOrNull()
 
     private val CREATURE_TYPES: Set<String> = Subtype.ALL_CREATURE_TYPES.toSet()
+
+    private val PLAYER_SCOPED_COUNTS = setOf("Count", "AggregateBattlefield")
+
+    private val OPPONENT_PLAYERS = setOf(
+        "AnOpponent", "DefendingPlayer", "EachDefendingPlayer", "EachAttackedPlayer", "EachOpponent",
+        "TargetOpponent", "ChosenOpponent",
+    )
 
     private val OPPONENT_SCOPES = setOf(
         "ControlledByOpponent", "OwnedByOpponent", "ControlledByDefendingPlayer", "ControlledByTargetOpponent",

@@ -774,6 +774,76 @@
     ]
 }
 
+// Forge Devil
+{
+    "name": "Forge Devil",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Devil",
+    "oracleText": "When this creature enters, it deals 1 damage to target creature and 1 damage to you.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Forge Devil:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, it deals 1 damage to target creature and 1 damage to you."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "artist": "Austin Hsu",
+        "flavorText": "Devils infiltrated the lower levels of Thraben Cathedral, making cracks in load-bearing pillars and setting fire to precious archives.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/63b565a5-d706-47b4-bfa2-deebcc0e2e60.jpg?1783940817",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "Forge Devil's ability is mandatory. If it's the only creature on the battlefield, you'll have to choose it as the target and have it deal 1 damage to itself and 1 damage to you."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Gather the Townsfolk
 {
     "name": "Gather the Townsfolk",

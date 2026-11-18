@@ -1,0 +1,1 @@
+- #4734 The AI now reads "whenever you activate an ability of an artifact" and "whenever an Aura becomes attached" triggers as asking for the deck's artifacts / Auras, and no longer reads a defending player's creature-type count (Siege Dragon's Walls) as a tribe the card wants.

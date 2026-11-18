@@ -78,4 +78,9 @@ class CreatureTypeSynergyTest : FunSpec({
         swap?.first?.card?.name shouldBe "Ironclaw Orcs"
         swap?.second?.card?.name shouldBe "Goblin Piker"
     }
+    test("a count of the defending player's permanents of a type is a tribe it fights, not one it asks for") {
+        // Siege Dragon: "if defending player controls no Walls" and "destroy all Walls your
+        // opponents control" both name the opponent's Walls.
+        read("Siege Dragon").tribesRewarded.shouldBeEmpty()
+    }
 })
