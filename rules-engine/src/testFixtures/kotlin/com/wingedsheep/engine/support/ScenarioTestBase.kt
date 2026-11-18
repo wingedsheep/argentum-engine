@@ -1181,7 +1181,7 @@ abstract class ScenarioTestBase : FunSpec() {
             LegalActionEnumerator(
                 services.cardRegistry, services.manaSolver, services.costCalculator,
                 services.predicateEvaluator, services.conditionEvaluator, services.turnManager
-            ) to LegalActionEnricher(services.manaSolver, services.cardRegistry)
+            ) to LegalActionEnricher(services.manaSolver, services.cardRegistry, services.costCalculator)
         }
 
         /**

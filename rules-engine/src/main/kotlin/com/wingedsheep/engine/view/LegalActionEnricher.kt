@@ -4,6 +4,8 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.handlers.actions.spell.altAllows
 import com.wingedsheep.engine.legalactions.*
+import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
 import com.wingedsheep.engine.mechanics.mana.buildAbilityPaymentContext
@@ -26,7 +28,8 @@ import com.wingedsheep.sdk.scripting.ChoiceSlot
  */
 class LegalActionEnricher(
     private val manaSolver: ManaSolver,
-    private val cardRegistry: CardRegistry
+    private val cardRegistry: CardRegistry,
+    private val costCalculator: CostCalculator = CostCalculator(cardRegistry, PredicateEvaluator(cardRegistry)),
 ) {
     fun enrich(actions: List<LegalAction>, state: GameState, playerId: EntityId): List<LegalActionInfo> {
         val manaSourceInfos = buildManaSourceInfos(state, playerId)
@@ -36,9 +39,25 @@ class LegalActionEnricher(
                 action,
                 manaSourceInfos,
                 eligibleRestrictedMana = if (restrictedMana.isEmpty() || !shouldExposeManaSources(action)) null
-                else buildEligibleRestrictedMana(state, action, restrictedMana)
+                else buildEligibleRestrictedMana(state, action, restrictedMana),
+                targetPriceCountedIds = targetPriceCountedIds(state, action),
             )
         }
+    }
+
+    /**
+     * Which objects count as matching targets in [LegalAction.manaCostByTargetCount]'s key, when a
+     * per-target modifier counts only matching targets ("for each creature it targets" —
+     * Battlefield Thaumaturge). Null for every other action, and for a table keyed by different
+     * targets alone. Derived from the state like the table's own key
+     * ([CostCalculator.targetPriceCountedIds]), so the two agree.
+     */
+    private fun targetPriceCountedIds(state: GameState, action: LegalAction): List<EntityId>? {
+        if (action.manaCostByTargetCount == null) return null
+        val cast = action.action as? CastSpell ?: return null
+        val cardDef = state.getEntity(cast.cardId)?.get<CardComponent>()
+            ?.let { cardRegistry.getCard(it.cardDefinitionId) } ?: return null
+        return costCalculator.targetPriceCountedIds(state, cardDef, cast.playerId)
     }
 
     /**
@@ -93,7 +112,8 @@ class LegalActionEnricher(
     private fun toLegalActionInfo(
         action: LegalAction,
         manaSourceInfos: List<ManaSourceInfo>?,
-        eligibleRestrictedMana: List<ClientRestrictedManaEntry>?
+        eligibleRestrictedMana: List<ClientRestrictedManaEntry>?,
+        targetPriceCountedIds: List<EntityId>? = null,
     ): LegalActionInfo {
         return LegalActionInfo(
             actionType = action.actionType,
@@ -142,6 +162,7 @@ class LegalActionEnricher(
             validHarmonizeCreatures = action.harmonizeCreatures?.map { it.toDto() },
             manaCostString = action.manaCostString,
             manaCostByTargetCount = action.manaCostByTargetCount,
+            targetPriceCountedIds = targetPriceCountedIds,
             minimumManaCostString = minimumManaCostString(action),
             requiresDamageDistribution = action.requiresDamageDistribution,
             totalDamageToDistribute = action.totalDamageToDistribute,

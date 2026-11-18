@@ -777,8 +777,14 @@ class CostCalculator(
             // "for each target [beyond the first]" — different players and objects, not uses of
             // the word "target" (Hinata's ruling). 0 while targets are still unchosen;
             // [calculateMinPossibleCost] prices the cheapest reachable count for affordability.
-            is CostReductionSource.ChosenTargets ->
-                (chosenTargets.distinct().size - source.beyond).coerceAtLeast(0)
+            // With a filter only the matching targets count — "for each creature it targets"
+            // (Battlefield Thaumaturge), read relative to the modifier's permanent.
+            is CostReductionSource.ChosenTargets -> {
+                val counted = source.filter?.let { filter ->
+                    countTargetsMatchingFilter(state, playerId, chosenTargets.distinct(), filter, abilitySourceId)
+                } ?: chosenTargets.distinct().size
+                (counted - source.beyond).coerceAtLeast(0)
+            }
             is CostReductionSource.FixedIfCreatureAttackingYou -> {
                 if (isAnyCreatureAttacking(state, playerId)) source.amount else 0
             }
@@ -1200,9 +1206,73 @@ class CostCalculator(
             castUsing, zonePermissionModification,
         )
         if (!countsTargets) return TargetPricedCost(pricing.priced(pricing.optimisticTargets), null)
+        val key = perTargetCountKey(state, cardDef, modifiers)
+        if (key != null) {
+            val table = pricing.pricedByDistinctAndMatching(key)
+            return TargetPricedCost(table.values.minBy { it.cmc }, if (withTable) table else null)
+        }
         val range = pricing.countRange()
         val min = listOf(range.first, range.last).map(pricing::pricedAt).minBy { it.cmc }
         return TargetPricedCost(min, if (withTable) range.associateWith(pricing::pricedAt) else null)
+    }
+
+    /**
+     * The filter the filtered per-target modifiers in play count by ("for each creature it
+     * targets" — Battlefield Thaumaturge) — the spell's own and the battlefield's, whether or not
+     * they apply to this cast, so [targetPriceCountedIds] reaches the same answer from the state
+     * alone. With one, a spell's price depends on how many different targets it has (for any
+     * modifier counting every target — Hinata, Fireball) *and* how many of them match, so
+     * [priceByTargets] keys its table by both ([targetPriceKey]). Null when no per-target modifier
+     * in play has a filter — or two have different ones, which no card prints yet: the table is
+     * then keyed by different targets alone.
+     */
+    private fun perTargetCountKey(
+        state: GameState,
+        cardDef: CardDefinition,
+        modifiers: List<Pair<EntityId, ModifySpellCost>>,
+    ): PerTargetKey? {
+        val keyed = buildList {
+            for (ability in cardDef.script.staticAbilities) {
+                if (ability is ModifySpellCost && ability.target == SpellCostTarget.SelfCast) {
+                    chosenTargetsSource(ability.modification)?.let { add(null to it) }
+                }
+            }
+            for ((sourceId, ability) in modifiers) chosenTargetsSource(ability.modification)?.let { add(sourceId to it) }
+        }
+        val filtered = keyed.filter { it.second.filter != null }
+        val (sourceId, first) = filtered.firstOrNull() ?: return null
+        if (filtered.any { it.second.filter != first.filter }) return null
+        return PerTargetKey(first.filter!!, sourceId)
+    }
+
+    private class PerTargetKey(val filter: GameObjectFilter, val sourceId: EntityId?)
+
+    private fun chosenTargetsSource(modification: CostModification): CostReductionSource.ChosenTargets? =
+        (sourceFromModification(modification) ?: when (modification) {
+            is CostModification.IncreaseGenericBy -> modification.source
+            is CostModification.IncreaseColoredPerUnit -> modification.countSource
+            else -> null
+        }) as? CostReductionSource.ChosenTargets
+
+    /**
+     * The objects that count as matching targets when [cardDef]'s `manaCostByTargetCount` table is
+     * keyed by [targetPriceKey] ([perTargetCountKey]) — every object in play matching the filter,
+     * so the client can count the chosen targets among them. Null when the table is keyed by
+     * different targets alone.
+     */
+    fun targetPriceCountedIds(state: GameState, cardDef: CardDefinition, casterId: EntityId): List<EntityId>? {
+        val key = perTargetCountKey(state, cardDef, scanModifySpellCost(state)) ?: return null
+        val candidates = buildList {
+            addAll(state.getBattlefield())
+            addAll(state.stack)
+            for (playerId in state.turnOrder) {
+                addAll(state.getZone(playerId, Zone.GRAVEYARD))
+                addAll(state.getZone(playerId, Zone.EXILE))
+            }
+        }
+        val projected = state.projectedState
+        val context = PredicateContext(controllerId = casterId, sourceId = key.sourceId)
+        return candidates.filter { predicateEvaluator.matches(state, projected, it, key.filter, context) }
     }
 
     /**
@@ -1307,6 +1377,25 @@ class CostCalculator(
 
         /** Priced with [count] different targets, the discount-earning ones first. */
         fun pricedAt(count: Int): ManaCost = priced((optimisticTargets + legalTargets).distinct().take(count))
+
+        /**
+         * Every reachable pair of different-target count ([countRange]) and how many of those
+         * match [key]'s filter, priced and keyed by [targetPriceKey] — the discount-earning
+         * targets first within each side.
+         */
+        fun pricedByDistinctAndMatching(key: PerTargetKey): Map<Int, ManaCost> {
+            val projected = state.projectedState
+            val context = PredicateContext(controllerId = casterId, sourceId = key.sourceId)
+            val (matching, others) = (optimisticTargets + legalTargets).distinct()
+                .partition { predicateEvaluator.matches(state, projected, it, key.filter, context) }
+            return buildMap {
+                for (distinct in countRange()) {
+                    for (matched in maxOf(0, distinct - others.size)..minOf(distinct, matching.size)) {
+                        put(targetPriceKey(distinct, matched), priced(matching.take(matched) + others.take(distinct - matched)))
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -1520,6 +1609,19 @@ class CostCalculator(
         return targets.any { entityId ->
             predicateEvaluator.matches(state, projected, entityId, filter, context)
         }
+    }
+
+    /** How many of [targets] match the filter, read like [anyTargetMatchesFilter]. */
+    private fun countTargetsMatchingFilter(
+        state: GameState,
+        playerId: EntityId,
+        targets: List<EntityId>,
+        filter: GameObjectFilter,
+        sourceId: EntityId? = null,
+    ): Int {
+        val projected = state.projectedState
+        val context = PredicateContext(controllerId = playerId, sourceId = sourceId)
+        return targets.count { predicateEvaluator.matches(state, projected, it, filter, context) }
     }
 
     /** The first of [candidates] matching the filter. */
@@ -2575,6 +2677,16 @@ class CostCalculator(
     }
 
     companion object {
+        /**
+         * How a `manaCostByTargetCount` key packs two counts when the action carries
+         * `targetPriceCountedIds`: `distinct + TARGET_PRICE_MATCHED_STRIDE * matched`, where
+         * `distinct` is the spell's different targets and `matched` how many are counted ids. No
+         * spell reaches a thousand targets.
+         */
+        const val TARGET_PRICE_MATCHED_STRIDE = 1000
+
+        fun targetPriceKey(distinct: Int, matched: Int): Int = distinct + TARGET_PRICE_MATCHED_STRIDE * matched
+
         /** The X [minPossibleXCredit] prices at — far above any reduction a board can supply. */
         private const val X_CREDIT_PROBE = 1000
 

@@ -306,6 +306,100 @@
     ]
 }
 
+// Battlefield Thaumaturge
+{
+    "name": "Battlefield Thaumaturge",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Each instant and sorcery spell you cast costs {1} less to cast for each creature it targets.\nHeroic — Whenever you cast a spell that targets this creature, this creature gains hexproof until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Battlefield Thaumaturge:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF",
+                    "target": "Self"
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, this creature gains hexproof until end of turn."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "instant|sorcery"
+                },
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "ChosenTargets",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                "IsOnBattlefield"
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "RARE",
+        "artist": "Mike Sass",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/467ffc93-b107-457c-af04-a1b682a4b886.jpg?1783939450",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Battlefield Thaumaturge's first ability doesn't change that spell's mana cost or mana value. It changes only the amount you actually pay (the \"total cost\" of the spell)."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "To calculate the total cost of an instant or sorcery spell you're casting, start with the mana cost (or alternative cost, if applicable), add all cost increases (including additional costs such as those imposed by strive abilities), then subtract all cost reductions (such as the one created by Battlefield Thaumaturge's first ability)."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "The cost reduction created by Battlefield Thaumaturge's first ability can reduce only the generic portion of the spell's total cost. Colored mana requirements aren't affected."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "The cost reduction is {1} per target creature, even if the spell targets a creature more than once."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Bearer of the Heavens
 {
     "name": "Bearer of the Heavens",

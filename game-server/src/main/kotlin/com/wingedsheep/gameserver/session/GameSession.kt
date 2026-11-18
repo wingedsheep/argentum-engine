@@ -331,7 +331,7 @@ class GameSession(
         cardRegistry, services.manaSolver, services.costCalculator,
         services.predicateEvaluator, services.conditionEvaluator, services.turnManager
     )
-    private val legalActionEnricher = LegalActionEnricher(services.manaSolver, cardRegistry)
+    private val legalActionEnricher = LegalActionEnricher(services.manaSolver, cardRegistry, services.costCalculator)
 
     /** Tracks the last processed messageId per player for idempotency */
     private val lastProcessedMessageId = java.util.concurrent.ConcurrentHashMap<EntityId, String>()
