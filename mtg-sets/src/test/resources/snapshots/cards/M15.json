@@ -6926,51 +6926,6 @@
     ]
 }
 
-// Unmake the Graves
-{
-    "name": "Unmake the Graves",
-    "manaCost": "{4}{B}",
-    "typeLine": "Instant",
-    "oracleText": "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nReturn up to two target creature cards from your graveyard to your hand.",
-    "keywords": [
-        "CONVOKE"
-    ],
-    "script": {
-        "spellEffect": {
-            "type": "ForEach",
-            "space": "IterationSpace.Targets",
-            "body": {
-                "type": "MoveToZone",
-                "target": {
-                    "type": "ContextTarget",
-                    "index": 0
-                },
-                "destination": "Hand"
-            }
-        },
-        "targetRequirements": [
-            {
-                "type": "TargetObject",
-                "count": 2,
-                "optional": true,
-                "filter": {
-                    "baseFilter": "creature own:you",
-                    "zone": "Graveyard"
-                }
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "120",
-        "artist": "Aaron Miller",
-        "flavorText": "\"I'm raising an army. Any volunteers?\"",
-        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d6fd00bb-b247-45b7-9cb2-0d65b92c0360.jpg?1783939179"
-    },
-    "colorIdentityOverride": [
-        "BLACK"
-    ]
-}
-
 // Venom Sliver
 {
     "name": "Venom Sliver",
