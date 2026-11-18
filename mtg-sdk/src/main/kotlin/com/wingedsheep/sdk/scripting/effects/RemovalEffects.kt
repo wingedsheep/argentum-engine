@@ -537,7 +537,7 @@ data class MoveToZoneEffect(
             destination == Zone.EXILE -> append("Exile ${target.description}")
             destination == Zone.LIBRARY && positionFromTop != null -> {
                 val ordinal = when (val depth = (positionFromTop as? DynamicAmount.Fixed)?.amount) {
-                    null -> "just beneath the top ${positionFromTop.description} cards"
+                    null -> "just beneath the top X cards of that library, where X is ${positionFromTop.description}"
                     0 -> "top"
                     1 -> "second from the top"
                     2 -> "third from the top"
