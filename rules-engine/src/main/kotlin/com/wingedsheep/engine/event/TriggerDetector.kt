@@ -5068,6 +5068,10 @@ class TriggerDetector(
         if (doublers.isEmpty()) return
 
         val duplicates = mutableListOf<PendingTrigger>()
+        // "A triggered ability of a permanent you control": an emblem's (or a graveyard card's)
+        // attack trigger isn't a permanent's, so the doubler leaves it alone (Garruk, Apex
+        // Predator's emblem under Isshin).
+        val battlefield = state.getBattlefield().toSet()
 
         for (attackEvent in attackEvents) {
             for (doubler in doublers) {
@@ -5083,6 +5087,7 @@ class TriggerDetector(
 
                 for (trigger in triggers) {
                     if (trigger.controllerId != doubler.controllerId) continue
+                    if (trigger.sourceId !in battlefield) continue
 
                     // Only attack-caused triggers: "whenever a creature attacks" / "whenever you attack".
                     val triggerEvent = trigger.ability.trigger
