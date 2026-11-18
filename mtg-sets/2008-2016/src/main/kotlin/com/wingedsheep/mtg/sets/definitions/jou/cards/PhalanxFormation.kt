@@ -19,10 +19,9 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * Strive — This spell costs {1}{W} more to cast for each target beyond the first.
  * Any number of target creatures each gain double strike until end of turn.
  *
- * Strive is Call the Coppercoats' split tax: the generic {1} through
- * [CostModification.IncreaseGenericBy] and the {W} through [CostModification.IncreaseColoredPerUnit],
- * both counting [CostReductionSource.ChosenTargets] with `beyond = 1`. They're cost increases, so a
- * free cast still owes them and the mana value stays 3. [Effects.ForEachTarget] grants double strike
+ * Strive is one [CostModification.IncreaseManaPerUnit] of {1}{W} counting
+ * [CostReductionSource.ChosenTargets] with `beyond = 1`. It's a cost increase, so a free cast still
+ * owes it and the mana value stays 3. [Effects.ForEachTarget] grants double strike
  * to each chosen creature on its own, so a target that became illegal simply misses out.
  */
 val PhalanxFormation = card("Phalanx Formation") {
@@ -36,15 +35,8 @@ val PhalanxFormation = card("Phalanx Formation") {
     staticAbility {
         ability = ModifySpellCost(
             target = SpellCostTarget.SelfCast,
-            modification = CostModification.IncreaseGenericBy(CostReductionSource.ChosenTargets(beyond = 1)),
-        )
-    }
-
-    staticAbility {
-        ability = ModifySpellCost(
-            target = SpellCostTarget.SelfCast,
-            modification = CostModification.IncreaseColoredPerUnit(
-                symbols = "{W}",
+            modification = CostModification.IncreaseManaPerUnit(
+                symbols = "{1}{W}",
                 countSource = CostReductionSource.ChosenTargets(beyond = 1),
             ),
         )

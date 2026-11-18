@@ -701,11 +701,12 @@ class CostCalculator(
                     .filterIsInstance<ManaSymbol.Colored>()
                     .forEach(addColoredIncrease)
             }
-            is CostModification.IncreaseColoredPerUnit -> {
+            is CostModification.IncreaseManaPerUnit -> {
                 val units =
                     evaluateReduction(state, modification.countSource, casterId, chosenTargets, abilitySourceId, cardDef)
-                val coloredSymbols = ManaCost.parse(modification.symbols).symbols
-                    .filterIsInstance<ManaSymbol.Colored>()
+                val perUnit = ManaCost.parse(modification.symbols)
+                val coloredSymbols = perUnit.symbols.filterIsInstance<ManaSymbol.Colored>()
+                if (units > 0 && perUnit.genericAmount > 0) addGenericIncrease(units * perUnit.genericAmount)
                 repeat(units) { coloredSymbols.forEach(addColoredIncrease) }
             }
             is CostModification.IncreaseGenericPerOtherSpellThisTurn -> {
@@ -1250,7 +1251,7 @@ class CostCalculator(
     private fun chosenTargetsSource(modification: CostModification): CostReductionSource.ChosenTargets? =
         (sourceFromModification(modification) ?: when (modification) {
             is CostModification.IncreaseGenericBy -> modification.source
-            is CostModification.IncreaseColoredPerUnit -> modification.countSource
+            is CostModification.IncreaseManaPerUnit -> modification.countSource
             else -> null
         }) as? CostReductionSource.ChosenTargets
 
@@ -1560,7 +1561,7 @@ class CostCalculator(
     private fun targetCountDirection(modification: CostModification): Boolean? {
         val source = sourceFromModification(modification) ?: when (modification) {
             is CostModification.IncreaseGenericBy -> modification.source
-            is CostModification.IncreaseColoredPerUnit -> modification.countSource
+            is CostModification.IncreaseManaPerUnit -> modification.countSource
             else -> null
         }
         if (source !is CostReductionSource.ChosenTargets) return null

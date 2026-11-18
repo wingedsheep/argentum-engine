@@ -91,6 +91,7 @@ import com.wingedsheep.sdk.scripting.effects.CopyTargetTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.CounterEffect
 import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
+import com.wingedsheep.sdk.scripting.effects.InvestigateEffect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.TriggerBinding
@@ -705,6 +706,11 @@ object TargetPolarityAnalyzer {
                 perSlot[damageWatch] += TargetPolarity.FLEXIBLE
                 continue
             }
+            val measured = measuredPlayerSlots(leaf, requirements)
+            if (measured.isNotEmpty()) {
+                measured.forEach { perSlot[it] += TargetPolarity.FLEXIBLE }
+                continue
+            }
             val recursion = recursionSlot(leaf, requirements)
             val copy = ownCopySlot(leaf, requirements)
             val gift = tokenGiftSlot(leaf, requirements)
@@ -1106,6 +1112,33 @@ object TargetPolarityAnalyzer {
         filter?.baseFilter?.controllerPredicate.let {
             it == ControllerPredicate.OwnedByYou || it == ControllerPredicate.ControlledByYou
         }
+
+    /**
+     * The player slots a **token count sized by target players** reads — "choose any number of
+     * target opponents. Create X 1/1 Soldiers, where X is the number of creatures those opponents
+     * control" (Call the Coppercoats), "investigate X times, where X is the total number of
+     * creatures those players control" (Officious Interrogation) — or none.
+     *
+     * The tokens are the controller's; the targeted players are only counted, not acted on, as a
+     * draw sized by a target opponent's damage is (Knollspine Dragon). So each slot reads
+     * [TargetPolarity.FLEXIBLE]: understood, and the simulation weighs who has the most to count.
+     * A token handed *to* a target player is [tokenGiftSlot]'s, not this.
+     */
+    private fun measuredPlayerSlots(leaf: Effect, requirements: List<TargetRequirement>): List<Int> {
+        val (controller, count) = when (leaf) {
+            is CreateTokenEffect -> leaf.controller to leaf.count
+            is InvestigateEffect -> leaf.controller to leaf.count
+            else -> return emptyList()
+        }
+        if (controller?.isSlot() == true) return emptyList()
+        val player = (count as? DynamicAmount.Count)?.player ?: return emptyList()
+        return when (player) {
+            Player.EachTargetedPlayer -> requirements.indices.filter {
+                requirements[it] is TargetPlayer || requirements[it] is TargetOpponent
+            }
+            else -> listOfNotNull(playerSlotOf(player, requirements))
+        }
+    }
 
     /**
      * The player slot a **token for a target player** names — "target player creates a 1/1 …

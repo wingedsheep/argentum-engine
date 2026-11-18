@@ -22,7 +22,7 @@ import io.kotest.matchers.shouldBe
  * Two engine additions carry this card, and each has a way of failing silently that these tests are
  * built to catch:
  *
- *  - **the per-target tax** (`CostModification.IncreaseColoredPerUnit` over
+ *  - **the per-target tax** (`CostModification.IncreaseManaPerUnit` over
  *    `CostReductionSource.ChosenTargets(beyond = 1)`). A tax that never applied would look exactly
  *    like a working card in a test that only checks the Clue count, so the price is pinned from both
  *    sides: two targets must be *rejected* on one-target mana, and accepted on two-target mana.

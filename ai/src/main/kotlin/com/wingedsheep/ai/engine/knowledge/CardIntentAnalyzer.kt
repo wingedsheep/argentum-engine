@@ -3981,7 +3981,7 @@ object CardIntentAnalyzer {
         is CostModification.IncreaseGeneric, is CostModification.IncreaseGenericBy,
         is CostModification.IncreaseGenericIfAnyTargetMatches,
         is CostModification.IncreaseGenericPerOtherSpellThisTurn,
-        is CostModification.IncreaseColored, is CostModification.IncreaseColoredPerUnit,
+        is CostModification.IncreaseColored, is CostModification.IncreaseManaPerUnit,
         is CostModification.IncreaseLife -> true
         is CostModification.ReduceGeneric, is CostModification.ReduceGenericBy,
         is CostModification.ReduceColored, is CostModification.ReduceColoredPerUnit,

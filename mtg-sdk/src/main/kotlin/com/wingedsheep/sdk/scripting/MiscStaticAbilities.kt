@@ -1062,7 +1062,7 @@ data class MayCastSelfFromZones(
         is CostModification.IncreaseGeneric -> "{${m.amount}} more"
         is CostModification.IncreaseGenericBy -> "{X} more, where X is ${m.source.description},"
         is CostModification.IncreaseColored -> "${m.symbols} more"
-        is CostModification.IncreaseColoredPerUnit -> "${m.symbols} more for each ${m.countSource.description}"
+        is CostModification.IncreaseManaPerUnit -> "${m.symbols} more for each ${m.countSource.description}"
         is CostModification.IncreaseGenericPerOtherSpellThisTurn ->
             "{${m.amountPerSpell}} more for each other spell you've cast this turn"
         is CostModification.IncreaseGenericIfAnyTargetMatches ->

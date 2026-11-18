@@ -105,7 +105,7 @@ data class ModifySpellCost(
             is CostModification.IncreaseGenericBy ->
                 "cost {X} more to cast, where X is ${fromCasterPerspective(modification.source.description)}"
             is CostModification.IncreaseColored -> "cost ${modification.symbols} more to cast"
-            is CostModification.IncreaseColoredPerUnit ->
+            is CostModification.IncreaseManaPerUnit ->
                 "cost ${modification.symbols} more to cast for each ${modification.countSource.description}"
             is CostModification.IncreaseGenericPerOtherSpellThisTurn ->
                 "cost {${modification.amountPerSpell}} more to cast for each other spell that player has cast this turn"
@@ -501,19 +501,22 @@ sealed interface CostModification {
     data class IncreaseColored(val symbols: String) : CostModification
 
     /**
-     * Add [symbols] to the cost once per unit of [countSource] — the tax mirror of
-     * [ReduceColoredPerUnit], reading the same [CostReductionSource] vocabulary.
+     * Add [symbols] — generic and colored alike — to the cost once per unit of [countSource]: the
+     * per-unit tax, reading the same [CostReductionSource] vocabulary as [ReduceColoredPerUnit].
      *
-     * Used for Officious Interrogation ("This spell costs {W}{U} more to cast for each target
-     * beyond the first") as
-     * `IncreaseColoredPerUnit("{W}{U}", CostReductionSource.ChosenTargets(beyond = 1))`.
+     * Used for strive and its kin, whose printed tax is one mana cost per target beyond the first:
+     * Officious Interrogation ("{W}{U} more ... for each target beyond the first") as
+     * `IncreaseManaPerUnit("{W}{U}", CostReductionSource.ChosenTargets(beyond = 1))`, Ajani's
+     * Presence ("{2}{W} more ...") as `IncreaseManaPerUnit("{2}{W}", ...)`. The generic part of
+     * [symbols] adds to the generic total and each colored symbol is appended, so one modifier
+     * carries the whole printed tax (a purely generic one still reads as [IncreaseGenericBy]).
      *
      * Unlike the reduction side there is no overflow question: added symbols always land, so a
-     * count of N simply appends N copies of [symbols].
+     * count of N simply adds N copies of [symbols].
      */
-    @SerialName("IncreaseColoredPerUnit")
+    @SerialName("IncreaseManaPerUnit")
     @Serializable
-    data class IncreaseColoredPerUnit(
+    data class IncreaseManaPerUnit(
         val symbols: String,
         val countSource: CostReductionSource,
     ) : CostModification
@@ -775,7 +778,7 @@ sealed interface CostReductionSource {
      * target.
      *
      * Pair with [CostModification.ReduceGenericBy] / [CostModification.IncreaseGenericBy] for a
-     * generic amount per target and with [CostModification.IncreaseColoredPerUnit] for a colored one.
+     * generic amount per target and with [CostModification.IncreaseManaPerUnit] for a colored one.
      */
     @SerialName("ChosenTargets")
     @Serializable
