@@ -109,7 +109,6 @@ import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DistributeCountersAmongTargetsEffect
 import com.wingedsheep.sdk.scripting.effects.DoubleCountersEffect
 import com.wingedsheep.sdk.scripting.effects.SkipUntapEffect
-import com.wingedsheep.sdk.scripting.effects.HijackNextTurnEffect
 import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ExileTargetSpellEffect
@@ -123,6 +122,7 @@ import com.wingedsheep.sdk.scripting.effects.GrantHexproofFromChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.LockPlayerCountersEffect
 import com.wingedsheep.sdk.scripting.effects.GrantProtectionFromChosenColorEffect
+import com.wingedsheep.sdk.scripting.effects.HijackNextTurnEffect
 import com.wingedsheep.sdk.scripting.effects.GrantStaticAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.GrantFlashbackEffect
 import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityEffect
