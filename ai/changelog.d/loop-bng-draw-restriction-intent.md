@@ -1,1 +1,1 @@
-- #TBD The AI reads a static that caps opponents' card draw (Spirit of the Labyrinth, Narset, Parter of Veils) as a draw lock instead of an unrecognised ability, and prices it as a hoser.
+- #4767 The AI reads a static that caps opponents' card draw (Spirit of the Labyrinth, Narset, Parter of Veils) as a draw lock instead of an unrecognised ability, and prices it as a hoser.
