@@ -43,7 +43,7 @@ val ArbiterOfTheIdeal = card("Arbiter of the Ideal") {
         trigger = Triggers.self.becomesUntapped()
         effect = Effects.Pipeline {
             val top = gather(CardSource.TopOfLibrary(1))
-            reveal(top)
+            reveal(top, fromZone = Zone.LIBRARY)
             val chosen = chooseUpTo(
                 1,
                 from = top,

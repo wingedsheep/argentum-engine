@@ -264,7 +264,8 @@
                         },
                         {
                             "type": "RevealCollection",
-                            "from": "gathered0"
+                            "from": "gathered0",
+                            "fromZone": "Library"
                         },
                         {
                             "type": "SelectFromCollection",

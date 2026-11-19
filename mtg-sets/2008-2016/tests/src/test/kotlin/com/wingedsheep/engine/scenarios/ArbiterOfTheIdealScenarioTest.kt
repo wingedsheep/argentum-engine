@@ -89,13 +89,11 @@ class ArbiterOfTheIdealScenarioTest : ScenarioTestBase() {
             val game = untapArbiter("Lightning Bolt")
             val bolt = game.findCardsInLibrary(1, "Lightning Bolt").single()
 
-            val decision = game.getPendingDecision()
-            if (decision is SelectCardsDecision) {
-                withClue("the instant is shown but not selectable") {
-                    decision.nonSelectableOptions.contains(bolt) shouldBe true
-                }
-                game.skipSelection().error shouldBe null
+            val decision = game.getPendingDecision().shouldBeInstanceOf<SelectCardsDecision>()
+            withClue("the instant is shown but not selectable") {
+                decision.nonSelectableOptions.contains(bolt) shouldBe true
             }
+            game.skipSelection().error shouldBe null
             game.resolveStack()
 
             game.state.getZone(game.player1Id, Zone.LIBRARY).first() shouldBe bolt
