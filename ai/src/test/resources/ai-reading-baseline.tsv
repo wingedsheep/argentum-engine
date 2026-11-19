@@ -3142,6 +3142,7 @@ Chord of Calling
 Choreographed Sparks
 Chorus of Woe
 Chorus of the Conclave
+Chorus of the Tides
 Chosen by Heliod
 Christine Chapel, Combat Medic
 Chromatic Lantern
@@ -5451,6 +5452,7 @@ Ego Erasure	timing: ForEach>ModifyStatsEffect
 Egon, God of Death
 Eidolon of Astral Winds
 Eidolon of Blossoms
+Eidolon of Countless Battles
 Eidolon of Inspiration
 Eidolon of Obstruction
 Eidolon of Philosophy
@@ -6276,6 +6278,8 @@ Fate Forgotten
 Fate Unraveler
 Fate of the Sun-Cryst
 Fated Firepower
+Fated Infatuation
+Fated Retribution
 Fateful Absence
 Fateful Discovery
 Fateful End
@@ -6708,6 +6712,7 @@ Flight of Fancy
 Flight-Deck Coordinator
 Fling
 Flip the Switch
+Flitterstep Eidolon
 Flitterwing Nuisance
 Flitting Guerrilla
 Floating-Dream Zubera
@@ -7366,6 +7371,7 @@ Ghost Vacuum
 Ghost Warden
 Ghost of Illyria
 Ghost, Spectral Saboteur
+Ghostblade Eidolon
 Ghostfire Blade
 Ghostfire Slice
 Ghostform
@@ -7576,6 +7582,7 @@ Glimpse the Core
 Glimpse the Cosmos
 Glimpse the Future
 Glimpse the Impossible
+Glimpse the Sun God
 Glimpse the Unthinkable
 Glint
 Glint Weaver
@@ -8642,6 +8649,7 @@ Hermitic Nautilus
 Hero in Training
 Hero of Bladehold
 Hero of Goma Fada
+Hero of Iroas
 Hero of Precinct One
 Hero of the Dunes
 Hero of the Games
@@ -11585,6 +11593,7 @@ Meldweb Curator
 Meldweb Strider
 Melek, Reforged Researcher
 Melesse Spirit
+Meletis Astronomer
 Melira, the Living Cure	polarity: CreateDelayedTriggerEffect
 Melkotian Adjudicator
 Meloku the Clouded Mirror
@@ -12829,6 +12838,8 @@ Nyxborn Courser
 Nyxborn Hydra
 Nyxborn Marauder
 Nyxborn Seaguard
+Nyxborn Shieldmate
+Nyxborn Triton
 Nyxborn Unicorn
 O'aka, Traveling Merchant
 Oaken Brawler
@@ -13666,6 +13677,7 @@ Pillar Launch
 Pillar of Flame
 Pillar of Light
 Pillar of Origins
+Pillar of War
 Pillardrop Rescuer
 Pillardrop Warden
 Pillarfield Ox
@@ -17536,6 +17548,7 @@ Spirit of Malevolence
 Spirit of Resistance
 Spirit of the Aldergard
 Spirit of the Hunt
+Spirit of the Labyrinth
 Spirit of the Spires
 Spirit-Sister's Call
 Spiritcall Enthusiast
@@ -18182,6 +18195,7 @@ Sunblade Angel
 Sunblade Elf
 Sunblade Samurai
 Sunblast Angel
+Sunbond
 Sunbringer's Touch
 Suncleanser	intent: ModalEffect; polarity: GrantKeywordEffect
 Sunder Shaman
@@ -20398,6 +20412,7 @@ Vance's Blasting Cannons
 Vandalblast
 Vandalize
 Vanguard Seraph
+Vanguard of Brimaz
 Vanguard of the Rose
 Vanille, Cheerful l'Cie	intent: MeldEffect
 Vanish from Sight
