@@ -22,7 +22,7 @@ import io.kotest.matchers.string.shouldContain
 /**
  * [AdditionalManaOnTap] with `anyColor = true` and an amount above one — "adds an additional two
  * mana in any combination of colors" (Market Festival, Dawn's Reflection). Each unit's color is its
- * own choice: a manual tap asks once per unit (the land's mana first, then each bonus unit), and the
+ * own choice: a manual tap asks once per bonus unit, and the
  * auto-payer treats every unit as flexible, so one tap can pay two different colored pips.
  */
 class AnyCombinationTapBonusTest : ScenarioTestBase() {
@@ -47,9 +47,10 @@ class AnyCombinationTapBonusTest : ScenarioTestBase() {
 
             game.execute(tapForMana(game)).error shouldBe null
             val first = pendingColor(game)
-            first.prompt shouldContain "2 remaining"
+            first.prompt shouldContain "(1 of 2)"
             game.submitDecision(ColorChosenResponse(first.id, Color.RED)).error shouldBe null
             val second = pendingColor(game)
+            second.prompt shouldContain "(2 of 2)"
             game.submitDecision(ColorChosenResponse(second.id, Color.BLUE)).error shouldBe null
 
             game.getPendingDecision() shouldBe null

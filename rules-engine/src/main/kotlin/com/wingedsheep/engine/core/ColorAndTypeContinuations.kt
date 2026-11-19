@@ -67,7 +67,9 @@ data class ChooseManaColorContinuation(
 data class AnyColorTapBonus(
     val auraId: EntityId,
     val controllerId: EntityId,
-    val amount: Int
+    val amount: Int,
+    /** The bonus's full size at tap time, so a multi-unit prompt can say which unit it is asking for. */
+    val total: Int = amount
 )
 
 /**

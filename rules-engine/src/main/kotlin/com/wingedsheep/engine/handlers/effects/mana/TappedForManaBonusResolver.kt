@@ -107,7 +107,7 @@ class TappedForManaBonusResolver(
             playerId = item.controllerId,
             sourceId = item.auraId,
             sourceName = sourceName,
-            prompt = if (item.amount > 1) "Choose a color for the additional mana (${item.amount} remaining)"
+            prompt = if (item.total > 1) "Choose a color for the additional mana (${item.total - item.amount + 1} of ${item.total})"
                 else "Choose a color for the additional mana",
             phase = DecisionPhase.RESOLUTION,
             availableColors = available,

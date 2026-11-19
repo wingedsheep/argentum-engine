@@ -280,7 +280,9 @@ data class AdditionalManaOnTap(
     override val description: String =
         if (anyColor) {
             val fixed = (amount as? DynamicAmount.Fixed)?.amount
+            val words = listOf("zero", "one", "two", "three", "four", "five")
             if (fixed == 1) "Whenever enchanted land is tapped for mana, its controller adds an additional one mana of any color"
+            else if (fixed != null && fixed in words.indices) "Whenever enchanted land is tapped for mana, its controller adds an additional ${words[fixed]} mana in any combination of colors"
             else "Whenever enchanted land is tapped for mana, its controller adds additional mana in any combination of colors"
         }
         else "Whenever enchanted land is tapped for mana, its controller adds additional mana"
