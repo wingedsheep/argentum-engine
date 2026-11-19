@@ -680,6 +680,27 @@ class DecisionResponder(
             return CardsSelectedResponse(decision.id, if (total >= floor) payment else emptyList())
         }
 
+        // An attack paid with permanents ("can't attack unless you sacrifice two Islands" /
+        // "return an enchantment you control to its owner's hand"): the attack is already
+        // declared, so pay as cheaply as possible. A sacrifice loses the permanent, so give up the
+        // ones worth least on the board; a bounce keeps the card and costs only the mana to recast
+        // it, so return the cheapest first. The bounce prompt used to fall through to "pick best"
+        // and return the enchantment the AI most wanted to keep.
+        ((state.peekContinuation() as? Suspension)?.takeIf { it.question.id == decision.id }
+            ?.answer as? AttackPermanentCostSelectionContinuation)?.let { attackCost ->
+            val projected = state.projectedState
+            fun boardValue(id: EntityId): Double {
+                val card = state.getEntity(id)?.get<CardComponent>() ?: return 0.0
+                return BoardPresence.permanentValue(state, projected, id, card, intents)
+            }
+            val ranked = when (attackCost.action) {
+                com.wingedsheep.sdk.scripting.AttackPermanentCostAction.SACRIFICE -> options.sortedBy(::boardValue)
+                com.wingedsheep.sdk.scripting.AttackPermanentCostAction.RETURN_TO_HAND ->
+                    options.sortedWith(compareBy<EntityId>({ manaValueOf(state, it) }, ::boardValue))
+            }
+            return CardsSelectedResponse(decision.id, ranked.take(min))
+        }
+
         // Context-aware ranking
         val prompt = decision.prompt.lowercase()
         // A library search says so on the decision; its prompt and label name the filter and the

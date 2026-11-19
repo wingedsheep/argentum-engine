@@ -22,7 +22,9 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.CanBlockAdditionalForCreatureGroup
+import com.wingedsheep.sdk.scripting.AttackPermanentCostAction
 import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
+import com.wingedsheep.sdk.scripting.CantAttackUnlessPermanentCost
 import com.wingedsheep.sdk.scripting.CantBlockUnlessCoBlocker
 import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.MustAttack
@@ -527,6 +529,13 @@ object LimitedCardRater {
             is CanBlockAdditionalForCreatureGroup -> return 0.2 * static.count.coerceIn(0, 3)
             is CantBlock -> if (static.filter.scope == Scope.Self) return -0.3
             is CantAttackUnlessCoAttacker -> if (static.filter.scope == Scope.Self) return -0.3
+            // "Can't attack unless you sacrifice two Islands" (Leviathan) costs a permanent per
+            // attack; "unless you return an enchantment you control" (Floodtide Serpent) only the
+            // tempo of recasting it — and attacks not at all without one.
+            is CantAttackUnlessPermanentCost -> return when (static.action) {
+                AttackPermanentCostAction.SACRIFICE -> -0.5
+                AttackPermanentCostAction.RETURN_TO_HAND -> -0.3
+            }
             is CantBlockUnlessCoBlocker -> if (static.filter.scope == Scope.Self) return -0.2
             // "Attacks each combat if able" sends it into bad attacks; "blocks each combat if able"
             // into bad blocks, a milder cost since a block is usually wanted anyway.

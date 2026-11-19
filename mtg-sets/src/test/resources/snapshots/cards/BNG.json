@@ -1850,6 +1850,36 @@
     ]
 }
 
+// Floodtide Serpent
+{
+    "name": "Floodtide Serpent",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Serpent",
+    "oracleText": "This creature can't attack unless you return an enchantment you control to its owner's hand. (This cost is paid as attackers are declared.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnlessPermanentCost",
+                "filter": "enchantment",
+                "action": "RETURN_TO_HAND"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "artist": "Steven Belledin",
+        "flavorText": "\"Pray to Thassa for *what*? A bigger monster to eat it? A wave that can wash it away? What then?\"\n—Lindos, merchant of Meletis",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7a2a4b24-096a-4d36-a872-73fa4552bb35.jpg?1783939568"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Forlorn Pseudamma
 {
     "name": "Forlorn Pseudamma",

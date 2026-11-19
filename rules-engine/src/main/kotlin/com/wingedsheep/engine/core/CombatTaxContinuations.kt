@@ -37,30 +37,33 @@ data class AttackTaxManaSelectionContinuation(
 ) : AnswerContinuation
 
 /**
- * Resume after the attacking player chooses which permanents to sacrifice to declare an attacker
- * carrying [com.wingedsheep.sdk.scripting.CantAttackUnlessSacrifice] (Leviathan). One frame per
- * paying attacker: [remaining] holds the attackers still owing a sacrifice, so a board with two
+ * Resume after the attacking player chooses which permanents to pay with (sacrifice or return to hand) to declare an attacker
+ * carrying [com.wingedsheep.sdk.scripting.CantAttackUnlessPermanentCost] (Leviathan). One frame per
+ * paying attacker: [remaining] holds the attackers still owing a permanent cost, so a board with two
  * such creatures asks twice and each choice is made knowing the previous one.
  *
  * Declining is not offered. Affordability was checked before the declaration was accepted, and a
  * player who no longer wants to pay should not have declared the attack — the same contract the
  * generic-mana attack tax has, except that tax *can* be declined because its own pause happens
- * before enlist and sacrifice payments are committed.
+ * before enlist and permanent-cost payments are committed.
  *
  * @property attackingPlayer Player who declared the attack and pays the cost.
  * @property attackers The full declared [attacker → defender] map, replayed on commit.
  * @property payingAttacker The attacker whose cost this decision pays.
- * @property count How many permanents must be sacrificed for [payingAttacker].
- * @property remaining Attackers after this one that still owe a sacrifice, with their counts.
+ * @property count How many permanents must be paid for [payingAttacker].
+ * @property action Whether this payment sacrifices them or returns them to hand.
+ * @property remaining Attackers after this one that still owe a permanent cost, with their counts.
  * @property bands Validated band groupings, carried through to the commit.
  */
 @Serializable
-data class AttackSacrificeSelectionContinuation(
+data class AttackPermanentCostSelectionContinuation(
     val attackingPlayer: EntityId,
     val attackers: Map<EntityId, EntityId>,
     val payingAttacker: EntityId,
     val count: Int,
-    val remaining: List<PendingAttackSacrifice> = emptyList(),
+    val action: com.wingedsheep.sdk.scripting.AttackPermanentCostAction =
+        com.wingedsheep.sdk.scripting.AttackPermanentCostAction.SACRIFICE,
+    val remaining: List<PendingAttackPermanentCost> = emptyList(),
     val bands: List<Set<EntityId>> = emptyList(),
 ) : AnswerContinuation
 
@@ -83,9 +86,9 @@ data class AttackExertSelectionContinuation(
     val bands: List<Set<EntityId>> = emptyList(),
 ) : AnswerContinuation
 
-/** One still-unpaid sacrifice cost in an [AttackSacrificeSelectionContinuation]'s queue. */
+/** One still-unpaid permanent cost in an [AttackPermanentCostSelectionContinuation]'s queue. */
 @Serializable
-data class PendingAttackSacrifice(
+data class PendingAttackPermanentCost(
     val attackerId: EntityId,
     val count: Int,
 )

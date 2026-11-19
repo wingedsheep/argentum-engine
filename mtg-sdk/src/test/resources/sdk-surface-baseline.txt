@@ -1414,7 +1414,7 @@ CantAttack — StaticAbility
 CantAttackOrBlockUnlessPay — StaticAbility
 CantAttackUnless — StaticAbility
 CantAttackUnlessCoAttacker — StaticAbility
-CantAttackUnlessSacrifice — StaticAbility
+CantAttackUnlessPermanentCost — StaticAbility
 CantBeAttackedBy — StaticAbility
 CantBeAttackedWhileAttached — StaticAbility
 CantBeBlocked — StaticAbility
@@ -1674,7 +1674,7 @@ EffectTarget.AttackedBy — EffectTarget — Raid Bombardment — PlayerRef(Play
 EffectTarget.DamageRecipient — EffectTarget — Zagras, Thief of Heartbeats — EffectTarget.DamageSource, EffectTarget.TriggeringEntity — DamageSource names the other side of the same damage event and a role axis on that data object would fork its one meaning ("that creature" that dealt it); TriggeringEntity is already bound to the damage source on every source-filtered deals-damage observer (the "exile it" payoffs read it there), so the damaged permanent has no other name
 EmitKeywordCounterEventEffect — Effect — Watchful Radstag — EmitExploitedEventEffect, EmitChampionedEventEffect — replaces EmitTrainedEventEffect with a keyword axis (TRAINING, EVOLVE) so training and evolve share one "a resolving [keyword] ability put a +1/+1 counter on this creature" emitter; the exploit and champion emitters signal a sacrifice and an exile, not a counter placement
 EncodeOnCreatureEffect — Effect — Whispering Madness — MarkSpellExileOnResolveEffect, MarkSpellExileWithCountersEffect — both mark a target spell to be exiled instead of going to the graveyard (then plotted or returned, or with counters) and link it to nothing; cipher's exile is the resolving spell's own last instruction, so graveyard riders and rebound don't apply to it, and it leaves an encoding to a chosen creature that gains a trigger
-Enlist — StaticAbility — Benalish Faithbonder — ExertAsItAttacks, CantAttackUnlessSacrifice — optional other-creature tap with linked power trigger; exert does not choose another creature and sacrifice is mandatory
+Enlist — StaticAbility — Benalish Faithbonder — ExertAsItAttacks, CantAttackUnlessPermanentCost — optional other-creature tap with linked power trigger; exert does not choose another creature and the permanent attack cost is mandatory
 EnterTappedEffect — Effect — Auntie's Hovel — TapUntapEffect, PermanentsEnterTapped — TapUntapEffect taps a permanent already on the battlefield and emits the "becomes tapped" event, while this is an as-enters modification of the entry event that emits nothing and yields to an EntersUntapped replacement (CR 616.1); PermanentsEnterTapped is a battlefield-sourced replacement over other entering permanents, not a rider an OnEnterRun can run conditionally
 EntersOnlyIfPaid — ReplacementEffect — Mox Diamond — OnEnterRun, EntersTapped — OnEnterRun runs after the permanent is already on the battlefield, so "if you don't, put it into its owner's graveyard" could only make it leave again, firing enters and leaves triggers that never happen; EntersTapped's payLifeCost pays to change how it enters (untapped), never whether, and only in life
 EntityNumericProperty.AbilityResolutionsThisTurn — EntityNumericProperty — Bronze Cudgels — DamageDealtThisTurn, EnlistmentsThisCombat — reads the per-permanent ability-resolution tally, not damage or enlist history; replaces the SourceAbilityResolvedNTimesThisTurn condition (now Compare EQ over this amount), so the surface is net zero

@@ -282,11 +282,11 @@ internal class AttackPhaseManager(
         // Non-mana attack costs: "can't attack unless you sacrifice two Islands" (Leviathan). The
         // clause is a *restriction* checked at CR 508.1c, and the cost it names is determined and
         // paid at CR 508.1h–j — not an optional "as it attacks" cost (CR 508.1g), which the player
-        // may always decline. Affordability was already enforced by CantAttackUnlessSacrificeRule,
+        // may always decline. Affordability was already enforced by CantAttackUnlessPermanentCostRule,
         // so reaching here means the cost *can* be paid; what remains is choosing what to sacrifice.
-        val sacrificeCosts = AttackSacrificeCosts.requirementsFor(paidState, attackers.keys, cardRegistry)
+        val sacrificeCosts = AttackPermanentCosts.requirementsFor(paidState, attackers.keys, cardRegistry)
         if (sacrificeCosts.isNotEmpty()) {
-            return pauseForAttackSacrifice(paidState, attackingPlayer, attackers, sacrificeCosts, bands, paidEvents)
+            return pauseForAttackPermanentCost(paidState, attackingPlayer, attackers, sacrificeCosts, bands, paidEvents)
         }
 
         return commitAttackDeclaration(paidState, attackingPlayer, attackers, paidState.projectedState, taxEvents = paidEvents, bands = bands)
@@ -345,7 +345,7 @@ internal class AttackPhaseManager(
 
     /**
      * Whether [attackerId] carries [ExertAsItAttacks]. Read off the card definition like
-     * [AttackSacrificeCosts.requirementFor]; a face-down creature (CR 708.2) or one that has lost
+     * [AttackPermanentCosts.requirementFor]; a face-down creature (CR 708.2) or one that has lost
      * all abilities has no such option. A once-per-turn exert
      * ([ExertAsItAttacks.onlyIfNotExertedThisTurn]) isn't offered once the creature has been
      * exerted this turn — in an earlier combat phase or by an exert cost.
@@ -578,27 +578,28 @@ internal class AttackPhaseManager(
      * Leviathans owe two Islands each, not four between them), and a combined prompt could not say
      * which creature a given Island was paying for.
      */
-    private fun pauseForAttackSacrifice(
+    private fun pauseForAttackPermanentCost(
         state: GameState,
         attackingPlayer: EntityId,
         attackers: Map<EntityId, EntityId>,
-        costs: List<Pair<EntityId, com.wingedsheep.sdk.scripting.CantAttackUnlessSacrifice>>,
+        costs: List<Pair<EntityId, com.wingedsheep.sdk.scripting.CantAttackUnlessPermanentCost>>,
         bands: List<Set<EntityId>>,
         carryEvents: List<GameEvent>,
     ): ExecutionResult {
         val (payingAttacker, requirement) = costs.first()
-        val eligible = AttackSacrificeCosts.eligiblePermanents(
+        val eligible = AttackPermanentCosts.eligiblePermanents(
             state, attackingPlayer, payingAttacker, requirement,
             predicateEvaluator = predicateEvaluator
         )
         val attackerName = state.getEntity(payingAttacker)?.get<CardComponent>()?.name ?: "your attacker"
-        val continuation = com.wingedsheep.engine.core.AttackSacrificeSelectionContinuation(
+        val continuation = com.wingedsheep.engine.core.AttackPermanentCostSelectionContinuation(
             attackingPlayer = attackingPlayer,
             attackers = attackers,
             payingAttacker = payingAttacker,
             count = requirement.count,
+            action = requirement.action,
             remaining = costs.drop(1).map { (id, req) ->
-                com.wingedsheep.engine.core.PendingAttackSacrifice(id, req.count)
+                com.wingedsheep.engine.core.PendingAttackPermanentCost(id, req.count)
             },
             bands = bands,
         )
@@ -607,7 +608,7 @@ internal class AttackPhaseManager(
                 com.wingedsheep.engine.core.SelectCardsDecision(
                     id = decisionId,
                     playerId = attackingPlayer,
-                    prompt = "Sacrifice ${requirement.count} ${requirement.sacrificeFilter.description} to attack with $attackerName",
+                    prompt = AttackPermanentCosts.prompt(requirement, requirement.count, attackerName),
                     context = com.wingedsheep.engine.core.DecisionContext(
                         sourceId = payingAttacker,
                         sourceName = attackerName,
@@ -625,33 +626,34 @@ internal class AttackPhaseManager(
 
     /**
      * Ask for the next queued attack sacrifice after a previous one was paid. Same decision as
-     * [pauseForAttackSacrifice], but carrying the earlier payment's events forward so the
+     * [pauseForAttackPermanentCost], but carrying the earlier payment's events forward so the
      * sacrifices are all reported even though only the last resume commits the declaration.
      */
-    internal fun pauseForNextAttackSacrifice(
+    internal fun pauseForNextAttackPermanentCost(
         state: GameState,
         attackingPlayer: EntityId,
         attackers: Map<EntityId, EntityId>,
         payingAttacker: EntityId,
         count: Int,
-        remaining: List<com.wingedsheep.engine.core.PendingAttackSacrifice>,
+        remaining: List<com.wingedsheep.engine.core.PendingAttackPermanentCost>,
         bands: List<Set<EntityId>>,
         carryEvents: List<com.wingedsheep.engine.core.GameEvent>,
     ): ExecutionResult {
-        val requirement = AttackSacrificeCosts.requirementFor(state, payingAttacker, cardRegistry)
+        val requirement = AttackPermanentCosts.requirementFor(state, payingAttacker, cardRegistry)
             ?: return commitAttackDeclaration(
                 state, attackingPlayer, attackers, state.projectedState, carryEvents, bands
             )
-        val eligible = AttackSacrificeCosts.eligiblePermanents(
+        val eligible = AttackPermanentCosts.eligiblePermanents(
             state, attackingPlayer, payingAttacker, requirement,
             predicateEvaluator = predicateEvaluator
         )
         val attackerName = state.getEntity(payingAttacker)?.get<CardComponent>()?.name ?: "your attacker"
-        val continuation = com.wingedsheep.engine.core.AttackSacrificeSelectionContinuation(
+        val continuation = com.wingedsheep.engine.core.AttackPermanentCostSelectionContinuation(
             attackingPlayer = attackingPlayer,
             attackers = attackers,
             payingAttacker = payingAttacker,
             count = count,
+            action = requirement.action,
             remaining = remaining,
             bands = bands,
         )
@@ -660,7 +662,7 @@ internal class AttackPhaseManager(
                 com.wingedsheep.engine.core.SelectCardsDecision(
                     id = decisionId,
                     playerId = attackingPlayer,
-                    prompt = "Sacrifice $count ${requirement.sacrificeFilter.description} to attack with $attackerName",
+                    prompt = AttackPermanentCosts.prompt(requirement, count, attackerName),
                     context = com.wingedsheep.engine.core.DecisionContext(
                         sourceId = payingAttacker,
                         sourceName = attackerName,
@@ -1249,7 +1251,7 @@ internal class AttackPhaseManager(
         goadRules: GoadRules,
         coAttackers: List<CombatStaticScan.Entry<CantAttackUnlessCoAttacker>>,
     ): Boolean {
-        if (AttackSacrificeCosts.requirementFor(state, attackerId, cardRegistry) != null) return false
+        if (AttackPermanentCosts.requirementFor(state, attackerId, cardRegistry) != null) return false
         if (coAttackerRestrictions(state, attackerId, coAttackers).any {
                 !coAttackerAvailable(state, projected, attackerId, it, validAttackers)
             }) return false
@@ -1465,7 +1467,7 @@ internal class AttackPhaseManager(
         val projected = state.projectedState
         val defenders = CombatDefenders.attackTargets(state, projected, attackingPlayer)
         return candidates.filterTo(mutableSetOf()) { attackerId ->
-            if (AttackSacrificeCosts.requirementFor(state, attackerId, cardRegistry) != null) return@filterTo true
+            if (AttackPermanentCosts.requirementFor(state, attackerId, cardRegistry) != null) return@filterTo true
             val ctx = AttackCheckContext(state, projected, attackerId, attackingPlayer, cardRegistry)
             val legal = defenders.filter { defenderId -> attackDefenderRules.all { it.check(ctx, defenderId) == null } }
             legal.isNotEmpty() && legal.none { calculateTotalAttackTax(state, mapOf(attackerId to it), projected) == 0 }
@@ -1485,7 +1487,7 @@ internal class AttackPhaseManager(
         attackerId: EntityId,
         defenderId: EntityId,
     ): Boolean {
-        if (AttackSacrificeCosts.requirementFor(state, attackerId, cardRegistry) != null) return false
+        if (AttackPermanentCosts.requirementFor(state, attackerId, cardRegistry) != null) return false
         val ctx = AttackCheckContext(state, projected, attackerId, attackingPlayer, cardRegistry)
         return attackDefenderRules.all { it.check(ctx, defenderId) == null } &&
             calculateTotalAttackTax(state, mapOf(attackerId to defenderId), projected) == 0

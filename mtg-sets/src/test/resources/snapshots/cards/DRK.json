@@ -3378,16 +3378,8 @@
         ],
         "staticAbilities": [
             {
-                "type": "CantAttackUnlessSacrifice",
-                "sacrificeFilter": {
-                    "cardPredicates": [
-                        "IsLand",
-                        {
-                            "type": "HasSubtype",
-                            "subtype": "Island"
-                        }
-                    ]
-                },
+                "type": "CantAttackUnlessPermanentCost",
+                "filter": "land Island",
                 "count": 2
             }
         ],

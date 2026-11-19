@@ -8,7 +8,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.CantAttackUnlessSacrifice
+import com.wingedsheep.sdk.scripting.CantAttackUnlessPermanentCost
 import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -31,7 +31,7 @@ import com.wingedsheep.sdk.core.Step
  *
  * The last line is not: it is a **cost** paid as attackers are declared — the clause is a
  * restriction (CR 508.1c) and its cost is determined and paid at CR 508.1h–j — and the engine only
- * had generic-mana attack taxes. `CantAttackUnlessSacrifice` adds the non-mana form,
+ * had generic-mana attack taxes. `CantAttackUnlessPermanentCost` adds the non-mana form,
  * split across two places that share one helper so they cannot disagree — the declaration is
  * illegal up front when the controller can't pay, and the declare-attackers step then pauses to
  * ask *which* Islands, in the same window the mana tax is paid.
@@ -57,8 +57,8 @@ val Leviathan = card("Leviathan") {
     replacementEffect(EntersTapped())
 
     staticAbility {
-        ability = CantAttackUnlessSacrifice(
-            sacrificeFilter = islands,
+        ability = CantAttackUnlessPermanentCost(
+            filter = islands,
             count = 2,
         )
     }
