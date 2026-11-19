@@ -3456,15 +3456,6 @@ object CardIntentAnalyzer {
 
     private fun targetsAGroup(target: EffectTarget): Boolean = target is EffectTarget.GroupRef
 
-    /**
-     * Whether an effect aimed at [target] lands on a permanent that is not the card itself — the
-     * precondition for calling anything "removal".
-     *
-     * Two exclusions. A **player** target is a clock, not an answer. And **[EffectTarget.Self]** is
-     * the card sacrificing or exiling itself — so "put this into your graveyard" is a sacrifice
-     * clause, not removal, while Wrath of God's per-creature "destroy it"
-     * ([EffectTarget.IterationEntity]) is.
-     */
     /** Whether a granted ability's payoff puts a growing stat counter (+1/+1, +1/+0 …) on its holder. */
     private fun growsItsHolder(effect: Effect): Boolean = EffectWalker.payoffLeaves(effect).any { leaf ->
         val (type, target) = when (leaf) {
@@ -3476,6 +3467,15 @@ object CardIntentAnalyzer {
         target == EffectTarget.Self && delta.first >= 0 && delta.second >= 0 && (delta.first > 0 || delta.second > 0)
     }
 
+    /**
+     * Whether an effect aimed at [target] lands on a permanent that is not the card itself — the
+     * precondition for calling anything "removal".
+     *
+     * Two exclusions. A **player** target is a clock, not an answer. And **[EffectTarget.Self]** is
+     * the card sacrificing or exiling itself — so "put this into your graveyard" is a sacrifice
+     * clause, not removal, while Wrath of God's per-creature "destroy it"
+     * ([EffectTarget.IterationEntity]) is.
+     */
     private fun hitsAnotherPermanent(target: EffectTarget): Boolean = when (target) {
         // "… deals 2 damage to enchanted artifact's controller" (Gremlin Infestation): a player.
         is EffectTarget.PlayerRef, is EffectTarget.ControllerOfPipelineTarget, EffectTarget.Controller, EffectTarget.TargetController,
