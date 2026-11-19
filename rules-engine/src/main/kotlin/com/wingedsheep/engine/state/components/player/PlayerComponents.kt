@@ -2235,6 +2235,22 @@ data class PermanentsEnteredUnderControlThisTurnComponent(
 }
 
 /**
+ * The previous turn's [PermanentsEnteredUnderControlThisTurnComponent] entries, rolled over by
+ * [com.wingedsheep.engine.core.CleanupPhaseManager] as it clears the this-turn log. "Last turn" is
+ * the immediately preceding turn, whoever's it was (Ephara, God of the Polis's upkeep trigger also
+ * fires on opponents' upkeeps). [turnNumber] is the turn the entries belong to: a reader only
+ * trusts the record while `state.turnNumber == turnNumber + 1`, so a turn whose log was empty —
+ * nothing is rolled over then — never leaves an older turn's record looking current. A repeated
+ * cleanup step (CR 514.3a) appends to the same turn's record rather than wiping it.
+ * Backs `DynamicAmount.CardTypeEnteredUnderControlLastTurn`.
+ */
+@Serializable
+data class PermanentsEnteredUnderControlLastTurnComponent(
+    val turnNumber: Int,
+    val entries: List<EnteredPermanentRecord> = emptyList()
+) : Component
+
+/**
  * How many nontoken permanents this player **put** onto the battlefield during the current turn —
  * the actor, not the controller the permanent entered under (Arboria's second ruling). Counted by
  * `PermanentEntryTracker.record`, which knows who put each permanent there: the caster of a

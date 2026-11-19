@@ -19633,6 +19633,16 @@ threshold — Malcator, Purity Overseer's "if three or more artifacts entered th
 control this turn" is `CompareAmounts(cardTypeEnteredUnderControlThisTurn(ARTIFACT), GTE, 3)` as an
 `interveningIf`. For "one or more" prefer `Conditions.PermanentTypeEnteredBattlefieldThisTurn`.
 
+`CardTypeEnteredUnderControlLastTurn(player, cardType, excludeSource = false)` /
+`DynamicAmounts.cardTypeEnteredUnderControlLastTurn(cardType, player = Player.You, excludeSource = false)` —
+the same count for **last turn**: the immediately preceding turn, whoever's it was. Cleanup rolls each
+player's entry log into `PermanentsEnteredUnderControlLastTurnComponent` (tagged with its turn number, so
+a turn with no entries never leaves an older record looking current). The type is judged as the
+permanent entered — a bestow Aura that becomes a creature later never counts — and what happened to it
+since doesn't matter. `excludeSource = true` drops the source's own current object ("another"). Ephara,
+God of the Polis: `Triggers.anyPlayer.beginningOf(Step.UPKEEP)` with `interveningIf = Conditions.CompareAmounts(cardTypeEnteredUnderControlLastTurn(CREATURE,
+excludeSource = true), GTE, 1)`.
+
 `CreaturesWithSubtypeDiedThisTurn(subtype, player = Player.Each)` /
 `DynamicAmounts.creaturesWithSubtypeDiedThisTurn(subtype, player?)` — "the number of [subtype]s that
 died this turn" (the CHK Zubera cycle: "for each Zubera that died this turn"). Game-wide by default;

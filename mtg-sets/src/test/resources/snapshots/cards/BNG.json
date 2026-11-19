@@ -1351,6 +1351,112 @@
     ]
 }
 
+// Ephara, God of the Polis
+{
+    "name": "Ephara, God of the Polis",
+    "manaCost": "{2}{W}{U}",
+    "typeLine": "Legendary Enchantment Creature — God",
+    "oracleText": "Indestructible\nAs long as your devotion to white and blue is less than seven, Ephara isn't a creature.\nAt the beginning of each upkeep, if you had another creature enter the battlefield under your control last turn, draw a card.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "keywords": [
+        "INDESTRUCTIBLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ephara, God of the Polis:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "CardTypeEnteredUnderControlLastTurn",
+                        "player": "You",
+                        "cardType": "CREATURE",
+                        "excludeSource": true
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "At the beginning of each upkeep, if you had another creature enter the battlefield under your control last turn, draw a card."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "RemoveCardType",
+                    "cardType": "CREATURE"
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "DevotionTo",
+                        "colors": [
+                            "WHITE",
+                            "BLUE"
+                        ]
+                    },
+                    "operator": "LT",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "MYTHIC",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/6832e495-7ee9-43e0-94ea-03c88344080e.jpg?1783939528",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "Ephara's last ability checks at the beginning of each upkeep whether another creature entered the battlefield under your control last turn. If one did, it will trigger; otherwise, it won't. The ability will trigger only once no matter how many creatures entered the battlefield under your control that turn, as long as at least one did."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "The last ability will trigger regardless of what has happened to the creature that entered the battlefield on the previous turn. It doesn't matter whether it's still under your control or whether it's still on the battlefield."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If a noncreature permanent you control (such as an Aura with bestow) becomes a creature, it will not cause Ephara's last ability to trigger the following turn. This is true even if that noncreature permanent became a creature the same turn it entered the battlefield."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If a God stops being a creature, it loses the type creature and the creature type God. It continues to be a legendary enchantment."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "The type-changing ability that can make a God not be a creature functions only on the battlefield. It's always a creature card in other zones, regardless of your devotion to its color. It's always a creature spell while it's on the stack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Epiphany Storm
 {
     "name": "Epiphany Storm",

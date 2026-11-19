@@ -1,5 +1,6 @@
 package com.wingedsheep.ai.engine.knowledge
 
+import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.KeywordAbility
@@ -17,6 +18,7 @@ import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.conditions.Compare
+import com.wingedsheep.sdk.scripting.conditions.PermanentTypeEnteredBattlefieldThisTurn
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.conditions.PermanentLeftBattlefieldThisTurn
@@ -219,6 +221,10 @@ object SynergyAxes {
                 // "If you've cast a noncreature spell this turn" as the gate pays off what the spells
                 // axis feeds, like a "whenever you cast a noncreature spell" trigger does.
                 if (readsSpellsCastThisTurn(ability.interveningIf)) add(SynergyAxis.SPELLS)
+                // "If you had another creature enter the battlefield under your control last turn"
+                // (Ephara, God of the Polis), "if a creature entered under your control this turn": the
+                // entry count as the gate pays off what the creatures-enter axis feeds.
+                if (readsCreaturesEntered(ability.interveningIf)) add(SynergyAxis.CREATURES_ENTER)
             }
             // "Activate only if you've cast a noncreature spell this turn" (Tapestry of the Ages): with
             // no instant or sorcery cast first the ability is dead, so it cashes in the deck's spells.
@@ -323,7 +329,24 @@ object SynergyAxes {
     private fun readsSpellsCastThisTurn(condition: Condition?): Boolean =
         condition is PlayerCastSpellsThisTurn && condition.player == Player.You && rewardsSpells(condition.filter)
 
-    private fun spellsCastGate(restriction: ActivationRestriction): Boolean = when (restriction) {
+    /**
+     * Whether [condition] asks that one or more creatures entered the battlefield under our control
+     * this turn or last turn — the entry-log amounts compared upward, or the card-type-entered check.
+     */
+    private fun readsCreaturesEntered(condition: Condition?): Boolean = when (condition) {
+        is Compare -> (condition.operator == ComparisonOperator.GTE || condition.operator == ComparisonOperator.GT) &&
+            when (val left = condition.left) {
+                is DynamicAmount.CardTypeEnteredUnderControlThisTurn ->
+                    left.player == Player.You && left.cardType == CardType.CREATURE
+                is DynamicAmount.CardTypeEnteredUnderControlLastTurn ->
+                    left.player == Player.You && left.cardType == CardType.CREATURE
+                else -> false
+            }
+        is PermanentTypeEnteredBattlefieldThisTurn -> condition.player == Player.You && condition.cardType == CardType.CREATURE
+        else -> false
+    }
+
+        private fun spellsCastGate(restriction: ActivationRestriction): Boolean = when (restriction) {
         is ActivationRestriction.OnlyIfCondition -> readsSpellsCastThisTurn(restriction.condition)
         is ActivationRestriction.All -> restriction.restrictions.any(::spellsCastGate)
         else -> false

@@ -1,0 +1,1 @@
+- #<pr> The AI reads an "if a creature entered the battlefield under your control this/last turn" trigger gate (Ephara, God of the Polis) as a creatures-enter payoff when drafting and building.

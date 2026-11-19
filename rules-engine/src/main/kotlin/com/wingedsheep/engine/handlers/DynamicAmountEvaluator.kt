@@ -246,6 +246,7 @@ class DynamicAmountEvaluator(
         is DynamicAmount.StoredCardManaValue,
         is DynamicAmount.SubtypeEnteredUnderControlThisTurn,
         is DynamicAmount.CardTypeEnteredUnderControlThisTurn,
+        is DynamicAmount.CardTypeEnteredUnderControlLastTurn,
         is DynamicAmount.CreaturesWithSubtypeDiedThisTurn,
         DynamicAmount.TotalManaSpent,
         DynamicAmount.TotalPowerSacrificedThisWay,
@@ -1245,6 +1246,24 @@ class DynamicAmountEvaluator(
                         ?.get<com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlThisTurnComponent>()
                         ?.countOfType(amount.cardType) ?: 0
                 }
+
+            is DynamicAmount.CardTypeEnteredUnderControlLastTurn -> {
+                val sourceId = if (amount.excludeSource) context.sourceId else null
+                val sourceTimestamp = sourceId?.let {
+                    state.getEntity(it)?.get<BattlefieldEntryTimestampComponent>()?.timestamp
+                }
+                resolveUnifiedPlayerIds(state, amount.player, context, projectedState).sumOf { playerId ->
+                    val record = state.getEntity(playerId)
+                        ?.get<com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlLastTurnComponent>()
+                        ?.takeIf { it.turnNumber == state.turnNumber - 1 }
+                    record?.entries.orEmpty().count { rec ->
+                        amount.cardType in rec.cardTypes && !(
+                            rec.entityId == sourceId &&
+                                (sourceTimestamp == null || rec.entryTimestamp == null || rec.entryTimestamp == sourceTimestamp)
+                            )
+                    }
+                }
+            }
 
             is DynamicAmount.SubtypeEnteredUnderControlThisTurn -> {
                 val playerIds = resolveUnifiedPlayerIds(state, amount.player, context, projectedState)

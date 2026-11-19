@@ -452,6 +452,7 @@ Duration.WhileYouControlSourceAndSourceTapped — Duration
 DynamicAmount.Add — DynamicAmount
 DynamicAmount.AggregateBattlefield — DynamicAmount
 DynamicAmount.AggregateZone — DynamicAmount
+DynamicAmount.CardTypeEnteredUnderControlLastTurn — DynamicAmount
 DynamicAmount.CardTypeEnteredUnderControlThisTurn — DynamicAmount
 DynamicAmount.CardsCycledThisGame — DynamicAmount
 DynamicAmount.CastChoice — DynamicAmount
