@@ -1,1 +1,1 @@
-- #TBD The AI reads an Aura or Equipment that grants a scry or surveil ability ("{T}: Scry 1, then draw a card") or a target-player mill as the card draw, card selection or mill engine it gives, as it does the same ability printed on a creature.
+- #4753 The AI reads an Aura or Equipment that grants a scry or surveil ability ("{T}: Scry 1, then draw a card") or a target-player mill as the card draw, card selection or mill engine it gives, as it does the same ability printed on a creature.
