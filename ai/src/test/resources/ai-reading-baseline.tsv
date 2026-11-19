@@ -13782,6 +13782,7 @@ Polukranos, Unchained
 Polygraph Orb
 Polymorph
 Polymorphist's Jest
+Polymorphous Rush
 Polyraptor
 Pompous Battlemage
 Pompous Gadabout
@@ -14099,6 +14100,7 @@ Pugnacious Pugilist
 Pull Through the Weft
 Pull Under
 Pull from Tomorrow
+Pull from the Deep
 Pull from the Grave
 Pulsar Squadron Ace
 Pulse Tracker
@@ -14274,7 +14276,7 @@ Rabaroo Troop
 Rabbit Battery	intent: UnattachEquipmentEffect
 Rabbit Response
 Rabble Rousing	intent: Pipeline(TopOfLibrary→exile|library)
-Rabid Attack	timing: ForEach>ModifyStatsEffect
+Rabid Attack
 Rabid Bite
 Rabid Bloodsucker
 Rabid Gnaw
@@ -14548,6 +14550,7 @@ Ravenous Giant
 Ravenous Gigamole
 Ravenous Harpy
 Ravenous Intruder
+Ravenous Leucrocota
 Ravenous Lindwurm
 Ravenous Necrotitan
 Ravenous Rats
@@ -15033,6 +15036,7 @@ Ribskiff
 Rick Jones, Destined Sidekick
 Rictus Robber
 Riddle Gate Gargoyle
+Riddle of Lightning
 Riddleform
 Riddlemaster Sphinx
 Riddles in the Dark
@@ -15164,6 +15168,7 @@ Ritual of Hope
 Ritual of Rejuvenation
 Ritual of Restoration
 Ritual of Soot
+Ritual of the Returned
 Rivaz of the Claw
 Riven Turnbull
 Rivendell
@@ -15551,6 +15556,7 @@ Sage Owl
 Sage of Ancient Lore
 Sage of Days
 Sage of Epityr
+Sage of Hours
 Sage of Lat-Nam
 Sage of Mysteries
 Sage of Shaila's Claim
@@ -15902,6 +15908,7 @@ Scour from Existence
 Scour the Laboratory
 Scoured Barrens
 Scourge Wolf
+Scourge of Fleets
 Scourge of Valkas
 Scourge of the Skyclaves
 Scourge of the Throne	intent: AddCombatPhaseEffect; intent: ForEach>TapUntapEffect
@@ -16271,6 +16278,7 @@ Setessan Champion
 Setessan Griffin
 Setessan Petitioner
 Setessan Skirmisher
+Setessan Tactics
 Setessan Training
 Sethron, Hurloon General
 Settle Beyond Reality
@@ -17461,6 +17469,7 @@ Spire Winder
 Spire of Industry
 Spirebluff Canal
 Spireside Infiltrator
+Spirespine
 Spirit Bonds
 Spirit Link
 Spirit Mascot
@@ -17481,8 +17490,10 @@ Spiritual Guardian
 Spiritual Sanctuary
 Spit Flame
 Spite // Malice
+Spite of Mogis
 Spitebellows
 Spiteful Banditry
+Spiteful Blow
 Spiteful Bully
 Spiteful Hexmage
 Spiteful Motives
@@ -17654,6 +17665,7 @@ Star Pupil
 Star of Extinction
 Star-Crowned Stag
 Starbreach Whale
+Starfall
 Starfall Invocation
 Starfield Mystic
 Starfield Shepherd
@@ -17898,6 +17910,7 @@ Stormbeacon Blade
 Stormbind
 Stormcarved Coast
 Stormcatch Mentor
+Stormchaser Chimera
 Stormchaser Drake
 Stormchaser Mage
 Stormchaser's Talent
@@ -18274,6 +18287,7 @@ Swarm Surge
 Swarm of Bloodflies
 Swarm of Rats
 Swarm, Being of Bees
+Swarmborn Giant
 Swarming Goblins
 Swarming of Moria
 Swarmyard
@@ -19754,6 +19768,7 @@ Triplicate Spirits
 Triskaidekaphile
 Triskaidekaphobia
 Triskelion
+Triton Cavalry
 Triton Shorestalker
 Triton Shorethief
 Triton Wavebreaker
