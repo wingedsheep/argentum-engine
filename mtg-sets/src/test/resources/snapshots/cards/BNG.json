@@ -3310,7 +3310,10 @@
                 "binding": "ANY",
                 "effect": {
                     "type": "Gated",
-                    "gate": "Gate.MayDecide",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Exchange control of Perplexing Chimera and that spell? If you do, you may choose new targets for it."
+                    },
                     "then": {
                         "type": "Gated",
                         "gate": {

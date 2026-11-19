@@ -21,8 +21,8 @@ import kotlin.reflect.KClass
 /**
  * Executor for ExchangeControlEffect.
  *
- * Exchanges control of two objects (CR 701.12b) — each a permanent on the battlefield or a spell on
- * the stack. A permanent changes hands through a Layer.CONTROL floating effect; a spell through a
+ * Exchanges control of two objects — each a permanent on the battlefield or a spell on the stack —
+ * applying CR 701.12b's permanent rule to a spell side as well. A permanent changes hands through a Layer.CONTROL floating effect; a spell through a
  * rewrite of its stack object's controller.
  */
 class ExchangeControlExecutor : EffectExecutor<ExchangeControlEffect> {
@@ -75,7 +75,7 @@ class ExchangeControlExecutor : EffectExecutor<ExchangeControlEffect> {
             ?: container2.get<ControllerComponent>()?.playerId
             ?: return EffectResult.error(state, "Second target has no controller")
 
-        // If both creatures already have the same controller, no-op
+        // If both sides already have the same controller, no-op (CR 701.12b)
         if (controller1 == controller2) return EffectResult.success(state)
 
         // "Other players can't gain control of it" (Guardian Beast): an exchange would hand each

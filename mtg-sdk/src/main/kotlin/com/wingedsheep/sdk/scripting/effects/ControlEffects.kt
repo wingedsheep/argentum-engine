@@ -177,8 +177,8 @@ data class GiveControlToTargetPlayerEffect(
 }
 
 /**
- * Exchange control of two objects (CR 701.12b) — each a permanent on the battlefield or a spell on
- * the stack.
+ * Exchange control of two objects — each a permanent on the battlefield or a spell on the stack
+ * (CR 701.12b's permanent rule, applied to a spell side as well).
  * "You may exchange control of target creature you control and target creature an opponent controls."
  * "You may exchange control of this creature and that spell." (Perplexing Chimera)
  *

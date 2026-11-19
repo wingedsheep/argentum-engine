@@ -3,11 +3,14 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.engine.core.PaymentStrategy
+import com.wingedsheep.engine.core.SelectCardsDecision
+import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.bng.cards.PerplexingChimera
+import com.wingedsheep.mtg.sets.definitions.isd.cards.RangersGuile
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
@@ -16,7 +19,10 @@ import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * Perplexing Chimera (BNG #48) — "Whenever an opponent casts a spell, you may exchange control of
@@ -28,7 +34,7 @@ class PerplexingChimeraScenarioTest : FunSpec({
 
     fun setup(startingPlayer: Int = 0): Game {
         val d = GameTestDriver()
-        d.registerCards(TestCards.all + listOf(PerplexingChimera))
+        d.registerCards(TestCards.all + listOf(PerplexingChimera, RangersGuile))
         d.initMirrorMatch(deck = Deck.of("Island" to 40), startingPlayer = startingPlayer)
         d.passPriorityUntil(Step.PRECOMBAT_MAIN)
         val p1 = d.player1
@@ -101,6 +107,28 @@ class PerplexingChimeraScenarioTest : FunSpec({
         g.controllerOf(g.chimera) shouldBe g.p2
     }
 
+    test("new targets are judged from the new controller: \"creature you control\" now means P1's") {
+        val g = setup()
+        val d = g.d
+        val lions = d.putCreatureOnBattlefield(g.p2, "Savannah Lions")
+        val bears = d.putCreatureOnBattlefield(g.p1, "Grizzly Bears")
+        val lionsPower = d.state.projectedState.getPower(lions)
+        g.opponentCasts("Ranger's Guile", 1, Color.GREEN, targets = listOf(ChosenTarget.Permanent(lions)))
+
+        d.bothPass()
+        d.submitYesNo(g.p1, true).error.shouldBeNull()
+
+        val retarget = d.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>()
+        withClue("P1's creature is a legal new target; the Chimera, now P2's, is not") {
+            retarget.options shouldContain bears
+            retarget.options shouldNotContain g.chimera
+        }
+        d.submitCardSelection(g.p1, listOf(bears)).error.shouldBeNull()
+        d.bothPass() // the Guile resolves under P1
+        d.state.projectedState.getPower(bears) shouldBe 3
+        d.state.projectedState.getPower(lions) shouldBe lionsPower
+    }
+
     test("the Chimera gone before its trigger resolves: no exchange and no retarget") {
         val g = setup()
         val d = g.d
@@ -117,7 +145,10 @@ class PerplexingChimeraScenarioTest : FunSpec({
         (g.chimera in d.getGraveyard(g.p1)) shouldBe true
 
         d.bothPass() // the trigger resolves
-        d.pendingDecision?.let { d.submitYesNo(g.p1, true).error.shouldBeNull() }
+        withClue("the \"may\" is still asked; answering yes finds nothing to exchange") {
+            d.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
+        }
+        d.submitYesNo(g.p1, true).error.shouldBeNull()
         withClue("CR 701.12a: half an exchange is no exchange, so the spell stays P2's and is not retargeted") {
             d.pendingDecision.shouldBeNull()
             d.state.getEntity(bolt).shouldNotBeNull().get<SpellOnStackComponent>()!!.casterId shouldBe g.p2

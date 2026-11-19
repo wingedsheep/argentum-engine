@@ -722,12 +722,10 @@ object LimitedCardRater {
                 minOf(EffectWalker.fold(effect.then, this), EffectWalker.fold(effect.otherwise!!, this))
                     .coerceAtLeast(0.0)
             } else if (effect is GatedEffect && effect.decisionMaker == null &&
-                effect.gate is com.wingedsheep.sdk.scripting.effects.Gate.DoAction
+                effect.gate is Gate.DoAction
             ) {
-                // "[action]. If you do, [then]" (Effects.IfYouDo) — Perplexing Chimera's "exchange
-                // control of this creature and that spell. If you do, you may choose new targets",
-                // Harvester Troll's sacrificed land: the payoff is the `then` (and an `otherwise`),
-                // the action the price — the reading [EffectWalker.payoffLeaves] gives the intent
+                // "[action]. If you do, [then]" (Effects.IfYouDo) — Harvester Troll's sacrificed
+                // land: the payoff is the `then` (and an `otherwise`), the action usually the price — the reading [EffectWalker.payoffLeaves] gives the intent
                 // reader. Whether the action happens isn't certain, so both branches are discounted
                 // like a conditional. Unread, every such ability scored nothing.
                 conditional(
