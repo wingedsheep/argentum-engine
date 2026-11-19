@@ -132,6 +132,10 @@ sealed interface KeywordAbility {
             require(scope !is ProtectionScope.ChosenCardName) { "Protection from the chosen card name is a granted static" }
             // "Each mana value other than the chosen number" (Haktos) hangs off a choice too.
             require(scope !is ProtectionScope.ManaValueOtherThan) { "Protection from each mana value other than N is a granted static" }
+            // "From creatures your opponents control" (Crypsis) is granted, never printed.
+            require(scope !is ProtectionScope.CardType || scope.controller == null) {
+                "Protection from a card type scoped by controller is a granted quality"
+            }
         }
 
         override val keyword: Keyword? = when (scope) {

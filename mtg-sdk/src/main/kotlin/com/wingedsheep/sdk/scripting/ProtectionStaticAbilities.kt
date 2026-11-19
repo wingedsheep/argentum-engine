@@ -237,7 +237,9 @@ data class GrantProtectionFromToGroup(
             ProtectionScope.Spells, ProtectionScope.PermanentsCastThisTurn, ProtectionScope.RingBearers,
             ProtectionScope.ActivatedAbilities, ProtectionScope.TriggeredAbilities,
             is ProtectionScope.ManaValueParity, is ProtectionScope.ManaValueOtherThan -> true
-            is ProtectionScope.Color, is ProtectionScope.CardType,
+            // A plain card type keeps its older spelling; one scoped to opponents has none.
+            is ProtectionScope.CardType -> scope.controller != null
+            is ProtectionScope.Color,
             is ProtectionScope.NonColor, ProtectionScope.Monocolored, ProtectionScope.Everything,
             is ProtectionScope.ChosenCardName -> false
         }

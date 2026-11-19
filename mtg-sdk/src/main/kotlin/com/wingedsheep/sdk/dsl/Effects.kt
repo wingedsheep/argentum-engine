@@ -4311,12 +4311,20 @@ object Effects {
      * printed `KeywordAbility.Protection(ProtectionScope.CardType(...))` static and the
      * player-chosen [GrantProtectionFromChosenCardType] both produce, so targeting, blocking,
      * and combat damage all read it from one place.
+     *
+     * [controller] = `ControllerPredicate.ControlledByOpponent` narrows it to "protection from
+     * creatures your opponents control" (Crypsis) — see [com.wingedsheep.sdk.scripting.ProtectionScope.CardType].
      */
     fun GrantProtectionFromCardType(
         cardType: CardType,
         target: EffectTarget,
-        duration: Duration = Duration.EndOfTurn
-    ): Effect = GrantKeywordEffect("PROTECTION_FROM_CARDTYPE_${cardType.name}", target, duration)
+        duration: Duration = Duration.EndOfTurn,
+        controller: com.wingedsheep.sdk.scripting.predicates.ControllerPredicate? = null
+    ): Effect = GrantKeywordEffect(
+        com.wingedsheep.sdk.scripting.ProtectionScope.CardType(cardType.name, controller).protectionKeyword(),
+        target,
+        duration
+    )
 
     /**
      * Choose a color, then run [then] with the chosen color exposed via the effect

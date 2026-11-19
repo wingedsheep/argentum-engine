@@ -53,10 +53,45 @@ sealed interface ProtectionScope {
     @Serializable
     data object Monocolored : ProtectionScope
 
-    /** Protection from a card type — "from creatures". */
+    /**
+     * Protection from a card type — "from creatures". [controller] narrows the quality to objects
+     * of that type controlled by a particular player, relative to the protected object (or player):
+     * [com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByOpponent] is "from
+     * creatures your opponents control" (Crypsis), which a creature its own controller controls
+     * doesn't match. Null matches the card type whoever controls it. Only
+     * `ControlledByOpponent` is supported; the controller is read when protection is checked, so a
+     * creature that changes hands changes whether it matches.
+     *
+     * An axis here rather than a sibling scope: the quality is still a card type, only scoped by
+     * controller — the same way [Subtype] and [Supertype] narrow by card type. Granted protection
+     * only (one-shot grants, `GrantProtectionFromToGroup`, player protection); a printed
+     * [KeywordAbility.Protection] rejects it. On hexproof it is redundant (hexproof already ignores
+     * its controller's own sources, CR 702.11d) and reads as the plain card type.
+     */
     @SerialName("ProtectionScope.CardType")
     @Serializable
-    data class CardType(val cardType: String) : ProtectionScope
+    data class CardType(
+        val cardType: String,
+        val controller: com.wingedsheep.sdk.scripting.predicates.ControllerPredicate? = null
+    ) : ProtectionScope {
+        init {
+            require(controller == null ||
+                controller == com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByOpponent
+            ) { "ProtectionScope.CardType supports only ControlledByOpponent as its controller, not $controller" }
+        }
+
+        /**
+         * The projected keyword this protection is enforced through: `PROTECTION_FROM_CARDTYPE_<TYPE>`,
+         * or `PROTECTION_FROM_OPPONENTS_CARDTYPE_<TYPE>` when scoped to opponents' objects.
+         */
+        fun protectionKeyword(): String =
+            (if (controller == null) KEYWORD_PREFIX else OPPONENTS_KEYWORD_PREFIX) + cardType.uppercase()
+
+        companion object {
+            const val KEYWORD_PREFIX = "PROTECTION_FROM_CARDTYPE_"
+            const val OPPONENTS_KEYWORD_PREFIX = "PROTECTION_FROM_OPPONENTS_CARDTYPE_"
+        }
+    }
 
     /**
      * Protection from the card type the **granting permanent chose as it entered** — "As Serra's

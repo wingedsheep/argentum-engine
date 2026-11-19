@@ -1,0 +1,1 @@
+- #TBD The AI now holds a protection grant that untaps the creature it shields (Crypsis) as a combat trick, and its combat math knows a creature with protection from creatures your opponents control can't be blocked by them

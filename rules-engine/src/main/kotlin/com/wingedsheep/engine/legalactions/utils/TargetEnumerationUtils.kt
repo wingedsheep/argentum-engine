@@ -13,6 +13,7 @@ import com.wingedsheep.engine.mechanics.targeting.ControllerShroud
 import com.wingedsheep.engine.mechanics.targeting.DynamicTargetCount
 import com.wingedsheep.engine.mechanics.targeting.HexproofSuppression
 import com.wingedsheep.engine.mechanics.targeting.PlayerTargetRestriction
+import com.wingedsheep.engine.mechanics.targeting.OpponentCardTypeProtection
 import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
 import com.wingedsheep.engine.mechanics.targeting.StackObjectTargeting
 import com.wingedsheep.engine.mechanics.targeting.UntargetableByRules
@@ -144,6 +145,7 @@ class TargetEnumerationUtils(
                                 state, entityId, sourceId, playerId, targetingSourceType, predicateEvaluator
                             ) != null
                         ) return@filter false
+                        if (OpponentCardTypeProtection.targetingError(state, entityId, sourceId, playerId) != null) return@filter false
                         predicateEvaluator.matches(state, projected, entityId, permanentFilter, context)
                     }
                 }
@@ -205,6 +207,7 @@ class TargetEnumerationUtils(
                     state, entityId, sourceId, playerId, targetingSourceType, predicateEvaluator
                 ) != null
             ) return@filter false
+            if (OpponentCardTypeProtection.targetingError(state, entityId, sourceId, playerId) != null) return@filter false
             predicateEvaluator.matches(state, projected, entityId, filter.baseFilter, context)
         }
     }

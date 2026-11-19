@@ -465,6 +465,12 @@ internal class ResolutionTargetValidator(
                     return false
                 }
             }
+            // "From creatures your opponents control" (Crypsis): the type plus an opponent controller.
+            val sourceController = (if (projectedTypes.isNotEmpty()) projected.getController(sourceId) else null) ?: controllerId
+            if (com.wingedsheep.engine.mechanics.targeting.OpponentCardTypeProtection.matchedType(
+                    state, projected, target.entityId, sourceCardTypes, sourceController
+                ) != null
+            ) return false
             // Protection from a subtype or supertype, optionally narrowed to a card type
             // ("protection from God creatures").
             val sourceSupertypes = if (projectedTypes.isNotEmpty()) projected.getSupertypes(sourceId)

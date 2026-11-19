@@ -557,6 +557,11 @@ class TargetValidator(
         val protectionFromOpponentError = checkProtectionFromEachOpponent(state, target, casterId)
         if (protectionFromOpponentError != null) return protectionFromOpponentError
 
+        // Protection from a card type your opponents control (Crypsis)
+        if (target is ChosenTarget.Permanent) {
+            OpponentCardTypeProtection.targetingError(state, target.entityId, sourceId, casterId)?.let { return it }
+        }
+
         // Check protection from a subtype or supertype, e.g. "protection from Goblins",
         // "protection from God creatures" (Rule 702.16)
         val protectionFromTypeError = checkProtectionFromTypeQuality(state, target, sourceId, sourceSubtypes)
