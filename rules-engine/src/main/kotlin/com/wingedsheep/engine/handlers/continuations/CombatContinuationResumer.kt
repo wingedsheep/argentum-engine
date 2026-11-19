@@ -324,12 +324,13 @@ class CombatContinuationResumer(
             workingState = advanced
             val splitEffectData = FloatingEffectData(
                 layer = Layer.ABILITY,
-                modification = SerializableModification.PreventNextDamage(
-                    preventionAmount,
-                    onlyFromSource = sourceId,
-                    controllerGainsLife = gainsLife,
-                    combatOnly = combatOnly
-                ),
+                modification = originalMod?.copy(remainingAmount = preventionAmount, onlyFromSource = sourceId)
+                    ?: SerializableModification.PreventNextDamage(
+                        preventionAmount,
+                        onlyFromSource = sourceId,
+                        controllerGainsLife = gainsLife,
+                        combatOnly = combatOnly
+                    ),
                 affectedEntities = setOf(continuation.recipientId)
             )
             updatedEffects.add(

@@ -1,3 +1,59 @@
+// Acolyte's Reward
+{
+    "name": "Acolyte's Reward",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Prevent the next X damage that would be dealt to target creature this turn, where X is your devotion to white. If damage is prevented this way, Acolyte's Reward deals that much damage to any target. (Each {W} in the mana costs of permanents you control counts toward your devotion to white.)",
+    "script": {
+        "spellEffect": {
+            "type": "PreventDamageShield",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "amount": {
+                "type": "DevotionTo",
+                "colors": [
+                    "WHITE"
+                ]
+            },
+            "onPrevented": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "ContextProperty",
+                    "key": "PREVENTED_DAMAGE_AMOUNT"
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t1"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "AnyTarget",
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cd8980af-c3fa-4027-917a-4a3d441c0a75.jpg?1783939586"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Aerie Worshippers
 {
     "name": "Aerie Worshippers",

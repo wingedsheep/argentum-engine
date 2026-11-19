@@ -364,6 +364,15 @@ sealed interface SerializableModification {
      * When [combatOnly] is set, only combat damage is prevented ("prevent the next 1 combat damage
      * that would be dealt to you this turn", Decorated Griffin); noncombat damage passes through and
      * leaves the shield untouched.
+     *
+     * [onPrevented] is the rest of the shield's printed text — "if damage is prevented this way,
+     * Acolyte's Reward deals that much damage to any target". Each damage event the shield prevents
+     * damage from queues it once as a [com.wingedsheep.engine.replacement.PendingReplacementRider]
+     * carrying the total it prevented in that event (simultaneous combat damage from several
+     * sources is one event, so one reaction). It names the creating spell's targets through
+     * [onPreventedTargets] / [onPreventedNamedTargets] / [onPreventedBound], frozen as for
+     * [PreventAllDamageToGroup]. Damage that can't be prevented doesn't spend the shield and
+     * queues nothing.
      */
     @Serializable
     data class PreventNextDamage(
@@ -371,7 +380,11 @@ sealed interface SerializableModification {
         /** If set, only prevents damage from this specific source (used for CR 615.7 prevention distribution) */
         val onlyFromSource: EntityId? = null,
         val controllerGainsLife: Boolean = false,
-        val combatOnly: Boolean = false
+        val combatOnly: Boolean = false,
+        val onPrevented: com.wingedsheep.sdk.scripting.effects.Effect? = null,
+        val onPreventedTargets: List<ChosenTarget> = emptyList(),
+        val onPreventedNamedTargets: Map<String, ChosenTarget> = emptyMap(),
+        val onPreventedBound: List<CapturedObjectBinding> = emptyList(),
     ) : SerializableModification
 
     /**
