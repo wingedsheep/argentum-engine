@@ -30,6 +30,15 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-jou',
+    date: '2026-11-19',
+    kind: 'set',
+    setCode: 'JOU',
+    title: 'Journey into Nyx is complete',
+    body: "The finale of the Theros block takes the war to the gods themselves. Strive spells grow by targeting more creatures, constellation rewards every enchantment you play, inspired creatures cash in each time they untap after an attack, while heroic, bestow and devotion carry on from Theros alongside the last five gods, Pharika and Keranos among them.",
+    tryIf: 'enchantment-heavy decks, heroic combat tricks and building towards a god',
+  },
+  {
     id: 'set-m15',
     date: '2026-11-18',
     kind: 'set',

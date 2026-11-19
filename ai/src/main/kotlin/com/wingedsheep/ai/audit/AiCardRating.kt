@@ -329,6 +329,7 @@ object AiCardRating {
         IntentTag.DISCARD_SHIELD to "Keeps cards an effect discards",
         IntentTag.GAME_WIN to "Wins the game outright",
         IntentTag.EXTRA_TURN to "Takes an extra turn",
+        IntentTag.TURN_CONTROL to "Controls an opponent's next turn",
         IntentTag.FREE_SPELL to "Casts spells for free",
         IntentTag.HIDDEN_INFO to "Shows hidden information",
         IntentTag.SPELL_TAX to "Taxes opponents' spells",

@@ -10376,6 +10376,65 @@
     ]
 }
 
+// War-Wing Siren
+{
+    "name": "War-Wing Siren",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Siren Soldier",
+    "oracleText": "Flying\nHeroic — Whenever you cast a spell that targets this creature, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "War-Wing Siren:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, put a +1/+1 counter on this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "artist": "Magali Villeneuve",
+        "flavorText": "Once she sang sailors to their doom. Now she leads them to glory.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d88c942-3a69-4975-a08d-80405a549beb.jpg?1783939441",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Whitewater Naiads
 {
     "name": "Whitewater Naiads",
@@ -10424,5 +10483,184 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Wildfire Cerberus
+{
+    "name": "Wildfire Cerberus",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Dog",
+    "oracleText": "{5}{R}{R}: Monstrosity 1. (If this creature isn't monstrous, put a +1/+1 counter on it and it becomes monstrous.)\nWhen this creature becomes monstrous, it deals 2 damage to each opponent and each creature they control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wildfire Cerberus:2",
+                "trigger": "BecameMonstrousEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:opponent"
+                                }
+                            },
+                            "body": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Wildfire Cerberus:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{R}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        "IsMonstrous"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddDynamicCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "Self"
+                            },
+                            "BecomeMonstrous"
+                        ]
+                    },
+                    "descriptionOverride": "Monstrosity 1. (If this creature isn't monstrous, put a +1/+1 counter on it and it becomes monstrous.)"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d7a26c23-abb9-41c3-aea1-bb241093119d.jpg?1783939416",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Once a creature becomes monstrous, it can't become monstrous again. If the creature is already monstrous when the monstrosity ability resolves, nothing happens."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Monstrous isn't an ability that a creature has. It's just something true about that creature. If the creature stops being a creature or loses its abilities, it will continue to be monstrous."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "An ability that triggers when a creature becomes monstrous won't trigger if that creature isn't on the battlefield when its monstrosity ability resolves."
+            }
+        ]
+    }
+}
+
+// Worst Fears
+{
+    "name": "Worst Fears",
+    "manaCost": "{7}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "You control target player during that player's next turn. Exile Worst Fears. (You see all cards that player could see and make all decisions for that player.)",
+    "script": {
+        "spellEffect": {
+            "type": "HijackNextTurn",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ],
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "MYTHIC",
+        "artist": "Eric Deschamps",
+        "flavorText": "Elspeth feared that her trespass into Nyx would not go unanswered.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8f4e21ac-4f3e-4a3e-83c0-0a59a1b84020.jpg?1783939427",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "The player you're controlling is still the active player during that turn."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "You only control the player. You don't control any of their permanents, spells, or abilities."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If the target player skips their next turn, you'll control the next turn the affected player actually takes."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Multiple player-controlling effects that affect the same player overwrite each other. The last one to be created is the one that works."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "You could gain control of yourself using Worst Fears, but unless you do so to overwrite someone else's player-controlling effect, this doesn't do anything."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "You can use only the affected player's resources (cards, mana, and so on) to pay costs for that player; you can't use your own. Similarly, you can use the affected player's resources only to pay that player's costs; you can't spend them on your costs."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }

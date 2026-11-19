@@ -2610,6 +2610,10 @@ object CardIntentAnalyzer {
         // "Take an extra turn after this one": a whole turn for its controller, or for the player it
         // targets, who is the controller whenever it is cast to be played.
         is TakeExtraTurnEffect -> if (takesTheTurnOurselves(effect.target)) setOf(IntentTag.EXTRA_TURN) else emptySet()
+        // "You control target player during that player's next turn" (Mindslaver, Worst Fears): a
+        // turn of an opponent's decisions made for them. A chosen target player is cast at an
+        // opponent, like a cast ban's ([bansAnOpponent]).
+        is HijackNextTurnEffect -> if (bansAnOpponent(effect.target)) setOf(IntentTag.TURN_CONTROL) else emptySet()
 
         is AddCountersEffect -> counterTags(effect.counterType, effect.target)
         is AddDynamicCountersEffect -> counterTags(effect.counterType, effect.target)

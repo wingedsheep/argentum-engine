@@ -619,6 +619,15 @@ enum class IntentTag {
     EXTRA_TURN,
 
     /**
+     * Its controller controls another player during that player's next turn — Mindslaver, Worst
+     * Fears, Emrakul, the Promised End, Secret of Bloodbending (CR 722). Its payoff is a turn of the
+     * opponent's decisions played against them: their attacks, blocks and spells, none of which the
+     * board simulation sees when the effect resolves, so without the tag the ability read as "no
+     * intent". Controlling your own turn changes nothing and earns no tag.
+     */
+    TURN_CONTROL,
+
+    /**
      * Casts a spell without paying its mana cost — Wildfire Eternal's and Omnispell Adept's "cast an
      * instant or sorcery spell from your hand without paying its mana cost", a cascade-like "cast it
      * without paying its mana cost" off the top of a library or out of exile. Its payoff is the mana
