@@ -869,7 +869,7 @@ Families:
 - `EncodeOnCreatureEffect(from: String)` — Cipher's encoding step (CR 702.99a): "you may exile this card encoded on a creature you control".
 - `EndTheTurnEffect` — End the turn (CR 724.1).
 - `EnterTappedEffect` — "This permanent enters tapped" — the rider of an as-enters replacement, run inside com.wingedsheep.sdk.scripting.OnEnterRun: the reveal lands' "if you don't, this land enters tapped" (Auntie's Hove…
-- `ExchangeControlEffect(target1: EffectTarget, target2: EffectTarget)` — Exchange control of two target creatures.
+- `ExchangeControlEffect(target1: EffectTarget, target2: EffectTarget)` — Exchange control of two objects (CR 701.12b) — each a permanent on the battlefield or a spell on the stack.
 - `ExchangeLifeAndStatEffect(target: EffectTarget, stat: CreatureStat, player: EffectTarget)` — Exchange a player's life total with a creature's power or toughness (CR 701.12g).
 - `ExchangeLifeTotalsEffect(target: EffectTarget, drawEqualToLifeLost: Boolean, player: EffectTarget)` — Exchange player's life total (the controller by default) with target player's (CR 701.12c): each player gains or loses the life needed to reach the other's former total.
 - `ExchangeTextBoxesEffect(first: EffectTarget, second: EffectTarget)` — Exchange the text boxes of two permanents (CR 701.12h, 612.5): the rules text of each becomes the previous rules text of the other.

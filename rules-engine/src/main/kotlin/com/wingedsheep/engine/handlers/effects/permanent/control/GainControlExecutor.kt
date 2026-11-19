@@ -180,13 +180,25 @@ class GainControlExecutor : EffectExecutor<GainControlEffect> {
     ): EffectResult {
         val oldControllerId = spell.casterId
         if (oldControllerId == newControllerId) return EffectResult.success(state)
-        val newState = state.updateEntity(spellId) { container ->
+        return EffectResult.success(
+            setSpellController(state, spellId, spell, newControllerId),
+            listOf(ControlChangedEvent(spellId, cardComponent.name, oldControllerId, newControllerId))
+        )
+    }
+
+    companion object {
+        /**
+         * Rewrite a spell's controller on its stack object (no event — callers emit their own
+         * [ControlChangedEvent]). Shared with [ExchangeControlExecutor]'s spell side.
+         */
+        fun setSpellController(
+            state: GameState,
+            spellId: EntityId,
+            spell: SpellOnStackComponent,
+            newControllerId: EntityId
+        ): GameState = state.updateEntity(spellId) { container ->
             val updated = container.with(spell.copy(casterId = newControllerId))
             if (updated.has<ControllerComponent>()) updated.with(ControllerComponent(newControllerId)) else updated
         }
-        return EffectResult.success(
-            newState,
-            listOf(ControlChangedEvent(spellId, cardComponent.name, oldControllerId, newControllerId))
-        )
     }
 }

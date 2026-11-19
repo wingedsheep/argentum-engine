@@ -3720,7 +3720,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `ControlChangedEvent`. **Dragonlord Silumgar** = `Triggers.self.enters()` +
   `Effects.GainControl(target(TargetFilter(GameObjectFilter.CreatureOrPlaneswalker)),
   Duration.WhileYouControlSource("Dragonlord Silumgar"))` — killed in response, it steals nothing.
-- `ExchangeControlEffect(target1, target2)` — swap control of two permanents.
+- `ExchangeControlEffect(target1, target2)` — swap control of two objects (CR 701.12b), each a permanent on the battlefield or a spell on the stack (`Effects.ExchangeControl(EffectTarget.Self, EffectTarget.TriggeringEntity)` — Perplexing Chimera). A permanent changes hands indefinitely through a Layer.CONTROL effect; a spell through its stack object's controller, so a permanent spell enters under its new controller. If either side has left its zone, or both share a controller, nothing happens (CR 701.12a); gate a follow-up on it with `IfYouDo(..., successCriterion = SuccessCriterion.ControlChanged)` ("If you do, you may choose new targets for the spell" is `ChangeTriggeringObjectTargets(spell = …)`).
 - `ExchangeTextBoxesEffect(first, second)` (facade `Effects.ExchangeTextBoxes(first, second)`) — exchange the
   text boxes of two permanents (CR 612.5, 701.12h): each one's rules text — abilities, keywords, oracle text —
   becomes the other's previous rules text; names, mana costs, colors, types and power/toughness stay put.
