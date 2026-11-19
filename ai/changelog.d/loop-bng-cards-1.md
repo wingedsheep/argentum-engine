@@ -1,1 +1,1 @@
-- #TBD Reads an Aura that grants its host a +1/+1-counter trigger (Sunbond) as a pump of the enchanted creature.
+- #4766 Reads an Aura that grants its host a +1/+1-counter trigger (Sunbond) as a pump of the enchanted creature.
