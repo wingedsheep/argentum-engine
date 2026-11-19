@@ -996,6 +996,13 @@ value class CounterType(val name: String) {
          */
         val CRYSTAL = CounterType("CRYSTAL")
 
+        /**
+         * Manifestation counter (BNG — Arbiter of the Ideal). A memory aid with no inherent rule:
+         * the card Arbiter puts onto the battlefield enters with one, and is an enchantment in
+         * addition to its other types whether or not the counter is still there.
+         */
+        val MANIFESTATION = CounterType("MANIFESTATION")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -1169,6 +1176,7 @@ value class CounterType(val name: String) {
             FEEDING,
             ISOLATION,
             CRYSTAL,
+            MANIFESTATION,
         )
 
         /**
