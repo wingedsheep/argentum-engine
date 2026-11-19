@@ -3,6 +3,7 @@ package com.wingedsheep.engine.mechanics.stack
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.chosenOpponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.*
 import com.wingedsheep.sdk.core.Color
@@ -36,11 +37,10 @@ internal class EntersWithChoicePrompt(
         // A number chosen at random has no chooser; it is drawn as the permanent enters
         // (EntersWithReplacements.applyFromDefinition), so there is nothing to ask.
         if (choice.atRandom) return null
-        val chooserId = when (choice.chooser) {
-            com.wingedsheep.sdk.scripting.references.Player.AnOpponent ->
-                state.getOpponents(controllerId).firstOrNull() ?: controllerId
-            else -> controllerId
-        }
+        val entry = com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
+        val chooserId = entry.entersChoiceChooser(
+            state, controllerId, choice, state.getEntity(spellId)?.chosenOpponent()
+        ) ?: return promptOpponentOfYourChoice(state, spellId, controllerId, ownerId, cardComponent, choice)
 
         return when (choice.choiceType) {
             ChoiceType.COLOR ->
@@ -65,6 +65,39 @@ internal class EntersWithChoicePrompt(
             ChoiceType.NUMBER ->
                 promptNumber(state, spellId, controllerId, ownerId, cardComponent, choice, chooserId)
         }
+    }
+
+    /**
+     * "An opponent of your choice" makes [choice] (Tribute, CR 702.104a) and there are several: the
+     * controller picks one first. The resumer records the pick under [ChoiceSlot.OPPONENT] and then
+     * asks [choice] of that opponent ([EntersWithChoiceSpellContinuation.forChoice]).
+     */
+    private fun promptOpponentOfYourChoice(
+        state: GameState,
+        spellId: EntityId,
+        controllerId: EntityId,
+        ownerId: EntityId,
+        cardComponent: CardComponent,
+        choice: EntersWithChoice,
+    ): ExecutionResult {
+        val opponentIds = state.getOpponents(controllerId)
+        val continuation = EntersWithChoiceSpellContinuation(
+            spellId = spellId,
+            controllerId = controllerId,
+            ownerId = ownerId,
+            choiceType = ChoiceType.OPPONENT,
+            opponentIds = opponentIds,
+            forChoice = choice.choiceType
+        )
+        return state.suspendForDecision(
+            question = { decisionId ->
+                com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements.opponentOfYourChoiceQuestion(
+                    state, decisionId, controllerId, opponentIds,
+                    DecisionContext(sourceId = spellId, sourceName = cardComponent.name, phase = DecisionPhase.RESOLUTION)
+                )
+            },
+            answer = continuation
+        )
     }
 
     private fun promptColor(

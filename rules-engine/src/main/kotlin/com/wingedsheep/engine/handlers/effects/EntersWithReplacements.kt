@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects
 
+import com.wingedsheep.engine.state.components.battlefield.chosenOpponent
 import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.state.components.stack.AdditionalEntryCounters
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
@@ -251,9 +252,12 @@ object EntersWithReplacements {
                         if (!predicateEvaluator.conditions.evaluate(newState, effect.condition!!, condContext)) continue
                     }
                     // CR 122.6a — who puts them on: the controller, or (Tribute, CR 702.104a) the
-                    // opponent who chose to pay — the same opponent an `AnOpponent` entry choice asks.
+                    // opponent who chose to pay — the same opponent an `AnOpponent` entry choice asked:
+                    // the one the controller picked (recorded under ChoiceSlot.OPPONENT) when there
+                    // were several, else the only one.
                     val placerId = when (effect.placedBy) {
-                        Player.AnOpponent -> newState.getOpponents(controllerId).firstOrNull() ?: controllerId
+                        Player.AnOpponent -> newState.getEntity(entityId)?.chosenOpponent()
+                            ?: newState.getOpponents(controllerId).firstOrNull() ?: controllerId
                         else -> controllerId
                     }
                     // Supplied-counter totals are the controller's placement; another placer's

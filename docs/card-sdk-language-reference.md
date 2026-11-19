@@ -6396,8 +6396,10 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   on the damage trigger — the legality check and resolution both bind it to the damaged player
   (Fear of Burning Alive).
 - `Player.AnOpponent` — a genuinely non-targeted "an opponent" (a chooser: "an opponent chooses a
-  creature type"). Currently resolves to the first opponent in turn order; the proper multiplayer
-  choice flow is tracked in `backlog/multiplayer.md`. Do **not** use it where the text means
+  creature type"). As an `EntersWithChoice.chooser` it is "an opponent of your choice": with more than one
+  opponent the entering permanent's controller first picks one (a `ChooseOptionDecision` naming the card,
+  recorded under `ChoiceSlot.OPPONENT`), and that opponent then makes the choice; with one opponent nobody is
+  asked. Elsewhere it still resolves to the first opponent in turn order. Do **not** use it where the text means
   `TargetOpponent`, `EachOpponent`, `DefendingPlayer`, or `TriggeringPlayer`.
 - `Player.ChosenOpponent` — the opponent locked into the source's `ChoiceSlot.OPPONENT` slot.
 - `Player.ChosenPlayer` — the player (any player, the source's controller included) recorded in the source's
@@ -15927,7 +15929,9 @@ MacCready, Lamplight Mayor (granted).
   "When this creature enters, if tribute wasn't paid, …" line is an ordinary `Triggers.self.enters()` with
   `interveningIf = Conditions.TributeNotPaid` (CR 702.104b; `Not(SourceChosenModeIs("tribute_paid"))`, so it still
   resolves after the creature has left the battlefield). Every entry path asks — cast, reanimation, blink.
-  Fanatic of Xenagos, Snake of the Golden Grove. Engine test: `TributeTest`.
+  **Multiplayer:** with more than one opponent the controller first chooses which opponent is offered the
+  tribute; that opponent answers and is the placer. Fanatic of Xenagos, Snake of the Golden Grove. Engine
+  tests: `TributeTest`, `OpponentOfYourChoiceEntryTest`.
 - `Mobilize(n)` — +N tapped-and-attacking 1/1 red Warrior tokens on attack (Tarkir: Dragonstorm, Mardu).
   Display-only; wire the behavior with the `card { mobilize(n) }` builder helper, which adds this keyword
   ability plus a "whenever this attacks" triggered `CreateTokenEffect` (`tapped = true`, `attacking = true`)
@@ -20689,7 +20693,9 @@ The priority groups are (CR 616.1a–f):
   `EntersWithDynamicCounters(counterType?, count, otherOnly?, appliesTo?, activeZones?)` — "[permanent] enters with
   N counters." `EntersWithCounters` takes a fixed `count: Int` (Master Biomancer, Metallic Mimic); its
   `placedBy` (`Player.You` default, or `Player.AnOpponent` for Tribute) names who puts them on (CR 122.6a) — read by
-  placer-scoped counter replacements and `CountersAddedEvent.placedBy`;
+  placer-scoped counter replacements and `CountersAddedEvent.placedBy`. `Player.AnOpponent` is the opponent
+  recorded under `ChoiceSlot.OPPONENT` — the one the controller picked to answer an `AnOpponent` entry choice in
+  multiplayer — else the only opponent;
   `EntersWithDynamicCounters` takes a `count: DynamicAmount` (Stag Beetle; the SOS Converge "Archaic"
   cycle via `convergeEntersWithCounters()` → `count = DistinctColorsManaSpent`). `appliesTo` defaults
   to "creatures you control entering the battlefield." A dynamic count is measured **as of just before

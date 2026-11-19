@@ -395,6 +395,14 @@ data class EntersWithChoiceSpellContinuation(
      */
     val opponentIds: List<EntityId> = emptyList(),
     /**
+     * Set on an [com.wingedsheep.sdk.scripting.ChoiceType.OPPONENT] question that is not itself a
+     * printed choice but the controller picking *which* opponent makes this [forChoice] choice — "an
+     * opponent of your choice" (Tribute, CR 702.104a) in a game with more than one opponent. The
+     * pick is recorded under [com.wingedsheep.sdk.scripting.ChoiceSlot.OPPONENT], and the resumer
+     * then asks [forChoice] of that opponent instead of moving past it.
+     */
+    val forChoice: com.wingedsheep.sdk.scripting.ChoiceType? = null,
+    /**
      * For [com.wingedsheep.sdk.scripting.ChoiceType.CARD_NAME] choices, the positionally
      * aligned list of land card names presented. The response's chosen index indexes into
      * this list to recover the name stored under
@@ -451,6 +459,8 @@ data class EntersWithChoiceOnBattlefieldContinuation(
     /** For [com.wingedsheep.sdk.scripting.ChoiceType.OPPONENT] choices, see
      *  [EntersWithChoiceSpellContinuation.opponentIds]. */
     val opponentIds: List<EntityId> = emptyList(),
+    /** See [EntersWithChoiceSpellContinuation.forChoice]. */
+    val forChoice: com.wingedsheep.sdk.scripting.ChoiceType? = null,
     /** For [com.wingedsheep.sdk.scripting.ChoiceType.CARD_NAME] choices, the land card names
      *  presented (the resumer stores the chosen name by index). */
     val cardNames: List<String> = emptyList(),

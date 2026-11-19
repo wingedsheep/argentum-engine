@@ -1053,6 +1053,8 @@ data class PutOntoBattlefieldThen(
  *                  controller, the default) or [Player.AnOpponent], the opponent who chose to pay
  *                  Tribute (CR 702.104a: "That player may put an additional N +1/+1 counters on it";
  *                  ruling 2017-04-18: the player chosen to pay tribute puts those counters on it).
+ *                  In multiplayer that is the opponent the controller picked for the `AnOpponent`
+ *                  [EntersWithChoice] (recorded under [ChoiceSlot.OPPONENT]); else the only opponent.
  *                  Read by placer-scoped replacements and triggers ("if **you** would put counters").
  */
 @SerialName("EntersWithCounters")
@@ -3089,7 +3091,10 @@ data class EntryCharacteristics(
  * and EntersWithCreatureChoice with a single parameterized type.
  *
  * @param choiceType What kind of choice to present
- * @param chooser Who makes the choice (default: controller)
+ * @param chooser Who makes the choice (default: controller). [Player.AnOpponent] is "an opponent of
+ *   your choice" (Tribute, CR 702.104a): with more than one opponent the controller first picks one,
+ *   recorded under [ChoiceSlot.OPPONENT], and that opponent makes the choice; with one, it is asked
+ *   directly.
  *
  * Examples:
  * - Riptide Replicator: `EntersWithChoice(ChoiceType.COLOR)`

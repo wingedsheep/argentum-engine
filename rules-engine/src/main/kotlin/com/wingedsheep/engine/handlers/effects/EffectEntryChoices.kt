@@ -101,6 +101,7 @@ object EffectEntryChoices {
                     cardNameOptions = if (choice.choiceType == ChoiceType.CARD_NAME) {
                         PermanentEntryReplacements.cardNameOptions(state, registry, controller, choice)
                     } else emptyList(),
+                    recordedOpponent = (answers.values[ChoiceSlot.OPPONENT] as? ChoiceValue.EntityChoice)?.entityId,
                 )
                 if (prompt == null) {
                     answers = answers.copy(asked = answers.asked + choice.choiceType)
@@ -166,6 +167,18 @@ object EffectEntryChoices {
         val prior = context.entryChoices[entityId] ?: EntryChoiceAnswers()
         return context.copy(entryChoices = context.entryChoices + (entityId to prior.copy(
             asked = prior.asked + choiceType, values = prior.values + (slot to value),
+        )))
+    }
+
+    /**
+     * [context] with the opponent the controller picked to make one of [entityId]'s "an opponent of
+     * your choice" questions ([PermanentEntryReplacements.entersChoiceChooser]) recorded under
+     * [ChoiceSlot.OPPONENT]. The question itself is still owed, so nothing is marked asked.
+     */
+    fun answeredChooser(context: EffectContext, entityId: EntityId, opponent: ChoiceValue): EffectContext {
+        val prior = context.entryChoices[entityId] ?: EntryChoiceAnswers()
+        return context.copy(entryChoices = context.entryChoices + (entityId to prior.copy(
+            values = prior.values + (ChoiceSlot.OPPONENT to opponent),
         )))
     }
 

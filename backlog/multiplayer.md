@@ -170,7 +170,8 @@ layer, the client's "the opponent" rendering, and the AI.
 is replaced by `getOpponents(playerId)` (turn-order, excluding lost players) + `activePlayers`. New
 vocabulary: `Player.DefendingPlayer` (CR 802.2a, resolved from the source's attack assignment) and
 `Player.AnOpponent` (genuinely non-targeted "an opponent" chooser shapes only — Callous Oppressor,
-Risky Move; resolves to first opponent in turn order until the choose-an-opponent flow exists).
+Risky Move). As an `EntersWithChoice` chooser it now asks the controller to pick the opponent when
+there are several (Tribute's "an opponent of your choice"); elsewhere it resolves to the first opponent.
 Central single-player resolution lives in `TargetResolutionUtils.resolvePlayerRef`. Verified by
 `MultiplayerSmokeTest` (4-player init, priority round-trip, turn cycle, EachOpponent fan-out,
 DefendingPlayer resolution).

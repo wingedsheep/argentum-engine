@@ -10,6 +10,7 @@ import com.wingedsheep.engine.core.DecisionResponse
 import com.wingedsheep.engine.core.NumberChosenResponse
 import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
+import com.wingedsheep.engine.state.components.battlefield.chosenOpponent
 import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.engine.core.ChooseNumberDecision
 import com.wingedsheep.engine.core.ChooseOptionDecision
@@ -604,10 +605,58 @@ object PermanentEntryReplacements {
     }
 
     /**
+     * Who makes [choice] for a permanent entering under [controllerId]: the controller, or for an
+     * [Player.AnOpponent] chooser ("an opponent of your choice", Tribute — CR 702.104a) the opponent
+     * the controller picked, recorded under [ChoiceSlot.OPPONENT] ([recordedOpponent]). With a single
+     * opponent there is nothing to pick. `null` means the controller must pick first, among
+     * [GameState.getOpponents] — the [opponentOfYourChoiceQuestion] both entry paths ask.
+     */
+    fun entersChoiceChooser(
+        state: GameState,
+        controllerId: EntityId,
+        choice: EntersWithChoice,
+        recordedOpponent: EntityId?,
+    ): EntityId? {
+        if (choice.chooser != Player.AnOpponent) return controllerId
+        val opponents = state.getOpponents(controllerId)
+        if (recordedOpponent != null && recordedOpponent in opponents) return recordedOpponent
+        return when (opponents.size) {
+            0 -> controllerId
+            1 -> opponents.single()
+            else -> null
+        }
+    }
+
+    /**
+     * The controller's "choose an opponent" question that precedes an [Player.AnOpponent] choice in a
+     * game with more than one opponent ([entersChoiceChooser] returned `null`). Its answer is read
+     * like a [ChoiceType.OPPONENT] choice, into [ChoiceSlot.OPPONENT].
+     */
+    fun opponentOfYourChoiceQuestion(
+        state: GameState,
+        decisionId: String,
+        controllerId: EntityId,
+        opponentIds: List<EntityId>,
+        context: DecisionContext,
+    ): ChooseOptionDecision = ChooseOptionDecision(
+        id = decisionId,
+        playerId = controllerId,
+        prompt = "Choose an opponent to make the choice for ${context.sourceName ?: "this permanent"}",
+        context = context,
+        options = playerNames(state, opponentIds),
+    )
+
+    private fun playerNames(state: GameState, playerIds: List<EntityId>): List<String> =
+        playerIds.map { pid -> state.getEntity(pid)?.get<PlayerComponent>()?.name ?: "Player ${pid.value}" }
+
+    /**
      * Build the question for one [EntersWithChoice] of [entityId] — shared by the post-entry pause
      * above and the pre-entry preparation of an effect-driven entry
      * ([com.wingedsheep.engine.handlers.effects.EffectEntryChoices]).
      *
+     * @param recordedOpponent the opponent already picked to make an [Player.AnOpponent] choice
+     *   (see [entersChoiceChooser]); read off the permanent by default, supplied by an effect-driven
+     *   entry whose answers ride its context until it arrives.
      * @return `null` if the choice cannot be presented (see [pauseForEntersWithChoice]).
      */
     fun entersChoicePrompt(
@@ -620,14 +669,28 @@ object PermanentEntryReplacements {
         cardNameOptions: List<String> = emptyList(),
         syntheticRiot: Boolean = false,
         syntheticRiotRemaining: Int = 0,
+        recordedOpponent: EntityId? = state.getEntity(entityId)?.chosenOpponent(),
     ): EntersChoicePrompt? {
         // Drawn on entry, not asked (see EntersWithReplacements.applyFromDefinition).
         if (choice.atRandom) return null
-        val chooserId = when (choice.chooser) {
-            Player.AnOpponent -> state.getOpponents(controllerId).firstOrNull() ?: controllerId
-            else -> controllerId
-        }
         val name = cardComponent.name
+        val chooserId = entersChoiceChooser(state, controllerId, choice, recordedOpponent) ?: run {
+            // "An opponent of your choice" with several opponents: the controller picks one first.
+            val opponentIds = state.getOpponents(controllerId)
+            val context = DecisionContext(sourceId = entityId, sourceName = name, phase = DecisionPhase.RESOLUTION)
+            return EntersChoicePrompt(
+                { id -> opponentOfYourChoiceQuestion(state, id, controllerId, opponentIds, context) },
+                EntersWithChoiceOnBattlefieldContinuation(
+                    entityId = entityId,
+                    controllerId = controllerId,
+                    choiceType = ChoiceType.OPPONENT,
+                    opponentIds = opponentIds,
+                    forChoice = choice.choiceType,
+                    fromZone = fromZone,
+                ),
+                state,
+            )
+        }
 
         fun context() = DecisionContext(
             sourceId = entityId,
@@ -770,9 +833,7 @@ object PermanentEntryReplacements {
             ChoiceType.OPPONENT -> {
                 val opponentIds = state.turnOrder.filter { it != chooserId }
                 if (opponentIds.isEmpty()) return null
-                val opponentNames = opponentIds.map { pid ->
-                    state.getEntity(pid)?.get<PlayerComponent>()?.name ?: "Player ${pid.value}"
-                }
+                val opponentNames = playerNames(state, opponentIds)
                 pause(
                     { id -> ChooseOptionDecision(
                         id = id,
