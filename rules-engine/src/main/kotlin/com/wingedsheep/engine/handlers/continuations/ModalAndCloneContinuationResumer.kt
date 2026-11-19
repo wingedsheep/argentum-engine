@@ -196,6 +196,10 @@ class ModalAndCloneContinuationResumer(
         val context = if (decoded == null) {
             com.wingedsheep.engine.handlers.effects.EffectEntryChoices.declined(
                 continuation.context, continuation.entityId, continuation.question.choiceType)
+        } else if (continuation.question.forChoice != null) {
+            // Only the opponent who makes the choice was picked; the choice itself is asked next.
+            com.wingedsheep.engine.handlers.effects.EffectEntryChoices.answeredChooser(
+                continuation.context, continuation.entityId, decoded.second)
         } else if (continuation.question.syntheticRiot) {
             val value = decoded.second
             // A granted-Riot answer (counter or haste) — recorded apart from the printed MODE slot.
@@ -1015,6 +1019,10 @@ class ModalAndCloneContinuationResumer(
             ?: return ExecutionResult.error(state, "Spell has no CardComponent")
         val cardDef = services.cardRegistry.getCard(cardComponent.cardDefinitionId)
 
+        // The choices still owed follow the one just answered — or, when the answer only picked the
+        // opponent to make a choice ([EntersWithChoiceSpellContinuation.forChoice]), include it.
+        val answeredOrdinal = continuation.forChoice?.let { it.ordinal - 1 } ?: continuation.choiceType.ordinal
+
         // A granted read-ahead choice isn't printed, so it is synthesized here too in case an
         // earlier choice (a printed one, or granted riot) paused first.
         val nextChoice = (cardDef?.script?.replacementEffects
@@ -1023,7 +1031,7 @@ class ModalAndCloneContinuationResumer(
                 newState, spellId, cardDef, services.cardRegistry, services.predicateEvaluator
             )))
             .sortedBy { it.choiceType.ordinal }
-            .firstOrNull { it.choiceType.ordinal > continuation.choiceType.ordinal }
+            .firstOrNull { it.choiceType.ordinal > answeredOrdinal }
 
         // Granted riot (a lord's, or one frozen onto the spell by a mana rider) sits in the MODE
         // slot. When a printed choice was asked first — printed riot itself, or an earlier
@@ -1031,7 +1039,7 @@ class ModalAndCloneContinuationResumer(
         // the printed chain has passed MODE, before any later printed choice.
         val riotOrdinal = com.wingedsheep.engine.mechanics.RiotSynthesis.RIOT_CHOICE.choiceType.ordinal
         if (!continuation.syntheticRiot &&
-            continuation.choiceType.ordinal <= riotOrdinal &&
+            answeredOrdinal <= riotOrdinal &&
             (nextChoice == null || nextChoice.choiceType.ordinal > riotOrdinal)
         ) {
             val grantedRiot = com.wingedsheep.engine.mechanics.RiotSynthesis.grantedRiotInstanceCount(
@@ -1178,7 +1186,8 @@ class ModalAndCloneContinuationResumer(
                 newState, entityId, cardDef, services.cardRegistry, services.predicateEvaluator
             )))
             .sortedBy { it.choiceType.ordinal }
-            .filter { it.choiceType.ordinal > continuation.choiceType.ordinal }
+            // An answer that only picked the opponent to make a choice leaves that choice owed.
+            .filter { it.choiceType.ordinal > (continuation.forChoice?.let { f -> f.ordinal - 1 } ?: continuation.choiceType.ordinal) }
 
         // A chained choice that can't be presented (null) is skipped for the next one.
         for (nextChoice in nextChoices) {

@@ -49,6 +49,9 @@ internal val TributeNotPaidCondition: Condition = NotCondition(SourceChosenModeI
  *  - a mode-gated [EntersWithCounters] (`selfOnly`) puts the N +1/+1 counters on it when the
  *    opponent paid, so it *enters* with them.
  *
+ * With more than one opponent the controller first chooses which opponent is offered the tribute
+ * (recorded under `ChoiceSlot.OPPONENT`); that opponent answers and puts the counters on.
+ *
  * The card's "When this creature enters, if tribute wasn't paid, …" ability is an ordinary enters
  * trigger with `interveningIf = Conditions.TributeNotPaid` (CR 702.104b).
  */
