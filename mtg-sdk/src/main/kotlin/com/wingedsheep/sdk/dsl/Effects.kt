@@ -4725,7 +4725,8 @@ object Effects {
     ): Effect = ChangeOwnershipEffect(card, newOwner)
 
     /**
-     * Exchange control of two target creatures.
+     * Exchange control of two objects — permanents on the battlefield or a spell on the stack
+     * ("exchange control of this creature and that spell", Perplexing Chimera).
      */
     fun ExchangeControl(
         target1: EffectTarget,

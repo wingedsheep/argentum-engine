@@ -721,6 +721,17 @@ object LimitedCardRater {
                 // gate with an `otherwise` among the cards is another player's (punisherBranchLeaves).
                 minOf(EffectWalker.fold(effect.then, this), EffectWalker.fold(effect.otherwise!!, this))
                     .coerceAtLeast(0.0)
+            } else if (effect is GatedEffect && effect.decisionMaker == null &&
+                effect.gate is Gate.DoAction
+            ) {
+                // "[action]. If you do, [then]" (Effects.IfYouDo) — Harvester Troll's sacrificed
+                // land: the payoff is the `then` (and an `otherwise`), the action usually the price — the reading [EffectWalker.payoffLeaves] gives the intent
+                // reader. Whether the action happens isn't certain, so both branches are discounted
+                // like a conditional. Unread, every such ability scored nothing.
+                conditional(
+                    EffectWalker.fold(effect.then, this),
+                    effect.otherwise?.let { EffectWalker.fold(it, this) },
+                )
             } else {
                 scoreEffect(effect, targets, source)
             }

@@ -177,15 +177,19 @@ data class GiveControlToTargetPlayerEffect(
 }
 
 /**
- * Exchange control of two target creatures.
+ * Exchange control of two objects — each a permanent on the battlefield or a spell on the stack
+ * (CR 701.12b's permanent rule, applied to a spell side as well).
  * "You may exchange control of target creature you control and target creature an opponent controls."
+ * "You may exchange control of this creature and that spell." (Perplexing Chimera)
  *
- * Creates two floating effects at Layer.CONTROL:
- * 1. Target A (yours) → opponent gains control
- * 2. Target B (opponent's) → you gain control
+ * A permanent changes hands through an indefinite Layer.CONTROL floating effect; a spell through a
+ * rewrite of its stack object's controller (it lasts while the spell is on the stack, and a permanent
+ * spell enters under the new controller). If either side has left its zone, or both already share a
+ * controller, nothing happens (CR 701.12a) — no ControlChangedEvent, so an `IfYouDo` gated on
+ * `SuccessCriterion.ControlChanged` skips its follow-up.
  *
- * @property target1 The creature you control (becomes opponent's)
- * @property target2 The creature an opponent controls (becomes yours)
+ * @property target1 The first side (becomes the second side's controller's)
+ * @property target2 The second side (becomes the first side's controller's)
  */
 @SerialName("ExchangeControl")
 @Serializable

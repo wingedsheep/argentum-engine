@@ -1,0 +1,1 @@
+- #4762 The draft heuristic prices the payoff of an "[action]. If you do, [then]" ability (IfYouDo) instead of scoring it at zero; the AI weighs exchanging control of its creature for an opponent's spell (Perplexing Chimera) by the board it leaves.

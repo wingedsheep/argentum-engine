@@ -3289,6 +3289,98 @@
     ]
 }
 
+// Perplexing Chimera
+{
+    "name": "Perplexing Chimera",
+    "manaCost": "{4}{U}",
+    "typeLine": "Enchantment Creature — Chimera",
+    "oracleText": "Whenever an opponent casts a spell, you may exchange control of this creature and that spell. If you do, you may choose new targets for the spell. (If the spell becomes a permanent, you control that permanent.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Perplexing Chimera:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Exchange control of Perplexing Chimera and that spell? If you do, you may choose new targets for it."
+                    },
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "ExchangeControl",
+                                "target1": "Self",
+                                "target2": "TriggeringEntity"
+                            },
+                            "successCriterion": "SuccessCriterion.ControlChanged"
+                        },
+                        "then": "ChangeTriggeringObjectTargets"
+                    }
+                },
+                "descriptionOverride": "Whenever an opponent casts a spell, you may exchange control of this creature and that spell. If you do, you may choose new targets for the spell."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "RARE",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f9cff40b-9cae-47d0-8df4-c287a17a33e4.jpg?1783939566",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "You may exchange control of Perplexing Chimera and any spell cast by an opponent, not just one with targets."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "You make the decision whether to exchange control of Perplexing Chimera and the spell as the triggered ability resolves."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If Perplexing Chimera leaves the battlefield or the spell leaves the stack before the triggered ability resolves, you can't make the exchange."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "Neither Perplexing Chimera nor the spell changes zones. Only control of them is exchanged."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "After the ability resolves, you control the spell. Any instance of \"you\" in that spell's text now refers to you, \"an opponent\" refers to one of your opponents, and so on. The change of control happens before new targets are chosen, so any targeting restrictions such as \"target opponent\" or \"target creature you control\" are now made in reference to you, not the spell's original controller."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "You may change any of the spell's targets. If you change a target, you must choose a legal target for the spell. If you can't, you must leave the target the same (even if that target is now illegal)."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "Gaining control of a spell and changing its targets won't cause any heroic abilities of the new targets to trigger."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If you gain control of an instant or sorcery spell, it will be put into its owner's graveyard as it resolves, fails to resolve, or is countered."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "In some unusual cases, you may not control Perplexing Chimera when its triggered ability resolves. In these cases, you can exchange control of Perplexing Chimera and the spell that causes the ability to trigger, even if you control neither of them. If you do, you'll be able to change targets of the spell, not the spell's new controller."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Pheres-Band Raiders
 {
     "name": "Pheres-Band Raiders",
