@@ -13123,6 +13123,7 @@ Ore-Scale Guardian
 Oread of Mountain's Blaze
 Oreplate Pangolin
 Oreskos Explorer
+Oreskos Sun Guide
 Oreskos Swiftclaw
 Organ Hoarder
 Organic Avulsion Unit
@@ -13551,7 +13552,9 @@ Phase Dolphin
 Phelia, Exuberant Shepherd	intent: Pipeline(ChosenTargets→battlefield|exile); polarity: CreateDelayedTriggerEffect; polarity: Pipeline(ChosenTargets→exile)
 Pheres-Band Brawler
 Pheres-Band Centaurs
+Pheres-Band Raiders
 Pheres-Band Thunderhoof
+Pheres-Band Tromper
 Pheres-Band Warchief
 Phial of Galadriel
 Phlage, Titan of Fire's Fury
@@ -13769,6 +13772,7 @@ Play with Fire
 Playful Shove
 Plaza of Harmony
 Plaza of Heroes
+Plea for Guidance
 Pledge of Loyalty
 Pledge of Unity
 Plover Knights
@@ -14682,6 +14686,7 @@ Reckless Pyrosurfer	intent: GrantTriggeredAbilityEffect
 Reckless Racer
 Reckless Rage
 Reckless Ransacking
+Reckless Reveler
 Reckless Scholar
 Reckless Spite
 Reckless Stormseeker
@@ -15161,6 +15166,7 @@ Rise of the Dread Marn
 Rise of the Varmints
 Rise of the Witch-king
 Rise to Glory
+Rise to the Challenge
 Risen Executioner
 Risen Necroregent
 Risen Reef
@@ -15776,6 +15782,7 @@ Satyr Enchanter
 Satyr Grovedancer
 Satyr Hedonist
 Satyr Hoplite
+Satyr Nyx-Smith
 Satyr Rambler
 Satyr Wayfinder
 Satyr's Cunning
@@ -16697,6 +16704,7 @@ Silent Departure
 Silent Gravestone
 Silent Hallcreeper
 Silent Observer
+Silent Sentinel
 Silent Skimmer
 Silent Specter
 Silent Submersible
@@ -16805,7 +16813,9 @@ Sire of Stagnation
 Sire of the Storm
 Siren Lookout
 Siren Reaver
+Siren Song Lyre
 Siren Stormtamer
+Siren of the Silent Song
 Siren's Call
 Siren's Ruse
 Sisay's Ring
@@ -17422,6 +17432,7 @@ Sphinx of the Second Sun	intent: AddBeginningPhaseEffect
 Sphinx of the Steel Wind
 Sphinx's Approach
 Sphinx's Decree
+Sphinx's Disciple
 Sphinx's Insight
 Sphinx's Revelation
 Sphinx's Tutelage
@@ -17938,6 +17949,7 @@ Storm, Windrider
 Storm-Kiln Artist
 Stormbeacon Blade
 Stormbind
+Stormcaller of Keranos
 Stormcarved Coast
 Stormcatch Mentor
 Stormchaser Chimera
@@ -20999,6 +21011,7 @@ Warbreak Trumpeter
 Warbriar Blessing
 Warbringer
 Warchanter Skald
+Warchanter of Mogis
 Warcry Phoenix
 Ward Sliver
 Warded Battlements
