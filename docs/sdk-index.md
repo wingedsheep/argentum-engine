@@ -1889,6 +1889,7 @@ Families:
 - `CantBeBlockedExceptBy(blockerFilter: GameObjectFilter, filter: GroupFilter)` — This creature can't be blocked except by creatures matching the filter.
 - `CantBeBlockedIfCastSpellType(spellFilter: GameObjectFilter, filter: GroupFilter)` — This creature can't be blocked if its controller has cast a spell matching the given filter this turn.
 - `CantBeBlockedIfDefenderControls(permanentFilter: GameObjectFilter, minCount: Int, filter: GroupFilter)` — This creature can't be blocked as long as the **defending player** controls at least minCount permanents matching permanentFilter — the landwalk shape generalized past land types.
+- `CantBeBlockedUnlessAllDefendersBlock(filter: GroupFilter)` — This creature can't be blocked unless **every** creature the defending player controls blocks it (Tromokratis).
 - `CantBeBlockedUnlessDefenderSharesCreatureType(minSharedCount: Int, filter: GroupFilter)` — This creature can't be blocked unless defending player controls N or more creatures that share a creature type.
 - `CantBeBlockedWhilePropertyAtMost(maxValue: Int, properties: Set<EntityNumericProperty>, filter: GroupFilter)` — Creatures matching filter can't be blocked while every stat in properties is at most maxValue — the "small creatures slip through" evasion, in both the scopes it is printed in: - **Tetsuko Umezawa,…
 - `CantBeSacrificed(filter: GroupFilter, scope: CantBeSacrificed.Scope)` — Permanents matching filter can't be sacrificed — at all, or only to pay a cost (scope).

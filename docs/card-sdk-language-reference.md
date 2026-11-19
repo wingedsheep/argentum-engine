@@ -4060,6 +4060,14 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   more creatures" = `CantBeBlockedByFewerThan(3, GroupFilter(GameObjectFilter.Creature.youControl()
   .withKeyword(Keyword.MENACE)))`. A copy granted via `Effects.GrantStaticAbility` is read too; the
   strictest minimum wins.
+- `CantBeBlockedUnlessAllDefendersBlock(filter = source())` (static ability) — "can't be blocked
+  unless all creatures defending player controls block it" (Tromokratis). The all-the-defender's-
+  creatures sibling of `CantBeBlockedByFewerThan`, checked in the same declaration-wide pass: it may be
+  left unblocked, but once anything blocks it every creature the defending player controls (projected
+  state — tapped and otherwise unable-to-block creatures included) must be among its blockers, so one
+  creature that can't or doesn't block it makes it unblockable. Printed, granted and group-filter
+  (host-projected) copies are all read. The AI reads it as unblockable whenever the defender controls
+  more than one creature.
 - `CantCastSpellsEffect(target, duration = EndOfTurn, spellFilter = Any, moreAllowed = 0)` — target can't cast matching
   spells from any zone. Facade: `Effects.CantCastSpells(target, duration, spellFilter, moreAllowed)`.
   `moreAllowed = N` lets each target cast N more spells first, counted from resolution (spells cast earlier

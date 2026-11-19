@@ -23,6 +23,7 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.combat.rules.BlockAsThoughReach
 import com.wingedsheep.engine.mechanics.combat.rules.LandwalkSuppression
 import com.wingedsheep.sdk.scripting.CantBeBlockedBy
+import com.wingedsheep.sdk.scripting.CantBeBlockedUnlessAllDefendersBlock
 import com.wingedsheep.sdk.scripting.CantBlockCreaturesWithGreaterPower
 
 /**
@@ -157,6 +158,15 @@ object CombatMath {
                 if (attackerDef != null) {
                     val attackerController = projected.getController(attacker)
                     val predicateEvaluator = PredicateEvaluator(cardRegistry)
+                    // "Can't be blocked unless all creatures defending player controls block it"
+                    // (Tromokratis): only a lone creature can stop it on its own, and the AI never
+                    // commits a whole board to one attacker — read it as unblockable otherwise.
+                    if (attackerDef.staticAbilities.any {
+                            it is CantBeBlockedUnlessAllDefendersBlock &&
+                                it.filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self
+                        } && blockerController != null &&
+                        projected.getBattlefieldControlledBy(blockerController).count { projected.isCreature(it) } > 1
+                    ) return false
                     for (ability in attackerDef.staticAbilities.filterIsInstance<CantBeBlockedBy>()) {
                         if (ability.filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self && attackerController != null) {
                             val ctx = PredicateContext(controllerId = attackerController, sourceId = attacker)

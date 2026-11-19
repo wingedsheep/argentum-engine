@@ -1,0 +1,1 @@
+- #TBD The AI reads "can't be blocked unless all creatures defending player controls block it" (Tromokratis) as evasion in combat math and card intent, and "can't be blocked except by N or more" as evasion in card intent.
