@@ -3910,6 +3910,7 @@ Cry of the Carnarium
 Cryogen Relic	intent: AddCountersEffect
 Cryoshatter
 Cryotheory Adept
+Crypsis
 Crypt Angel
 Crypt Creeper
 Crypt Feaster
@@ -9806,7 +9807,7 @@ Johan	intent: AttacksWithoutTappingGroupEffect; intent: CantAttackEffect
 Johann's Stopgap
 Johann, Apprentice Sorcerer
 Join Forces
-Join Shields	timing: ForEach>GrantKeywordEffect
+Join Shields
 Join the Dance
 Join the Dead
 Join the Maestros
