@@ -1374,14 +1374,27 @@ data class SelectFromCollectionEffect(
  * Empty piles are legal — the chooser still gets to assign the empty pile to
  * either side.
  *
+ * **More than two piles.** [additionalPiles] (labelled by [additionalPileLabels]) extends the
+ * choice past two — "separates all permanents they control into three piles" (Whims of the
+ * Fates) is `pileA`, `pileB` plus one additional pile. The chosen pile goes to [storeChosenAs];
+ * every other pile, merged, goes to [storeOtherAs].
+ *
+ * **At random.** [atRandom] is "chooses one of their piles at random": the engine, not a player,
+ * draws one pile uniformly with the game's seeded RNG (each pile, empty or not, has an equal
+ * chance — Whims of the Fates' ruling), presents no decision and announces nothing; the pick is
+ * revealed by whatever the pipeline then does with it. [chooser] is ignored.
+ *
  * @property pileA Name of the first pre-existing collection (e.g. "pileA")
  * @property pileB Name of the second pre-existing collection (e.g. "pileB")
  * @property pileALabel Display label for pile A (defaults to "Pile 1")
  * @property pileBLabel Display label for pile B (defaults to "Pile 2")
  * @property chooser Who picks (defaults to the controller of the source spell/ability)
  * @property storeChosenAs Collection name to store the picked pile under
- * @property storeOtherAs Collection name to store the non-picked pile under
+ * @property storeOtherAs Collection name to store the non-picked pile(s) under
  * @property prompt Custom prompt for the decision; defaults to a generic one
+ * @property additionalPiles Names of further piles after [pileA] and [pileB], in display order
+ * @property additionalPileLabels Display labels for [additionalPiles] (defaults to "Pile 3", …)
+ * @property atRandom The engine picks a pile uniformly at random instead of a player choosing
  */
 @SerialName("ChoosePile")
 @Serializable
@@ -1393,10 +1406,26 @@ data class ChoosePileEffect(
     val chooser: Chooser = Chooser.Controller,
     val storeChosenAs: String,
     val storeOtherAs: String,
-    val prompt: String? = null
+    val prompt: String? = null,
+    val additionalPiles: List<String> = emptyList(),
+    val additionalPileLabels: List<String> = additionalPiles.indices.map { "Pile ${it + 3}" },
+    val atRandom: Boolean = false
 ) : Effect {
+    init {
+        require(additionalPileLabels.size == additionalPiles.size) {
+            "ChoosePile: one label per additional pile (${additionalPiles.size} piles, ${additionalPileLabels.size} labels)"
+        }
+    }
+
+    /** Every pile in display order: [pileA], [pileB], then [additionalPiles]. */
+    val piles: List<String> get() = listOf(pileA, pileB) + additionalPiles
+
+    /** The display label of each of [piles], in the same order. */
+    val pileLabels: List<String> get() = listOf(pileALabel, pileBLabel) + additionalPileLabels
+
     override val description: String =
-        "Choose one pile: $pileALabel or $pileBLabel"
+        if (atRandom) "Choose one of ${piles.size} piles at random"
+        else "Choose one pile: ${pileLabels.joinToString(" or ")}"
 }
 
 /**

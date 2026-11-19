@@ -993,7 +993,11 @@ class PipelineBuilder private constructor(private val shared: Shared) {
         steps += RevealCollectionEffect(from = from.key, revealToSelf = revealToSelf, fromZone = fromZone, toZone = toZone)
     }
 
-    /** A player picks one of two piles; both are re-stored as chosen/other ([ChoosePileEffect]). */
+    /**
+     * A player picks one of two (or, with [additionalPiles], more) piles; the pick is re-stored as
+     * chosen and every other pile, merged, as other ([ChoosePileEffect]). [atRandom] has the engine
+     * pick uniformly instead — "chooses one of their piles at random".
+     */
     fun choosePile(
         pileA: CollectionSlot,
         pileB: CollectionSlot,
@@ -1002,7 +1006,10 @@ class PipelineBuilder private constructor(private val shared: Shared) {
         chooser: Chooser = Chooser.Controller,
         prompt: String? = null,
         chosenName: String? = null,
-        otherName: String? = null
+        otherName: String? = null,
+        additionalPiles: List<CollectionSlot> = emptyList(),
+        additionalPileLabels: List<String> = additionalPiles.indices.map { "Pile ${it + 3}" },
+        atRandom: Boolean = false
     ): PileSlots {
         val index = nextIndex()
         val chosen = CollectionSlot(slotKey("chosenPile", index, chosenName))
@@ -1015,7 +1022,10 @@ class PipelineBuilder private constructor(private val shared: Shared) {
             chooser = chooser,
             storeChosenAs = chosen.key,
             storeOtherAs = other.key,
-            prompt = prompt
+            prompt = prompt,
+            additionalPiles = additionalPiles.map { it.key },
+            additionalPileLabels = additionalPileLabels,
+            atRandom = atRandom
         )
         return PileSlots(chosen, other)
     }

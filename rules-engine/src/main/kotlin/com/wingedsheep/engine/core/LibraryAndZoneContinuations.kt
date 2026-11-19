@@ -171,14 +171,11 @@ data class NoteCreatureTypePipelineContinuation(
 
 /**
  * Resume after the chooser picks one of two pre-existing pipeline collections
- * (a "pile"). Index 0 = pile A, index 1 = pile B. Used by [ChoosePileEffect]
+ * (a "pile"). Option index n = pile n of [pileIds]. Used by [ChoosePileEffect]
  * (Fact or Fiction's "you choose which pile is which" step).
  *
  * @property playerId The chooser
- * @property pileAIds The cards currently stored under [pileAName]
- * @property pileBIds The cards currently stored under [pileBName]
- * @property pileAName Original collection name for pile A
- * @property pileBName Original collection name for pile B
+ * @property pileIds The cards of each pile, in option order
  * @property storeChosenAs Collection name where the picked pile's cards land
  * @property storeOtherAs Collection name where the non-picked pile's cards land
  * @property storedCollections Snapshot of pipeline collections at pause time
@@ -188,10 +185,7 @@ data class ChoosePileContinuation(
     val playerId: EntityId,
     val sourceId: EntityId?,
     val sourceName: String?,
-    val pileAIds: List<EntityId>,
-    val pileBIds: List<EntityId>,
-    val pileAName: String,
-    val pileBName: String,
+    val pileIds: List<List<EntityId>>,
     val storeChosenAs: String,
     val storeOtherAs: String,
     val storedCollections: Map<String, List<EntityId>> = emptyMap(),

@@ -4642,6 +4642,109 @@
     ]
 }
 
+// Whims of the Fates
+{
+    "name": "Whims of the Fates",
+    "manaCost": "{5}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Starting with you, each player separates all permanents they control into three piles. Then each player chooses one of their piles at random and sacrifices those permanents. (Piles can be empty.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachStartingWithYou"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": "ControlledPermanents",
+                                "storeAs": "gathered1"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered1",
+                                "selection": "ChooseAnyNumber",
+                                "storeSelected": "selected2",
+                                "storeRemainder": "remainder2",
+                                "prompt": "Separate your permanents into three piles. The permanents you select form Pile 1.",
+                                "selectedLabel": "Pile 1",
+                                "remainderLabel": "Piles 2 and 3",
+                                "useTargetingUI": true,
+                                "alwaysPrompt": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "remainder2",
+                                "selection": "ChooseAnyNumber",
+                                "storeSelected": "selected3",
+                                "storeRemainder": "remainder3",
+                                "prompt": "The permanents you select form Pile 2; the rest form Pile 3.",
+                                "selectedLabel": "Pile 2",
+                                "remainderLabel": "Pile 3",
+                                "useTargetingUI": true,
+                                "alwaysPrompt": true
+                            },
+                            {
+                                "type": "ChoosePile",
+                                "pileA": "selected2",
+                                "pileB": "selected3",
+                                "storeChosenAs": "chosenPile4",
+                                "storeOtherAs": "otherPile4",
+                                "additionalPiles": [
+                                    "remainder3"
+                                ],
+                                "atRandom": true
+                            }
+                        ]
+                    },
+                    "collectCollections": {
+                        "chosenPile4": "collected5"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "collected5",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Sacrifice"
+                }
+            ],
+            "descriptionOverride": "Starting with you, each player separates all permanents they control into three piles. Then each player chooses one of their piles at random and sacrifices those permanents."
+        }
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "rarity": "RARE",
+        "artist": "Seb McKinnon",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a7ef2fc3-0072-450b-acab-7d19c4903128.jpg?1783939539",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "To choose a pile at random, each pile must have an equal chance of being chosen. There are many ways to do this, including assigning each pile a number and rolling a die."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "You may put Auras or Equipment into one pile and the creatures they were attached to into a different pile."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If you put all permanents you control into one pile, you'll have a two-thirds chance of not having to sacrifice any permanents, but a one-third chance of having to sacrifice all of them."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Xenagos, God of Revels
 {
     "name": "Xenagos, God of Revels",
