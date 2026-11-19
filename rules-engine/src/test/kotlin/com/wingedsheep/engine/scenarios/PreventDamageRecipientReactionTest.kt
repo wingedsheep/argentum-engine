@@ -179,10 +179,12 @@ class PreventDamageRecipientReactionTest : FunSpec({
         val player = driver.activePlayer!!
         val executor = PreventDamageExecutor(driver.services.predicateEvaluator.amounts)
 
-        // "Prevent the next 2 damage that would be dealt to you" has no recipient-side lowering for a reaction.
+        // "Prevent the next 2 damage of the next instance dealt to you" — a capped next-instance shield
+        // has no lowering for a reaction (the plain amount shield does: Acolyte's Reward).
         val unsupported: PreventDamageEffect = PreventDamageEffect(
             amount = DynamicAmounts.fixed(2),
             direction = PreventionDirection.ToTarget,
+            nextInstanceOnly = true,
             onPrevented = Effects.GainLife(DynamicAmounts.preventedDamage()),
         )
         val result = executor.execute(driver.state, unsupported, EffectContext(sourceId = null, controllerId = player))

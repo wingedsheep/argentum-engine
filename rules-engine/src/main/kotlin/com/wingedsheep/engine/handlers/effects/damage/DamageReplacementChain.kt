@@ -603,9 +603,10 @@ object DamageReplacementChain {
                             val active = current.floatingEffects.firstOrNull { it.id == floating.id }
                             val remaining = (active?.effect?.modification as? SerializableModification.PreventNextDamage)?.remainingAmount ?: 0
                             val left = remaining - prevented
-                            val next = current.copy(floatingEffects = current.floatingEffects.mapNotNull {
+                            val shrunk = current.copy(floatingEffects = current.floatingEffects.mapNotNull {
                                 if (it.id != floating.id) it else if (left == 0) null else it.copy(effect = it.effect.copy(modification = mod.copy(remainingAmount = left)))
                             })
+                            val next = if (mod.onPrevented == null || prevented <= 0) shrunk else queuePreventedReaction(shrunk, floating, mod, d.targetId, prevented)
                             Step(next, listOf(d.copy(amount = d.amount - prevented)),
                                 gains = if (mod.controllerGainsLife && prevented > 0) mapOf(floating.controllerId to prevented) else emptyMap())
                         }) { error("Finite prevention is allocated over the whole damage batch") }
@@ -739,6 +740,37 @@ object DamageReplacementChain {
                 }
             }
         }
+    }
+
+    /**
+     * "If damage is prevented this way, Acolyte's Reward deals that much damage to any target": the
+     * reaction is part of the prevention (no stack). Simultaneous damage is one event the shield
+     * applies to once, so a batch's allocations add into the one rider this shield already queued
+     * for its recipient rather than queuing a reaction per source. The merge spans
+     * the riders not yet drained, i.e. the settling action, so two separate damage instructions of one
+     * spell to the shielded creature also make one reaction of their total.
+     */
+    private fun queuePreventedReaction(
+        state: GameState,
+        floating: ActiveFloatingEffect,
+        mod: SerializableModification.PreventNextDamage,
+        recipientId: EntityId,
+        prevented: Int,
+    ): GameState {
+        val effect = requireNotNull(mod.onPrevented)
+        val hostId = floating.sourceId ?: floating.controllerId
+        val riders = state.pendingReplacementRiders
+        val existing = riders.indexOfFirst {
+            it.effect == effect && it.hostId == hostId && it.controllerId == floating.controllerId &&
+                it.subjectId == recipientId && it.targets == mod.onPreventedTargets
+        }
+        val updated = if (existing >= 0) {
+            riders.toMutableList().also { it[existing] = it[existing].copy(amount = it[existing].amount + prevented) }
+        } else {
+            riders + PendingReplacementRider(effect, hostId, floating.controllerId, recipientId, amount = prevented,
+                targets = mod.onPreventedTargets, namedTargets = mod.onPreventedNamedTargets, boundObjects = mod.onPreventedBound)
+        }
+        return state.copy(pendingReplacementRiders = updated)
     }
 
     private fun originOf(state: GameState, sourceId: EntityId): EntityId? {

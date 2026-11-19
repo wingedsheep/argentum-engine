@@ -382,10 +382,7 @@ class PreventDamageExecutor(
                     // rest names targets chosen as the spell was cast, so they ride the shield.
                     onPreventedTargets = if (effect.onPrevented != null) context.targets else emptyList(),
                     onPreventedNamedTargets = if (effect.onPrevented != null) context.pipeline.namedTargets else emptyMap(),
-                    onPreventedBound = if (effect.onPrevented == null) emptyList() else
-                        (context.targets + context.pipeline.namedTargets.values).mapNotNull { t ->
-                            (t as? ChosenTarget.Permanent)?.entityId?.takeIf { it in state.getBattlefield() }
-                        }.distinct().map { CapturedObjectBinding(it, state.objectRef(it)) },
+                    onPreventedBound = if (effect.onPrevented == null) emptyList() else frozenBindings(state, context),
                 )
             }
 
@@ -506,11 +503,27 @@ class PreventDamageExecutor(
                 val effectAmount = effect.amount!!
                 val amount = amountEvaluator.evaluate(state, effectAmount, context)
                 if (amount <= 0) return EffectResult.success(state)
+                // A reaction on the amount shield must not hide a shape it would ignore.
+                if (effect.onPrevented != null && (!effect.preventDamage || effect.nextInstanceOnly ||
+                        effect.halvePreventedDamage || effect.direction != PreventionDirection.ToTarget)
+                ) {
+                    return EffectResult.error(
+                        state,
+                        "An amount shield with onPrevented prevents the next N damage to its target; " +
+                            "preventDamage = false, nextInstanceOnly, halvePreventedDamage and FromTarget aren't supported"
+                    )
+                }
                 affectedEntities = setOf(targetId)
                 modification = SerializableModification.PreventNextDamage(
                     amount,
                     controllerGainsLife = effect.gainLifeFromPrevented,
-                    combatOnly = effect.scope == PreventionScope.CombatOnly
+                    combatOnly = effect.scope == PreventionScope.CombatOnly,
+                    // "If damage is prevented this way, Acolyte's Reward deals that much damage to
+                    // any target": the reaction names targets chosen as the spell was cast.
+                    onPrevented = effect.onPrevented,
+                    onPreventedTargets = if (effect.onPrevented != null) context.targets else emptyList(),
+                    onPreventedNamedTargets = if (effect.onPrevented != null) context.pipeline.namedTargets else emptyMap(),
+                    onPreventedBound = if (effect.onPrevented == null) emptyList() else frozenBindings(state, context),
                 )
             }
 
@@ -531,10 +544,13 @@ class PreventDamageExecutor(
 
         // A reaction only runs where the lowering keeps it; any other shape would drop it silently
         // and the card would read as a plain prevention.
-        if (effect.onPrevented != null && (modification as? SerializableModification.PreventAllDamageToGroup)?.onPrevented == null) {
+        val keepsReaction = (modification as? SerializableModification.PreventAllDamageToGroup)?.onPrevented != null ||
+            (modification as? SerializableModification.PreventNextDamage)?.onPrevented != null
+        if (effect.onPrevented != null && !keepsReaction) {
             return EffectResult.error(
                 state,
-                "PreventDamageEffect.onPrevented needs a Chosen source, FromTarget, or a recipient-side shield (to you / to a group)"
+                "PreventDamageEffect.onPrevented needs a Chosen source, FromTarget, a recipient-side shield (to you / to a group), " +
+                    "or an amount shield on one target"
             )
         }
 
@@ -549,4 +565,10 @@ class PreventDamageExecutor(
 
         return EffectResult.success(newState)
     }
+
+    /** Pins each battlefield target the reaction may name to the object it is now (CR 400.7). */
+    private fun frozenBindings(state: GameState, context: EffectContext): List<CapturedObjectBinding> =
+        (context.targets + context.pipeline.namedTargets.values).mapNotNull { t ->
+            (t as? ChosenTarget.Permanent)?.entityId?.takeIf { it in state.getBattlefield() }
+        }.distinct().map { CapturedObjectBinding(it, state.objectRef(it)) }
 }
