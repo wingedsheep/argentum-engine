@@ -925,6 +925,80 @@
     ]
 }
 
+// Riddle of Lightning
+{
+    "name": "Riddle of Lightning",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Choose any target. Scry 3, then reveal the top card of your library. Riddle of Lightning deals damage equal to that card's mana value to that permanent or player.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Scry",
+                    "count": 3
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "gathered0"
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "StoredCardManaValue",
+                                "collectionName": "gathered0"
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "artist": "Daren Bader",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/338be9e2-c0b8-4b69-b7b6-6ba9927a3a4d.jpg?1783943104",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "If the chosen target is an illegal target by the time Riddle of Lightning tries to resolve, the spell doesn't resolve. You don't scry 3 or reveal any card."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "If a card in a player's library has {X} in its mana cost, X is considered to be 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Rites of Flourishing
 {
     "name": "Rites of Flourishing",

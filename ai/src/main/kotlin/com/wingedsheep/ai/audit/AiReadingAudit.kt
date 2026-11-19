@@ -64,7 +64,9 @@ import com.wingedsheep.sdk.scripting.effects.EmitKeywordCounterEventEffect
 import com.wingedsheep.sdk.scripting.effects.ExileAndReturnTransformedEffect
 import com.wingedsheep.sdk.scripting.effects.ExploreEffect
 import com.wingedsheep.sdk.scripting.effects.LoseGameEffect
+import com.wingedsheep.sdk.scripting.effects.FightEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
+import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersToCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.Chooser
@@ -786,7 +788,11 @@ object AiReadingAudit {
             // "… loses all abilities until end of turn. Target creature you control deals damage equal
             // to its power to that permanent" (Flourishing Grapple): the strip clears the way for the
             // damage as the spell resolves, so it too is spent on the removal's timing.
+            // "Any number of target creatures each get +1/+1 and gain '{T}: This creature fights
+            // another target creature'" (Setessan Tactics): the stats are the fights' setup, cast in
+            // the removal's window (CardIntentAnalyzer withholds the trick reading from it).
             val ridesOnRemoval = (leaf is MarkExileOnDeathEffect || expiring is EachPermanentBecomesCopyOfTargetEffect ||
+                (leaf is ForEachEffect && expiring is ModifyStatsEffect && grantsFightThisTurn(leaf.body)) ||
                 expiring is CantBlockEffect || expiring is CantAttackEffect || expiring is RemoveAllAbilitiesEffect) && removal
             // "This land becomes a copy of target creature you control until end of turn. The legend
             // rule doesn't apply to permanents you control this turn" (Hall of Echoes): the waiver only
@@ -821,6 +827,12 @@ object AiReadingAudit {
                 sink += gap(Check.TIMING, "no timing for this until-end-of-turn effect", label, step(leaves, leaf))
             }
         }
+    }
+
+    /** Whether [body] hands its target a fight until end of turn — "gain '{T}: This creature fights …'". */
+    private fun grantsFightThisTurn(body: Effect): Boolean = EffectWalker.leaves(body).any { leaf ->
+        leaf is GrantActivatedAbilityEffect && leaf.duration == Duration.EndOfTurn &&
+            EffectWalker.leaves(leaf.ability.effect).any { it is FightEffect }
     }
 
     private fun modal(root: Effect, sink: Sink) {
