@@ -344,6 +344,7 @@ Ajani's Welcome
 Ajani, Adversary of Tyrants
 Ajani, Caller of the Pride
 Ajani, Inspiring Leader
+Ajani, Mentor of Heroes
 Ajani, Nacatl Pariah
 Ajani, Outland Chaperone
 Ajani, Sleeper Agent	intent: CreateGlobalTriggeredAbilityEffect
@@ -6307,6 +6308,7 @@ Fearless Swashbuckler
 Fearsome Awakening
 Fearsome Goblin Pair
 Feast of Blood
+Feast of Dreams
 Feast of Worms
 Feast of the Victorious Dead
 Feast on the Fallen
@@ -6618,6 +6620,7 @@ Flames of the Raze-Boar
 Flamescroll Celebrant	timing: CantActivateLoyaltyAbilitiesEffect; timing: CantCastSpellsEffect
 Flameshadow Conjuring
 Flameskull	intent: GrantMayPlayFromExileEffect; intent: Pipeline(Entity|TopOfLibrary|exile→exile)
+Flamespeaker's Will
 Flamestick Courier
 Flametongue Kavu
 Flamewake Phoenix
@@ -6649,6 +6652,7 @@ Fledgling Imp
 Fledgling Mawcor
 Fleet Swallower
 Fleet-Footed Monk
+Fleetfeather Cockatrice
 Fleetfeather Sandals
 Fleetfoot Dancer
 Fleeting Aven
@@ -6774,6 +6778,7 @@ Font of Fortunes
 Font of Ire
 Font of Mythos
 Font of Progress
+Font of Return
 Font of Vigor
 Food Coma
 Food Fight
@@ -7597,6 +7602,7 @@ Glowrider
 Glowspore Shaman
 Glowstone Recluse
 Gluntch, the Bestower
+Gluttonous Cyclops
 Gluttonous Guest
 Gluttonous Slime
 Gluttonous Troll
@@ -7805,6 +7811,7 @@ Golden-Scale Aeronaut
 Golden-Tail Disciple
 Golden-Tail Trainer
 Goldenglow Moth
+Goldenhide Ox
 Goldfury Strider
 Goldhound
 Goldlust Triad
@@ -8920,6 +8927,7 @@ Huatli, Poet of Unity	intent: GrantStaticAbilityEffect
 Huatli, Radiant Champion
 Huatli, Warrior Poet
 Huatli, the Sun's Heart
+Hubris
 Hugs, Grisly Guardian
 Hulk, Gamma Goliath
 Hulking Bugbear
@@ -9024,6 +9032,7 @@ Hymn to Tourach
 Hyperion Blacksmith
 Hypnotic Cloud
 Hypnotic Grifter
+Hypnotic Siren
 Hypnotic Specter
 Hypnotic Sprite
 Hypochondria
@@ -10129,6 +10138,7 @@ Kinetic Augur
 King Crab
 King Darien XLVIII
 King Harald's Revenge
+King Macar, the Gold-Cursed
 King Narfi's Betrayal	intent: ForEach>Pipeline(graveyard→?); intent: GrantMayPlayFromExileEffect; intent: Pipeline(FromLinkedExile→?); intent: Pipeline(TopOfLibrary→exile|graveyard)
 King Suleiman
 King T'Challa
@@ -10244,6 +10254,7 @@ Knockout Maneuver
 Knollspine Dragon
 Knowledge Seeker
 Knowledge Vault	intent: Pipeline(FromLinkedExile|hand→graveyard|hand); intent: Pipeline(TopOfLibrary→exile)
+Knowledge and Power
 Knucklebone Witch
 Kobayashi Maru Scenario
 Kobold Drill Sergeant
@@ -12480,6 +12491,7 @@ Neriv, Heart of the Storm
 Nervous Gardener
 Nessian Boar
 Nessian Courser
+Nessian Game Warden
 Nessian Hornbeetle
 Nessian Wanderer
 Nest Robber
@@ -12578,6 +12590,7 @@ Nightmare Shepherd
 Nightmare Sower
 Nightmare Void
 Nightmare's Thirst
+Nightmarish End
 Nightpack Ambusher
 Nightscape Apprentice	polarity: MoveToZoneEffect
 Nightscape Familiar
@@ -13502,10 +13515,12 @@ Pharika's Disciple
 Pharika's Libation
 Pharika's Mender
 Pharika's Spawn
+Pharika, God of Affliction
 Phase Dolphin
 Phelia, Exuberant Shepherd	intent: Pipeline(ChosenTargets→battlefield|exile); polarity: CreateDelayedTriggerEffect; polarity: Pipeline(ChosenTargets→exile)
 Pheres-Band Brawler
 Pheres-Band Centaurs
+Pheres-Band Thunderhoof
 Pheres-Band Warchief
 Phial of Galadriel
 Phlage, Titan of Fire's Fury
