@@ -1048,7 +1048,8 @@ data class PutOntoBattlefieldThen(
  *                  additional counter" (Metallic Mimic). The [selfOnly] mirror, and the same flag
  *                  [EntersWithDynamicCounters] carries: the source's own entry path skips an
  *                  `otherOnly` effect, so the source can never counter itself as it enters. Leave
- *                  false for a group effect that also covers the source's own entry. * @param placedBy Who *puts* the counters on (CR 122.6a) — [Player.You] (the entering permanent's
+ *                  false for a group effect that also covers the source's own entry.
+ * @param placedBy Who *puts* the counters on (CR 122.6a) — [Player.You] (the entering permanent's
  *                  controller, the default) or [Player.AnOpponent], the opponent who chose to pay
  *                  Tribute (CR 702.104a: "That player may put an additional N +1/+1 counters on it";
  *                  ruling 2017-04-18: the player chosen to pay tribute puts those counters on it).

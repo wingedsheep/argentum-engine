@@ -1034,8 +1034,10 @@ object DamageUtils {
      *    target's *projected* controller, exactly as [markCounterPlacedOnCreature] does, so a call
      *    site can never let a hand-computed boolean drift out of sync with the id it already holds.
      *  - **[byController]** — the enters-with-counters case, where the object is not on the
-     *    battlefield yet and so has no projected controller to compare against. CR 122.6a fixes the
-     *    answer to `true` there regardless of whose effect caused the counters.
+     *    battlefield yet and so has no projected controller to compare against. CR 122.6a makes the
+     *    entering permanent's controller the placer, whatever effect caused the counters — so the
+     *    caller passes `true`, unless a rule names another placer (Tribute's chosen opponent passes
+     *    `false` with [entering] still set).
      *
      * [counterType] is required for that reason: a kind-less mark would satisfy neither the
      * type-scoped reading nor the widest one, both of which answer from the recorded kind sets.

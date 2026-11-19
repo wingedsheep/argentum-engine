@@ -1,1 +1,1 @@
-- #TBD Answers an opponent's Tribute (pay or not) by weighing the counters against the "if tribute wasn't paid" trigger, and rates Tribute creatures' counters in draft
+- #TBD Rates Tribute creatures' counters (the half of the bargain an opponent may hand over) in draft

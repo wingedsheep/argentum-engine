@@ -32,9 +32,9 @@ fun tributeModeOptions(n: Int): List<ModeOption> = listOf(
 
 /**
  * `Conditions.TributeNotPaid` — "if tribute wasn't paid" (CR 702.104b) — true unless the opponent chose to put the tribute
- * counters on the source as it entered. Read off the source's durable cast-choices bag, so the
- * intervening-if holds on resolution even after the creature has left the battlefield (its bag is
- * gone, and no tribute was paid by the object that's left).
+ * counters on the source as it entered. Read off the source's cast-choices bag. Once the creature has
+ * left the battlefield that bag is gone, so the condition reads true — which is what the rulings want:
+ * the trigger only exists when tribute wasn't paid, and it still resolves after the creature leaves.
  */
 internal val TributeNotPaidCondition: Condition = NotCondition(SourceChosenModeIs(TRIBUTE_MODE_PAID))
 
