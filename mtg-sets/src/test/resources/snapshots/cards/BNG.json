@@ -2813,6 +2813,128 @@
     ]
 }
 
+// Mindreaver
+{
+    "name": "Mindreaver",
+    "manaCost": "{U}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Heroic — Whenever you cast a spell that targets this creature, exile the top three cards of target player's library.\n{U}{U}, Sacrifice this creature: Counter target spell with the same name as a card exiled with this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mindreaver:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "player": "TargetPlayer"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, exile the top three cards of target player's library."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Mindreaver:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{U}{U}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": "Counter",
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "SharesNameWithLinkedExile"
+                                ]
+                            },
+                            "zone": "Stack"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "{U}{U}, Sacrifice this creature: Counter target spell with the same name as a card exiled with this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "RARE",
+        "artist": "Wesley Burt",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/87912ae7-3edc-4ea2-9b4b-caf2bc149ad1.jpg?1783939567",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "The cards are exiled face up. All players can look at them."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If Mindreaver leaves the battlefield, and later another Mindreaver enters the battlefield, it is a new object (even if the two were represented by the same card). The last ability of the second Mindreaver doesn't refer to any cards exiled with the first one."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Mischief and Mayhem
 {
     "name": "Mischief and Mayhem",
