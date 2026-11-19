@@ -366,9 +366,9 @@ sealed interface SerializableModification {
      * leaves the shield untouched.
      *
      * [onPrevented] is the rest of the shield's printed text — "if damage is prevented this way,
-     * Acolyte's Reward deals that much damage to any target". Each damage event the shield prevents
-     * damage from queues it once as a [com.wingedsheep.engine.replacement.PendingReplacementRider]
-     * carrying the total it prevented in that event (simultaneous combat damage from several
+     * Acolyte's Reward deals that much damage to any target". Each settled action in which the shield
+     * prevents damage queues it once as a [com.wingedsheep.engine.replacement.PendingReplacementRider]
+     * carrying the total it prevented there (simultaneous combat damage from several
      * sources is one event, so one reaction). It names the creating spell's targets through
      * [onPreventedTargets] / [onPreventedNamedTargets] / [onPreventedBound], frozen as for
      * [PreventAllDamageToGroup]. Damage that can't be prevented doesn't spend the shield and

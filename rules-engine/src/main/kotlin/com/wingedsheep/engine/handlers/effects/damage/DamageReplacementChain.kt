@@ -746,7 +746,9 @@ object DamageReplacementChain {
      * "If damage is prevented this way, Acolyte's Reward deals that much damage to any target": the
      * reaction is part of the prevention (no stack). Simultaneous damage is one event the shield
      * applies to once, so a batch's allocations add into the one rider this shield already queued
-     * for its recipient rather than queuing a reaction per source.
+     * for its recipient rather than queuing a reaction per source. The merge spans
+     * the riders not yet drained, i.e. the settling action, so two separate damage instructions of one
+     * spell to the shielded creature also make one reaction of their total.
      */
     private fun queuePreventedReaction(
         state: GameState,
