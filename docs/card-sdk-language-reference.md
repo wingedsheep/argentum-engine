@@ -15878,7 +15878,17 @@ MacCready, Lamplight Mayor (granted).
   "loses all abilities" strips it) while N is read from the printed `KeywordAbility.Numeric`, and
   per CR 702.123b each printed instance becomes its own trigger with its own N — two instances are
   two separate decisions, never one summed fabricate. Pinned by `FabricateScenarioTest`.
-- `Tribute(n)` — opponent chooses ETB bonus.
+- `Tribute(n)` — "Tribute N (As this creature enters, an opponent of your choice may put N +1/+1 counters on it.)"
+  (CR 702.104). Display-only numeric keyword; wire it with the `card { tribute(n) }` builder helper
+  (`dsl/mechanics/TributeDsl.kt`), which composes the Riot shape: an `EntersWithChoice(ChoiceType.MODE, chooser =
+  Player.AnOpponent, [tribute_paid, tribute_not_paid])` (the opponent answers as it enters — a replacement, no stack,
+  no response window) + a mode-gated `EntersWithCounters(count = n, selfOnly = true, condition =
+  SourceChosenModeIs("tribute_paid"), placedBy = Player.AnOpponent)` — the opponent puts the counters on (ruling
+  2017-04-18), so the controller's "if **you** would put counters" replacements don't apply to them. The card's
+  "When this creature enters, if tribute wasn't paid, …" line is an ordinary `Triggers.self.enters()` with
+  `interveningIf = Conditions.TributeNotPaid` (CR 702.104b; `Not(SourceChosenModeIs("tribute_paid"))`, so it still
+  resolves after the creature has left the battlefield). Every entry path asks — cast, reanimation, blink.
+  Fanatic of Xenagos, Snake of the Golden Grove. Engine test: `TributeTest`.
 - `Mobilize(n)` — +N tapped-and-attacking 1/1 red Warrior tokens on attack (Tarkir: Dragonstorm, Mardu).
   Display-only; wire the behavior with the `card { mobilize(n) }` builder helper, which adds this keyword
   ability plus a "whenever this attacks" triggered `CreateTokenEffect` (`tapped = true`, `attacking = true`)
@@ -20626,9 +20636,11 @@ The priority groups are (CR 616.1a–f):
   The observable difference is that the entry's triggers are matched against the pre-choice
   characteristics — a "whenever a Mountain enters" trigger won't see the type a Multiversal Passage
   just chose. Both entry paths behave the same way here, so it is consistent, not path-dependent.
-- `EntersWithCounters(counterType?, count, selfOnly?, condition?, otherOnly?, appliesTo?)` /
+- `EntersWithCounters(counterType?, count, selfOnly?, condition?, otherOnly?, appliesTo?, placedBy?)` /
   `EntersWithDynamicCounters(counterType?, count, otherOnly?, appliesTo?, activeZones?)` — "[permanent] enters with
-  N counters." `EntersWithCounters` takes a fixed `count: Int` (Master Biomancer, Metallic Mimic);
+  N counters." `EntersWithCounters` takes a fixed `count: Int` (Master Biomancer, Metallic Mimic); its
+  `placedBy` (`Player.You` default, or `Player.AnOpponent` for Tribute) names who puts them on (CR 122.6a) — read by
+  placer-scoped counter replacements and `CountersAddedEvent.placedBy`;
   `EntersWithDynamicCounters` takes a `count: DynamicAmount` (Stag Beetle; the SOS Converge "Archaic"
   cycle via `convergeEntersWithCounters()` → `count = DistinctColorsManaSpent`). `appliesTo` defaults
   to "creatures you control entering the battlefield." A dynamic count is measured **as of just before

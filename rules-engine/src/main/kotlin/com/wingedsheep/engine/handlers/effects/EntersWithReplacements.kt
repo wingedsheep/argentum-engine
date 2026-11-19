@@ -31,6 +31,7 @@ import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EntersWithChoice
 import com.wingedsheep.sdk.scripting.EntersWithCounters
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.EntersWithDynamicCounters
 import com.wingedsheep.sdk.scripting.EntersWithKeywords
 import com.wingedsheep.sdk.scripting.Vanishing
@@ -249,13 +250,21 @@ object EntersWithReplacements {
                         )
                         if (!predicateEvaluator.conditions.evaluate(newState, effect.condition!!, condContext)) continue
                     }
-                    if (counterTotals != null) {
+                    // CR 122.6a — who puts them on: the controller, or (Tribute, CR 702.104a) the
+                    // opponent who chose to pay — the same opponent an `AnOpponent` entry choice asks.
+                    val placerId = when (effect.placedBy) {
+                        Player.AnOpponent -> newState.getOpponents(controllerId).firstOrNull() ?: controllerId
+                        else -> controllerId
+                    }
+                    // Supplied-counter totals are the controller's placement; another placer's
+                    // counters are a placement of their own.
+                    if (counterTotals != null && placerId == controllerId) {
                         counterTotals[effect.counterType] = (counterTotals[effect.counterType] ?: 0) + effect.count
                         continue
                     }
                     val (afterCounters, counterEvents) = placeEntryCounters(
                         newState, entityId, effect.counterType, effect.count, controllerId, entityName,
-                        predicateEvaluator = predicateEvaluator
+                        predicateEvaluator = predicateEvaluator, placerId = placerId
                     )
                     newState = afterCounters
                     events.addAll(counterEvents)
@@ -360,12 +369,13 @@ object EntersWithReplacements {
         controllerId: EntityId,
         entityName: String,
         predicateEvaluator: PredicateEvaluator,
-        replacementSourceState: GameState? = null
+        replacementSourceState: GameState? = null,
+        placerId: EntityId = controllerId,
     ): Pair<GameState, List<GameEvent>> {
         val prospective = prospectiveEntryView(state, entityId, replacementSourceState)
         if (count <= 0 || !prospective.projectedState.canReceiveCounters(entityId)) return state to emptyList()
         val modifiedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(
-            prospective, entityId, counterType, count, placerId = controllerId,
+            prospective, entityId, counterType, count, placerId = placerId,
             predicateEvaluator = predicateEvaluator, replacementSourceState = replacementSourceState, byEffect = true
         )
         // A modifier can cut the placement to nothing; then no counter was put on it (no event).
@@ -374,17 +384,17 @@ object EntersWithReplacements {
         var newState = state.updateEntity(entityId) { c ->
             c.with(current.withAdded(counterType, modifiedCount))
         }
-        // CR 122.6a — the entering object's controller is the one putting these counters on, so the
-        // marker records both axes and a "you've put +1/+1 counters on it this turn" filter (Kid
-        // Loki) sees a creature that *entered* with them.
+        // CR 122.6a — the entering object's controller is usually the one putting these counters on
+        // ([placerId] says otherwise for Tribute), so the marker records both axes and a "you've put
+        // +1/+1 counters on it this turn" filter (Kid Loki) sees a creature that *entered* with them.
         val (afterMark, firstThisTurn, firstOfTypeThisTurn) = DamageUtils.recordCounterPlacement(
-            newState, entityId, counterType, byController = true
+            newState, entityId, counterType, byController = placerId == controllerId, entering = true
         )
         newState = afterMark
         return newState to listOf(
             CountersAddedEvent(
                 entityId, counterType, modifiedCount, entityName, firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn,
-                placedBy = controllerId
+                placedBy = placerId
             )
         )
     }

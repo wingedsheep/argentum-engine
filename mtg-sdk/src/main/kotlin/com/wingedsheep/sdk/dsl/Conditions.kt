@@ -1108,6 +1108,13 @@ object Conditions {
         WasCastFromZoneCondition(Zone.GRAVEYARD)
 
     /**
+     * "If tribute wasn't paid" (CR 702.104b) — the intervening-if of a Tribute creature's enters
+     * trigger. See [tribute] (`dsl/mechanics/TributeDsl.kt`).
+     */
+    val TributeNotPaid: ConditionInterface =
+        TributeNotPaidCondition
+
+    /**
      * If this spell was kicked.
      * Used for kicker spells like Shivan Fire.
      */
