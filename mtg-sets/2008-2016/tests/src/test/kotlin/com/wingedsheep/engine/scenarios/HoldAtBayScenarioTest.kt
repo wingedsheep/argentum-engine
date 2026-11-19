@@ -52,5 +52,30 @@ class HoldAtBayScenarioTest : ScenarioTestBase() {
 
             game.getLifeTotal(2) shouldBe 20
         }
+
+        test("the shield stops after 7 damage and the rest gets through") {
+            val game = scenario()
+                .withPlayers("P1", "P2")
+                .withCardInHand(1, "Hold at Bay")
+                .withCardInHand(1, "Lightning Bolt")
+                .withCardInHand(1, "Lightning Bolt")
+                .withCardInHand(1, "Lightning Bolt")
+                .withLandsOnBattlefield(1, "Plains", 2)
+                .withLandsOnBattlefield(1, "Mountain", 4)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            game.castSpellTargetingPlayer(1, "Hold at Bay", 2).error shouldBe null
+            game.resolveStack()
+            repeat(3) {
+                game.castSpellTargetingPlayer(1, "Lightning Bolt", 2).error shouldBe null
+                game.resolveStack()
+            }
+
+            withClue("9 damage, 7 prevented") {
+                game.getLifeTotal(2) shouldBe 18
+            }
+        }
     }
 }
