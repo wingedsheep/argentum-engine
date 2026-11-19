@@ -37,8 +37,9 @@ data class AttackTaxManaSelectionContinuation(
 ) : AnswerContinuation
 
 /**
- * Resume after the attacking player chooses which permanents to pay with (sacrifice or return to hand) to declare an attacker
- * carrying [com.wingedsheep.sdk.scripting.CantAttackUnlessPermanentCost] (Leviathan). One frame per
+ * Resume after the attacking player chooses which permanents to pay with — sacrifice (Leviathan)
+ * or return to hand (Floodtide Serpent) — to declare an attacker carrying
+ * [com.wingedsheep.sdk.scripting.CantAttackUnlessPermanentCost]. One frame per
  * paying attacker: [remaining] holds the attackers still owing a permanent cost, so a board with two
  * such creatures asks twice and each choice is made knowing the previous one.
  *
@@ -48,7 +49,8 @@ data class AttackTaxManaSelectionContinuation(
  * before enlist and permanent-cost payments are committed.
  *
  * @property attackingPlayer Player who declared the attack and pays the cost.
- * @property attackers The full declared [attacker → defender] map, replayed on commit.
+ * @property attackers The declared [attacker → defender] map, replayed on commit minus any
+ *   attacker paid away as a cost.
  * @property payingAttacker The attacker whose cost this decision pays.
  * @property count How many permanents must be paid for [payingAttacker].
  * @property action Whether this payment sacrifices them or returns them to hand.

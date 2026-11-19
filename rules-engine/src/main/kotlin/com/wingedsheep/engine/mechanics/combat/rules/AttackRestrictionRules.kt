@@ -497,7 +497,8 @@ private fun findDefendingPlayer(ctx: AttackCheckContext, defenderId: EntityId): 
  * generic-mana attack tax is paid — see `AttackPhaseManager.pauseForAttackPermanentCost`.
  *
  * The cost is per *creature*, so two Leviathans attacking together owe two payments of two
- * Islands each; the affordability check totals them.
+ * Islands each. This rule checks one attacker alone; `AttackPhaseManager.declareAttackers` checks
+ * that all of them can be paid together (`AttackPermanentCosts.unaffordableAttacker`).
  */
 class CantAttackUnlessPermanentCostRule(
     private val predicateEvaluator: PredicateEvaluator

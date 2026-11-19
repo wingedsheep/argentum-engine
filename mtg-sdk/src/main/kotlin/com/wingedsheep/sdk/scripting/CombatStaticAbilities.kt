@@ -458,12 +458,12 @@ data class CantAttackUnlessPermanentCost(
  * and ability costs (exile/sacrifice/tap), and an attack cost never taps or exiles.
  */
 @Serializable
-enum class AttackPermanentCostAction(val verb: String) {
+enum class AttackPermanentCostAction {
     /** "…unless you sacrifice two Islands" (Leviathan). Fires sacrifice and dies triggers. */
-    SACRIFICE("Sacrifice"),
+    SACRIFICE,
 
     /** "…unless you return an enchantment you control to its owner's hand" (Floodtide Serpent). */
-    RETURN_TO_HAND("Return"),
+    RETURN_TO_HAND,
 }
 
 /**

@@ -62,6 +62,51 @@ class FloodtideSerpentScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("two Serpents can't both attack on one enchantment") {
+                val game = scenario()
+                    .withPlayers("Tide", "Shore")
+                    .withCardOnBattlefield(1, "Floodtide Serpent")
+                    .withCardOnBattlefield(1, "Floodtide Serpent")
+                    .withCardOnBattlefield(1, "Glorious Anthem")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                    .build()
+
+                val serpents = game.findPermanents("Floodtide Serpent")
+                val defender = game.player2Id
+                val result = game.execute(
+                    com.wingedsheep.engine.core.DeclareAttackers(game.player1Id, serpents.associateWith { defender })
+                )
+                withClue("each cost is payable alone, but not both together, so the declaration is refused") {
+                    result.error shouldNotBe null
+                    game.state.pendingDecision shouldBe null
+                }
+            }
+
+            test("an enchantment creature declared as an attacker can pay, and then doesn't attack") {
+                val game = scenario()
+                    .withPlayers("Tide", "Shore")
+                    .withCardOnBattlefield(1, "Floodtide Serpent")
+                    .withCardOnBattlefield(1, "Nyx-Fleece Ram")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                    .build()
+
+                val serpent = game.findPermanent("Floodtide Serpent")!!
+                val ram = game.findPermanent("Nyx-Fleece Ram")!!
+                game.declareAttackers(mapOf("Floodtide Serpent" to 2, "Nyx-Fleece Ram" to 2)).error shouldBe null
+                val decision = game.state.pendingDecision
+                decision.shouldBeInstanceOf<SelectCardsDecision>()
+                decision.options shouldContainExactly listOf(ram)
+
+                game.submitDecision(CardsSelectedResponse(decision.id, listOf(ram))).error shouldBe null
+
+                withClue("the Ram went back to hand and is not attacking; the Serpent is") {
+                    game.isInHand(1, "Nyx-Fleece Ram") shouldBe true
+                    game.state.getEntity(serpent)?.has<AttackingComponent>() shouldBe true
+                }
+            }
+
             test("attacking pauses to return one of your enchantments to hand") {
                 val game = scenario()
                     .withPlayers("Tide", "Shore")

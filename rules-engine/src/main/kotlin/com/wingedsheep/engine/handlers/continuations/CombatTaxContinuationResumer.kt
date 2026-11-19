@@ -93,11 +93,11 @@ class CombatTaxContinuationResumer(
         val requirement = com.wingedsheep.engine.mechanics.combat.AttackPermanentCosts.requirementFor(
             state, continuation.payingAttacker, services.cardRegistry
         ) ?: return ExecutionResult.error(state, "Attacker no longer has an attack cost")
-        val eligible = com.wingedsheep.engine.mechanics.combat.AttackPermanentCosts.eligiblePermanents(
+        val payable = com.wingedsheep.engine.mechanics.combat.AttackPermanentCosts.payableOptions(
             state, continuation.attackingPlayer, continuation.payingAttacker, requirement,
-            predicateEvaluator = services.predicateEvaluator
+            continuation.count, continuation.remaining, services.cardRegistry, services.predicateEvaluator
         ).toSet()
-        if (!eligible.containsAll(chosen)) {
+        if (!payable.containsAll(chosen)) {
             return ExecutionResult.error(state, "Chosen permanents can't pay this attack cost")
         }
 
@@ -112,17 +112,33 @@ class CombatTaxContinuationResumer(
             }
         }
         if (paidResult.outcome !is Outcome.Done) return paidResult
+        // Each pick was payable on its own; a multi-permanent pick could still jointly take what a
+        // later cost needs. Refuse it so the player picks again rather than meeting an empty prompt.
+        if (!com.wingedsheep.engine.mechanics.combat.AttackPermanentCosts.remainingAffordable(
+                paidResult.state, continuation.attackingPlayer, continuation.remaining,
+                services.cardRegistry, services.predicateEvaluator
+            )
+        ) {
+            return ExecutionResult.error(state, "That choice leaves another attacker's cost unpayable")
+        }
+        // A declared attacker paid away as the cost (an enchantment creature returned, a creature
+        // sacrificed) is no longer on the battlefield, so it doesn't become an attacking creature
+        // (CR 508.1k): drop it from the declaration and its band.
+        val battlefield = paidResult.state.getBattlefield().toSet()
+        val attackers = continuation.attackers.filterKeys { it in battlefield }
+        val bands = continuation.bands.map { band -> band.filterTo(mutableSetOf()) { it in battlefield } }
+            .filter { it.size > 1 }
 
         val next = continuation.remaining.firstOrNull()
         if (next != null) {
             return services.combatManager.attackPhase.pauseForNextAttackPermanentCost(
                 state = paidResult.state,
                 attackingPlayer = continuation.attackingPlayer,
-                attackers = continuation.attackers,
+                attackers = attackers,
                 payingAttacker = next.attackerId,
                 count = next.count,
                 remaining = continuation.remaining.drop(1),
-                bands = continuation.bands,
+                bands = bands,
                 carryEvents = paidResult.events.toList(),
             )
         }
@@ -130,10 +146,10 @@ class CombatTaxContinuationResumer(
         return services.combatManager.attackPhase.commitAttackDeclaration(
             state = paidResult.state,
             attackingPlayer = continuation.attackingPlayer,
-            attackers = continuation.attackers,
+            attackers = attackers,
             projected = paidResult.state.projectedState,
             taxEvents = paidResult.events.toList(),
-            bands = continuation.bands,
+            bands = bands,
         )
     }
 

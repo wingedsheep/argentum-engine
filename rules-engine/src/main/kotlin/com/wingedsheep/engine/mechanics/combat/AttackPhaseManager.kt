@@ -130,6 +130,16 @@ internal class AttackPhaseManager(
             return ExecutionResult.error(state, coAttackerValidation)
         }
 
+        // Permanent attack costs (Leviathan, Floodtide Serpent) are checked one attacker at a time
+        // by CantAttackUnlessPermanentCostRule; this checks they can all be paid together, so a
+        // declaration whose costs compete for the same permanents is refused up front instead of
+        // stranding the player at a payment prompt they can't answer.
+        AttackPermanentCosts.unaffordableAttacker(state, attackingPlayer, attackers.keys, cardRegistry, predicateEvaluator)
+            ?.let { attackerId ->
+                val name = state.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
+                return ExecutionResult.error(state, "$name's attack cost can't be paid alongside the other attackers' costs")
+            }
+
         // "Can only attack alone" (Master of Cruelties, CR 506.5 / 508.1c), and the attack
         // requirements a declaration obeying it may leave unobeyed (CR 508.1d).
         val loneOnly = LoneAttackers.of(state, getValidAttackers(state, attackingPlayer) + attackers.keys, cardRegistry, projected).toSet()
@@ -279,14 +289,16 @@ internal class AttackPhaseManager(
         if (paid.error != null) return paid
         val paidState = paid.state
         val paidEvents = taxEvents + paid.events
-        // Non-mana attack costs: "can't attack unless you sacrifice two Islands" (Leviathan). The
+        // Non-mana attack costs: "can't attack unless you sacrifice two Islands" (Leviathan), "unless
+        // you return an enchantment you control to its owner's hand" (Floodtide Serpent). The
         // clause is a *restriction* checked at CR 508.1c, and the cost it names is determined and
         // paid at CR 508.1h–j — not an optional "as it attacks" cost (CR 508.1g), which the player
-        // may always decline. Affordability was already enforced by CantAttackUnlessPermanentCostRule,
-        // so reaching here means the cost *can* be paid; what remains is choosing what to sacrifice.
-        val sacrificeCosts = AttackPermanentCosts.requirementsFor(paidState, attackers.keys, cardRegistry)
-        if (sacrificeCosts.isNotEmpty()) {
-            return pauseForAttackPermanentCost(paidState, attackingPlayer, attackers, sacrificeCosts, bands, paidEvents)
+        // may always decline. Affordability was already enforced by CantAttackUnlessPermanentCostRule
+        // and, for every cost together, by AttackPermanentCosts.unaffordableAttacker, so reaching
+        // here means the costs *can* be paid; what remains is choosing what to pay with.
+        val permanentCosts = AttackPermanentCosts.requirementsFor(paidState, attackers.keys, cardRegistry)
+        if (permanentCosts.isNotEmpty()) {
+            return pauseForAttackPermanentCost(paidState, attackingPlayer, attackers, permanentCosts, bands, paidEvents)
         }
 
         return commitAttackDeclaration(paidState, attackingPlayer, attackers, paidState.projectedState, taxEvents = paidEvents, bands = bands)
@@ -572,7 +584,7 @@ internal class AttackPhaseManager(
     }
 
     /**
-     * Pause the declare-attackers step for the first unpaid sacrifice cost, queueing the rest.
+     * Pause the declare-attackers step for the first unpaid permanent cost, queueing the rest.
      *
      * One decision per paying attacker rather than one combined pile: the costs are separate (two
      * Leviathans owe two Islands each, not four between them), and a combined prompt could not say
@@ -587,47 +599,22 @@ internal class AttackPhaseManager(
         carryEvents: List<GameEvent>,
     ): ExecutionResult {
         val (payingAttacker, requirement) = costs.first()
-        val eligible = AttackPermanentCosts.eligiblePermanents(
-            state, attackingPlayer, payingAttacker, requirement,
-            predicateEvaluator = predicateEvaluator
-        )
-        val attackerName = state.getEntity(payingAttacker)?.get<CardComponent>()?.name ?: "your attacker"
-        val continuation = com.wingedsheep.engine.core.AttackPermanentCostSelectionContinuation(
-            attackingPlayer = attackingPlayer,
-            attackers = attackers,
-            payingAttacker = payingAttacker,
-            count = requirement.count,
-            action = requirement.action,
+        return pauseForNextAttackPermanentCost(
+            state, attackingPlayer, attackers, payingAttacker, requirement.count,
             remaining = costs.drop(1).map { (id, req) ->
                 com.wingedsheep.engine.core.PendingAttackPermanentCost(id, req.count)
             },
             bands = bands,
-        )
-        return state.suspendForDecision(
-            question = { decisionId ->
-                com.wingedsheep.engine.core.SelectCardsDecision(
-                    id = decisionId,
-                    playerId = attackingPlayer,
-                    prompt = AttackPermanentCosts.prompt(requirement, requirement.count, attackerName),
-                    context = com.wingedsheep.engine.core.DecisionContext(
-                        sourceId = payingAttacker,
-                        sourceName = attackerName,
-                        phase = com.wingedsheep.engine.core.DecisionPhase.COMBAT,
-                    ),
-                    options = eligible,
-                    minSelections = requirement.count,
-                    maxSelections = requirement.count,
-                )
-            },
-            answer = continuation,
-            events = carryEvents,
+            carryEvents = carryEvents,
         )
     }
 
     /**
-     * Ask for the next queued attack sacrifice after a previous one was paid. Same decision as
-     * [pauseForAttackPermanentCost], but carrying the earlier payment's events forward so the
-     * sacrifices are all reported even though only the last resume commits the declaration.
+     * Ask for [payingAttacker]'s permanent cost, carrying earlier payments' events forward so they
+     * are all reported even though only the last resume commits the declaration. An attacker that
+     * already left the battlefield — paid away as another attacker's cost — owes nothing and is
+     * skipped. The options are only the permanents that leave every later cost payable
+     * ([AttackPermanentCosts.payableOptions]), so no answer here can strand a later prompt.
      */
     internal fun pauseForNextAttackPermanentCost(
         state: GameState,
@@ -640,12 +627,18 @@ internal class AttackPhaseManager(
         carryEvents: List<com.wingedsheep.engine.core.GameEvent>,
     ): ExecutionResult {
         val requirement = AttackPermanentCosts.requirementFor(state, payingAttacker, cardRegistry)
-            ?: return commitAttackDeclaration(
-                state, attackingPlayer, attackers, state.projectedState, carryEvents, bands
+            ?.takeIf { payingAttacker in state.getBattlefield() }
+        if (requirement == null) {
+            val next = remaining.firstOrNull()
+                ?: return commitAttackDeclaration(
+                    state, attackingPlayer, attackers, state.projectedState, carryEvents, bands
+                )
+            return pauseForNextAttackPermanentCost(
+                state, attackingPlayer, attackers, next.attackerId, next.count, remaining.drop(1), bands, carryEvents
             )
-        val eligible = AttackPermanentCosts.eligiblePermanents(
-            state, attackingPlayer, payingAttacker, requirement,
-            predicateEvaluator = predicateEvaluator
+        }
+        val options = AttackPermanentCosts.payableOptions(
+            state, attackingPlayer, payingAttacker, requirement, count, remaining, cardRegistry, predicateEvaluator
         )
         val attackerName = state.getEntity(payingAttacker)?.get<CardComponent>()?.name ?: "your attacker"
         val continuation = com.wingedsheep.engine.core.AttackPermanentCostSelectionContinuation(
@@ -668,7 +661,7 @@ internal class AttackPhaseManager(
                         sourceName = attackerName,
                         phase = com.wingedsheep.engine.core.DecisionPhase.COMBAT,
                     ),
-                    options = eligible,
+                    options = options,
                     minSelections = count,
                     maxSelections = count,
                 )
