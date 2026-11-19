@@ -1078,8 +1078,17 @@ class CleanupPhaseManager(
                 if (result.has<SurveiledThisTurnComponent>()) {
                     result = result.without<SurveiledThisTurnComponent>()
                 }
-                if (result.has<PermanentsEnteredUnderControlThisTurnComponent>()) {
+                result.get<PermanentsEnteredUnderControlThisTurnComponent>()?.let { thisTurn ->
+                    // Roll this turn's entries into the "last turn" record before clearing them.
+                    val turn = newState.turnNumber
+                    val earlier = result.get<com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlLastTurnComponent>()
+                        ?.takeIf { it.turnNumber == turn }?.entries.orEmpty()
                     result = result.without<PermanentsEnteredUnderControlThisTurnComponent>()
+                        .with(
+                            com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlLastTurnComponent(
+                                turn, earlier + thisTurn.entries
+                            )
+                        )
                 }
                 if (result.has<PutCounterOnCreatureThisTurnComponent>()) {
                     result = result.without<PutCounterOnCreatureThisTurnComponent>()

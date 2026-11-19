@@ -2313,6 +2313,29 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     }
 
     /**
+     * The number of [cardType] permanents that entered the battlefield under [player]'s control
+     * **last turn** — the immediately preceding turn, whoever's it was — the last-turn sibling of
+     * [CardTypeEnteredUnderControlThisTurn] over the same entry log, with the same counting rules:
+     * the type is judged as the permanent entered (a bestow Aura that later becomes a creature never
+     * counts), and what has happened to it since doesn't matter. [excludeSource] drops the source's
+     * own current object — "another creature" (Ephara, God of the Polis: "if you had another
+     * creature enter the battlefield under your control last turn").
+     *
+     * Backed by `PermanentsEnteredUnderControlLastTurnComponent`, rolled over at cleanup.
+     */
+    @SerialName("CardTypeEnteredUnderControlLastTurn")
+    @Serializable
+    data class CardTypeEnteredUnderControlLastTurn(
+        val player: Player,
+        val cardType: com.wingedsheep.sdk.core.CardType,
+        val excludeSource: Boolean = false
+    ) : DynamicAmount {
+        override val description: String =
+            "the number of ${if (excludeSource) "other " else ""}${cardType.name.lowercase()}s that " +
+                "entered the battlefield under ${player.possessive} control last turn"
+    }
+
+    /**
      * The number of permanents with **any** of [subtypes] that entered the battlefield under
      * [player]'s control this turn (counting even those that have since left or changed type —
      * the entry event is what's tracked). When [excludeTriggeringEntity] is true, the permanent

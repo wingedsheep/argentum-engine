@@ -1028,6 +1028,17 @@ object DynamicAmounts {
     ): DynamicAmount = DynamicAmount.CardTypeEnteredUnderControlThisTurn(player, cardType)
 
     /**
+     * "The number of [cardType]s that entered the battlefield under [player]'s control last turn" —
+     * the immediately preceding turn, anyone's. [excludeSource] makes it "another" (Ephara, God of
+     * the Polis).
+     */
+    fun cardTypeEnteredUnderControlLastTurn(
+        cardType: com.wingedsheep.sdk.core.CardType,
+        player: Player = Player.You,
+        excludeSource: Boolean = false
+    ): DynamicAmount = DynamicAmount.CardTypeEnteredUnderControlLastTurn(player, cardType, excludeSource)
+
+    /**
      * "The number of As and/or Bs that entered the battlefield under [player]'s control this turn"
      * (Cloudspire Coordinator — "Mounts and/or Vehicles"). Any-of over [subtypes], so a permanent
      * carrying several of them still counts once; summing per-subtype amounts would not.

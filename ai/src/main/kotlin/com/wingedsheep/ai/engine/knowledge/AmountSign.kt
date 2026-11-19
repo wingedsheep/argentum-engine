@@ -110,7 +110,8 @@ internal enum class AmountSign {
             is DynamicAmount.SpellsCastThisTurn, is DynamicAmount.SpellsCastLastTurn,
             is DynamicAmount.CraftedMaterialsTotalPower, is DynamicAmount.CraftedMaterialsTotalManaValue,
             is DynamicAmount.CraftedMaterialsColorCount, is DynamicAmount.CreaturesThatCrewedOrSaddledThisTurn,
-            is DynamicAmount.CardTypeEnteredUnderControlThisTurn, is DynamicAmount.SubtypeEnteredUnderControlThisTurn,
+            is DynamicAmount.CardTypeEnteredUnderControlThisTurn, is DynamicAmount.CardTypeEnteredUnderControlLastTurn,
+            is DynamicAmount.SubtypeEnteredUnderControlThisTurn,
             is DynamicAmount.CreaturesWithSubtypeDiedThisTurn, is DynamicAmount.PermanentsSacrificedThisWay,
             is DynamicAmount.CountersRemovedAsCost, is DynamicAmount.TotalPowerSacrificedThisWay,
             is DynamicAmount.LargestSharedCreatureTypeCount -> GAIN
