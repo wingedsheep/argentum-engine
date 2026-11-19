@@ -26,11 +26,12 @@ import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
- * Resolves "additional one mana of any color" tap bonuses from [AdditionalManaOnTap] auras with
- * `anyColor = true` (Fertile Ground). These are triggered mana abilities that resolve off the
- * stack, but unlike fixed-color bonuses they require a per-tap color choice. The resolver drives
- * the pending bonuses one at a time, pausing for a [ChooseAnyColorTapBonusContinuation] when a
- * color choice is needed and resuming with the remaining bonuses afterward.
+ * Resolves "additional mana of any color" tap bonuses from [AdditionalManaOnTap] auras with
+ * `anyColor = true` — Fertile Ground's one mana of any color, Market Festival's two mana in any
+ * combination of colors. These are triggered mana abilities that resolve off the stack, but unlike
+ * fixed-color bonuses they require a per-tap color choice for each unit. The resolver drives the
+ * pending bonuses one unit at a time, pausing for a [ChooseAnyColorTapBonusContinuation] when a
+ * color choice is needed and resuming with the rest of that bonus, then the remaining bonuses.
  *
  * Fixed-color and mirror-color tap bonuses are handled directly (no decision) earlier in
  * [ManaAbilityResolutionPipeline.finishTapBonuses], which drives this resolver last; this
@@ -86,11 +87,12 @@ class TappedForManaBonusResolver(
         )
         if (available.isEmpty()) return drive(state, remaining, accumulatedEvents)
 
-        // A single legal color needs no choice; add it directly. (Plain any-color always offers
-        // five, so this only short-circuits if a future colorSet narrowing is introduced.)
+        // A single legal color needs no choice; add the whole bonus in it directly. (Plain
+        // any-color always offers five, so this only short-circuits if a future colorSet
+        // narrowing is introduced.)
         val singleColor = available.singleOrNull()
         if (singleColor != null) {
-            val added = addBonus(state, item, singleColor, available)
+            val added = addBonus(state, item, item.amount, singleColor, available)
             return drive(added.state, remaining, accumulatedEvents + added.events)
         }
 
@@ -105,7 +107,8 @@ class TappedForManaBonusResolver(
             playerId = item.controllerId,
             sourceId = item.auraId,
             sourceName = sourceName,
-            prompt = "Choose a color for the additional mana",
+            prompt = if (item.amount > 1) "Choose a color for the additional mana (${item.amount} remaining)"
+                else "Choose a color for the additional mana",
             phase = DecisionPhase.RESOLUTION,
             availableColors = available,
             answer = continuation
@@ -132,18 +135,22 @@ class TappedForManaBonusResolver(
             ManaColorSet.AnyColor, state, state.projectedState, item.auraId, item.controllerId, cardRegistry,
             predicateEvaluator = dynamicAmountEvaluator.predicates
         )
-        val added = addBonus(state, item, response.color, available)
-        val driveResult = drive(added.state, continuation.remaining, added.events.toList())
+        // Each unit of the bonus is colored independently ("in any combination of colors"): add
+        // one unit, then the rest of this bonus is chosen next, ahead of the remaining bonuses.
+        val added = addBonus(state, item, 1, response.color, available)
+        val rest = if (item.amount > 1) listOf(item.copy(amount = item.amount - 1)) + continuation.remaining
+            else continuation.remaining
+        val driveResult = drive(added.state, rest, added.events.toList())
         if (driveResult.outcome is Outcome.Paused) return driveResult
         return checkForMore(driveResult.state, driveResult.events)
     }
 
     /**
-     * Add [item]'s bonus in [color]. The aura is the source of this mana (CR 106.3), so a snow
+     * Add [units] of [item]'s bonus in [color]. The aura is the source of this mana (CR 106.3), so a snow
      * aura's bonus is snow mana and pays `{S}` (Glittering Frost).
      */
-    private fun addBonus(state: GameState, item: AnyColorTapBonus, color: Color, available: Set<Color>): com.wingedsheep.engine.core.EffectResult {
-        val added = manaExecutor.addManaToPool(state, bonusEffect(item.amount), contextFor(state, item.auraId, item.controllerId), color, available)
+    private fun addBonus(state: GameState, item: AnyColorTapBonus, units: Int, color: Color, available: Set<Color>): com.wingedsheep.engine.core.EffectResult {
+        val added = manaExecutor.addManaToPool(state, bonusEffect(units), contextFor(state, item.auraId, item.controllerId), color, available)
         return added.copy(state = ManaProvenanceTracker.markSnowProduction(state, added.state, item.auraId, item.controllerId))
     }
 
