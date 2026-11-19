@@ -190,6 +190,7 @@ Aerid Konstrari
 Aerie Auxiliary
 Aerie Bowmasters
 Aerie Mystics
+Aerie Worshippers
 Aerith Gainsborough	intent: AddCountersToCollectionEffect; intent: Pipeline(BattlefieldMatching→?)
 Aerith Rescue Mission
 Aeromunculus
@@ -376,6 +377,7 @@ Akroan Crusader
 Akroan Jailer
 Akroan Line Breaker
 Akroan Mastiff
+Akroan Phalanx
 Akroan Sergeant
 Akroan Skyguard
 Akroma's Blessing
@@ -1031,6 +1033,7 @@ Aspect of Lamprey
 Aspect of Manticore
 Aspect of Wolf
 Asphodel Wanderer
+Asphyxiate
 Aspirant's Ascent
 Aspiring Aeronaut
 Assassin's Blade
@@ -1740,6 +1743,7 @@ Black Mana Battery
 Black Market
 Black Market Connections
 Black Market Tycoon
+Black Oak of Odunos
 Black Panther, Vanguard
 Black Poplar Shaman
 Black Sun's Twilight
@@ -2092,6 +2096,7 @@ Bolrac-Clan Basher
 Bolrac-Clan Crusher
 Bolt Bend
 Bolt Hound
+Bolt of Keranos
 Boltwave
 Boltwing Marauder
 Bomat Bazaar Barge
@@ -3036,6 +3041,7 @@ Charge Through	timing: GrantKeywordEffect
 Charge of the Forever-Beast
 Charge of the Mites
 Charge the Sanctum
+Charging Badger
 Charging Bandits
 Charging Griffin
 Charging Hooligan
@@ -3209,6 +3215,7 @@ Clachan Festival
 Clackbridge Troll
 Claim // Fame
 Claim Jumper
+Claim of Erebos
 Claim the Firstborn
 Claim the Kingdom
 Claim the Precious
@@ -4218,6 +4225,7 @@ Dawn Evangel
 Dawn Gryff
 Dawn of Hope
 Dawn of a New Age
+Dawn to Dusk
 Dawn's Light Archer
 Dawn's Truce
 Dawn-Blessed Pennant
@@ -4409,6 +4417,7 @@ Deeproot Warrior
 Deeproot Waters
 Deeproot Wayfinder
 Deeptread Merrow
+Deepwater Hypnotist
 Deepway Navigator
 Deepwood Denizen
 Deepwood Drummer
@@ -5169,6 +5178,7 @@ Drove of Elves
 Drover Grizzly
 Drover of the Mighty
 Drown in Ichor
+Drown in Sorrow
 Drown in the Loch
 Drowned
 Drowned Catacomb
@@ -5805,6 +5815,8 @@ Environmental Scientist
 Envoy of Okinec Ahau
 Envoy of the Ancestors
 Ephara's Dispersal
+Ephara's Enlightenment
+Ephara's Radiance
 Ephara's Warden
 Ephemeral Shields
 Epic Confrontation
@@ -5812,6 +5824,7 @@ Epic Downfall
 Epic Fight
 Epic Proportions
 Epicure of Blood
+Epiphany Storm
 Epiphany at the Drownyard
 Epitaph Golem
 Equestrian Skill
@@ -5935,6 +5948,7 @@ Eureka
 Eureka Moment
 Eusocial Engineering
 Eutropia the Twice-Favored
+Evanescent Intellect
 Evangel of Synthesis
 Evelyn, the Covetous	intent: Pipeline(TopOfLibrary→exile)
 Even the Score
@@ -5980,6 +5994,7 @@ Excavation Mole
 Exclude
 Exclusion Mage
 Excommunicate
+Excoriate
 Excruciator
 Exdeath, Void Warlock
 Execute
@@ -6850,6 +6865,7 @@ Fork
 Fork in the Road
 Forked Lightning
 Forlorn Flats
+Forlorn Pseudamma
 Form a Posse
 Form of the Dinosaur
 Form of the Dragon
@@ -6858,6 +6874,7 @@ Formidable Commons
 Formidable Speaker
 Formless Nurturing
 Forsake the Worldly
+Forsaken Drifters
 Forsaken Miner
 Forsaken Monument
 Forsaken Sanctuary
@@ -7779,6 +7796,7 @@ God-Eternal Bontu
 God-Eternal Kefnet
 God-Eternal Oketra
 God-Eternal Rhonas
+God-Favored General
 God-Pharaoh's Faithful
 God-Pharaoh's Gift
 God-Pharaoh's Statue
@@ -7876,6 +7894,7 @@ Goretusk Firebeast
 Gorex, the Tombshell
 Gorging Vulture
 Gorgon Flail
+Gorgon's Head
 Gorilla Warrior
 Goring Ceratops
 Goring Warplow
@@ -7967,6 +7986,7 @@ Graven Abomination
 Graven Cairns
 Graven Lore
 Gravepurge
+Graverobber Spider
 Graveshifter
 Gravespawn Sovereign
 Gravestone Strider
@@ -8048,6 +8068,7 @@ Grey Havens Navigator
 Grid Monitor
 Grievous Wound	polarity: Aura>LoseLifeEffect
 Griffin Aerie
+Griffin Dreamfinder
 Griffin Protector
 Griffin Sentinel
 Griffnaut Tracker
@@ -8090,6 +8111,7 @@ Grisly Ritual
 Grisly Salvage
 Grisly Sigil
 Grisly Survivor
+Grisly Transformation
 Grist, Voracious Larva
 Gristle Glutton
 Grixis Battlemage
@@ -8752,6 +8774,7 @@ Hobgoblin Captain
 Hobgoblin, Mantled Marauder
 Hofri Ghostforge
 Hog-Monkey
+Hold at Bay
 Hold for Questioning
 Hold for Ransom
 Hold the Line
@@ -9172,6 +9195,7 @@ Imperious Oligarch
 Imperious Perfect
 Impervious Greatwurm
 Impetuous Devils
+Impetuous Sunchaser
 Implement of Combustion
 Implement of Examination
 Implement of Ferocity
@@ -9931,6 +9955,7 @@ Karai, Future of the Foot
 Karakas
 Karakyk Guardian
 Karametra's Blessing
+Karametra's Favor
 Karametra, God of Harvests
 Kardur's Vicious Return
 Kardur, Doomscourge
@@ -10331,6 +10356,7 @@ Kozilek's Unsealing
 Kozilek, Butcher of Truth	intent: Pipeline(graveyard→library)
 Kozilek, the Broken Reality	polarity: DrawCardsEffect; polarity: ForEachEffect
 Kozilek, the Great Distortion
+Kragma Butcher
 Kraken Hatchling
 Kraken's Eye
 Krakilin
@@ -11871,6 +11897,7 @@ Mirrorshell Crab
 Mirrorwing Dragon
 Miscalculation
 Miscast
+Mischief and Mayhem
 Mischievous Catgeist
 Mischievous Chimera
 Mischievous Mystic
@@ -12131,6 +12158,8 @@ Morphic Pool
 Morphling
 Morselhoarder
 Mortal Obstinacy
+Mortal's Ardor
+Mortal's Resolve
 Mortality Spear
 Mortify
 Mortipede
@@ -13041,6 +13070,7 @@ Opulent Palace
 Oracle of Dust
 Oracle of Mul Daya
 Oracle of Tragedy
+Oracle's Insight
 Oracle's Restoration
 Oracle's Vault
 Orah, Skyclave Hierophant
