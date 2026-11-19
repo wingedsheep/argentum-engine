@@ -3562,7 +3562,7 @@ Constable Odo
 Constricting Sliver
 Constricting Tendrils
 Constrictor Sage
-Construct a Cosmic Cube	intent: HijackNextTurnEffect
+Construct a Cosmic Cube
 Consul's Lieutenant
 Consul's Shieldguard
 Consulate Crackdown
@@ -5690,7 +5690,7 @@ Emrakul's Evangel
 Emrakul's Influence
 Emrakul's Messenger
 Emrakul, the Exigent Doom
-Emrakul, the Promised End	intent: HijackNextTurnEffect; intent: TakeExtraTurnEffect; polarity: HijackNextTurnEffect; polarity: TakeExtraTurnEffect
+Emrakul, the Promised End
 Emrakul, the World Anew	intent: Pipeline(BattlefieldMatching→graveyard)
 Emry, Lurker of the Loch
 Enatu Golem
@@ -11783,7 +11783,7 @@ Mindmelter
 Mindmoil
 Mindscour Dragon
 Mindseeker Oculus
-Mindslaver	intent: HijackNextTurnEffect; polarity: HijackNextTurnEffect
+Mindslaver
 Mindsparker
 Mindsplice Apparatus
 Mindspring Merfolk
@@ -16082,7 +16082,7 @@ Secret Plans
 Secret Rendezvous
 Secret Salvage
 Secret Tunnel
-Secret of Bloodbending	intent: HijackNextTurnEffect; polarity: HijackNextTurnEffect
+Secret of Bloodbending
 Secrets of the Dead
 Secrets of the Golden City
 Secrets of the Key
@@ -20963,6 +20963,7 @@ War of the Last Alliance
 War-Name Aspirant
 War-Torch Goblin
 War-Trained Slasher
+War-Wing Siren
 Warbeast of Gorgoroth
 Warbreak Trumpeter
 Warbriar Blessing
@@ -21317,6 +21318,7 @@ Wilderland Scrounger
 Wilderness Reclamation
 Wildest Dreams
 Wildfire
+Wildfire Cerberus
 Wildfire Elemental
 Wildfire Emissary
 Wildfire Eternal
@@ -21588,6 +21590,7 @@ Wormhole Serpent
 Worms of the Earth
 Wormwood Treefolk
 Worn Powerstone
+Worst Fears
 Wort, Boggart Auntie
 Worthy Cost
 Worthy Knight
