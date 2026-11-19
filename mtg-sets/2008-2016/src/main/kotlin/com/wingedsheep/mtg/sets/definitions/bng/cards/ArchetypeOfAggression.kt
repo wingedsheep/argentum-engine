@@ -39,7 +39,7 @@ val ArchetypeOfAggression = card("Archetype of Aggression") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "88"
         artist = "Mathias Kollros"
-        flavorText = "\"Did Purphoros bless Maikal because of his rage? Or did Maikal's rage blossom after he'd been blessed? Only the gods know.\" —Eocles, oracle of Purphoros"
+        flavorText = "\"Did Purphoros bless Maikal because of his rage? Or did Maikal's rage blossom after he'd been blessed? Only the gods know.\"\n—Eocles, oracle of Purphoros"
         imageUri = "https://cards.scryfall.io/normal/front/1/3/13946413-c76d-41a8-a699-404fd56b2067.jpg?1783939550"
         ruling(
             "2014-02-01",

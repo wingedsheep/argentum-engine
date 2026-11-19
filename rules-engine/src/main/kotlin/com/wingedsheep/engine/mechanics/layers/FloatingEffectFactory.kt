@@ -18,27 +18,6 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
  * Wall-clock time must never be used here — it makes Rule 613 layer ordering nondeterministic
  * and breaks replay, state verification, and MCTS simulation.
  */
-/**
- * [affectedEntities] minus the objects that "can't have or gain" the keyword [modification]
- * grants. Only a permanent with a keyword-prohibiting static (the Archetypes) can make this
- * non-identity, so the projection is read only while one is on the battlefield.
- */
-internal fun GameState.withoutProhibitedKeywordGrants(
-    modification: SerializableModification,
-    affectedEntities: Set<EntityId>
-): Set<EntityId> {
-    if (modification !is SerializableModification.GrantKeyword || affectedEntities.isEmpty()) return affectedEntities
-    val anyProhibition = getBattlefield().any { id ->
-        getEntity(id)?.get<ContinuousEffectSourceComponent>()?.effects?.any {
-            (it.modification as? Modification.RemoveKeyword)?.prohibitsGain == true
-        } == true
-    }
-    if (!anyProhibition) return affectedEntities
-    val projected = projectedState
-    if (affectedEntities.none { projected.cantGainKeyword(it, modification.keyword) }) return affectedEntities
-    return affectedEntities.filterTo(LinkedHashSet()) { !projected.cantGainKeyword(it, modification.keyword) }
-}
-
 fun GameState.addFloatingEffect(
     layer: Layer,
     modification: SerializableModification,
@@ -147,3 +126,24 @@ fun GameState.createFloatingEffect(
  */
 fun GameState.addFloatingEffects(effects: List<ActiveFloatingEffect>): GameState =
     copy(floatingEffects = floatingEffects + effects)
+
+/**
+ * [affectedEntities] minus the objects that "can't have or gain" the keyword [modification]
+ * grants. Only a permanent with a keyword-prohibiting static (the Archetypes) can make this
+ * non-identity, so the projection is read only while one is on the battlefield.
+ */
+internal fun GameState.withoutProhibitedKeywordGrants(
+    modification: SerializableModification,
+    affectedEntities: Set<EntityId>
+): Set<EntityId> {
+    if (modification !is SerializableModification.GrantKeyword || affectedEntities.isEmpty()) return affectedEntities
+    val anyProhibition = getBattlefield().any { id ->
+        getEntity(id)?.get<ContinuousEffectSourceComponent>()?.effects?.any {
+            (it.modification as? Modification.RemoveKeyword)?.prohibitsGain == true
+        } == true
+    }
+    if (!anyProhibition) return affectedEntities
+    val projected = projectedState
+    if (affectedEntities.none { projected.cantGainKeyword(it, modification.keyword) }) return affectedEntities
+    return affectedEntities.filterTo(LinkedHashSet()) { !projected.cantGainKeyword(it, modification.keyword) }
+}

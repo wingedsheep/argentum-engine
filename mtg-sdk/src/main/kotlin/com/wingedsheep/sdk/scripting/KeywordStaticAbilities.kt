@@ -136,9 +136,9 @@ enum class KeywordFamily(val displayName: String) {
  * E.g., Starforged Sword: "Equipped creature loses flying."
  *
  * [cantHaveOrGain] is the "… and can't have or gain [keyword]" rider (the Born of the Gods
- * Archetypes): the removal is applied after every other Layer-6 effect, so a grant with a later
- * timestamp — an aura, a pump spell, a keyword counter — never gives the keyword back. Without it
- * the removal is an ordinary timestamp-ordered loss, and a later grant wins.
+ * Archetypes): no grant — static, resolved or a keyword counter — gives the keyword back while it
+ * applies, whatever its timestamp, and a resolving grant made meanwhile is never created for those
+ * objects. Without it the removal is an ordinary timestamp-ordered loss, and a later grant wins.
  */
 @SerialName("RemoveKeywordStatic")
 @Serializable

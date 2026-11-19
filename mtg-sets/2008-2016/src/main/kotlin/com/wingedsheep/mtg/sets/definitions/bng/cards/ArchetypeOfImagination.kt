@@ -39,7 +39,7 @@ val ArchetypeOfImagination = card("Archetype of Imagination") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "32"
         artist = "Robbie Trevino"
-        flavorText = "\"Is it not the embodiment of our aspirations?\" —Prokopios, astronomer of Meletis"
+        flavorText = "\"Is it not the embodiment of our aspirations?\"\n—Prokopios, astronomer of Meletis"
         imageUri = "https://cards.scryfall.io/normal/front/3/d/3de0f770-b62b-4a9d-bea7-6bb7bc2020ad.jpg?1783939572"
         ruling(
             "2014-02-01",

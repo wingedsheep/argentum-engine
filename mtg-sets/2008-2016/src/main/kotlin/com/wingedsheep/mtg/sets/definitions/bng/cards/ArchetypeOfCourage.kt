@@ -39,7 +39,7 @@ val ArchetypeOfCourage = card("Archetype of Courage") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "4"
         artist = "Willian Murai"
-        flavorText = "\"It has been my experience that soldiers most fervently follow generals who lead by example.\" —Elspeth"
+        flavorText = "\"It has been my experience that soldiers most fervently follow generals who lead by example.\"\n—Elspeth"
         imageUri = "https://cards.scryfall.io/normal/front/8/e/8e6c4afb-6a94-4519-91c6-9824fed2892c.jpg?1783939584"
         ruling(
             "2014-02-01",
