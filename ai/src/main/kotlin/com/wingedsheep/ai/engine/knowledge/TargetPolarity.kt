@@ -652,9 +652,18 @@ object TargetPolarityAnalyzer {
             }
             if (space is IterationSpace.Collection) {
                 val chosenTargets = space.collection in chosenTargetCollections(effect)
+                val everyTarget = space.collection in allChosenTargets(effect)
                 for (inner in EffectWalker.payoffLeaves(leaf.body)) {
                     for ((target, polarity) in classify(inner, definitions, source)) {
                         slotOf(target, requirements)?.let { perSlot[it] += polarity }
+                    }
+                    // "Any number of target creatures you control each become a copy of that
+                    // creature until end of turn" (Polymorphous Rush): every chosen target becomes
+                    // the copy. Which of ours is worth turning into it — a weak body made big, not
+                    // a big one made small — is the board's question, as the copy reading below
+                    // makes it for a declared `affected` slot: either way.
+                    if (everyTarget && inner is EachPermanentBecomesCopyOfTargetEffect && inner.affected == EffectTarget.IterationEntity) {
+                        for (slot in permanentSlots(requirements)) perSlot[slot] += TargetPolarity.FLEXIBLE
                     }
                     if (chosenTargets && inner is DealDamageEffect && inner.damageSource == EffectTarget.IterationEntity) {
                         biteSources += requirements.indices.filter { isOwnSide(requirements[it]) }

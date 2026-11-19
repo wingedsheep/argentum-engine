@@ -391,6 +391,7 @@ object CardIntentAnalyzer {
         val rummageLeaves = scripts.flatMap { it.activatedAbilities }.filter(::isRummage)
             .flatMap { readingLeaves(it.effect, it.targetRequirements) }
         val refunds = roots.flatMapTo(HashSet<Effect>()) { refundsOf(it) }
+        val chosenCollections = roots.flatMapTo(HashSet()) { TargetPolarityAnalyzer.allChosenTargets(it) }
         for (effect in leaves) {
             tags += if (rummageLeaves.any { it === effect }) asRummage(tagsOf(effect)) else refundedTagsOf(effect, refunds)
             reachOf(effect)?.let { removalReach = maxOf(removalReach ?: 0, it) }
@@ -401,6 +402,17 @@ object CardIntentAnalyzer {
             }
             if (isExpiringGroupPump(effect)) expiringGroupPump = true
             if (isExpiringCopy(effect)) expiringPump = true
+            // "Any number of target creatures each get +1/+1 … until end of turn" (Setessan Tactics,
+            // Rabid Attack), "any number of target creatures you control each become a copy of that
+            // creature until end of turn" (Polymorphous Rush): the single-target trick run once per
+            // chosen target, so it is the same trick, held for the same fight.
+            for (member in perTargetBody(effect, chosenCollections)) {
+                if (isExpiringPump(member)) {
+                    expiringPump = true
+                    pumpToughness = maxOf(pumpToughness, expiringToughnessOf(member))
+                }
+                if (isExpiringCopy(member)) expiringPump = true
+            }
         }
         // A replacing base P/T until end of turn is a body for this turn's fight, like a copy —
         // unless it is the setup for removal (a fight beside it), whose timing the removal owns.
@@ -3489,6 +3501,29 @@ object CardIntentAnalyzer {
         if (effect !is ModifyStatsEffect) return false
         if (effect.duration != Duration.EndOfTurn) return false
         return raises(effect.powerModifier) || raises(effect.toughnessModifier)
+    }
+
+    /**
+     * The leaves of a loop over the spell's own chosen targets that land on the target it visits:
+     * `ForEachTarget`'s body aimed at `ContextTarget(0)`, or a loop over a collection gathered
+     * straight from [CardSource.ChosenTargets] ([chosenCollections]) aimed at `IterationEntity`.
+     * Each is the single-target effect it repeats on every target. Any other loop, or a body leaf
+     * aimed elsewhere, is not this shape: empty.
+     */
+    private fun perTargetBody(effect: Effect, chosenCollections: Set<String>): List<Effect> {
+        if (effect !is ForEachEffect) return emptyList()
+        val visited = when (val space = effect.space) {
+            IterationSpace.Targets -> EffectTarget.ContextTarget(0)
+            is IterationSpace.Collection -> EffectTarget.IterationEntity.takeIf { space.collection in chosenCollections }
+            else -> null
+        } ?: return emptyList()
+        return readingLeaves(effect.body).filter { leaf ->
+            when (leaf) {
+                is ModifyStatsEffect -> leaf.target == visited
+                is EachPermanentBecomesCopyOfTargetEffect -> leaf.affected == visited
+                else -> false
+            }
+        }
     }
 
     /**

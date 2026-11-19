@@ -7147,6 +7147,128 @@
     ]
 }
 
+// Polymorphous Rush
+{
+    "name": "Polymorphous Rush",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Strive — This spell costs {1}{U} more to cast for each target beyond the first.\nChoose a creature on the battlefield. Any number of target creatures you control each become a copy of that creature until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "SelectTarget",
+                    "requirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        }
+                    },
+                    "storeAs": "target0",
+                    "nonTargeting": true,
+                    "prompt": "Choose a creature on the battlefield for your targeted creatures to copy"
+                },
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Collection",
+                        "collection": "gathered1"
+                    },
+                    "body": {
+                        "type": "EachPermanentBecomesCopyOfTarget",
+                        "target": {
+                            "type": "PipelineTarget",
+                            "collectionName": "target0"
+                        },
+                        "duration": "EndOfTurn",
+                        "affected": "IterationEntity"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "IncreaseManaPerUnit",
+                    "symbols": "{1}{U}",
+                    "countSource": {
+                        "type": "ChosenTargets",
+                        "beyond": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "RARE",
+        "artist": "Ryan Barger",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2ff5f703-339f-430c-b342-77bcc2c63222.jpg?1783939445",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "The creature that's copied isn't targeted by Polymorphous Rush. You choose that creature as the spell resolves. It can be one of the targeted creatures. A creature can become a copy of itself this way, though this usually won't have any noticeable effect."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "The target creatures copy the printed values of the chosen creature, plus any copy effects that have been applied to it. They won't copy counters on that creature or effects that have changed the creature's power, toughness, types, color, or so on."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If the creatures copy a creature that's copying a creature, they will become whatever the chosen creature is copying."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "This effect can cause the targets to stop being creatures. For example, if they each become a copy of a land that has become a creature, the effect that turned that land into a creature won't be copied. The targets will become noncreature lands."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Effects that have already applied to the target creatures will continue to apply to them. For example, if Giant Growth had given one of those creatures +3/+3 earlier in the turn, then Polymorphous Rush makes it a copy of Pensive Minotaur (a 2/3 creature), it will become a 5/6 Pensive Minotaur."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "You choose how many targets each spell with a strive ability has and what those targets are as you cast it. It's legal to cast such a spell with no targets, although this is rarely a good idea. You can't choose the same target more than once for a single strive spell."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "The mana cost and mana value of strive spells don't change no matter how many targets they have. Strive abilities affect only what you pay."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If all of the spell's targets are illegal when the spell tries to resolve, it won't resolve and none of its effects will happen. If one or more of its targets are legal when it tries to resolve, the spell will resolve and affect only those legal targets. It will have no effect on any illegal targets."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If such a spell is copied, and the effect that copies the spell allows a player to choose new targets for the copy, the number of targets can't be changed. The player may change any number of the targets, including all of them or none of them. If, for one of the targets, the player can't choose a new legal target, then it remains unchanged (even if the current target is illegal)."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If a spell or ability allows you to cast a strive spell without paying its mana cost, you must pay the additional costs for any targets beyond the first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Prophetic Flamespeaker
 {
     "name": "Prophetic Flamespeaker",
@@ -7217,6 +7339,68 @@
     ]
 }
 
+// Pull from the Deep
+{
+    "name": "Pull from the Deep",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return up to one target instant card and up to one target sorcery card from your graveyard to your hand. Exile Pull from the Deep.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Hand"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "instant own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "sorcery own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t1"
+            }
+        ],
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Yee",
+        "flavorText": "Ideas, not stones, form the true foundation of Meletis.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a051b622-fa1d-4694-aef7-0fcdd7bff8d2.jpg?1783939444"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Quarry Colossus
 {
     "name": "Quarry Colossus",
@@ -7267,6 +7451,89 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Ravenous Leucrocota
+{
+    "name": "Ravenous Leucrocota",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Vigilance\n{6}{G}: Monstrosity 3. (If this creature isn't monstrous, put three +1/+1 counters on it and it becomes monstrous.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ravenous Leucrocota:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{6}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        "IsMonstrous"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddDynamicCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": "Self"
+                            },
+                            "BecomeMonstrous"
+                        ]
+                    },
+                    "descriptionOverride": "Monstrosity 3. (If this creature isn't monstrous, put 3 +1/+1 counters on it and it becomes monstrous.)"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "artist": "Christopher Burdett",
+        "flavorText": "Hunger makes a leucrocota dangerous. A full belly makes it angry and dangerous.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e91524b-4885-45fc-b22d-f9e5ee55845d.jpg?1783939410",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Once a creature becomes monstrous, it can't become monstrous again. If the creature is already monstrous when the monstrosity ability resolves, nothing happens."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Monstrous isn't an ability that a creature has. It's just something true about that creature. If the creature stops being a creature or loses its abilities, it will continue to be monstrous."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "An ability that triggers when a creature becomes monstrous won't trigger if that creature isn't on the battlefield when its monstrosity ability resolves."
+            }
+        ]
+    }
 }
 
 // Renowned Weaver
@@ -7619,6 +7886,76 @@
     ]
 }
 
+// Ritual of the Returned
+{
+    "name": "Ritual of the Returned",
+    "manaCost": "{3}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target creature card from your graveyard. Create a black Zombie creature token. Its power is equal to that card's power and its toughness is equal to that card's toughness.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "dynamicPower": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "Power"
+                    },
+                    "dynamicToughness": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "Toughness"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "UNCOMMON",
+        "artist": "Zack Stella",
+        "flavorText": "A mask forged to avenge a death forgotten.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/20bdf00a-e7f1-42f4-997f-388f3b28bf8f.jpg?1783939431"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Rollick of Abandon
 {
     "name": "Rollick of Abandon",
@@ -7775,6 +8112,89 @@
     ]
 }
 
+// Sage of Hours
+{
+    "name": "Sage of Hours",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Heroic — Whenever you cast a spell that targets this creature, put a +1/+1 counter on it.\nRemove all +1/+1 counters from this creature: For each five counters removed this way, take an extra turn after this one.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sage of Hours:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, put a +1/+1 counter on it."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Sage of Hours:2",
+                "cost": {
+                    "type": "CostRemoveAllCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE"
+                },
+                "effect": {
+                    "type": "RepeatDynamicTimes",
+                    "amount": {
+                        "type": "Divide",
+                        "numerator": "CountersRemovedAsCost",
+                        "denominator": {
+                            "type": "Fixed",
+                            "amount": 5
+                        },
+                        "roundUp": false
+                    },
+                    "body": "TakeExtraTurn"
+                },
+                "descriptionOverride": "Remove all +1/+1 counters from this creature: For each five counters removed this way, take an extra turn after this one."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "rarity": "MYTHIC",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8cb55caf-fc95-40dc-80af-5144f94333ee.jpg?1783939443",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "You must remove all +1/+1 counters from Sage of Hours to activate its ability, even if the number of counters isn't a multiple of five. For example, if you remove twelve counters to activate the ability, you'll take two extra turns. If you remove three counters, you won't take any extra turns."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Satyr Grovedancer
 {
     "name": "Satyr Grovedancer",
@@ -7876,6 +8296,203 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Scourge of Fleets
+{
+    "name": "Scourge of Fleets",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Creature — Kraken",
+    "oracleText": "When this creature enters, return each creature your opponents control with toughness X or less to its owner's hand, where X is the number of Islands you control.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Scourge of Fleets:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "CompareNumericProperty",
+                                            "property": "TOUGHNESS",
+                                            "operator": "LTE",
+                                            "amount": {
+                                                "type": "AggregateBattlefield",
+                                                "player": "You",
+                                                "filter": "land Island"
+                                            }
+                                        }
+                                    ],
+                                    "controllerPredicate": "ControlledByOpponent"
+                                }
+                            },
+                            "storeAs": "returnAllToHand_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "returnAllToHand_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, return each creature your opponents control with toughness X or less to its owner's hand, where X is the number of Islands you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "rarity": "RARE",
+        "artist": "Steven Belledin",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0aaf1de7-1476-4f8d-b8b3-67675891df23.jpg?1783939442",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "The value of X is determined as the ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Setessan Tactics
+{
+    "name": "Setessan Tactics",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Strive — This spell costs {G} more to cast for each target beyond the first.\nUntil end of turn, any number of target creatures each get +1/+1 and gain \"{T}: This creature fights another target creature.\"",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    {
+                        "type": "GrantActivatedAbility",
+                        "ability": {
+                            "id": "Setessan Tactics:1",
+                            "cost": "CostTap",
+                            "effect": {
+                                "type": "Fight",
+                                "target1": "Self",
+                                "target2": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature",
+                                        "excludeSelf": true
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "descriptionOverride": "This creature fights another target creature."
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "IncreaseManaPerUnit",
+                    "symbols": "{G}",
+                    "countSource": {
+                        "type": "ChosenTargets",
+                        "beyond": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "rarity": "RARE",
+        "artist": "Mark Winters",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/385a1939-15e5-4f13-b01b-7cdc6835da2a.jpg",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Each of the two creatures that fight deals damage equal to its power to the other. If either one of the creatures isn't on the battlefield when the ability that instructs them to fight resolves, no damage is dealt."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "You choose how many targets each spell with a strive ability has and what those targets are as you cast it. It's legal to cast such a spell with no targets, although this is rarely a good idea. You can't choose the same target more than once for a single strive spell."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "The mana cost and mana value of strive spells don't change no matter how many targets they have. Strive abilities affect only what you pay."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If all of the spell's targets are illegal when the spell tries to resolve, it won't resolve and none of its effects will happen. If one or more of its targets are legal when it tries to resolve, the spell will resolve and affect only those legal targets. It will have no effect on any illegal targets."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If such a spell is copied, and the effect that copies the spell allows a player to choose new targets for the copy, the number of targets can't be changed. The player may change any number of the targets, including all of them or none of them. If, for one of the targets, the player can't choose a new legal target, then it remains unchanged (even if the current target is illegal)."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If a spell or ability allows you to cast a strive spell without paying its mana cost, you must pay the additional costs for any targets beyond the first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -8353,6 +8970,188 @@
     ]
 }
 
+// Spirespine
+{
+    "name": "Spirespine",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment Creature — Beast",
+    "oracleText": "Bestow {4}{G} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nThis creature blocks each combat if able.\nEnchanted creature gets +4/+1 and blocks each combat if able.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 1
+    },
+    "keywords": [
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{4}{G}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            "MustBlock",
+            {
+                "type": "ModifyStats",
+                "powerBonus": 4,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "MustBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "rarity": "UNCOMMON",
+        "artist": "Sam Burley",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac71491f-3027-4257-a18f-ba4de6041feb.jpg?1783939407",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Unlike other Auras, an Aura with bestow isn't put into its owner's graveyard if it becomes unattached. Rather, the effect making it an Aura ends, it loses enchant creature, and it remains on the battlefield as an enchantment creature. It can attack (and its {T} abilities can be activated, if it has any) on the turn it becomes unattached if it's been under your control continuously, even as an Aura, since your most recent turn began."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "You still control the Aura, even if it's enchanting a creature controlled by another player."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If the enchanted creature leaves the battlefield, the Aura stops being an Aura and remains on the battlefield. Control of that permanent doesn't change; you'll control the resulting enchantment creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Spite of Mogis
+{
+    "name": "Spite of Mogis",
+    "manaCost": "{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Spite of Mogis deals damage to target creature equal to the number of instant and sorcery cards in your graveyard. Scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "instant|sorcery"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Scry",
+                    "count": 1
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "rarity": "UNCOMMON",
+        "artist": "Vincent Proce",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/5676d255-707e-4621-a0df-3305f999f124.jpg?1783939418",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Spite of Mogis isn't counted among the number of instant and sorcery cards in your graveyard. It isn't put there until after it deals damage and you scry 1."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Spiteful Blow
+{
+    "name": "Spiteful Blow",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target creature and target land.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "land"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "83",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Chan",
+        "flavorText": "\"Only a fool takes Phenax at his word. What do you expect from a god born of lies and betrayal?\"\n—Verenes, priest of Iroas",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fafaa798-e534-4cd0-b369-9e767a02fe3d.jpg?1783939430",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "You can't cast Spiteful Blow without a legal creature and land to target. If one of those targets is illegal when Spiteful Below tries to resolve, the other one will still be destroyed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Squelching Leeches
 {
     "name": "Squelching Leeches",
@@ -8386,6 +9185,72 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Starfall
+{
+    "name": "Starfall",
+    "manaCost": "{4}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Starfall deals 3 damage to target creature. If that creature is an enchantment, Starfall deals 3 damage to that creature's controller.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": "enchantment"
+                        }
+                    },
+                    "then": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": "TargetController"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "artist": "Chris Rahn",
+        "flavorText": "\"The most brilliant stars are not born of Nyx.\"\n—Rhexenor, Akroan flamespeaker",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/13921f0d-f163-4275-b025-045c1ccd99e5.jpg?1783939417"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -8439,6 +9304,86 @@
         "flavorText": "Ephara taught some mortals to feel every vein in marble as though it flows with their own blood.",
         "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b1cd291-92a0-4f0f-b73a-64fc498da1ef.jpg?1783939454"
     }
+}
+
+// Stormchaser Chimera
+{
+    "name": "Stormchaser Chimera",
+    "manaCost": "{2}{U}{R}",
+    "typeLine": "Creature — Chimera",
+    "oracleText": "Flying\n{2}{U}{R}: Scry 1, then reveal the top card of your library. This creature gets +X/+0 until end of turn, where X is that card's mana value. (To scry 1, look at the top card of your library, then you may put that card on the bottom.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Stormchaser Chimera:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{U}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Scry",
+                            "count": 1
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "RevealCollection",
+                                    "from": "gathered0"
+                                },
+                                {
+                                    "type": "ModifyStats",
+                                    "powerModifier": {
+                                        "type": "StoredCardManaValue",
+                                        "collectionName": "gathered0"
+                                    },
+                                    "toughnessModifier": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    },
+                                    "target": "Self"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Staples",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/db6621dd-7220-4b53-a30f-7dd05b2e0134.jpg?1783939402"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
 }
 
 // Strength from the Fallen
@@ -8547,6 +9492,123 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Swarmborn Giant
+{
+    "name": "Swarmborn Giant",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Giant",
+    "oracleText": "When you're dealt combat damage, sacrifice this creature.\n{4}{G}{G}: Monstrosity 2. (If this creature isn't monstrous, put two +1/+1 counters on it and it becomes monstrous.)\nAs long as this creature is monstrous, it has reach.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Swarmborn Giant:1",
+                "trigger": {
+                    "type": "OneOrMoreDealCombatDamageToYouEvent",
+                    "sourceFilter": {}
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "SacrificeTarget",
+                    "target": "Self"
+                },
+                "descriptionOverride": "When you're dealt combat damage, sacrifice this creature."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Swarmborn Giant:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{G}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        "IsMonstrous"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddDynamicCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": "Self"
+                            },
+                            "BecomeMonstrous"
+                        ]
+                    },
+                    "descriptionOverride": "Monstrosity 2. (If this creature isn't monstrous, put 2 +1/+1 counters on it and it becomes monstrous.)"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "REACH",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "IsMonstrous"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "144",
+        "rarity": "UNCOMMON",
+        "artist": "Jaime Jones",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/84a3ddf9-b682-4691-bb1d-abd1d3486f59.jpg?1783939407",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Once a creature becomes monstrous, it can't become monstrous again. If the creature is already monstrous when the monstrosity ability resolves, nothing happens."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Monstrous isn't an ability that a creature has. It's just something true about that creature. If the creature stops being a creature or loses its abilities, it will continue to be monstrous."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "An ability that triggers when a creature becomes monstrous won't trigger if that creature isn't on the battlefield when its monstrosity ability resolves."
+            }
+        ]
+    }
 }
 
 // Temple of Epiphany
@@ -9050,6 +10112,77 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Triton Cavalry
+{
+    "name": "Triton Cavalry",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Merfolk Soldier",
+    "oracleText": "Heroic — Whenever you cast a spell that targets this creature, you may return target enchantment to its owner's hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Triton Cavalry:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    },
+                    "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, you may return target enchantment to its owner's hand."
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "enchantment"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, you may return target enchantment to its owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "rarity": "UNCOMMON",
+        "artist": "Kev Walker",
+        "flavorText": "The tritons broke the surface, and the Nyxborn broke ranks.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b9b6c6b-35f8-4c8a-aa29-ae71d5166121.jpg?1783939442",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

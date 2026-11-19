@@ -1,0 +1,1 @@
+- #TBD The AI holds instants that pump or copy each of any number of targets until end of turn (Setessan Tactics, Rabid Attack, Polymorphous Rush) as combat tricks instead of casting them where no fight is left, and lets simulation pick which of its creatures Polymorphous Rush turns into the copy
