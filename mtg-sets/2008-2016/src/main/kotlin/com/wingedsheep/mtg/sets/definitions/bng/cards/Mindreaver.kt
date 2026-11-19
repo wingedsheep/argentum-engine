@@ -24,8 +24,9 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * The heroic exile links every card to Mindreaver's pile (`linkToSource`), and the counter reads
  * that pile whole through `CardPredicate.SharesNameWithLinkedExile` (Circu's predicate). The
  * sacrifice is a cost, so by the time the counter resolves and re-checks its target Mindreaver is
- * in the graveyard: the predicate reads the pile of the battlefield visit the ability came from
- * (CR 607.2a linked abilities), never a later Mindreaver's (the card's second ruling).
+ * in the graveyard. The pile travels with the card out of play (its `LinkedExileComponent` is only
+ * stripped when it enters the battlefield again, CR 400.7), so the predicate still sees it there,
+ * and a different Mindreaver never sees it (the card's second ruling).
  */
 val Mindreaver = card("Mindreaver") {
     manaCost = "{U}{U}"
