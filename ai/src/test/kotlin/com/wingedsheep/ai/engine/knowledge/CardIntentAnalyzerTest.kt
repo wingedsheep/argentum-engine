@@ -131,6 +131,16 @@ class CardIntentAnalyzerTest : ScenarioTestBase() {
             intentOf("Mirari's Wake").tags shouldContain IntentTag.RAMP
         }
 
+        test("an Aura granting a scry-then-draw or a target-player mill reads as the printed ability") {
+            withClue("Oracle's Insight: \"{T}: Scry 1, then draw a card\" is a draw engine with card selection") {
+                intentOf("Oracle's Insight").tags shouldContain IntentTag.DRAW
+                intentOf("Oracle's Insight").tags shouldContain IntentTag.CARD_SELECTION
+            }
+            withClue("Evanescent Intellect: \"{1}{U}, {T}: Target player mills three cards\" is a mill engine") {
+                intentOf("Evanescent Intellect").tags shouldContain IntentTag.MILL
+            }
+        }
+
         test("an Aura that adds mana whenever its land is tapped is ramp") {
             // Verdant Haven / Fertile Ground: "whenever enchanted land is tapped for mana, its
             // controller adds an additional one mana of any color".

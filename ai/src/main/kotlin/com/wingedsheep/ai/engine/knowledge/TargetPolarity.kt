@@ -170,6 +170,8 @@ import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.CastFromCollectionWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
+import com.wingedsheep.sdk.scripting.effects.SurveilEffect
+import com.wingedsheep.sdk.scripting.effects.ScryEffect
 import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
@@ -2691,7 +2693,18 @@ object TargetPolarityAnalyzer {
     private fun grantedEffectPolarity(effect: Effect, requirements: List<TargetRequirement>): TargetPolarity {
         val readings = mutableListOf<TargetPolarity>()
         val payoff = EffectWalker.payoffLeaves(effect)
+        val milled = HashSet<String>()
         for (leaf in payoff) {
+            // "{1}{U}, {T}: Target player mills three cards" (Evanescent Intellect's grant): a mill
+            // of a chosen player is aimed by whoever activates it — at an opponent, as the printed
+            // ability's harmful slot is — and its move to the graveyard is the same mill.
+            val top = (leaf as? GatherCardsEffect)?.source as? CardSource.TopOfLibrary
+            if (top != null && top.isMill && playerSlotOf(top.player, requirements) != null) {
+                milled += leaf.storeAs
+                readings += TargetPolarity.BENEFICIAL
+                continue
+            }
+            if (leaf is MoveCollectionEffect && leaf.from in milled) continue
             // "Create a 4/4 Angel that's tapped and attacking. Exile that token at end of combat"
             // (Invocation of Saint Traft): a delayed step that only takes back what the trigger made
             // is its price; what else it does when it fires reads like any other step.
@@ -2819,6 +2832,9 @@ object TargetPolarityAnalyzer {
             target == EffectTarget.Controller || target == EffectTarget.PlayerRef(Player.You)
         return when (leaf) {
             is DrawCardsEffect -> if (isController(leaf.target)) TargetPolarity.BENEFICIAL else null
+            // "{T}: Scry 1, then draw a card" (Oracle's Insight's grant): the compact scry and
+            // surveil nodes always look at their controller's own library — card selection for them.
+            is ScryEffect, is SurveilEffect -> TargetPolarity.BENEFICIAL
             is GainLifeEffect -> if (isController(leaf.target)) TargetPolarity.BENEFICIAL else null
             is LoseLifeEffect -> if (isController(leaf.target)) TargetPolarity.HARMFUL else null
             // A token with no other controller named is the ability controller's (Ceremonial
