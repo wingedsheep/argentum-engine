@@ -346,7 +346,7 @@ object SynergyAxes {
         else -> false
     }
 
-        private fun spellsCastGate(restriction: ActivationRestriction): Boolean = when (restriction) {
+    private fun spellsCastGate(restriction: ActivationRestriction): Boolean = when (restriction) {
         is ActivationRestriction.OnlyIfCondition -> readsSpellsCastThisTurn(restriction.condition)
         is ActivationRestriction.All -> restriction.restrictions.any(::spellsCastGate)
         else -> false
