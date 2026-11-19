@@ -7,16 +7,19 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.nameVisibleToAll
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.ChoosePileEffect
 import kotlin.reflect.KClass
 
 /**
  * Executor for [ChoosePileEffect].
  *
- * Reads two named card collections from the pipeline, presents a binary
- * [ChooseOptionDecision] to the player [ChooserResolution] derives from the effect's
- * [com.wingedsheep.sdk.scripting.effects.Chooser], and (on response) routes the picked pile to
- * [ChoosePileEffect.storeChosenAs] and the other to [ChoosePileEffect.storeOtherAs].
+ * Reads two or more named card collections from the pipeline ([ChoosePileEffect.piles]), presents
+ * a [ChooseOptionDecision] (one option per pile) to the player [ChooserResolution] derives from the
+ * effect's [com.wingedsheep.sdk.scripting.effects.Chooser], and (on response) routes the picked
+ * pile to [ChoosePileEffect.storeChosenAs] and every other pile, merged, to
+ * [ChoosePileEffect.storeOtherAs]. With [ChoosePileEffect.atRandom] the engine draws the pile
+ * uniformly with the seeded RNG and nothing is presented.
  */
 class ChoosePileExecutor : EffectExecutor<ChoosePileEffect> {
 
@@ -27,11 +30,20 @@ class ChoosePileExecutor : EffectExecutor<ChoosePileEffect> {
         effect: ChoosePileEffect,
         context: EffectContext
     ): EffectResult {
-        val pileA = context.pipeline.storedCollections[effect.pileA] ?: emptyList()
-        val pileB = context.pipeline.storedCollections[effect.pileB] ?: emptyList()
+        val piles = effect.piles.map { context.pipeline.storedCollections[it] ?: emptyList() }
 
+        if (effect.atRandom) {
+            // "Chooses one of their piles at random" — each pile, empty or not, has an equal
+            // chance; no player makes this choice, so nothing is presented.
+            val (pick, advanced) = state.nextRandom { nextInt(piles.size) }
+            return EffectResult.success(advanced).copy(
+                updatedCollections = ChoosePileRouting.route(piles, pick, effect.storeChosenAs, effect.storeOtherAs)
+            )
+        }
+
+        val allCards = piles.flatten()
         val deciderId = when (
-            val outcome = ChooserResolution.resolve(state, effect.chooser, context, pileA + pileB)
+            val outcome = ChooserResolution.resolve(state, effect.chooser, context, allCards)
         ) {
             is ChooserResolution.Outcome.Resolved -> outcome.playerId
             // "An opponent chooses one of those piles" — with several opponents the controller
@@ -55,7 +67,7 @@ class ChoosePileExecutor : EffectExecutor<ChoosePileEffect> {
                 state.getEntity(entityId)?.get<CardComponent>()?.name ?: "Unknown")
         }
 
-        val cardInfo = (pileA + pileB).associateWith { cardId ->
+        val cardInfo = allCards.associateWith { cardId ->
             val cc = state.getEntity(cardId)?.get<CardComponent>()
             SearchCardInfo(
                 name = cc?.name ?: "Unknown",
@@ -75,11 +87,8 @@ class ChoosePileExecutor : EffectExecutor<ChoosePileEffect> {
                 sourceName = choiceSubjectName,
                 phase = DecisionPhase.RESOLUTION
             ),
-            options = listOf(effect.pileALabel, effect.pileBLabel),
-            optionCardIds = mapOf(
-                0 to pileA,
-                1 to pileB
-            )
+            options = effect.pileLabels,
+            optionCardIds = piles.withIndex().associate { (index, pile) -> index to pile }
         ) }
 
         val continuation = ChoosePileContinuation(
@@ -87,10 +96,7 @@ class ChoosePileExecutor : EffectExecutor<ChoosePileEffect> {
             sourceId = context.sourceId,
             objectReferences = context.objectReferences,
             sourceName = sourceName,
-            pileAIds = pileA,
-            pileBIds = pileB,
-            pileAName = effect.pileA,
-            pileBName = effect.pileB,
+            pileIds = piles,
             storeChosenAs = effect.storeChosenAs,
             storeOtherAs = effect.storeOtherAs,
             storedCollections = context.pipeline.storedCollections
@@ -98,4 +104,17 @@ class ChoosePileExecutor : EffectExecutor<ChoosePileEffect> {
 
         return EffectResult.from(state.suspendForDecision(decision, continuation))
     }
+}
+
+/** Stores the picked pile under one name and every other pile, merged, under another. */
+internal object ChoosePileRouting {
+    fun route(
+        piles: List<List<EntityId>>,
+        chosenIndex: Int,
+        storeChosenAs: String,
+        storeOtherAs: String
+    ): Map<String, List<EntityId>> = mapOf(
+        storeChosenAs to piles[chosenIndex],
+        storeOtherAs to piles.filterIndexed { index, _ -> index != chosenIndex }.flatten()
+    )
 }

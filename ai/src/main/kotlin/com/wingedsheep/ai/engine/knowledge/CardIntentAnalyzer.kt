@@ -2242,7 +2242,7 @@ object CardIntentAnalyzer {
     private fun sourcesOf(leaf: Effect): List<String> = when (leaf) {
         is SelectFromCollectionEffect -> listOf(leaf.from)
         is FilterCollectionEffect -> listOf(leaf.from)
-        is ChoosePileEffect -> listOf(leaf.pileA, leaf.pileB)
+        is ChoosePileEffect -> leaf.piles
         is ChooseOnePerCategoryEffect -> listOf(leaf.from)
         is MoveCollectionEffect -> listOf(leaf.from)
         is ShufflePileEffect -> leaf.from
@@ -2409,7 +2409,7 @@ object CardIntentAnalyzer {
     internal fun derivedCollections(leaf: Effect, sources: Set<String>): List<String> = when (leaf) {
         is SelectFromCollectionEffect -> if (leaf.from in sources) listOfNotNull(leaf.storeSelected, leaf.storeRemainder) else emptyList()
         is FilterCollectionEffect -> if (leaf.from in sources) listOfNotNull(leaf.storeMatching, leaf.storeNonMatching) else emptyList()
-        is ChoosePileEffect -> if (leaf.pileA in sources || leaf.pileB in sources) listOf(leaf.storeChosenAs, leaf.storeOtherAs) else emptyList()
+        is ChoosePileEffect -> if (leaf.piles.any { it in sources }) listOf(leaf.storeChosenAs, leaf.storeOtherAs) else emptyList()
         is ChooseOnePerCategoryEffect -> if (leaf.from in sources) listOf(leaf.storeAs) else emptyList()
         is MoveCollectionEffect -> if (leaf.from in sources) listOfNotNull(leaf.storeMovedAs) else emptyList()
         // A shuffled pile is the same cards as the collections it joins (Jeskai Infiltrator).

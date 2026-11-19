@@ -10,6 +10,7 @@ import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.handlers.effects.permanent.attachments.AttachmentMover
 import com.wingedsheep.engine.handlers.effects.library.CascadeExecutor
 import com.wingedsheep.engine.handlers.effects.library.ChooseOnePerCategoryExecutor
+import com.wingedsheep.engine.handlers.effects.library.ChoosePileRouting
 import com.wingedsheep.engine.handlers.effects.library.LibraryRevealUtils
 import com.wingedsheep.engine.handlers.effects.library.CastAnyNumberFromCollectionWithoutPayingCostExecutor
 import com.wingedsheep.engine.handlers.effects.library.CastFromCollectionWithoutPayingCostExecutor
@@ -675,10 +676,10 @@ class LibraryAndZoneContinuationResumer(
     }
 
     /**
-     * Resume after the chooser picked one of two pre-existing piles via
-     * [com.wingedsheep.sdk.scripting.effects.ChoosePileEffect]. Routes pile A
-     * or pile B (per [OptionChosenResponse.optionIndex]) to [storeChosenAs],
-     * and the other to [storeOtherAs], on the next [EffectProgram].
+     * Resume after the chooser picked one of the pre-existing piles via
+     * [com.wingedsheep.sdk.scripting.effects.ChoosePileEffect]. Routes the pile at
+     * [OptionChosenResponse.optionIndex] to [storeChosenAs], and every other pile,
+     * merged, to [storeOtherAs], on the next [EffectProgram].
      */
     fun resumeChoosePile(
         state: GameState,
@@ -689,18 +690,16 @@ class LibraryAndZoneContinuationResumer(
         if (response !is OptionChosenResponse) {
             return ExecutionResult.error(state, "Expected option choice response for ChoosePile")
         }
-        val (chosen, other) = when (response.optionIndex) {
-            0 -> continuation.pileAIds to continuation.pileBIds
-            1 -> continuation.pileBIds to continuation.pileAIds
-            else -> return ExecutionResult.error(
+        if (response.optionIndex !in continuation.pileIds.indices) {
+            return ExecutionResult.error(
                 state,
                 "Invalid pile index for ChoosePile: ${response.optionIndex}"
             )
         }
 
-        val updatedCollections = continuation.storedCollections.toMutableMap()
-        updatedCollections[continuation.storeChosenAs] = chosen
-        updatedCollections[continuation.storeOtherAs] = other
+        val updatedCollections = continuation.storedCollections + ChoosePileRouting.route(
+            continuation.pileIds, response.optionIndex, continuation.storeChosenAs, continuation.storeOtherAs
+        )
 
         val newState = exposeCollectionsToNextFrame(state, updatedCollections)
 
