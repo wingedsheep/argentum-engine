@@ -3465,6 +3465,17 @@ object CardIntentAnalyzer {
      * clause, not removal, while Wrath of God's per-creature "destroy it"
      * ([EffectTarget.IterationEntity]) is.
      */
+    /** Whether a granted ability's payoff puts a growing stat counter (+1/+1, +1/+0 …) on its holder. */
+    private fun growsItsHolder(effect: Effect): Boolean = EffectWalker.payoffLeaves(effect).any { leaf ->
+        val (type, target) = when (leaf) {
+            is AddCountersEffect -> leaf.counterType to leaf.target
+            is AddDynamicCountersEffect -> leaf.counterType to leaf.target
+            else -> return@any false
+        }
+        val delta = type.ptDelta ?: return@any false
+        target == EffectTarget.Self && delta.first >= 0 && delta.second >= 0 && (delta.first > 0 || delta.second > 0)
+    }
+
     private fun hitsAnotherPermanent(target: EffectTarget): Boolean = when (target) {
         // "… deals 2 damage to enchanted artifact's controller" (Gremlin Infestation): a player.
         is EffectTarget.PlayerRef, is EffectTarget.ControllerOfPipelineTarget, EffectTarget.Controller, EffectTarget.TargetController,
@@ -3879,10 +3890,17 @@ object CardIntentAnalyzer {
         // creatures is the same ability printed on each of them — read as the Aura's grant above.
         // A grant reaching the opponent's creatures too ("all Slivers have …") is symmetric, and
         // stays unread.
+        // "Enchanted creature has 'Whenever you gain life, put that many +1/+1 counters on this
+        // creature'" (Sunbond): "this creature" in a trigger handed to the host is the host, so a
+        // stat counter it puts there grows the creature the Aura sits on — the Aura's lasting
+        // [IntentTag.PUMP], which the printed reading (a counter on itself) leaves untagged.
         is GrantTriggeredAbility ->
             if ((static.filter.scope == Scope.AttachedTo || grantsOnlyToOwnGroup(static.filter)) &&
                 TargetPolarityAnalyzer.grantedTriggerPolarity(static.ability) == TargetPolarity.BENEFICIAL
-            ) analyzeEffect(static.ability.effect, static.ability.allTargetRequirements).tags
+            ) analyzeEffect(static.ability.effect, static.ability.allTargetRequirements).tags.let { tags ->
+                if (static.filter.scope == Scope.AttachedTo && growsItsHolder(static.ability.effect)) tags + IntentTag.PUMP
+                else tags
+            }
             else emptySet()
         // "Enchanted creature has '{T}, Discard a card: Draw a card'" (Prophetic Ravings), an
         // Equipment's granted activation: the static form of [GrantActivatedAbilityEffect] — a mana
