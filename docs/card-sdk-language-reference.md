@@ -7461,6 +7461,13 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   `PlayersCantCastSpells(affected = Player.EachOpponent, spellFilter = GameObjectFilter.Any.sharingNameWithLinkedExile())`
   — and note that a `PlayersCantCastSpells` filter is evaluated with the *granting permanent* as its
   source, which is what makes any source-relative predicate usable there.
+  The pile outlives the source's own departure: a permanent leaving the battlefield keeps its
+  `LinkedExileComponent` in its new zone (it is only stripped when the card enters the battlefield again,
+  as a new object), so a target filter on a "Sacrifice this: … target spell with the same name as a card
+  exiled with this" ability still matches when the target is re-checked on resolution — **Mindreaver**:
+  `target(TargetFilter.SpellOnStack.sharingNameWithLinkedExile())` + `Effects.CounterSpell()` under
+  `Costs.Composite(Costs.Mana("{U}{U}"), Costs.SacrificeSelf)`. A second Mindreaver has its own (empty)
+  pile.
 - `.sharingColorWith(entity)` — `CardPredicate.SharesColorWith(entity)`: shares ≥1 (projected) color with
   a referenced entity (e.g. `EffectTarget.TriggeringEntity`). Mirror of `.sharingCreatureTypeWith(entity)`.
   Colorless entities share no color (never match). Used by Spreading Plague ("destroy all other creatures
