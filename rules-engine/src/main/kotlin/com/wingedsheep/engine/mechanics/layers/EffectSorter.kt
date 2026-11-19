@@ -103,7 +103,8 @@ internal class EffectSorter {
         // A static grant also depends on a removal that strips its *source* (CR 613.8a: applying
         // the removal changes the grant's existence) — StateProjector then drops the grant.
         if (effectA.fromStaticAbility && effectB.modification is Modification.RemoveAllAbilities &&
-            (effectA.modification is Modification.GrantKeyword || effectA.modification is Modification.GrantStaticAbility)) {
+            (effectA.modification is Modification.GrantKeyword || effectA.modification is Modification.GrantStaticAbility ||
+                effectA.modification.isKeywordProhibition())) {
             if (effectA.sourceId in effectB.affectedEntities ||
                 effectA.affectedEntities.any { it in effectB.affectedEntities }) return true
             // A holder's effect from a granted static also exists only while its *granter* keeps

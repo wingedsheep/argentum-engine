@@ -978,7 +978,7 @@ class StaticAbilityHandler(
             }
             is RemoveKeywordStatic -> {
                 ContinuousEffectData(
-                    modification = Modification.RemoveKeyword(ability.keyword),
+                    modification = Modification.RemoveKeyword(ability.keyword, prohibitsGain = ability.cantHaveOrGain),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }

@@ -3820,6 +3820,11 @@ object CardIntentAnalyzer {
         }
 
         is GrantKeyword -> keywordTags(static.keyword)
+        // "Creatures your opponents control lose first strike and can't have or gain first strike"
+        // (the Born of the Gods Archetypes), "… lose flying": strips a keyword from the opposing
+        // board, which tilts every combat our way.
+        is com.wingedsheep.sdk.scripting.RemoveKeywordStatic ->
+            if (opponentsOnly(static.filter.baseFilter.controllerPredicate)) setOf(IntentTag.COMBAT_ENHANCEMENT) else emptySet()
         // "Enchanted creature has protection from white" (the Ward cycle, Spectra Ward), from a card
         // type, from the chosen color or from the colors of permanents you control: the static form
         // of the one-shot protection grants [leafTagsOf] reads as a shield, as a granted hexproof is.

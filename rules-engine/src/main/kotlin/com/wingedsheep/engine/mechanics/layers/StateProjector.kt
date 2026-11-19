@@ -374,8 +374,10 @@ class StateProjector {
             // longer exists (CR 604.2) — e.g. a creature's own "can't be blocked" under a Humility
             // that predates it. EffectSorter orders such a grant after the removal that strips its
             // source (CR 613.8a), so the source's lostAllAbilities is settled by the time we get here.
+            // The same holds for a "can't have or gain [keyword]" prohibition.
             if ((effect.modification is Modification.GrantKeyword ||
-                    effect.modification is Modification.GrantStaticAbility) && effect.fromStaticAbility &&
+                    effect.modification is Modification.GrantStaticAbility ||
+                    effect.modification.isKeywordProhibition()) && effect.fromStaticAbility &&
                 !startedBeforeAbility && effect.sourceId !in staticRemoveAllAbilitiesSources &&
                 !gainedAfterRemoval(effect) &&
                 projectedValues[effect.sourceId]?.lostAllAbilities == true) continue
@@ -407,7 +409,7 @@ class StateProjector {
         for ((entityId, values) in projectedValues) {
             val countersComponent = state.getEntity(entityId)?.get<CountersComponent>() ?: continue
             KEYWORD_COUNTER_MAP.forEach { (counterType, keywordName) ->
-                if (countersComponent.getCount(counterType) > 0) {
+                if (countersComponent.getCount(counterType) > 0 && keywordName !in values.prohibitedKeywords) {
                     values.keywords.add(keywordName)
                 }
             }
@@ -606,6 +608,7 @@ class StateProjector {
                 staticAbilitySourceIds = v.staticAbilitySourceIds.toList(),
                 enchantmentRestrictions = v.enchantmentRestrictions.toList(),
                 protectionSpares = if (v.protectionSpares.isEmpty()) emptyMap() else v.protectionSpares.mapValues { it.value.toList() },
+                prohibitedKeywords = v.prohibitedKeywords,
                 colors = v.colors,
                 types = v.types,
                 subtypes = v.subtypes,

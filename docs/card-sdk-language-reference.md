@@ -11275,6 +11275,16 @@ staticAbility {
 
 **Composite static abilities**
 
+- `RemoveKeywordStatic(keyword, filter, cantHaveOrGain = false)` — matching permanents lose a keyword
+  ("All creatures lose flying" — Gravity Sphere). A plain loss is timestamp-ordered in layer 6: a
+  grant with a later timestamp gives the keyword back. `cantHaveOrGain = true` is "… and can't have or
+  gain [keyword]" (the Born of the Gods Archetypes: `GrantKeyword(Keyword.FIRST_STRIKE,
+  GroupFilter.AllCreaturesYouControl)` plus `RemoveKeywordStatic(Keyword.FIRST_STRIKE,
+  GroupFilter.AllCreaturesOpponentsControl, cantHaveOrGain = true)`): no grant — static, resolved,
+  keyword counter — gives it back whatever its timestamp, and a *resolving* grant made while it applies
+  is never created for those objects, so they stay without the keyword even after the prohibition ends
+  (a static grant such as an Aura's resumes). The engine reads it through
+  `ProjectedState.cantGainKeyword`.
 - `ModifyStatsForCreatureGroup` — lord-style P/T booster targeting a group.
 - `SetBasePowerToughnessStatic(power: Int?, toughness: Int?, filter = GroupFilter.attachedCreature())` —
   *sets* base power and/or toughness of a group to fixed values (Layer 7b SET_VALUES, CR 613.4b).

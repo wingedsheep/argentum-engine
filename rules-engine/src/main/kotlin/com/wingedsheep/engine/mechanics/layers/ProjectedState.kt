@@ -94,6 +94,13 @@ data class ProjectedValues(
      * every attachment with its quality. Read through [ProjectedState.protectionRemovesAttachment].
      */
     val protectionSpares: Map<String, List<ProtectionSparing>> = emptyMap(),
+    /**
+     * Keywords this object "can't have or gain" (a [Modification.RemoveKeyword] with
+     * `prohibitsGain`). Read through [ProjectedState.cantGainKeyword]: a resolving grant of one of
+     * these is never created for this object (Archetype rulings), so it stays off even after the
+     * prohibition ends.
+     */
+    val prohibitedKeywords: Set<String> = emptySet(),
     val colors: Set<String> = emptySet(),
     val types: Set<String> = emptySet(),
     val subtypes: Set<String> = emptySet(),
@@ -338,6 +345,10 @@ class ProjectedState(
 
     fun hasKeyword(entityId: EntityId, keyword: String): Boolean =
         getKeywords(entityId).contains(keyword)
+
+    /** Whether [entityId] "can't have or gain" [keyword] — see [ProjectedValues.prohibitedKeywords]. */
+    fun cantGainKeyword(entityId: EntityId, keyword: String): Boolean =
+        projectedValues[entityId]?.prohibitedKeywords?.contains(keyword) == true
 
     /**
      * Whether [entityId]'s protection keyword [keyword] would remove [attachmentId] from it under
@@ -584,6 +595,7 @@ internal fun buildIntermediateProjectedState(
             staticAbilitySourceIds = v.staticAbilitySourceIds.toList(),
             enchantmentRestrictions = v.enchantmentRestrictions.toList(),
             protectionSpares = if (v.protectionSpares.isEmpty()) emptyMap() else v.protectionSpares.mapValues { it.value.toList() },
+            prohibitedKeywords = v.prohibitedKeywords.toSet(),
             colors = v.colors.toSet(),
             types = v.types.toSet(),
             subtypes = v.subtypes.toSet(),

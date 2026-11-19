@@ -70,6 +70,9 @@ class GrantKeywordExecutor : EffectExecutor<GrantKeywordEffect> {
             sourceCondition = effect.condition
         )
 
+        // A target that "can't have or gain" the keyword got nothing (see addFloatingEffect).
+        if (state.projectedState.cantGainKeyword(targetId, effect.keyword)) return EffectResult.success(newState)
+
         // Emit event for visualization
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name } ?: "Unknown"
         val events = listOf(
