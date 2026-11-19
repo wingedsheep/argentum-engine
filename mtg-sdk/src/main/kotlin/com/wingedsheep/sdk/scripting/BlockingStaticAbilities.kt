@@ -95,6 +95,23 @@ data class CantBeBlockedByFewerThan(
 }
 
 /**
+ * This creature can't be blocked unless **every** creature the defending player controls blocks
+ * it (Tromokratis). Like [CantBeBlockedByFewerThan] it may be left unblocked and is enforced over
+ * the whole block declaration: once anything blocks it, each creature the defending player controls
+ * — tapped or otherwise unable to block included — must be among its blockers, so a single creature
+ * that can't or doesn't block it makes it unblockable.
+ *
+ * @property filter What this ability applies to (default: the source creature).
+ */
+@SerialName("CantBeBlockedUnlessAllDefendersBlock")
+@Serializable
+data class CantBeBlockedUnlessAllDefendersBlock(
+    val filter: GroupFilter = GroupFilter.source()
+) : StaticAbility {
+    override val description: String = "can't be blocked unless all creatures defending player controls block it"
+}
+
+/**
  * This creature can only block creatures matching a filter.
  * Generalized "can block only X creatures" — used for the Spirit token from Realm of Koh
  * ("can't block or be blocked by non-Spirit creatures") and any analogous restriction.

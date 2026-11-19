@@ -1,0 +1,1 @@
+- #4763 The AI reads "can't be blocked unless all creatures defending player controls block it" (Tromokratis) as evasion in combat math and card intent; facing lethal it gang-blocks it with every creature. It also reads "can't be blocked except by N or more" as evasion.

@@ -1333,6 +1333,7 @@ class StaticAbilityHandler(
             is CantBeBlockedByCreaturesWithLessPower,
             is CantBeBlockedByMoreThan,
             is com.wingedsheep.sdk.scripting.CantBeBlockedByFewerThan,
+            is com.wingedsheep.sdk.scripting.CantBeBlockedUnlessAllDefendersBlock,
             is CantBeBlockedIfCastSpellType,
             is CantBeBlockedIfDefenderControls,
             is CantBeBlockedUnlessDefenderSharesCreatureType,

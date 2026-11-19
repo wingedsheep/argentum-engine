@@ -649,6 +649,17 @@ class CombatAdvisor(
         fixMenaceAssignments(state, projected, bestMap, validBlockers, assignedBlockers,
             saved.keys, if (partialChoice) supportedMenace else emptySet())
 
+        // ── Last stand against "can't be blocked unless all creatures defending player controls
+        // block it" (Tromokratis): the passes above read it as unblockable, but when it kills us
+        // the whole board blocking it is the block that saves us. ──
+        if (!partialChoice) {
+            allDefendersLastStand(state, projected, playerId, attackers, bestMap, myLife)?.let { plan ->
+                bestMap = plan.toMutableMap()
+                assignedBlockers.clear()
+                assignedBlockers.addAll(plan.keys)
+            }
+        }
+
         // ── Block tax: a plan we cannot pay for is a plan we would only decline (see
         // [CombatTaxBudget]) ──
         val legal = legalizeBlockerPlan(state, playerId, bestMap, mandatoryBlockerIds)
@@ -662,6 +673,33 @@ class CombatAdvisor(
             state, playerId,
             satisfyUnnamedRequirements(state, projected, playerId, attackers, validBlockers, finalPlan),
         )
+    }
+
+    /**
+     * Facing lethal, try the one block [CombatMath.canBeBlockedBy] never proposes against an attacker
+     * that "can't be blocked unless all creatures defending player controls block it": every
+     * creature we control on it. Adopted only when the engine accepts that declaration and it turns
+     * a lethal combat into a survivable one.
+     */
+    private fun allDefendersLastStand(
+        state: GameState,
+        projected: ProjectedState,
+        playerId: EntityId,
+        attackers: List<EntityId>,
+        plan: Map<EntityId, List<EntityId>>,
+        myLife: Int,
+    ): Map<EntityId, List<EntityId>>? {
+        if (!isLethalThisCombat(state, projected, attackers, plan, myLife, playerId)) return null
+        val registry = cardRegistry ?: return null
+        val ours = projected.getBattlefieldControlledBy(playerId).filter { projected.isCreature(it) }
+        if (ours.isEmpty()) return null
+        return attackers
+            .filter { CombatMath.requiresAllDefendersToBlock(state, projected, it, registry) }
+            .map { attacker -> ours.associateWith { listOf(attacker) } }
+            .firstOrNull { candidate ->
+                !isLethalThisCombat(state, projected, attackers, candidate, myLife, playerId) &&
+                    simulator.simulate(state, blockDeclaration(state, playerId, candidate)) !is SimulationResult.Illegal
+            }
     }
 
     /**

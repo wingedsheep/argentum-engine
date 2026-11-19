@@ -35,7 +35,9 @@ import com.wingedsheep.sdk.scripting.GrantOpponentsCantWinGame
 import com.wingedsheep.sdk.scripting.GrantCantLoseGame
 import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.CantBeBlockedBy
+import com.wingedsheep.sdk.scripting.CantBeBlockedByFewerThan
 import com.wingedsheep.sdk.scripting.CantBeBlockedByMoreThan
+import com.wingedsheep.sdk.scripting.CantBeBlockedUnlessAllDefendersBlock
 import com.wingedsheep.sdk.scripting.CantBeBlockedExceptBy
 import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantAttackOrBlockUnlessPay
@@ -3784,6 +3786,10 @@ object CardIntentAnalyzer {
         // "Can't be blocked by more than one creature" (Sinuous Predator, Norwood Riders): no gang
         // block can bring it down, so it gets through at its own size — partial evasion too.
         is CantBeBlockedByMoreThan -> setOf(IntentTag.EVASION_GRANT)
+        // "Can't be blocked except by three or more creatures" (Troll of Khazad-dûm) and "can't be
+        // blocked unless all creatures defending player controls block it" (Tromokratis): menace
+        // pushed further — a board has to spend several bodies, or all of them, to stop it.
+        is CantBeBlockedByFewerThan, is CantBeBlockedUnlessAllDefendersBlock -> setOf(IntentTag.EVASION_GRANT)
         // "Can't be blocked except by creatures with flying or reach" (Orchard Spirit, Elven Riders):
         // the inverse spelling of [CantBeBlockedBy] — every creature outside the filter is shut out.
         is CantBeBlockedExceptBy -> setOf(IntentTag.EVASION_GRANT)

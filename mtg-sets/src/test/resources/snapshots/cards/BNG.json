@@ -4512,6 +4512,61 @@
     ]
 }
 
+// Tromokratis
+{
+    "name": "Tromokratis",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Legendary Creature — Kraken",
+    "oracleText": "Tromokratis has hexproof unless it's attacking or blocking.\nTromokratis can't be blocked unless all creatures defending player controls block it. (If any creature that player controls doesn't block this creature, it can't be blocked.)",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 8
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "Any",
+                        "conditions": [
+                            {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": "attacking"
+                            },
+                            {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": "blocking"
+                            }
+                        ]
+                    }
+                }
+            },
+            "CantBeBlockedUnlessAllDefendersBlock"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "rarity": "RARE",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/69fcad7f-2740-49ff-a448-4b232c456e16.jpg?1783939564"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Warchanter of Mogis
 {
     "name": "Warchanter of Mogis",

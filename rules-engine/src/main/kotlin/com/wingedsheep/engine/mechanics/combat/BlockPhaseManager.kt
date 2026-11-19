@@ -37,6 +37,7 @@ import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.engine.mechanics.durations.GrantDurationGate
 import com.wingedsheep.sdk.scripting.CantBeBlockedByFewerThan
 import com.wingedsheep.sdk.scripting.CantBeBlockedByMoreThan
+import com.wingedsheep.sdk.scripting.CantBeBlockedUnlessAllDefendersBlock
 import com.wingedsheep.sdk.scripting.CantBlockUnless
 import com.wingedsheep.sdk.scripting.CantBlockUnlessCoBlocker
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -955,6 +956,11 @@ internal class BlockPhaseManager(
         val hostMinimums = hostScopedBlockerCounts<CantBeBlockedByFewerThan>(
             state, attackerToBlockers.keys, count = { it.minBlockers }, tightest = ::maxOf
         )
+        // "Can't be blocked unless all creatures defending player controls block it" (Tromokratis)
+        // is the same kind of count, with the defender's whole creature count as the minimum.
+        val hostAllDefenders = hostScopedBlockerCounts<CantBeBlockedUnlessAllDefendersBlock>(
+            state, attackerToBlockers.keys, count = { 1 }, tightest = ::maxOf
+        ).keys
 
         for ((attackerId, blockerList) in attackerToBlockers) {
             if (blockerList.isEmpty()) continue
@@ -976,6 +982,27 @@ internal class BlockPhaseManager(
                 .filterIsInstance<CantBeBlockedByFewerThan>()
                 .filter { it.filter.scope is Scope.Self }
                 .maxOfOrNull { it.minBlockers }
+            val needsAllDefenders = attackerId in hostAllDefenders ||
+                cardDef?.staticAbilities.orEmpty().any {
+                    it is CantBeBlockedUnlessAllDefendersBlock && it.filter.scope is Scope.Self
+                } ||
+                state.grantedStaticAbilities.any {
+                    it.entityId == attackerId && it.ability.let { ability ->
+                        ability is CantBeBlockedUnlessAllDefendersBlock && ability.filter.scope is Scope.Self
+                    }
+                }
+            if (needsAllDefenders) {
+                val projected = state.projectedState
+                val defender = projected.getController(blockerList.first())
+                val defenderCreatures = defender?.let { player ->
+                    projected.getBattlefieldControlledBy(player).filter { projected.isCreature(it) }
+                }.orEmpty()
+                if (!blockerList.containsAll(defenderCreatures)) {
+                    return "${nameVisibleToAll(state, attackerId, attackerCard.name)} can't be blocked unless " +
+                        "all creatures defending player controls block it"
+                }
+            }
+
             val minBlockers = listOfNotNull(printedMinimum, grantedMinimum, hostMinimums[attackerId]).maxOrNull()
                 ?: continue
 
@@ -1116,6 +1143,7 @@ internal class BlockPhaseManager(
     private fun blockerCountFilter(ability: StaticAbility): GroupFilter? = when (ability) {
         is CantBeBlockedByMoreThan -> ability.filter
         is CantBeBlockedByFewerThan -> ability.filter
+        is CantBeBlockedUnlessAllDefendersBlock -> ability.filter
         else -> null
     }
 
