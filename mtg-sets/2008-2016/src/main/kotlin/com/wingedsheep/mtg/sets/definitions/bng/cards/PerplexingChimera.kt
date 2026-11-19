@@ -38,7 +38,8 @@ val PerplexingChimera = card("Perplexing Chimera") {
                 action = Effects.ExchangeControl(EffectTarget.Self, EffectTarget.TriggeringEntity),
                 then = Effects.ChangeTriggeringObjectTargets(spell = EffectTarget.TriggeringEntity),
                 successCriterion = SuccessCriterion.ControlChanged,
-            )
+            ),
+            prompt = "Exchange control of Perplexing Chimera and that spell? If you do, you may choose new targets for it.",
         )
         description = "Whenever an opponent casts a spell, you may exchange control of this creature and that spell. " +
             "If you do, you may choose new targets for the spell."
