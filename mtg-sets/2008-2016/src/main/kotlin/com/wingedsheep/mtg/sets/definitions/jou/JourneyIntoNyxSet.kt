@@ -8,9 +8,6 @@ import com.wingedsheep.sdk.model.Printing
 /**
  * Journey into Nyx (2014)
  *
- * mtgish-tooling auto-generated seed: only the cards relocated here as their canonical
- * earliest printing. Intentionally incomplete relative to the official set.
- *
  * Set Code: JOU
  * Release Date: 2014-05-02
  */
@@ -21,7 +18,6 @@ object JourneyIntoNyxSet : MtgSet {
     override val releaseDate = "2014-05-02"
     override val block = "Theros"
     override val sealedSupported = false
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
