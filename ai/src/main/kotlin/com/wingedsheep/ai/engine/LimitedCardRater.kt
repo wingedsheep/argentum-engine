@@ -1018,6 +1018,9 @@ object LimitedCardRater {
         // Locking out the opponents' life gain blanks a lifegain deck's payoffs and turns a drain
         // race ours — a sideboard hoser in Limited, priced like the counter lock.
         IntentTag.LIFEGAIN_LOCK to 0.1,
+        // A draw cap blanks the opponent's card-draw spells past the first card each turn — a
+        // sideboard hoser against a card-draw deck, priced like the life-gain lock.
+        IntentTag.DRAW_LOCK to 0.1,
         IntentTag.TRIBAL_ENABLER to 0.1,
         // Stealing the opponent's tokens for a turn pays off only when they make some — a flash
         // response to a token spell, or a turn they'd have made Treasure or Clues anyway.
