@@ -259,11 +259,13 @@ data class CompositeStaticAbility(
  *   If the source has no chosen color, no mana is added (per Oracle ruling). Ignored when
  *   [anyColor] is true.
  * @property amount How much additional mana to produce (evaluated dynamically)
- * @property anyColor When true, the bonus is mana of any color the controller chooses
- *   (a real choice made each time the land is tapped) rather than a fixed/aura-chosen color.
- *   Used by Fertile Ground ("adds an additional one mana of any color"). On a manual tap the
- *   controller is prompted for the color; when auto-tapping for a cost the solver treats the
- *   bonus as flexible and supplies whatever color the cost needs.
+ * @property anyColor When true, each unit of the bonus is mana of any color the controller
+ *   chooses (a real choice made each time the land is tapped, unit by unit) rather than a
+ *   fixed/aura-chosen color — so an [amount] above one is "in any combination of colors".
+ *   Used by Fertile Ground ("adds an additional one mana of any color") and Market Festival
+ *   ("an additional two mana in any combination of colors"). On a manual tap the controller is
+ *   prompted for each unit's color; when auto-tapping for a cost the solver treats every unit
+ *   as flexible and supplies whatever colors the cost needs.
  *
  * The aura is the source of the bonus mana (CR 106.3): a snow aura's bonus is snow mana and pays
  * `{S}` (Glittering Frost), whatever the land is.
@@ -276,7 +278,13 @@ data class AdditionalManaOnTap(
     val anyColor: Boolean = false
 ) : StaticAbility {
     override val description: String =
-        if (anyColor) "Whenever enchanted land is tapped for mana, its controller adds an additional one mana of any color"
+        if (anyColor) {
+            val fixed = (amount as? DynamicAmount.Fixed)?.amount
+            val words = listOf("zero", "one", "two", "three", "four", "five")
+            if (fixed == 1) "Whenever enchanted land is tapped for mana, its controller adds an additional one mana of any color"
+            else if (fixed != null && fixed in words.indices) "Whenever enchanted land is tapped for mana, its controller adds an additional ${words[fixed]} mana in any combination of colors"
+            else "Whenever enchanted land is tapped for mana, its controller adds additional mana in any combination of colors"
+        }
         else "Whenever enchanted land is tapped for mana, its controller adds additional mana"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newAmount = amount.applyTextReplacement(replacer)

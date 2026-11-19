@@ -6003,6 +6003,41 @@
     "colorIdentityOverride": []
 }
 
+// Market Festival
+{
+    "name": "Market Festival",
+    "manaCost": "{3}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nWhenever enchanted land is tapped for mana, its controller adds an additional two mana in any combination of colors.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "AdditionalManaOnTap",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "anyColor": true
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "artist": "Ryan Barger",
+        "flavorText": "Commerce is always the basis for peace.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c3a70329-ecae-4647-b912-75d936a6c8c5.jpg?1783939412"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Master of the Feast
 {
     "name": "Master of the Feast",
