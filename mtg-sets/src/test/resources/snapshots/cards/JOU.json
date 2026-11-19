@@ -282,6 +282,156 @@
     ]
 }
 
+// Ajani, Mentor of Heroes
+{
+    "name": "Ajani, Mentor of Heroes",
+    "manaCost": "{3}{G}{W}",
+    "typeLine": "Legendary Planeswalker — Ajani",
+    "oracleText": "+1: Distribute three +1/+1 counters among one, two, or three target creatures you control.\n+1: Look at the top four cards of your library. You may reveal an Aura, creature, or planeswalker card from among them and put it into your hand. Put the rest on the bottom of your library in any order.\n−8: You gain 100 life.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ajani, Mentor of Heroes:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "DistributeCountersAmongTargets",
+                    "totalCounters": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 3,
+                        "minCount": 1,
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Ajani, Mentor of Heroes:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            {
+                                                "type": "Or",
+                                                "predicates": [
+                                                    {
+                                                        "type": "And",
+                                                        "predicates": [
+                                                            "IsEnchantment",
+                                                            {
+                                                                "type": "HasSubtype",
+                                                                "subtype": "Aura"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "IsCreature"
+                                                ]
+                                            },
+                                            "IsPlaneswalker"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal an Aura, creature, or planeswalker card from among them and put it into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "ControllerChooses"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Ajani, Mentor of Heroes:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -8
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 100
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "MYTHIC",
+        "artist": "Aaron Miller",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4a30bcfa-6f95-450f-aea7-885983d7c6a5.jpg?1783939407"
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Akroan Line Breaker
 {
     "name": "Akroan Line Breaker",
@@ -3109,6 +3259,60 @@
     ]
 }
 
+// Feast of Dreams
+{
+    "name": "Feast of Dreams",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target enchanted creature or enchantment creature.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "anyOf": [
+                            {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "IsEnchanted"
+                                ]
+                            },
+                            {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsEnchantment"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "artist": "Clint Cearley",
+        "flavorText": "\"We gave the gods the power to war against us. It is time we took that power back.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/de07e21e-c12a-47a6-ad2c-ef6fed343407.jpg?1783939436"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Felhide Petrifier
 {
     "name": "Felhide Petrifier",
@@ -3144,6 +3348,170 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Flamespeaker's Will
+{
+    "name": "Flamespeaker's Will",
+    "manaCost": "{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature you control\nEnchanted creature gets +1/+1.\nWhenever enchanted creature deals combat damage to a player, you may sacrifice this Aura. If you do, destroy target artifact.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Flamespeaker's Will:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": "SacrificeSelf"
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever enchanted creature deals combat damage to a player, you may sacrifice this Aura. If you do, destroy target artifact."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature ctrl:you"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/32b5e3bb-f9e8-4a74-9798-41d8f8515e12.jpg?1783939425",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "You decide whether to sacrifice Flamespeaker's Will as its triggered ability resolves. If it's not on the battlefield at that time, you can't sacrifice it and destroy the target artifact."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If another player gains control of the enchanted creature, Flamespeaker's Will will be put into its owner's graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Fleetfeather Cockatrice
+{
+    "name": "Fleetfeather Cockatrice",
+    "manaCost": "{3}{G}{U}",
+    "typeLine": "Creature — Cockatrice",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nFlying, deathtouch\n{5}{G}{U}: Monstrosity 3. (If this creature isn't monstrous, put three +1/+1 counters on it and it becomes monstrous.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING",
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Fleetfeather Cockatrice:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{G}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        "IsMonstrous"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddDynamicCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": "Self"
+                            },
+                            "BecomeMonstrous"
+                        ]
+                    },
+                    "descriptionOverride": "Monstrosity 3. (If this creature isn't monstrous, put 3 +1/+1 counters on it and it becomes monstrous.)"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/1139236e-5d71-4fc1-937d-ba1efadee031.jpg?1783939404",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Once a creature becomes monstrous, it can't become monstrous again. If the creature is already monstrous when the monstrosity ability resolves, nothing happens."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Monstrous isn't an ability that a creature has. It's just something true about that creature. If the creature stops being a creature or loses its abilities, it will continue to be monstrous."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "An ability that triggers when a creature becomes monstrous won't trigger if that creature isn't on the battlefield when its monstrosity ability resolves."
+            }
+        ]
+    }
 }
 
 // Flurry of Horns
@@ -3358,6 +3726,67 @@
     ]
 }
 
+// Font of Return
+{
+    "name": "Font of Return",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "{3}{B}, Sacrifice this enchantment: Return up to three target creature cards from your graveyard to your hand.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Font of Return:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{B}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Hand"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 3,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature own:you",
+                            "zone": "Graveyard"
+                        }
+                    }
+                ],
+                "descriptionOverride": "{3}{B}, Sacrifice this enchantment: Return up to three target creature cards from your graveyard to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "artist": "Daarken",
+        "flavorText": "Drink deep, and death will recoil from you.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/1/c13eacff-0fd1-4e2e-8213-5bf5fff973c8.jpg?1783939433"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Font of Vigor
 {
     "name": "Font of Vigor",
@@ -3457,6 +3886,86 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Gluttonous Cyclops
+{
+    "name": "Gluttonous Cyclops",
+    "manaCost": "{5}{R}",
+    "typeLine": "Creature — Cyclops",
+    "oracleText": "{5}{R}{R}: Monstrosity 3. (If this creature isn't monstrous, put three +1/+1 counters on it and it becomes monstrous.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Gluttonous Cyclops:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{R}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        "IsMonstrous"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddDynamicCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": "Self"
+                            },
+                            "BecomeMonstrous"
+                        ]
+                    },
+                    "descriptionOverride": "Monstrosity 3. (If this creature isn't monstrous, put 3 +1/+1 counters on it and it becomes monstrous.)"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "artist": "Steve Prescott",
+        "flavorText": "The cyclops had learned to never eat a shepherd. Instead he gently flung the \"pit\" aside to grow a new flock.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/5/e583f6be-3d78-4085-9059-c3c989a4977f.jpg?1783939424",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Once a creature becomes monstrous, it can't become monstrous again. If the creature is already monstrous when the monstrosity ability resolves, nothing happens."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Monstrous isn't an ability that a creature has. It's just something true about that creature. If the creature stops being a creature or loses its abilities, it will continue to be monstrous."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "An ability that triggers when a creature becomes monstrous won't trigger if that creature isn't on the battlefield when its monstrosity ability resolves."
+            }
+        ]
+    }
 }
 
 // Gnarled Scarhide
@@ -3762,6 +4271,75 @@
         "artist": "Cyril Van Der Haegen",
         "flavorText": "\"It is not yours to hunt, mortal. Be content with its beauty alone.\"\n—Nylea, god of the hunt",
         "imageUri": "https://cards.scryfall.io/normal/front/1/a/1ae883ea-191e-4571-be3d-1e3149e6965e.jpg?1783939414"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Goldenhide Ox
+{
+    "name": "Goldenhide Ox",
+    "manaCost": "{5}{G}",
+    "typeLine": "Enchantment Creature — Ox",
+    "oracleText": "Constellation — Whenever this creature or another enchantment you control enters, target creature must be blocked this turn if able.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Goldenhide Ox:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MustBeBlocked",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "allCreatures": false
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Constellation — Whenever this creature or another enchantment you control enters, target creature must be blocked this turn if able."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "rarity": "UNCOMMON",
+        "artist": "Jack Wang",
+        "flavorText": "The temptation to take the ox's golden hide is as irresistible as it is fatal.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d107c72f-483a-4af9-b86f-681669d99c46.jpg?1783939414",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "The defending player must assign at least one blocker to the target creature during the declare blockers step if that player controls any creatures that could block it."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "The constellation ability doesn't force any specific creature to block the target creature."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If multiple attacking creatures must be blocked if able, the defending player must assign at least one blocker to each of them if possible. For example, if two such creatures were attacking and there were two potential blockers, they couldn't both be assigned to block the same attacker."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "A constellation ability triggers whenever an enchantment enters the battlefield under your control for any reason. Enchantments with other card types, such as enchantment creatures, will also cause constellation abilities to trigger."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -4192,6 +4770,66 @@
     ]
 }
 
+// Hubris
+{
+    "name": "Hubris",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Return target creature and all Auras attached to it to their owners' hands.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "AttachedToTarget",
+                        "host": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "filter": "permanent Aura"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "artist": "Seb McKinnon",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/05f5b473-edad-43a9-b4e7-b6d3fc877cf2.jpg?1783939447"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Humbler of Mortals
 {
     "name": "Humbler of Mortals",
@@ -4350,6 +4988,69 @@
             }
         ]
     }
+}
+
+// Hypnotic Siren
+{
+    "name": "Hypnotic Siren",
+    "manaCost": "{U}",
+    "typeLine": "Enchantment Creature — Siren",
+    "oracleText": "Bestow {5}{U}{U} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nFlying\nYou control enchanted creature.\nEnchanted creature gets +1/+1 and has flying.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING",
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{5}{U}{U}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            "ControlEnchantedPermanent",
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "rarity": "RARE",
+        "artist": "James Ryman",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b2f562f-00d1-41da-a6ac-bc019cce7fe7.jpg?1783939446",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Gaining control of a creature doesn't cause you to gain control of any Auras or Equipment attached to it."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Unlike other Aura spells, an Aura spell with bestow isn't countered if its target is illegal as it begins to resolve. Rather, the effect making it an Aura spell ends, it loses enchant creature, it returns to being an enchantment creature spell, and it resolves and enters the battlefield as an enchantment creature."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Unlike other Auras, an Aura with bestow isn't put into its owner's graveyard if it becomes unattached. Rather, the effect making it an Aura ends, it loses enchant creature, and it remains on the battlefield as an enchantment creature."
+            },
+            {
+                "date": "2013-10-17",
+                "text": "If you cast Hypnotic Siren for its bestow cost, and you gain control of a creature with a constellation ability, that ability will trigger when Hypnotic Siren enters the battlefield. You'll control that triggered ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Interpret the Signs
@@ -4622,6 +5323,86 @@
     ]
 }
 
+// King Macar, the Gold-Cursed
+{
+    "name": "King Macar, the Gold-Cursed",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Legendary Creature — Human Noble",
+    "oracleText": "Inspired — Whenever King Macar becomes untapped, you may exile target creature. If you do, create a Gold token. (It's an artifact with \"Sacrifice this token: Add one mana of any color.\")",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "King Macar, the Gold-Cursed:1",
+                "trigger": "UntapEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Exile"
+                            },
+                            {
+                                "type": "CreatePredefinedToken",
+                                "tokenType": "Gold"
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Inspired — Whenever King Macar becomes untapped, you may exile target creature. If you do, create a Gold token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "rarity": "RARE",
+        "artist": "Greg Staples",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff5987ab-570a-426c-ae4a-a270fac6b346.jpg?1783939434",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "The player who controlled King Macar when its ability triggered will control the artifact token, not the player who controlled the creature that was exiled."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Inspired abilities trigger no matter how the creature becomes untapped: by the turn-based action at the beginning of the untap step or by a spell or ability."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If an inspired ability triggers during your untap step, the ability will be put on the stack at the beginning of your upkeep. If the ability creates one or more token creatures, those creatures won't be able to attack that turn (unless they gain haste)."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Inspired abilities don't trigger when the creature enters the battlefield."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If the inspired ability includes an optional cost, you decide whether to pay that cost as the ability resolves. You can do this even if the creature leaves the battlefield in response to the ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Kiora's Dismissal
 {
     "name": "Kiora's Dismissal",
@@ -4695,6 +5476,68 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Knowledge and Power
+{
+    "name": "Knowledge and Power",
+    "manaCost": "{4}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you scry, you may pay {2}. If you do, this enchantment deals 2 damage to any target.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Knowledge and Power:1",
+                "trigger": "ScriedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{2}"
+                        }
+                    },
+                    "then": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "UNCOMMON",
+        "artist": "Jung Park",
+        "flavorText": "\"Information is a powerful weapon.\"\n—Cymede, queen of Akros",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7cd48a18-df3d-4381-a7e7-a3e9ae18d4d7.jpg?1783939422",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Knowledge and Power's ability triggers only once each time you scry, no matter how many cards you look at."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "You choose the target of the ability as it's put on the stack. You choose whether to pay {2} as it resolves. You can pay {2} only once each time you scry."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -5429,6 +6272,150 @@
     ]
 }
 
+// Nessian Game Warden
+{
+    "name": "Nessian Game Warden",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "When this creature enters, look at the top X cards of your library, where X is the number of Forests you control. You may reveal a creature card from among them and put it into your hand. Put the rest on the bottom of your library in any order.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nessian Game Warden:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": "land Forest"
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "creature",
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal a creature card from among them and put it into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "ControllerChooses"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "UNCOMMON",
+        "artist": "Vincent Proce",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/5099d18d-c8b5-4706-bc93-40d1bb12988d.jpg?1783939410",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "The value of X is calculated as the ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Nightmarish End
+{
+    "name": "Nightmarish End",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets -X/-X until end of turn, where X is the number of cards in your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "ModifyStats",
+            "powerModifier": {
+                "type": "Multiply",
+                "amount": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Hand"
+                },
+                "multiplier": -1
+            },
+            "toughnessModifier": {
+                "type": "Multiply",
+                "amount": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Hand"
+                },
+                "multiplier": -1
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "rarity": "UNCOMMON",
+        "artist": "Willian Murai",
+        "flavorText": "\"To think some believe it peaceful to die in one's sleep.\"\n—Ashiok, Nightmare Weaver",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4bab0e0a-7eb9-4422-a1d4-82cc05b4374d.jpg?1783939434"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Nyx Infusion
 {
     "name": "Nyx Infusion",
@@ -5854,6 +6841,187 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Pharika, God of Affliction
+{
+    "name": "Pharika, God of Affliction",
+    "manaCost": "{1}{B}{G}",
+    "typeLine": "Legendary Enchantment Creature — God",
+    "oracleText": "Indestructible\nAs long as your devotion to black and green is less than seven, Pharika isn't a creature.\n{B}{G}: Exile target creature card from a graveyard. Its owner creates a 1/1 black and green Snake enchantment creature token with deathtouch.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "INDESTRUCTIBLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Pharika, God of Affliction:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "BLACK",
+                                "GREEN"
+                            ],
+                            "creatureTypes": [
+                                "Snake"
+                            ],
+                            "keywords": [
+                                "DEATHTOUCH"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/5/9/5910a7f2-71a7-4e85-8feb-4a0da228eb15.jpg?1783939392",
+                            "controller": {
+                                "type": "PlayerRef",
+                                "player": {
+                                    "type": "OwnerOf",
+                                    "targetDescription": "target creature card"
+                                }
+                            },
+                            "enchantmentToken": true
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{B}{G}: Exile target creature card from a graveyard. Its owner creates a 1/1 black and green Snake enchantment creature token with deathtouch."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "RemoveCardType",
+                    "cardType": "CREATURE"
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "DevotionTo",
+                        "colors": [
+                            "BLACK",
+                            "GREEN"
+                        ]
+                    },
+                    "operator": "LT",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "rarity": "MYTHIC",
+        "artist": "Peter Mohrbacher",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/75ec8548-5790-4eac-8780-cdd126438192.jpg?1783939402",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "Your devotion to two colors is the number of mana symbols among mana costs of permanents you control that are the first color, the second, or both. If an effect counts your devotion to two colors, a hybrid symbol that is both of those colors is counted just once."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If a God stops being a creature, it loses the type creature and the creature type God. It continues to be a legendary enchantment."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "The abilities of Gods function as long as they're on the battlefield, regardless of whether they're creatures."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
+// Pheres-Band Thunderhoof
+{
+    "name": "Pheres-Band Thunderhoof",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Centaur Warrior",
+    "oracleText": "Heroic — Whenever you cast a spell that targets this creature, put two +1/+1 counters on this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pheres-Band Thunderhoof:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, put two +1/+1 counters on this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "artist": "Christopher Moeller",
+        "flavorText": "\"Flesh and bone or star and shadow. It makes no difference to my club.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a19a2e8e-9d8f-4537-838c-ac60e09d78bf.jpg?1783939410",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
