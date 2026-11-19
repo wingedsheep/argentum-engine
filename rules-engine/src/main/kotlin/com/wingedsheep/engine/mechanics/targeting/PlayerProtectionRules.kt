@@ -106,7 +106,7 @@ object PlayerProtectionRules {
         val sourceController = if (sourceSnapshot != null) sourceSnapshot.controllerId else casterId
             ?: state.projectedState.getController(sourceId)
             ?: state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
-        return sourceController != null && sourceController != protectedPlayerId
+        return sourceController != null && state.isOpponentOf(sourceController, protectedPlayerId)
     }
 
     private fun scopeMatchesSource(

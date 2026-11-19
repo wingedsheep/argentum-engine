@@ -539,7 +539,7 @@ data class GrantProtectionToController(
             is ProtectionScope.NonColor -> "non" + s.color.displayName.lowercase()
             ProtectionScope.Multicolored -> "multicolored"
             ProtectionScope.Monocolored -> "monocolored"
-            is ProtectionScope.CardType -> s.cardType.lowercase() + "s"
+            is ProtectionScope.CardType -> s.cardType.lowercase() + "s" + (s.controller?.let { " your opponents control" } ?: "")
             is ProtectionScope.ChosenCardType -> "the chosen card type"
             is ProtectionScope.ChosenCardName -> "the chosen card name"
             is ProtectionScope.Subtype -> s.subtype + "s"

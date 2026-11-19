@@ -62,7 +62,7 @@ fun keywordDisplayText(keyword: String): String =
 private fun opponentsCardTypeProtectionText(keyword: String): String? {
     val type = keyword.removePrefix(com.wingedsheep.sdk.scripting.ProtectionScope.CardType.OPPONENTS_KEYWORD_PREFIX)
     if (type == keyword) return null
-    return "protection from ${type.lowercase()}s your opponents control"
+    return "protection from ${pluralNounPhrase(type.lowercase())} your opponents control"
 }
 
 /**

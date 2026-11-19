@@ -341,7 +341,7 @@ internal class CardActiveEffectsProjector(
                 keyword.startsWith(ProtectionScope.CardType.OPPONENTS_KEYWORD_PREFIX) ->
                 com.wingedsheep.sdk.scripting.util.keywordDisplayText(keyword)
             keyword.startsWith(ProtectionScope.CardType.KEYWORD_PREFIX) ->
-                "protection from ${keyword.removePrefix(ProtectionScope.CardType.KEYWORD_PREFIX).lowercase()}s"
+                "protection from ${com.wingedsheep.sdk.scripting.util.pluralNounPhrase(keyword.removePrefix(ProtectionScope.CardType.KEYWORD_PREFIX).lowercase())}"
             else -> keyword.lowercase().replace('_', ' ')
         }
 
