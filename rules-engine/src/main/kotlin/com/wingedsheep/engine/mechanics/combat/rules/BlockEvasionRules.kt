@@ -2,6 +2,7 @@ package com.wingedsheep.engine.mechanics.combat.rules
 
 import com.wingedsheep.engine.mechanics.targeting.TypeQualityProtection
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureOf
+import com.wingedsheep.engine.mechanics.targeting.OpponentCardTypeProtection
 import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
 import com.wingedsheep.engine.mechanics.targeting.ColorProtection
 import com.wingedsheep.engine.handlers.PredicateContext
@@ -522,6 +523,23 @@ class ProtectionFromEachOpponentRule : BlockEvasionRule {
 }
 
 /**
+ * Protection from a card type your opponents control (CR 702.16f): an attacker with protection
+ * from creatures your opponents control can't be blocked by a creature an opponent of its
+ * controller controls (Crypsis).
+ */
+class ProtectionFromOpponentsCardTypeRule : BlockEvasionRule {
+    override fun check(ctx: BlockCheckContext): String? {
+        val type = OpponentCardTypeProtection.matchedType(
+            ctx.state, ctx.projected, ctx.attackerId,
+            ctx.projected.getTypes(ctx.blockerId), ctx.projected.getController(ctx.blockerId)
+        ) ?: return null
+        val attackerName = ctx.publicName(ctx.attackerId)
+        val blockerName = ctx.publicName(ctx.blockerId)
+        return "$attackerName has protection from ${OpponentCardTypeProtection.describe(type)} and can't be blocked by $blockerName"
+    }
+}
+
+/**
  * Protection from a kind of source (CR 702.16f): an attacker with protection from permanents that
  * were cast this turn can't be blocked by a creature cast this turn (Emrakul, the World Anew).
  */
@@ -756,6 +774,7 @@ fun defaultBlockEvasionRules(
     ProtectionFromTypeQualityRule(),
     ProtectionFromCardTypeRule(),
     ProtectionFromEachOpponentRule(),
+    ProtectionFromOpponentsCardTypeRule(),
     ProtectionFromSourceKindRule(),
     CanOnlyBlockCreaturesWithRule(predicateEvaluator),
     CantBlockCreaturesWithGreaterPowerRule(),

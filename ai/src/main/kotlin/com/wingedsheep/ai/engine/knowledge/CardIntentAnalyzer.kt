@@ -3598,9 +3598,14 @@ object CardIntentAnalyzer {
      */
     private fun isExpiringProtectionTrick(root: Effect): Boolean {
         val leaves = readingLeaves(root).flatMap { if (it is ForEachEffect) readingLeaves(it.body) else listOf(it) }
+        // "… gains protection from creatures your opponents control until end of turn. Untap it."
+        // (Crypsis): untapping the shielded creature is spent on resolution — it can block or be
+        // used again in the same fight the shield is for.
+        val shielded = leaves.filter(::isExpiringProtection).mapNotNull { (it as? GrantKeywordEffect)?.target }
         return leaves.any(::isExpiringProtection) && leaves.all { leaf ->
             isExpiringPump(leaf) || isExpiringProtection(leaf) ||
                 (leaf is GrantKeywordEffect && leaf.duration == Duration.EndOfTurn) ||
+                (leaf is TapUntapEffect && !leaf.tap && leaf.target in shielded) ||
                 tagsOf(leaf).let { it.isNotEmpty() && it.all { tag -> tag in SPENT_ON_RESOLUTION } }
         }
     }

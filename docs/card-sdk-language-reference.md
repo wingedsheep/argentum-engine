@@ -5273,7 +5273,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
 - `GrantBushido(amount, target, duration = EndOfTurn)` — "[target] gains bushido N"; a thin recipe over `GrantKeyword("BUSHIDO_<n>")`, the same `<KEYWORD>_<n>` form as `GrantToxic`. The engine derives the bushido trigger from it and `KeywordValue(BUSHIDO)` counts it. Sensei Golden-Tail: `AddCounters(TRAINING, 1, t) then GrantBushido(1, t, Duration.Permanent) then AddCreatureType("Samurai", t)`.
 - `GrantRampage(amount, target, duration = EndOfTurn)` — "[target] gains rampage N"; `GrantKeyword("RAMPAGE_<n>")`, the `GrantBushido` shape. The engine derives the rampage trigger from it (see `Rampage(n)`). Rapid Fire: `GrantKeyword(FIRST_STRIKE, t) then If(Not(EntityMatches(t, Any.withKeyword(RAMPAGE))), GrantRampage(2, t))`.
 - `GrantProtectionFromColor(color, target, duration)` — grant protection from a **fixed** color to a target (no player choice); a thin recipe over `GrantKeyword("PROTECTION_FROM_<COLOR>")`. "{W}: Target creature gains protection from red until end of turn." (Crimson Acolyte).
-- `GrantProtectionFromCardType(cardType, target, duration)` — the card-type sibling: grant protection from a **fixed** `CardType` (no player choice), a thin recipe over `GrantKeyword("PROTECTION_FROM_CARDTYPE_<TYPE>")` — the same projected keyword the printed `Protection(ProtectionScope.CardType(...))` static and the player-chosen `GrantProtectionFromChosenCardType` produce, so targeting, blocking, and combat damage all read one keyword. Reach for it when the card names the type outright rather than letting the player pick ("gains protection from artifacts" — Razor Barrier).
+- `GrantProtectionFromCardType(cardType, target, duration, controller = null)` — the card-type sibling: grant protection from a **fixed** `CardType` (no player choice), a thin recipe over `GrantKeyword("PROTECTION_FROM_CARDTYPE_<TYPE>")` — the same projected keyword the printed `Protection(ProtectionScope.CardType(...))` static and the player-chosen `GrantProtectionFromChosenCardType` produce, so targeting, blocking, and combat damage all read one keyword. Reach for it when the card names the type outright rather than letting the player pick ("gains protection from artifacts" — Razor Barrier). Its optional `controller = ControllerPredicate.ControlledByOpponent` narrows it to "protection from creatures your opponents control" (Crypsis — `PROTECTION_FROM_OPPONENTS_CARDTYPE_<TYPE>`, see `ProtectionScope.CardType`).
 - `GrantPlayerProtection(scope = ProtectionScope.Everything, duration = Duration.UntilYourNextTurn, target = Controller)` — grant a **player** protection from a `ProtectionScope` (CR 702.16); the player-level counterpart of the creature protection statics. For a player only the **D**amage and **T**argeting parts of DEBT apply: a protected player can't be the target of, nor be dealt damage by, a source matching the scope. Adds/merges a `PlayerProtectionComponent` (multiple grants stack their scopes); the targeting validator, target enumerator, and `DamageUtils` all consult the shared `PlayerProtectionRules`. `Duration.UntilYourNextTurn` clears it after the untap step of the player's next turn. "You gain protection from everything until your next turn." (The One Ring).
 - `ChooseColorThenEffect(whenChosen)` — pick a color, then run a function of that color.
 - `Effects.ChooseColorsThen(then, prompt)` — the multi-color form (`ChooseColorThenEffect.maxColors > 1`):
@@ -15353,6 +15353,16 @@ MacCready, Lamplight Mayor (granted).
   block evasion (`BlockEvasionRules`) all honour it with no per-card wiring. Protection only functions on
   the battlefield (CR 702.16), so a spell that targets the permanent while it is still on the stack is
   unaffected. Rides on the card entity as `ProtectionComponent.cardTypes`.
+- `ProtectionScope.CardType("Creature", controller = ControllerPredicate.ControlledByOpponent)` — "protection
+  from creatures **your opponents control**" (Crypsis): the card type narrowed to objects an opponent of the
+  protected permanent's controller (or of the protected player) controls, read whenever protection is checked,
+  so a creature that changes hands changes whether it matches and its controller's own creatures never do.
+  Projected as `PROTECTION_FROM_OPPONENTS_CARDTYPE_<TYPE>` and enforced on every leg — targeting, resolution
+  re-check, damage, enchanting/equipping and blocking — through `OpponentCardTypeProtection`. Only
+  `ControlledByOpponent` is accepted. Granted only: the one-shot
+  `Effects.GrantProtectionFromCardType(CardType.CREATURE, target, controller = ControllerPredicate.ControlledByOpponent)`,
+  `GrantProtectionFromToGroup`, or player protection; a printed `KeywordAbility.Protection` rejects it. On
+  hexproof the axis is redundant (hexproof already ignores its controller's own sources) and reads as the plain type.
 - `Hexproof(ProtectionScope.Color(Color.WHITE))` — "hexproof from white" (Knight of Malice). Projected as
   `HEXPROOF_FROM_<COLOR>`.
 - `Hexproof(ProtectionScope.NonColor(Color.GREEN))` / `KeywordAbility.hexproofFromNon(Color.GREEN)` —

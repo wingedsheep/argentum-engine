@@ -161,6 +161,13 @@ object EnchantRestriction {
         if (TypeQualityProtection.matchedQuality(projected, hostId, subtypes, supertypes, types) != null) return true
         // An Aura or Equipment that was cast this turn (CR 702.16c/d) — Emrakul, the World Anew.
         if (SourceKindProtection.isProtectedFromObject(state, hostId, attachmentId)) return true
+        // An attached creature an opponent controls, against "from creatures your opponents control".
+        val attachmentControllerNow = projected.getController(attachmentId)
+            ?: state.getEntity(attachmentId)?.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()?.playerId
+        if (com.wingedsheep.engine.mechanics.targeting.OpponentCardTypeProtection.matchedType(
+                state, projected, hostId, types, attachmentControllerNow
+            ) != null
+        ) return true
         if (projected.hasKeyword(hostId, "PROTECTION_FROM_EACH_OPPONENT")) {
             val hostController = projected.getController(hostId)
             val attachmentController = projected.getController(attachmentId)

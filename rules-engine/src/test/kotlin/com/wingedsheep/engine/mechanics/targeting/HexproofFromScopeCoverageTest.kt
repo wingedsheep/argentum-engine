@@ -28,6 +28,7 @@ class HexproofFromScopeCoverageTest : FunSpec({
         ProtectionScope.Multicolored,
         ProtectionScope.Monocolored,
         ProtectionScope.CardType("INSTANT"),
+        ProtectionScope.CardType("Creature", com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByOpponent),
         ProtectionScope.Subtype("Goblin"),
         ProtectionScope.Supertype("LEGENDARY"),
         ProtectionScope.Everything,

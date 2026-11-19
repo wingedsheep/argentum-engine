@@ -237,7 +237,9 @@ data class GrantProtectionFromToGroup(
             ProtectionScope.Spells, ProtectionScope.PermanentsCastThisTurn, ProtectionScope.RingBearers,
             ProtectionScope.ActivatedAbilities, ProtectionScope.TriggeredAbilities,
             is ProtectionScope.ManaValueParity, is ProtectionScope.ManaValueOtherThan -> true
-            is ProtectionScope.Color, is ProtectionScope.CardType,
+            // A plain card type keeps its older spelling; one scoped to opponents has none.
+            is ProtectionScope.CardType -> scope.controller != null
+            is ProtectionScope.Color,
             is ProtectionScope.NonColor, ProtectionScope.Monocolored, ProtectionScope.Everything,
             is ProtectionScope.ChosenCardName -> false
         }
@@ -537,7 +539,7 @@ data class GrantProtectionToController(
             is ProtectionScope.NonColor -> "non" + s.color.displayName.lowercase()
             ProtectionScope.Multicolored -> "multicolored"
             ProtectionScope.Monocolored -> "monocolored"
-            is ProtectionScope.CardType -> s.cardType.lowercase() + "s"
+            is ProtectionScope.CardType -> s.cardType.lowercase() + "s" + (s.controller?.let { " your opponents control" } ?: "")
             is ProtectionScope.ChosenCardType -> "the chosen card type"
             is ProtectionScope.ChosenCardName -> "the chosen card name"
             is ProtectionScope.Subtype -> s.subtype + "s"

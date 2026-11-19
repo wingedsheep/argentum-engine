@@ -190,7 +190,7 @@ fun ProtectionScope.protectionDescription(): String = when (this) {
     is ProtectionScope.NonColor -> "non" + color.name.lowercase()
     ProtectionScope.Multicolored -> "multicolored"
     ProtectionScope.Monocolored -> "monocolored"
-    is ProtectionScope.CardType -> cardType.lowercase() + "s"
+    is ProtectionScope.CardType -> cardType.lowercase() + "s" + (controller?.let { " your opponents control" } ?: "")
     is ProtectionScope.ChosenCardType -> "the chosen card type"
     is ProtectionScope.ChosenCardName -> "the chosen card name"
     is ProtectionScope.Subtype -> subtype + "s"

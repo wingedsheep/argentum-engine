@@ -974,6 +974,55 @@
     ]
 }
 
+// Crypsis
+{
+    "name": "Crypsis",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control gains protection from creatures your opponents control until end of turn. Untap it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "PROTECTION_FROM_OPPONENTS_CARDTYPE_CREATURE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "artist": "Daarken",
+        "flavorText": "Tritons borrow the camouflage of their oceanic prey to become predators on land.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bd445b01-34af-4132-a9fe-a03858624492.jpg?1783939572"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Cyclops of One-Eyed Pass
 {
     "name": "Cyclops of One-Eyed Pass",

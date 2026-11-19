@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.view.projection
 
+import com.wingedsheep.sdk.scripting.ProtectionScope
 import com.wingedsheep.engine.state.components.identity.TextBoxExchangeComponent
 import com.wingedsheep.sdk.scripting.MustAttackDefender
 import com.wingedsheep.engine.handlers.PredicateContext
@@ -333,10 +334,15 @@ internal class CardActiveEffectsProjector(
     private fun keywordName(keyword: String): String =
         // "Bands with other" keywords carry their quality (and a card name) inside the string, so
         // they are decoded rather than lower-cased: `"bands with other legendary creatures"`.
-        if (keyword.startsWith(com.wingedsheep.sdk.scripting.KeywordAbility.BandsWithOther.FAMILY_KEYWORD)) {
-            com.wingedsheep.sdk.scripting.util.keywordDisplayText(keyword)
-        } else {
-            keyword.lowercase().replace('_', ' ')
+        // So do card-type protections: "protection from creatures your opponents control"
+        // (Crypsis), "protection from artifacts" (Razor Barrier).
+        when {
+            keyword.startsWith(com.wingedsheep.sdk.scripting.KeywordAbility.BandsWithOther.FAMILY_KEYWORD) ||
+                keyword.startsWith(ProtectionScope.CardType.OPPONENTS_KEYWORD_PREFIX) ->
+                com.wingedsheep.sdk.scripting.util.keywordDisplayText(keyword)
+            keyword.startsWith(ProtectionScope.CardType.KEYWORD_PREFIX) ->
+                "protection from ${com.wingedsheep.sdk.scripting.util.pluralNounPhrase(keyword.removePrefix(ProtectionScope.CardType.KEYWORD_PREFIX).lowercase())}"
+            else -> keyword.lowercase().replace('_', ' ')
         }
 
     /** This badge with its effect's end stated, both as a field and in the text a tooltip shows. */

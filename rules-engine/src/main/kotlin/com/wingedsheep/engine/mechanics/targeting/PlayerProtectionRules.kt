@@ -95,6 +95,20 @@ object PlayerProtectionRules {
     ): Boolean = isProtectedFromSource(state, playerId, sourceId, casterId, predicateEvaluator) ||
         hasHexproofFromSource(state, playerId, sourceId, casterId, predicateEvaluator)
 
+    /** Whether [sourceId] (or its snapshot) is controlled by a player other than [protectedPlayerId]. */
+    private fun sourceControlledByOpponent(
+        state: GameState,
+        protectedPlayerId: EntityId,
+        sourceId: EntityId,
+        casterId: EntityId?,
+        sourceSnapshot: EntitySnapshot?
+    ): Boolean {
+        val sourceController = if (sourceSnapshot != null) sourceSnapshot.controllerId else casterId
+            ?: state.projectedState.getController(sourceId)
+            ?: state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
+        return sourceController != null && state.isOpponentOf(sourceController, protectedPlayerId)
+    }
+
     private fun scopeMatchesSource(
         state: GameState,
         protectedPlayerId: EntityId,
@@ -131,13 +145,10 @@ object PlayerProtectionRules {
                 projected.getSupertypes(sourceId).any { it.equals(scope.supertype, ignoreCase = true) }
                 else card?.typeLine?.supertypes?.any { it.name.equals(scope.supertype, ignoreCase = true) } == true) &&
                 (scope.cardType?.let { hasCardType(it) } ?: true)
-            is ProtectionScope.CardType -> hasCardType(scope.cardType)
-            is ProtectionScope.EachOpponent -> {
-                val sourceController = if (sourceSnapshot != null) sourceSnapshot.controllerId else casterId
-                    ?: projected.getController(sourceId)
-                    ?: state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
-                sourceController != null && sourceController != protectedPlayerId
-            }
+            // "From creatures your opponents control" adds the opponent test of EachOpponent.
+            is ProtectionScope.CardType -> hasCardType(scope.cardType) &&
+                (scope.controller == null || sourceControlledByOpponent(state, protectedPlayerId, sourceId, casterId, sourceSnapshot))
+            is ProtectionScope.EachOpponent -> sourceControlledByOpponent(state, protectedPlayerId, sourceId, casterId, sourceSnapshot)
             ProtectionScope.Everything -> true
             ProtectionScope.Spells -> sourceSnapshot == null && SourceKindProtection.isSpell(state, sourceId)
             ProtectionScope.PermanentsCastThisTurn -> if (sourceSnapshot != null) sourceSnapshot.wasCast && sourceSnapshot.enteredOnTurn == state.turnNumber else SourceKindProtection.isPermanentCastThisTurn(state, sourceId)

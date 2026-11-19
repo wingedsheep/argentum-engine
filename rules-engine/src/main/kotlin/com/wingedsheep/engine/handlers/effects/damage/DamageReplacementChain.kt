@@ -399,7 +399,11 @@ object DamageReplacementChain {
                 DamageUtils.damageSourceController(state, projected, source, sourceSnapshot = d.sourceSnapshot)?.let { from ->
                     projected.getController(d.targetId)?.let { state.isOpponentOf(from, it) }
                 } == true
-            if (color || quality || type || opponent || SourceKindProtection.isProtectedFromObject(viewState, d.targetId, source, d.sourceSnapshot) ||
+            val opponentType = OpponentCardTypeProtection.matchedType(
+                state, projected, d.targetId, types,
+                DamageUtils.damageSourceController(state, projected, source, sourceSnapshot = d.sourceSnapshot)
+            ) != null
+            if (color || quality || type || opponent || opponentType || SourceKindProtection.isProtectedFromObject(viewState, d.targetId, source, d.sourceSnapshot) ||
                 PlayerProtectionRules.isProtectedFromSource(viewState, d.targetId, source, casterId = null, predicateEvaluator = evaluator, sourceSnapshot = d.sourceSnapshot)) {
                 prevent("protection:${d.targetId}", "Protection — prevent all damage", d.targetId)
             }

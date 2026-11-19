@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
  */
 fun describeKeywordGrant(subject: String, keyword: String, plural: Boolean = false): String {
     bandsWithOtherText(keyword)?.let { return "$subject ${if (plural) "gain" else "gains"} $it" }
+    opponentsCardTypeProtectionText(keyword)?.let { return "$subject ${if (plural) "gain" else "gains"} $it" }
     Keyword.entries.firstOrNull { it.name == keyword }?.let {
         return "$subject ${if (plural) "gain" else "gains"} ${it.displayName.lowercase()}"
     }
@@ -50,9 +51,19 @@ fun describeKeywordLoss(subject: String, keyword: String, plural: Boolean = fals
  * phrase ("flying", "can't be blocked").
  */
 fun keywordDisplayText(keyword: String): String =
-    bandsWithOtherText(keyword) ?: Keyword.entries.firstOrNull { it.name == keyword }?.displayName?.lowercase()
+    bandsWithOtherText(keyword) ?: opponentsCardTypeProtectionText(keyword) ?: Keyword.entries.firstOrNull { it.name == keyword }?.displayName?.lowercase()
         ?: AbilityFlag.entries.firstOrNull { it.name == keyword }?.displayName?.replaceFirstChar { it.lowercase() }
         ?: keyword.lowercase().replace('_', ' ')
+
+/**
+ * "Protection from creatures your opponents control" (Crypsis) — the opponents-scoped card-type
+ * protection keyword, decoded from [ProtectionScope.CardType.OPPONENTS_KEYWORD_PREFIX].
+ */
+private fun opponentsCardTypeProtectionText(keyword: String): String? {
+    val type = keyword.removePrefix(com.wingedsheep.sdk.scripting.ProtectionScope.CardType.OPPONENTS_KEYWORD_PREFIX)
+    if (type == keyword) return null
+    return "protection from ${pluralNounPhrase(type.lowercase())} your opponents control"
+}
 
 /**
  * "Bands with other" keywords (CR 702.22b) carry their quality inside the string, so they are

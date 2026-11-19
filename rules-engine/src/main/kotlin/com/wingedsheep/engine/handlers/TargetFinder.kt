@@ -14,6 +14,7 @@ import com.wingedsheep.engine.mechanics.ControllerGrants
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.targeting.ControllerHexproof
 import com.wingedsheep.engine.mechanics.targeting.ControllerShroud
+import com.wingedsheep.engine.mechanics.targeting.OpponentCardTypeProtection
 import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
 import com.wingedsheep.engine.mechanics.targeting.UntargetableByRules
 import com.wingedsheep.engine.mechanics.targeting.PlayerTargetRestriction
@@ -224,6 +225,8 @@ class TargetFinder(
         if (SourceKindProtection.targetingError(state, entityId, sourceId, controllerId, targetingSourceType, predicateEvaluator) != null) {
             return true
         }
+        // Protection from a card type your opponents control (Crypsis).
+        if (OpponentCardTypeProtection.targetingError(state, entityId, sourceId, controllerId) != null) return true
 
         // Source-card-type restriction (Artifact Ward) is checked first because, unlike the
         // opponent-ability restriction, its default form is NOT controller-gated: a matching source
