@@ -48,7 +48,7 @@ class CantBeBlockedUnlessAllDefendersBlockAiTest : ScenarioTestBase() {
             CombatMath.isEvasive(crowded.state, projected, crowded.findPermanent("Tromokratis")!!, blockers, cardRegistry) shouldBe true
         }
 
-        test("facing lethal from Tromokratis with two creatures, the AI declares a legal block") {
+        test("facing lethal from Tromokratis with two creatures, the AI blocks it with both creatures") {
             val game = scenario()
                 .withPlayers("Attacker", "AI")
                 .withCardOnBattlefield(1, "Tromokratis")
@@ -66,7 +66,37 @@ class CantBeBlockedUnlessAllDefendersBlockAiTest : ScenarioTestBase() {
 
             val action = AIPlayer.create(cardRegistry, game.player2Id, AiProfile.LIVE).chooseAction(game.state)
             val blocks = action.shouldBeInstanceOf<DeclareBlockers>().blockers
-            withClue("blocks: $blocks") { game.execute(action).error shouldBe null }
+            val tromokratis = game.findPermanent("Tromokratis")!!
+            withClue("blocks: $blocks") {
+                blocks shouldBe mapOf(
+                    game.findPermanent("Grizzly Bears")!! to listOf(tromokratis),
+                    game.findPermanent("Savannah Lions")!! to listOf(tromokratis),
+                )
+                game.execute(action).error shouldBe null
+            }
+        }
+
+        test("not facing lethal, the AI keeps its creatures out of Tromokratis' way") {
+            val game = scenario()
+                .withPlayers("Attacker", "AI")
+                .withCardOnBattlefield(1, "Tromokratis")
+                .withCardOnBattlefield(2, "Grizzly Bears")
+                .withCardOnBattlefield(2, "Savannah Lions")
+                .withCardInLibrary(1, "Island")
+                .withCardInLibrary(2, "Plains")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+            game.declareAttackers(mapOf("Tromokratis" to 2)).error shouldBe null
+            game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+
+            val action = AIPlayer.create(cardRegistry, game.player2Id, AiProfile.LIVE).chooseAction(game.state)
+            val blocks = action.shouldBeInstanceOf<DeclareBlockers>().blockers
+            withClue("blocks: $blocks") {
+                blocks shouldBe emptyMap()
+                game.execute(action).error shouldBe null
+            }
         }
     }
 }

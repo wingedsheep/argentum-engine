@@ -161,10 +161,7 @@ object CombatMath {
                     // "Can't be blocked unless all creatures defending player controls block it"
                     // (Tromokratis): only a lone creature can stop it on its own, and the AI never
                     // commits a whole board to one attacker — read it as unblockable otherwise.
-                    if (attackerDef.staticAbilities.any {
-                            it is CantBeBlockedUnlessAllDefendersBlock &&
-                                it.filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self
-                        } && blockerController != null &&
+                    if (blockerController != null && requiresAllDefendersToBlock(state, projected, attacker, cardRegistry) &&
                         projected.getBattlefieldControlledBy(blockerController).count { projected.isCreature(it) } > 1
                     ) return false
                     for (ability in attackerDef.staticAbilities.filterIsInstance<CantBeBlockedBy>()) {
@@ -257,6 +254,26 @@ object CombatMath {
         cardRegistry: CardRegistry? = null,
     ): List<EntityId> {
         return opponentBlockers.filter { canBeBlockedBy(state, projected, attacker, it, cardRegistry) }
+    }
+
+    /**
+     * Whether [attacker] "can't be blocked unless all creatures defending player controls block it"
+     * (Tromokratis) — its own printed copy or one granted to it, while it keeps its abilities.
+     */
+    fun requiresAllDefendersToBlock(
+        state: GameState,
+        projected: ProjectedState,
+        attacker: EntityId,
+        cardRegistry: CardRegistry,
+    ): Boolean {
+        if (projected.hasLostAllAbilities(attacker)) return false
+        fun CantBeBlockedUnlessAllDefendersBlock.onSelf() =
+            filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self
+        val printed = state.getEntity(attacker)?.faceUpCardDefinition(cardRegistry)?.staticAbilities.orEmpty()
+            .any { it is CantBeBlockedUnlessAllDefendersBlock && it.onSelf() }
+        return printed || state.grantedStaticAbilities.any {
+            it.entityId == attacker && (it.ability as? CantBeBlockedUnlessAllDefendersBlock)?.onSelf() == true
+        }
     }
 
     /**
