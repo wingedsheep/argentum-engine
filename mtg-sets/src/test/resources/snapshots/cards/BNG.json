@@ -2474,6 +2474,363 @@
     ]
 }
 
+// Oreskos Sun Guide
+{
+    "name": "Oreskos Sun Guide",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Cat Monk",
+    "oracleText": "Inspired — Whenever this creature becomes untapped, you gain 2 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Oreskos Sun Guide:1",
+                "trigger": "UntapEvent",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "artist": "Mathias Kollros",
+        "flavorText": "\"Let the humans have their pantheon. We need no gods to thrive. Even a mortal such as I can capture a part of the sun's power.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/064435e7-20ea-4ba4-b039-a945afeeb5c6.jpg?1783939578"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Pheres-Band Raiders
+{
+    "name": "Pheres-Band Raiders",
+    "manaCost": "{5}{G}",
+    "typeLine": "Creature — Centaur Warrior",
+    "oracleText": "Inspired — Whenever this creature becomes untapped, you may pay {2}{G}. If you do, create a 3/3 green Centaur enchantment creature token.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pheres-Band Raiders:1",
+                "trigger": "UntapEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{2}{G}"
+                        }
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "power": 3,
+                        "toughness": 3,
+                        "colors": [
+                            "GREEN"
+                        ],
+                        "creatureTypes": [
+                            "Centaur"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/9/8/985be507-6125-4db2-b99f-8b61149ffeeb.jpg?1783939515",
+                        "enchantmentToken": true
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Barger",
+        "flavorText": "\"Who can deny the call to battle when it sings in our blood?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/80856020-f569-4d73-8c44-7b48535a69e8.jpg?1783939532"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Pheres-Band Tromper
+{
+    "name": "Pheres-Band Tromper",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Centaur Warrior",
+    "oracleText": "Inspired — Whenever this creature becomes untapped, put a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pheres-Band Tromper:1",
+                "trigger": "UntapEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "artist": "Volkan Baǵa",
+        "flavorText": "Trompers are the most feared warriors of the Pheres Band. Anger is their lifeblood. It sustains them and gives them purpose.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2d7e7d1-70ee-450b-8018-ff373cc91c68.jpg?1783939529"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Plea for Guidance
+{
+    "name": "Plea for Guidance",
+    "manaCost": "{5}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for up to two enchantment cards, reveal them, put them into your hand, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "enchantment"
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for up to two enchantment cards to put into your hand",
+                    "selectedLabel": "Put into your hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "rarity": "RARE",
+        "artist": "Terese Nielsen",
+        "flavorText": "On Theros, the dove is a symbol not of peace but of discovery. Quick wings herald the arrival of a revelation.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1d1d6d76-f399-475a-b5cd-544bd7c6d967.jpg?1783939576"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Reckless Reveler
+{
+    "name": "Reckless Reveler",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Satyr",
+    "oracleText": "{R}, Sacrifice this creature: Destroy target artifact.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Reckless Reveler:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{R}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "artist": "Mike Sass",
+        "flavorText": "\"The gods of Theros are born of the expectations and beliefs of mortals. If I have found godhood, what does that say about their true desires?\"\n—Xenagos, god of revels",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/188adefd-a808-4991-80be-53249c24df8f.jpg?1783939542"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Rise to the Challenge
+{
+    "name": "Rise to the Challenge",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +2/+0 and gains first strike until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "artist": "Anthony Palumbo",
+        "flavorText": "Plidius wagered that Arissa couldn't kill a chimera with her javelins alone. She proved him wrong in a way everyone could see for days to come.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c656ad1b-e85b-4b0c-b538-506afe4a9da5.jpg?1783939543"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Satyr Nyx-Smith
+{
+    "name": "Satyr Nyx-Smith",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Satyr Shaman",
+    "oracleText": "Haste\nInspired — Whenever this creature becomes untapped, you may pay {2}{R}. If you do, create a 3/1 red Elemental enchantment creature token with haste.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Satyr Nyx-Smith:1",
+                "trigger": "UntapEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{2}{R}"
+                        }
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "power": 3,
+                        "toughness": 1,
+                        "colors": [
+                            "RED"
+                        ],
+                        "creatureTypes": [
+                            "Elemental"
+                        ],
+                        "keywords": [
+                            "HASTE"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/9/7/97e5fee3-6dd9-4bbe-b64d-ddfa4b9d4256.jpg?1783939516",
+                        "enchantmentToken": true
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Staples",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3bc2c65e-3cba-4813-9949-87e15f592247.jpg?1783939541"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Satyr Wayfinder
 {
     "name": "Satyr Wayfinder",
@@ -2596,6 +2953,334 @@
         "imageUri": "https://cards.scryfall.io/normal/front/2/7/273f25fc-9c9f-4b73-a28b-1461d8fcd443.jpg?1783939539"
     },
     "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Silent Sentinel
+{
+    "name": "Silent Sentinel",
+    "manaCost": "{5}{W}{W}",
+    "typeLine": "Creature — Archon",
+    "oracleText": "Flying\nWhenever this creature attacks, you may return target enchantment card from your graveyard to the battlefield.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Silent Sentinel:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Battlefield",
+                        "fromZone": "Graveyard"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "enchantment own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "flavorText": "It serves a justice higher than the whims of the gods.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/177ece7c-b979-4a31-ba5f-6a8a382f2862.jpg?1783939576"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Siren Song Lyre
+{
+    "name": "Siren Song Lyre",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature has \"{2}, {T}: Tap target creature.\"\nEquip {2}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Siren Song Lyre:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Siren Song Lyre:1",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{2}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "161",
+        "rarity": "UNCOMMON",
+        "artist": "James Paick",
+        "flavorText": "A siren once tried to steal it out of jealousy but was caught by the song of its strings.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/f/cfeca720-3163-4391-b90d-5f7aa5f5987b.jpg?1783939520"
+    }
+}
+
+// Siren of the Silent Song
+{
+    "name": "Siren of the Silent Song",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Creature — Zombie Siren",
+    "oracleText": "Flying\nInspired — Whenever this creature becomes untapped, each opponent discards a card, then each opponent mills a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Siren of the Silent Song:1",
+                "trigger": "UntapEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachOpponent"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "player": "EachOpponent",
+                                        "isMill": true
+                                    },
+                                    "storeAs": "milled"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "milled",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard",
+                                        "player": "EachOpponent"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "rarity": "UNCOMMON",
+        "artist": "Anthony Palumbo",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/990f4438-aa74-4460-8bac-93480d0bb0dc.jpg?1783939521"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Sphinx's Disciple
+{
+    "name": "Sphinx's Disciple",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Flying\nInspired — Whenever this creature becomes untapped, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sphinx's Disciple:1",
+                "trigger": "UntapEvent",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "artist": "Ryan Alexander Lee",
+        "flavorText": "Few dare to brave the Dakra Isles. Those who return are forever changed.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba33f00d-dbed-4bfb-a295-90f729be98de.jpg?1783939565"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Stormcaller of Keranos
+{
+    "name": "Stormcaller of Keranos",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "Haste\n{1}{U}: Scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Stormcaller of Keranos:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "UNCOMMON",
+        "artist": "Marco Nelor",
+        "flavorText": "A prayer answered by Keranos is clear for all to witness.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/3/d397bdc3-a866-45be-8740-185d9ccf29c4.jpg?1783939539"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
         "RED"
     ]
 }
@@ -2853,6 +3538,49 @@
     "colorIdentityOverride": [
         "WHITE",
         "GREEN"
+    ]
+}
+
+// Warchanter of Mogis
+{
+    "name": "Warchanter of Mogis",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Minotaur Shaman",
+    "oracleText": "Inspired — Whenever this creature becomes untapped, target creature you control gains intimidate until end of turn. (A creature with intimidate can't be blocked except by artifact creatures and/or creatures that share a color with it.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Warchanter of Mogis:1",
+                "trigger": "UntapEvent",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "INTIMIDATE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "artist": "Mike Bierek",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/757948b3-8cb2-4709-9bbf-031c2bf6d4c5.jpg?1783939551"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
