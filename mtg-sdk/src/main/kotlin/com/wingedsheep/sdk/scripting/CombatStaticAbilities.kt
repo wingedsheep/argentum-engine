@@ -380,23 +380,6 @@ data class AssignUnblockedCombatDamageToDefendingCreature(
  * @property filter What this ability applies to
  */
 /**
- * This creature can't attack unless its controller sacrifices [count] permanents matching
- * [sacrificeFilter], paid as attackers are declared — Leviathan's "this creature can't attack
- * unless you sacrifice two Islands".
- *
- * A **cost**, not a condition, which is why it is not [CantAttackUnless]: merely controlling two
- * Islands is not enough, they have to go. It is also not an *optional* attack cost (CR 508.1g,
- * "costs a player may pay as a creature attacks"): the clause is a restriction checked at
- * CR 508.1c, and its cost is determined and paid at CR 508.1h–j. CR 508.1d is the reason an
- * unpayable one simply keeps the creature home rather than making the whole declaration illegal. The declaration is illegal up front when the controller
- * doesn't control enough matching permanents to pay (a cost you can't pay can't be paid), and
- * otherwise the declare-attackers step pauses for the choice of which to sacrifice, in the same
- * window the generic-mana [AttackTax] pauses to be paid.
- *
- * Unlike [CantAttackOrBlockUnlessPay] this has no blocking half: the printed line is attack-only,
- * and a blocking sibling would need its own pause in the blocker step.
- */
-/**
  * "You may exert this creature as it attacks." (CR 701.43d) — an *optional* cost to attack
  * (CR 508.1g): as attackers are declared, the controller chooses whether to exert each declared
  * attacker carrying it. Exerting (CR 701.43a) means the creature won't untap during its
@@ -408,7 +391,7 @@ data class AssignUnblockedCombatDamageToDefendingCreature(
  * exert chosen through this ability, never for an exert paid as an activated ability's cost
  * (`Costs.Exert`).
  *
- * Read off the card definition like [CantAttackUnlessSacrifice]; a face-down creature or one that
+ * Read off the card definition like [CantAttackUnlessPermanentCost]; a face-down creature or one that
  * has lost all abilities isn't offered the choice.
  *
  * [onlyIfNotExertedThisTurn] is the "If this creature hasn't been exerted this turn, you may exert
@@ -429,19 +412,58 @@ data class ExertAsItAttacks(
     }
 }
 
-@SerialName("CantAttackUnlessSacrifice")
+/**
+ * This creature can't attack unless its controller pays [count] permanents matching [filter] they
+ * control, the way [action] names, as attackers are declared — Leviathan's "this creature can't
+ * attack unless you sacrifice two Islands" ([AttackPermanentCostAction.SACRIFICE]), Floodtide
+ * Serpent's "can't attack unless you return an enchantment you control to its owner's hand"
+ * ([AttackPermanentCostAction.RETURN_TO_HAND]).
+ *
+ * A **cost**, not a condition, which is why it is not [CantAttackUnless]: merely controlling two
+ * Islands is not enough, they have to go. It is also not an *optional* attack cost (CR 508.1g,
+ * "costs a player may pay as a creature attacks"): the clause is a restriction checked at
+ * CR 508.1c, and its cost is determined and paid at CR 508.1h–j. CR 508.1d is the reason an
+ * unpayable one simply keeps the creature home rather than making the whole declaration illegal.
+ * The declaration is illegal up front when the controller doesn't control enough matching
+ * permanents to pay (a cost you can't pay can't be paid), and otherwise the declare-attackers step
+ * pauses for the choice of which to pay with, in the same window the generic-mana [AttackTax]
+ * pauses to be paid. The attacking creature itself is never eligible.
+ *
+ * Unlike [CantAttackOrBlockUnlessPay] this has no blocking half: the printed lines are attack-only,
+ * and a blocking sibling would need its own pause in the blocker step.
+ */
+@SerialName("CantAttackUnlessPermanentCost")
 @Serializable
-data class CantAttackUnlessSacrifice(
-    val sacrificeFilter: GameObjectFilter,
+data class CantAttackUnlessPermanentCost(
+    val filter: GameObjectFilter,
     val count: Int = 1,
+    val action: AttackPermanentCostAction = AttackPermanentCostAction.SACRIFICE,
 ) : StaticAbility {
-    override val description: String =
-        "can't attack unless you sacrifice $count ${sacrificeFilter.description}"
+    override val description: String = when (action) {
+        AttackPermanentCostAction.SACRIFICE ->
+            "can't attack unless you sacrifice $count ${filter.description}"
+        AttackPermanentCostAction.RETURN_TO_HAND ->
+            "can't attack unless you return $count ${filter.description} you control to its owner's hand"
+    }
 
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
-        val newFilter = sacrificeFilter.applyTextReplacement(replacer)
-        return if (newFilter !== sacrificeFilter) copy(sacrificeFilter = newFilter) else this
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
     }
+}
+
+/**
+ * What a [CantAttackUnlessPermanentCost] does with the permanents its controller pays with. Not
+ * [com.wingedsheep.sdk.scripting.costs.PermanentCostAction]: that one prices variable-count spell
+ * and ability costs (exile/sacrifice/tap), and an attack cost never taps or exiles.
+ */
+@Serializable
+enum class AttackPermanentCostAction {
+    /** "…unless you sacrifice two Islands" (Leviathan). Fires sacrifice and dies triggers. */
+    SACRIFICE,
+
+    /** "…unless you return an enchantment you control to its owner's hand" (Floodtide Serpent). */
+    RETURN_TO_HAND,
 }
 
 /**
@@ -937,7 +959,7 @@ data class CanAttackAsThoughHasty(
  * Enlist (CR 702.154): each instance offers its own optional attack-declaration tap cost
  * and creates its own linked power-boost trigger. Multiple instances are independent.
  * Unlike [ExertAsItAttacks], this chooses another creature and reads its power on resolution;
- * [CantAttackUnlessSacrifice] is a mandatory restriction, not an optional linked ability.
+ * [CantAttackUnlessPermanentCost] is a mandatory restriction, not an optional linked ability.
  */
 @SerialName("Enlist")
 @Serializable

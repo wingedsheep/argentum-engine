@@ -1,0 +1,1 @@
+- #4760 The AI reads "can't attack unless you sacrifice/return a permanent" as a combat restriction (rated down in draft) and pays such an attack with its least valuable permanent instead of returning its best enchantment

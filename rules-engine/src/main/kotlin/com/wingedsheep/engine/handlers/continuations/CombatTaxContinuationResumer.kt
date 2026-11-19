@@ -55,8 +55,8 @@ class CombatTaxContinuationResumer(
         resumer(BlockTaxManaSelectionContinuation::class) { state, continuation, response, _ ->
             resumeBlockTaxSelection(state, continuation, response)
         },
-        resumer(com.wingedsheep.engine.core.AttackSacrificeSelectionContinuation::class) { state, continuation, response, _ ->
-            resumeAttackSacrificeSelection(state, continuation, response)
+        resumer(com.wingedsheep.engine.core.AttackPermanentCostSelectionContinuation::class) { state, continuation, response, _ ->
+            resumeAttackPermanentCostSelection(state, continuation, response)
         },
         resumer(com.wingedsheep.engine.core.AttackExertSelectionContinuation::class) { state, continuation, response, _ ->
             resumeAttackExertSelection(state, continuation, response)
@@ -64,54 +64,92 @@ class CombatTaxContinuationResumer(
     )
 
     /**
-     * Sacrifice the chosen permanents for one attacker's `CantAttackUnlessSacrifice` cost, then
-     * either ask for the next attacker's cost or commit the declaration.
+     * Pay one attacker's `CantAttackUnlessPermanentCost` with the chosen permanents — sacrifice
+     * them or return them to their owners' hands — then either ask for the next attacker's cost
+     * or commit the declaration.
      *
-     * The sacrifice reuses `ForceSacrificeExecutor.sacrificePermanents`, so it emits
+     * The choice is client-supplied, so each pick is re-checked against the same eligible set the
+     * prompt offered. A sacrifice reuses `ForceSacrificeExecutor.sacrificePermanents`, so it emits
      * `PermanentsSacrificedEvent`, snapshots the sacrificed permanents' characteristics, and lets
-     * dies/sacrifice triggers fire — a hand-rolled zone move here would silently skip all three.
+     * dies/sacrifice triggers fire; a return moves them together through the zone-transition
+     * service, which emits their zone-change events — a hand-rolled zone move here would silently
+     * skip all of that.
      */
-    private fun resumeAttackSacrificeSelection(
+    private fun resumeAttackPermanentCostSelection(
         state: GameState,
-        continuation: com.wingedsheep.engine.core.AttackSacrificeSelectionContinuation,
+        continuation: com.wingedsheep.engine.core.AttackPermanentCostSelectionContinuation,
         response: DecisionResponse,
     ): ExecutionResult {
         if (response !is com.wingedsheep.engine.core.CardsSelectedResponse) {
-            return ExecutionResult.error(state, "Expected card selection response for attack sacrifice")
+            return ExecutionResult.error(state, "Expected card selection response for attack cost")
         }
-        if (response.selectedCards.size != continuation.count) {
+        val chosen = response.selectedCards.distinct()
+        if (chosen.size != continuation.count) {
             return ExecutionResult.error(
                 state,
-                "Must sacrifice exactly ${continuation.count} permanents to attack"
+                "Must choose exactly ${continuation.count} permanents to attack"
             )
         }
+        val requirement = com.wingedsheep.engine.mechanics.combat.AttackPermanentCosts.requirementFor(
+            state, continuation.payingAttacker, services.cardRegistry
+        ) ?: return ExecutionResult.error(state, "Attacker no longer has an attack cost")
+        val payable = com.wingedsheep.engine.mechanics.combat.AttackPermanentCosts.payableOptions(
+            state, continuation.attackingPlayer, continuation.payingAttacker, requirement,
+            continuation.count, continuation.remaining, services.cardRegistry, services.predicateEvaluator
+        ).toSet()
+        if (!payable.containsAll(chosen)) {
+            return ExecutionResult.error(state, "Chosen permanents can't pay this attack cost")
+        }
 
-        val sacrificeResult = com.wingedsheep.engine.handlers.effects.zones.ForceSacrificeExecutor(services.zones, dynamicAmountEvaluator = services.dynamicAmountEvaluator)
-            .sacrificePermanents(state, continuation.attackingPlayer, response.selectedCards)
-            .toExecutionResult()
-        if (sacrificeResult.outcome !is Outcome.Done) return sacrificeResult
+        val paidResult = when (requirement.action) {
+            com.wingedsheep.sdk.scripting.AttackPermanentCostAction.SACRIFICE ->
+                com.wingedsheep.engine.handlers.effects.zones.ForceSacrificeExecutor(services.zones, dynamicAmountEvaluator = services.dynamicAmountEvaluator)
+                    .sacrificePermanents(state, continuation.attackingPlayer, chosen)
+                    .toExecutionResult()
+            com.wingedsheep.sdk.scripting.AttackPermanentCostAction.RETURN_TO_HAND -> {
+                val moved = services.zones.moveToZoneBatch(state, chosen, com.wingedsheep.sdk.core.Zone.HAND)
+                ExecutionResult.success(moved.state, moved.events)
+            }
+        }
+        if (paidResult.outcome !is Outcome.Done) return paidResult
+        // Each pick was payable on its own; a multi-permanent pick could still jointly take what a
+        // later cost needs. Refuse it so the player picks again rather than meeting an empty prompt.
+        if (!com.wingedsheep.engine.mechanics.combat.AttackPermanentCosts.remainingAffordable(
+                paidResult.state, continuation.attackingPlayer, continuation.remaining,
+                services.cardRegistry, services.predicateEvaluator
+            )
+        ) {
+            return ExecutionResult.error(state, "That choice leaves another attacker's cost unpayable")
+        }
+        // A declared attacker paid away as the cost (an enchantment creature returned, a creature
+        // sacrificed) is no longer on the battlefield, so it doesn't become an attacking creature
+        // (CR 508.1k): drop it from the declaration and its band.
+        val battlefield = paidResult.state.getBattlefield().toSet()
+        val attackers = continuation.attackers.filterKeys { it in battlefield }
+        val bands = continuation.bands.map { band -> band.filterTo(mutableSetOf()) { it in battlefield } }
+            .filter { it.size > 1 }
 
         val next = continuation.remaining.firstOrNull()
         if (next != null) {
-            return services.combatManager.attackPhase.pauseForNextAttackSacrifice(
-                state = sacrificeResult.state,
+            return services.combatManager.attackPhase.pauseForNextAttackPermanentCost(
+                state = paidResult.state,
                 attackingPlayer = continuation.attackingPlayer,
-                attackers = continuation.attackers,
+                attackers = attackers,
                 payingAttacker = next.attackerId,
                 count = next.count,
                 remaining = continuation.remaining.drop(1),
-                bands = continuation.bands,
-                carryEvents = sacrificeResult.events.toList(),
+                bands = bands,
+                carryEvents = paidResult.events.toList(),
             )
         }
 
         return services.combatManager.attackPhase.commitAttackDeclaration(
-            state = sacrificeResult.state,
+            state = paidResult.state,
             attackingPlayer = continuation.attackingPlayer,
-            attackers = continuation.attackers,
-            projected = sacrificeResult.state.projectedState,
-            taxEvents = sacrificeResult.events.toList(),
-            bands = continuation.bands,
+            attackers = attackers,
+            projected = paidResult.state.projectedState,
+            taxEvents = paidResult.events.toList(),
+            bands = bands,
         )
     }
 

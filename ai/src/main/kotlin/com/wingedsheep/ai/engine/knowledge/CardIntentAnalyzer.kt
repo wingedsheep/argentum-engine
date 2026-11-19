@@ -44,6 +44,7 @@ import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWith
 import com.wingedsheep.sdk.scripting.CanBlockAdditionalForCreatureGroup
 import com.wingedsheep.sdk.scripting.CanBlockAsThoughHadReach
 import com.wingedsheep.sdk.scripting.CantAttackUnless
+import com.wingedsheep.sdk.scripting.CantAttackUnlessPermanentCost
 import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
 import com.wingedsheep.sdk.scripting.CantBlockUnless
 import com.wingedsheep.sdk.scripting.CantBlockUnlessCoBlocker
@@ -3918,6 +3919,10 @@ object CardIntentAnalyzer {
         // Prototype): a mana price on its own combat — the drawback of an oversized body. Scoped
         // to itself by construction; the Aura form (Brainwash) is skipped where the card is read.
         is CantAttackOrBlockUnlessPay -> setOf(IntentTag.COMBAT_RESTRICTION)
+        // "This creature can't attack unless you sacrifice two Islands" (Leviathan) / "return an
+        // enchantment you control to its owner's hand" (Floodtide Serpent): a permanent price on its
+        // own attacks — the same drawback on an oversized body as a mana price.
+        is CantAttackUnlessPermanentCost -> setOf(IntentTag.COMBAT_RESTRICTION)
         is CantBlockUnlessCoBlocker -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
         // "This creature can't block unless you control another Wolf or Werewolf" (Howlpack Wolf):
         // the blocking half of [CantAttackUnless] — a condition on its own blocks, a drawback.

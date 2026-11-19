@@ -462,7 +462,7 @@ val engineSerializersModule = SerializersModule {
         subclass(CoinFlipChoiceContinuation::class)
         subclass(ConvertCountersToTokensContinuation::class)
         subclass(AttackTaxManaSelectionContinuation::class)
-        subclass(AttackSacrificeSelectionContinuation::class)
+        subclass(AttackPermanentCostSelectionContinuation::class)
         subclass(AttackEnlistSelectionContinuation::class)
         subclass(AttackExertSelectionContinuation::class)
         subclass(BlockTaxManaSelectionContinuation::class)

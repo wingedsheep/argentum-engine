@@ -1320,7 +1320,7 @@ class StaticAbilityHandler(
             is com.wingedsheep.sdk.scripting.SuppressLandwalkForGroup,
             is com.wingedsheep.sdk.scripting.CanBlockAsThoughHadReach,
             is CantAttackUnless,
-            is com.wingedsheep.sdk.scripting.CantAttackUnlessSacrifice,
+            is com.wingedsheep.sdk.scripting.CantAttackUnlessPermanentCost,
             is com.wingedsheep.sdk.scripting.ExertAsItAttacks,
             is CantAttackUnlessCoAttacker,
             is com.wingedsheep.sdk.scripting.CanOnlyAttackAlone,

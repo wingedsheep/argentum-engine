@@ -1877,7 +1877,7 @@ Families:
 - `CantAttackOrBlockUnlessPay(amount: DynamicAmount, appliesToBlocking: Boolean)` — This permanent can't attack or block unless its controller pays amount generic mana for it (CR 508.1a / 509.1a — the payment is part of the cost of declaring it).
 - `CantAttackUnless(condition: Condition, filter: GroupFilter, coversPlaneswalkers: Boolean)` — The creatures filter covers can't attack unless condition holds, read relative to the defender each attacker is declared against (CR 508.1c): `Player.DefendingPlayer` in the condition is the player…
 - `CantAttackUnlessCoAttacker(coAttackerFilter: GameObjectFilter, filter: GroupFilter)` — This creature can't attack unless another creature being declared as an attacker in the same declaration matches coAttackerFilter.
-- `CantAttackUnlessSacrifice(sacrificeFilter: GameObjectFilter, count: Int)`
+- `CantAttackUnlessPermanentCost(filter: GameObjectFilter, count: Int, action: AttackPermanentCostAction)` — This creature can't attack unless its controller pays count permanents matching filter they control, the way action names, as attackers are declared — Leviathan's "this creature can't attack unless…
 - `CantAttackYou(filter: GroupFilter, coversPlaneswalkers: Boolean)` — The affected permanents can't attack **you** — and, with coversPlaneswalkers, planeswalkers you control — but stay free to attack anyone else (CR 508.1c).
 - `CantBeAttackedBy(attackerFilter: GameObjectFilter)` — Creatures matching attackerFilter can't attack the controller of this permanent — the general defender-side attack restriction (CR 508.1c).
 - `CantBeAttackedWhileAttached` — The source permanent can't be chosen as an attack defender while it is attached to another permanent.

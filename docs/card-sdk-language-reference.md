@@ -12560,19 +12560,23 @@ in the declare-blockers step, even before the turn-based block action has comple
   with it — Two-Headed Giant teammates included: Angelic Arbiter's "each opponent who cast a spell this
   turn can't attack with creatures" = `CantAttackUnless(CompareAmounts(spellsCastThisTurn(
   Player.ControllerOfIterationEntity), EQ, 0), GroupFilter.AllCreaturesOpponentsControl)`.
-- `CantAttackUnlessSacrifice(sacrificeFilter, count = 1)` — a **non-mana** attack cost, paid as
-  attackers are declared: Leviathan's "this creature can't attack unless you sacrifice two Islands".
-  The clause is a restriction (CR 508.1c) whose cost is determined and paid at CR 508.1h–j — not an
-  optional "as it attacks" cost (CR 508.1g), which a player may always decline. Distinct from
-  `CantAttackUnless`, which takes a *condition* — controlling two Islands is not the same as
-  spending them — and from `CantAttackOrBlockUnlessPay`, which is generic mana only
+- `CantAttackUnlessPermanentCost(filter, count = 1, action = AttackPermanentCostAction.SACRIFICE)` —
+  a **non-mana** attack cost paid with permanents, as attackers are declared. `SACRIFICE` is
+  Leviathan's "this creature can't attack unless you sacrifice two Islands"; `RETURN_TO_HAND` is
+  Floodtide Serpent's "can't attack unless you return an enchantment you control to its owner's
+  hand". The clause is a restriction (CR 508.1c) whose cost is determined and paid at
+  CR 508.1h–j — not an optional "as it attacks" cost (CR 508.1g), which a player may always
+  decline. Distinct from `CantAttackUnless`, which takes a *condition* — controlling two Islands is
+  not the same as spending them — and from `CantAttackOrBlockUnlessPay`, which is generic mana only
   and carries a blocking half this deliberately lacks. Enforced in two places that share
-  `AttackSacrificeCosts` so they cannot drift: `CantAttackUnlessSacrificeRule` makes the declaration
-  illegal up front when the controller can't pay, and `AttackPhaseManager.pauseForAttackSacrifice`
-  then asks which permanents to sacrifice, in the same window the mana tax is paid. The cost is per
+  `AttackPermanentCosts` so they cannot drift: `CantAttackUnlessPermanentCostRule` makes the
+  declaration illegal up front when the controller can't pay, and
+  `AttackPhaseManager.pauseForAttackPermanentCost` then asks which permanents to pay with, in the
+  same window the mana tax is paid. The attacker itself is never eligible. The cost is per
   *creature* — two Leviathans owe two Islands each, asked one at a time so each choice is made
-  knowing the last. The sacrifice runs through `ForceSacrificeExecutor.sacrificePermanents`, so it
-  emits `PermanentsSacrificedEvent` and fires dies triggers rather than being a silent zone move.
+  knowing the last. A sacrifice runs through `ForceSacrificeExecutor.sacrificePermanents`, so it
+  emits `PermanentsSacrificedEvent` and fires dies triggers; a return moves the chosen permanents
+  together through `ZoneTransitionService.moveToZoneBatch`, emitting their zone-change events.
 - `Enlist` — `staticAbility { ability = Enlist }` represents the optional attack-declaration
   tap cost and its linked power-boost trigger. Each occurrence is independent. After declaration
   taps, the controller selects another untapped creature they control that was not chosen to attack
