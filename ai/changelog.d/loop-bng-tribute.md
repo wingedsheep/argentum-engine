@@ -1,1 +1,1 @@
-- #TBD Rates Tribute creatures' counters (the half of the bargain an opponent may hand over) in draft
+- #4755 Rates Tribute creatures' counters (the half of the bargain an opponent may hand over) in draft
