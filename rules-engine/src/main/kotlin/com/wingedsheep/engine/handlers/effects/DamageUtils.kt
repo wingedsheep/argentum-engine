@@ -1039,7 +1039,10 @@ object DamageUtils {
      *
      * [counterType] is required for that reason: a kind-less mark would satisfy neither the
      * type-scoped reading nor the widest one, both of which answer from the recorded kind sets.
-     * A caller placing several kinds at once calls this once per kind.
+     * A caller placing several kinds at once calls this once per kind. [entering] marks a permanent
+     * entering with the counters (so its base controller is credited before it is on the
+     * battlefield); it defaults to [byController], and is set on its own when someone other than
+     * the controller puts the entry counters on (Tribute).
      *
      * This deliberately does *not* set the placer's [com.wingedsheep.engine.state.components.player.PutCounterOnCreatureThisTurnComponent]
      * ("if you put a counter on a creature this turn", Lasting Tarfire), which stays exclusive to
@@ -1056,14 +1059,15 @@ object DamageUtils {
         targetId: EntityId,
         counterType: CounterType,
         placerId: EntityId? = null,
-        byController: Boolean = false
+        byController: Boolean = false,
+        entering: Boolean = byController,
     ): CounterPlacementRecord {
         val placedByController = byController ||
             (placerId != null && state.projectedState.getController(targetId) == placerId)
         val first = state.getEntity(targetId)
             ?.has<com.wingedsheep.engine.state.components.battlefield.ReceivedCountersThisTurnComponent>() != true
         val firstOfType = isFirstCounterOfTypeThisTurn(state, targetId, counterType)
-        val newState = markCounterOnControlledPermanent(state, targetId, counterType, entering = byController)
+        val newState = markCounterOnControlledPermanent(state, targetId, counterType, entering = entering)
             .updateEntity(targetId) { container ->
             val existing = container
                 .get<com.wingedsheep.engine.state.components.battlefield.ReceivedCountersThisTurnComponent>()

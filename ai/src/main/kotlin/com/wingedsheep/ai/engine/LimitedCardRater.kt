@@ -1,5 +1,8 @@
 package com.wingedsheep.ai.engine
 
+import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.scripting.EntersWithCounters
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.ai.draftsim.DraftsimData
 import com.wingedsheep.ai.engine.knowledge.AmountSign
 import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
@@ -574,8 +577,21 @@ object LimitedCardRater {
         // "Your opponents can't gain life" (Archfiend of Despair), "if an opponent would gain
         // life, that player loses that much life instead" (Tainted Remedy): a lifegain hoser.
         LifeGainLocks.reads(replacement) -> TAG_VALUE.getValue(IntentTag.LIFEGAIN_LOCK)
+        // Tribute's counters (CR 702.104a): +1/+1 counters an *opponent* may put on it as it enters,
+        // instead of letting its "if tribute wasn't paid" trigger through. The trigger is priced
+        // in its own slot; the counters are the other half of the bargain, and since the opponent
+        // picks whichever hurts them less, a share of a counter each, capped at one self-counter leaf.
+        replacement is EntersWithCounters && replacement.placedBy == Player.AnOpponent &&
+            replacement.counterType == CounterType.PLUS_ONE_PLUS_ONE ->
+            (TRIBUTE_COUNTER_VALUE * replacement.count).coerceAtMost(SELF_COUNTER_VALUE)
         else -> DamageAmplifiers.pickValue(replacement)
     }
+
+    /** One +1/+1 counter an opponent may hand over as Tribute — see [replacementScore]. */
+    private const val TRIBUTE_COUNTER_VALUE = 0.1
+
+    /** What a +1/+1 counter put on the card itself is worth as an effect leaf. */
+    private const val SELF_COUNTER_VALUE = 0.4
 
     /** "If you would lose the game, instead …" — the opponent has to win the game twice. */
     private const val LOSS_SHIELD_VALUE = 0.8
