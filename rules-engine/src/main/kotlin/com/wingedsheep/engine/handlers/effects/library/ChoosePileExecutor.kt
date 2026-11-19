@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.nameVisibleToAll
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.ChoosePileEffect
 import kotlin.reflect.KClass
 
@@ -108,11 +109,11 @@ class ChoosePileExecutor : EffectExecutor<ChoosePileEffect> {
 /** Stores the picked pile under one name and every other pile, merged, under another. */
 internal object ChoosePileRouting {
     fun route(
-        piles: List<List<com.wingedsheep.sdk.model.EntityId>>,
+        piles: List<List<EntityId>>,
         chosenIndex: Int,
         storeChosenAs: String,
         storeOtherAs: String
-    ): Map<String, List<com.wingedsheep.sdk.model.EntityId>> = mapOf(
+    ): Map<String, List<EntityId>> = mapOf(
         storeChosenAs to piles[chosenIndex],
         storeOtherAs to piles.filterIndexed { index, _ -> index != chosenIndex }.flatten()
     )
