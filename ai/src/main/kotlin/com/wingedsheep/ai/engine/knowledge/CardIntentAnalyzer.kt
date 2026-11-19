@@ -74,6 +74,7 @@ import com.wingedsheep.sdk.scripting.LookAtFaceDownCreatures
 import com.wingedsheep.sdk.scripting.LookAtTopOfLibrary
 import com.wingedsheep.sdk.scripting.PlayersCantCastSpells
 import com.wingedsheep.sdk.scripting.PlayersCantGetCounters
+import com.wingedsheep.sdk.scripting.RestrictCardsDrawnPerTurn
 import com.wingedsheep.sdk.scripting.CantReceiveCounters
 import com.wingedsheep.sdk.scripting.RedirectTokenCreationController
 import com.wingedsheep.sdk.scripting.TriggerBinding
@@ -4033,6 +4034,12 @@ object CardIntentAnalyzer {
         // on them" lock counters out; an Aura's or the creature's own (Blossombind) is read by
         // whatever else the card does to what it enchants.
         is PlayersCantGetCounters -> setOf(IntentTag.COUNTER_LOCK)
+        // "Each player can't draw more than one card each turn" (Spirit of the Labyrinth), "each
+        // opponent …" (Narset, Parter of Veils): a draw cap over the opponents. One over its
+        // controller alone is a price, not a lock.
+        is RestrictCardsDrawnPerTurn ->
+            if (static.affected == Player.Each || static.affected in OPPONENT_PLAYERS) setOf(IntentTag.DRAW_LOCK)
+            else emptySet()
         // "Your opponents can't cast spells with the chosen name" (Gideon's Intervention), "…during
         // your turn" (Dragonlord Dromoka): the standing form of a cast ban. A ban that binds us too
         // ("each player") is a symmetric price; an Aura's on its enchanted player is the polarity

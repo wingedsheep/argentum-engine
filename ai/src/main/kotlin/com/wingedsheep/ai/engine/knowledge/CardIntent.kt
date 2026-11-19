@@ -577,6 +577,18 @@ enum class IntentTag {
     LIFEGAIN_LOCK,
 
     /**
+     * Caps how many cards opponents may draw each turn — Spirit of the Labyrinth's "each player
+     * can't draw more than one card each turn", Narset, Parter of Veils's "each opponent can't draw
+     * more than one card each turn".
+     *
+     * Like [LIFEGAIN_LOCK], a lock moves nothing: its payoff is the extra draws an opponent never
+     * gets, which no board simulation sees. An opponents-only cap and a symmetric one both read (the
+     * symmetric one binds us too, as Torpor Orb's [TRIGGER_LOCK] does); a cap on its controller
+     * alone is a price and earns no tag. A sideboard hoser against a card-draw deck in Limited.
+     */
+    DRAW_LOCK,
+
+    /**
      * Takes the tokens an opponent would create — Crafty Cutpurse's "each token that would be
      * created under an opponent's control this turn is created under your control instead".
      *
