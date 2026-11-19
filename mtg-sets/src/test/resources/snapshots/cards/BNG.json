@@ -230,6 +230,117 @@
     ]
 }
 
+// Arbiter of the Ideal
+{
+    "name": "Arbiter of the Ideal",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Creature — Sphinx",
+    "oracleText": "Flying\nInspired — Whenever this creature becomes untapped, reveal the top card of your library. If it's an artifact, creature, or land card, you may put it onto the battlefield with a manifestation counter on it. That permanent is an enchantment in addition to its other types.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Arbiter of the Ideal:1",
+                "trigger": "UntapEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "gathered0",
+                            "fromZone": "Library"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "artifact|creature|land",
+                            "storeSelected": "selected2",
+                            "prompt": "You may put it onto the battlefield with a manifestation counter on it",
+                            "selectedLabel": "Put onto the battlefield",
+                            "remainderLabel": "Leave on top",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "addCounterType": "MANIFESTATION",
+                            "entersWith": {
+                                "addedCardTypes": [
+                                    "ENCHANTMENT"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Inspired — Whenever this creature becomes untapped, reveal the top card of your library. If it's an artifact, creature, or land card, you may put it onto the battlefield with a manifestation counter on it. That permanent is an enchantment in addition to its other types."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/32e58ba3-4202-4f91-b27f-7528d27c1d5c.jpg?1783939573",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "The manifestation counter is a memory aid only. The permanent will continue to be an enchantment in addition to its other types even if that counter is removed."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If you choose to not put the card onto the battlefield, or if the card isn't one of the listed types, it will remain on top of your library. (Note that revealing the card is not optional.)"
+            },
+            {
+                "date": "2014-02-01",
+                "text": "The permanent will be an enchantment as it enters the battlefield and will cause constellation abilities of permanents you control to trigger."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "Inspired abilities trigger no matter how the creature becomes untapped: by the turn-based action at the beginning of the untap step or by a spell or ability."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If an inspired ability triggers during your untap step, the ability will be put on the stack at the beginning of your upkeep. If the ability creates one or more token creatures, those creatures won't be able to attack that turn (unless they gain haste)."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "Inspired abilities don't trigger when the creature enters the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Archetype of Aggression
 {
     "name": "Archetype of Aggression",

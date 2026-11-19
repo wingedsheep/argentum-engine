@@ -933,6 +933,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.ISOLATION,
   // Prism Array: enters with one per color spent (converge); remove one to tap target creature.
   CounterType.CRYSTAL,
+  // Arbiter of the Ideal's memory aid: the permanent stays an enchantment even once it is gone.
+  CounterType.MANIFESTATION,
   CounterType.PLUS_ONE_PLUS_TWO,
   CounterType.PLUS_TWO_PLUS_TWO,
   CounterType.MINUS_TWO_MINUS_TWO,
