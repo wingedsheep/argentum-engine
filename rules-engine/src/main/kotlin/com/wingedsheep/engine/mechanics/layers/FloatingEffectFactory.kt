@@ -30,6 +30,8 @@ fun GameState.addFloatingEffect(
     timestamp: Long = this.timestamp
 ): GameState {
     val (effectId, stateWithId) = newEntity()
+    // Built on this state rather than the copy: only the entity counter differs, and this one's
+    // projection (which a keyword grant may read) is usually cached already.
     val effect = createFloatingEffect(
         id = effectId,
         layer = layer,
@@ -67,6 +69,11 @@ fun GameState.createFloatingEffect(
     id: EntityId
 ): ActiveFloatingEffect {
     val sourceName = context.sourceId?.let { getEntity(it)?.get<CardComponent>()?.name }
+    // An object that "can't have or gain" a keyword never gets a resolving grant of it: the effect
+    // isn't created for that object, so it stays without the keyword even once the prohibition
+    // ends (the Born of the Gods Archetype rulings). A static grant is a continuous effect of its
+    // source instead and resumes when the prohibition goes — that is projection's business.
+    val affectedEntities = withoutProhibitedKeywordGrants(modification, affectedEntities)
     val damageSourceId = when (modification) {
         is SerializableModification.PreventNextDamage -> modification.onlyFromSource
         is SerializableModification.PreventAllDamageFromSource -> modification.damageSourceId
@@ -119,3 +126,24 @@ fun GameState.createFloatingEffect(
  */
 fun GameState.addFloatingEffects(effects: List<ActiveFloatingEffect>): GameState =
     copy(floatingEffects = floatingEffects + effects)
+
+/**
+ * [affectedEntities] minus the objects that "can't have or gain" the keyword [modification]
+ * grants. Only a permanent with a keyword-prohibiting static (the Archetypes) can make this
+ * non-identity, so the projection is read only while one is on the battlefield.
+ */
+internal fun GameState.withoutProhibitedKeywordGrants(
+    modification: SerializableModification,
+    affectedEntities: Set<EntityId>
+): Set<EntityId> {
+    if (modification !is SerializableModification.GrantKeyword || affectedEntities.isEmpty()) return affectedEntities
+    val anyProhibition = getBattlefield().any { id ->
+        getEntity(id)?.get<ContinuousEffectSourceComponent>()?.effects?.any {
+            (it.modification as? Modification.RemoveKeyword)?.prohibitsGain == true
+        } == true
+    }
+    if (!anyProhibition) return affectedEntities
+    val projected = projectedState
+    if (affectedEntities.none { projected.cantGainKeyword(it, modification.keyword) }) return affectedEntities
+    return affectedEntities.filterTo(LinkedHashSet()) { !projected.cantGainKeyword(it, modification.keyword) }
+}

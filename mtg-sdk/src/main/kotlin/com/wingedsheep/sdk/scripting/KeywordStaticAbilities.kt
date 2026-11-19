@@ -134,17 +134,27 @@ enum class KeywordFamily(val displayName: String) {
  * Removes a keyword from the affected permanents (continuous static ability).
  * Used for Equipment that causes the equipped creature to lose a keyword.
  * E.g., Starforged Sword: "Equipped creature loses flying."
+ *
+ * [cantHaveOrGain] is the "… and can't have or gain [keyword]" rider (the Born of the Gods
+ * Archetypes): no grant — static, resolved or a keyword counter — gives the keyword back while it
+ * applies, whatever its timestamp, and a resolving grant made meanwhile is never created for those
+ * objects. Without it the removal is an ordinary timestamp-ordered loss, and a later grant wins.
  */
 @SerialName("RemoveKeywordStatic")
 @Serializable
 data class RemoveKeywordStatic(
     val keyword: String,
-    val filter: GroupFilter = GroupFilter.attachedCreature()
+    val filter: GroupFilter = GroupFilter.attachedCreature(),
+    val cantHaveOrGain: Boolean = false
 ) : StaticAbility {
-    constructor(keyword: Keyword, filter: GroupFilter = GroupFilter.attachedCreature()) :
-        this(keyword.name, filter)
+    constructor(keyword: Keyword, filter: GroupFilter = GroupFilter.attachedCreature(), cantHaveOrGain: Boolean = false) :
+        this(keyword.name, filter, cantHaveOrGain)
 
-    override val description: String = "Removes ${com.wingedsheep.sdk.scripting.util.keywordDisplayText(keyword)}"
+    override val description: String = if (cantHaveOrGain) {
+        "Removes ${com.wingedsheep.sdk.scripting.util.keywordDisplayText(keyword)}, which can't be had or gained"
+    } else {
+        "Removes ${com.wingedsheep.sdk.scripting.util.keywordDisplayText(keyword)}"
+    }
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this

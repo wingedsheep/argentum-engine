@@ -50,6 +50,8 @@ internal class EffectApplicator(
      * number of renown instances matters.
      */
     private fun addKeyword(values: MutableProjectedValues, keyword: String) {
+        // "Can't have or gain [keyword]" (Modification.RemoveKeyword.prohibitsGain) beats any grant.
+        if (keyword in values.prohibitedKeywords) return
         values.protectionSpares.remove(keyword)
         val keywords = values.keywords
         val split = keyword.lastIndexOf('_')
@@ -200,6 +202,7 @@ internal class EffectApplicator(
                     ))
                 }
                 is Modification.RemoveKeyword -> {
+                    if (mod.prohibitsGain) values.prohibitedKeywords.add(mod.keyword)
                     values.keywords.remove(mod.keyword)
                     values.protectionSpares.remove(mod.keyword)
                     values.grantedKeywordInstances.remove(mod.keyword)
@@ -223,7 +226,7 @@ internal class EffectApplicator(
                         else -> null
                     }
                     if (landwalk != null) {
-                        values.keywords.add(landwalk.name)
+                        addKeyword(values, landwalk.name)
                     }
                 }
                 is Modification.ChangeColor -> {
@@ -464,7 +467,7 @@ internal class EffectApplicator(
                                 (landwalk && keyword in Keyword.LANDWALK) ||
                                 (hexproof && keyword == Keyword.HEXPROOF)
                             ) {
-                                values.keywords.add(keyword.name)
+                                addKeyword(values, keyword.name)
                             }
                         }
                         if (KeywordFamily.PROTECTION in mod.families) {

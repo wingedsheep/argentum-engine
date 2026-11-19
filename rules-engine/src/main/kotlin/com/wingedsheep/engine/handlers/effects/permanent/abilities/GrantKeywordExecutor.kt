@@ -57,6 +57,10 @@ class GrantKeywordExecutor : EffectExecutor<GrantKeywordEffect> {
             return EffectResult.error(state, "Target is no longer on the battlefield or stack")
         }
 
+        // A target that "can't have or gain" the keyword gets nothing: no effect is created for it,
+        // so it stays without the keyword once the prohibition ends (Archetype rulings).
+        if (state.projectedState.cantGainKeyword(targetId, effect.keyword)) return EffectResult.success(state)
+
         // Create a floating effect for the keyword grant. An optional [GrantKeywordEffect.condition]
         // rides along as the floating effect's source condition, so the keyword is live only while
         // the condition holds — the durational form of a printed "as long as …" clause, and how a

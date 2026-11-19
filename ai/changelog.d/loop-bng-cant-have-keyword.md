@@ -1,0 +1,1 @@
+- #4756 The AI reads "creatures your opponents control lose [keyword] and can't have or gain it" (the Born of the Gods Archetypes) as a combat enhancement and prices it in the draft heuristic

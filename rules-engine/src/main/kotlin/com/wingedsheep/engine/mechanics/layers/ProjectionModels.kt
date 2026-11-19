@@ -585,8 +585,13 @@ sealed interface Modification {
     ) : Modification {
         override val layer get() = Layer.ABILITY
     }
+    /**
+     * [prohibitsGain] is "can't have or gain [keyword]": besides removing the keyword where it
+     * applies, it records the keyword in [MutableProjectedValues.prohibitedKeywords], so no grant
+     * applied after it in Layer 6 — whatever its timestamp — nor a keyword counter gives it back.
+     */
     @Serializable
-    data class RemoveKeyword(val keyword: String) : Modification {
+    data class RemoveKeyword(val keyword: String, val prohibitsGain: Boolean = false) : Modification {
         override val layer get() = Layer.ABILITY
     }
 
@@ -958,6 +963,8 @@ internal data class MutableProjectedValues(
     val enchantmentRestrictions: MutableList<ActiveEnchantmentRestriction> = mutableListOf(),
     /** See [com.wingedsheep.engine.mechanics.layers.ProjectedValues.protectionSpares]. */
     val protectionSpares: MutableMap<String, MutableList<ProtectionSparing>> = mutableMapOf(),
+    /** See [com.wingedsheep.engine.mechanics.layers.ProjectedValues.prohibitedKeywords]. */
+    val prohibitedKeywords: MutableSet<String> = mutableSetOf(),
     val colors: MutableSet<String> = mutableSetOf(),
     val types: MutableSet<String> = mutableSetOf(),
     val subtypes: MutableSet<String> = mutableSetOf(),
@@ -993,3 +1000,6 @@ internal data class MutableProjectedValues(
      */
     val removedCardTypes: MutableSet<String> = mutableSetOf()
 )
+
+/** Whether this is a "can't have or gain [keyword]" prohibition ([Modification.RemoveKeyword.prohibitsGain]). */
+internal fun Modification.isKeywordProhibition(): Boolean = this is Modification.RemoveKeyword && prohibitsGain
