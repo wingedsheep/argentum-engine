@@ -1,0 +1,1 @@
+- #TBD The AI reads "you control target player during their next turn" (Worst Fears, Mindslaver, Emrakul, the Promised End) as aimed at an opponent and rates it as turn control instead of an unknown effect

@@ -109,6 +109,7 @@ import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DistributeCountersAmongTargetsEffect
 import com.wingedsheep.sdk.scripting.effects.DoubleCountersEffect
 import com.wingedsheep.sdk.scripting.effects.SkipUntapEffect
+import com.wingedsheep.sdk.scripting.effects.HijackNextTurnEffect
 import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ExileTargetSpellEffect
@@ -1941,6 +1942,9 @@ object TargetPolarityAnalyzer {
             // (Imaginary Threats, Exhaustion, Mana Vapors): the target player's permanents stay
             // tapped through a turn — a tapper's lock on that player, never a gift.
             is SkipUntapEffect -> leaf.target to TargetPolarity.HARMFUL
+            // "You control target player during that player's next turn" (Mindslaver, Worst Fears):
+            // their turn is played against them; aimed at ourselves it does nothing.
+            is HijackNextTurnEffect -> leaf.target to TargetPolarity.HARMFUL
             // Forcing a block can trade the target into a blocker or draw blockers away from its
             // teammates. Neither the one-blocker nor the all-blockers form fixes a target side;
             // keep both sides available to simulation, including beside a pump (Emergent Growth).
