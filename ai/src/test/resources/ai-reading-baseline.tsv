@@ -1013,6 +1013,7 @@ Ashen-Skin Zubera
 Ashenmoor Gouger
 Ashes of the Abhorrent
 Ashes to Ashes
+Ashiok's Adept
 Ashiok's Erasure	intent: ExileTargetSpellEffect; intent: Pipeline(FromLinkedExile→hand)
 Ashiok's Forerunner
 Ashiok's Reaper
@@ -1685,6 +1686,7 @@ Bilbo's Ring
 Bilbo, Luckwearer
 Bilbo, Retired Burglar
 Bilbo, Thief in the Night	intent: GrantStaticAbilityEffect
+Bile Blight
 Bile-Vial Boggart
 Bilious Skulldweller
 Bill Ferny, Bree Swindler
@@ -5388,6 +5390,7 @@ Easy Prey
 Eat to Extinction
 Eaten Alive
 Eaten by Piranhas
+Eater of Hope
 Eater of Virtue
 Eater of the Dead
 Ebon Dragon
@@ -6102,6 +6105,7 @@ Exuberant Wolfbear
 Exultant Cultist
 Exultant Skymarcher
 Eye Collector
+Eye Gouge
 Eye Spy	intent: Pipeline(TopOfLibrary→graveyard|library)
 Eye for an Eye
 Eye of Jace
@@ -6281,6 +6285,7 @@ Fate of the Sun-Cryst
 Fated Firepower
 Fated Infatuation
 Fated Retribution
+Fated Return
 Fateful Absence
 Fateful Discovery
 Fateful End
@@ -6370,6 +6375,7 @@ Feint	timing: ForEach>PreventDamageEffect
 Feisty Spikeling
 Feldon's Cane	intent: Pipeline(graveyard→library)
 Feldon, Ronom Excavator
+Felhide Brawler
 Felhide Minotaur
 Felhide Petrifier
 Felidar Cub
@@ -7470,6 +7476,7 @@ Gigantosaurus
 Gigapede
 Gigastorm Titan
 Gila Courser
+Gild
 Gilded Assault Cart
 Gilded Cerodon
 Gilded Ghoda
@@ -8625,6 +8632,7 @@ Herald of Faith
 Herald of Hadar
 Herald of Kozilek
 Herald of Secret Streams
+Herald of Torment
 Herald of War
 Herald of the Dreadhorde
 Herald of the Fair
@@ -11449,6 +11457,7 @@ Marshal of the Lost
 Marshal's Anthem
 Marshaling the Troops
 Marshals' Pathcruiser
+Marshmist Titan
 Martial Coup
 Martial Impetus
 Martyr for the Cause
@@ -12836,6 +12845,7 @@ Nyxbloom Ancient
 Nyxborn Brute
 Nyxborn Colossus
 Nyxborn Courser
+Nyxborn Eidolon
 Nyxborn Hydra
 Nyxborn Marauder
 Nyxborn Seaguard
@@ -12926,6 +12936,7 @@ Oculus Whelp
 Odric's Outrider
 Odric, Blood-Cursed
 Odric, Lunarch Marshal
+Odunos River Trawler
 Of One Mind
 Offender at Large
 Offer Immortality
@@ -13310,6 +13321,7 @@ Pah-Wraith
 Pain // Suffering
 Pain 101
 Pain Kami
+Pain Seer
 Pain for All
 Painful Lesson
 Painful Quandary
@@ -15750,6 +15762,7 @@ Sandworm
 Sandwurm Convergence
 Sangrite Surge
 Sangromancer
+Sanguimancy
 Sanguinary Mage
 Sanguine Bond
 Sanguine Evangelist
@@ -16327,6 +16340,7 @@ Serum Tank
 Serum Visionary
 Serum Visions
 Serum-Core Chimera
+Servant of Tymaret
 Servant of Volrath
 Servant of the Conduit
 Servant of the Scale
@@ -17566,6 +17580,7 @@ Spiteful Bully
 Spiteful Hexmage
 Spiteful Motives
 Spiteful Prankster
+Spiteful Returned
 Spiteful Squad
 Spiteful Visions
 Spitfire Handler
