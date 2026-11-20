@@ -1,1 +1,1 @@
-- #PR The AI reads an Aura that adds basic land types to the land it enchants (Nylea's Presence) as a gift, so it enchants its own land.
+- #4786 The AI reads an Aura that adds basic land types to the land it enchants (Nylea's Presence) as a gift, so it enchants its own land.
