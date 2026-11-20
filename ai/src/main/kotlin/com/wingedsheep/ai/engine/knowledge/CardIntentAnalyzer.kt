@@ -3927,6 +3927,14 @@ object CardIntentAnalyzer {
         // '{T}: Add one mana of any color'", Honored Hierarch) is its own mana source, as a printed one is.
         is GrantActivatedAbility -> when {
             static.filter.scope == Scope.Self && static.ability.isManaAbility -> setOf(IntentTag.RAMP)
+            // "Creatures you control have '{T}: Target player mills X cards, where X is this
+            // creature's toughness'" (Phenax, God of Deception): the lasting form of a group grant to
+            // our own side — every creature we control carries the ability, read as its effect.
+            static.filter.scope == Scope.Battlefield &&
+                static.filter.baseFilter.controllerPredicate == ControllerPredicate.ControlledByYou &&
+                !static.ability.isManaAbility &&
+                TargetPolarityAnalyzer.grantedActivatedPolarity(static.ability) == TargetPolarity.BENEFICIAL ->
+                analyzeEffect(static.ability.effect, static.ability.targetRequirements).tags
             static.filter.scope != Scope.AttachedTo -> emptySet()
             static.ability.isManaAbility -> setOf(IntentTag.RAMP)
             TargetPolarityAnalyzer.grantedActivatedPolarity(static.ability) == TargetPolarity.BENEFICIAL ->

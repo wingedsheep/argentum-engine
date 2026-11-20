@@ -933,6 +933,12 @@ object TargetPolarityAnalyzer {
                     } }.let { harmful -> harmful.isNotEmpty() && harmful.all { it is RemoveAllAbilitiesEffect } } ->
                     TargetPolarity.FLEXIBLE
                 drawsForItsLife(slot, readings, leaves, requirements, definitions, source) -> TargetPolarity.BENEFICIAL
+                // "Prevent all damage that would be dealt to and dealt by target permanent an opponent
+                // controls" (Kiora, the Crashing Wave; Dovin's −1): shielding a permanent and silencing
+                // it takes it out of combat altogether. Which side that helps is the board's to say —
+                // unless the slot is confined to the opponent's side, where it disarms their threat.
+                shieldsAndSilences(slot, leaves, requirements) ->
+                    if (isOpponentSide(requirements[slot])) TargetPolarity.HARMFUL else TargetPolarity.FLEXIBLE
                 else -> combine(readings)
             }
         }
@@ -1054,6 +1060,19 @@ object TargetPolarityAnalyzer {
         val taps = branches.map { it as? TapUntapEffect ?: return emptyList() }
         return if (taps.size == 2 && taps[0].target == taps[1].target && taps[0].tap != taps[1].tap)
             listOf(taps[0].target) else emptyList()
+    }
+
+    /**
+     * Whether [slot] is both shielded from damage and stopped from dealing it: one
+     * [PreventionDirection.Both] shield, or a [PreventionDirection.ToTarget] and a
+     * [PreventionDirection.FromTarget] shield on the same target.
+     */
+    private fun shieldsAndSilences(slot: Int, leaves: List<Effect>, requirements: List<TargetRequirement>): Boolean {
+        val directions = leaves.filterIsInstance<PreventDamageEffect>()
+            .filter { it.preventDamage && slotOf(it.target, requirements) == slot }
+            .map { it.direction }.toSet()
+        return PreventionDirection.Both in directions ||
+            (PreventionDirection.ToTarget in directions && PreventionDirection.FromTarget in directions)
     }
 
     /** One polarity for a slot, from every leaf that acts on it. */
