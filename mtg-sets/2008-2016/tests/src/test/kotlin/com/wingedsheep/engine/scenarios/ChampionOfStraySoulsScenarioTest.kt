@@ -24,7 +24,8 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  * top of your library."
  *
  * The sacrifice pick announces X (CR 601.2b) and the target choice that follows is sized to exactly
- * X — the creatures just sacrificed are already in the graveyard and may be among the targets.
+ * X. Targets are chosen before the cost is paid (CR 601.2c, 601.2h), so the creatures being
+ * sacrificed can't be among them.
  */
 class ChampionOfStraySoulsScenarioTest : FunSpec({
 
