@@ -1,3 +1,60 @@
+// Cavalry Pegasus
+{
+    "name": "Cavalry Pegasus",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Pegasus",
+    "oracleText": "Flying\nWhenever this creature attacks, each attacking Human gains flying until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cavalry Pegasus:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature Human attacking"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "FLYING",
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever this creature attacks, each attacking Human gains flying until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "artist": "Kev Walker",
+        "flavorText": "\"It is hope, hooved and winged.\"\n—Cymede, queen of Akros",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6ea1e03e-5f6d-4e52-9538-956963c2335c.jpg?1783939866",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Once the triggered ability resolves, the attacking Humans will continue to have flying even if Cavalry Pegasus leaves the battlefield."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "The attacking Humans gain flying before blockers are declared."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ordeal of Purphoros
 {
     "name": "Ordeal of Purphoros",
