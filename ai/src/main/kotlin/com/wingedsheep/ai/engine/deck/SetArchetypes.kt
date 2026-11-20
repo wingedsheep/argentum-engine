@@ -1475,6 +1475,23 @@ object SetArchetypes {
                     "Play creatures with enters-the-battlefield effects like Frost Lynx, Kapsho Kitefins and Shaman of Spring, then rebuy them with Roaring Primadox and Invasive Species. A value midrange deck that gets two uses out of every creature."),
             )
         ),
+        "BNG" to SetSynergies(
+            setCode = "BNG",
+            setName = "Born of the Gods",
+            archetypes = listOf(
+                Archetype("Heroic Fliers", listOf(Color.WHITE, Color.BLUE),
+                    "Target heroic fliers like Akroan Skyguard and Chorus of the Tides with Ephara's Enlightenment, Auras and bestow creatures, then fly over a stalled ground. A tempo deck that makes one evasive threat bigger every turn."),
+                Archetype("Inspired Attrition", listOf(Color.BLUE, Color.BLACK),
+                    "Attack with inspired creatures like Siren of the Silent Song, Pain Seer and Forlorn Pseudamma so every untap step strips the opponent's hand or draws you cards, while Bile Blight and Asphyxiate clear the way. A grindy deck that wins the long game."),
+                Archetype("Minotaur Aggro", listOf(Color.BLACK, Color.RED),
+                    "Curve out with Minotaurs like Felhide Brawler, Kragma Butcher and Felhide Spiritbinder, cast them cheaply off Ragemonger, and finish with burn. A fast tribal deck that races before the opponent can stabilize.",
+                    creatureTypes = listOf("Minotaur")),
+                Archetype("Tribute Monsters", listOf(Color.RED, Color.GREEN),
+                    "Play tribute creatures like Fanatic of Xenagos, Thunder Brute and Nessian Demolok that leave the opponent a choice between a bigger creature and a painful bonus, then trample through. An aggressive midrange deck that punishes either answer."),
+                Archetype("Heroic Counters", listOf(Color.GREEN, Color.WHITE),
+                    "Spread +1/+1 counters with Reap What Is Sown and heroic creatures like Hero of Leina Tower and Setessan Oathsworn, and go wide with Vanguard of Brimaz's Cat Soldier tokens. A midrange deck whose creatures outgrow the opponent's blockers."),
+            )
+        ),
         "ORI" to SetSynergies(
             setCode = "ORI",
             setName = "Magic Origins",
