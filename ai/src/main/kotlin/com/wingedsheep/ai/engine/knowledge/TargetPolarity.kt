@@ -67,6 +67,7 @@ import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 import com.wingedsheep.sdk.scripting.effects.LookAtTargetHandEffect
 import com.wingedsheep.sdk.scripting.effects.LoseAllCreatureTypesEffect
 import com.wingedsheep.sdk.scripting.effects.SetCreatureSubtypesEffect
+import com.wingedsheep.sdk.scripting.effects.AddSubtypeEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.references.Player
@@ -2145,6 +2146,13 @@ object TargetPolarityAnalyzer {
             // card's statics don't name stays unread: what it is for is the board's question.
             is SetCreatureSubtypesEffect -> TypeEvasion.of(source, leaf)?.let { leaf.target to it.polarity }
                 ?: return emptyList()
+            // "Target land becomes an Island in addition to its other types" on a card whose own
+            // attack names Islands (Sealock Monster's "can't attack unless defending player controls
+            // an Island", or islandwalk): the type is handed to the defending player's land to open
+            // that attack, so the slot is aimed at an opponent's land — see [LandTypeAttackEnabler].
+            // The mana ability the type brings them is the price. Any other added type stays unread.
+            is AddSubtypeEffect -> if (LandTypeAttackEnabler.of(source, leaf)) leaf.target to TargetPolarity.HARMFUL
+                else return emptyList()
             // "If a triggered ability of that creature triggers, it triggers an additional time"
             // (Lwaxana Troi, Charming Guest): a doubler only ever repeats its holder's controller's
             // own triggers, so it is aimed at a creature of yours.
@@ -3002,9 +3010,27 @@ object TargetPolarityAnalyzer {
         if (ability.binding != TriggerBinding.ATTACHED) return emptyList()
         val dies = ability.trigger as? EventPattern.ZoneChangeEvent ?: return emptyList()
         if (dies.from != Zone.BATTLEFIELD || dies.to != Zone.GRAVEYARD) return emptyList()
-        if (!servesController(ability.effect)) return emptyList()
+        if (!servesController(ability.effect) && !servesDeadHostController(ability.effect)) return emptyList()
         return listOf(TargetPolarity.BENEFICIAL)
     }
+
+    /**
+     * Whether every payoff of an attached dies trigger is a gift to the dead host's own controller
+     * — "when enchanted creature dies, its controller draws a card" (Fate Foretold), named
+     * [EffectTarget.ControllerOfTriggeringEntity]. The card goes to whoever controlled the host, so
+     * the Aura is a gift to the host's side and belongs on one of ours, like a payoff for the Aura's
+     * controller ([hostDeathPayoffReadings]).
+     */
+    private fun servesDeadHostController(effect: Effect): Boolean =
+        EffectWalker.payoffLeaves(effect).let { leaves ->
+            leaves.isNotEmpty() && leaves.all { leaf ->
+                when (leaf) {
+                    is DrawCardsEffect -> leaf.target == EffectTarget.ControllerOfTriggeringEntity
+                    is GainLifeEffect -> leaf.target == EffectTarget.ControllerOfTriggeringEntity
+                    else -> false
+                }
+            }
+        }
 
     /**
      * What an attachment's "whenever enchanted creature attacks, you may create a token that's a
