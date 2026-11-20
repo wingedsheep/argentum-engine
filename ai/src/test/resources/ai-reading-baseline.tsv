@@ -376,6 +376,7 @@ Akoum Stonewaker
 Akoum Warrior
 Akroan Conscriptor
 Akroan Crusader
+Akroan Hoplite
 Akroan Jailer
 Akroan Line Breaker
 Akroan Mastiff
@@ -2169,6 +2170,7 @@ Boommobile
 Boon Reflection
 Boon of Boseiju
 Boon of Emrakul
+Boon of Erebos
 Boon of Safety
 Boon of the Wish-Giver
 Boon-Bringer Valkyrie
@@ -2946,6 +2948,7 @@ Chain of Smog	intent: ChainCopyEffect; polarity: ChainCopyEffect
 Chain of Vapor	intent: ChainCopyEffect; polarity: ChainCopyEffect
 Chain to Memory
 Chained Brute
+Chained to the Rocks
 Chainer's Edict
 Chainer's Torment
 Chainer, Dementia Master
@@ -3499,6 +3502,7 @@ Commune with Evil
 Commune with Lava
 Commune with Nature
 Commune with Spirits
+Commune with the Gods
 Companion of the Trials
 Comparative Analysis
 Compass Gnome
@@ -4340,6 +4344,7 @@ Death's Oasis
 Death's-Head Buzzard
 Death-Priest of Myrkul
 Death-Rattle Oni
+Deathbellow Raider
 Deathbellow War Cry
 Deathbloom Gardener
 Deathbloom Ritualist
@@ -4995,6 +5000,7 @@ Dragon Grip
 Dragon Hatchling
 Dragon Hunter
 Dragon Mage
+Dragon Mantle
 Dragon Roost
 Dragon Scales
 Dragon Shadow
@@ -6717,6 +6723,7 @@ Flesh to Dust
 Fleshbag Marauder
 Fleshformer
 Fleshless Gladiator
+Fleshmad Steed
 Fleshtaker
 Fleshwrither
 Flexible Waterbender
@@ -8895,6 +8902,7 @@ Horde of Boggarts
 Horde of Notions	intent: GrantFreeCastTargetFromExileEffect; polarity: GrantFreeCastTargetFromExileEffect
 Hordeling Outburst
 Hordewing Skaab
+Horizon Chimera
 Horizon Explorer
 Horizon Scholar
 Horizon Seed
@@ -9035,6 +9043,7 @@ Hungry Spriggan
 Hungry for More
 Hunt Down	polarity: ForceBlockEffect
 Hunt for Specimens
+Hunt the Hunter
 Hunt the Weak
 Hunted Bonebrute
 Hunted Dragon
@@ -12028,6 +12037,7 @@ Mnemonic Betrayal	intent: GrantMayPlayFromExileEffect; intent: Pipeline(graveyar
 Mnemonic Nexus
 Mnemonic Sliver
 Mnemonic Sphere
+Mnemonic Wall
 Moan of the Unhallowed
 Moaning Spirit
 Moaning Wall
@@ -14425,6 +14435,7 @@ Rage Reflection
 Rage Weaver
 Rage into the Valley
 Rage-Scarred Berserker
+Rageblood Shaman
 Ragefire
 Ragefire Hellkite
 Rageform
@@ -14718,6 +14729,7 @@ Reaper King
 Reaper from the Abyss
 Reaper of Flight Moonsilver
 Reaper of Night
+Reaper of the Wilds
 Reaper's Talisman
 Reaping Willow
 Reaping the Graves
@@ -16114,6 +16126,7 @@ Sea Gate Oracle
 Sea Gate Restoration
 Sea Gate Stormcaller
 Sea Gate Wreckage
+Sea God's Revenge
 Sea God's Scorn
 Sea Kings' Blessing	intent: ForEach>ChangeColorEffect; polarity: ForEachEffect
 Sea Legs
@@ -16885,6 +16898,7 @@ Sinuous Benthisaur
 Sinuous Striker
 Sinuous Vermin
 Siona, Captain of the Pyleas
+Sip of Hemlock
 Siphon Insight
 Sir Shandlar of Eberyn
 Sire of Seven Deaths
@@ -17257,6 +17271,7 @@ Sold Out
 Soldevi Machinist
 Soldier Replica
 Soldier of the Grey Host
+Soldier of the Pantheon
 Solemn Offering
 Solemn Recruit
 Solemn Simulacrum
@@ -18143,6 +18158,7 @@ Study Break
 Stuffed Bear
 Stump Stomp
 Stun	timing: CantBlockEffect
+Stymied Hopes
 Su-Chi
 Su-Chi Cave Guard
 Subcommander T'Pol
@@ -18978,6 +18994,7 @@ Thallid Omnivore
 Thallid Shell-Dweller
 Thallid Soothsayer
 Thanos, the Mad Titan
+Thassa's Bounty
 Thassa's Devourer
 Thassa's Intervention
 Thassa's Ire
@@ -21610,6 +21627,7 @@ Witch's Vengeance
 Witch's Web
 Witch-king of Angmar
 Witch-king, Bringer of Ruin
+Witches' Eye
 Witching Well
 Witchstalker Frenzy
 With Great Power . . .	polarity: Aura>GrantDynamicStats
