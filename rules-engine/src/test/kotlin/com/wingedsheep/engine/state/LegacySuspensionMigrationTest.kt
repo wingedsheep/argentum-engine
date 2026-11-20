@@ -471,6 +471,7 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
             "initiative", "pendingAnyManaTypeSpells", "departedSpells", "departedAbilities",
             "damageReplacementChoices", "damageReplacementRevealOriginals", "damageReplacementRevealTimestamp",
             "pendingCyclingDiscardIds", "previousTurnSpellCountsByPlayer", "pendingNextSpellResolveDestinations",
+            "isExtraTurn",
         )
     }
 }

@@ -182,6 +182,7 @@ class TurnManager(
             spellCostModifiers = state.spellCostModifiers.filter { it.duration != Duration.EndOfTurn },
             spellWarpedThisTurn = false,
             damageCantBePreventedThisTurn = false,
+            isExtraTurn = false,
             // Kang the Conqueror's "during that turn, power-up abilities can't be activated" is
             // stamped against a future turn number, so it is *not* cleared at the boundary — only
             // stamps for turns that have already passed are dropped.
@@ -1295,7 +1296,10 @@ class TurnManager(
         }
         val turnResult = startTurn(spendPendingExtraTurn(state, nextTeam, began = true), nextPlayer)
         if (turnResult.outcome !is Outcome.Done) return turnResult
-        val result = finishTurnStart(applyExtraTurnRiders(turnResult.state, riders), nextPlayer, followUps)
+        // A member spending a pending extra turn makes this turn an extra turn (CR 500.7) —
+        // set after the turn boundary has cleared last turn's flag, so it holds for this turn only.
+        val begun = if (riders.isEmpty()) turnResult.state else turnResult.state.copy(isExtraTurn = true)
+        val result = finishTurnStart(applyExtraTurnRiders(begun, riders), nextPlayer, followUps)
         return result.copy(events = turnResult.events + result.events)
     }
 

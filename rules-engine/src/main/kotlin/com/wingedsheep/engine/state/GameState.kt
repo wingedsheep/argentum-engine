@@ -338,6 +338,13 @@ data class GameState(
     val damageCantBePreventedThisTurn: Boolean = false,
 
     /**
+     * Whether the current turn began as an extra turn (CR 500.7). Set by `TurnManager` as a turn
+     * that spends one of the active player's pending extra turns begins, and reset to false at
+     * every turn boundary. Read by [com.wingedsheep.sdk.scripting.conditions.IsExtraTurn].
+     */
+    val isExtraTurn: Boolean = false,
+
+    /**
      * Turn numbers during which **no player** may activate a power-up ability (CR 702.193). Written
      * by [com.wingedsheep.engine.handlers.effects.player.TakeExtraTurnExecutor] when the resolving
      * [com.wingedsheep.sdk.scripting.effects.TakeExtraTurnEffect] carries
