@@ -2872,6 +2872,7 @@ Cavalier of Night
 Cavalier of Thorns
 Cavalry Drillmaster
 Cavalry Master
+Cavalry Pegasus
 Cave People
 Cave Sense
 Cave of Temptation
@@ -2891,6 +2892,7 @@ Cecil, Dark Knight
 Celeborn the Wise
 Celebrate the Mountain-king
 Celebrity Fencer
+Celestial Archon
 Celestial Armor
 Celestial Enforcer
 Celestial Flare
@@ -5983,6 +5985,7 @@ Eureka Moment
 Eusocial Engineering
 Eutropia the Twice-Favored
 Evanescent Intellect
+Evangel of Heliod
 Evangel of Synthesis
 Evelyn, the Covetous	intent: Pipeline(TopOfLibrary→exile)
 Even the Score
@@ -6151,6 +6154,7 @@ Ezuri's Brigade
 Ezuri, Renegade Leader
 Ezuri, Stalker of Spheres
 Fable of the Mirror-Breaker
+Fabled Hero
 Fabled Passage
 Fabricate
 Fabrication Foundry
@@ -7490,6 +7494,7 @@ Gift of Compleation
 Gift of Estates
 Gift of Fangs
 Gift of Growth
+Gift of Immortality
 Gift of Paradise
 Gift of Strands
 Gift of Strength
@@ -8617,6 +8622,7 @@ Hekma Sentinels
 Helga, Skittish Seer
 Helica Glider
 Helicarrier Strike
+Heliod's Emissary
 Heliod's Intervention
 Heliod's Pilgrim
 Heliod's Punishment	polarity: Aura>CantAttack; polarity: Aura>CantBlock; polarity: Aura>GrantActivatedAbility; polarity: Aura>LoseAllAbilities
@@ -8907,6 +8913,7 @@ Hope Estheim
 Hope Tender
 Hope of Ghirapur
 Hope-Ender Coatl
+Hopeful Eidolon
 Hopeful Initiate
 Hopeful Vigil
 Hopeless Nightmare
@@ -9041,6 +9048,7 @@ Humongulus
 Humpback Whales
 Hunding Gjornersen
 Hundred-Battle Veteran
+Hundred-Handed One
 Hundred-Talon Kami
 Hundroog
 Hunger of the Howlpack
@@ -10601,6 +10609,7 @@ Lash of the Whip
 Lashweed Lurker
 Lashwhip Predator
 Lassoed by the Law
+Last Breath
 Last Caress
 Last Chance
 Last Gasp
@@ -12970,6 +12979,7 @@ Obscura Initiate
 Obscura Interceptor
 Obscura Storefront
 Obscuring Aether
+Observant Alseid
 Obsessive Astronomer
 Obsessive Pursuit
 Obsessive Skinner
@@ -13198,6 +13208,7 @@ Orcish Vandal
 Orcish Veteran
 Orcrist, Goblin-cleaver
 Orcus, Prince of Undeath
+Ordeal of Heliod
 Ordeal of Nylea
 Ordeal of Purphoros
 Order of Leitbur
@@ -13624,6 +13635,7 @@ Petrifying Meddler
 Pewter Golem
 Phage the Untouchable
 Phalanx Formation
+Phalanx Leader
 Phalanx Tactics
 Phalanx Vanguard
 Phantasmal Forces
@@ -16018,6 +16030,7 @@ Scheming Aspirant
 Scheming Fence
 Scheming Silvertongue
 Scheming Symmetry	polarity: ForEachEffect
+Scholar of Athreos
 Scholar of Combustion
 Scholar of New Horizons
 Scholar of Stars
@@ -16433,6 +16446,7 @@ Servo Schematic
 Seshiro the Anointed
 Set Adrift
 Set Phasers to . . .
+Setessan Battle Priest
 Setessan Champion
 Setessan Griffin
 Setessan Oathsworn
@@ -17491,6 +17505,7 @@ Spawning Pit
 Speakeasy Server
 Speaker of the Heavens
 Spear Spewer
+Spear of Heliod
 Spearbreaker Behemoth
 Species 8472
 Species Gorger
