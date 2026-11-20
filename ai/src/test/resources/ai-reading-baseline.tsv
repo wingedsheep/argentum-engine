@@ -1038,6 +1038,7 @@ Ashroot Animist
 Asinine Antics
 Asmodeus the Archfiend	intent: Pipeline(FromLinkedExile→hand)
 Aspect of Gorgon
+Aspect of Hydra
 Aspect of Lamprey
 Aspect of Manticore
 Aspect of Wolf
@@ -3959,6 +3960,7 @@ Cubwarden
 Cudgel Troll
 Culber and Stamets, Star-Crossed
 Culling Drone
+Culling Mark
 Culling Ritual
 Culling Scales
 Culling the Weak
@@ -6289,6 +6291,7 @@ Fate of the Sun-Cryst
 Fated Conflagration
 Fated Firepower
 Fated Infatuation
+Fated Intervention
 Fated Retribution
 Fated Return
 Fateful Absence
@@ -8668,6 +8671,7 @@ Hero in Training
 Hero of Bladehold
 Hero of Goma Fada
 Hero of Iroas
+Hero of Leina Tower
 Hero of Precinct One
 Hero of the Dunes
 Hero of the Games
@@ -9046,6 +9050,7 @@ Hunter's Axe
 Hunter's Blowgun
 Hunter's Edge
 Hunter's Mark
+Hunter's Prowess
 Hunter's Talent
 Hunting Cheetah
 Hunting Drake
@@ -12561,6 +12566,7 @@ Neriv, Heart of the Storm
 Nervous Gardener
 Nessian Boar
 Nessian Courser
+Nessian Demolok
 Nessian Game Warden
 Nessian Hornbeetle
 Nessian Wanderer
@@ -12754,6 +12760,7 @@ No-Dachi
 Noble Elephant
 Noble Hierarch
 Noble Panther
+Noble Quarry
 Noble Templar
 Nobody
 Noctis, Prince of Lucis
@@ -12863,6 +12870,7 @@ Nyxborn Seaguard
 Nyxborn Shieldmate
 Nyxborn Triton
 Nyxborn Unicorn
+Nyxborn Wolf
 O'aka, Traveling Merchant
 Oaken Brawler
 Oaken Siren
@@ -13508,6 +13516,7 @@ Peppersmoke
 Perception Bobblehead
 Perch Protection
 Peregrin Took
+Peregrination
 Peregrine Drake	intent: Pipeline(BattlefieldMatching→?); intent: TapUntapCollectionEffect
 Peregrine Mask
 Perennation
@@ -14455,6 +14464,7 @@ Raise Dead
 Raise the Alarm
 Raise the Draugr
 Raise the Past
+Raised by Wolves
 Raiyuu, Storm's Edge	intent: AddCombatPhaseEffect; intent: TapUntapEffect
 Rakalite
 Rakdos Carnarium
@@ -15997,6 +16007,7 @@ Scour the Laboratory
 Scoured Barrens
 Scourge Wolf
 Scourge of Fleets
+Scourge of Skola Vale
 Scourge of Valkas
 Scourge of the Skyclaves
 Scourge of the Throne	intent: AddCombatPhaseEffect; intent: ForEach>TapUntapEffect
@@ -16366,8 +16377,10 @@ Set Adrift
 Set Phasers to . . .
 Setessan Champion
 Setessan Griffin
+Setessan Oathsworn
 Setessan Petitioner
 Setessan Skirmisher
+Setessan Starbreaker
 Setessan Tactics
 Setessan Training
 Sethron, Hurloon General
@@ -17005,6 +17018,7 @@ Skyline Scout
 Skymarch Bloodletter
 Skymarcher Aspirant
 Skyraker Giant
+Skyreaping
 Skyrider Elf
 Skyrider Patrol
 Skyscanner
@@ -20250,6 +20264,7 @@ Unpredictable Cyclone
 Unquenchable Thirst
 Unquestioned Authority
 Unravel
+Unravel the Aether
 Unraveling Mummy
 Unrooted Ancestor
 Unruly Catapult
