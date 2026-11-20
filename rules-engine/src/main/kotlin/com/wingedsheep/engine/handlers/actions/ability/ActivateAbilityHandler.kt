@@ -111,7 +111,7 @@ class ActivateAbilityHandler(
         validator.validate(state.withPriority(action.playerId), action)?.let { ExecutionResult.error(state, it) }
             ?: executeActivation(state.withPriority(action.playerId), action)
     }
-    private val choicePauses = ActivationChoicePauses(costHandler, manaSolver, targetFinder = targetFinder, castPermissionUtils = castPermissionUtils)
+    private val choicePauses = ActivationChoicePauses(costHandler, manaSolver, targetFinder = targetFinder, castPermissionUtils = castPermissionUtils, amountEvaluator = conditionEvaluator.amounts)
     private val autoTapper = ActivationAutoTapper(manaSolver, manaAbilitySideEffectExecutor)
     private val costPayer = ActivationCostPayer(costHandler, manaSolver, alternativePaymentHandler, autoTapper, predicateEvaluator = conditionEvaluator.predicates)
     private val manaAbilityResolver =

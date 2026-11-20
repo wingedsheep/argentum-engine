@@ -1112,6 +1112,106 @@
     ]
 }
 
+// Champion of Stray Souls
+{
+    "name": "Champion of Stray Souls",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Skeleton Warrior",
+    "oracleText": "{3}{B}{B}, {T}, Sacrifice X other creatures: Return X target creature cards from your graveyard to the battlefield.\n{5}{B}{B}: Put this card from your graveyard on top of your library.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Champion of Stray Souls:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{B}{B}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomVariablePermanents",
+                                "filter": "creature",
+                                "minCount": 0,
+                                "action": "SACRIFICE",
+                                "xMeasure": "COUNT"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0",
+                        "dynamicMaxCount": "XValue",
+                        "dynamicMinCount": "XValue"
+                    }
+                ],
+                "descriptionOverride": "{3}{B}{B}, {T}, Sacrifice X other creatures: Return X target creature cards from your graveyard to the battlefield."
+            },
+            {
+                "id": "Champion of Stray Souls:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{B}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Library",
+                    "placement": "Top"
+                },
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "{5}{B}{B}: Put this card from your graveyard on top of your library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "MYTHIC",
+        "artist": "Aleksi Briclot",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/4/342196b9-ab65-4922-864e-00f067153261.jpg?1783939558"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Charging Badger
 {
     "name": "Charging Badger",
