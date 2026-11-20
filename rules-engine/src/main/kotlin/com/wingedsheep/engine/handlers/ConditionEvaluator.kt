@@ -479,13 +479,13 @@ class ConditionEvaluator(
                 else state.step in condition.steps
             }
 
-            // True while we're in the turn's *natural* end step — i.e. an end step the active player
-            // hasn't yet marked as an inserted extra (AddAdditionalEndStepsEffect). Board-derived, so
-            // it reads the same at resolution and under projection. The loop guard for Y'shtola Rhul.
             // The turn began as an extra turn (CR 500.7). Board-derived — a turn-scoped game flag —
             // so it reads the same at resolution and under projection.
             is IsExtraTurn -> state.isExtraTurn
 
+            // True while we're in the turn's *natural* end step — i.e. an end step the active player
+            // hasn't yet marked as an inserted extra (AddAdditionalEndStepsEffect). Board-derived, so
+            // it reads the same at resolution and under projection. The loop guard for Y'shtola Rhul.
             is IsFirstEndStepOfTurn -> {
                 state.step == Step.END &&
                     state.activePlayerId?.let {
