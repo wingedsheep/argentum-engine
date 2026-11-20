@@ -30,6 +30,15 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-bng',
+    date: '2026-11-20',
+    kind: 'set',
+    setCode: 'BNG',
+    title: 'Born of the Gods is complete',
+    body: "The second Theros set brings five new two-colour gods, from Ephara, God of the Polis to Xenagos, God of Revels. Tribute monsters make your opponent choose between a bigger creature and a painful bonus, inspired creatures pay off every time they untap after an attack, and heroic, bestow and devotion carry on, with Minotaurs charging in black-red.",
+    tryIf: 'heroic combat tricks, punishing tribute choices and building towards a god',
+  },
+  {
     id: 'set-jou',
     date: '2026-11-19',
     kind: 'set',

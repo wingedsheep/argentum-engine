@@ -3354,6 +3354,43 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  BNG: {
+    setCode: 'BNG',
+    setName: 'Born of the Gods',
+    archetypes: [
+      {
+        name: 'Heroic Fliers',
+        colors: ['W', 'U'],
+        keyCard: 'Ephara\'s Enlightenment',
+        description: 'Target heroic fliers like Akroan Skyguard and Chorus of the Tides with Ephara\'s Enlightenment, Auras and bestow creatures, then fly over a stalled ground. A tempo deck that makes one evasive threat bigger every turn.',
+      },
+      {
+        name: 'Inspired Attrition',
+        colors: ['U', 'B'],
+        keyCard: 'Siren of the Silent Song',
+        description: 'Attack with inspired creatures like Siren of the Silent Song, Pain Seer and Forlorn Pseudamma so every untap step strips the opponent\'s hand, draws you cards or makes Zombies, while Bile Blight and Asphyxiate clear the way. A grindy deck that wins the long game.',
+      },
+      {
+        name: 'Minotaur Aggro',
+        colors: ['B', 'R'],
+        keyCard: 'Ragemonger',
+        description: 'Curve out with Minotaurs like Felhide Brawler, Kragma Butcher and Felhide Spiritbinder, cast them cheaply off Ragemonger, and finish with burn. A fast tribal deck that races before the opponent can stabilize.',
+        creatureTypes: ['Minotaur'],
+      },
+      {
+        name: 'Tribute Monsters',
+        colors: ['R', 'G'],
+        keyCard: 'Fanatic of Xenagos',
+        description: 'Play tribute creatures like Fanatic of Xenagos, Thunder Brute and Nessian Demolok that leave the opponent a choice between a bigger creature and a painful bonus, then trample through. An aggressive midrange deck that punishes either answer.',
+      },
+      {
+        name: 'Heroic Counters',
+        colors: ['G', 'W'],
+        keyCard: 'Reap What Is Sown',
+        description: 'Spread +1/+1 counters with Reap What Is Sown and heroic creatures like Hero of Leina Tower and Setessan Oathsworn, and go wide with Vanguard of Brimaz\'s Cat Soldier tokens. A midrange deck whose creatures outgrow the opponent\'s blockers.',
+      },
+    ],
+  },
   M15: {
     setCode: 'M15',
     setName: 'Magic 2015',
