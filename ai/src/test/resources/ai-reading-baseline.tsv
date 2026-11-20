@@ -706,6 +706,7 @@ Ant-Man, Colony Commander
 Antagonist Incorporator
 Antagonize
 Anthem of Champions
+Anthousa, Setessan Hero
 Anthropede
 Anthropological Mission
 Anti-Magic Aura	polarity: Aura>GrantKeyword; polarity: Aura>PreventEnchantment
@@ -785,6 +786,7 @@ Arbiter of Knollridge
 Arbiter of Woe
 Arbiter of the Ideal
 Arbor Armament
+Arbor Colossus
 Arbor Elf
 Arborback Stomper
 Arborea Pegasus
@@ -2179,6 +2181,7 @@ Boomerang
 Boomerang Basics
 Boommobile
 Boon Reflection
+Boon Satyr
 Boon of Boseiju
 Boon of Emrakul
 Boon of Erebos
@@ -2261,6 +2264,7 @@ Bounty of Might
 Bounty of Skemfar
 Bounty of the Luxa
 Bovine Intervention
+Bow of Nylea
 Brackish Blunder
 Brackish Trudge
 Brad Boimler, Eager Ensign	intent: GrantCounterPlacementModifierEffect
@@ -2927,6 +2931,7 @@ Cenn's Heir
 Cenote Scout
 Censor
 Centaur Archer
+Centaur Battlemaster
 Centaur Courser
 Centaur Glade
 Centaur Healer
@@ -4470,6 +4475,7 @@ Deface
 Defeat
 Defend the Campus
 Defend the Celestus
+Defend the Hearth
 Defend the Rider
 Defender of Chaos
 Defender of Law
@@ -10051,6 +10057,7 @@ Karai's Technique
 Karai, Future of the Foot
 Karakas
 Karakyk Guardian
+Karametra's Acolyte
 Karametra's Blessing
 Karametra's Favor
 Karametra, God of Harvests
@@ -10697,6 +10704,7 @@ Leaf Arrow
 Leaf Dancer
 Leaf Gilder
 Leaf-Crowned Visionary
+Leafcrown Dryad
 Leafkin Avenger
 Leafkin Druid
 League Guildmage
@@ -12626,6 +12634,7 @@ Nekusar, the Mindrazer
 Nema Siltlurker
 Nemata, Grove Guardian
 Nemata, Primeval Warden
+Nemesis of Mortals
 Neoform
 Neonate's Rush
 Nephalia Academy
@@ -12636,6 +12645,7 @@ Nerd Rage
 Neriv, Crackling Vanguard	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Neriv, Heart of the Storm
 Nervous Gardener
+Nessian Asp
 Nessian Boar
 Nessian Courser
 Nessian Demolok
@@ -12923,9 +12933,12 @@ Nurturing Presence
 Nutrient Block
 Nykthos Paragon
 Nykthos, Shrine to Nyx
+Nylea's Disciple
+Nylea's Emissary
 Nylea's Forerunner
 Nylea's Huntmaster
 Nylea's Intervention
+Nylea's Presence
 Nylea, God of the Hunt
 Nylea, Keen-Eyed
 Nyota Uhura, Communications
@@ -15175,6 +15188,7 @@ Revered Dead
 Revered Elder
 Reverent Hoplite
 Reverent Howl
+Reverent Hunter
 Reverent Silence
 Reverse Damage
 Reverse Engineer
@@ -15947,6 +15961,7 @@ Satyr Grovedancer
 Satyr Hedonist
 Satyr Hoplite
 Satyr Nyx-Smith
+Satyr Piper
 Satyr Rambler
 Satyr Wayfinder
 Satyr's Cunning
