@@ -27,6 +27,7 @@ import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
 import com.wingedsheep.sdk.scripting.CantAttackUnlessPermanentCost
 import com.wingedsheep.sdk.scripting.CantBlockUnlessCoBlocker
 import com.wingedsheep.sdk.scripting.ModifySpellCost
+import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.MustAttack
 import com.wingedsheep.sdk.scripting.MustBlock
 import com.wingedsheep.sdk.scripting.CascadeMayPutOntoBattlefield
@@ -543,9 +544,17 @@ object LimitedCardRater {
             is MustBlock -> if (static.filter.scope == Scope.Self) return -0.1
             // "Creature spells you cast cost {1} more" (Geist-Fueled Scarecrow): every matching
             // spell costs one more mana, often a turn late — the price of its body, a little under "can't block".
-            is ModifySpellCost -> if (CardIntentAnalyzer.ownSpellsOnly(static.target) &&
-                CardIntentAnalyzer.taxes(static.modification)
-            ) return -0.2
+            is ModifySpellCost -> {
+                if (CardIntentAnalyzer.ownSpellsOnly(static.target) &&
+                    CardIntentAnalyzer.taxes(static.modification)
+                ) return -0.2
+                // "This spell costs {X} less to cast, where X is your devotion to black" (Marshmist
+                // Titan): the printed mana value overstates what the body costs in the deck that
+                // wants it, so the stat-efficiency base undersells it — credit back a couple of mana.
+                if (static.target == SpellCostTarget.SelfCast && !CardIntentAnalyzer.taxes(static.modification)) {
+                    return SELF_DISCOUNT_SCORE
+                }
+            }
             // "As you cascade, you may put a land card from among the exiled cards onto the battlefield
             // tapped" (Averna, the Chaos Bloom): a land per cascade, so it pays off only in a deck that
             // cascades — half a ramp term, like a conditional static.
@@ -595,6 +604,9 @@ object LimitedCardRater {
             (TRIBUTE_COUNTER_VALUE * replacement.count).coerceAtMost(SELF_COUNTER_VALUE)
         else -> DamageAmplifiers.pickValue(replacement)
     }
+
+    /** A self-cast discount ("costs {X} less, where X is your devotion") — about two mana off the printed body. */
+    private const val SELF_DISCOUNT_SCORE = 0.8
 
     /** One +1/+1 counter an opponent may hand over as Tribute — see [replacementScore]. */
     private const val TRIBUTE_COUNTER_VALUE = 0.1
@@ -903,7 +915,11 @@ object LimitedCardRater {
 
             // Life gain — low value in limited
             is GainLifeEffect -> 0.1
-            is LoseLifeEffect -> LIFE_LOSS_SCORE
+            // "You lose 1 life" (Herald of Torment's upkeep, Sanguimancy's price): life its controller
+            // pays is the card's cost, not a clock on an opponent — the intent reader draws the same line.
+            is LoseLifeEffect ->
+                if (effect.target == EffectTarget.Controller || effect.target == EffectTarget.PlayerRef(Player.You)) -LIFE_LOSS_SCORE
+                else LIFE_LOSS_SCORE
 
             // Counter manipulation
             is AddCountersEffect -> 0.4

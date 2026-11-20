@@ -636,6 +636,97 @@
     ]
 }
 
+// Ashiok's Adept
+{
+    "name": "Ashiok's Adept",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Heroic — Whenever you cast a spell that targets this creature, each opponent discards a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ashiok's Adept:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "discarded"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, each opponent discards a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "UNCOMMON",
+        "artist": "Karla Ortiz",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/86acd1cc-5238-4734-a324-b4cecffc0bab.jpg?1783939561",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Asphyxiate
 {
     "name": "Asphyxiate",
@@ -721,6 +812,88 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Bile Blight
+{
+    "name": "Bile Blight",
+    "manaCost": "{B}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature and all other creatures with the same name as that creature get -3/-3 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -3
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "SharesNameWith",
+                                        "entity": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    }
+                                ]
+                            },
+                            "excludeTarget": true
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -3
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -3
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "UNCOMMON",
+        "artist": "Vincent Proce",
+        "flavorText": "Not an arrow loosed, javelin thrown, nor sword raised. None were needed.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3ca11057-e50a-4817-924a-5bb504d0780f.jpg?1783939561"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Black Oak of Odunos
@@ -1380,6 +1553,115 @@
     ]
 }
 
+// Eater of Hope
+{
+    "name": "Eater of Hope",
+    "manaCost": "{5}{B}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "Flying\n{B}, Sacrifice another creature: Regenerate this creature.\n{2}{B}, Sacrifice two other creatures: Destroy target creature.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Eater of Hope:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "Self"
+                },
+                "descriptionOverride": "{B}, Sacrifice another creature: Regenerate this creature."
+            },
+            {
+                "id": "Eater of Hope:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "StateNot",
+                                            "predicate": "IsSource"
+                                        }
+                                    ]
+                                },
+                                "count": 2
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}{B}, Sacrifice two other creatures: Destroy target creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "rarity": "RARE",
+        "artist": "Peter Mohrbacher",
+        "flavorText": "Gods can be appeased. Demons, however . . .",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f75f3d3f-925d-45ef-92e6-22aca22e5451.jpg?1783939559"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Eidolon of Countless Battles
 {
     "name": "Eidolon of Countless Battles",
@@ -1981,6 +2263,83 @@
     ]
 }
 
+// Eye Gouge
+{
+    "name": "Eye Gouge",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets -1/-1 until end of turn. If it's a Cyclops, destroy it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": "creature Cyclops"
+                        }
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "artist": "Tyler Jacobson",
+        "flavorText": "One chance. One throw. One perfect hit.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/94d4eb34-0529-48a0-ac52-b57cead7b651.jpg?1783939559",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "If the target creature is a Cyclops, it will get -1/-1 before it's destroyed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Fanatic of Xenagos
 {
     "name": "Fanatic of Xenagos",
@@ -2247,6 +2606,120 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Fated Return
+{
+    "name": "Fated Return",
+    "manaCost": "{4}{B}{B}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Put target creature card from a graveyard onto the battlefield under your control. It gains indestructible. If it's your turn, scry 2. (Look at the top two cards of your library, then put any number of them on the bottom of your library and the rest on top in any order.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "controllerOverride": "Controller"
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "Permanent"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "IsYourTurn"
+                    },
+                    "then": {
+                        "type": "Scry",
+                        "count": 2
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "RARE",
+        "artist": "Peter Mohrbacher",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a55878ec-a903-4694-8709-e29fa88b2c28.jpg?1783939559",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "The effect that causes the creature to gain indestructible doesn’t have a duration. It lasts until the creature leaves the battlefield."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "The indestructible granted by Fated Return isn’t part of the creature’s copiable values. If the creature is copied, the copy won’t have indestructible (unless the creature otherwise has indestructible)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Felhide Brawler
+{
+    "name": "Felhide Brawler",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Minotaur",
+    "oracleText": "This creature can't block unless you control another Minotaur.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBlockUnless",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Minotaur",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "artist": "Nils Hamm",
+        "flavorText": "Burial rites among the Felhide minotaurs involve devouring those who fell in battle, to remove their shame from memory and to fuel the survivors' revenge.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4a829bb0-6a84-46de-9c2d-14176cf542e6.jpg?1783939557",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "Whether you control another Minotaur is checked only as you declare blockers. The other Minotaur doesn't have to block."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -2527,6 +3000,62 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Gild
+{
+    "name": "Gild",
+    "manaCost": "{3}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile target creature. Create a Gold token. (It's an artifact with \"Sacrifice this token: Add one mana of any color.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Gold"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "rarity": "RARE",
+        "artist": "Richard Wright",
+        "flavorText": "Merchants of the Underworld trade in coins of clay. Gold serves another purpose.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8ce5e6c4-02c8-4602-96d6-19dad34f7804.jpg?1783939557",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "You will control the token, no matter who controls the target creature."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If the creature isn't a legal target as Gild tries to resolve, the spell won't resolve and none of its effects will happen. No token will be created."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -2862,6 +3391,90 @@
         "collectorNumber": "74",
         "artist": "Tyler Jacobson",
         "imageUri": "https://cards.scryfall.io/normal/front/4/e/4eb0ce84-560f-4e39-a0ab-7bd710d541cc.jpg?1783939555"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Herald of Torment
+{
+    "name": "Herald of Torment",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Enchantment Creature — Demon",
+    "oracleText": "Bestow {3}{B}{B} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nFlying\nAt the beginning of your upkeep, you lose 1 life.\nEnchanted creature gets +3/+3 and has flying.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{3}{B}{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Herald of Torment:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Controller"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 3
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "rarity": "RARE",
+        "artist": "Vance Kovacs",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6bb7e5ab-57d7-4a86-b7c2-262932ac3344.jpg?1783939556",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "The triggered ability that causes you to lose life applies whether Herald of Torment is a creature or an Aura. The \"you\" in that ability refers to Herald of Torment's controller. If you control Herald of Torment as an Aura enchanting a creature another player controls, that ability will trigger at the beginning of your upkeep and cause you to lose 1 life."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "On the stack, a spell with bestow is either a creature spell or an Aura spell. It's never both, although it's an enchantment spell in either case."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Unlike other Aura spells, an Aura spell with bestow isn't countered if its target is illegal as it begins to resolve. Rather, the effect making it an Aura spell ends, it loses enchant creature, it returns to being an enchantment creature spell, and it resolves and enters the battlefield as an enchantment creature."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Unlike other Auras, an Aura with bestow isn't put into its owner's graveyard if it becomes unattached. Rather, the effect making it an Aura ends, it loses enchant creature, and it remains on the battlefield as an enchantment creature. It can attack (and its {T} abilities can be activated, if it has any) on the turn it becomes unattached if it's been under your control continuously, even as an Aura, since your most recent turn began."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If a permanent with bestow enters the battlefield by any method other than being cast, it will be an enchantment creature. You can't choose to pay the bestow cost and have it become an Aura."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -3483,6 +4096,57 @@
     ]
 }
 
+// Marshmist Titan
+{
+    "name": "Marshmist Titan",
+    "manaCost": "{6}{B}",
+    "typeLine": "Creature — Giant",
+    "oracleText": "This spell costs {X} less to cast, where X is your devotion to black. (Each {B} in the mana costs of permanents you control counts toward your devotion to black.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": {
+                            "type": "DevotionTo",
+                            "colors": [
+                                "BLACK"
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "artist": "Volkan Baǵa",
+        "flavorText": "A favorite of Erebos, for it has sent many to the Underworld.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/093d2e4c-f2c4-4d4e-a1b7-200327ce23b0.jpg?1783939554",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "Your devotion to black is calculated when you determine Marshmist Titan's total cost, and that cost is locked in before any costs are paid. For example, if you control a creature with black mana symbols in its mana cost that can be sacrificed for mana, those mana symbols will count toward your devotion to black. You can then sacrifice that creature for mana to pay the reduced total cost."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If your devotion to black is greater than six, Marshmist Titan will cost {B} to cast. The colored mana requirement isn't reduced."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Meletis Astronomer
 {
     "name": "Meletis Astronomer",
@@ -3974,6 +4638,67 @@
     ]
 }
 
+// Nyxborn Eidolon
+{
+    "name": "Nyxborn Eidolon",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment Creature — Spirit",
+    "oracleText": "Bestow {4}{B} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nEnchanted creature gets +2/+1.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{4}{B}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "artist": "Nils Hamm",
+        "flavorText": "A body Returned, a soul still lost.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/76f79804-cd90-472b-9d09-3c71e4c6be22.jpg?1783939554",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "On the stack, a spell with bestow is either a creature spell or an Aura spell. It's never both, although it's an enchantment spell in either case."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Unlike other Aura spells, an Aura spell with bestow isn't countered if its target is illegal as it begins to resolve. Rather, the effect making it an Aura spell ends, it loses enchant creature, it returns to being an enchantment creature spell, and it resolves and enters the battlefield as an enchantment creature."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Unlike other Auras, an Aura with bestow isn't put into its owner's graveyard if it becomes unattached. Rather, the effect making it an Aura ends, it loses enchant creature, and it remains on the battlefield as an enchantment creature. It can attack (and its {T} abilities can be activated, if it has any) on the turn it becomes unattached if it's been under your control continuously, even as an Aura, since your most recent turn began."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If a permanent with bestow enters the battlefield by any method other than being cast, it will be an enchantment creature. You can't choose to pay the bestow cost and have it become an Aura."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Auras attached to a creature don't become tapped when the creature becomes tapped. Except in some rare cases, an Aura with bestow remains untapped when it becomes unattached and becomes a creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Nyxborn Shieldmate
 {
     "name": "Nyxborn Shieldmate",
@@ -4094,6 +4819,91 @@
     ]
 }
 
+// Odunos River Trawler
+{
+    "name": "Odunos River Trawler",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "When this creature enters, return target enchantment creature card from your graveyard to your hand.\n{W}, Sacrifice this creature: Return target enchantment creature card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Odunos River Trawler:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature enchantment own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Odunos River Trawler:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{W}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature enchantment own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "rarity": "UNCOMMON",
+        "artist": "Seb McKinnon",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a5d1eda4-ac34-4905-9022-59f91d38dbb3.jpg?1783939552"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Oracle's Insight
 {
     "name": "Oracle's Insight",
@@ -4177,6 +4987,69 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Pain Seer
+{
+    "name": "Pain Seer",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Inspired — Whenever this creature becomes untapped, reveal the top card of your library and put that card into your hand. You lose life equal to that card's mana value.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pain Seer:1",
+                "trigger": "UntapEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "StoredCardManaValue",
+                                "collectionName": "gathered0"
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "RARE",
+        "artist": "Tyler Jacobson",
+        "flavorText": "Every twitching nerve and pulsing vein carries a message, discernible with the right tools.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8ce8891f-b44c-4be4-878e-9fc45a9dc9cb.jpg?1783939553"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -4574,6 +5447,49 @@
     ]
 }
 
+// Sanguimancy
+{
+    "name": "Sanguimancy",
+    "manaCost": "{4}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "You draw X cards and you lose X life, where X is your devotion to black. (Each {B} in the mana costs of permanents you control counts toward your devotion to black.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "DevotionTo",
+                        "colors": [
+                            "BLACK"
+                        ]
+                    }
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "DevotionTo",
+                        "colors": [
+                            "BLACK"
+                        ]
+                    },
+                    "target": "Controller"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "UNCOMMON",
+        "artist": "Dave Kendall",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fb129def-4055-4b12-9944-39406b451553.jpg?1783939551"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Satyr Nyx-Smith
 {
     "name": "Satyr Nyx-Smith",
@@ -4755,6 +5671,59 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Servant of Tymaret
+{
+    "name": "Servant of Tymaret",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "Inspired — Whenever this creature becomes untapped, each opponent loses 1 life. You gain life equal to the life lost this way.\n{2}{B}: Regenerate this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Servant of Tymaret:1",
+                "trigger": "UntapEvent",
+                "effect": {
+                    "type": "DrainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Servant of Tymaret:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "Self"
+                },
+                "descriptionOverride": "{2}{B}: Regenerate this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "artist": "Karl Kopinski",
+        "flavorText": "Life is most precious to those who have already lost it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/dfb16d4f-ed42-4b19-9e45-330db88eea9b.jpg?1783939552"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -5187,6 +6156,100 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Spiteful Returned
+{
+    "name": "Spiteful Returned",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment Creature — Zombie",
+    "oracleText": "Bestow {3}{B} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nWhenever this creature or enchanted creature attacks, defending player loses 2 life.\nEnchanted creature gets +1/+1.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{3}{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spiteful Returned:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "DefendingPlayer"
+                    }
+                }
+            },
+            {
+                "id": "Spiteful Returned:2",
+                "trigger": "AttackEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "DefendingPlayer"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "UNCOMMON",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/017e8cfb-7cb0-403c-b8be-abee22369661.jpg?1783939551",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "On the stack, a spell with bestow is either a creature spell or an Aura spell. It's never both, although it's an enchantment spell in either case."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Unlike other Aura spells, an Aura spell with bestow isn't countered if its target is illegal as it begins to resolve. Rather, the effect making it an Aura spell ends, it loses enchant creature, it returns to being an enchantment creature spell, and it resolves and enters the battlefield as an enchantment creature."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Unlike other Auras, an Aura with bestow isn't put into its owner's graveyard if it becomes unattached. Rather, the effect making it an Aura ends, it loses enchant creature, and it remains on the battlefield as an enchantment creature. It can attack (and its {T} abilities can be activated, if it has any) on the turn it becomes unattached if it's been under your control continuously, even as an Aura, since your most recent turn began."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If a permanent with bestow enters the battlefield by any method other than being cast, it will be an enchantment creature. You can't choose to pay the bestow cost and have it become an Aura."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Auras attached to a creature don't become tapped when the creature becomes tapped. Except in some rare cases, an Aura with bestow remains untapped when it becomes unattached and becomes a creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
