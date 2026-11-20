@@ -2047,6 +2047,115 @@
     ]
 }
 
+// Ruric Thar, the Unbowed
+{
+    "name": "Ruric Thar, the Unbowed",
+    "manaCost": "{4}{R}{G}",
+    "typeLine": "Legendary Creature — Ogre Warrior",
+    "oracleText": "Reach, vigilance\nRuric Thar attacks each combat if able.\nWhenever a player casts a noncreature spell, Ruric Thar deals 6 damage to that player.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "REACH",
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ruric Thar, the Unbowed:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    },
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 6
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            "MustAttack"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "RARE",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/84dd3586-7c3b-4f9c-a1eb-7745b75339b0.jpg?1783940022"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
+// Savageborn Hydra
+{
+    "name": "Savageborn Hydra",
+    "manaCost": "{X}{R}{G}",
+    "typeLine": "Creature — Hydra",
+    "oracleText": "Double strike\nThis creature enters with X +1/+1 counters on it.\n{1}{R/G}: Put a +1/+1 counter on this creature. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "keywords": [
+        "DOUBLE_STRIKE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Savageborn Hydra:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{R/G}"
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "timing": "SorcerySpeed"
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "rarity": "MYTHIC",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2f2b73cd-6179-4885-9d92-1782d0b492c1.jpg?1783940021"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Selesnya Cluestone
 {
     "name": "Selesnya Cluestone",
@@ -2179,6 +2288,166 @@
     ]
 }
 
+// Skylasher
+{
+    "name": "Skylasher",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "Flash\nThis spell can't be countered.\nReach, protection from blue",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH",
+        "REACH"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Color",
+                "color": "BLUE"
+            }
+        }
+    ],
+    "script": {
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "\"It preys on those who would spy on our lands, so we never prey on it.\"\n—Kroshkar, Gruul shaman",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4f4c2069-deb1-4e56-8069-170c4f495944.jpg?1783940034"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Species Gorger
+{
+    "name": "Species Gorger",
+    "manaCost": "{3}{G}{U}",
+    "typeLine": "Creature — Frog Beast",
+    "oracleText": "At the beginning of your upkeep, return a creature you control to its owner's hand.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Species Gorger:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "creature",
+                                "player": "You"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Return a permanent you control to its owner's hand",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "rarity": "UNCOMMON",
+        "artist": "Min Yum",
+        "flavorText": "\"We raised eelhawks to control the squidflies, then waspcrabs to prey on the eelhawks. Now what do we do with all these waspcrabs?\"\n—Gulistan, Simic biomancer",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0087a98-55cf-4c8b-a180-fb0d9c336eb2.jpg?1783940021"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
+// Spike Jester
+{
+    "name": "Spike Jester",
+    "manaCost": "{B}{R}",
+    "typeLine": "Creature — Goblin Warrior",
+    "oracleText": "Haste",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Barger",
+        "flavorText": "For the Rakdos, \"suicidal charge\" and \"good showmanship\" are one and the same.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/cec50499-70d4-4dc1-9cae-abbecfc8e87d.jpg?1783940021"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
+// Steeple Roc
+{
+    "name": "Steeple Roc",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying, first strike",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING",
+        "FIRST_STRIKE"
+    ],
+    "metadata": {
+        "collectorNumber": "8",
+        "artist": "David Palumbo",
+        "flavorText": "\"Sometimes it forgets to loosen its grip before taking flight. I lost my roof that way.\"\n—Ecaban, Boros scout",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5fecafab-97f4-40ed-bc43-d186eb2f3af6.jpg?1783940043"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Unflinching Courage
 {
     "name": "Unflinching Courage",
@@ -2218,6 +2487,54 @@
     "colorIdentityOverride": [
         "WHITE",
         "GREEN"
+    ]
+}
+
+// Viashino Firstblade
+{
+    "name": "Viashino Firstblade",
+    "manaCost": "{1}{R}{W}",
+    "typeLine": "Creature — Lizard Soldier",
+    "oracleText": "Haste\nWhen this creature enters, it gets +2/+2 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Viashino Firstblade:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "artist": "Matt Stewart",
+        "flavorText": "\"All that steel doesn't make them slower. It makes them bolder.\"\n—Tajic, Blade of the Legion",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1cb0c21c-bdf1-478a-9ad8-6c6bda6ffb0f.jpg?1783940019"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
     ]
 }
 
@@ -2324,6 +2641,56 @@
     },
     "colorIdentityOverride": [
         "GREEN",
+        "WHITE"
+    ]
+}
+
+// Warleader's Helix
+{
+    "name": "Warleader's Helix",
+    "manaCost": "{2}{R}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Warleader's Helix deals 4 damage to any target and you gain 4 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Staples",
+        "flavorText": "\"There is no time to remedy our enemies' ignorance. Blast it out of them.\"\n—Aurelia",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/81e474ac-54f7-43f9-8af9-2f1adf258b15.jpg?1783940018"
+    },
+    "colorIdentityOverride": [
+        "RED",
         "WHITE"
     ]
 }
@@ -2437,4 +2804,39 @@
         }
     ],
     "hasNoManaCost": true
+}
+
+// Woodlot Crawler
+{
+    "name": "Woodlot Crawler",
+    "manaCost": "{U}{B}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "Forestwalk (This creature can't be blocked as long as defending player controls a Forest.)\nProtection from green",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FORESTWALK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Color",
+                "color": "GREEN"
+            }
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "118",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Staples",
+        "flavorText": "\"We learned something from the Simic. Unfortunately for them.\"\n—Nefara, Dimir agent",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11f1e6fe-e959-4030-9925-9ccc27040275.jpg?1783940017"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
 }
