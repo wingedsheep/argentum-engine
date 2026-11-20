@@ -827,6 +827,59 @@
     ]
 }
 
+// Aspect of Hydra
+{
+    "name": "Aspect of Hydra",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +X/+X until end of turn, where X is your devotion to green. (Each {G} in the mana costs of permanents you control counts toward your devotion to green.)",
+    "script": {
+        "spellEffect": {
+            "type": "ModifyStats",
+            "powerModifier": {
+                "type": "DevotionTo",
+                "colors": [
+                    "GREEN"
+                ]
+            },
+            "toughnessModifier": {
+                "type": "DevotionTo",
+                "colors": [
+                    "GREEN"
+                ]
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "artist": "Mark Winters",
+        "flavorText": "\"Even alone I outnumber you.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19353629-07be-47e2-a7d5-3a5e5e1120c8.jpg?1783939539",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "The value of X is calculated as Aspect of Hydra resolves. The bonus won't change later in the turn, even if your devotion to green does."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Asphyxiate
 {
     "name": "Asphyxiate",
@@ -1560,6 +1613,51 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Culling Mark
+{
+    "name": "Culling Mark",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature blocks this turn if able.",
+    "script": {
+        "spellEffect": {
+            "type": "MarkMustBlockThisTurn",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "Hunt without Nylea's leave and you may find yourself the next quarry.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d4c45eda-9f00-4b40-b91d-0ed00151923c.jpg?1783939536",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "The creature blocks only if it's able to do so as the declare blockers step begins. If, at that time, the creature is tapped, it's affected by a spell or ability that says it can't block, or no creatures are attacking its controller or a planeswalker controlled by that player, then it doesn't block. If there's a cost associated with having the creature block, the player isn't forced to pay that cost. If that cost isn't paid, the creature won't block."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "The controller of the creature chooses which attacking creature that creature blocks."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -2952,6 +3050,58 @@
     ]
 }
 
+// Fated Intervention
+{
+    "name": "Fated Intervention",
+    "manaCost": "{2}{G}{G}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Create two 3/3 green Centaur enchantment creature tokens. If it's your turn, scry 2. (Look at the top two cards of your library, then put any number of them on the bottom of your library and the rest on top in any order.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Centaur"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/8/985be507-6125-4db2-b99f-8b61149ffeeb.jpg?1783939515",
+                    "enchantmentToken": true
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "IsYourTurn"
+                    },
+                    "then": {
+                        "type": "Scry",
+                        "count": 2
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/622e1afc-0d06-4c01-abef-3b3e93bd21c3.jpg?1783939536"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Fated Retribution
 {
     "name": "Fated Retribution",
@@ -4333,6 +4483,72 @@
     ]
 }
 
+// Hero of Leina Tower
+{
+    "name": "Hero of Leina Tower",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Heroic — Whenever you cast a spell that targets this creature, you may pay {X}. If you do, put X +1/+1 counters on this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hero of Leina Tower:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayPayX",
+                    "then": {
+                        "type": "AddDynamicCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "amount": "XValue",
+                        "target": "Self"
+                    },
+                    "descriptionOverride": "You may pay {X}. If you do, put X +1/+1 counters on this creature."
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, you may pay {X}. If you do, put X +1/+1 counters on this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "rarity": "RARE",
+        "artist": "Aaron Miller",
+        "flavorText": "\"You cannot achieve greatness if its seed has not already been planted in your heart.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f022c0c3-6331-47be-b07f-9768930afd3a.jpg?1783939534",
+        "rulings": [
+            {
+                "date": "2018-12-07",
+                "text": "The amount to pay for {X} is chosen as the triggered ability resolves. No player may take actions between the time you pay {X} and the time Hero of Leina Tower has X +1/+1 counters on it."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Heroes' Podium
 {
     "name": "Heroes' Podium",
@@ -4512,6 +4728,89 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Hunter's Prowess
+{
+    "name": "Hunter's Prowess",
+    "manaCost": "{4}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Until end of turn, target creature gets +3/+3 and gains trample and \"Whenever this creature deals combat damage to a player, draw that many cards.\"",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantTriggeredAbility",
+                    "ability": {
+                        "id": "Hunter's Prowess:1",
+                        "trigger": {
+                            "type": "DealsDamageEvent",
+                            "damageType": "DamageCombat",
+                            "recipient": {
+                                "type": "RecipientPlayer",
+                                "player": "Any"
+                            }
+                        },
+                        "effect": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "ContextProperty",
+                                "key": "TRIGGER_DAMAGE_AMOUNT"
+                            }
+                        },
+                        "descriptionOverride": "Whenever this creature deals combat damage to a player, draw that many cards."
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "rarity": "RARE",
+        "artist": "Greg Staples",
+        "flavorText": "To be counted among the warriors of Setessa's Leina Tower, you must not fear death, only failure.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/cef2323c-3e35-4ac6-9f07-2c0584371f9e.jpg?1783939535"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -5454,6 +5753,196 @@
     ]
 }
 
+// Nessian Demolok
+{
+    "name": "Nessian Demolok",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Tribute 3 (As this creature enters, an opponent of your choice may put three +1/+1 counters on it.)\nWhen this creature enters, if tribute wasn't paid, destroy target noncreature permanent.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRIBUTE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "TRIBUTE",
+            "n": 3
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nessian Demolok:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "noncreature permanent"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "SourceChosenModeIs",
+                        "modeId": "tribute_paid"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "chooser": "AnOpponent",
+                "modeOptions": [
+                    {
+                        "id": "tribute_paid",
+                        "label": "Pay tribute",
+                        "description": "Put 3 +1/+1 counters on it",
+                        "iconKey": "plusOneCounter"
+                    },
+                    {
+                        "id": "tribute_not_paid",
+                        "label": "Don't pay tribute",
+                        "description": "Its \"if tribute wasn't paid\" ability triggers"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "count": 3,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "tribute_paid"
+                },
+                "placedBy": "AnOpponent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/ee0683b2-8bc2-4c6a-964e-b909693b68c1.jpg?1783939533",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "For effects that check which player put counters on the entering creature, the player chosen to pay tribute puts those counters on it, not the creature's controller."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If the opponent pays tribute, the creature will enter the battlefield with the specified number of +1/+1 counters on it. It won't enter the battlefield and then have the +1/+1 counters placed on it."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If the triggered ability has a target, that target will not be known while the creature spell with tribute is on the stack."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "Players can't respond to the tribute decision before the creature enters the battlefield. That is, if the opponent doesn't pay tribute, the triggered ability will trigger before any player has a chance to remove the creature."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "The triggered ability will resolve even if the creature with tribute isn't on the battlefield at that time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Noble Quarry
+{
+    "name": "Noble Quarry",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment Creature — Unicorn",
+    "oracleText": "Bestow {5}{G} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nAll creatures able to block this creature or enchanted creature do so.\nEnchanted creature gets +1/+1.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{5}{G}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "MustBeBlockedStatic",
+                "allCreatures": true
+            },
+            {
+                "type": "MustBeBlockedStatic",
+                "allCreatures": true,
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "rarity": "UNCOMMON",
+        "artist": "Michael C. Hayes",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cd8447c3-4fce-4971-a3d7-e5671fe269f5.jpg?1783939533",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "On the stack, a spell with bestow is either a creature spell or an Aura spell. It's never both, although it's an enchantment spell in either case."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Unlike other Aura spells, an Aura spell with bestow isn't countered if its target is illegal as it begins to resolve. Rather, the effect making it an Aura spell ends, it loses enchant creature, it returns to being an enchantment creature spell, and it resolves and enters the battlefield as an enchantment creature."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Unlike other Auras, an Aura with bestow isn't put into its owner's graveyard if it becomes unattached. Rather, the effect making it an Aura ends, it loses enchant creature, and it remains on the battlefield as an enchantment creature. It can attack (and its {T} abilities can be activated, if it has any) on the turn it becomes unattached if it's been under your control continuously, even as an Aura, since your most recent turn began."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If a permanent with bestow enters the battlefield by any method other than being cast, it will be an enchantment creature. You can't choose to pay the bestow cost and have it become an Aura."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Auras attached to a creature don't become tapped when the creature becomes tapped. Except in some rare cases, an Aura with bestow remains untapped when it becomes unattached and becomes a creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Nyxborn Eidolon
 {
     "name": "Nyxborn Eidolon",
@@ -5695,6 +6184,66 @@
     ]
 }
 
+// Nyxborn Wolf
+{
+    "name": "Nyxborn Wolf",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment Creature — Wolf",
+    "oracleText": "Bestow {4}{G} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nEnchanted creature gets +3/+1.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{4}{G}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "artist": "Lucas Graciano",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/91a78895-5e09-46a5-8a74-a07f0befc4e5.jpg?1783939532",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "On the stack, a spell with bestow is either a creature spell or an Aura spell. It's never both, although it's an enchantment spell in either case."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Unlike other Aura spells, an Aura spell with bestow isn't countered if its target is illegal as it begins to resolve. Rather, the effect making it an Aura spell ends, it loses enchant creature, it returns to being an enchantment creature spell, and it resolves and enters the battlefield as an enchantment creature."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Unlike other Auras, an Aura with bestow isn't put into its owner's graveyard if it becomes unattached. Rather, the effect making it an Aura ends, it loses enchant creature, and it remains on the battlefield as an enchantment creature. It can attack (and its {T} abilities can be activated, if it has any) on the turn it becomes unattached if it's been under your control continuously, even as an Aura, since your most recent turn began."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If a permanent with bestow enters the battlefield by any method other than being cast, it will be an enchantment creature. You can't choose to pay the bestow cost and have it become an Aura."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Auras attached to a creature don't become tapped when the creature becomes tapped. Except in some rare cases, an Aura with bestow remains untapped when it becomes unattached and becomes a creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Odunos River Trawler
 {
     "name": "Odunos River Trawler",
@@ -5926,6 +6475,100 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Peregrination
+{
+    "name": "Peregrination",
+    "manaCost": "{3}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for up to two basic land cards, reveal those cards, and put one onto the battlefield tapped and the other into your hand. Shuffle, then scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "basicland"
+                    },
+                    "storeAs": "gathered0",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "prompt": "Search your library for up to two basic land cards"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "selected1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected2",
+                    "storeRemainder": "remainder2",
+                    "prompt": "Choose which basic land enters the battlefield tapped; the other goes to your hand.",
+                    "selectedLabel": "Onto the battlefield tapped",
+                    "remainderLabel": "Into your hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    },
+                    "revealed": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "remainder2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent",
+                {
+                    "type": "Scry",
+                    "count": 1
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "UNCOMMON",
+        "artist": "Jonas De Ro",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/03835e3e-9fd1-47c7-86a5-a5481420f2d3.jpg?1783939532",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "You can choose to search for only one basic land card with Peregrination. If you do, you'll put that card onto the battlefield tapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -6252,6 +6895,76 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Raised by Wolves
+{
+    "name": "Raised by Wolves",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, create two 2/2 green Wolf creature tokens.\nEnchanted creature gets +1/+1 for each Wolf you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Raised by Wolves:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Wolf"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/8/9/8958b650-c831-4499-813b-5699954ab2f0.jpg?1783939515"
+                },
+                "descriptionOverride": "When this Aura enters, create two 2/2 green Wolf creature tokens."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "permanent Wolf"
+                },
+                "toughnessBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "permanent Wolf"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "rarity": "UNCOMMON",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bcfaace7-86e2-427e-97b1-b09dfdd30fee.jpg?1783939529"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -6619,6 +7332,74 @@
     ]
 }
 
+// Scourge of Skola Vale
+{
+    "name": "Scourge of Skola Vale",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Hydra",
+    "oracleText": "Trample\nThis creature enters with two +1/+1 counters on it.\n{T}, Sacrifice another creature: Put a number of +1/+1 counters on this creature equal to the sacrificed creature's toughness.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Scourge of Skola Vale:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "SacrificedAsCost",
+                        "numericProperty": "Toughness"
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 2,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "rarity": "RARE",
+        "artist": "Dave Kendall",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/baef76dc-7cef-449b-b8a7-e038887129d9.jpg?1783939529",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "Use the toughness of the sacrificed creature as it last existed on the battlefield to determine how many +1/+1 counters to put on Scourge of Skola Vale."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Scouring Sands
 {
     "name": "Scouring Sands",
@@ -6782,6 +7563,116 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Setessan Oathsworn
+{
+    "name": "Setessan Oathsworn",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Satyr Warrior",
+    "oracleText": "Heroic — Whenever you cast a spell that targets this creature, put two +1/+1 counters on this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Setessan Oathsworn:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, put two +1/+1 counters on this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "artist": "Scott Murphy",
+        "flavorText": "\"Setessa is not the city of my birth, but it is the place I fight for, and the place I'm willing to die for. Does that not make it my home?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/5/e5579755-4718-406a-bba6-27f1f2811e59.jpg?1783939529",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Setessan Starbreaker
+{
+    "name": "Setessan Starbreaker",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "When this creature enters, you may destroy target Aura.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Setessan Starbreaker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "descriptionOverride": "When this creature enters, you may destroy target Aura."
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "enchantment Aura"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, you may destroy target Aura."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "artist": "Chase Stone",
+        "flavorText": "\"Who says you cannot touch the stars?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/03af8b3b-a897-43e2-a87d-833da93edc41.jpg?1783939528"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -7027,6 +7918,44 @@
     "colorIdentityOverride": [
         "BLUE",
         "BLACK"
+    ]
+}
+
+// Skyreaping
+{
+    "name": "Skyreaping",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Skyreaping deals damage to each creature with flying equal to your devotion to green. (Each {G} in the mana costs of permanents you control counts toward your devotion to green.)",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature kw:flying"
+                }
+            },
+            "body": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "DevotionTo",
+                    "colors": [
+                        "GREEN"
+                    ]
+                },
+                "target": "IterationEntity"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "rarity": "UNCOMMON",
+        "artist": "Seb McKinnon",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/40eb76b3-b527-4ed8-8ce3-d3de48562b6e.jpg?1783939529"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -7876,6 +8805,50 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Unravel the Aether
+{
+    "name": "Unravel the Aether",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Choose target artifact or enchantment. Its owner shuffles it into their library.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Library",
+            "placement": "Shuffled"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|enchantment"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "rarity": "UNCOMMON",
+        "artist": "Jung Park",
+        "flavorText": "Thaumaturges of Theros have learned to weave their magic into the world around them, but it can be pulled apart strand by strand.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/5584c26f-62ac-4d0b-9142-5159f2a05734.jpg?1783939527",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "If the artifact or enchantment is a token, it will be shuffled into its owner's library when Unravel the Aether resolves, then will cease to exist. For practical purposes, whatever item is representing the token should not actually be put into the library, though the library is still shuffled."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
