@@ -1592,7 +1592,15 @@ object CardIntentAnalyzer {
             leaves.mapNotNullTo(HashSet()) { leaf ->
                 (leaf as? GatherCardsEffect)?.takeIf { it.source is CardSource.FromLinkedExile }?.storeAs
             }
-        if (ourGraveyard.isEmpty() && linkedExile.isEmpty()) return emptySet()
+        // "When enchanted creature dies, return that card to the battlefield under its owner's control"
+        // (Gift of Immortality): the dying card itself, gathered as the trigger's object, put straight
+        // back — the single-card `MoveToZoneEffect` return from the graveyard (Unholy Indenture) in its
+        // pipeline spelling.
+        val triggeringCard = leaves.mapNotNullTo(HashSet()) { leaf ->
+            (leaf as? GatherCardsEffect)
+                ?.takeIf { (it.source as? CardSource.Entity)?.entity == EffectTarget.TriggeringEntity }?.storeAs
+        }
+        if (ourGraveyard.isEmpty() && linkedExile.isEmpty() && triggeringCard.isEmpty()) return emptySet()
         fun closed(seed: MutableSet<String>): Set<String> {
             do {
                 val before = seed.size
@@ -1611,6 +1619,8 @@ object CardIntentAnalyzer {
                 // Stash) is a regrowth paid for with the next draw, as the single-card move is.
                 in fromGraveyard -> to.zone == Zone.HAND || to.zone == Zone.BATTLEFIELD ||
                     (to.zone == Zone.LIBRARY && to.placement == ZonePlacement.Top)
+                // The dying card returned (Gift of Immortality), whoever's control it comes back under.
+                in triggeringCard -> to.zone == Zone.BATTLEFIELD
                 // "Under their owners' control" hands the pile back (Lagrella), unless only our
                 // own cards were ever stashed in it (Endless Sands, Safe Haven). Its owner's hand is
                 // ours on the same terms (Gorex, the Tombshell's own graveyard cards).

@@ -2648,6 +2648,7 @@ object TargetPolarityAnalyzer {
         ) {
             for (ability in card.script.triggeredAbilities) readings += hostDeathPayoffReadings(ability)
         }
+        for (ability in card.script.triggeredAbilities) readings += hostDeathReturnReadings(ability)
         if (payPrices) readings += prices
         return readings
     }
@@ -2964,6 +2965,29 @@ object TargetPolarityAnalyzer {
                 else -> null
             }
         }
+    }
+
+    /**
+     * What an Aura's "when enchanted creature dies, return that card to the battlefield under its
+     * owner's control" trigger (Gift of Immortality) does to its host: the creature comes straight
+     * back to whoever owns it, a death undone — a gift on our own creature, wasted on an opponent's.
+     * Read off the pipeline that gathers the dying card itself and moves it onto the battlefield
+     * under its owner's control; a return under the Aura controller's control (Unholy Indenture)
+     * steals an opponent's creature and isn't this shape.
+     */
+    private fun hostDeathReturnReadings(ability: TriggeredAbility): List<TargetPolarity> {
+        if (ability.binding != TriggerBinding.ATTACHED) return emptyList()
+        val dies = ability.trigger as? EventPattern.ZoneChangeEvent ?: return emptyList()
+        if (dies.from != Zone.BATTLEFIELD || dies.to != Zone.GRAVEYARD) return emptyList()
+        val leaves = EffectWalker.payoffLeaves(ability.effect)
+        val dyingCard = leaves.filterIsInstance<GatherCardsEffect>()
+            .filter { (it.source as? CardSource.Entity)?.entity == EffectTarget.TriggeringEntity }
+            .map { it.storeAs }.toSet()
+        val returned = leaves.filterIsInstance<MoveCollectionEffect>().any { move ->
+            move.from in dyingCard && move.underOwnersControl &&
+                (move.destination as? CardDestination.ToZone)?.zone == Zone.BATTLEFIELD
+        }
+        return if (returned) listOf(TargetPolarity.BENEFICIAL) else emptyList()
     }
 
     /**
