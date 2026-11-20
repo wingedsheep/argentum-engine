@@ -3151,6 +3151,7 @@ Chorus of the Conclave
 Chorus of the Tides
 Chosen by Heliod
 Christine Chapel, Combat Medic
+Chromanticore
 Chromatic Lantern
 Chromatic Orrery
 Chromatic Sphere
@@ -6635,7 +6636,7 @@ Flame Blitz
 Flame Burst
 Flame Channeler
 Flame Discharge
-Flame Fusillade	intent: ForEach>GrantActivatedAbilityEffect
+Flame Fusillade
 Flame Javelin
 Flame Jet
 Flame Lash
@@ -9588,7 +9589,7 @@ Iroh, Grand Lotus
 Iroh, Tea Master	polarity: AddDynamicCountersEffect; polarity: CreateTokenEffect
 Iron Apprentice
 Iron Bully
-Iron Fist, Living Weapon	intent: GrantActivatedAbilityEffect
+Iron Fist, Living Weapon
 Iron Giant
 Iron Golem
 Iron Hills
@@ -10399,6 +10400,7 @@ Kozilek, the Broken Reality	polarity: DrawCardsEffect; polarity: ForEachEffect
 Kozilek, the Great Distortion
 Kragma Butcher
 Kraken Hatchling
+Kraken of the Straits
 Kraken's Eye
 Krakilin
 Krang & Shredder	intent: ForEach>GatherUntilMatchEffect; intent: ForEach>Pipeline(?→exile)
@@ -12570,6 +12572,7 @@ Nessian Demolok
 Nessian Game Warden
 Nessian Hornbeetle
 Nessian Wanderer
+Nessian Wilds Ravager
 Nest Robber
 Nest of Scarabs
 Nested Ghoul
@@ -12834,6 +12837,7 @@ Null Group Biological Assets
 Null Summoner
 Nulldrifter
 Nullhide Ferox	timing: RemoveAllAbilitiesEffect
+Nullify
 Nullmage Shepherd
 Nullpriest of Oblivion
 Nullstone Gargoyle
@@ -13120,6 +13124,7 @@ Oppressive Rays
 Opt
 Optimistic Scavenger
 Opulent Palace
+Oracle of Bones
 Oracle of Dust
 Oracle of Mul Daya
 Oracle of Tragedy
@@ -13197,6 +13202,7 @@ Ornery Dilophosaur
 Ornery Goblin
 Ornery Kudu
 Ornery Tumblewagg
+Ornitharch
 Ornithopter
 Ornithopter of Paradise
 Orochi Eggwatcher
@@ -13597,6 +13603,7 @@ Phantom Nantuko
 Phantom Ninja
 Phantom Train
 Phantom Warrior
+Pharagax Giant
 Pharika's Chosen
 Pharika's Cure
 Pharika's Disciple
@@ -14419,6 +14426,7 @@ Rage-Scarred Berserker
 Ragefire
 Ragefire Hellkite
 Rageform
+Ragemonger
 Ragged Playmate
 Ragged Recluse
 Ragged Short Spear
@@ -14703,6 +14711,7 @@ Realmbreaker's Grasp
 Realmbreaker, the Invasion Tree
 Realmwalker
 Reanimate
+Reap What Is Sown
 Reaper King
 Reaper from the Abyss
 Reaper of Flight Moonsilver
@@ -15028,6 +15037,7 @@ Resurgent Belief
 Resurrected Cultist
 Resurrection
 Retched Wretch
+Retraction Helix
 Retreat to Coralhelm
 Retreat to Emeria
 Retreat to Hagra
@@ -16669,6 +16679,7 @@ Shrieking Mogg
 Shrieking Specter
 Shriekmaw
 Shrike Force
+Shrike Harpy
 Shrill Howler
 Shrine Keeper
 Shrine Steward
@@ -16881,6 +16892,7 @@ Siren Lookout
 Siren Reaver
 Siren Song Lyre
 Siren Stormtamer
+Siren of the Fanged Coast
 Siren of the Silent Song
 Siren's Call
 Siren's Ruse
@@ -18152,6 +18164,7 @@ Sudden Insight
 Sudden Reclamation
 Sudden Setback
 Sudden Spinnerets
+Sudden Storm
 Sudden Strength
 Sudden Strike
 Suffocating Fumes
@@ -18967,6 +18980,7 @@ Thassa's Devourer
 Thassa's Intervention
 Thassa's Ire
 Thassa's Oracle
+Thassa's Rebuff
 Thassa, Deep-Dwelling	polarity: MoveToZoneEffect
 Thaumatic Compass
 Thaumatog
@@ -21327,6 +21341,7 @@ Wheel and Deal
 Wheel of Fortune
 Wheel of Potential
 Wheel of Torture
+Whelming Wave
 When We Were Young
 Whims of the Fates
 Whip Sergeant
