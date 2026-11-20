@@ -26,7 +26,10 @@ import com.wingedsheep.sdk.scripting.AttackPermanentCostAction
 import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
 import com.wingedsheep.sdk.scripting.CantAttackUnlessPermanentCost
 import com.wingedsheep.sdk.scripting.CantBlockUnlessCoBlocker
+import com.wingedsheep.sdk.scripting.CostModification
+import com.wingedsheep.sdk.scripting.CostReductionSource
 import com.wingedsheep.sdk.scripting.ModifySpellCost
+import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.MustAttack
 import com.wingedsheep.sdk.scripting.MustBlock
 import com.wingedsheep.sdk.scripting.CascadeMayPutOntoBattlefield
@@ -244,6 +247,7 @@ object LimitedCardRater {
         rating += cyclingBonus(card)
         rating += rarityBonus(card)
         rating += curveBonus(card)
+        rating += selfDiscountBonus(card)
         rating += sorceryPumpPenalty(card)
         return rating.coerceIn(0.0, 5.0)
     }
@@ -293,6 +297,9 @@ object LimitedCardRater {
         cyclingBonus(card).takeIf { it != 0.0 }?.let { add(Term("Cycling", it, "discards itself for a fresh card or a land when it isn't wanted")) }
         rarityBonus(card).takeIf { it != 0.0 }?.let { add(Term("Rarity", it, card.metadata.rarity.name.lowercase())) }
         curveBonus(card).takeIf { it != 0.0 }?.let { add(Term("Curve", it, "mana value ${card.cmc}")) }
+        selfDiscountBonus(card).takeIf { it != 0.0 }?.let {
+            add(Term("Self discount", it, "costs less to cast as the board builds, so the printed mana value overstates the body"))
+        }
         sorceryPumpPenalty(card).takeIf { it != 0.0 }?.let {
             add(Term("Sorcery pump", it, "temporary single-creature stats without surprise or lasting value, mana value ${card.cmc}"))
         }
@@ -595,6 +602,9 @@ object LimitedCardRater {
             (TRIBUTE_COUNTER_VALUE * replacement.count).coerceAtMost(SELF_COUNTER_VALUE)
         else -> DamageAmplifiers.pickValue(replacement)
     }
+
+    /** A self-cast discount ("costs {X} less, where X is your devotion") — about two mana off the printed body. */
+    private const val SELF_DISCOUNT_SCORE = 0.8
 
     /** One +1/+1 counter an opponent may hand over as Tribute — see [replacementScore]. */
     private const val TRIBUTE_COUNTER_VALUE = 0.1
@@ -903,7 +913,11 @@ object LimitedCardRater {
 
             // Life gain — low value in limited
             is GainLifeEffect -> 0.1
-            is LoseLifeEffect -> LIFE_LOSS_SCORE
+            // "You lose 1 life" (Herald of Torment's upkeep, Sanguimancy's price): life its controller
+            // pays is the card's cost, not a clock on an opponent — the intent reader draws the same line.
+            is LoseLifeEffect ->
+                if (effect.target == EffectTarget.Controller || effect.target == EffectTarget.PlayerRef(Player.You)) -LIFE_LOSS_SCORE
+                else LIFE_LOSS_SCORE
 
             // Counter manipulation
             is AddCountersEffect -> 0.4
@@ -1063,6 +1077,21 @@ object LimitedCardRater {
             Rarity.UNCOMMON -> 0.2
             else -> 0.0
         }
+    }
+
+    /**
+     * "This spell costs {X} less to cast, where X is your devotion to black" (Marshmist Titan): a
+     * creature whose own generic cost shrinks by a board count is rated on its printed mana value by
+     * the stat-efficiency base, which undersells it in the deck that wants it — credit back about two
+     * mana, once per card. Conditional or target-gated discounts (Savage Stomp) aren't this shape.
+     */
+    private fun selfDiscountBonus(card: CardDefinition): Double {
+        if (!card.typeLine.isCreature) return 0.0
+        val discounted = card.script.staticAbilities.any { static ->
+            static is ModifySpellCost && static.target == SpellCostTarget.SelfCast &&
+                (static.modification as? CostModification.ReduceGenericBy)?.source is CostReductionSource.Dynamic
+        }
+        return if (discounted) SELF_DISCOUNT_SCORE else 0.0
     }
 
     /**

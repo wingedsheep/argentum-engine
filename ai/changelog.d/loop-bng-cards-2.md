@@ -1,0 +1,1 @@
+- #4769 The draft rater counts an upkeep "you lose 1 life" as the card's price rather than a drain, and credits a self-cast discount ("costs {X} less, where X is your devotion") back to the body's rating.
