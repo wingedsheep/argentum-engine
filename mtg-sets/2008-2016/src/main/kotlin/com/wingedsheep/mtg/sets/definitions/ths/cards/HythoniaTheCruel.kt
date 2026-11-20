@@ -11,7 +11,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 
 /**
  * Hythonia the Cruel — Theros #91
- * {4}{B}{B} · Legendary Creature — Gorgon · 6/6
+ * {4}{B}{B} · Legendary Creature — Gorgon · 4/6
  *
  * Deathtouch
  * {6}{B}{B}: Monstrosity 3.
