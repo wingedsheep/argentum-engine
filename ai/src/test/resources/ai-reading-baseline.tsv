@@ -752,6 +752,7 @@ April O'Neil, Kunoichi Trainee
 April, Reporter of the Weird
 Aquatic Alchemist
 Aquatic Incursion
+Aqueous Form
 Aquitect's Defenses
 Aquitect's Will	polarity: AddCountersEffect; polarity: AddSubtypeEffect
 Aquus Steed
@@ -980,6 +981,7 @@ Artificial Anomaly
 Artificial Evolution	intent: ChangeCreatureTypeTextEffect; polarity: ChangeCreatureTypeTextEffect
 Artifist Acumen
 Artillery Blast
+Artisan of Forms
 Artisan of Kozilek
 Artisan's Sorrow
 Artist's Talent
@@ -3389,6 +3391,7 @@ Coastal Drake
 Coastal Hornclaw
 Coastal Tower
 Coastal Wizard
+Coastline Chimera
 Coat of Arms
 Coat with Venom
 Coati Scavenger
@@ -4028,6 +4031,7 @@ Curse of Opulence	polarity: Aura>CreatePredefinedTokenEffect; polarity: Aura>For
 Curse of Shaken Faith	polarity: Aura>DealDamageEffect
 Curse of Silence	polarity: Aura>GatedEffect; polarity: Aura>ModifySpellCost
 Curse of Surveillance	polarity: Aura>ForEachEffect
+Curse of the Swine
 Curse of the Werefox	polarity: ReflexiveTriggerEffect
 Curse-Marred Demon
 Cursebreak
@@ -6306,6 +6310,7 @@ Fatal Fumes
 Fatal Grudge
 Fatal Mutation
 Fatal Push
+Fate Foretold
 Fate Forgotten
 Fate Unraveler
 Fate of the Sun-Cryst
@@ -11566,6 +11571,7 @@ Master of Dark Rites
 Master of Etherium
 Master of Pearls
 Master of Predicaments
+Master of Waves
 Master of Winds
 Master of the Feast
 Master of the Hunt
@@ -12749,6 +12755,7 @@ Nimble Obstructionist
 Nimble Thopterist
 Nimble Trapfinder
 Nimble-Blade Khenra
+Nimbus Naiad
 Nimbus Wings
 Nimbus of the Isles
 Nimraiser Paladin
@@ -13211,6 +13218,7 @@ Orcus, Prince of Undeath
 Ordeal of Heliod
 Ordeal of Nylea
 Ordeal of Purphoros
+Ordeal of Thassa
 Order of Leitbur
 Order of Midnight
 Order of the Ebon Hand
@@ -14153,6 +14161,7 @@ Proft, Consulting Detective
 Proft, Sinister Mastermind
 Progenitor Exarch	intent: TransformEffect
 Progenitus
+Prognostic Sphinx
 Prohibit
 Project Deathlok Soldier
 Projektor Inspector
@@ -16198,6 +16207,7 @@ Seal of Fire
 Seal of Primordium
 Seal of Removal
 Seal of Strength
+Sealock Monster
 Seam Rip
 Sear
 Search Party Captain
@@ -16665,6 +16675,7 @@ Shining Armor
 Shinka, the Bloodsoaked Keep
 Shinra Reinforcements
 Shiny Impetus
+Shipbreaker Kraken
 Shipwreck Dowser
 Shipwreck Looter
 Shipwreck Marsh
@@ -19049,11 +19060,13 @@ Thallid Soothsayer
 Thanos, the Mad Titan
 Thassa's Bounty
 Thassa's Devourer
+Thassa's Emissary
 Thassa's Intervention
 Thassa's Ire
 Thassa's Oracle
 Thassa's Rebuff
 Thassa, Deep-Dwelling	polarity: MoveToZoneEffect
+Thassa, God of the Sea
 Thaumatic Compass
 Thaumatog
 Thaumaton Torpedo
@@ -19970,8 +19983,10 @@ Triskaidekaphile
 Triskaidekaphobia
 Triskelion
 Triton Cavalry
+Triton Fortune Hunter
 Triton Shorestalker
 Triton Shorethief
+Triton Tactics
 Triton Wavebreaker
 Triton Waverider
 Triumph of Gerrard
@@ -21297,6 +21312,7 @@ Wave Elemental
 Wave of Indifference
 Wave-Wing Elemental
 Wavebreak Hippocamp
+Wavecrash Triton
 Wax // Wane
 Wax-Wane Witness
 Waxen Shapethief
