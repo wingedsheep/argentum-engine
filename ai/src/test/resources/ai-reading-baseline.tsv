@@ -156,6 +156,7 @@ Adun Oakenshield
 Advance Scout
 Advanced Hoverguard
 Advanced Stitchwing
+Advent of the Wurm
 Adventure Awaits
 Adventurer's Airship
 Adventurer's Inn
@@ -996,6 +997,7 @@ Ascendant Dustspeaker
 Ascendant Evincar
 Ascendant Packleader
 Ascendant Spirit
+Ascended Lawmage
 Ascending Aven
 Ascent of the Worthy
 Asceticism
@@ -1273,6 +1275,7 @@ Azor's Gateway
 Azor, the Lawbringer
 Azorius Chancery
 Azorius Charm
+Azorius Cluestone
 Azorius Guildgate
 Azorius Knight-Arbiter
 Azorius Locket
@@ -1581,6 +1584,7 @@ Bee Sting
 Beetle, Legacy Criminal
 Beetle-Headed Merchants
 Beetleback Chief
+Beetleform Mage
 Befoul
 Befriending the Moths
 Befuddle
@@ -2194,6 +2198,7 @@ Borne Upon a Wind	timing: GrantFlashToSpellsEffect
 Boromir, Warden of the Tower
 Boros Challenger
 Boros Charm
+Boros Cluestone
 Boros Fury-Shield
 Boros Garrison
 Boros Guildgate
@@ -2336,6 +2341,7 @@ Breath of Fury
 Breath of Life
 Breathe Your Last
 Breathstealer
+Bred for the Hunt
 Breeches, Eager Pillager
 Breeches, the Blastmaker	intent: FlipCoinEffect; polarity: FlipCoinEffect
 Breeding Pit
@@ -2423,6 +2429,7 @@ Bronze Sable
 Bronze Sword
 Bronze Tablet
 Bronze Walrus
+Bronzebeak Moa
 Bronzehide Lion	intent: PutOntoBattlefieldAsAuraEffect
 Bronzeplate Boar	intent: UnattachEquipmentEffect
 Brood Butcher
@@ -4558,6 +4565,7 @@ Deprive
 Depth Charge Colossus
 Depth Defiler
 Depths of Desire
+Deputy of Acquittals
 Deputy of Detention
 Deranged Assistant
 Deranged Whelp
@@ -4703,6 +4711,7 @@ Dimensional Exile
 Dimensional Infiltrator
 Diminisher Witch
 Dimir Aqueduct
+Dimir Cluestone
 Dimir Cutpurse
 Dimir Doppelganger
 Dimir Guildgate
@@ -6289,6 +6298,7 @@ Fascination
 Fastbond
 Fasting
 Fatal Fissure	polarity: CreateDelayedTriggerEffect
+Fatal Fumes
 Fatal Grudge
 Fatal Mutation
 Fatal Push
@@ -7897,6 +7907,7 @@ Golem's Heart
 Golem-Skin Gauntlets
 Golgari Brownscale
 Golgari Charm
+Golgari Cluestone
 Golgari Findbroker
 Golgari Germination
 Golgari Grave-Troll
@@ -8205,6 +8216,7 @@ Gruff Triplets
 Grumgully, the Generous
 Grunn, the Lonely King
 Gruul Beastmaster
+Gruul Cluestone
 Gruul Guildgate
 Gruul Locket
 Gruul Signet
@@ -8316,6 +8328,7 @@ HYDRA Infiltration
 HYDRA Troopers
 Haazda Marshal
 Haazda Officer
+Haazda Snare Squad
 Haazda Vigilante
 Hackrobat
 Hadana's Climb
@@ -8484,6 +8497,7 @@ Haunted Mire
 Haunted Plate Mail
 Haunted Ridge
 Haunted Screen
+Haunter of Nightveil
 Haunting Figment
 Haunting Voyage
 Haunting Wind
@@ -9689,6 +9703,7 @@ Izoni, Center of the Web
 Izoni, Thousand-Eyed
 Izzet Boilerworks
 Izzet Chronarch
+Izzet Cluestone
 Izzet Generatorium
 Izzet Guildgate
 Izzet Locket
@@ -9781,6 +9796,7 @@ Jedit Ojanen
 Jedit's Dragoons
 Jeering Instigator
 Jegantha, the Wellspring
+Jelenn Sphinx
 Jem Lightfoote, Sky Explorer
 Jenara, Asura of War
 Jennifer Walters
@@ -11578,6 +11594,7 @@ Mavinda, Students' Advocate
 Mavren Fein, Dusk Apostle
 Maw of Kozilek
 Maw of the Mire
+Maw of the Obzedat
 Mawcor
 Maximize Altitude
 Maximize Velocity
@@ -11658,6 +11675,7 @@ Memory Trap
 Memory Vessel
 Menacing Ogre	intent: SecretChoiceEffect; intent: StorePlayerEffect
 Mendicant Core, Guidelight
+Mending Touch
 Meneldor, Swift Savior
 Meng Huo's Horde
 Meng Huo, Barbarian King
@@ -11874,6 +11892,7 @@ Mindsplice Apparatus
 Mindspring Merfolk
 Mindstab
 Mindstab Thrull
+Mindstatic
 Mindstorm Crown
 Mindswipe
 Mindwhip Sliver
@@ -12344,6 +12363,7 @@ Mutant Chain Reaction
 Mutant Surveyor
 Mutant Town
 Mutant Town Musicians
+Mutant's Prey
 Mutational Advantage	timing: ForEach>GrantKeywordEffect
 Mutinous Massacre
 Mutiny
@@ -12962,6 +12982,7 @@ Obstinate Baloth
 Obstinate Gargoyle
 Obyra's Attendants
 Obyra, Dreaming Duelist
+Obzedat's Aid
 Ocelot Pride
 Ochran Assassin
 Ochre Jelly
@@ -13232,6 +13253,7 @@ Orthodoxy Enforcer
 Orvar, the All-Form
 Orysa, Tide Choreographer
 Orzhov Basilica
+Orzhov Cluestone
 Orzhov Enforcer
 Orzhov Guildgate
 Orzhov Locket
@@ -13689,6 +13711,7 @@ Phyrexian Vindicator
 Phyrexian Vivisector
 Phyrexian Walker
 Phyrexian Warhorse
+Phytoburst
 Phytohydra
 Phytotitan
 Pia Nalaar
@@ -13718,6 +13741,7 @@ Pikemen
 Pile On
 Pileated Provisioner
 Pilfer
+Pilfered Plans
 Pilfering Hawk
 Pilfering Imp
 Pilgrim of the Ages
@@ -14492,6 +14516,7 @@ Raiyuu, Storm's Edge	intent: AddCombatPhaseEffect; intent: TapUntapEffect
 Rakalite
 Rakdos Carnarium
 Rakdos Charm
+Rakdos Cluestone
 Rakdos Firewheeler
 Rakdos Guildgate
 Rakdos Joins Up
@@ -15212,6 +15237,7 @@ Rinoa Heartilly
 Rionya, Fire Dancer
 Riot Control
 Riot Devils
+Riot Piker
 Riot Ringleader
 Rip Apart
 Rip, Spawn Hunter
@@ -15458,6 +15484,7 @@ Rosethorn Halberd
 Rosheen, Roaring Prophet
 Rosie Cotton of South Lane
 Rot Farm Mortipede
+Rot Farm Skeleton
 Rot Shambler
 Rot-Curse Rakshasa	intent: ForEach>AddCountersEffect; polarity: ForEachEffect
 Rot-Tide Gargantua
@@ -15583,6 +15610,7 @@ Runesword	timing: GrantStaticAbilityEffect
 Runewing
 Runic Armasaur
 Runic Shot
+Runner's Bane
 Runo Stromkirk	intent: Pipeline(TopOfLibrary→?)
 Rupture Spire
 Rural Recruit
@@ -16282,6 +16310,7 @@ Sela, Tal Shiar Paradox
 Select for Inspection
 Selective Snare
 Selesnya Charm
+Selesnya Cluestone
 Selesnya Evangel
 Selesnya Guildgate
 Selesnya Guildmage
@@ -16868,6 +16897,7 @@ Simian Simulacrum
 Simian Sling	intent: UnattachEquipmentEffect
 Simian Spirit Guide
 Simic Ascendancy
+Simic Cluestone
 Simic Growth Chamber
 Simic Guildgate
 Simic Locket
