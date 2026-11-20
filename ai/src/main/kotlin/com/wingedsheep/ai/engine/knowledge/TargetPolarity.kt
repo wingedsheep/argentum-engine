@@ -936,9 +936,14 @@ object TargetPolarityAnalyzer {
                 // "Prevent all damage that would be dealt to and dealt by target permanent an opponent
                 // controls" (Kiora, the Crashing Wave; Dovin's −1): shielding a permanent and silencing
                 // it takes it out of combat altogether. Which side that helps is the board's to say —
-                // unless the slot is confined to the opponent's side, where it disarms their threat.
-                shieldsAndSilences(slot, leaves, requirements) ->
-                    if (isOpponentSide(requirements[slot])) TargetPolarity.HARMFUL else TargetPolarity.FLEXIBLE
+                // unless the slot is confined to one side: the opponent's threat disarmed, or our own
+                // creature kept safe. Only where the steps otherwise disagree (Maze of Ith's untap
+                // already reads the slot).
+                combine(readings) == TargetPolarity.UNKNOWN && shieldsAndSilences(slot, leaves, requirements) -> when {
+                    isOpponentSide(requirements[slot]) -> TargetPolarity.HARMFUL
+                    isOwnSide(requirements[slot]) -> TargetPolarity.BENEFICIAL
+                    else -> TargetPolarity.FLEXIBLE
+                }
                 else -> combine(readings)
             }
         }

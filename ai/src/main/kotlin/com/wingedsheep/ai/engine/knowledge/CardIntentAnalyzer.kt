@@ -3935,6 +3935,7 @@ object CardIntentAnalyzer {
                 !static.ability.isManaAbility &&
                 TargetPolarityAnalyzer.grantedActivatedPolarity(static.ability) == TargetPolarity.BENEFICIAL ->
                 analyzeEffect(static.ability.effect, static.ability.targetRequirements).tags
+                    .let { if (isRummage(static.ability)) asRummage(it) else it }
             static.filter.scope != Scope.AttachedTo -> emptySet()
             static.ability.isManaAbility -> setOf(IntentTag.RAMP)
             TargetPolarityAnalyzer.grantedActivatedPolarity(static.ability) == TargetPolarity.BENEFICIAL ->
