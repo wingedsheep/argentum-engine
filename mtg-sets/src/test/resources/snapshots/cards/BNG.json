@@ -5170,6 +5170,157 @@
     ]
 }
 
+// Kiora, the Crashing Wave
+{
+    "name": "Kiora, the Crashing Wave",
+    "manaCost": "{2}{G}{U}",
+    "typeLine": "Legendary Planeswalker — Kiora",
+    "oracleText": "+1: Until your next turn, prevent all damage that would be dealt to and dealt by target permanent an opponent controls.\n−1: Draw a card. You may play an additional land this turn.\n−5: You get an emblem with \"At the beginning of your end step, create a 9/9 blue Kraken creature token.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kiora, the Crashing Wave:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "PreventDamageShield",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "PreventDamageShield",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "direction": "FromTarget",
+                            "duration": "UntilYourNextTurn"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent ctrl:opponent"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Until your next turn, prevent all damage that would be dealt to and dealt by target permanent an opponent controls."
+            },
+            {
+                "id": "Kiora, the Crashing Wave:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "PlayAdditionalLands",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Draw a card. You may play an additional land this turn."
+            },
+            {
+                "id": "Kiora, the Crashing Wave:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -5
+                },
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "Kiora, the Crashing Wave:3",
+                        "trigger": {
+                            "type": "StepEvent",
+                            "step": "END"
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "CreateToken",
+                            "power": 9,
+                            "toughness": 9,
+                            "colors": [
+                                "BLUE"
+                            ],
+                            "creatureTypes": [
+                                "Kraken"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/f/9/f9576efe-03eb-49da-bb00-5bf8e50877fb.jpg?1783939516"
+                        },
+                        "descriptionOverride": "At the beginning of your end step, create a 9/9 blue Kraken creature token."
+                    },
+                    "descriptionOverride": "At the beginning of your end step, create a 9/9 blue Kraken creature token.",
+                    "emblem": true
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You get an emblem with \"At the beginning of your end step, create a 9/9 blue Kraken creature token.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "rarity": "MYTHIC",
+        "artist": "Scott M. Fischer",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f77ac7fa-718d-425f-a0aa-2f8e2bfc0950.jpg?1783939525",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "Kiora's first ability can target any permanent an opponent controls, not just one that can deal or be dealt damage."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "Once the first ability resolves, the damage prevention continues to apply even if that permanent changes controllers."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "Kiora's second ability allows you to play an additional land during your main phase. Doing so follows the normal timing rules for playing lands. In particular, you won't play a land as that ability resolves. The ability will fully resolve (and you'll draw a card, perhaps a land you'll play later) first."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "The effect of the second ability is cumulative with other effects that let you play additional lands, such as the one from Rites of Flourishing."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If Kiora leaves the battlefield after her second ability is activated but before it resolves, you'll still be able to play an additional land after the ability resolves."
+            }
+        ]
+    },
+    "startingLoyalty": 2,
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Kragma Butcher
 {
     "name": "Kragma Butcher",
@@ -7330,6 +7481,134 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Phenax, God of Deception
+{
+    "name": "Phenax, God of Deception",
+    "manaCost": "{3}{U}{B}",
+    "typeLine": "Legendary Enchantment Creature — God",
+    "oracleText": "Indestructible\nAs long as your devotion to blue and black is less than seven, Phenax isn't a creature.\nCreatures you control have \"{T}: Target player mills X cards, where X is this creature's toughness.\"",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 7
+    },
+    "keywords": [
+        "INDESTRUCTIBLE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "RemoveCardType",
+                    "cardType": "CREATURE"
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "DevotionTo",
+                        "colors": [
+                            "BLUE",
+                            "BLACK"
+                        ]
+                    },
+                    "operator": "LT",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                }
+            },
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Phenax, God of Deception:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": "Toughness"
+                                    },
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "isMill": true
+                                },
+                                "storeAs": "milled"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "milled",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "{T}: Target player mills X cards, where X is this creature's toughness."
+                },
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "rarity": "MYTHIC",
+        "artist": "Ryan Barger",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8dfcb129-4665-40e4-b5cb-a79f3f40ae5c.jpg?1783939522",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "If you activate the ability Phenax grants to creatures you control, the toughness of the creature is calculated as the ability resolves. If the creature is no longer on the battlefield at that time, use its toughness when it was last on the battlefield."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If Phenax is a creature, it will grant itself the activated ability."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If you tap Phenax to activate the ability it grants itself, and Phenax is no longer a creature but still on the battlefield as that ability resolves, no cards will be put into the target player's graveyard. Similarly, if Phenax isn't on the battlefield as the ability resolves and wasn't a creature when it left the battlefield, no cards will be put into the graveyard."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Your devotion to two colors is the number of mana symbols among mana costs of permanents you control that are the first color, the second, or both. If an effect counts your devotion to two colors, a hybrid symbol that is both of those colors is counted just once."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If a God stops being a creature, it loses the type creature and the creature type God. It continues to be a legendary enchantment."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "The type-changing ability that can make a God not be a creature functions only on the battlefield. It's always a creature card in other zones, regardless of your devotion to its color. It's always a creature spell while it's on the stack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 

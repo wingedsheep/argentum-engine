@@ -15,7 +15,6 @@ object BornOfTheGodsSet : MtgSet {
     override val code = "BNG"
     override val displayName = "Born of the Gods"
     override val releaseDate = "2014-02-07"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)

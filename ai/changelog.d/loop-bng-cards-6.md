@@ -1,0 +1,1 @@
+- #4775 The AI reads "prevent all damage dealt to and by target permanent an opponent controls" (Kiora, the Crashing Wave, Dovin) as disarming the opponent's threat, and a god granting every creature you control a mill ability (Phenax) as mill.
