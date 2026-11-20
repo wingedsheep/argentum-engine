@@ -1,0 +1,1 @@
+- #4777 Theros drafts read a first-party THS pick table (229 cards) instead of guessing from the effect heuristic

@@ -1,0 +1,190 @@
+{
+  "Agent of the Fates": [
+    "removal",
+    "creature-removal"
+  ],
+  "Anger of the Gods": [
+    "removal",
+    "creature-removal"
+  ],
+  "Arbor Colossus": [
+    "removal",
+    "creature-removal"
+  ],
+  "Artisan's Sorrow": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Ashen Rider": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Boulderfall": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Chained to the Rocks": [
+    "removal",
+    "creature-removal"
+  ],
+  "Crackling Triton": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Curse of the Swine": [
+    "removal",
+    "creature-removal"
+  ],
+  "Dark Betrayal": [
+    "removal",
+    "creature-removal"
+  ],
+  "Demolish": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Destructive Revelry": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Divine Verdict": [
+    "removal",
+    "creature-removal"
+  ],
+  "Elspeth, Sun's Champion": [
+    "removal",
+    "creature-removal"
+  ],
+  "Fade into Antiquity": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Flamecast Wheel": [
+    "removal",
+    "creature-removal"
+  ],
+  "Glare of Heresy": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Griptide": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hero's Downfall": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Hunt the Hunter": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hythonia the Cruel": [
+    "removal",
+    "creature-removal"
+  ],
+  "Keepsake Gorgon": [
+    "removal",
+    "creature-removal"
+  ],
+  "Lash of the Whip": [
+    "removal",
+    "creature-removal"
+  ],
+  "Last Breath": [
+    "removal",
+    "creature-removal"
+  ],
+  "Lightning Strike": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Loathsome Catoblepas": [
+    "removal",
+    "creature-removal"
+  ],
+  "Magma Jet": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Pharika's Cure": [
+    "removal",
+    "creature-removal"
+  ],
+  "Polis Crusher": [
+    "removal",
+    "enchantment-removal"
+  ],
+  "Priest of Iroas": [
+    "removal",
+    "enchantment-removal"
+  ],
+  "Rage of Purphoros": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ray of Dissolution": [
+    "removal",
+    "enchantment-removal"
+  ],
+  "Sea God's Revenge": [
+    "removal",
+    "creature-removal"
+  ],
+  "Shredding Winds": [
+    "removal",
+    "creature-removal"
+  ],
+  "Sip of Hemlock": [
+    "removal",
+    "creature-removal"
+  ],
+  "Spark Jolt": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Spear of Heliod": [
+    "removal",
+    "creature-removal"
+  ],
+  "Time to Feed": [
+    "removal",
+    "creature-removal"
+  ],
+  "Titan of Eternal Fire": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Triad of Fates": [
+    "removal",
+    "creature-removal"
+  ],
+  "Vanquish the Foul": [
+    "removal",
+    "creature-removal"
+  ],
+  "Voyage's End": [
+    "removal",
+    "creature-removal"
+  ],
+  "Wild Celebrants": [
+    "removal",
+    "artifact-removal"
+  ]
+}
