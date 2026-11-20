@@ -6,10 +6,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
-import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.events.Recipient
-import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 /**
  * Bred for the Hunt
@@ -20,8 +17,8 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
  *
  * Canonical printing: Dragon's Maze, the card's earliest real printing.
  *
- * Granted-trigger shape (as Synapse Sliver): each creature you control with a +1/+1 counter carries
- * "whenever this deals combat damage to a player, you may draw a card"; its controller is you.
+ * The trigger is the enchantment's own (it watches your creatures), not one granted to them: a
+ * creature that loses all abilities still draws you a card.
  */
 val BredForTheHunt = card("Bred for the Hunt") {
     manaCost = "{1}{G}{U}"
@@ -29,16 +26,11 @@ val BredForTheHunt = card("Bred for the Hunt") {
     typeLine = "Enchantment"
     oracleText = "Whenever a creature you control with a +1/+1 counter on it deals combat damage to a player, you may draw a card."
 
-    staticAbility {
-        ability = GrantTriggeredAbility(
-            ability = TriggeredAbility.create(
-                trigger = Triggers.self.dealsCombatDamage(Recipient.AnyPlayer),
-                effect = Effects.May(Effects.DrawCards(1)),
-            ),
-            filter = GroupFilter(
-                GameObjectFilter.Creature.youControl().withCounter(CounterType.PLUS_ONE_PLUS_ONE)
-            ),
-        )
+    triggeredAbility {
+        trigger = Triggers.a(
+            GameObjectFilter.Creature.youControl().withCounter(CounterType.PLUS_ONE_PLUS_ONE)
+        ).dealsCombatDamage(Recipient.AnyPlayer)
+        effect = Effects.May(Effects.DrawCards(1))
     }
 
     metadata {

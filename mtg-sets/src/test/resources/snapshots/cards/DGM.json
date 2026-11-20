@@ -301,33 +301,17 @@
     "typeLine": "Enchantment",
     "oracleText": "Whenever a creature you control with a +1/+1 counter on it deals combat damage to a player, you may draw a card.",
     "script": {
-        "staticAbilities": [
+        "triggeredAbilities": [
             {
-                "type": "GrantTriggeredAbility",
-                "ability": {
-                    "id": "Bred for the Hunt:1",
-                    "trigger": {
-                        "type": "DealsDamageEvent",
-                        "damageType": "DamageCombat",
-                        "recipient": {
-                            "type": "RecipientPlayer",
-                            "player": "Any"
-                        }
+                "id": "Bred for the Hunt:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
                     },
-                    "effect": {
-                        "type": "Gated",
-                        "gate": "Gate.MayDecide",
-                        "then": {
-                            "type": "DrawCards",
-                            "count": {
-                                "type": "Fixed",
-                                "amount": 1
-                            }
-                        }
-                    }
-                },
-                "filter": {
-                    "baseFilter": {
+                    "sourceFilter": {
                         "cardPredicates": [
                             "IsCreature"
                         ],
@@ -338,6 +322,18 @@
                             }
                         ],
                         "controllerPredicate": "ControlledByYou"
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
                     }
                 }
             }
