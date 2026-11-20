@@ -1,1 +1,1 @@
-- #PR Reads an Aura that returns its dying host to the battlefield under its owner's control (Gift of Immortality) as a gift and a recursion, so it enchants its own creatures, not the opponent's.
+- #4780 Reads an Aura that returns its dying host to the battlefield under its owner's control (Gift of Immortality) as a gift and a recursion, so it enchants its own creatures, not the opponent's.
