@@ -56,6 +56,7 @@ internal class ActivationChoicePauses(
     private val manaSolver: ManaSolver,
     private val targetFinder: TargetFinder,
     private val castPermissionUtils: com.wingedsheep.engine.legalactions.utils.CastPermissionUtils,
+    private val amountEvaluator: com.wingedsheep.engine.handlers.DynamicAmountEvaluator,
 ) {
 
     /**
@@ -758,8 +759,19 @@ internal class ActivationChoicePauses(
             return null
         }
         val controllerTargetReqsExec = activation.targetRequirements.filter { it.chooser == TargetChooser.Controller }
-        if (controllerTargetReqsExec.none { it.effectiveMinCount > 0 }) return null
         val xForTargets = activation.effectiveXValue ?: 0
+        // "Return X target creature cards" (Champion of Stray Souls): the count is X itself, fixed by
+        // the cost pick just made, so read it through the one DynamicTargetCount reading — a static
+        // effectiveMinCount is 0 for an X-counted requirement and would skip the choice entirely.
+        val boundsContext = com.wingedsheep.engine.handlers.EffectContext(
+            sourceId = action.sourceId, controllerId = action.playerId, xValue = xForTargets
+        )
+        val bounds = controllerTargetReqsExec.map { req ->
+            com.wingedsheep.engine.mechanics.targeting.DynamicTargetCount.bounds(req, xForTargets) { amount ->
+                amountEvaluator.evaluate(state, amount, boundsContext)
+            }
+        }
+        if (bounds.none { it.min > 0 }) return null
         val finder = targetFinder
         val pipelineContext = PredicateContext(
             controllerId = action.playerId,
@@ -772,7 +784,8 @@ internal class ActivationChoicePauses(
                 state, req, action.playerId, action.sourceId,
                 targetingSourceType = TargetingSourceType.ACTIVATED_ABILITY, pipelineContext = pipelineContext
             )
-            if (com.wingedsheep.engine.mechanics.targeting.NumericTargetEquality.eligible(state, legal, req).size < req.effectiveMinCount) {
+            val reqBounds = bounds[index]
+            if (com.wingedsheep.engine.mechanics.targeting.NumericTargetEquality.eligible(state, legal, req).size < reqBounds.min) {
                 return ExecutionResult.error(state, "No legal target for ${sourceName}")
             }
             legalTargets[index] = com.wingedsheep.engine.mechanics.targeting.NumericTargetEquality.eligible(state, legal, req)
@@ -780,8 +793,8 @@ internal class ActivationChoicePauses(
                 index = index,
                 description = req.description,
                 mustDifferFromEarlier = req is com.wingedsheep.sdk.scripting.targets.TargetOther,
-                minTargets = req.effectiveMinCount,
-                maxTargets = if (req.unlimited) legal.size else req.count
+                minTargets = reqBounds.min,
+                maxTargets = reqBounds.max ?: if (req.unlimited) legal.size else req.count
             ).withTargetConstraints(state, req, legal)
         }
         val prompt = "Choose ${controllerTargetReqsExec.joinToString(" and ") { it.description }} for ${sourceName}"

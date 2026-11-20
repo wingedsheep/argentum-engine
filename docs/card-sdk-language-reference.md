@@ -820,6 +820,14 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
     accepted; `null` = the free count above). A spell-cost axis: "sacrifice X creatures"
     (`Costs.additional.SacrificeX`, Eliminate the Competition), where X is announced with the spell
     because nothing in the mana cost carries it. Leaves `minCount`/`maxCount`/`minMeasure` open.
+  - **X-counted targets on an activation** — when the measure is `COUNT` and the ability's target is
+    "X target …" (`targets(filter, exactly = DynamicAmounts.xValue())`), the target choice raised after
+    the cost pick is sized to exactly the X that pick announced: **Champion of Stray Souls** ("{3}{B}{B},
+    {T}, Sacrifice X other creatures: Return X target creature cards from your graveyard to the
+    battlefield") is `Costs.SacrificePermanents(Creature, minCount = 0, excludeSelf = true)` with
+    `targets(CreatureInYourGraveyard, exactly = X)`. X = 0 asks for no target; an X above the legal
+    targets refuses the pick before anything is paid. Targets precede payment (CR 601.2c, 601.2h), so
+    the permanents being sacrificed can't be among them.
 
   This atom is also a **spell additional cost**, not only an activated-ability cost: teamwork
   (CR 702.194a) rides it through `AdditionalCost.Atom`, paying from
