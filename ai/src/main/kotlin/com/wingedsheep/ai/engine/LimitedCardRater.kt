@@ -26,6 +26,8 @@ import com.wingedsheep.sdk.scripting.AttackPermanentCostAction
 import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
 import com.wingedsheep.sdk.scripting.CantAttackUnlessPermanentCost
 import com.wingedsheep.sdk.scripting.CantBlockUnlessCoBlocker
+import com.wingedsheep.sdk.scripting.CostModification
+import com.wingedsheep.sdk.scripting.CostReductionSource
 import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.MustAttack
@@ -245,6 +247,7 @@ object LimitedCardRater {
         rating += cyclingBonus(card)
         rating += rarityBonus(card)
         rating += curveBonus(card)
+        rating += selfDiscountBonus(card)
         rating += sorceryPumpPenalty(card)
         return rating.coerceIn(0.0, 5.0)
     }
@@ -294,6 +297,9 @@ object LimitedCardRater {
         cyclingBonus(card).takeIf { it != 0.0 }?.let { add(Term("Cycling", it, "discards itself for a fresh card or a land when it isn't wanted")) }
         rarityBonus(card).takeIf { it != 0.0 }?.let { add(Term("Rarity", it, card.metadata.rarity.name.lowercase())) }
         curveBonus(card).takeIf { it != 0.0 }?.let { add(Term("Curve", it, "mana value ${card.cmc}")) }
+        selfDiscountBonus(card).takeIf { it != 0.0 }?.let {
+            add(Term("Self discount", it, "costs less to cast as the board builds, so the printed mana value overstates the body"))
+        }
         sorceryPumpPenalty(card).takeIf { it != 0.0 }?.let {
             add(Term("Sorcery pump", it, "temporary single-creature stats without surprise or lasting value, mana value ${card.cmc}"))
         }
@@ -544,17 +550,9 @@ object LimitedCardRater {
             is MustBlock -> if (static.filter.scope == Scope.Self) return -0.1
             // "Creature spells you cast cost {1} more" (Geist-Fueled Scarecrow): every matching
             // spell costs one more mana, often a turn late — the price of its body, a little under "can't block".
-            is ModifySpellCost -> {
-                if (CardIntentAnalyzer.ownSpellsOnly(static.target) &&
-                    CardIntentAnalyzer.taxes(static.modification)
-                ) return -0.2
-                // "This spell costs {X} less to cast, where X is your devotion to black" (Marshmist
-                // Titan): the printed mana value overstates what the body costs in the deck that
-                // wants it, so the stat-efficiency base undersells it — credit back a couple of mana.
-                if (static.target == SpellCostTarget.SelfCast && !CardIntentAnalyzer.taxes(static.modification)) {
-                    return SELF_DISCOUNT_SCORE
-                }
-            }
+            is ModifySpellCost -> if (CardIntentAnalyzer.ownSpellsOnly(static.target) &&
+                CardIntentAnalyzer.taxes(static.modification)
+            ) return -0.2
             // "As you cascade, you may put a land card from among the exiled cards onto the battlefield
             // tapped" (Averna, the Chaos Bloom): a land per cascade, so it pays off only in a deck that
             // cascades — half a ramp term, like a conditional static.
@@ -1079,6 +1077,21 @@ object LimitedCardRater {
             Rarity.UNCOMMON -> 0.2
             else -> 0.0
         }
+    }
+
+    /**
+     * "This spell costs {X} less to cast, where X is your devotion to black" (Marshmist Titan): a
+     * creature whose own generic cost shrinks by a board count is rated on its printed mana value by
+     * the stat-efficiency base, which undersells it in the deck that wants it — credit back about two
+     * mana, once per card. Conditional or target-gated discounts (Savage Stomp) aren't this shape.
+     */
+    private fun selfDiscountBonus(card: CardDefinition): Double {
+        if (!card.typeLine.isCreature) return 0.0
+        val discounted = card.script.staticAbilities.any { static ->
+            static is ModifySpellCost && static.target == SpellCostTarget.SelfCast &&
+                (static.modification as? CostModification.ReduceGenericBy)?.source is CostReductionSource.Dynamic
+        }
+        return if (discounted) SELF_DISCOUNT_SCORE else 0.0
     }
 
     /**
