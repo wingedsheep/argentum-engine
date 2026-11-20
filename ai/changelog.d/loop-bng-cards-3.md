@@ -1,0 +1,2 @@
+- #TBD The AI no longer casts a spell that hands its creatures a {T} ability until end of turn (Lightning Volley, Psychic Trance) when none of them is untapped and free of summoning sickness to use it.
+- #TBD The AI reads an Aura whose host's attack trigger pumps that creature (Thunderous Might) as a gift, and enchants its own creature with it.

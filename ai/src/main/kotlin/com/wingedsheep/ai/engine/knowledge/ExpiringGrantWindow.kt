@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
+import com.wingedsheep.engine.mechanics.SummoningSicknessRules
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
@@ -44,6 +45,7 @@ import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
 import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityEffect
+import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityToGroupEffect
 import com.wingedsheep.sdk.scripting.effects.GrantCantBeBlockedByChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.GrantEvasionKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.GrantHexproofFromChosenColorEffect
@@ -353,6 +355,11 @@ internal object ExpiringGrantWindow {
                 return@none connectorCanStillHit(state, projected, playerId, payoff, sourceId, sourceTaps, intents)
                     ?: return false
             }
+            if (payoff.kind == PayoffKind.ACTIVATION) {
+                val group = payoff.group ?: return false
+                val members = groupMembers(state, projected, playerId, group, sourceId, intents, creaturesOnly = false) ?: return false
+                return@none members.any { !(sourceTaps && it == sourceId) && canStillTap(state, projected, playerId, it) }
+            }
             if (payoff.kind == PayoffKind.STRIP) {
                 val keyword = payoff.keyword ?: return false
                 val stripped = (if (payoff.group != null) {
@@ -387,7 +394,7 @@ internal object ExpiringGrantWindow {
                     }
                 }
                 PayoffKind.LAND -> affected.any { canStillMatter(state, projected, playerId, it) }
-                PayoffKind.SHIELD, PayoffKind.SILENCE, PayoffKind.CONNECT, PayoffKind.STRIP -> true // answered above
+                PayoffKind.SHIELD, PayoffKind.SILENCE, PayoffKind.CONNECT, PayoffKind.STRIP, PayoffKind.ACTIVATION -> true // answered above
                 PayoffKind.BORROW -> affected.any { projected.isCreature(it) } &&
                     (state.step in UNTIL_ATTACKERS_DECLARED || state.step in FIGHT_STILL_AHEAD ||
                         controlsASacrificeOutlet(state, playerId, intents))
@@ -436,6 +443,26 @@ internal object ExpiringGrantWindow {
         val payoffs = expiringPayoffs(effect, readShrinks = true) ?: return false
         val grants = payoffs.filter { it.kind == PayoffKind.CREATURE }
         return grants.isNotEmpty() && grants.all { it.animates || (it.keyword != null && it.keyword != HASTE) }
+    }
+
+    /**
+     * Whether a spell's whole payoff is a `{T}` ability granted to a group of ours until end of turn
+     * ([PayoffKind.ACTIVATION]) — the grant [castBuysNothing] reads beside the keyword grants.
+     */
+    fun readsSpellGroupActivationGrant(effect: Effect): Boolean =
+        expiringPayoffs(effect)?.all { it.kind == PayoffKind.ACTIVATION } == true
+
+    /** See [PayoffKind.ACTIVATION]: a non-mana `{T}` ability granted to a group that isn't only theirs. */
+    private fun grantsTapActivationToOurGroup(leaf: Effect): Boolean =
+        leaf is GrantActivatedAbilityToGroupEffect && leaf.duration == Duration.EndOfTurn &&
+            !leaf.ability.isManaAbility && tapsItsSource(leaf.ability) &&
+            !CardIntentAnalyzer.opponentsOnly(leaf.filter.baseFilter.controllerPredicate)
+
+    /** Whether [creature] of ours can still pay a `{T}` cost this turn: untapped, and not summoning sick. */
+    private fun canStillTap(state: GameState, projected: ProjectedState, playerId: EntityId, permanent: EntityId): Boolean {
+        val entity = state.getEntity(permanent) ?: return false
+        return projected.getController(permanent) == playerId && !entity.has<TappedComponent>() &&
+            !SummoningSicknessRules.blocksTapOrUntapCost(permanent, entity, projected)
     }
 
     private val HASTE = Keyword.HASTE.name
@@ -499,7 +526,7 @@ internal object ExpiringGrantWindow {
             sourceTaps = false,
             pendingSelfGrant = false,
             intents = intents,
-            readGrants = readKeywordGrants && readsSpellKeywordGrant(effect),
+            readGrants = readKeywordGrants && (readsSpellKeywordGrant(effect) || readsSpellGroupActivationGrant(effect)),
             readShrinks = readShrinks,
             readBorrows = readBorrows,
             fightMustBeOn = fightMustBeOn,
@@ -1259,6 +1286,18 @@ internal object ExpiringGrantWindow {
          * for them ([holds]).
          */
         CONNECT,
+
+        /**
+         * A `{T}` activated ability handed to a group of ours until end of turn — "until end of turn,
+         * creatures you control gain '{T}: This creature deals 1 damage to any target'" (Lightning
+         * Volley), "Wizards you control gain '{T}: Counter target spell'" (Psychic Trance). Whatever
+         * the ability does, it is spent only by a member tapping for it before cleanup, so it buys
+         * something only while one of them is untapped and free of summoning sickness
+         * ([canStillTap]). Cast with every member tapped or freshly arrived, the grant wears off
+         * unused. Carries the group it lands on ([Payoff.group]). Not deferred ([holds]): any
+         * window with an untapped member is one it can be spent in.
+         */
+        ACTIVATION,
     }
 
     /**
@@ -1297,7 +1336,10 @@ internal object ExpiringGrantWindow {
         val animates: Boolean = false,
         /** For a [PayoffKind.CONNECT]: the creatures of ours whose combat damage fires the trigger. */
         val matching: GameObjectFilter? = null,
-        /** For a [PayoffKind.STRIP] over a group: the group it strips — `IterationEntity` is its members. */
+        /**
+         * For a [PayoffKind.STRIP] over a group: the group it strips — `IterationEntity` is its members.
+         * For a [PayoffKind.ACTIVATION]: the group handed the ability.
+         */
         val group: GroupFilter? = null,
         /** For a [PayoffKind.SET_BASE]: its creature also loses all abilities until end of turn. */
         val neutralizes: Boolean = false,
@@ -1419,6 +1461,8 @@ internal object ExpiringGrantWindow {
                 // gone at cleanup. The group form lands on our creatures, as a team pump does.
                 leaf is EachPermanentBecomesCopyOfTargetEffect && leaf.duration == Duration.EndOfTurn ->
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.affected ?: EffectTarget.IterationEntity, animates = true)
+                grantsTapActivationToOurGroup(leaf) ->
+                    payoffs += Payoff(PayoffKind.ACTIVATION, null, group = (leaf as GrantActivatedAbilityToGroupEffect).filter)
                 isShield(leaf) -> payoffs += Payoff(PayoffKind.SHIELD, (leaf as PreventDamageEffect).target)
                 // A source chosen on resolution has no target to land on: null.
                 isSilence(leaf) -> payoffs += Payoff(
