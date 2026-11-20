@@ -104,6 +104,50 @@
     ]
 }
 
+// Akroan Hoplite
+{
+    "name": "Akroan Hoplite",
+    "manaCost": "{R}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Whenever this creature attacks, it gets +X/+0 until end of turn, where X is the number of attacking creatures you control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Akroan Hoplite:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature attacking"
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "185",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"Fair fight? How could it be a fair fight? We're Akroans. They're not.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/695ccac5-c87e-49af-9131-8f1730e84bc0.jpg?1783939734"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Anvilwrought Raptor
 {
     "name": "Anvilwrought Raptor",
@@ -521,6 +565,69 @@
     ]
 }
 
+// Boon of Erebos
+{
+    "name": "Boon of Erebos",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +2/+0 until end of turn. Regenerate it. You lose 2 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Regenerate",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Controller"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "artist": "James Ryman",
+        "flavorText": "\"Death is not a certainty. Erebos determines when a mortal's time is up.\"\n—Iadorna, death priest of Erebos",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/4371083b-c300-4464-a7ea-6168db4e345c.jpg?1783939782"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Borderland Minotaur
 {
     "name": "Borderland Minotaur",
@@ -690,6 +797,80 @@
     "colorIdentityOverride": []
 }
 
+// Chained to the Rocks
+{
+    "name": "Chained to the Rocks",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant Mountain you control\nWhen this Aura enters, exile target creature an opponent controls until this Aura leaves the battlefield. (That creature returns under its owner's control.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Chained to the Rocks:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ExileUntilLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Chained to the Rocks:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land Mountain ctrl:you"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "RARE",
+        "artist": "Aaron Miller",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a5af083f-5820-4185-ac04-4c4368f7703c.jpg?1783939823"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Chosen by Heliod
 {
     "name": "Chosen by Heliod",
@@ -735,6 +916,74 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Commune with the Gods
+{
+    "name": "Commune with the Gods",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Reveal the top five cards of your library. You may put a creature or enchantment card from among them into your hand. Put the rest into your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 5
+                        }
+                    },
+                    "storeAs": "looked",
+                    "revealed": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "looked",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "creature|enchantment",
+                    "storeSelected": "kept",
+                    "storeRemainder": "rest",
+                    "prompt": "You may put a creature or enchantment card from among them into your hand",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "kept",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "rest",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "artist": "Aleksi Briclot",
+        "flavorText": "For the first time in many years, Elspeth asked for help.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/1/e101ae5f-c3ea-4788-b27f-d9452234eaef.jpg?1783939746"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -1010,6 +1259,49 @@
     ]
 }
 
+// Deathbellow Raider
+{
+    "name": "Deathbellow Raider",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Minotaur Berserker",
+    "oracleText": "This creature attacks each combat if able.\n{2}{B}: Regenerate this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Deathbellow Raider:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            "MustAttack"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "artist": "Wayne Reynolds",
+        "flavorText": "\"The temple has been rededicated. It belongs to Mogis now.\"\n—Rastos, disciple of Mogis",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b29fc64e-297e-4e10-8f4e-289dc1c3ebfd.jpg?1783939765"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Decorated Griffin
 {
     "name": "Decorated Griffin",
@@ -1094,6 +1386,73 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Dragon Mantle
+{
+    "name": "Dragon Mantle",
+    "manaCost": "{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, draw a card.\nEnchanted creature has \"{R}: This creature gets +1/+0 until end of turn.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dragon Mantle:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Dragon Mantle:2",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{R}"
+                        }
+                    },
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "Self"
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "artist": "Anthony Palumbo",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d97b1080-9001-4751-b2f5-7f56d9f58dff.jpg?1783939764"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -1511,6 +1870,45 @@
     "colorIdentityOverride": []
 }
 
+// Fleshmad Steed
+{
+    "name": "Fleshmad Steed",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Horse",
+    "oracleText": "Whenever another creature dies, tap this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fleshmad Steed:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "artist": "Robbie Trevino",
+        "flavorText": "More disturbing than the unknown is a distortion of the familiar.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/378c5ba0-bf4f-43d5-b371-0991db5a2e32.jpg?1783939780"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Glare of Heresy
 {
     "name": "Glare of Heresy",
@@ -1812,6 +2210,50 @@
     ]
 }
 
+// Horizon Chimera
+{
+    "name": "Horizon Chimera",
+    "manaCost": "{2}{G}{U}",
+    "typeLine": "Creature — Chimera",
+    "oracleText": "Flash\nFlying, trample\nWhenever you draw a card, you gain 1 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Horizon Chimera:1",
+                "trigger": "DrawEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Whenever you draw a card, you gain 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "194",
+        "rarity": "UNCOMMON",
+        "artist": "Sam Burley",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/73b0e296-d556-4e76-bb2e-5a640e070bb5.jpg?1783939730"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Horizon Scholar
 {
     "name": "Horizon Scholar",
@@ -1848,6 +2290,73 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Hunt the Hunter
+{
+    "name": "Hunt the Hunter",
+    "manaCost": "{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target green creature you control gets +2/+2 until end of turn. It fights target green creature an opponent controls.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Fight",
+                    "target1": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature green ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature green ctrl:opponent"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Barger",
+        "flavorText": "\"A grudge is a tattoo worn on the inside.\"\n—Setessan warrior saying",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/61d4899f-11a4-4a2c-a499-3a447b792f86.jpg?1783939746"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -3081,6 +3590,52 @@
     ]
 }
 
+// Rageblood Shaman
+{
+    "name": "Rageblood Shaman",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Creature — Minotaur Shaman",
+    "oracleText": "Trample\nOther Minotaur creatures you control get +1/+1 and have trample.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature Minotaur ctrl:you",
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE",
+                "filter": {
+                    "baseFilter": "creature Minotaur ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "rarity": "RARE",
+        "artist": "Mike Bierek",
+        "flavorText": "\"I see a spark of pure rage. Soon that spark will spread from the depths of Kragma. Soon its fire will engulf the polis.\"\n—Hira, street oracle",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ffaa31fd-5ba5-49d4-90b6-fafb9f1a8b3a.jpg?1783939756"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Ray of Dissolution
 {
     "name": "Ray of Dissolution",
@@ -3170,6 +3725,78 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Reaper of the Wilds
+{
+    "name": "Reaper of the Wilds",
+    "manaCost": "{2}{B}{G}",
+    "typeLine": "Creature — Gorgon",
+    "oracleText": "Whenever another creature dies, scry 1.\n{B}: This creature gains deathtouch until end of turn.\n{1}{G}: This creature gains hexproof until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Reaper of the Wilds:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Reaper of the Wilds:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "DEATHTOUCH",
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Reaper of the Wilds:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "rarity": "RARE",
+        "artist": "Karl Kopinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/4/34d6c78f-b868-4171-b231-4dee45cfa6e0.jpg?1783939727"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
     ]
 }
 
@@ -3311,6 +3938,58 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Sea God's Revenge
+{
+    "name": "Sea God's Revenge",
+    "manaCost": "{5}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return up to three target creatures your opponents control to their owners' hands. Scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Hand"
+                    }
+                },
+                {
+                    "type": "Scry",
+                    "count": 1
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 3,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "UNCOMMON",
+        "artist": "Eric Velhagen",
+        "flavorText": "\"What has neither mouth nor throat, yet swallows captain, crew, and boat?\"\n—Sphinx's riddle",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5acdf4e4-5933-43dc-bf8b-25f89415db5b.jpg?1783939793"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3512,6 +4191,108 @@
     ]
 }
 
+// Sip of Hemlock
+{
+    "name": "Sip of Hemlock",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target creature. Its controller loses 2 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "TargetController"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "artist": "Nils Hamm",
+        "flavorText": "Conspirators poisoned the oracle not because her visions were wrong, but because they were right.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/22051427-9b2a-4571-8c9f-ee84d8d0e4d1.jpg?1783939771"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Soldier of the Pantheon
+{
+    "name": "Soldier of the Pantheon",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Protection from multicolored\nWhenever an opponent casts a multicolored spell, you gain 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": "ProtectionScope.Multicolored"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Soldier of the Pantheon:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsMulticolored"
+                        ]
+                    },
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "rarity": "RARE",
+        "artist": "Eric Deschamps",
+        "flavorText": "\"I hear the gods' voices in my dreams each night, and I offer bloody trophies on their altars each day.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5cfc0f46-4df4-4ae3-bfe6-391916eb590f.jpg?1783939806"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Spark Jolt
 {
     "name": "Spark Jolt",
@@ -3554,6 +4335,51 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Stymied Hopes
+{
+    "name": "Stymied Hopes",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell unless its controller pays {1}. Scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Counter",
+                    "condition": {
+                        "type": "CounterCondition.UnlessPaysMana",
+                        "cost": "{1}"
+                    }
+                },
+                {
+                    "type": "Scry",
+                    "count": 1
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "artist": "Peter Mohrbacher",
+        "flavorText": "When a god's will is against you, the day never ends well.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/7/5702b757-5be5-4a48-bc73-a87ec4f3193b.jpg?1783939790"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3939,6 +4765,76 @@
     "colorIdentityOverride": [
         "WHITE",
         "RED"
+    ]
+}
+
+// Thassa's Bounty
+{
+    "name": "Thassa's Bounty",
+    "manaCost": "{5}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw three cards. Target player mills three cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "artist": "Ryan Yee",
+        "flavorText": "\"Was this gift cast adrift for any to find, or did Thassa guide the currents to bring it to me alone?\"\n—Kenessos, priest of Thassa",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3ac987ac-3f81-4704-b42c-651f44670641.jpg?1783939788"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4599,6 +5495,80 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Witches' Eye
+{
+    "name": "Witches' Eye",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature has \"{1}, {T}: Scry 1.\" (To scry 1, look at the top card of your library, then you may put that card on the bottom.)\nEquip {1}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Witches' Eye:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Witches' Eye:1",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{1}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": {
+                        "type": "Scry",
+                        "count": 1
+                    }
+                }
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "The price of prophecy is a vacant eye socket.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6d989daa-78eb-4120-81b5-7866a7b04590.jpg?1783939715"
+    },
+    "colorIdentityOverride": []
 }
 
 // Yoked Ox
