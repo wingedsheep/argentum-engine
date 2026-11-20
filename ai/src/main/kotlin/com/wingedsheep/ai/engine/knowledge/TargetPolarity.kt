@@ -1899,7 +1899,12 @@ object TargetPolarityAnalyzer {
         // whichever side the original belongs to, and it is worth what that object does, which
         // only the stack shows — so both sides stay open, as a copied permanent's source does.
         if (leaf is CopyTargetSpellOrAbilityEffect) return listOf(leaf.target to TargetPolarity.FLEXIBLE)
-        if (leaf is CopyTargetSpellEffect) return listOf(leaf.target to TargetPolarity.FLEXIBLE)
+        // "The controller of target spell copies it" (Meletis Charlatan) hands the copy to the
+        // spell's own controller, so it is a gift to that side: aim it at our own spells.
+        if (leaf is CopyTargetSpellEffect) {
+            val polarity = if (leaf.copier is Player.ControllerOf) TargetPolarity.BENEFICIAL else TargetPolarity.FLEXIBLE
+            return listOf(leaf.target to polarity)
+        }
         if (leaf is CopyTargetTriggeredAbilityEffect) return listOf(leaf.target to TargetPolarity.FLEXIBLE)
         // "Create a token that's a copy of target artifact" (Saheeli's Artistry, Cackling
         // Counterpart's any-side kin): the token is ours whichever side the original sits on, as a

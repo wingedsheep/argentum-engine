@@ -1098,12 +1098,25 @@ data class CopyTargetSpellEffect(
      */
     @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
-    val mayChooseNewTargets: Boolean = true
+    val mayChooseNewTargets: Boolean = true,
+    /**
+     * Who copies — the player who controls every copy and who may choose its new targets (CR
+     * 707.10). [Player.You] is "copy target spell"; Meletis Charlatan's "**the controller of target
+     * instant or sorcery spell** copies it. That player may choose new targets for the copy." is
+     * `Player.ControllerOf("target spell")`, which reads the targeted spell's controller. A
+     * copy-count replacement ("if you would copy a spell", Twinning Staff) is checked for this player.
+     */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val copier: Player = Player.You
 ) : Effect {
     override val description: String = run {
         // "that spell" when the copied spell is the trigger's own ("copy it"), not a chosen target.
         val spell = if (target == EffectTarget.TriggeringEntity) "that spell" else "target spell"
-        val main = if (copies == DynamicAmount.Fixed(1)) "Copy $spell"
+        val main = if (copier != Player.You) {
+            val who = if (copier is Player.ControllerOf) "The controller of $spell" else copier.description.replaceFirstChar { it.uppercase() }
+            if (copies == DynamicAmount.Fixed(1)) "$who copies it" else "$who copies it ${copies.description} times"
+        } else if (copies == DynamicAmount.Fixed(1)) "Copy $spell"
             else "Copy $spell ${copies.description} times"
         val clauses = exceptions.clauses()
         if (clauses.isEmpty()) main else "$main except ${clauses.joinToString(" and ")}"

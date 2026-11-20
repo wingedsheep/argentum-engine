@@ -2611,6 +2611,91 @@
     ]
 }
 
+// Meletis Charlatan
+{
+    "name": "Meletis Charlatan",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{2}{U}, {T}: The controller of target instant or sorcery spell copies it. That player may choose new targets for the copy.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Meletis Charlatan:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CopyTargetSpell",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "copier": {
+                        "type": "ControllerOf",
+                        "targetDescription": "target spell"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "instant|sorcery",
+                            "zone": "Stack"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "RARE",
+        "artist": "Jason A. Engle",
+        "flavorText": "\"Every object has an echo in the Æther beyond the world. Every idea has a shadow that can be brought to light.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bf22da0c-5bf5-4c81-9422-671ce17c8ffa.jpg?1783939794",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Meletis Charlatan's ability can target any instant or sorcery spell, not just one with targets and not just one that you control."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "When the ability resolves, it creates a copy of the spell. The controller of the original spell controls the copy. That copy is created on the stack, so it's not \"cast.\" Abilities that trigger when a player casts a spell won't trigger. The copy will then resolve like a normal spell, after players get a chance to cast spells and activate abilities."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "The copy will have the same targets as the spell it's copying unless its controller chooses new ones. That player may change any number of the targets, including all of them or none of them. If, for one of the targets, that player can't choose a new legal target, then it remains unchanged (even if the current target is illegal)."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If the spell being copied is modal (that is, it says \"Choose one —\" or the like), the copy will have the same mode. Its controller can't choose a different one."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If the spell being copied has an X whose value was determined as it was cast (like Curse of the Swine has), the copy has the same value of X."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Messenger's Speed
 {
     "name": "Messenger's Speed",

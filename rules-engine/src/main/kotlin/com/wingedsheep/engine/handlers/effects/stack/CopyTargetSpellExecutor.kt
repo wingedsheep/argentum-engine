@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.handlers.effects.library.KeywordActionAmountModifier
 import com.wingedsheep.engine.mechanics.stack.StackPlacement
 import com.wingedsheep.engine.state.GameState
@@ -14,6 +15,7 @@ import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComp
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.CopyExceptions
 import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellEffect
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlin.reflect.KClass
 
@@ -37,16 +39,25 @@ class CopyTargetSpellExecutor(
     override fun execute(
         state: GameState,
         effect: CopyTargetSpellEffect,
-        context: EffectContext
+        effectContext: EffectContext
     ): EffectResult {
         // "Copy that spell" names the triggering spell, which may have left the stack (countered,
         // bounced) and so become a new object (CR 400.7). The copy is then made from the spell as
         // it last existed on the stack (CR 608.2h).
-        val spellEntityId = context.resolveTarget(effect.target)
-            ?: context.objectReferences.triggering
+        val spellEntityId = effectContext.resolveTarget(effect.target)
+            ?: effectContext.objectReferences.triggering
                 ?.takeIf { effect.target == EffectTarget.TriggeringEntity }
                 ?.let(state::departedSpellEntity)
             ?: return EffectResult.error(state, "No target spell to copy")
+
+        // "The controller of target spell copies it" (Meletis Charlatan): the copier controls the
+        // copies, chooses their new targets and is the "you" of any copy-count replacement, so the
+        // rest of the resolution runs as that player.
+        val context = if (effect.copier == Player.You) effectContext else {
+            val copierId = TargetResolutionUtils.resolvePlayerRef(effect.copier, effectContext, state)
+                ?: return EffectResult.success(state)
+            effectContext.copy(controllerId = copierId)
+        }
 
         // "Copy it for each …" clauses resolve their count here (Thousand-Year Storm). Zero
         // matching prior spells means no copies at all — the ability still resolved.
