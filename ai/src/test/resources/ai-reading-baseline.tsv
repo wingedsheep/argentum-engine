@@ -38,6 +38,7 @@ Aberrant Manawurm
 Aberrant Mind Sorcerer
 Aberrant Researcher
 Abhorrent Oculus
+Abhorrent Overlord
 Abigale, Eloquent First-Year
 Abigale, Poet Laureate
 Abnormal Endurance
@@ -276,6 +277,7 @@ Agent of Horizons
 Agent of Kotis
 Agent of Shauku
 Agent of Treachery
+Agent of the Fates
 Agents of HYDRA
 Agents of S.H.I.E.L.D.
 Aggravated Assault
@@ -1334,6 +1336,7 @@ Balduvian Berserker
 Balefire Dragon
 Baleful Ammit
 Baleful Beholder
+Baleful Eidolon
 Baleful Mastery
 Baleful Stare
 Baleful Strix
@@ -1955,6 +1958,7 @@ Blood on the Snow
 Blood-Chin Fanatic
 Blood-Chin Rager
 Blood-Cursed Knight
+Blood-Toll Harpy
 Bloodbond March	intent: Pipeline(graveyard→battlefield)
 Bloodbond Vampire
 Bloodbraid Elf
@@ -2880,6 +2884,7 @@ Cave Sense
 Cave of Temptation
 Cave of the Frost Dragon
 Cavern Crawler
+Cavern Lampad
 Cavern Stomper	intent: GrantStaticAbilityEffect; timing: GrantStaticAbilityEffect
 Cavern Thoctar
 Cavern Whisperer
@@ -4779,6 +4784,7 @@ Disciple of Grace
 Disciple of Law
 Disciple of Malice
 Disciple of Perdition
+Disciple of Phenax
 Disciple of the Ring
 Disciple of the Vault
 Disciples of Gix
@@ -5876,9 +5882,11 @@ Eradicator Valkyrie
 Erase
 Erdwal Illuminator
 Erebor Flamesmith
+Erebos's Emissary
 Erebos's Intervention
 Erebos's Titan
 Erebos, Bleak-Hearted
+Erebos, God of the Dead
 Erg Raiders
 Erhnam Djinn
 Erica Ortegas, Plucky Pilot
@@ -9141,6 +9149,7 @@ Hypothesizzle
 Hyrax Tower Scout
 Hysterical Blindness
 Hystrodon
+Hythonia the Cruel
 I Am Iron Man	timing: BecomeCreatureEffect
 I'm a Doctor, Not a . . .
 Ian the Reckless
@@ -10138,6 +10147,7 @@ Keeper of the Lens
 Keeper of the Nine Gales
 Keeper of the Quiet Hour
 Keepers of the Faith
+Keepsake Gorgon
 Kefka, Court Mage
 Kefka, Dancing Mad	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: ForEach>Pipeline(graveyard→?); intent: Pipeline(?→exile)
 Kefnet the Mindful
@@ -10988,6 +10998,7 @@ Loam Larva
 Loamdragger Giant
 Loaming Shaman	polarity: ForEachEffect; polarity: Pipeline(?→?)
 Loan Shark
+Loathsome Catoblepas
 Loathsome Chimera
 Loathsome Troll
 Lobber Crew
@@ -11450,6 +11461,7 @@ March of Wretched Sorrow
 March of the Drowned
 March of the Machines
 March of the Multitudes
+March of the Returned
 March of the World Ooze
 Marchesa, Dealer of Death
 Marcus, Mutant Mayor
@@ -12099,6 +12111,7 @@ Mogg Raider
 Mogg War Marshal
 Moggcatcher
 Mogis's Favor
+Mogis's Marauder
 Mogis's Warhound
 Mogis, God of Slaughter
 Moira Brown, Guide Author	intent: AddCountersEffect; polarity: AddCountersEffect
@@ -12710,6 +12723,7 @@ Nightfire Giant
 Nightguard Patrol
 Nighthawk Scavenger
 Nighthowl Pursuer
+Nighthowler
 Nightkin Ambusher	polarity: AddCountersEffect
 Nightmare
 Nightmare Lash
@@ -13215,6 +13229,7 @@ Orcish Vandal
 Orcish Veteran
 Orcrist, Goblin-cleaver
 Orcus, Prince of Undeath
+Ordeal of Erebos
 Ordeal of Heliod
 Ordeal of Nylea
 Ordeal of Purphoros
