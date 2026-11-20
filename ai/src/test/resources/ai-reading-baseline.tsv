@@ -4954,7 +4954,7 @@ Dovin's Dismissal
 Dovin's Veto
 Dovin, Architect of Law	polarity: SkipStepOrPhaseEffect
 Dovin, Grand Arbiter
-Dovin, Hand of Control	polarity: mixed(PreventDamageEffect)
+Dovin, Hand of Control
 Down in the Valley
 Down, Down to Goblin-town
 Downwind Ambusher
@@ -5404,7 +5404,7 @@ Ebon Praetor
 Ebon Stronghold
 Ebonblade Reaper
 Ebondeath, Dracolich
-Ebony Horse	polarity: PreventDamageEffect; timing: PreventDamageEffect
+Ebony Horse	timing: PreventDamageEffect
 Ebony Treefolk
 Eccentric Apprentice	polarity: SetCreatureSubtypesEffect
 Eccentric Farmer
@@ -5628,7 +5628,7 @@ Elvish Reclaimer
 Elvish Refueler
 Elvish Regrower
 Elvish Rejuvenator
-Elvish Scout	polarity: PreventDamageEffect; timing: PreventDamageEffect
+Elvish Scout	timing: PreventDamageEffect
 Elvish Scrapper
 Elvish Skysweeper
 Elvish Soultiller	intent: ChooseCreatureTypeEffect; intent: Pipeline(graveyard→library)
@@ -9655,7 +9655,7 @@ It That Heralds the End
 It of the Horrid Swarm
 It'll Quench Ya!
 Item Shopkeep
-Ith, High Arcanist	polarity: PreventDamageEffect; timing: PreventDamageEffect
+Ith, High Arcanist	timing: PreventDamageEffect
 Ithilien Kingfisher
 Itzquinth, Firstborn of Gishath
 Ivora, Insatiable Heir
@@ -10232,6 +10232,7 @@ Kiora's Follower
 Kiora, Behemoth Beckoner
 Kiora, Master of the Depths
 Kiora, Sovereign of the Deep
+Kiora, the Crashing Wave
 Kiora, the Rising Tide
 Kira Nerys, Firebrand
 Kird Ape
@@ -11577,8 +11578,8 @@ Mayhem Devil
 Mayhem Patrol
 Mayor of Avabruck
 Maze Skullbomb
-Maze of Ith	polarity: PreventDamageEffect; timing: PreventDamageEffect
-Maze of Shadows	polarity: PreventDamageEffect; timing: PreventDamageEffect
+Maze of Ith	timing: PreventDamageEffect
+Maze of Shadows	timing: PreventDamageEffect
 Maze's End
 Maze's Mantle
 Mazemind Tome
@@ -13613,6 +13614,7 @@ Pharika's Spawn
 Pharika, God of Affliction
 Phase Dolphin
 Phelia, Exuberant Shepherd	intent: Pipeline(ChosenTargets→battlefield|exile); polarity: CreateDelayedTriggerEffect; polarity: Pipeline(ChosenTargets→exile)
+Phenax, God of Deception
 Pheres-Band Brawler
 Pheres-Band Centaurs
 Pheres-Band Raiders
