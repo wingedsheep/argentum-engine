@@ -651,6 +651,7 @@ Angelic Voices
 Angelic Wall
 Angelsong
 Anger
+Anger of the Gods
 Angler Drake
 Angrath's Ambusher
 Angrath's Fury
@@ -2244,6 +2245,7 @@ Boulder Dash
 Boulder Salvo
 Boulderborn Dragon
 Boulderbranch Golem
+Boulderfall
 Bounce Off
 Bouncer's Beatdown
 Bound by Moonsilver
@@ -5672,6 +5674,7 @@ Embalmer's Tools
 Ember Hauler
 Ember Island Production
 Ember Shot
+Ember Swallower
 Ember Weaver
 Ember-Eye Wolf
 Ember-Fist Zubera
@@ -6268,6 +6271,7 @@ Famished Foragers
 Famished Paladin
 Famished Worldsire
 Fan Bearer
+Fanatic of Mogis
 Fanatic of Rhonas
 Fanatic of Xenagos
 Fanatic of the Harrowing
@@ -6624,6 +6628,7 @@ Firebrand Archer
 Firebrand Ranger
 Firebreathing
 Firecannon Blast
+Firedrinker Satyr
 Firefiend Elemental
 Firefist Adept
 Firefly
@@ -6700,6 +6705,7 @@ Flames of the Raze-Boar
 Flamescroll Celebrant	timing: CantActivateLoyaltyAbilitiesEffect; timing: CantCastSpellsEffect
 Flameshadow Conjuring
 Flameskull	intent: GrantMayPlayFromExileEffect; intent: Pipeline(Entity|TopOfLibrary|exile→exile)
+Flamespeaker Adept
 Flamespeaker's Will
 Flamestick Courier
 Flametongue Kavu
@@ -8401,6 +8407,7 @@ Hamlet Vanguard
 Hamletback Goliath
 Hammer Dropper
 Hammer Mage
+Hammer of Purphoros
 Hammer of Ruin
 Hammerfist Giant
 Hammerhand
@@ -9222,6 +9229,7 @@ Iguana Parrot
 Il Mheg Pixie
 Ilharg, the Raze-Boar
 Ill-Gotten Inheritance
+Ill-Tempered Cyclops
 Ill-Tempered Loner
 Ill-Timed Explosion
 Illegitimate Business
@@ -10557,6 +10565,7 @@ La'An Noonien-Singh, Security
 Lab Rats
 Laboratory Brute
 Laboratory Maniac
+Labyrinth Champion
 Labyrinth Guardian
 Labyrinth Raptor
 Labyrinth of Skophos	polarity: RemoveFromCombatEffect
@@ -13546,6 +13555,7 @@ Peace in Our Time
 Peace of Mind
 Peacewalker Colossus	intent: AddCardTypeEffect; polarity: AddCardTypeEffect; timing: AddCardTypeEffect
 Peach Garden Oath
+Peak Eruption
 Pearl Dragon
 Pearl Lake Ancient
 Pearl Medallion
@@ -14298,6 +14308,7 @@ Purify
 Purify the Grave
 Purifying Dragon
 Purity
+Purphoros's Emissary
 Purphoros's Intervention
 Purphoros, Bronze-Blooded
 Purphoros, God of the Forge
@@ -14496,6 +14507,7 @@ Ragavan, Nimble Pilferer
 Rage Reflection
 Rage Weaver
 Rage into the Valley
+Rage of Purphoros
 Rage-Scarred Berserker
 Rageblood Shaman
 Ragefire
@@ -17533,6 +17545,7 @@ Speaker of the Heavens
 Spear Spewer
 Spear of Heliod
 Spearbreaker Behemoth
+Spearpoint Oread
 Species 8472
 Species Gorger
 Specimen Freighter
@@ -18088,6 +18101,7 @@ Stonefury
 Stonehorn Chanter
 Stonerise Spirit
 Stoneshaker Shaman
+Stoneshock Giant
 Stoneskin
 Stonesplitter Bolt
 Stonewise Fortifier
@@ -18127,6 +18141,7 @@ Storm, Windrider
 Storm-Kiln Artist
 Stormbeacon Blade
 Stormbind
+Stormbreath Dragon
 Stormcaller of Keranos
 Stormcarved Coast
 Stormcatch Mentor
