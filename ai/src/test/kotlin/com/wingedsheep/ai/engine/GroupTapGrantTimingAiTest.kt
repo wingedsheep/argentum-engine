@@ -36,7 +36,7 @@ class GroupTapGrantTimingAiTest : ScenarioTestBase() {
     init {
         test("Lightning Volley's group grant has a timing reading") {
             val volley = cardRegistry.requireCard("Lightning Volley")
-            ExpiringGrantWindow.readsSpellGroupActivationGrant(volley.script.spellEffect!!) shouldBe true
+            ExpiringGrantWindow.readsSpellActivationGrant(volley.script.spellEffect!!) shouldBe true
             AiReadingAudit.read(volley).readFully shouldBe true
         }
 

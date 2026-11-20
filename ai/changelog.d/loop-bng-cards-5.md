@@ -1,0 +1,1 @@
+- #4773 The AI reads a spell that hands one creature a {T} ability until end of turn (Retraction Helix) as that ability's effect, and no longer casts it onto a creature that is tapped, summoning sick or not its own.
