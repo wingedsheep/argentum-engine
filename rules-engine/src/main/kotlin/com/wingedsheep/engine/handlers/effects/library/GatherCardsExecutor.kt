@@ -27,6 +27,8 @@ import com.wingedsheep.sdk.scripting.effects.LookAudience
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.LastKnownPermanentComponent
+import com.wingedsheep.engine.state.components.combat.BlockedComponent
+import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.battlefield.CrewSaddleContributorsComponent
 import com.wingedsheep.engine.state.components.battlefield.CraftedFromExiledComponent
 import com.wingedsheep.engine.state.components.battlefield.entitiesChoice
@@ -362,12 +364,27 @@ class GatherCardsExecutor(
             }
 
             is CardSource.LastKnownCombatPairedWithSource -> {
-                // CR 509 combat pairing captured when the source left the battlefield. Restrict
-                // to creatures still on the battlefield — a creature that already left can't be
-                // affected (last-known-information identifies them, it doesn't resurrect them).
+                // CR 509 combat pairing, read as last-known information (CR 608.2h). A dies /
+                // leaves trigger carries the snapshot on its trigger context. Otherwise — an
+                // activated ability resolving (Vortex Elemental) — the pairing is read live while
+                // the source is still on the battlefield, and off the snapshot the source carries
+                // in its new zone once it has left. Restrict to creatures still on the battlefield
+                // — LKI identifies them, it doesn't resurrect them.
                 val battlefield = state.getBattlefield().toSet()
-                (context.triggerContext?.lastKnownBlockingOrBlockedByIds ?: emptyList())
-                    .filter { it in battlefield }
+                val sourceId = context.sourceId
+                val paired = context.triggerContext?.lastKnownBlockingOrBlockedByIds
+                    ?: sourceId?.let { id ->
+                        val source = state.getEntity(id)
+                        if (id in battlefield) {
+                            ((source?.get<BlockedComponent>()?.blockerIds ?: emptyList()) +
+                                (source?.get<BlockingComponent>()?.blockedAttackerIds ?: emptyList())).distinct()
+                        } else {
+                            source?.get<LastKnownPermanentComponent>()?.snapshot
+                                ?.takeIf { it.entityId == id }?.blockingOrBlockedByIds
+                        }
+                    }
+                    ?: emptyList()
+                paired.filter { it in battlefield }
             }
 
             is CardSource.CreaturesThatCrewedOrSaddledSource -> {

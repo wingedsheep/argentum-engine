@@ -424,6 +424,13 @@ sealed interface CardSource {
      * dies trigger (Abu Ja'far): by resolution the engine has already torn the combat
      * cross-references down, so the pairing must come from the last-known snapshot carried on
      * the leaves-battlefield event rather than from live combat components.
+     *
+     * Outside a trigger the same read serves an activated ability (CR 608.2h): while the source
+     * is still on the battlefield the pairing is read live, and once it has left — before or
+     * during resolution — from the last-known snapshot the source carries in its new zone. Gather
+     * this *before* moving the source itself: "Put this creature and each creature blocking or
+     * blocked by it on top of their owners' libraries" (Vortex Elemental, whose ruling keeps the
+     * pairing even if the Elemental left before the ability resolved).
      */
     @SerialName("LastKnownCombatPairedWithSource")
     @Serializable

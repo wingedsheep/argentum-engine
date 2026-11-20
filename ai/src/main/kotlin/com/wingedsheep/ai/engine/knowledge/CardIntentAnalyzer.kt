@@ -2082,6 +2082,14 @@ object CardIntentAnalyzer {
                 continue
             }
             if (leaf !is GatherCardsEffect) continue
+            // "Destroy each creature blocking or blocked by it" (Abu Ja'far), "put it and each
+            // creature blocking or blocked by it on top of their owners' libraries" (Vortex
+            // Elemental): the creatures in combat with the source are the opponent's few, picked
+            // by the fight rather than by a target — spot removal, never a whole group.
+            if (leaf.source == CardSource.LastKnownCombatPairedWithSource) {
+                groups[leaf.storeAs] = groups[leaf.storeAs] ?: false
+                continue
+            }
             val (player, filter) = when (val source = leaf.source) {
                 is CardSource.BattlefieldMatching -> source.player to source.filter
                 is CardSource.ControlledPermanents -> source.player to source.filter

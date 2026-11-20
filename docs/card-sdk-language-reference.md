@@ -6081,7 +6081,11 @@ their library into their graveyard. If it's a creature card, you create a 2/2 bl
   `GatherCards(CraftedMaterials) → SelectFromCollection(ChooseUpTo 1, filter = Creature) →
   MoveCollection(BATTLEFIELD, ZonePlacement.TappedAndAttacking)`.
 - `CardSource.LastKnownCombatPairedWithSource` — creatures blocking/blocked by the source at the
-  moment it last left the battlefield (Abu Ja'far).
+  moment it last left the battlefield (Abu Ja'far). Outside a dies/leaves trigger it reads the pairing
+  live while the source is on the battlefield, and from the source's leaves-battlefield snapshot
+  (CR 608.2h) once it has left — so an activated ability gathers it *before* moving its own source:
+  Vortex Elemental = `GatherCards(LastKnownCombatPairedWithSource, "paired") →
+  ShuffleIntoLibrary(Self, fromZone = BATTLEFIELD) → MoveCollection("paired", LIBRARY, Shuffled)`.
 - `CardSource.CreaturesThatCrewedOrSaddledSource` — the creatures that crewed (CR 702.122) or
   saddled (CR 702.171c) the source this turn, read off its crew/saddle-contributors record and
   restricted to creatures still on the battlefield. The record is last-known information: it

@@ -10107,6 +10107,96 @@
     ]
 }
 
+// Vortex Elemental
+{
+    "name": "Vortex Elemental",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "{U}: Put this creature and each creature blocking or blocked by it on top of their owners' libraries, then those players shuffle.\n{3}{U}{U}: Target creature blocks this creature this turn if able.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Vortex Elemental:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "LastKnownCombatPairedWithSource",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Library",
+                            "placement": "Shuffled",
+                            "fromZone": "Battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Shuffled"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{U}: Put this creature and each creature blocking or blocked by it on top of their owners' libraries, then those players shuffle."
+            },
+            {
+                "id": "Vortex Elemental:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{U}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "ForceBlock",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{3}{U}{U}: Target creature blocks this creature this turn if able."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "UNCOMMON",
+        "artist": "Jack Wang",
+        "flavorText": "The sea is always hungry.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5cb7ca2b-c5de-4c8a-91cb-8dd8ab5387d8.jpg?1783939563"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Warchanter of Mogis
 {
     "name": "Warchanter of Mogis",

@@ -1,0 +1,1 @@
+- #4774 Reads destroying or tucking the creatures blocking or blocked by its source (Abu Ja'far, Vortex Elemental) as creature removal
