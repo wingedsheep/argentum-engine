@@ -298,6 +298,51 @@
     ]
 }
 
+// Anger of the Gods
+{
+    "name": "Anger of the Gods",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Anger of the Gods deals 3 damage to each creature. If a creature dealt damage this way would die this turn, exile it instead.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            },
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "MarkExileOnDeath",
+                        "target": "IterationEntity"
+                    },
+                    {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": "IterationEntity"
+                    }
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "RARE",
+        "artist": "Noah Bradley",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/90795891-5e67-47c0-8d52-a5e5c5a9ef81.jpg?1783939769"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Anvilwrought Raptor
 {
     "name": "Anvilwrought Raptor",
@@ -1052,6 +1097,51 @@
         "artist": "Greg Staples",
         "flavorText": "\"You have led us to triumph over the forces of Mogis!\" said Brygus the Brave, clapping the Champion on the back. The Champion wiped the sweat and blood from her brow. \"I count eight graves,\" she said. \"Too many to call this a victory.\"\n—*The Theriad*",
         "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c7f6eb2-feae-4dc9-a009-0ad60f89a592.jpg?1783939766"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Boulderfall
+{
+    "name": "Boulderfall",
+    "manaCost": "{6}{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Boulderfall deals 5 damage divided as you choose among any number of targets.",
+    "script": {
+        "spellEffect": {
+            "type": "DividedDamage",
+            "totalDamage": 5,
+            "maxTargets": 5
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "count": 5,
+                "minCount": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "artist": "Ralph Horsley",
+        "flavorText": "\"Defeating the Meletians was not so difficult. I needed only to move a mountain.\"\n—Eocles, oracle of Purphoros",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66470bac-cce0-4e79-82f9-9fb77aa950eb.jpg?1783939766",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "You divide the damage as you cast the spell, not as it resolves. Each target must be assigned at least 1 damage."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If some but not all of Boulderfall's targets become illegal, you can't change the division of damage. Damage that would have been dealt to illegal targets simply isn't dealt."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If an effect creates a copy of Boulderfall, the division of damage and number of targets can't be changed. The effect that creates the copy may allow you to change targets, however."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED"
@@ -2344,6 +2434,108 @@
     ]
 }
 
+// Ember Swallower
+{
+    "name": "Ember Swallower",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "{5}{R}{R}: Monstrosity 3. (If this creature isn't monstrous, put three +1/+1 counters on it and it becomes monstrous.)\nWhen this creature becomes monstrous, each player sacrifices three lands of their choice.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ember Swallower:2",
+                "trigger": "BecameMonstrousEvent",
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "land",
+                    "count": 3,
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "Each"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Ember Swallower:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{R}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        "IsMonstrous"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddDynamicCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": "Self"
+                            },
+                            "BecomeMonstrous"
+                        ]
+                    },
+                    "descriptionOverride": "Monstrosity 3. (If this creature isn't monstrous, put 3 +1/+1 counters on it and it becomes monstrous.)"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e2715851-9def-42a0-bed4-0923e599e19a.jpg?1783939763",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "When the last ability resolves, the active player will choose three lands they control, then each other player in turn order will do the same. Then all of those lands are sacrificed at the same time."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Once a creature becomes monstrous, it can't become monstrous again. If the creature is already monstrous when the monstrosity ability resolves, nothing happens."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Monstrous isn't an ability that a creature has. It's just something true about that creature. If the creature stops being a creature or loses its abilities, it will continue to be monstrous."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "An ability that triggers when a creature becomes monstrous won't trigger if that creature isn't on the battlefield when its monstrosity ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Ephara's Warden
 {
     "name": "Ephara's Warden",
@@ -2754,6 +2946,70 @@
     ]
 }
 
+// Fanatic of Mogis
+{
+    "name": "Fanatic of Mogis",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Minotaur Shaman",
+    "oracleText": "When this creature enters, it deals damage to each opponent equal to your devotion to red. (Each {R} in the mana costs of permanents you control counts toward your devotion to red.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fanatic of Mogis:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "DevotionTo",
+                        "colors": [
+                            "RED"
+                        ]
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "descriptionOverride": "When this creature enters, it deals damage to each opponent equal to your devotion to red."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/581eaadb-442b-40c9-b8f9-9e19d5eba824.jpg?1783939763",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Numeric mana symbols ({0}, {1}, and so on) in mana costs of permanents you control don't count toward your devotion to any color."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Mana symbols in the text boxes of permanents you control don't count toward your devotion to any color."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Hybrid mana symbols, monocolored hybrid mana symbols, and Phyrexian mana symbols do count toward your devotion to their color(s)."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If an activated ability or triggered ability has an effect that depends on your devotion to a color, you count the number of mana symbols of that color among the mana costs of permanents you control as the ability resolves. The permanent with that ability will be counted if it's still on the battlefield at that time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Fate Foretold
 {
     "name": "Fate Foretold",
@@ -2938,6 +3194,79 @@
     ]
 }
 
+// Firedrinker Satyr
+{
+    "name": "Firedrinker Satyr",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Satyr Shaman",
+    "oracleText": "Whenever this creature is dealt damage, it deals that much damage to you.\n{1}{R}: This creature gets +1/+0 until end of turn and deals 1 damage to you.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Firedrinker Satyr:1",
+                "trigger": "DamageReceivedEvent",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    },
+                    "target": "Controller"
+                },
+                "descriptionOverride": "Whenever this creature is dealt damage, it deals that much damage to you."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Firedrinker Satyr:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "RARE",
+        "artist": "Anthony Palumbo",
+        "flavorText": "Attending a satyr revel requires a high tolerance for pain.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/683eaf5a-2f43-477f-b212-70ca5fe04f13.jpg?1783939763"
+    }
+}
+
 // Flamecast Wheel
 {
     "name": "Flamecast Wheel",
@@ -2993,6 +3322,65 @@
         "imageUri": "https://cards.scryfall.io/normal/front/5/c/5cfa31c9-5a11-4366-9063-056a659f3d0d.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Flamespeaker Adept
+{
+    "name": "Flamespeaker Adept",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "Whenever you scry, this creature gets +2/+0 and gains first strike until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Flamespeaker Adept:1",
+                "trigger": "ScriedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FIRST_STRIKE",
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "rarity": "UNCOMMON",
+        "artist": "Lucas Graciano",
+        "flavorText": "\"I see your future, mantled in ash.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/8/b84b90b6-71e2-429e-9853-50bcbd6538db.jpg?1783939763",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Flamespeaker Adept's ability triggers once for each scry instruction, no matter how many cards you're scrying."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Fleetfeather Sandals
@@ -3366,6 +3754,72 @@
         "imageUri": "https://cards.scryfall.io/normal/front/8/5/85284586-7a9d-4344-aebd-f0e072c1f266.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Hammer of Purphoros
+{
+    "name": "Hammer of Purphoros",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Legendary Enchantment Artifact",
+    "oracleText": "Creatures you control have haste.\n{2}{R}, {T}, Sacrifice a land: Create a 3/3 colorless Golem enchantment artifact creature token.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hammer of Purphoros:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{R}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "land"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Golem"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/d/c/dcee70ef-6285-4f09-8a71-8b7960e8fa99.jpg?1783939698",
+                    "artifactToken": true,
+                    "enchantmentToken": true
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "rarity": "RARE",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "All the world is Purphoros's anvil.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/f/3f867f61-676e-40b3-8e22-e60d0606c733.jpg?1783939762"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Heliod's Emissary
@@ -4073,6 +4527,92 @@
     ]
 }
 
+// Ill-Tempered Cyclops
+{
+    "name": "Ill-Tempered Cyclops",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Cyclops",
+    "oracleText": "Trample\n{5}{R}: Monstrosity 3. (If this creature isn't monstrous, put three +1/+1 counters on it and it becomes monstrous.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ill-Tempered Cyclops:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        "IsMonstrous"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddDynamicCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": "Self"
+                            },
+                            "BecomeMonstrous"
+                        ]
+                    },
+                    "descriptionOverride": "Monstrosity 3. (If this creature isn't monstrous, put 3 +1/+1 counters on it and it becomes monstrous.)"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "artist": "Peter Mohrbacher",
+        "flavorText": "A cyclops has two moods: angry and asleep.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d1f7f757-31ac-43e6-8be0-c5948d478d2f.jpg?1783939761",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Once a creature becomes monstrous, it can't become monstrous again. If the creature is already monstrous when the monstrosity ability resolves, nothing happens."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Monstrous isn't an ability that a creature has. It's just something true about that creature. If the creature stops being a creature or loses its abilities, it will continue to be monstrous."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "An ability that triggers when a creature becomes monstrous won't trigger if that creature isn't on the battlefield when its monstrosity ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Insatiable Harpy
 {
     "name": "Insatiable Harpy",
@@ -4213,6 +4753,72 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Labyrinth Champion
+{
+    "name": "Labyrinth Champion",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Heroic — Whenever you cast a spell that targets this creature, this creature deals 2 damage to any target.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Labyrinth Champion:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, this creature deals 2 damage to any target."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "rarity": "RARE",
+        "artist": "Chase Stone",
+        "flavorText": "\"It used to be a lair. Now it's just a tunnel.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/f/3f86d035-a86d-4c2a-a19d-3b90e0f9ff0f.jpg?1783939761",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -5873,6 +6479,67 @@
     ]
 }
 
+// Peak Eruption
+{
+    "name": "Peak Eruption",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target Mountain. Peak Eruption deals 3 damage to that land's controller.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": "TargetController"
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "land Mountain"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "UNCOMMON",
+        "artist": "Adam Paquette",
+        "flavorText": "\"Early olive buds? A good omen. Flock of crows? Not so good. Mountain exploding? Bad. Very, very bad.\"\n—Hira, street oracle",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/ed0a00f7-aee0-4ab2-bab6-bc0949176a7a.jpg?1783939758",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Peak Eruption can target any land with the subtype Mountain, not just those named Mountain. It can't target a land that doesn't have that subtype, even if the land can tap for {R}."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If the target Mountain is an illegal target when Peak Eruption tries to resolve, it won't resolve and none of its effects will happen. No damage will be dealt. However, if Peak Eruption resolves and the Mountain isn't destroyed (perhaps because it has indestructible), damage will be dealt."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Phalanx Leader
 {
     "name": "Phalanx Leader",
@@ -6372,6 +7039,50 @@
     "colorIdentityOverride": []
 }
 
+// Purphoros's Emissary
+{
+    "name": "Purphoros's Emissary",
+    "manaCost": "{3}{R}",
+    "typeLine": "Enchantment Creature — Ox",
+    "oracleText": "Bestow {6}{R} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nMenace (This creature can't be blocked except by two or more creatures.)\nEnchanted creature gets +3/+3 and has menace.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "MENACE",
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{6}{R}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 3
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "MENACE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "rarity": "UNCOMMON",
+        "artist": "Sam Burley",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4d4ddc30-844c-4860-b394-d3c807c31162.jpg?1783939756"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Purphoros, God of the Forge
 {
     "name": "Purphoros, God of the Forge",
@@ -6495,6 +7206,60 @@
                 "text": "Hybrid mana symbols, monocolored hybrid mana symbols, and Phyrexian mana symbols do count toward your devotion to their color(s)."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Rage of Purphoros
+{
+    "name": "Rage of Purphoros",
+    "manaCost": "{4}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Rage of Purphoros deals 4 damage to target creature. It can't be regenerated this turn. Scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CantBeRegenerated",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Scry",
+                    "count": 1
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e249f31-cc67-4d0c-9db5-962d10cf74ca.jpg?1783939756"
     },
     "colorIdentityOverride": [
         "RED"
@@ -7682,6 +8447,280 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Spearpoint Oread
+{
+    "name": "Spearpoint Oread",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment Creature — Nymph",
+    "oracleText": "Bestow {5}{R} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nFirst strike\nEnchanted creature gets +2/+2 and has first strike.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FIRST_STRIKE",
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{5}{R}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FIRST_STRIKE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "artist": "Todd Lockwood",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/22d9d241-74b8-4b40-b4b7-b8584012d482.jpg?1783939753"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Stoneshock Giant
+{
+    "name": "Stoneshock Giant",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Giant",
+    "oracleText": "{6}{R}{R}: Monstrosity 3. (If this creature isn't monstrous, put three +1/+1 counters on it and it becomes monstrous.)\nWhen this creature becomes monstrous, creatures without flying your opponents control can't block this turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Stoneshock Giant:2",
+                "trigger": "BecameMonstrousEvent",
+                "effect": {
+                    "type": "CantBlockGroup",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotKeyword",
+                                    "keyword": "FLYING"
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByOpponent"
+                        }
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Stoneshock Giant:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{6}{R}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        "IsMonstrous"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddDynamicCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": "Self"
+                            },
+                            "BecomeMonstrous"
+                        ]
+                    },
+                    "descriptionOverride": "Monstrosity 3. (If this creature isn't monstrous, put 3 +1/+1 counters on it and it becomes monstrous.)"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "rarity": "UNCOMMON",
+        "artist": "Lars Grant-West",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d890801-5ffa-48af-959f-72e5f371fc61.jpg?1783939754",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "If blockers have already been declared when Stoneshock Giant's last ability resolves, those blocks won't change or become undone."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Your opponents can't assign any creature without flying to block that turn, even if that creature had flying or wasn't on the battlefield under one of your opponent's control when Stoneshock Giant's ability resolved."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Once a creature becomes monstrous, it can't become monstrous again. If the creature is already monstrous when the monstrosity ability resolves, nothing happens."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "An ability that triggers when a creature becomes monstrous won't trigger if that creature isn't on the battlefield when its monstrosity ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Stormbreath Dragon
+{
+    "name": "Stormbreath Dragon",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying, haste, protection from white\n{5}{R}{R}: Monstrosity 3. (If this creature isn't monstrous, put three +1/+1 counters on it and it becomes monstrous.)\nWhen this creature becomes monstrous, it deals damage to each opponent equal to the number of cards in that player's hand.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "HASTE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Color",
+                "color": "WHITE"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Stormbreath Dragon:2",
+                "trigger": "BecameMonstrousEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "AggregateZone",
+                            "player": "You",
+                            "zone": "Hand"
+                        },
+                        "target": "Controller",
+                        "damageSource": "Self"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Stormbreath Dragon:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{R}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        "IsMonstrous"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddDynamicCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": "Self"
+                            },
+                            "BecomeMonstrous"
+                        ]
+                    },
+                    "descriptionOverride": "Monstrosity 3. (If this creature isn't monstrous, put 3 +1/+1 counters on it and it becomes monstrous.)"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "rarity": "MYTHIC",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/471979de-f569-444a-8651-12d7e726949a.jpg?1783939753",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "For each opponent, count the number of cards in that player's hand when the last ability resolves to determine how much damage Stormbreath Dragon does to them."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Once a creature becomes monstrous, it can't become monstrous again. If the creature is already monstrous when the monstrosity ability resolves, nothing happens."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Monstrous isn't an ability that a creature has. It's just something true about that creature. If the creature stops being a creature or loses its abilities, it will continue to be monstrous."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "An ability that triggers when a creature becomes monstrous won't trigger if that creature isn't on the battlefield when its monstrosity ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

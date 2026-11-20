@@ -4422,7 +4422,8 @@ object CardIntentAnalyzer {
     }
 
     private fun sacrificesOthers(cost: AbilityCost): Boolean = when (cost) {
-        is AbilityCost.Atom -> cost.atom is CostAtom.Sacrifice
+        // "Sacrifice a land" (Hammer of Purphoros) is no outlet: nothing it eats dies.
+        is AbilityCost.Atom -> CardAsks.sacrificesCreatures(cost.atom)
         is AbilityCost.Composite -> cost.costs.any { sacrificesOthers(it) }
         else -> false
     }
