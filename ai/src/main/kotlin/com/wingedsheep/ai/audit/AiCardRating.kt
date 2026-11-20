@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.scripting.CanBlockAdditionalForCreatureGroup
 import com.wingedsheep.sdk.scripting.EntersWithCounters
+import com.wingedsheep.sdk.scripting.GrantDynamicStats
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 
 /**
@@ -146,7 +147,12 @@ object AiCardRating {
                 }
             val power = card.creatureStats?.basePower?.plus(entryCounters)
             val toughness = card.creatureStats?.baseToughness?.plus(entryCounters)
-            if (power == null || toughness == null) {
+            // "This creature gets +X/+X, where X is …" (Nighthowler, Eidolon of Countless Battles — a
+            // printed 0/0): the body is the bonus, known only in play, where the evaluator reads
+            // projected P/T. A self-penalty keeps the printed body as its ceiling.
+            val growsInPlay = card.script.staticAbilities.filterIsInstance<GrantDynamicStats>()
+                .any { it.filter.scope == Scope.Self && !CardIntentAnalyzer.isStatPenalty(it) }
+            if (power == null || toughness == null || growsInPlay) {
                 return Board(
                     BoardKind.VARIABLE_CREATURE, null, emptyList(),
                     "Its power and toughness are only known in play, so the AI prices it from the live numbers.",

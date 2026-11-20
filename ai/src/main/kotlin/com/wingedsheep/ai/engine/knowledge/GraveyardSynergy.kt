@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import java.lang.reflect.Modifier
 import java.util.IdentityHashMap
 import java.util.concurrent.ConcurrentHashMap
@@ -133,6 +134,10 @@ object GraveyardSynergy {
             if (node is com.wingedsheep.sdk.scripting.MayCastSelfFromZones && node.costModification != null) {
                 return visitFields(node.copy(costModification = null))
             }
+            // "The number of creature cards in all graveyards" (Lhurgoyf, Nighthowler, Cruel Somnophage)
+            // grows with our own graveyard as much as anyone's; the `player = You` count is read by the
+            // zone-field walk below.
+            if (node is DynamicAmount.Count && node.zone == Zone.GRAVEYARD && node.player == Player.Each) return true
             // A destination fills a graveyard; it never consumes that resource.
             if (node is com.wingedsheep.sdk.scripting.effects.CardDestination) return false
             if (node is ChooseActionEffect && isTutorWithGraveyardFallback(node)) return false

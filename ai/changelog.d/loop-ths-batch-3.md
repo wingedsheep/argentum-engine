@@ -1,0 +1,1 @@
+- #4784 Counts of creature cards in all graveyards (Lhurgoyf, Nighthowler, Cruel Somnophage) now read as graveyard payoffs, so the AI values filling its own graveyard when it holds them.
