@@ -48,6 +48,12 @@ class AiCardRatingTest : FunSpec({
         mob.board.value.shouldNotBeNull() shouldBe (mob.board.parts.sumOf { it.value } plusOrMinus 1e-9)
     }
 
+    test("a 0/0 that gets +X/+X from a count is priced from the live numbers, not as an empty body") {
+        val howler = AiCardRating.of(card("Nighthowler"), listOf("THS"))
+        howler.board.kind shouldBe AiCardRating.BoardKind.VARIABLE_CREATURE
+        howler.board.value.shouldBeNull()
+    }
+
     test("repeatable removal is included in the reported creature value but spent entry damage is not") {
         val crew = AiCardRating.of(card("Captivating Crew"), listOf("XLN"))
         crew.board.value.shouldNotBeNull() shouldBe (6.7 plusOrMinus 1e-9)
