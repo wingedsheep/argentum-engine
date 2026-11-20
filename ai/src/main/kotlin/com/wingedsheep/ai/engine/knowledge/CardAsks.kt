@@ -197,7 +197,8 @@ internal object CardAsks {
     /**
      * Whether a sacrifice cost over [filter] can only take permanents that aren't creatures —
      * "Sacrifice a land" (Hammer of Purphoros), "sacrifice a noncreature artifact". Such a cost is
-     * no outlet for a death deck: nothing it eats dies.
+     * no outlet for a death deck: what it eats doesn't die. (A land creature such as Dryad Arbor
+     * is the rare exception; a static reading takes the printed filter at its word.)
      */
     internal fun sacrificesOnlyNoncreatures(filter: GameObjectFilter): Boolean {
         if (filter.anyOf.isNotEmpty()) return false
