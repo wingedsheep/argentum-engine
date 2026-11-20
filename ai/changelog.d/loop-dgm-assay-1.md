@@ -1,0 +1,1 @@
+- #4781 The AI now reads a card that only works through your creatures carrying a +1/+1 counter (a trigger watching them, like Bred for the Hunt, or a spell that can only target one, like Mutant's Prey) as a +1/+1-counters payoff, so drafting and deckbuilding pair it with counter makers.

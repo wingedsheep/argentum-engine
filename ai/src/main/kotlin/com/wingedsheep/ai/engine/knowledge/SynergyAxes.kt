@@ -276,6 +276,16 @@ object SynergyAxes {
             if (scripts.any { script -> script.replacementEffects.any(::countsOwnPlusCounters) }) {
                 add(SynergyAxis.PLUS_COUNTERS)
             }
+            // A trigger that only watches our creatures carrying a +1/+1 counter — "whenever a creature
+            // you control with a +1/+1 counter on it deals combat damage to a player" (Bred for the
+            // Hunt) — and a spell that can only target one ("target creature you control with a
+            // +1/+1 counter on it fights …", Mutant's Prey) are dead until the deck puts counters down.
+            if (scripts.any { script ->
+                    script.triggeredAbilities.any {
+                        it.binding != TriggerBinding.SELF && watchesOwnPlusCounterCarrier(it.trigger)
+                    } || script.targetRequirements.any(::targetsOwnPlusCounterCarrier)
+                }
+            ) add(SynergyAxis.PLUS_COUNTERS)
         }
         val feeds = buildSet {
             scripts.forEach { addAll(feedsOf(it, card.typeLine.isCreature)) }
@@ -770,6 +780,25 @@ object SynergyAxes {
         is EntersWithDevour -> effect.counterType == CounterType.PLUS_ONE_PLUS_ONE
         else -> false
     }
+
+    /** A filter over our own permanents that carry a +1/+1 counter. */
+    private fun ownPlusCounterCarrier(filter: GameObjectFilter?): Boolean =
+        filter != null && filter.controllerPredicate == ControllerPredicate.ControlledByYou &&
+            filter.statePredicates.any {
+                it is StatePredicate.HasCounter && it.counterType == CounterType.PLUS_ONE_PLUS_ONE
+            }
+
+    /** A trigger whose watched object must be our permanent carrying a +1/+1 counter. */
+    private fun watchesOwnPlusCounterCarrier(pattern: EventPattern): Boolean = when (pattern) {
+        is EventPattern.AnyOf -> pattern.events.any(::watchesOwnPlusCounterCarrier)
+        is EventPattern.DealsDamageEvent -> ownPlusCounterCarrier(pattern.sourceFilter)
+        is EventPattern.ZoneChangeEvent -> ownPlusCounterCarrier(pattern.filter)
+        else -> false
+    }
+
+    /** A spell target that must be our permanent carrying a +1/+1 counter. */
+    private fun targetsOwnPlusCounterCarrier(requirement: TargetRequirement): Boolean =
+        (requirement as? TargetObject)?.let { ownPlusCounterCarrier(it.filter.baseFilter) } ?: false
 
     /** An as-enters counter count over our own permanents carrying +1/+1 counters. */
     private fun countsOwnPlusCounters(effect: ReplacementEffect): Boolean {
