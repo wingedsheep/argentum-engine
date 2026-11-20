@@ -374,6 +374,7 @@ Akoum Hellkite
 Akoum Refuge
 Akoum Stonewaker
 Akoum Warrior
+Akroan Conscriptor
 Akroan Crusader
 Akroan Jailer
 Akroan Line Breaker
@@ -5973,6 +5974,7 @@ Ever After
 Evercoat Ursine	intent: Pipeline(TopOfLibrary→exile|library)
 Everdawn Champion
 Evereth, Viceroy of Plunder
+Everflame Eidolon
 Everflowing Chalice
 Everglove Courier
 Evernight Shade
@@ -6202,6 +6204,7 @@ Falkenrath Torturer
 Fall of Cair Andros
 Fall of Gil-galad
 Fall of the Gavel
+Fall of the Hammer
 Fall of the Impostor
 Fall of the Thran
 Fall of the Titans
@@ -6283,6 +6286,7 @@ Fatal Push
 Fate Forgotten
 Fate Unraveler
 Fate of the Sun-Cryst
+Fated Conflagration
 Fated Firepower
 Fated Infatuation
 Fated Retribution
@@ -6342,6 +6346,7 @@ Fearless Skald
 Fearless Swashbuckler
 Fearsome Awakening
 Fearsome Goblin Pair
+Fearsome Temper
 Feast of Blood
 Feast of Dreams
 Feast of Worms
@@ -6379,6 +6384,7 @@ Feldon, Ronom Excavator
 Felhide Brawler
 Felhide Minotaur
 Felhide Petrifier
+Felhide Spiritbinder
 Felidar Cub
 Felidar Guardian
 Felidar Retreat
@@ -6638,6 +6644,7 @@ Flame of Anor
 Flame-Blessed Bolt
 Flame-Chain Mauler
 Flame-Kin Zealot
+Flame-Wreathed Phoenix
 Flameblade Adept
 Flameblade Angel
 Flameborn Viron
@@ -6877,6 +6884,7 @@ Forge Boss
 Forge Devil
 Forgeborn Oreads
 Forgehammer Centurion
+Forgestoker Dragon
 Forging the Anchor
 Forging the Tyrite Sword
 Forgotten Ancient	intent: DistributeCountersFromSelfEffect
@@ -10803,6 +10811,7 @@ Lightning Stormkin
 Lightning Strike
 Lightning Talons
 Lightning Visionary
+Lightning Volley
 Lightning Wolf
 Lightning, Army of One	intent: DoubleDamageToPlayerEffect
 Lightning, Security Sergeant	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
@@ -12849,6 +12858,7 @@ Nyxborn Courser
 Nyxborn Eidolon
 Nyxborn Hydra
 Nyxborn Marauder
+Nyxborn Rollicker
 Nyxborn Seaguard
 Nyxborn Shieldmate
 Nyxborn Triton
@@ -13707,6 +13717,7 @@ Pinnacle Emissary
 Pinnacle Kill-Ship
 Pinnacle Monk
 Pinnacle Starcage
+Pinnacle of Rage
 Pinpoint Avalanche
 Pious Evangel
 Pious Interdiction
@@ -14153,7 +14164,7 @@ Psychic Puppetry
 Psychic Purge
 Psychic Rebuttal
 Psychic Symbiont
-Psychic Trance	intent: GrantActivatedAbilityToGroupEffect; timing: GrantActivatedAbilityToGroupEffect
+Psychic Trance	intent: GrantActivatedAbilityToGroupEffect
 Psychic Transfer
 Psychic Venom	polarity: Aura>DealDamageEffect
 Psychic Whorl
@@ -15818,6 +15829,7 @@ Satoru Umezawa
 Satoru, the Infiltrator
 Satsuki, the Living Lore	intent: ForEach>AddCountersEffect
 Satyr Enchanter
+Satyr Firedancer
 Satyr Grovedancer
 Satyr Hedonist
 Satyr Hoplite
@@ -16115,6 +16127,7 @@ Searchlight Companion
 Searchlight Geist
 Searing Barb
 Searing Barrage
+Searing Blood
 Searing Flesh
 Searing Light
 Searing Meditation
@@ -19379,6 +19392,7 @@ Thrun, Breaker of Silence
 Thryx, the Sudden Storm
 Thrór's Map
 Thud
+Thunder Brute
 Thunder Dragon
 Thunder Drake
 Thunder Lasso
@@ -19414,6 +19428,7 @@ Thunderkin Awakener
 Thundermane Dragon
 Thundermare
 Thunderous Debut
+Thunderous Might
 Thunderous Orator
 Thunderous Snapper
 Thunderous Velocipede
