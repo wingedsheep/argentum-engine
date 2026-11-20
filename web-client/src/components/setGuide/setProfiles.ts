@@ -452,6 +452,26 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Clash', inPlay: 'Both players reveal their top card for a bonus, which also lets you send bad draws to the bottom.' },
     ],
   },
+  BNG: {
+    tagline: 'An aggressive Greek-myth format of heroic Auras, bestow and tribute creatures, where inspired attackers and early pressure beat the slow, durdly enchantment deck.',
+    setting: 'Theros again, as the satyr Xenagos ascends to godhood and lesser gods like Ephara and Phenax join the pantheon.',
+    gameplay: 'Games are quicker and more combat-heavy than most enchantment sets. Heroic creatures grow from cheap Auras and tricks, bestow creatures double as Auras late, and tribute creatures hand the opponent a choice between a bigger body and a bonus. Inspired creatures want to attack and untap, so boards keep moving rather than stalling. Black and red carry the best common removal (Bile Blight, Weight of the Underworld, Lightning Volley), and a monstrous creature or a god with devotion behind it can take over a quiet board.',
+    tips: [
+      'Bestow creatures are two cards in one: a body early, or an Aura that survives its creature dying. Value them highly.',
+      'Tribute creatures let the opponent pick the lesser evil, so judge them by their worse mode, not their best.',
+      'Heroic needs enough targeting spells to trigger it; count your Auras and tricks before you take another heroic payoff.',
+    ],
+    tryIf: 'combat tricks, Auras and attacking every turn',
+    power: 3, speed: 3, complexity: 3,
+    themes: ['aggro', 'counters', 'bigThings'],
+    mechanics: [
+      { name: 'Heroic', inPlay: 'Targeting your own creature with Auras and tricks grows it, rewarding aggression but leaving you open to removal in response.' },
+      { name: 'Bestow', inPlay: 'Cast early as a creature or late as an Aura; when the enchanted creature dies the Aura falls off and stays as a creature.' },
+      { name: 'Tribute', inPlay: 'The opponent chooses between +1/+1 counters on the creature and its bonus effect, so both outcomes should be fine for you.' },
+      { name: 'Inspired', inPlay: 'Triggers when the creature untaps, so it wants to attack, or tap for a cost, every turn.' },
+      { name: 'Devotion', inPlay: 'Gods and devotion payoffs reward heavy commitment to one or two colours, making splashes costlier.' },
+    ],
+  },
   M15: {
     tagline: 'A classic core set with a twist: convoke lets your creatures help cast spells, Slivers share abilities across the hive and Paragons lead mono-colour armies.',
     setting: 'A core set gathered from across the Multiverse, with Garruk hunting planeswalkers and a Soul for each colour.',
