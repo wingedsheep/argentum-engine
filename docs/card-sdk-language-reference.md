@@ -6085,7 +6085,7 @@ their library into their graveyard. If it's a creature card, you create a 2/2 bl
   live while the source is on the battlefield, and from the source's leaves-battlefield snapshot
   (CR 608.2h) once it has left — so an activated ability gathers it *before* moving its own source:
   Vortex Elemental = `GatherCards(LastKnownCombatPairedWithSource, "paired") →
-  Move(Self, LIBRARY, Shuffled, fromZone = BATTLEFIELD) → MoveCollection("paired", LIBRARY, Shuffled)`.
+  ShuffleIntoLibrary(Self, fromZone = BATTLEFIELD) → MoveCollection("paired", LIBRARY, Shuffled)`.
 - `CardSource.CreaturesThatCrewedOrSaddledSource` — the creatures that crewed (CR 702.122) or
   saddled (CR 702.171c) the source this turn, read off its crew/saddle-contributors record and
   restricted to creatures still on the battlefield. The record is last-known information: it
