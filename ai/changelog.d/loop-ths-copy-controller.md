@@ -1,0 +1,1 @@
+- #TBD The AI reads "the controller of target spell copies it" (Meletis Charlatan) as a gift to that spell's controller: it copies its own spells, never an opponent's.

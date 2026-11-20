@@ -6093,7 +6093,8 @@ object Effects {
         sacrificeTokenOnlyOnControllersTurn: Boolean = false,
         copies: DynamicAmount = DynamicAmount.Fixed(1),
         exceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions = com.wingedsheep.sdk.scripting.effects.CopyExceptions.None,
-        mayChooseNewTargets: Boolean = true
+        mayChooseNewTargets: Boolean = true,
+        copier: com.wingedsheep.sdk.scripting.references.Player = com.wingedsheep.sdk.scripting.references.Player.You
     ): Effect =
         CopyTargetSpellEffect(
             target,
@@ -6104,7 +6105,8 @@ object Effects {
             sacrificeTokenOnlyOnControllersTurn,
             copies,
             exceptions,
-            mayChooseNewTargets = mayChooseNewTargets
+            mayChooseNewTargets = mayChooseNewTargets,
+            copier = copier
         )
 
     /**
