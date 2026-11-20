@@ -25,6 +25,7 @@ import com.wingedsheep.sdk.scripting.ControlEnchantedPermanent
 import com.wingedsheep.sdk.scripting.GrantActivatedAbility
 import com.wingedsheep.sdk.scripting.GrantDynamicStats
 import com.wingedsheep.sdk.scripting.GrantProtection
+import com.wingedsheep.sdk.scripting.GrantSubtype
 import com.wingedsheep.sdk.scripting.GrantProtectionFromCardType
 import com.wingedsheep.sdk.scripting.GrantProtectionFromChosenColorToGroup
 import com.wingedsheep.sdk.scripting.GrantProtectionFromControlledColors
@@ -3124,6 +3125,12 @@ object TargetPolarityAnalyzer {
         // (Overgrowth, Wild Growth, Fertile Ground): the bonus goes to the land's controller, so
         // it is ramp for whoever's land it enchants. No filter: it only ever reads the host.
         is AdditionalManaOnTap -> TargetPolarity.BENEFICIAL
+        // "Enchanted land is every basic land type in addition to its other types" (Nylea's
+        // Presence): each added basic land type brings its mana ability with it, so the host's
+        // controller can tap it for more colours. Additive only — a land-type change that
+        // replaces the land's types is a different static and stays unread here.
+        is GrantSubtype -> if (static.filter.scope != Scope.AttachedTo || static.subtype !in Subtype.ALL_BASIC_LAND_TYPES) null
+            else TargetPolarity.BENEFICIAL
         // Control Magic, Annex, Confiscate: the host changes sides.
         ControlEnchantedPermanent -> TargetPolarity.HARMFUL
         // A condition gates the ability without turning it around ("as long as enchanted creature

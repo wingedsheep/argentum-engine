@@ -343,6 +343,92 @@
     ]
 }
 
+// Anthousa, Setessan Hero
+{
+    "name": "Anthousa, Setessan Hero",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Legendary Creature — Human Warrior",
+    "oracleText": "Heroic — Whenever you cast a spell that targets Anthousa, up to three target lands you control each become 2/2 Warrior creatures until end of turn. They're still lands.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Anthousa, Setessan Hero:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "BecomeCreature",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "power": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughness": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "creatureTypes": [
+                            "Warrior"
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 3,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "land ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets Anthousa, up to three target lands you control each become 2/2 Warrior creatures until end of turn. They're still lands."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "rarity": "RARE",
+        "artist": "Howard Lyon",
+        "flavorText": "The warriors she leads can rarely keep pace with her, and neither can the tales.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca89e4d4-185d-4a08-b7af-03f6eff38ba3.jpg?1783939750",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "If a land that hasn't been under your control continuously since your last turn began becomes a creature, it can't attack and its activated abilities that include {T} can't be activated. Notably, it can't be tapped for mana that turn."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Anvilwrought Raptor
 {
     "name": "Anvilwrought Raptor",
@@ -408,6 +494,114 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Arbor Colossus
+{
+    "name": "Arbor Colossus",
+    "manaCost": "{2}{G}{G}{G}",
+    "typeLine": "Creature — Giant",
+    "oracleText": "Reach\n{3}{G}{G}{G}: Monstrosity 3. (If this creature isn't monstrous, put three +1/+1 counters on it and it becomes monstrous.)\nWhen this creature becomes monstrous, destroy target creature with flying an opponent controls.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Arbor Colossus:2",
+                "trigger": "BecameMonstrousEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature kw:flying ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Arbor Colossus:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{G}{G}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        "IsMonstrous"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddDynamicCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": "Self"
+                            },
+                            "BecomeMonstrous"
+                        ]
+                    },
+                    "descriptionOverride": "Monstrosity 3. (If this creature isn't monstrous, put 3 +1/+1 counters on it and it becomes monstrous.)"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "rarity": "RARE",
+        "artist": "Jaime Jones",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/dfbd7c65-ebe5-47a6-8d2f-9a8c63a30a7b.jpg?1783939749",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Once a creature becomes monstrous, it can't become monstrous again. If the creature is already monstrous when the monstrosity ability resolves, nothing happens."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Monstrous isn't an ability that a creature has. It's just something true about that creature. If the creature stops being a creature or loses its abilities, it will continue to be monstrous."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "An ability that triggers when a creature becomes monstrous won't trigger if that creature isn't on the battlefield when its monstrosity ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -1020,6 +1214,76 @@
     ]
 }
 
+// Boon Satyr
+{
+    "name": "Boon Satyr",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Enchantment Creature — Satyr",
+    "oracleText": "Flash\nBestow {3}{G}{G} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nEnchanted creature gets +4/+2.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH",
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{3}{G}{G}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 4,
+                "toughnessBonus": 2
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "rarity": "RARE",
+        "artist": "Wesley Burt",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f50c12c4-5565-449a-b30e-7cd896da7735.jpg?1783939748",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "Bestow is an alternative cost to cast the spell with bestow. It can't be combined with other alternative costs, such as casting a spell “without paying its mana cost.”"
+            },
+            {
+                "date": "2018-07-13",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost (such as a bestow cost) you're paying, add any cost increases, then apply any cost reductions. The mana value of the spell remains unchanged, no matter what the total cost to cast it was."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "A spell with bestow is either a creature spell or an Aura spell. It's never both. Similarly, a permanent with bestow is either a creature or an Aura, but not both."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Unlike other Aura spells, an Aura spell with bestow still resolves if its target is illegal. Instead of entering the battlefield as an Aura, the effect making it an Aura spell ends, it loses enchant creature, and it resolves and enters the battlefield as an enchantment creature."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Unlike other Auras, an Aura with bestow isn't put into its owner's graveyard if the enchanted creature leaves the battlefield or becomes an illegal creature for the Aura to enchant. Rather, the effect making it an Aura ends, it loses enchant creature, and it remains on the battlefield as an enchantment creature. It can attack (and its abilities can be activated, if it has any) on the turn it becomes unattached if it's been under your control continuously, even as an Aura, since your most recent turn began."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "If a permanent with bestow enters the battlefield by any method other than being cast, it will be an enchantment creature. You can't choose to pay the bestow cost and have it become an Aura."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Auras attached to a creature don't become tapped when the creature becomes tapped. Except in some rare cases, an Aura with bestow remains untapped when it becomes unattached and becomes a creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Boon of Erebos
 {
     "name": "Boon of Erebos",
@@ -1145,6 +1409,146 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Bow of Nylea
+{
+    "name": "Bow of Nylea",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Legendary Enchantment Artifact",
+    "oracleText": "Attacking creatures you control have deathtouch.\n{1}{G}, {T}: Choose one —\n• Put a +1/+1 counter on target creature.\n• Bow of Nylea deals 2 damage to target creature with flying.\n• You gain 3 life.\n• Put up to four target cards from your graveyard on the bottom of your library in any order.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Bow of Nylea:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{G}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Put a +1/+1 counter on target creature"
+                        },
+                        {
+                            "effect": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature kw:flying"
+                                    },
+                                    "id": "t1"
+                                }
+                            ],
+                            "description": "Deal 2 damage to target creature with flying"
+                        },
+                        {
+                            "effect": {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "description": "You gain 3 life"
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": "ChosenTargets",
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "gathered0",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Library",
+                                            "placement": "Bottom"
+                                        },
+                                        "order": "ControllerChooses"
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "count": 4,
+                                    "optional": true,
+                                    "filter": {
+                                        "baseFilter": "own:you",
+                                        "zone": "Graveyard"
+                                    },
+                                    "id": "t2"
+                                }
+                            ],
+                            "description": "Put up to four cards from your graveyard on the bottom of your library"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DEATHTOUCH",
+                "filter": {
+                    "baseFilter": "creature attacking ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "rarity": "RARE",
+        "artist": "Yeong-Hao Han",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/89a2c408-e953-4386-abaf-4af85aba9620.jpg?1783939748"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -1430,6 +1834,63 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Centaur Battlemaster
+{
+    "name": "Centaur Battlemaster",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Centaur Warrior",
+    "oracleText": "Heroic — Whenever you cast a spell that targets this creature, put three +1/+1 counters on this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Centaur Battlemaster:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 3,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, put three +1/+1 counters on this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "rarity": "UNCOMMON",
+        "artist": "Kev Walker",
+        "flavorText": "\"A herd is only as strong as its weakest. Our weakest just killed his third minotaur raider—today.\"\n—Braulios of Pheres Band",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/2975a0b4-7436-4588-8f79-c001a291c459.jpg?1783939748",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -2122,6 +2583,40 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Defend the Hearth
+{
+    "name": "Defend the Hearth",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Prevent all combat damage that would be dealt to players this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Players",
+                "players": "Each"
+            },
+            "body": {
+                "type": "PreventDamageShield",
+                "target": {
+                    "type": "PlayerRef",
+                    "player": "You"
+                },
+                "scope": "CombatOnly"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "artist": "Raymond Swanland",
+        "flavorText": "The defenders said not a word. Their shields, spears, and stances were warning enough.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c3e4c4c3-db3c-49d4-8080-1c93470f8b4d.jpg?1783939746"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -4639,6 +5134,48 @@
     ]
 }
 
+// Karametra's Acolyte
+{
+    "name": "Karametra's Acolyte",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Human Druid",
+    "oracleText": "{T}: Add an amount of {G} equal to your devotion to green. (Each {G} in the mana costs of permanents you control counts toward your devotion to green.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Karametra's Acolyte:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN",
+                    "amount": {
+                        "type": "DevotionTo",
+                        "colors": [
+                            "GREEN"
+                        ]
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "rarity": "UNCOMMON",
+        "artist": "Chase Stone",
+        "flavorText": "\"The wilds are a garden tended by divine hands.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/374a1b7c-ce11-4734-aff2-b0bd00857fad.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Keepsake Gorgon
 {
     "name": "Keepsake Gorgon",
@@ -4907,6 +5444,71 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Leafcrown Dryad
+{
+    "name": "Leafcrown Dryad",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment Creature — Nymph Dryad",
+    "oracleText": "Bestow {3}{G} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nReach\nEnchanted creature gets +2/+2 and has reach.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "REACH",
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{3}{G}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "REACH"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "161",
+        "artist": "Volkan Baǵa",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/2/8202e426-ad91-4d2e-9373-7a829b58fff5.jpg?1783939745",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "On the stack, a spell with bestow is either a creature spell or an Aura spell. It's never both, although it's an enchantment spell in either case."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Unlike other Aura spells, an Aura spell with bestow isn't countered if its target is illegal as it begins to resolve. Rather, the effect making it an Aura spell ends, it loses enchant creature, it returns to being an enchantment creature spell, and it resolves and enters the battlefield as an enchantment creature."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Unlike other Auras, an Aura with bestow isn't put into its owner's graveyard if it becomes unattached. Rather, the effect making it an Aura ends, it loses enchant creature, and it remains on the battlefield as an enchantment creature. It can attack (and its {T} abilities can be activated, if it has any) on the turn it becomes unattached if it's been under your control continuously, even as an Aura, since your most recent turn began."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If a permanent with bestow enters the battlefield by any method other than being cast, it will be an enchantment creature. You can't choose to pay the bestow cost and have it become an Aura."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Auras attached to a creature don't become tapped when the creature becomes tapped. Except in some rare cases, an Aura with bestow remains untapped when it becomes unattached and becomes a creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -5616,6 +6218,202 @@
     ]
 }
 
+// Nemesis of Mortals
+{
+    "name": "Nemesis of Mortals",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Snake",
+    "oracleText": "This spell costs {1} less to cast for each creature card in your graveyard.\n{7}{G}{G}: Monstrosity 5. This ability costs {1} less to activate for each creature card in your graveyard. (If this creature isn't monstrous, put five +1/+1 counters on it and it becomes monstrous.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nemesis of Mortals:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{7}{G}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        "IsMonstrous"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddDynamicCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                },
+                                "target": "Self"
+                            },
+                            "BecomeMonstrous"
+                        ]
+                    },
+                    "descriptionOverride": "Monstrosity 5. (If this creature isn't monstrous, put 5 +1/+1 counters on it and it becomes monstrous.)"
+                },
+                "descriptionOverride": "{7}{G}{G}: Monstrosity 5. This ability costs {1} less to activate for each creature card in your graveyard.",
+                "genericCostReduction": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "creature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "CardsInGraveyardMatchingFilter",
+                        "filter": "creature"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4010889-1d7a-4db3-a27c-c39baa024765.jpg?1783939744",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Neither the cost-reducing ability of Nemesis of Mortals nor the condition of its monstrosity ability can reduce the colored mana requirement of those costs."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Once you declare you're casting Nemesis of Mortals or activating its ability, it's too late for players to try to change the number of creature cards in your graveyard to affect the cost of doing so."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Once a creature becomes monstrous, it can't become monstrous again. If the creature is already monstrous when the monstrosity ability resolves, nothing happens."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Monstrous isn't an ability that a creature has. It's just something true about that creature. If the creature stops being a creature or loses its abilities, it will continue to be monstrous."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "An ability that triggers when a creature becomes monstrous won't trigger if that creature isn't on the battlefield when its monstrosity ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Nessian Asp
+{
+    "name": "Nessian Asp",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Snake",
+    "oracleText": "Reach\n{6}{G}: Monstrosity 4. (If this creature isn't monstrous, put four +1/+1 counters on it and it becomes monstrous.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nessian Asp:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{6}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        "IsMonstrous"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddDynamicCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "target": "Self"
+                            },
+                            "BecomeMonstrous"
+                        ]
+                    },
+                    "descriptionOverride": "Monstrosity 4. (If this creature isn't monstrous, put 4 +1/+1 counters on it and it becomes monstrous.)"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "164",
+        "artist": "Alex Horley-Orlandelli",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2d922596-4c2d-47fd-8c28-0e62972effbf.jpg?1783939742",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Once a creature becomes monstrous, it can't become monstrous again. If the creature is already monstrous when the monstrosity ability resolves, nothing happens."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Monstrous isn't an ability that a creature has. It's just something true about that creature. If the creature stops being a creature or loses its abilities, it will continue to be monstrous."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "An ability that triggers when a creature becomes monstrous won't trigger if that creature isn't on the battlefield when its monstrosity ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Nighthowler
 {
     "name": "Nighthowler",
@@ -5836,6 +6634,227 @@
         "imageUri": "https://cards.scryfall.io/normal/front/8/3/834b27a0-dfd7-4f96-8cde-cacac4b24acc.jpg?1783939713"
     },
     "colorIdentityOverride": []
+}
+
+// Nylea's Disciple
+{
+    "name": "Nylea's Disciple",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Centaur Archer",
+    "oracleText": "When this creature enters, you gain life equal to your devotion to green. (Each {G} in the mana costs of permanents you control counts toward your devotion to green.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nylea's Disciple:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "DevotionTo",
+                        "colors": [
+                            "GREEN"
+                        ]
+                    }
+                },
+                "descriptionOverride": "When this creature enters, you gain life equal to your devotion to green."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "artist": "Trevor Claxton",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/365d716a-1435-48ac-b85f-2cceca1056dd.jpg?1783939742",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Numeric mana symbols ({0}, {1}, and so on) in mana costs of permanents you control don't count toward your devotion to any color."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Mana symbols in the text boxes of permanents you control don't count toward your devotion to any color."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Hybrid mana symbols, monocolored hybrid mana symbols, and Phyrexian mana symbols do count toward your devotion to their color(s)."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If an activated ability or triggered ability has an effect that depends on your devotion to a color, you count the number of mana symbols of that color among the mana costs of permanents you control as the ability resolves. The permanent with that ability will be counted if it's still on the battlefield at that time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Nylea's Emissary
+{
+    "name": "Nylea's Emissary",
+    "manaCost": "{3}{G}",
+    "typeLine": "Enchantment Creature — Cat",
+    "oracleText": "Bestow {5}{G} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nTrample\nEnchanted creature gets +3/+3 and has trample.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE",
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{5}{G}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 3
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "rarity": "UNCOMMON",
+        "artist": "Sam Burley",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2f133775-09b3-4df4-a97f-0df75809b724.jpg?1783939741",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "On the stack, a spell with bestow is either a creature spell or an Aura spell. It's never both, although it's an enchantment spell in either case."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Unlike other Aura spells, an Aura spell with bestow isn't countered if its target is illegal as it begins to resolve. Rather, the effect making it an Aura spell ends, it loses enchant creature, it returns to being an enchantment creature spell, and it resolves and enters the battlefield as an enchantment creature."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Unlike other Auras, an Aura with bestow isn't put into its owner's graveyard if it becomes unattached. Rather, the effect making it an Aura ends, it loses enchant creature, and it remains on the battlefield as an enchantment creature. It can attack (and its {T} abilities can be activated, if it has any) on the turn it becomes unattached if it's been under your control continuously, even as an Aura, since your most recent turn began."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If a permanent with bestow enters the battlefield by any method other than being cast, it will be an enchantment creature. You can't choose to pay the bestow cost and have it become an Aura."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Auras attached to a creature don't become tapped when the creature becomes tapped. Except in some rare cases, an Aura with bestow remains untapped when it becomes unattached and becomes a creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Nylea's Presence
+{
+    "name": "Nylea's Presence",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nWhen this Aura enters, draw a card.\nEnchanted land is every basic land type in addition to its other types.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nylea's Presence:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantSubtype",
+                "subtype": "Plains",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "GrantSubtype",
+                "subtype": "Island",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "GrantSubtype",
+                "subtype": "Swamp",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "GrantSubtype",
+                "subtype": "Mountain",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "GrantSubtype",
+                "subtype": "Forest",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "169",
+        "artist": "Ralph Horsley",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e68f1fd4-1a2f-405b-a592-6c4af6214eae.jpg?1783939741",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "The enchanted land will have the land types Plains, Island, Swamp, Mountain, and Forest. It will also have the mana ability of each basic land type (for example, Forests can tap to produce {G}). It still has its other subtypes and abilities."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Giving a land extra basic land types doesn't change its name or whether it's legendary or basic."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If the target of an Aura is illegal when it tries to resolve, the Aura won't resolve. The Aura doesn't enter the battlefield, so you won't get to draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Nylea, God of the Hunt
@@ -7542,6 +8561,121 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Reverent Hunter
+{
+    "name": "Reverent Hunter",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Human Archer",
+    "oracleText": "When this creature enters, put a number of +1/+1 counters on it equal to your devotion to green. (Each {G} in the mana costs of permanents you control counts toward your devotion to green.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Reverent Hunter:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "DevotionTo",
+                        "colors": [
+                            "GREEN"
+                        ]
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "When this creature enters, put a number of +1/+1 counters on it equal to your devotion to green."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "173",
+        "rarity": "RARE",
+        "artist": "Wesley Burt",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/97b4e736-d19a-42ac-8bcb-b8e6b7b7b539.jpg?1783939738",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Numeric mana symbols ({0}, {1}, and so on) in mana costs of permanents you control don't count toward your devotion to any color."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Mana symbols in the text boxes of permanents you control don't count toward your devotion to any color."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Hybrid mana symbols, monocolored hybrid mana symbols, and Phyrexian mana symbols do count toward your devotion to their color(s)."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If an activated ability or triggered ability has an effect that depends on your devotion to a color, you count the number of mana symbols of that color among the mana costs of permanents you control as the ability resolves. The permanent with that ability will be counted if it's still on the battlefield at that time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Satyr Piper
+{
+    "name": "Satyr Piper",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Satyr Rogue",
+    "oracleText": "{3}{G}: Target creature must be blocked this turn if able.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Satyr Piper:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "MustBeBlocked",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "allCreatures": false
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "rarity": "UNCOMMON",
+        "artist": "Christopher Moeller",
+        "flavorText": "\"When I asked my commander the reward for killing that prancing nuisance, he told me, 'None! I want to kill him myself!'\"\n—Phrogas, soldier of Akros",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e244c4d0-2c30-4a56-94bb-0fff9ffe4a6a.jpg?1783939738"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
