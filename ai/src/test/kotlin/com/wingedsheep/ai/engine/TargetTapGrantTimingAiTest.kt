@@ -59,6 +59,17 @@ class TargetTapGrantTimingAiTest : ScenarioTestBase() {
             }
         }
 
+        test("a per-permanent grant fanned over a group is judged by the whole group, lands included") {
+            // Flame Fusillade: "until end of turn, permanents you control gain '{T}: …'" runs the
+            // single-target grant once per member; untapped lands can still spend it.
+            val effect = cardRegistry.requireCard("Flame Fusillade").script.spellEffect!!
+            val intents = IntentCatalog.of(cardRegistry)
+            val game = board(scenario(), untapped = false).also { it.advanceToPriority(1, Step.PRECOMBAT_MAIN) }
+            ExpiringGrantWindow.castBuysNothing(
+                game.state, game.player1Id, listOf(effect), emptyList(), intents, readKeywordGrants = true,
+            ) shouldBe false
+        }
+
         test("Retraction Helix is not cast when no creature of ours could tap for it") {
             val result = runner.run(
                 AiPuzzle(

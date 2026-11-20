@@ -2957,7 +2957,8 @@ object CardIntentAnalyzer {
             // "Target creature gains '{T}: Return target nonland permanent to its owner's hand' until
             // end of turn" (Retraction Helix): the holder's ability for this turn does what it would
             // printed — a bounce here. As for a group's grant below, its card flow stays out.
-            TargetPolarityAnalyzer.grantedActivatedPolarity(effect.ability) == TargetPolarity.BENEFICIAL ->
+            effect.duration == Duration.EndOfTurn &&
+                TargetPolarityAnalyzer.grantedActivatedPolarity(effect.ability) == TargetPolarity.BENEFICIAL ->
                 analyzeEffect(effect.ability.effect, effect.ability.targetRequirements).tags -
                     setOf(IntentTag.DRAW, IntentTag.TUTOR, IntentTag.CARD_SELECTION)
             else -> emptySet()

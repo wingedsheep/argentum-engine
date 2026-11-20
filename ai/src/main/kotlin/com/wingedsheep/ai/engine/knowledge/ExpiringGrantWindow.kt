@@ -1436,7 +1436,7 @@ internal object ExpiringGrantWindow {
                     val body = expiringPayoffs(leaf.body, readShrinks, source = source) ?: return null
                     if (body.any { it.target != EffectTarget.IterationEntity }) return null
                     val group = (leaf.space as IterationSpace.Group).filter
-                    payoffs += body.map { if (it.kind == PayoffKind.STRIP) it.copy(group = group) else it }
+                    payoffs += body.map { if (it.kind == PayoffKind.STRIP || it.kind == PayoffKind.ACTIVATION) it.copy(group = group) else it }
                 }
                 // "Any number of target creatures each gain double strike until end of turn" (Phalanx
                 // Formation): the body runs once per declared target, each seeing it as
