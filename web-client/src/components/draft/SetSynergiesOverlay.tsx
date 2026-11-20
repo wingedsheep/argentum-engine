@@ -3368,7 +3368,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Inspired Attrition',
         colors: ['U', 'B'],
         keyCard: 'Siren of the Silent Song',
-        description: 'Attack with inspired creatures like Siren of the Silent Song, Pain Seer and Forlorn Pseudamma so every untap step strips the opponent\'s hand or draws you cards, while Bile Blight and Asphyxiate clear the way. A grindy deck that wins the long game.',
+        description: 'Attack with inspired creatures like Siren of the Silent Song, Pain Seer and Forlorn Pseudamma so every untap step strips the opponent\'s hand, draws you cards or makes Zombies, while Bile Blight and Asphyxiate clear the way. A grindy deck that wins the long game.',
       },
       {
         name: 'Minotaur Aggro',

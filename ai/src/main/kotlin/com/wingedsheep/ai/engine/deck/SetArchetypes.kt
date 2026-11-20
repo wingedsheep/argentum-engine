@@ -1482,7 +1482,7 @@ object SetArchetypes {
                 Archetype("Heroic Fliers", listOf(Color.WHITE, Color.BLUE),
                     "Target heroic fliers like Akroan Skyguard and Chorus of the Tides with Ephara's Enlightenment, Auras and bestow creatures, then fly over a stalled ground. A tempo deck that makes one evasive threat bigger every turn."),
                 Archetype("Inspired Attrition", listOf(Color.BLUE, Color.BLACK),
-                    "Attack with inspired creatures like Siren of the Silent Song, Pain Seer and Forlorn Pseudamma so every untap step strips the opponent's hand or draws you cards, while Bile Blight and Asphyxiate clear the way. A grindy deck that wins the long game."),
+                    "Attack with inspired creatures like Siren of the Silent Song, Pain Seer and Forlorn Pseudamma so every untap step strips the opponent's hand, draws you cards or makes Zombies, while Bile Blight and Asphyxiate clear the way. A grindy deck that wins the long game."),
                 Archetype("Minotaur Aggro", listOf(Color.BLACK, Color.RED),
                     "Curve out with Minotaurs like Felhide Brawler, Kragma Butcher and Felhide Spiritbinder, cast them cheaply off Ragemonger, and finish with burn. A fast tribal deck that races before the opponent can stabilize.",
                     creatureTypes = listOf("Minotaur")),
