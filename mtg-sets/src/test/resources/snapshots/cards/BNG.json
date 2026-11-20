@@ -1445,6 +1445,96 @@
     ]
 }
 
+// Chromanticore
+{
+    "name": "Chromanticore",
+    "manaCost": "{W}{U}{B}{R}{G}",
+    "typeLine": "Enchantment Creature — Manticore",
+    "oracleText": "Bestow {2}{W}{U}{B}{R}{G} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nFlying, first strike, vigilance, trample, lifelink\nEnchanted creature gets +4/+4 and has flying, first strike, vigilance, trample, and lifelink.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "FIRST_STRIKE",
+        "VIGILANCE",
+        "TRAMPLE",
+        "LIFELINK",
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{2}{W}{U}{B}{R}{G}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 4,
+                "toughnessBonus": 4
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FIRST_STRIKE"
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE"
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE"
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "LIFELINK"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "144",
+        "rarity": "MYTHIC",
+        "artist": "Min Yum",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d171b46-69e7-4e39-b3b2-97ed022cd933.jpg?1783939526",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "On the stack, a spell with bestow is either a creature spell or an Aura spell. It's never both, although it's an enchantment spell in either case."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Unlike other Aura spells, an Aura spell with bestow isn't countered if its target is illegal as it begins to resolve. Rather, the effect making it an Aura spell ends, it loses enchant creature, it returns to being an enchantment creature spell, and it resolves and enters the battlefield as an enchantment creature."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Unlike other Auras, an Aura with bestow isn't put into its owner's graveyard if it becomes unattached. Rather, the effect making it an Aura ends, it loses enchant creature, and it remains on the battlefield as an enchantment creature. It can attack (and its {T} abilities can be activated, if it has any) on the turn it becomes unattached if it's been under your control continuously, even as an Aura, since your most recent turn began."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If a permanent with bestow enters the battlefield by any method other than being cast, it will be an enchantment creature. You can't choose to pay the bestow cost and have it become an Aura."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Auras attached to a creature don't become tapped when the creature becomes tapped. Except in some rare cases, an Aura with bestow remains untapped when it becomes unattached and becomes a creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Claim of Erebos
 {
     "name": "Claim of Erebos",
@@ -5121,6 +5211,61 @@
     ]
 }
 
+// Kraken of the Straits
+{
+    "name": "Kraken of the Straits",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Creature — Kraken",
+    "oracleText": "Creatures with power less than the number of Islands you control can't block this creature.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "PowerAtMostDynamic",
+                            "amount": {
+                                "type": "Subtract",
+                                "left": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": "land Island"
+                                },
+                                "right": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "rarity": "UNCOMMON",
+        "artist": "Richard Wright",
+        "flavorText": "Thassa felt no need to punish the sailors for their folly in crossing the straits. The kraken would do it for her.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/12ae69b3-afa5-4763-a0c8-c3d9d96f6ddc.jpg?1783939569",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "The number of Islands you control is counted as blockers are declared. Creatures with power less than that number at that time can't block Kraken of the Straits. Once blockers have been declared, the power of the blocking creatures and the number of Islands you control don't matter."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Lightning Volley
 {
     "name": "Lightning Volley",
@@ -5870,6 +6015,123 @@
     ]
 }
 
+// Nessian Wilds Ravager
+{
+    "name": "Nessian Wilds Ravager",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Hydra",
+    "oracleText": "Tribute 6 (As this creature enters, an opponent of your choice may put six +1/+1 counters on it.)\nWhen this creature enters, if tribute wasn't paid, you may have this creature fight another target creature. (Each deals damage equal to its power to the other.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "TRIBUTE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "TRIBUTE",
+            "n": 6
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nessian Wilds Ravager:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Fight",
+                        "target1": "Self",
+                        "target2": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "SourceChosenModeIs",
+                        "modeId": "tribute_paid"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "chooser": "AnOpponent",
+                "modeOptions": [
+                    {
+                        "id": "tribute_paid",
+                        "label": "Pay tribute",
+                        "description": "Put 6 +1/+1 counters on it",
+                        "iconKey": "plusOneCounter"
+                    },
+                    {
+                        "id": "tribute_not_paid",
+                        "label": "Don't pay tribute",
+                        "description": "Its \"if tribute wasn't paid\" ability triggers"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "count": 6,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "tribute_paid"
+                },
+                "placedBy": "AnOpponent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "rarity": "RARE",
+        "artist": "Richard Wright",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/65368cf0-7d92-4248-b930-633fd023065b.jpg?1783939532",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "For effects that check which player put counters on the entering creature, the player chosen to pay tribute puts those counters on it, not the creature's controller."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If the opponent pays tribute, the creature will enter the battlefield with the specified number of +1/+1 counters on it. It won't enter the battlefield and then have the +1/+1 counters placed on it."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If the triggered ability has a target, that target will not be known while the creature spell with tribute is on the stack."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "Players can't respond to the tribute decision before the creature enters the battlefield. That is, if the opponent doesn't pay tribute, the triggered ability will trigger before any player has a chance to remove the creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Noble Quarry
 {
     "name": "Noble Quarry",
@@ -5940,6 +6202,36 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Nullify
+{
+    "name": "Nullify",
+    "manaCost": "{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target creature or Aura spell.",
+    "script": {
+        "spellEffect": "Counter",
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|Aura",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "artist": "Adam Paquette",
+        "flavorText": "\"Those who incur Thassa's anger will be swallowed whole by her waves, or torn asunder by her bident.\"\n—Thrasios, triton hero",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a940d859-3fb1-4946-8277-b7c503605b1e.jpg?1783939566"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -6329,6 +6621,155 @@
     ]
 }
 
+// Oracle of Bones
+{
+    "name": "Oracle of Bones",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Minotaur Shaman",
+    "oracleText": "Haste\nTribute 2 (As this creature enters, an opponent of your choice may put two +1/+1 counters on it.)\nWhen this creature enters, if tribute wasn't paid, you may cast an instant or sorcery spell from your hand without paying its mana cost.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE",
+        "TRIBUTE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "TRIBUTE",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Oracle of Bones:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseSpell",
+                            "filter": "instant|sorcery",
+                            "storeSelected": "selected1",
+                            "prompt": "You may cast an instant or sorcery spell from your hand without paying its mana cost",
+                            "selectedLabel": "Cast for free",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "CastFromCollectionWithoutPayingCost",
+                            "from": "selected1"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "SourceChosenModeIs",
+                        "modeId": "tribute_paid"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "chooser": "AnOpponent",
+                "modeOptions": [
+                    {
+                        "id": "tribute_paid",
+                        "label": "Pay tribute",
+                        "description": "Put 2 +1/+1 counters on it",
+                        "iconKey": "plusOneCounter"
+                    },
+                    {
+                        "id": "tribute_not_paid",
+                        "label": "Don't pay tribute",
+                        "description": "Its \"if tribute wasn't paid\" ability triggers"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "count": 2,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "tribute_paid"
+                },
+                "placedBy": "AnOpponent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "rarity": "RARE",
+        "artist": "Greg Staples",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/ddb1931e-c282-47a7-9382-608de6ec8efa.jpg?1783939544",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "For effects that check which player put counters on the entering creature, the player chosen to pay tribute puts those counters on it, not the creature's controller."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If the card has {X} in its mana cost, you must choose 0 as its value."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If you cast a card \"without paying its mana cost,\" you can't pay alternative costs such as overload costs. You can, however, pay additional costs such as kicker costs. If the card has mandatory additional costs, you must pay those."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If you choose to cast a split card with fuse without paying its mana cost, you may cast both halves."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If the opponent pays tribute, the creature will enter the battlefield with the specified number of +1/+1 counters on it. It won't enter the battlefield and then have the +1/+1 counters placed on it."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If you want to cast a card this way, you cast it as part of the resolution of the triggered ability. Timing restrictions based on the card's type (such as sorcery) are ignored. Other casting restrictions (such as \"Cast [this card] only before attackers are declared\") are not."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If the triggered ability has a target, that target will not be known while the creature spell with tribute is on the stack."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "Players can't respond to the tribute decision before the creature enters the battlefield. That is, if the opponent doesn't pay tribute, the triggered ability will trigger before any player has a chance to remove the creature."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "The triggered ability will resolve even if the creature with tribute isn't on the battlefield at that time."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "The choice of whether to pay tribute is made as the creature with tribute is entering the battlefield. At that point, it's too late to respond to the creature spell. For example, in a multiplayer game, opponents won't know whether tribute will be paid or which opponent will be chosen to pay tribute or not when deciding whether to counter the creature spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Oracle's Insight
 {
     "name": "Oracle's Insight",
@@ -6409,6 +6850,127 @@
         "artist": "Mathias Kollros",
         "flavorText": "\"Let the humans have their pantheon. We need no gods to thrive. Even a mortal such as I can capture a part of the sun's power.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/0/6/064435e7-20ea-4ba4-b039-a945afeeb5c6.jpg?1783939578"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Ornitharch
+{
+    "name": "Ornitharch",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Archon",
+    "oracleText": "Flying\nTribute 2 (As this creature enters, an opponent of your choice may put two +1/+1 counters on it.)\nWhen this creature enters, if tribute wasn't paid, create two 1/1 white Bird creature tokens with flying.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "TRIBUTE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "TRIBUTE",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ornitharch:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Bird"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/c/8/c862470b-f273-4e01-945b-bf3697cd1359.jpg?1783939516"
+                },
+                "interveningIf": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "SourceChosenModeIs",
+                        "modeId": "tribute_paid"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "chooser": "AnOpponent",
+                "modeOptions": [
+                    {
+                        "id": "tribute_paid",
+                        "label": "Pay tribute",
+                        "description": "Put 2 +1/+1 counters on it",
+                        "iconKey": "plusOneCounter"
+                    },
+                    {
+                        "id": "tribute_not_paid",
+                        "label": "Don't pay tribute",
+                        "description": "Its \"if tribute wasn't paid\" ability triggers"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "count": 2,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "tribute_paid"
+                },
+                "placedBy": "AnOpponent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "UNCOMMON",
+        "artist": "Clint Cearley",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f95a0bf4-10c7-4afa-8cf6-e31196cc2bd5.jpg?1783939576",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "For effects that check which player put counters on the entering creature, the player chosen to pay tribute puts those counters on it, not the creature's controller."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If the opponent pays tribute, the creature will enter the battlefield with the specified number of +1/+1 counters on it. It won't enter the battlefield and then have the +1/+1 counters placed on it."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "The choice of whether to pay tribute is made as the creature with tribute is entering the battlefield. At that point, it's too late to respond to the creature spell. For example, in a multiplayer game, opponents won't know whether tribute will be paid or which opponent will be chosen to pay tribute or not when deciding whether to counter the creature spell."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "Players can't respond to the tribute decision before the creature enters the battlefield. That is, if the opponent doesn't pay tribute, the triggered ability will trigger before any player has a chance to remove the creature."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "The triggered ability will resolve even if the creature with tribute isn't on the battlefield at that time."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -6664,6 +7226,113 @@
     ]
 }
 
+// Pharagax Giant
+{
+    "name": "Pharagax Giant",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Giant",
+    "oracleText": "Tribute 2 (As this creature enters, an opponent of your choice may put two +1/+1 counters on it.)\nWhen this creature enters, if tribute wasn't paid, this creature deals 5 damage to each opponent.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRIBUTE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "TRIBUTE",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pharagax Giant:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "interveningIf": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "SourceChosenModeIs",
+                        "modeId": "tribute_paid"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "chooser": "AnOpponent",
+                "modeOptions": [
+                    {
+                        "id": "tribute_paid",
+                        "label": "Pay tribute",
+                        "description": "Put 2 +1/+1 counters on it",
+                        "iconKey": "plusOneCounter"
+                    },
+                    {
+                        "id": "tribute_not_paid",
+                        "label": "Don't pay tribute",
+                        "description": "Its \"if tribute wasn't paid\" ability triggers"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "count": 2,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "tribute_paid"
+                },
+                "placedBy": "AnOpponent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9eef1b9b-58f1-40af-a7c2-06cdaf1ec974.jpg?1783939543",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "For effects that check which player put counters on the entering creature, the player chosen to pay tribute puts those counters on it, not the creature's controller."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If the opponent pays tribute, the creature will enter the battlefield with the specified number of +1/+1 counters on it. It won't enter the battlefield and then have the +1/+1 counters placed on it."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "Players can't respond to the tribute decision before the creature enters the battlefield. That is, if the opponent doesn't pay tribute, the triggered ability will trigger before any player has a chance to remove the creature."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "The triggered ability will resolve even if the creature with tribute isn't on the battlefield at that time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Pheres-Band Raiders
 {
     "name": "Pheres-Band Raiders",
@@ -6898,6 +7567,43 @@
     ]
 }
 
+// Ragemonger
+{
+    "name": "Ragemonger",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Creature — Minotaur Shaman",
+    "oracleText": "Minotaur spells you cast cost {B}{R} less to cast. This effect reduces only the amount of colored mana you pay. (For example, if you cast a Minotaur spell with mana cost {2}{R}, it costs {2} to cast.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "Minotaur"
+                },
+                "modification": {
+                    "type": "ReduceColored",
+                    "symbols": "{B}{R}"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "rarity": "UNCOMMON",
+        "artist": "Karl Kopinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1eb6eda2-e3df-440a-8900-8310f11db6e9.jpg?1783939523"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Raised by Wolves
 {
     "name": "Raised by Wolves",
@@ -6968,6 +7674,57 @@
     ]
 }
 
+// Reap What Is Sown
+{
+    "name": "Reap What Is Sown",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Put a +1/+1 counter on each of up to three target creatures.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "AddCounters",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "count": 1,
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 3,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "rarity": "UNCOMMON",
+        "artist": "Cynthia Sheppard",
+        "flavorText": "The strength of the people comes from the land. And the bounty of the land comes from Karametra.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/120babed-841f-4bf1-ac2d-3ab097c0760b.jpg?1783939522",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "Reap What Is Sown can't target the same creature multiple times. It will put only one +1/+1 counter on each of its targets."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Reckless Reveler
 {
     "name": "Reckless Reveler",
@@ -7024,6 +7781,63 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Retraction Helix
+{
+    "name": "Retraction Helix",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Until end of turn, target creature gains \"{T}: Return target nonland permanent to its owner's hand.\"",
+    "script": {
+        "spellEffect": {
+            "type": "GrantActivatedAbility",
+            "ability": {
+                "id": "Retraction Helix:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "nonland permanent"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "Return target nonland permanent to its owner's hand."
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "artist": "Phill Simmer",
+        "flavorText": "Where the geometries of the world collapse, a master of the Æther can harvest power beyond comprehending.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4fe8c0b9-fdf4-4fc0-aa7c-774546cdd792.jpg?1783939566"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -7676,6 +8490,120 @@
     ]
 }
 
+// Shrike Harpy
+{
+    "name": "Shrike Harpy",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Harpy",
+    "oracleText": "Flying\nTribute 2 (As this creature enters, an opponent of your choice may put two +1/+1 counters on it.)\nWhen this creature enters, if tribute wasn't paid, target opponent sacrifices a creature of their choice.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "TRIBUTE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "TRIBUTE",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shrike Harpy:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "creature",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "SourceChosenModeIs",
+                        "modeId": "tribute_paid"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "chooser": "AnOpponent",
+                "modeOptions": [
+                    {
+                        "id": "tribute_paid",
+                        "label": "Pay tribute",
+                        "description": "Put 2 +1/+1 counters on it",
+                        "iconKey": "plusOneCounter"
+                    },
+                    {
+                        "id": "tribute_not_paid",
+                        "label": "Don't pay tribute",
+                        "description": "Its \"if tribute wasn't paid\" ability triggers"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "count": 2,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "tribute_paid"
+                },
+                "placedBy": "AnOpponent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "83",
+        "rarity": "UNCOMMON",
+        "artist": "Christopher Moeller",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1c2b1eeb-6cc9-48a7-a068-afa1011c45f2.jpg",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "For effects that check which player put counters on the entering creature, the player chosen to pay tribute puts those counters on it, not the creature's controller."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If the opponent pays tribute, the creature will enter the battlefield with the specified number of +1/+1 counters on it. It won't enter the battlefield and then have the +1/+1 counters placed on it."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If the triggered ability has a target, that target will not be known while the creature spell with tribute is on the stack."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "Players can't respond to the tribute decision before the creature enters the battlefield. That is, if the opponent doesn't pay tribute, the triggered ability will trigger before any player has a chance to remove the creature."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "The triggered ability will resolve even if the creature with tribute isn't on the battlefield at that time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Silent Sentinel
 {
     "name": "Silent Sentinel",
@@ -7813,6 +8741,126 @@
         "flavorText": "A siren once tried to steal it out of jealousy but was caught by the song of its strings.",
         "imageUri": "https://cards.scryfall.io/normal/front/c/f/cfeca720-3163-4391-b90d-5f7aa5f5987b.jpg?1783939520"
     }
+}
+
+// Siren of the Fanged Coast
+{
+    "name": "Siren of the Fanged Coast",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Siren",
+    "oracleText": "Flying\nTribute 3 (As this creature enters, an opponent of your choice may put three +1/+1 counters on it.)\nWhen this creature enters, if tribute wasn't paid, gain control of target creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING",
+        "TRIBUTE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "TRIBUTE",
+            "n": 3
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Siren of the Fanged Coast:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "SourceChosenModeIs",
+                        "modeId": "tribute_paid"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "chooser": "AnOpponent",
+                "modeOptions": [
+                    {
+                        "id": "tribute_paid",
+                        "label": "Pay tribute",
+                        "description": "Put 3 +1/+1 counters on it",
+                        "iconKey": "plusOneCounter"
+                    },
+                    {
+                        "id": "tribute_not_paid",
+                        "label": "Don't pay tribute",
+                        "description": "Its \"if tribute wasn't paid\" ability triggers"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "count": 3,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "tribute_paid"
+                },
+                "placedBy": "AnOpponent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "rarity": "UNCOMMON",
+        "artist": "Michael C. Hayes",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5ba93d9a-94cd-4d90-860a-f567793a5be4.jpg?1783939566",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "For effects that check which player put counters on the entering creature, the player chosen to pay tribute puts those counters on it, not the creature's controller."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If the opponent pays tribute, the creature will enter the battlefield with the specified number of +1/+1 counters on it. It won't enter the battlefield and then have the +1/+1 counters placed on it."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "The choice of whether to pay tribute is made as the creature with tribute is entering the battlefield. At that point, it's too late to respond to the creature spell. For example, in a multiplayer game, opponents won't know whether tribute will be paid or which opponent will be chosen to pay tribute or not when deciding whether to counter the creature spell."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If the triggered ability has a target, that target will not be known while the creature spell with tribute is on the stack."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "Players can't respond to the tribute decision before the creature enters the battlefield. That is, if the opponent doesn't pay tribute, the triggered ability will trigger before any player has a chance to remove the creature."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "The triggered ability will resolve even if the creature with tribute isn't on the battlefield at that time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Siren of the Silent Song
@@ -8346,6 +9394,88 @@
     ]
 }
 
+// Sudden Storm
+{
+    "name": "Sudden Storm",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Tap up to two target creatures. Those creatures don't untap during their controllers' next untap steps. Scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "TapUntap",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "DOESNT_UNTAP",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "duration": "UntilAfterAffectedControllersNextUntap"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "Scry",
+                    "count": 1
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "artist": "Adam Paquette",
+        "flavorText": "No matter how big and strong you are, the sea is bigger and stronger.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6beffc33-58fd-4364-b87b-d4573ecaf4bd.jpg?1783939565",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "If you choose zero targets, you'll just scry 1 when the ability resolves. However, if you choose at least one target and all of Sudden Storm's targets are illegal as it tries to resolve, the spell won't resolve and none of its effects will happen. You won't scry in that case."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If a creature affected by Sudden Storm changes controllers before its old controller's next untap step, Sudden Storm will prevent it from becoming untapped during its new controller's next untap step."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "This spell can target tapped creatures. If a targeted creature is already tapped when the spell resolves, that creature remains tapped and doesn't untap during its controller's next untap step."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If you chose two targets and one is an illegal target when Sudden Storm resolves, that creature won't become tapped and it won't be stopped from untapping during its controller's next untap step. It won't be affected by Sudden Storm in any way."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Sunbond
 {
     "name": "Sunbond",
@@ -8582,6 +9712,66 @@
     "colorIdentityOverride": [
         "WHITE",
         "GREEN"
+    ]
+}
+
+// Thassa's Rebuff
+{
+    "name": "Thassa's Rebuff",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell unless its controller pays {X}, where X is your devotion to blue. (Each {U} in the mana costs of permanents you control counts toward your devotion to blue.)",
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "condition": {
+                "type": "CounterCondition.UnlessPaysDynamic",
+                "amount": {
+                    "type": "DevotionTo",
+                    "colors": [
+                        "BLUE"
+                    ]
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "UNCOMMON",
+        "artist": "Lucas Graciano",
+        "flavorText": "To resist Thassa is to deny the rising tide.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/816a6ff7-cede-4346-b3e6-aee33aefac3a.jpg?1783939563",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Numeric mana symbols ({0}, {1}, and so on) in mana costs of permanents you control don't count toward your devotion to any color."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Mana symbols in the text boxes of permanents you control don't count toward your devotion to any color."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Hybrid mana symbols, monocolored hybrid mana symbols, and Phyrexian mana symbols do count toward your devotion to their color(s)."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If an activated ability or triggered ability has an effect that depends on your devotion to a color, you count the number of mana symbols of that color among the mana costs of permanents you control as the ability resolves. The permanent with that ability will be counted if it's still on the battlefield at that time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -8989,6 +10179,67 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Whelming Wave
+{
+    "name": "Whelming Wave",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return all creatures to their owners' hands except for Krakens, Leviathans, Octopuses, and Serpents.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Kraken"
+                                },
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Leviathan"
+                                },
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Octopus"
+                                },
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Serpent"
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "returnAllToHand_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "returnAllToHand_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "flavorText": "\"I can see why this appeals to Thassa.\"\n—Kiora",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fcabd4c7-093f-4ef6-8b89-b08565c48e3c.jpg?1783939563"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

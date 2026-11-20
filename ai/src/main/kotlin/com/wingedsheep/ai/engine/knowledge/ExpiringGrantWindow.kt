@@ -44,6 +44,7 @@ import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GainControlEffect
+import com.wingedsheep.sdk.scripting.effects.FightEffect
 import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityToGroupEffect
 import com.wingedsheep.sdk.scripting.effects.GrantCantBeBlockedByChosenColorEffect
@@ -356,8 +357,11 @@ internal object ExpiringGrantWindow {
                     ?: return false
             }
             if (payoff.kind == PayoffKind.ACTIVATION) {
-                val group = payoff.group ?: return false
-                val members = groupMembers(state, projected, playerId, group, sourceId, intents, creaturesOnly = false) ?: return false
+                val members = (if (payoff.group != null) {
+                    groupMembers(state, projected, playerId, payoff.group, sourceId, intents, creaturesOnly = false)
+                } else {
+                    affectedBy(state, projected, playerId, payoff.target, sourceId, targets)
+                }) ?: return false
                 return@none members.any { !(sourceTaps && it == sourceId) && canStillTap(state, projected, playerId, it) }
             }
             if (payoff.kind == PayoffKind.STRIP) {
@@ -446,10 +450,11 @@ internal object ExpiringGrantWindow {
     }
 
     /**
-     * Whether a spell's whole payoff is a `{T}` ability granted to a group of ours until end of turn
-     * ([PayoffKind.ACTIVATION]) — the grant [castBuysNothing] reads beside the keyword grants.
+     * Whether a spell's whole payoff is a `{T}` ability granted until end of turn, to a group of ours
+     * or to its target ([PayoffKind.ACTIVATION]) — the grant [castBuysNothing] reads beside the
+     * keyword grants.
      */
-    fun readsSpellGroupActivationGrant(effect: Effect): Boolean =
+    fun readsSpellActivationGrant(effect: Effect): Boolean =
         expiringPayoffs(effect)?.all { it.kind == PayoffKind.ACTIVATION } == true
 
     /** See [PayoffKind.ACTIVATION]: a non-mana `{T}` ability granted to a group that isn't only theirs. */
@@ -457,6 +462,16 @@ internal object ExpiringGrantWindow {
         leaf is GrantActivatedAbilityToGroupEffect && leaf.duration == Duration.EndOfTurn &&
             !leaf.ability.isManaAbility && tapsItsSource(leaf.ability) &&
             !CardIntentAnalyzer.opponentsOnly(leaf.filter.baseFilter.controllerPredicate)
+
+    /**
+     * See [PayoffKind.ACTIVATION]: a helpful, non-mana `{T}` ability granted to one permanent until
+     * end of turn. A fight grant is the removal's question (CardIntentAnalyzer reads it as one).
+     */
+    private fun grantsTapActivationToTarget(leaf: Effect): Boolean =
+        leaf is GrantActivatedAbilityEffect && leaf.duration == Duration.EndOfTurn &&
+            !leaf.ability.isManaAbility && tapsItsSource(leaf.ability) &&
+            EffectWalker.leaves(leaf.ability.effect).none { it is FightEffect } &&
+            TargetPolarityAnalyzer.grantedActivatedPolarity(leaf.ability) == TargetPolarity.BENEFICIAL
 
     /** Whether [creature] of ours can still pay a `{T}` cost this turn: untapped, and not summoning sick. */
     private fun canStillTap(state: GameState, projected: ProjectedState, playerId: EntityId, permanent: EntityId): Boolean {
@@ -526,7 +541,7 @@ internal object ExpiringGrantWindow {
             sourceTaps = false,
             pendingSelfGrant = false,
             intents = intents,
-            readGrants = readKeywordGrants && (readsSpellKeywordGrant(effect) || readsSpellGroupActivationGrant(effect)),
+            readGrants = readKeywordGrants && (readsSpellKeywordGrant(effect) || readsSpellActivationGrant(effect)),
             readShrinks = readShrinks,
             readBorrows = readBorrows,
             fightMustBeOn = fightMustBeOn,
@@ -1294,8 +1309,11 @@ internal object ExpiringGrantWindow {
          * the ability does, it is spent only by a member tapping for it before cleanup, so it buys
          * something only while one of them is untapped and free of summoning sickness
          * ([canStillTap]). Cast with every member tapped or freshly arrived, the grant wears off
-         * unused. Carries the group it lands on ([Payoff.group]). Not deferred ([holds]): any
-         * window with an untapped member is one it can be spent in.
+         * unused. Carries the group it lands on ([Payoff.group]). The single-target form — "target
+         * creature gains '{T}: Return target nonland permanent to its owner's hand' until end of
+         * turn" (Retraction Helix) — is the same question asked of that one creature, which must be
+         * ours: it carries [Payoff.target] instead. Not deferred ([holds]): any window with an
+         * untapped holder is one it can be spent in.
          */
         ACTIVATION,
     }
@@ -1463,6 +1481,8 @@ internal object ExpiringGrantWindow {
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.affected ?: EffectTarget.IterationEntity, animates = true)
                 grantsTapActivationToOurGroup(leaf) ->
                     payoffs += Payoff(PayoffKind.ACTIVATION, null, group = (leaf as GrantActivatedAbilityToGroupEffect).filter)
+                grantsTapActivationToTarget(leaf) ->
+                    payoffs += Payoff(PayoffKind.ACTIVATION, (leaf as GrantActivatedAbilityEffect).target)
                 isShield(leaf) -> payoffs += Payoff(PayoffKind.SHIELD, (leaf as PreventDamageEffect).target)
                 // A source chosen on resolution has no target to land on: null.
                 isSilence(leaf) -> payoffs += Payoff(
