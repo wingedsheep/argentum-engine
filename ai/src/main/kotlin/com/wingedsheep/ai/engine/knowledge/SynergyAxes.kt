@@ -821,7 +821,8 @@ object SynergyAxes {
     }
 
     private fun sacrifices(cost: AbilityCost, creatureSource: Boolean): Boolean = when (cost) {
-        is AbilityCost.Atom -> cost.atom is CostAtom.Sacrifice
+        // A land-only sacrifice (Hammer of Purphoros) feeds no death trigger.
+        is AbilityCost.Atom -> CardAsks.sacrificesCreatures(cost.atom)
         is AbilityCost.Composite -> cost.costs.any { sacrifices(it, creatureSource) }
         AbilityCost.SacrificeSelf -> creatureSource
         else -> false
@@ -856,7 +857,7 @@ object SynergyAxes {
     }
 
     private fun sacrifices(cost: AdditionalCost): Boolean = when (cost) {
-        is AdditionalCost.Atom -> cost.atom is CostAtom.Sacrifice
+        is AdditionalCost.Atom -> CardAsks.sacrificesCreatures(cost.atom)
         is AdditionalCost.Composite -> cost.steps.any(::sacrifices)
         else -> false
     }

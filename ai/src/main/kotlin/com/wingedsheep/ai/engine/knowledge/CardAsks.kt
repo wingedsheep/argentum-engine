@@ -194,6 +194,22 @@ internal object CardAsks {
         }
     }
 
+    /**
+     * Whether a sacrifice cost over [filter] can only take permanents that aren't creatures —
+     * "Sacrifice a land" (Hammer of Purphoros), "sacrifice a noncreature artifact". Such a cost is
+     * no outlet for a death deck: nothing it eats dies.
+     */
+    internal fun sacrificesOnlyNoncreatures(filter: GameObjectFilter): Boolean {
+        if (filter.anyOf.isNotEmpty()) return false
+        val predicates = filter.cardPredicates
+        return CardPredicate.IsCreature !in predicates &&
+            (CardPredicate.IsNoncreature in predicates || CardPredicate.IsLand in predicates)
+    }
+
+    /** Whether [atom] sacrifices something that can be a creature — a cost a death deck can feed. */
+    internal fun sacrificesCreatures(atom: CostAtom): Boolean =
+        atom is CostAtom.Sacrifice && !sacrificesOnlyNoncreatures(atom.filter)
+
     /** The permanents you tap to pay for a spell with [keyword]: improvise's artifacts. */
     private fun payersOf(keyword: Keyword): GameObjectFilter? =
         if (keyword == Keyword.IMPROVISE) GameObjectFilter.Artifact.youControl() else null

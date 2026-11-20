@@ -1,0 +1,1 @@
+- #PR A land-only sacrifice cost ("Sacrifice a land": Hammer of Purphoros, Zuran Orb) no longer reads as a sacrifice outlet or as feeding the death synergy axis.
