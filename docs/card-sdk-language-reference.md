@@ -17561,6 +17561,12 @@ that works in both resolution and static-ability (projection) contexts.
   (reads `state.step` + active player), so it evaluates identically at resolution and under projection,
   making it usable as a `ConditionalStaticAbility` gate. `yoursOnly` requires it to be the controller's
   turn ("during your end step"). Used by Zurgo, Thunder's Decree.
+- `Conditions.IsExtraTurn` — "during extra turns" (CR 500.7): the current turn began as an extra
+  turn (one created by `Effects.TakeExtraTurn`), whoever's turn it is. False during every natural
+  turn, and an extra turn that is skipped or prevented never begins, so it never reads true.
+  Board-derived (a turn-scoped game flag, set as the extra turn begins and cleared at the next turn
+  boundary), so it works as a `ConditionalStaticAbility` gate: Medomai the Ageless's "can't attack
+  during extra turns" is `ConditionalStaticAbility(CantAttack(GroupFilter.source()), Conditions.IsExtraTurn)`.
 - `IsFirstEndStepOfTurn` — it's the turn's first (natural) end step, i.e. *not* an extra end step
   inserted by `Effects.AddAdditionalEndSteps`. Board-derived (reads `state.step` + the active
   player's "in an inserted end step" marker), so it evaluates identically at resolution and under

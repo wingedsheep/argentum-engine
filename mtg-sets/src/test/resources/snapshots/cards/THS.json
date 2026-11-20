@@ -2611,6 +2611,64 @@
     ]
 }
 
+// Medomai the Ageless
+{
+    "name": "Medomai the Ageless",
+    "manaCost": "{4}{W}{U}",
+    "typeLine": "Legendary Creature — Sphinx",
+    "oracleText": "Flying\nWhenever Medomai deals combat damage to a player, take an extra turn after this one.\nMedomai can't attack during extra turns.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Medomai the Ageless:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": "TakeExtraTurn"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "CantAttack",
+                "condition": "IsExtraTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "rarity": "MYTHIC",
+        "artist": "David Palumbo",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5f4b3cf-2c78-42c9-9873-3758c7f7bb7d.jpg?1783939729",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "An \"extra turn\" is any turn created by a spell or ability. Notably, it doesn't include additional turns taken in tournaments after time expires for a round."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "It doesn't matter whose turn it is. In very rare cases, an opponent may be taking an extra turn and gain control of Medomai. Medomai can't attack during that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Meletis Charlatan
 {
     "name": "Meletis Charlatan",

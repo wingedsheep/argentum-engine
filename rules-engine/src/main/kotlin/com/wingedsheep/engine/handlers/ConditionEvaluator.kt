@@ -89,6 +89,7 @@ import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.conditions.IsInPhase
 import com.wingedsheep.sdk.scripting.conditions.IsInStep
 import com.wingedsheep.sdk.scripting.conditions.IsFirstCombatPhaseOfTurn
+import com.wingedsheep.sdk.scripting.conditions.IsExtraTurn
 import com.wingedsheep.sdk.scripting.conditions.IsFirstEndStepOfTurn
 import com.wingedsheep.sdk.scripting.conditions.IsFirstUpkeepStepOfTurn
 import com.wingedsheep.sdk.scripting.conditions.IsNotYourTurn
@@ -320,6 +321,7 @@ class ConditionEvaluator(
             is com.wingedsheep.sdk.scripting.conditions.BeforeFirstCombatStepThisTurn,
             com.wingedsheep.sdk.scripting.conditions.AfterCombatThisTurn,
             IsFirstCombatPhaseOfTurn,
+            IsExtraTurn,
             IsFirstEndStepOfTurn,
             IsFirstUpkeepStepOfTurn,
             IsFirstSpellPaidWithTreasureManaCastThisTurn,
@@ -476,6 +478,10 @@ class ConditionEvaluator(
                 if (condition.yoursOnly && notYourTurn) false
                 else state.step in condition.steps
             }
+
+            // The turn began as an extra turn (CR 500.7). Board-derived — a turn-scoped game flag —
+            // so it reads the same at resolution and under projection.
+            is IsExtraTurn -> state.isExtraTurn
 
             // True while we're in the turn's *natural* end step — i.e. an end step the active player
             // hasn't yet marked as an inserted extra (AddAdditionalEndStepsEffect). Board-derived, so

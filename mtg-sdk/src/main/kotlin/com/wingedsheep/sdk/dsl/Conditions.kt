@@ -2639,6 +2639,13 @@ object Conditions {
         com.wingedsheep.sdk.scripting.conditions.IsFirstUpkeepStepOfTurn
 
     /**
+     * If this turn is an extra turn (CR 500.7) — "during extra turns". Gate a `CantAttack` on it
+     * for "can't attack during extra turns" (Medomai the Ageless).
+     */
+    val IsExtraTurn: ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.IsExtraTurn
+
+    /**
      * If it's the first combat phase of the turn (not an extra combat phase inserted by
      * [Effects.AddCombatPhase]). The intervening-if / loop guard for "after this phase, there is an
      * additional combat phase" riders — see Balthier and Fran, Genji Glove, Raph & Leo.

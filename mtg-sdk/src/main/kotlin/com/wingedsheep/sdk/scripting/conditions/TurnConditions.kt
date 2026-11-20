@@ -139,6 +139,26 @@ data object IsFirstEndStepOfTurn : Condition {
 }
 
 /**
+ * Condition: "during extra turns" / "if this turn is an extra turn" (CR 500.7).
+ *
+ * True for the whole of a turn that began as an extra turn — one created by
+ * [com.wingedsheep.sdk.scripting.effects.TakeExtraTurnEffect] — and false during every natural
+ * turn. Gate a [com.wingedsheep.sdk.scripting.CantAttack] on it for "this creature can't attack
+ * during extra turns" (Medomai the Ageless). The turn-scoped counterpart of the game-long
+ * [com.wingedsheep.sdk.scripting.values.DynamicAmount.ExtraTurnsBegunThisGame] count; neither
+ * [IsYourTurn] nor a tracker amount can tell an extra turn from a natural one.
+ *
+ * Board-derived (reads the game's "this turn is an extra turn" flag, set as the extra turn begins
+ * and cleared at the next turn boundary), so it evaluates identically at resolution and under
+ * projection.
+ */
+@SerialName("IsExtraTurn")
+@Serializable
+data object IsExtraTurn : Condition {
+    override val description: String = "during extra turns"
+}
+
+/**
  * Condition: "If it's the first upkeep step of the turn."
  *
  * True while the game is in an upkeep step and no upkeep step has ended yet this turn — so an extra
