@@ -1,0 +1,1 @@
+- #4783 reads granted extra blocks (Coastline Chimera), puts host-death draw Auras on its own creatures (Fate Foretold), and aims "target land becomes an Island" at the opponent's land when its own attack restriction needs it (Sealock Monster)

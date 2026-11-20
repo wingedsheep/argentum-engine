@@ -287,9 +287,11 @@ object CardIntentAnalyzer {
         pileCast: Set<IntentTag> = emptySet(),
         /**
          * The card the effect is printed on, when known: a creature-type change reads through that
-         * card's own statics ([TypeEvasion]). The card-level readings need it for nothing — every
-         * card [TypeEvasion] reads carries the [CantBeBlockedBy] that already tags it
-         * [IntentTag.EVASION_GRANT].
+         * card's own statics ([TypeEvasion]), and a land-type change through its own attack
+         * restriction or landwalk ([LandTypeAttackEnabler]). The card-level readings don't pass it:
+         * [TypeEvasion]'s cards already carry a [CantBeBlockedBy] tagging them
+         * [IntentTag.EVASION_GRANT], while a land-type enabler (Sealock Monster) opens its own
+         * attack rather than evading blockers, so its card-level intent stays the combat restriction.
          */
         source: CardDefinition? = null,
     ): CardIntent {
@@ -302,6 +304,10 @@ object CardIntentAnalyzer {
             // single-creature can't-block ([CantBlockEffect]'s evasion grant); "becomes a Warrior"
             // is the evasion itself ([GrantEvasionKeywordEffect]'s).
             if (leaf is SetCreatureSubtypesEffect && TypeEvasion.of(source, leaf) != null) tags += IntentTag.EVASION_GRANT
+            // "Target land becomes an Island" beside the card's own "can't attack unless defending
+            // player controls an Island" or islandwalk (Sealock Monster): the type opens that attack
+            // on the defending player — see [LandTypeAttackEnabler].
+            if (leaf is AddSubtypeEffect && LandTypeAttackEnabler.of(source, leaf)) tags += IntentTag.EVASION_GRANT
             if (leaf is AttachEquipmentEffect && stealsItsHost(source)) tags += IntentTag.REMOVAL
             reachOf(leaf)?.let { removalReach = maxOf(removalReach ?: 0, it) }
         }
@@ -2781,6 +2787,11 @@ object CardIntentAnalyzer {
             else keywordTags(effect.keyword)
         // "It gains rebound" / "that spell gains lifelink" (Narset Transcendent's −2, Ojer Pakpatiq):
         // a keyword handed to one of our spells on the stack, read for what it does to the spell.
+        // "This creature can block an additional creature this turn" (Coastline Chimera, Act of
+        // Heroism's grant): a static handed out for a while reads as the static itself would — but
+        // only its extra-blocking half is taken here; every other granted static is its own shape
+        // (a forced attack, an activation lock, a cast permission) and stays unread until read.
+        is GrantStaticAbilityEffect -> tagsOf(effect.ability).filterTo(mutableSetOf()) { it == IntentTag.EXTRA_BLOCKING }
         is GrantKeywordToSpellEffect ->
             runCatching { Keyword.valueOf(effect.keyword) }.getOrNull()?.let(::ownSpellKeywordTags) ?: emptySet()
         is GrantEvasionKeywordEffect, is GrantCantBeBlockedByChosenColorEffect -> setOf(IntentTag.EVASION_GRANT)

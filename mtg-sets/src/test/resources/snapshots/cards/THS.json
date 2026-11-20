@@ -172,6 +172,50 @@
     "colorIdentityOverride": []
 }
 
+// Aqueous Form
+{
+    "name": "Aqueous Form",
+    "manaCost": "{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature can't be blocked.\nWhenever enchanted creature attacks, scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aqueous Form:1",
+                "trigger": "AttackEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantBeBlocked",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba104245-0483-407f-971b-ad6d8efd9733.jpg?1783939802"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Arena Athlete
 {
     "name": "Arena Athlete",
@@ -238,6 +282,110 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Artisan of Forms
+{
+    "name": "Artisan of Forms",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Heroic — Whenever you cast a spell that targets this creature, you may have this creature become a copy of target creature, except it has this ability.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Artisan of Forms:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "sourceRequiredZone": "Battlefield"
+                    },
+                    "then": {
+                        "type": "EachPermanentBecomesCopyOfTarget",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "affected": "Self",
+                        "exceptions": {
+                            "retainResolvingTriggeredAbility": true
+                        }
+                    },
+                    "descriptionOverride": "Have Artisan of Forms become a copy of the target creature?"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, you may have this creature become a copy of target creature, except it has this ability."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "rarity": "RARE",
+        "artist": "Min Yum",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a7f10198-1eef-4577-b375-b900b15060e1.jpg?1783939802",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "You choose the target for the triggered ability when the ability is put onto the stack. You choose whether or not Artisan of Forms becomes a copy of that creature when the ability resolves."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Artisan of Forms copies the printed values of the creature plus any copy effects that have been applied to it. It won't copy any other effects that have changed that creature's power, toughness, color, and so on. Artisan of Forms won't copy any counters on the creature, but Artisan of Forms will retain any counters it already had on it."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If Artisan of Forms becomes a copy of a token creature, it copies the original characteristics of that token as defined by the effect that put it onto the battlefield. It won't become a token creature."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "The copy effect lasts indefinitely. Often, it will last until it is overwritten by another copy effect (if it copies another creature on a future turn, perhaps)."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If the creature is an illegal target when the ability tries to resolve, the ability won't resolve. Artisan of Forms won't become a copy of that creature. It remains whatever it was a copy of."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "When Artisan of Forms becomes a copy of a creature, it's neither entering nor leaving the battlefield. Any enters-the-battlefield or leaves-the-battlefield abilities won't trigger."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If another creature becomes a copy of Artisan of Forms, it will become a copy of whatever Artisan of Forms is currently copying (if anything), plus it will have the triggered ability."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -990,6 +1138,63 @@
     ]
 }
 
+// Coastline Chimera
+{
+    "name": "Coastline Chimera",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Chimera",
+    "oracleText": "Flying\n{1}{W}: This creature can block an additional creature this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Coastline Chimera:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantStaticAbility",
+                    "ability": {
+                        "type": "CanBlockAdditionalForCreatureGroup",
+                        "filter": {
+                            "baseFilter": "permanent",
+                            "scope": "Self"
+                        }
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "This creature can block an additional creature this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "Seeing a chimera overhead foretells good fortune, but only because seeing one any closer foretells dismemberment.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/01320a31-25fa-4324-8225-d150c6aa58a1.jpg?1783939800",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Coastline Chimera's activated ability is cumulative. Activating it a second time will allow it to block three creatures, and so on."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "WHITE"
+    ]
+}
+
 // Commune with the Gods
 {
     "name": "Commune with the Gods",
@@ -1176,6 +1381,89 @@
     "colorIdentityOverride": [
         "BLUE",
         "RED"
+    ]
+}
+
+// Curse of the Swine
+{
+    "name": "Curse of the Swine",
+    "manaCost": "{X}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile X target creatures. For each creature exiled this way, its controller creates a 2/2 green Boar creature token.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Gated",
+                "gate": {
+                    "type": "Gate.DoAction",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "Entity",
+                                    "entity": {
+                                        "type": "ContextTarget",
+                                        "index": 0
+                                    }
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                },
+                                "storeMovedAs": "exiled"
+                            }
+                        ]
+                    },
+                    "successCriterion": {
+                        "type": "SuccessCriterion.CollectionNonEmpty",
+                        "name": "exiled"
+                    }
+                },
+                "then": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Boar"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/2/f/2f40613b-1bde-4939-86ad-6bd40f9db0d6.jpg?1783939698",
+                    "controller": "TargetController"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0",
+                "dynamicMaxCount": "XValue",
+                "dynamicMinCount": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "RARE",
+        "artist": "James Ryman",
+        "flavorText": "Another imminent battle subsided in busy snuffling and carefree rooting.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/78831fc6-ea90-4546-b46a-9c192dbefc65.jpg?1783939800"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -1831,6 +2119,70 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Fate Foretold
+{
+    "name": "Fate Foretold",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, draw a card.\nWhen enchanted creature dies, its controller draws a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fate Foretold:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            {
+                "id": "Fate Foretold:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "ControllerOfTriggeringEntity"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "The tale of her life was already written, but that didn't mean she could predict the ending.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/90d3ef99-6c86-4d70-a9a4-9c3cd4eb9538.jpg?1783939798",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "If the target of an Aura is illegal when it tries to resolve, the Aura won't resolve. The Aura doesn't enter the battlefield, so you won't get to draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3218,6 +3570,101 @@
     ]
 }
 
+// Master of Waves
+{
+    "name": "Master of Waves",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Merfolk Wizard",
+    "oracleText": "Protection from red\nElemental creatures you control get +1/+1.\nWhen this creature enters, create a number of 1/0 blue Elemental creature tokens equal to your devotion to blue. (Each {U} in the mana costs of permanents you control counts toward your devotion to blue.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Color",
+                "color": "RED"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Master of Waves:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "DevotionTo",
+                        "colors": [
+                            "BLUE"
+                        ]
+                    },
+                    "power": 1,
+                    "toughness": 0,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Elemental"
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, create a number of 1/0 blue Elemental creature tokens equal to your devotion to blue."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature Elemental ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "rarity": "MYTHIC",
+        "artist": "Karl Kopinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19242db3-660d-4d66-800c-d6cee636bcaf.jpg?1783939795",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Use your devotion to blue as the triggered ability resolves to determine how many tokens are put onto the battlefield. If Master of Waves is still on the battlefield at that time, its mana cost will count toward your devotion to blue."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Barring other effects, the Elemental tokens will enter the battlefield as 2/1 creatures."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If Master of Waves leaves the battlefield, and nothing else is raising the toughness of the Elemental tokens above 0, the Elemental tokens will die and subsequently cease to exist."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Numeric mana symbols ({0}, {1}, and so on) in mana costs of permanents you control don't count toward your devotion to any color."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Mana symbols in the text boxes of permanents you control don't count toward your devotion to any color."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Hybrid mana symbols, monocolored hybrid mana symbols, and Phyrexian mana symbols do count toward your devotion to their color(s)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Medomai the Ageless
 {
     "name": "Medomai the Ageless",
@@ -3483,6 +3930,71 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Nimbus Naiad
+{
+    "name": "Nimbus Naiad",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment Creature — Nymph",
+    "oracleText": "Bestow {4}{U} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nFlying\nEnchanted creature gets +2/+2 and has flying.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{4}{U}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "artist": "David Palumbo",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19e9c9a2-4c5b-4518-a127-e4ffb23437d6.jpg?1783939794",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "On the stack, a spell with bestow is either a creature spell or an Aura spell. It's never both, although it's an enchantment spell in either case."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Unlike other Aura spells, an Aura spell with bestow isn't countered if its target is illegal as it begins to resolve. Rather, the effect making it an Aura spell ends, it loses enchant creature, it returns to being an enchantment creature spell, and it resolves and enters the battlefield as an enchantment creature."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Unlike other Auras, an Aura with bestow isn't put into its owner's graveyard if it becomes unattached. Rather, the effect making it an Aura ends, it loses enchant creature, and it remains on the battlefield as an enchantment creature. It can attack (and its {T} abilities can be activated, if it has any) on the turn it becomes unattached if it's been under your control continuously, even as an Aura, since your most recent turn began."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If a permanent with bestow enters the battlefield by any method other than being cast, it will be an enchantment creature. You can't choose to pay the bestow cost and have it become an Aura."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Auras attached to a creature don't become tapped when the creature becomes tapped. Except in some rare cases, an Aura with bestow remains untapped when it becomes unattached and becomes a creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3984,6 +4496,86 @@
     ]
 }
 
+// Ordeal of Thassa
+{
+    "name": "Ordeal of Thassa",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhenever enchanted creature attacks, put a +1/+1 counter on it. Then if it has three or more +1/+1 counters on it, sacrifice this Aura.\nWhen you sacrifice this Aura, draw two cards.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ordeal of Thassa:1",
+                "trigger": "AttackEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "EnchantedCreature"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "TriggeringEntity",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": "PLUS_ONE_PLUS_ONE"
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "SacrificeTarget",
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Ordeal of Thassa:2",
+                "trigger": "PermanentsSacrificedEvent",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "rarity": "UNCOMMON",
+        "artist": "Howard Lyon",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fa764244-c5d5-4f27-9c56-866566a1404a.jpg?1783939794"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Phalanx Leader
 {
     "name": "Phalanx Leader",
@@ -4352,6 +4944,67 @@
     "colorIdentityOverride": [
         "WHITE",
         "RED"
+    ]
+}
+
+// Prognostic Sphinx
+{
+    "name": "Prognostic Sphinx",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Sphinx",
+    "oracleText": "Flying\nDiscard a card: This creature gains hexproof until end of turn. Tap it.\nWhenever this creature attacks, scry 3.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Prognostic Sphinx:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Scry",
+                    "count": 3
+                },
+                "descriptionOverride": "Whenever this creature attacks, scry 3."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Prognostic Sphinx:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": "AtomDiscard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HEXPROOF",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Discard a card: This creature gains hexproof until end of turn. Tap it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "rarity": "RARE",
+        "artist": "Steve Prescott",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f0a27a6-54b8-4615-89b3-591a4e3ef626.jpg?1783939793"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4998,6 +5651,126 @@
     ]
 }
 
+// Sealock Monster
+{
+    "name": "Sealock Monster",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Octopus",
+    "oracleText": "This creature can't attack unless defending player controls an Island.\n{5}{U}{U}: Monstrosity 3. (If this creature isn't monstrous, put three +1/+1 counters on it and it becomes monstrous.)\nWhen this creature becomes monstrous, target land becomes an Island in addition to its other types.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sealock Monster:2",
+                "trigger": "BecameMonstrousEvent",
+                "effect": {
+                    "type": "AddSubtype",
+                    "subtype": "Island",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "Permanent"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "land"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Sealock Monster:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{U}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        "IsMonstrous"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddDynamicCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": "Self"
+                            },
+                            "BecomeMonstrous"
+                        ]
+                    },
+                    "descriptionOverride": "Monstrosity 3. (If this creature isn't monstrous, put 3 +1/+1 counters on it and it becomes monstrous.)"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "Exists",
+                    "player": "DefendingPlayer",
+                    "zone": "Battlefield",
+                    "filter": "land Island"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "UNCOMMON",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/f/3f942075-b285-495c-941e-6f1da48d7948.jpg?1783939792",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "The effect making the land an Island doesn't have a duration and will last indefinitely. The land retains any land types and abilities it already had. An Island has the ability \"{T}: Add {U}.\""
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Once a creature becomes monstrous, it can't become monstrous again. If the creature is already monstrous when the monstrosity ability resolves, nothing happens."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Monstrous isn't an ability that a creature has. It's just something true about that creature. If the creature stops being a creature or loses its abilities, it will continue to be monstrous."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "An ability that triggers when a creature becomes monstrous won't trigger if that creature isn't on the battlefield when its monstrosity ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Sedge Scorpion
 {
     "name": "Sedge Scorpion",
@@ -5191,6 +5964,148 @@
     "colorIdentityOverride": [
         "WHITE",
         "GREEN"
+    ]
+}
+
+// Shipbreaker Kraken
+{
+    "name": "Shipbreaker Kraken",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Creature — Kraken",
+    "oracleText": "{6}{U}{U}: Monstrosity 4. (If this creature isn't monstrous, put four +1/+1 counters on it and it becomes monstrous.)\nWhen this creature becomes monstrous, tap up to four target creatures. Those creatures don't untap during their controllers' untap steps for as long as you control this creature.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shipbreaker Kraken:2",
+                "trigger": "BecameMonstrousEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "TapUntap",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "DOESNT_UNTAP",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "duration": {
+                                    "type": "WhileYouControlSource",
+                                    "sourceDescription": "Shipbreaker Kraken"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 4,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Shipbreaker Kraken:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{6}{U}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        "IsMonstrous"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddDynamicCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "target": "Self"
+                            },
+                            "BecomeMonstrous"
+                        ]
+                    },
+                    "descriptionOverride": "Monstrosity 4. (If this creature isn't monstrous, put 4 +1/+1 counters on it and it becomes monstrous.)"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "RARE",
+        "artist": "Jack Wang",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/4585565b-c743-4264-a647-4480ff5a3bbf.jpg?1783939790",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "If you lose control of Shipbreaker Kraken between when its last ability triggers and when that ability resolves, the target creatures will become tapped. However, they won't be affected by the other effect and will untap as normal during their controllers' untap steps."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If another player gains control of Shipbreaker Kraken, the creatures will no longer be affected by the effect preventing them from untapping, even if you later regain control of Shipbreaker Kraken."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If you gain control of a creature that's being prevented from untapping, that creature won't untap during your untap step for as long as you control Shipbreaker Kraken."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "The ability can target a tapped creature. If a targeted creature is already tapped when it resolves, that creature just remains tapped and doesn't untap during its controller's untap step."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Once a creature becomes monstrous, it can't become monstrous again. If the creature is already monstrous when the monstrosity ability resolves, nothing happens."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Monstrous isn't an ability that a creature has. It's just something true about that creature. If the creature stops being a creature or loses its abilities, it will continue to be monstrous."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "An ability that triggers when a creature becomes monstrous won't trigger if that creature isn't on the battlefield when its monstrosity ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -5973,6 +6888,221 @@
     ]
 }
 
+// Thassa's Emissary
+{
+    "name": "Thassa's Emissary",
+    "manaCost": "{3}{U}",
+    "typeLine": "Enchantment Creature — Crab",
+    "oracleText": "Bestow {5}{U} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nWhenever this creature or enchanted creature deals combat damage to a player, draw a card.\nEnchanted creature gets +3/+3.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{5}{U}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thassa's Emissary:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            {
+                "id": "Thassa's Emissary:2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 3
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "rarity": "UNCOMMON",
+        "artist": "Sam Burley",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f52b325b-3ea9-4a99-ae99-9d158560e45b.jpg?1783939789",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "On the stack, a spell with bestow is either a creature spell or an Aura spell. It's never both, although it's an enchantment spell in either case."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Unlike other Aura spells, an Aura spell with bestow isn't countered if its target is illegal as it begins to resolve. Rather, the effect making it an Aura spell ends, it loses enchant creature, it returns to being an enchantment creature spell, and it resolves and enters the battlefield as an enchantment creature."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Unlike other Auras, an Aura with bestow isn't put into its owner's graveyard if it becomes unattached. Rather, the effect making it an Aura ends, it loses enchant creature, and it remains on the battlefield as an enchantment creature. It can attack (and its {T} abilities can be activated, if it has any) on the turn it becomes unattached if it's been under your control continuously, even as an Aura, since your most recent turn began."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If a permanent with bestow enters the battlefield by any method other than being cast, it will be an enchantment creature. You can't choose to pay the bestow cost and have it become an Aura."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Auras attached to a creature don't become tapped when the creature becomes tapped. Except in some rare cases, an Aura with bestow remains untapped when it becomes unattached and becomes a creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Thassa, God of the Sea
+{
+    "name": "Thassa, God of the Sea",
+    "manaCost": "{2}{U}",
+    "typeLine": "Legendary Enchantment Creature — God",
+    "oracleText": "Indestructible\nAs long as your devotion to blue is less than five, Thassa isn't a creature. (Each {U} in the mana costs of permanents you control counts toward your devotion to blue.)\nAt the beginning of your upkeep, scry 1.\n{1}{U}: Target creature you control can't be blocked this turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "INDESTRUCTIBLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thassa, God of the Sea:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Thassa, God of the Sea:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "CANT_BE_BLOCKED",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{1}{U}: Target creature you control can't be blocked this turn."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "RemoveCardType",
+                    "cardType": "CREATURE"
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "DevotionTo",
+                        "colors": [
+                            "BLUE"
+                        ]
+                    },
+                    "operator": "LT",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "rarity": "MYTHIC",
+        "artist": "Jason Chan",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d6876c7a-8bbe-484e-b733-70229fa336cd.jpg?1783939788",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "If a God stops being a creature, it loses the type creature and the creature type God. It continues to be a legendary enchantment."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If a God is attacking or blocking and it stops being a creature, it will be removed from combat. It won't rejoin combat if it resumes being a creature later during that combat."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "The type-changing ability that can make a God not be a creature functions only on the battlefield. It's always a creature card in other zones, regardless of your devotion to its color. It's always a creature spell while it's on the stack."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Mana symbols in the text boxes of permanents you control don't count toward your devotion to any color."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Hybrid mana symbols, monocolored hybrid mana symbols, and Phyrexian mana symbols do count toward your devotion to their color(s)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Time to Feed
 {
     "name": "Time to Feed",
@@ -6129,6 +7259,64 @@
     ]
 }
 
+// Triton Fortune Hunter
+{
+    "name": "Triton Fortune Hunter",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Merfolk Soldier",
+    "oracleText": "Heroic — Whenever you cast a spell that targets this creature, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Triton Fortune Hunter:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "UNCOMMON",
+        "artist": "Clint Cearley",
+        "flavorText": "\"Thassa has blessed me with power and insight. I am careful not to disappoint her.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/1173ff96-998c-4fe7-9b28-602d990e0339.jpg?1783939787",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Triton Shorethief
 {
     "name": "Triton Shorethief",
@@ -6143,6 +7331,111 @@
         "artist": "Howard Lyon",
         "flavorText": "At sunrise, the Champion and her companions awoke to find their supplies gone and Brygus, their sentry, dead. Carefully arranged piles of ornamental shells gave a clear warning: go no further.\n—*The Theriad*",
         "imageUri": "https://cards.scryfall.io/normal/front/d/8/d8f0fe22-dc89-4ad8-b5f6-6d91b61f1385.jpg?1783939787"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Triton Tactics
+{
+    "name": "Triton Tactics",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Up to two target creatures each get +0/+3 until end of turn. Untap those creatures. At this turn's next end of combat, tap each creature that was blocked by one of those creatures this turn and it doesn't untap during its controller's next untap step.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "tap": false
+                    },
+                    {
+                        "type": "CreateDelayedTrigger",
+                        "step": "END_COMBAT",
+                        "effect": {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": {
+                                        "cardPredicates": [
+                                            "IsCreature"
+                                        ],
+                                        "statePredicates": [
+                                            {
+                                                "type": "BlockPairedWithEntityThisTurn",
+                                                "reference": "TriggeringEntity",
+                                                "direction": "BLOCKED_BY"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "TapUntap",
+                                        "target": "IterationEntity"
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "DOESNT_UNTAP",
+                                        "target": "IterationEntity",
+                                        "duration": "UntilAfterAffectedControllersNextUntap"
+                                    }
+                                ]
+                            }
+                        },
+                        "watchedTarget": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "timing": "ThisTurnOnly"
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "UNCOMMON",
+        "artist": "Jack Wang",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/ef2609e3-ec28-4a41-884e-3d10be5e31b4.jpg?1783939787"
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -6518,6 +7811,91 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Wavecrash Triton
+{
+    "name": "Wavecrash Triton",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Merfolk Wizard",
+    "oracleText": "Heroic — Whenever you cast a spell that targets this creature, tap target creature an opponent controls. That creature doesn't untap during its controller's next untap step.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wavecrash Triton:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, tap target creature an opponent controls. That creature doesn't untap during its controller's next untap step."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "artist": "Ryan Barger",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/7336ca1e-13ef-4e49-a526-3f285bc339bb.jpg?1783939786",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Wavecrash Triton's ability can target a creature that's already tapped. That creature still won't untap during its controller's next untap step."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Wavecrash Triton's ability tracks the creature, but not its controller. If the creature changes controllers before its first controller's next untap step has come around, then it won't untap during its new controller's next untap step."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

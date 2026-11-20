@@ -394,7 +394,7 @@ internal object ExpiringGrantWindow {
                         alreadyHas || (pendingOnSelf && (keyword != null || payoff.animates))
                     }
                     fresh.any {
-                        canStillFight(state, projected, playerId, it, sourceId, sourceTaps, keyword, payoff.animates)
+                        canStillFight(state, projected, playerId, it, sourceId, sourceTaps, keyword, payoff.animates, blocks = payoff.blocks)
                     }
                 }
                 PayoffKind.LAND -> affected.any { canStillMatter(state, projected, playerId, it) }
@@ -446,7 +446,7 @@ internal object ExpiringGrantWindow {
     fun readsSpellKeywordGrant(effect: Effect): Boolean {
         val payoffs = expiringPayoffs(effect, readShrinks = true) ?: return false
         val grants = payoffs.filter { it.kind == PayoffKind.CREATURE }
-        return grants.isNotEmpty() && grants.all { it.animates || (it.keyword != null && it.keyword != HASTE) }
+        return grants.isNotEmpty() && grants.all { it.animates || it.blocks || (it.keyword != null && it.keyword != HASTE) }
     }
 
     /**
@@ -766,6 +766,13 @@ internal object ExpiringGrantWindow {
         val sideBenefit: Boolean,
     )
 
+    /**
+     * "Can block an additional creature" (any number, as though it had reach) granted for the
+     * turn — a static whose intent reading is [IntentTag.EXTRA_BLOCKING].
+     */
+    private fun grantsExtraBlocks(leaf: GrantStaticAbilityEffect): Boolean =
+        IntentTag.EXTRA_BLOCKING in CardIntentAnalyzer.staticTags(leaf.ability)
+
     /** "Its activated abilities can't be activated this turn", granted to the permanent it names. */
     private fun locksActivatedAbilities(leaf: Effect): Boolean =
         leaf is GrantStaticAbilityEffect && leaf.duration == Duration.EndOfTurn && leaf.target != EffectTarget.Self &&
@@ -863,9 +870,29 @@ internal object ExpiringGrantWindow {
          * blockers are declared a blocked attacker connects only with trample.
          */
         connects: Boolean = false,
+        /**
+         * The payoff only lets [creature] block more attackers ("can block an additional creature
+         * this turn"). An attacker never blocks, so our own turn has no fight for it; on theirs it
+         * is spent while blockers are still to be declared — and once their attack is known, only
+         * when more than one creature attacks, since a single attacker needs no extra block.
+         */
+        blocks: Boolean = false,
     ): Boolean {
         val entity = state.getEntity(creature) ?: return false
         if (connects && !state.isActiveTurnFor(playerId)) return false
+        if (blocks) {
+            if (state.isActiveTurnFor(playerId) || !projected.isCreature(creature)) return false
+            if (sourceTaps && creature == sourceId || entity.has<TappedComponent>()) return false
+            return when (state.step) {
+                in UNTIL_ATTACKERS_DECLARED -> true
+                // Only attackers coming at us (or our planeswalkers/battles) can be blocked by our creature.
+                Step.DECLARE_ATTACKERS -> state.getBattlefield().count { id ->
+                    val defender = state.getEntity(id)?.get<AttackingComponent>()?.defenderId
+                    defender != null && (defender == playerId || projected.getController(defender) == playerId)
+                } > 1
+                else -> false
+            }
+        }
         val tapsAway = sourceTaps && creature == sourceId
         if (animates && !projected.isCreature(creature)) {
             if (tapsAway || entity.has<TappedComponent>()) return false
@@ -1352,6 +1379,8 @@ internal object ExpiringGrantWindow {
         val setToughness: Int? = null,
         /** For a [PayoffKind.CREATURE]: the payoff is the body itself — see [canStillFight]'s `animates`. */
         val animates: Boolean = false,
+        /** For a [PayoffKind.CREATURE]: the payoff is only more blocks — see [canStillFight]'s `blocks`. */
+        val blocks: Boolean = false,
         /** For a [PayoffKind.CONNECT]: the creatures of ours whose combat damage fires the trigger. */
         val matching: GameObjectFilter? = null,
         /**
@@ -1491,6 +1520,10 @@ internal object ExpiringGrantWindow {
                 )
                 leaf is GrantKeywordEffect && leaf.duration == Duration.EndOfTurn ->
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target, leaf.keyword)
+                // "This creature can block an additional creature this turn" (Coastline Chimera):
+                // more blocks for this turn's fight — spent only in a block, see [Payoff.blocks].
+                leaf is GrantStaticAbilityEffect && leaf.duration == Duration.EndOfTurn && grantsExtraBlocks(leaf) ->
+                    payoffs += Payoff(PayoffKind.CREATURE, leaf.target, blocks = true)
                 leaf is GrantEvasionKeywordEffect && leaf.duration == Duration.EndOfTurn ->
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target)
                 // "Target creature can't be blocked by creatures of the color of your choice this turn"
