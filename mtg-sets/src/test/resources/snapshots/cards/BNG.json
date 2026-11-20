@@ -110,6 +110,106 @@
     ]
 }
 
+// Akroan Conscriptor
+{
+    "name": "Akroan Conscriptor",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "Heroic — Whenever you cast a spell that targets this creature, gain control of another target creature until end of turn. Untap that creature. It gains haste until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Akroan Conscriptor:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainControl",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "EndOfTurn"
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "tap": false
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, gain control of another target creature until end of turn. Untap that creature. It gains haste until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "UNCOMMON",
+        "artist": "James Ryman",
+        "flavorText": "\"The time to serve is now.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/decb529f-44fd-409d-932f-be9c403f12f6.jpg?1783939549",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "The ability can target any creature except Akroan Conscriptor, including one that's untapped or one you already control."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "Gaining control of a creature doesn't cause you to gain control of any Auras or Equipment attached to it. Notably, if that creature is enchanted by an Aura with bestow and dies while under your control, the Aura's controller will continue to control the creature that Aura becomes."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If you control a legendary creature and gain control of another legendary creature with the same name, you'll choose one to remain on the battlefield and put the other into its owner's graveyard."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Akroan Phalanx
 {
     "name": "Akroan Phalanx",
@@ -2327,6 +2427,92 @@
     ]
 }
 
+// Everflame Eidolon
+{
+    "name": "Everflame Eidolon",
+    "manaCost": "{1}{R}",
+    "typeLine": "Enchantment Creature — Spirit",
+    "oracleText": "Bestow {2}{R} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\n{R}: This creature gets +1/+0 until end of turn. If it's an Aura, enchanted creature gets +1/+0 until end of turn instead.\nEnchanted creature gets +1/+1.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{2}{R}"
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Everflame Eidolon:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": "Aura"
+                        }
+                    },
+                    "then": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "EnchantedCreature"
+                    },
+                    "otherwise": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "Self"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a018d5ea-5229-40ca-b7c5-31d3e8ebb894.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Excoriate
 {
     "name": "Excoriate",
@@ -2437,6 +2623,63 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Fall of the Hammer
+{
+    "name": "Fall of the Hammer",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control deals damage equal to its power to another target creature.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "EntityProperty",
+                "entity": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "numericProperty": "Power"
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t1"
+            },
+            "damageSource": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetOther",
+                "baseRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    }
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "artist": "Adam Paquette",
+        "flavorText": "It is unwise to insult the god of the forge. It is also unwise to stand near anyone else who has insulted him.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/ed6f1a4b-db3b-4dfc-8d3a-cc73b011a5dd.jpg?1783939546"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -2603,6 +2846,58 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Fated Conflagration
+{
+    "name": "Fated Conflagration",
+    "manaCost": "{1}{R}{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Fated Conflagration deals 5 damage to target creature or planeswalker. If it's your turn, scry 2. (Look at the top two cards of your library, then put any number of them on the bottom of your library and the rest on top in any order.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "IsYourTurn"
+                    },
+                    "then": {
+                        "type": "Scry",
+                        "count": 2
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "RARE",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66ea1aeb-bd42-4960-b40f-e7c2fd1efb5c.jpg?1783939545"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -2782,6 +3077,68 @@
     ]
 }
 
+// Fearsome Temper
+{
+    "name": "Fearsome Temper",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+2 and has \"{2}{R}: Target creature can't block this creature this turn.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Fearsome Temper:1",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{2}{R}"
+                        }
+                    },
+                    "effect": {
+                        "type": "CantBlockTargetCreatures",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "attacker": "Self"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "artist": "Seb McKinnon",
+        "flavorText": "Purphoros is god of creation and destruction, which makes him the most creatively destructive god in the pantheon.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c6e7884c-2d66-42d1-87d1-1341a6fa52d8.jpg?1783939546"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Felhide Brawler
 {
     "name": "Felhide Brawler",
@@ -2820,6 +3177,226 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Felhide Spiritbinder
+{
+    "name": "Felhide Spiritbinder",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Minotaur Shaman",
+    "oracleText": "Inspired — Whenever this creature becomes untapped, you may pay {1}{R}. If you do, create a token that's a copy of another target creature, except it's an enchantment in addition to its other types. It gains haste. Exile it at the beginning of the next end step.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Felhide Spiritbinder:1",
+                "trigger": "UntapEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}{R}"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CreateTokenCopyOfTarget",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "addCardTypes": [
+                                    "ENCHANTMENT"
+                                ],
+                                "exileAtStep": "END"
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Collection",
+                                    "collection": "createdTokens"
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "HASTE",
+                                    "target": "IterationEntity",
+                                    "duration": "Permanent"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Inspired — Whenever this creature becomes untapped, you may pay {1}{R}. If you do, create a token that's a copy of another target creature, except it's an enchantment in addition to its other types. It gains haste. Exile it at the beginning of the next end step."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "rarity": "RARE",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bbbbe4ce-d6a6-428d-aeee-1c316f358777.jpg?1783939545",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "The token copies exactly what was printed on the original creature (except that the copy is also an enchantment) and nothing else (unless that permanent is copying something else or is a token). It doesn't copy whether that creature is tapped or untapped, whether it has any counters on it or Auras and Equipment attached to it, or any non-copy effects that have changed its power, toughness, types, color, and so on."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If another creature becomes or enters the battlefield as a copy of the token, that creature won't have haste and you won't exile it. However, if Felhide Spiritbinder creates multiple tokens due to a replacement effect (like the one Doubling Season creates), each of those tokens will have haste and you'll exile each of them."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If the inspired ability includes an optional cost, you decide whether to pay that cost as the ability resolves. You can do this even if the creature leaves the battlefield in response to the ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Flame-Wreathed Phoenix
+{
+    "name": "Flame-Wreathed Phoenix",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Phoenix",
+    "oracleText": "Flying\nTribute 2 (As this creature enters, an opponent of your choice may put two +1/+1 counters on it.)\nWhen this creature enters, if tribute wasn't paid, it gains haste and \"When this creature dies, return it to its owner's hand.\"",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "TRIBUTE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "TRIBUTE",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Flame-Wreathed Phoenix:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "target": "Self",
+                            "duration": "Permanent"
+                        },
+                        {
+                            "type": "GrantTriggeredAbility",
+                            "ability": {
+                                "id": "Flame-Wreathed Phoenix:1",
+                                "trigger": {
+                                    "type": "ZoneChangeEvent",
+                                    "from": "Battlefield",
+                                    "to": "Graveyard"
+                                },
+                                "effect": {
+                                    "type": "MoveToZone",
+                                    "target": "Self",
+                                    "destination": "Hand",
+                                    "fromZone": "Graveyard"
+                                },
+                                "descriptionOverride": "When this creature dies, return it to its owner's hand."
+                            },
+                            "target": "Self",
+                            "duration": "Permanent"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "SourceChosenModeIs",
+                        "modeId": "tribute_paid"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "chooser": "AnOpponent",
+                "modeOptions": [
+                    {
+                        "id": "tribute_paid",
+                        "label": "Pay tribute",
+                        "description": "Put 2 +1/+1 counters on it",
+                        "iconKey": "plusOneCounter"
+                    },
+                    {
+                        "id": "tribute_not_paid",
+                        "label": "Don't pay tribute",
+                        "description": "Its \"if tribute wasn't paid\" ability triggers"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "count": 2,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "tribute_paid"
+                },
+                "placedBy": "AnOpponent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "rarity": "MYTHIC",
+        "artist": "James Ryman",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a36bca58-e92f-4496-92d6-5ecba7a0424d.jpg?1783939545",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "For effects that check which player put counters on the entering creature, the player chosen to pay tribute puts those counters on it, not the creature's controller."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If the opponent pays tribute, the creature will enter the battlefield with the specified number of +1/+1 counters on it. It won't enter the battlefield and then have the +1/+1 counters placed on it."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "Players can't respond to the tribute decision before the creature enters the battlefield. That is, if the opponent doesn't pay tribute, the triggered ability will trigger before any player has a chance to remove the creature."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "The triggered ability will resolve even if the creature with tribute isn't on the battlefield at that time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -2921,6 +3498,99 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Forgestoker Dragon
+{
+    "name": "Forgestoker Dragon",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\n{1}{R}: This creature deals 1 damage to target creature. That creature can't block this combat. Activate only if this creature is attacking.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Forgestoker Dragon:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "CantBlockTargetCreatures",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "EndOfCombat"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": "attacking"
+                        }
+                    }
+                ],
+                "descriptionOverride": "{1}{R}: This creature deals 1 damage to target creature. That creature can't block this combat. Activate only if this creature is attacking."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "98",
+        "rarity": "RARE",
+        "artist": "Todd Lockwood",
+        "flavorText": "The Akroans fashion their helms to honor the dragons, not to protect against them, as that would be of little help.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4fd44170-ded7-4895-8950-bfa9d19e471d.jpg?1783939545",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "Forgestoker Dragon's activated ability can target any creature, not just creatures controlled by the defending player or ones that could block."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If you don't want the target creature to be able to block, Forgestoker Dragon's activated ability must be activated during the declare attackers step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -4152,6 +4822,52 @@
     ]
 }
 
+// Lightning Volley
+{
+    "name": "Lightning Volley",
+    "manaCost": "{3}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Until end of turn, creatures you control gain \"{T}: This creature deals 1 damage to any target.\"",
+    "script": {
+        "spellEffect": {
+            "type": "GrantActivatedAbilityToGroup",
+            "ability": {
+                "id": "Lightning Volley:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "damageSource": "Self"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}: This creature deals 1 damage to any target."
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "UNCOMMON",
+        "artist": "John Avon",
+        "flavorText": "\"We are the motes of rain that join to make the thundercloud. The power of the storm god surges through us!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b2af8746-033d-4a8a-b62d-ab5addb33d4d.jpg?1783939544"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Loyal Pegasus
 {
     "name": "Loyal Pegasus",
@@ -4799,6 +5515,66 @@
     ]
 }
 
+// Nyxborn Rollicker
+{
+    "name": "Nyxborn Rollicker",
+    "manaCost": "{R}",
+    "typeLine": "Enchantment Creature — Satyr",
+    "oracleText": "Bestow {1}{R} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nEnchanted creature gets +1/+1.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "BESTOW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Bestow",
+            "cost": "{1}{R}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "artist": "Seb McKinnon",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b2081bf0-09f5-4c95-b4cc-48a8784294d4.jpg?1783939543",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "On the stack, a spell with bestow is either a creature spell or an Aura spell. It's never both, although it's an enchantment spell in either case."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Unlike other Aura spells, an Aura spell with bestow isn't countered if its target is illegal as it begins to resolve. Rather, the effect making it an Aura spell ends, it loses enchant creature, it returns to being an enchantment creature spell, and it resolves and enters the battlefield as an enchantment creature."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Unlike other Auras, an Aura with bestow isn't put into its owner's graveyard if it becomes unattached. Rather, the effect making it an Aura ends, it loses enchant creature, and it remains on the battlefield as an enchantment creature. It can attack (and its {T} abilities can be activated, if it has any) on the turn it becomes unattached if it's been under your control continuously, even as an Aura, since your most recent turn began."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If a permanent with bestow enters the battlefield by any method other than being cast, it will be an enchantment creature. You can't choose to pay the bestow cost and have it become an Aura."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Auras attached to a creature don't become tapped when the creature becomes tapped. Except in some rare cases, an Aura with bestow remains untapped when it becomes unattached and becomes a creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Nyxborn Shieldmate
 {
     "name": "Nyxborn Shieldmate",
@@ -5372,6 +6148,53 @@
     "colorIdentityOverride": []
 }
 
+// Pinnacle of Rage
+{
+    "name": "Pinnacle of Rage",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Pinnacle of Rage deals 3 damage to each of two targets.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 3
+                },
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "count": 2
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "rarity": "UNCOMMON",
+        "artist": "Noah Bradley",
+        "flavorText": "Mount Sulano erupted not in magma but in anger.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b26ff2fa-82de-4831-9341-a446abf9ed03.jpg?1783939543",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "You must choose two legal targets to cast Pinnacle of Rage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Plea for Guidance
 {
     "name": "Plea for Guidance",
@@ -5590,6 +6413,73 @@
     ]
 }
 
+// Satyr Firedancer
+{
+    "name": "Satyr Firedancer",
+    "manaCost": "{1}{R}",
+    "typeLine": "Enchantment Creature — Satyr",
+    "oracleText": "Whenever an instant or sorcery spell you control deals damage to an opponent, this creature deals that much damage to target creature that player controls.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Satyr Firedancer:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "EachOpponent"
+                    },
+                    "sourceFilter": "instant|sorcery ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "damageSource": "Self"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "controllerPredicate": {
+                                "type": "ControlledByReferencedPlayer",
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "TriggeringPlayer"
+                                }
+                            }
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7fc6a735-cbf5-4af2-b15c-7ced82f0d9da.jpg?1783939542"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Satyr Nyx-Smith
 {
     "name": "Satyr Nyx-Smith",
@@ -5768,6 +6658,74 @@
         "artist": "Jonas De Ro",
         "flavorText": "When Purphoros cleans the ashes from his forge, entire cities vanish.",
         "imageUri": "https://cards.scryfall.io/normal/front/2/7/273f25fc-9c9f-4b73-a28b-1461d8fcd443.jpg?1783939539"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Searing Blood
+{
+    "name": "Searing Blood",
+    "manaCost": "{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Searing Blood deals 2 damage to target creature. When that creature dies this turn, Searing Blood deals 3 damage to the creature's controller.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": "ControllerOfTriggeringEntity"
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "ZoneChangeEvent",
+                            "from": "Battlefield",
+                            "to": "Graveyard"
+                        }
+                    },
+                    "watchedTarget": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "fireOnce": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "Purphoros's blessing: sometimes a boon, sometimes a bane. Always ablaze.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bb43fd07-d281-447d-88bf-c53498c2cf20.jpg?1783939539"
     },
     "colorIdentityOverride": [
         "RED"
@@ -6695,6 +7653,174 @@
     "colorIdentityOverride": [
         "WHITE",
         "GREEN"
+    ]
+}
+
+// Thunder Brute
+{
+    "name": "Thunder Brute",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Creature — Cyclops",
+    "oracleText": "Trample\nTribute 3 (As this creature enters, an opponent of your choice may put three +1/+1 counters on it.)\nWhen this creature enters, if tribute wasn't paid, it gains haste until end of turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE",
+        "TRIBUTE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "TRIBUTE",
+            "n": 3
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thunder Brute:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "SourceChosenModeIs",
+                        "modeId": "tribute_paid"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "chooser": "AnOpponent",
+                "modeOptions": [
+                    {
+                        "id": "tribute_paid",
+                        "label": "Pay tribute",
+                        "description": "Put 3 +1/+1 counters on it",
+                        "iconKey": "plusOneCounter"
+                    },
+                    {
+                        "id": "tribute_not_paid",
+                        "label": "Don't pay tribute",
+                        "description": "Its \"if tribute wasn't paid\" ability triggers"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "count": 3,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "tribute_paid"
+                },
+                "placedBy": "AnOpponent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "rarity": "UNCOMMON",
+        "artist": "Phill Simmer",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c28fa4f8-4b87-41dc-802d-dfd160ccf1a8.jpg?1783939539",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "For effects that check which player put counters on the entering creature, the player chosen to pay tribute puts those counters on it, not the creature's controller."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "If the opponent pays tribute, the creature will enter the battlefield with the specified number of +1/+1 counters on it. It won't enter the battlefield and then have the +1/+1 counters placed on it."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "Players can't respond to the tribute decision before the creature enters the battlefield. That is, if the opponent doesn't pay tribute, the triggered ability will trigger before any player has a chance to remove the creature."
+            },
+            {
+                "date": "2014-02-01",
+                "text": "The triggered ability will resolve even if the creature with tribute isn't on the battlefield at that time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Thunderous Might
+{
+    "name": "Thunderous Might",
+    "manaCost": "{1}{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhenever enchanted creature attacks, it gets +X/+0 until end of turn, where X is your devotion to red. (Each {R} in the mana costs of permanents you control counts toward your devotion to red.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thunderous Might:1",
+                "trigger": "AttackEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "DevotionTo",
+                        "colors": [
+                            "RED"
+                        ]
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "TriggeringEntity"
+                },
+                "descriptionOverride": "Whenever enchanted creature attacks, it gets +X/+0 until end of turn, where X is your devotion to red."
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "UNCOMMON",
+        "artist": "Jaime Jones",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/3/d361851d-e2d4-4912-ba08-81913f6b6e08.jpg?1783939538",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Mana symbols in the text boxes of permanents you control don't count toward your devotion to any color."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Numeric mana symbols ({0}, {1}, and so on) in mana costs of permanents you control don't count toward your devotion to any color."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Hybrid mana symbols, monocolored hybrid mana symbols, and Phyrexian mana symbols do count toward your devotion to their color(s)."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If an activated ability or triggered ability has an effect that depends on your devotion to a color, you count the number of mana symbols of that color among the mana costs of permanents you control as the ability resolves. The permanent with that ability will be counted if it's still on the battlefield at that time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

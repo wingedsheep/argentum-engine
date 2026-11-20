@@ -2567,6 +2567,7 @@ object TargetPolarityAnalyzer {
         for (ability in card.script.triggeredAbilities) readings += hostDamageTriggerReadings(ability)
         for (ability in card.script.triggeredAbilities) readings += hostStepTriggerReadings(ability)
         for (ability in card.script.triggeredAbilities) readings += hostAttackCopyReadings(ability)
+        for (ability in card.script.triggeredAbilities) readings += hostCombatTriggerReadings(ability, definitions)
         val abilityEffects = card.script.triggeredAbilities.map { it.effect } +
             card.script.activatedAbilities.map { it.effect }
         for (effect in abilityEffects) {
@@ -2968,6 +2969,27 @@ object TargetPolarityAnalyzer {
                     leaf.controller == null && !leaf.attacking
             }
         }
+    }
+
+    /**
+     * What an attachment's own combat trigger does to its host — "whenever enchanted creature
+     * attacks, it gets +X/+0 until end of turn" (Thunderous Might). An attached attack or
+     * becomes-blocked trigger binds the host itself as the triggering entity, so a leaf aimed at
+     * "it" lands on the creature the Aura enchants and reads as the same leaf aimed at the enchanted
+     * creature would. The token copy of the attacker (Mirror Mockery) is [hostAttackCopyReadings]'
+     * reading, not this one's.
+     */
+    private fun hostCombatTriggerReadings(ability: TriggeredAbility, definitions: CardLookup): List<TargetPolarity> {
+        if (ability.binding != TriggerBinding.ATTACHED) return emptyList()
+        val trigger = ability.trigger
+        if (trigger !is EventPattern.AttackEvent && trigger !is EventPattern.BecomesBlockedEvent &&
+            trigger != EventPattern.BecomesUnblockedEvent
+        ) return emptyList()
+        return EffectWalker.payoffLeaves(ability.effect)
+            .filterNot { it is CreateTokenCopyOfTargetEffect }
+            .flatMap { leaf ->
+                classify(leaf, definitions).filter { (target, _) -> target == EffectTarget.TriggeringEntity }.map { it.second }
+            }
     }
 
     private fun staticPolarity(static: StaticAbility): TargetPolarity? =
