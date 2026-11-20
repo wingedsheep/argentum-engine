@@ -357,7 +357,7 @@ internal object ExpiringGrantWindow {
             }
             if (payoff.kind == PayoffKind.ACTIVATION) {
                 val group = payoff.group ?: return false
-                val members = groupMembers(state, projected, playerId, group, sourceId, intents) ?: return false
+                val members = groupMembers(state, projected, playerId, group, sourceId, intents, creaturesOnly = false) ?: return false
                 return@none members.any { !(sourceTaps && it == sourceId) && canStillTap(state, projected, playerId, it) }
             }
             if (payoff.kind == PayoffKind.STRIP) {
@@ -459,10 +459,10 @@ internal object ExpiringGrantWindow {
             !CardIntentAnalyzer.opponentsOnly(leaf.filter.baseFilter.controllerPredicate)
 
     /** Whether [creature] of ours can still pay a `{T}` cost this turn: untapped, and not summoning sick. */
-    private fun canStillTap(state: GameState, projected: ProjectedState, playerId: EntityId, creature: EntityId): Boolean {
-        val entity = state.getEntity(creature) ?: return false
-        return projected.getController(creature) == playerId && !entity.has<TappedComponent>() &&
-            !SummoningSicknessRules.blocksTapOrUntapCost(creature, entity, projected)
+    private fun canStillTap(state: GameState, projected: ProjectedState, playerId: EntityId, permanent: EntityId): Boolean {
+        val entity = state.getEntity(permanent) ?: return false
+        return projected.getController(permanent) == playerId && !entity.has<TappedComponent>() &&
+            !SummoningSicknessRules.blocksTapOrUntapCost(permanent, entity, projected)
     }
 
     private val HASTE = Keyword.HASTE.name

@@ -2973,8 +2973,8 @@ object TargetPolarityAnalyzer {
 
     /**
      * What an attachment's own combat trigger does to its host — "whenever enchanted creature
-     * attacks, it gets +X/+0 until end of turn" (Thunderous Might). An attached attack or
-     * becomes-blocked trigger binds the host itself as the triggering entity, so a leaf aimed at
+     * attacks, it gets +X/+0 until end of turn" (Thunderous Might). An attached attack, unblocked or
+     * unfiltered becomes-blocked trigger binds the host itself as the triggering entity, so a leaf aimed at
      * "it" lands on the creature the Aura enchants and reads as the same leaf aimed at the enchanted
      * creature would. The token copy of the attacker (Mirror Mockery) is [hostAttackCopyReadings]'
      * reading, not this one's.
@@ -2982,9 +2982,10 @@ object TargetPolarityAnalyzer {
     private fun hostCombatTriggerReadings(ability: TriggeredAbility, definitions: CardLookup): List<TargetPolarity> {
         if (ability.binding != TriggerBinding.ATTACHED) return emptyList()
         val trigger = ability.trigger
-        if (trigger !is EventPattern.AttackEvent && trigger !is EventPattern.BecomesBlockedEvent &&
-            trigger != EventPattern.BecomesUnblockedEvent
-        ) return emptyList()
+        // A blocker-filtered becomes-blocked trigger ("blocked by a Wall") binds the blocker, not the host.
+        val hostBound = trigger is EventPattern.AttackEvent || trigger == EventPattern.BecomesUnblockedEvent ||
+            (trigger is EventPattern.BecomesBlockedEvent && trigger.filter == null)
+        if (!hostBound) return emptyList()
         return EffectWalker.payoffLeaves(ability.effect)
             .filterNot { it is CreateTokenCopyOfTargetEffect }
             .flatMap { leaf ->
