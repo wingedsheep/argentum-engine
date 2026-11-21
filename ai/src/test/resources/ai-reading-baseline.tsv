@@ -2773,6 +2773,7 @@ Careless Celebrant
 Caretaker's Talent
 Cargo Ship
 Carnage Altar
+Carnage Gladiator
 Carnage Tyrant
 Carnage, Crimson Chaos
 Carnelian Orb of Dragonkind
@@ -6471,6 +6472,7 @@ Femeref Scouts
 Fen Hauler
 Fencing Ace
 Feral Abomination
+Feral Animist
 Feral Deathgorger
 Feral Deceiver	intent: Pipeline(TopOfLibrary→?)
 Feral Encounter
@@ -7633,6 +7635,7 @@ Glasswing Grace
 Glassworks // Shattered Yard
 Glaze Fiend
 Gleam of Authority
+Gleam of Battle
 Gleaming Barrier
 Gleaming Bastion
 Gleaming Geardrake
@@ -8846,6 +8849,7 @@ Hired Blade
 Hired Claw
 Hired Hexblade
 Hired Poisoner
+Hired Torturer
 Hisoka's Defiance
 Hisoka's Guard
 Hisoka, Minamo Sensei
@@ -10454,6 +10458,7 @@ Kor Scythemaster
 Kor Sky Climber
 Korlessa, Scale Singer
 Kormus Bell
+Korozda Gorgon
 Korvold and the Noble Thief
 Korvold, Fae-Cursed King
 Koth of the Homestead
@@ -10491,6 +10496,7 @@ Krark-Clan Grunt
 Krark-Clan Ironworks
 Krark-Clan Shaman
 Krark-Clan Stoker
+Krasis Incubation
 Kraul Foragers
 Kraul Harpooner
 Kraul Raider
@@ -10756,6 +10762,7 @@ Legion Leadership
 Legion Lieutenant
 Legion Warboss
 Legion's End
+Legion's Initiative
 Legion's Judgment
 Legion's Landing
 Legions to Ashes
@@ -12282,6 +12289,7 @@ Mordenkainen
 Mordenkainen's Polymorph
 Mordor Muster
 Mordor Trebuchet
+Morgue Burst
 Morgue Theft
 Morgue Toad
 Morgul-Knife Wound	polarity: Aura>GrantTriggeredAbility; polarity: Aura>ModifyStats
@@ -14384,6 +14392,7 @@ Pyreswipe Hawk
 Pyretic Prankster
 Pyretic Rebirth
 Pyretic Ritual
+Pyrewild Shaman
 Pyrewood Gearhulk
 Pyrite Spellbomb
 Pyroceratops
@@ -15051,6 +15060,7 @@ Rending Volley
 Renegade Demon
 Renegade Firebrand
 Renegade Freighter
+Renegade Krasis
 Renegade Map
 Renegade Rallier
 Renegade Reaper
@@ -16129,6 +16139,7 @@ Scion of Oona
 Scion of Opulence
 Scion of Stygia
 Scion of Ugin
+Scion of Vitu-Ghazi
 Scion of the Swarm
 Scion of the Ur-Dragon
 Scion of the Wild
@@ -16808,6 +16819,7 @@ Show of Confidence
 Show of Valor
 Showdown of the Skalds
 Shower of Arrows
+Showstopper
 Shrapnel Blast
 Shrapnel Slinger
 Shred Memory
@@ -19746,6 +19758,7 @@ Titanium Golem
 Titanoth Rex
 Titans' Nest
 Titans' Vanguard
+Tithe Drinker
 Tithe Taker
 Tithebearer Giant
 Tithing Blade
@@ -21432,6 +21445,7 @@ Weakness
 Weakstone
 Weakstone's Subjugation
 Weapon Rack
+Weapon Surge
 Weaponcraft Enthusiast
 Weaponize the Monsters
 Weapons Manufacturing
@@ -22140,6 +22154,7 @@ Zhao, Ruthless Admiral
 Zhao, the Moon Slayer
 Zhou Yu, Chief Commander
 Zhuge Jin, Wu Strategist
+Zhur-Taa Ancient
 Zhur-Taa Druid
 Zhur-Taa Goblin
 Ziatora's Envoy
