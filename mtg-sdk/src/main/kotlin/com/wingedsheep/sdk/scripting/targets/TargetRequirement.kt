@@ -89,12 +89,14 @@ enum class TargetChooser {
 
     /**
      * Nobody decides — "target creature an opponent controls **chosen at random**" (Scab-Clan
-     * Giant). As the triggered ability is put on the stack the engine draws one legal target
-     * uniformly from the game's seeded RNG and announces it with no decision; it is still a real
+     * Giant), "any target chosen at random" (Goblin Test Pilot). As the triggered ability is put on
+     * the stack, or the activated ability is announced (before its costs are paid), the engine draws
+     * one legal target uniformly from the game's seeded RNG with no decision; it is still a real
      * target (hexproof and protection keep a creature out of the draw, and an illegal target at
      * resolution fizzles the ability, CR 608.2b). Only a single mandatory target can be drawn —
-     * [TargetObject] and [AnyTarget] reject any other count — and only the triggered-ability
-     * announcement path honors it (`CardLinter` fails it anywhere else).
+     * [TargetObject] and [AnyTarget] reject any other count, and it must be the ability's only
+     * target requirement — and only the triggered- and activated-ability announcement paths honor
+     * it (`CardLinter` fails it anywhere else).
      */
     Random
 }
