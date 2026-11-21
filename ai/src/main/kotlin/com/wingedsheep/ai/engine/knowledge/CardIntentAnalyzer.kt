@@ -312,6 +312,14 @@ object CardIntentAnalyzer {
             // on the defending player — see [LandTypeAttackEnabler].
             if (leaf is AddSubtypeEffect && LandTypeAttackEnabler.of(source, leaf)) tags += IntentTag.EVASION_GRANT
             if (leaf is AttachEquipmentEffect && stealsItsHost(source)) tags += IntentTag.REMOVAL
+            // "Put a fate counter on another target creature" beside "exile target creature that
+            // has a fate counter on it" (Triad of Fates): marking the victim is the targeting half
+            // of that removal — [TargetPolarityAnalyzer.markerCounterPolarity].
+            if (leaf is AddCountersEffect && hitsAnotherPermanent(leaf.target) &&
+                TargetPolarityAnalyzer.counterPolarity(leaf.counterType) == null &&
+                !TargetPolarityAnalyzer.targetsOwnSide(leaf.target, requirements) &&
+                TargetPolarityAnalyzer.markerCounterPolarity(source, leaf.counterType, TargetPolarityAnalyzer.NO_DEFINITIONS) == TargetPolarity.HARMFUL
+            ) tags += IntentTag.REMOVAL
             reachOf(leaf)?.let { removalReach = maxOf(removalReach ?: 0, it) }
         }
         return CardIntent.UNKNOWN.copy(tags = tags, removalReach = removalReach)

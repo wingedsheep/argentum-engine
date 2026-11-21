@@ -2053,7 +2053,10 @@ object TargetPolarityAnalyzer {
             is GrantCantBeBlockedByChosenColorEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is GrantProtectionFromChosenColorEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is GrantHexproofFromChosenColorEffect -> leaf.target to TargetPolarity.BENEFICIAL
-            is AddCountersEffect -> leaf.target to counterPolarity(leaf.counterType)
+            // A marker counter with no rule of its own (fate) means what the card that places it
+            // does to what bears one — see [markerCounterPolarity].
+            is AddCountersEffect -> leaf.target to
+                (counterPolarity(leaf.counterType) ?: markerCounterPolarity(source, leaf.counterType, definitions))
             is AdaptEffect -> leaf.target to TargetPolarity.BENEFICIAL
             // "Target creature you control explores" (Enter the Unknown): the explorer gets a +1/+1
             // counter, or its controller the revealed land in hand — either way a gift to that side.
@@ -2357,6 +2360,36 @@ object TargetPolarityAnalyzer {
             in BENEFICIAL_COUNTERS -> TargetPolarity.BENEFICIAL
             in HARMFUL_COUNTERS -> TargetPolarity.HARMFUL
             else -> null
+        }
+    }
+
+    /**
+     * A counter kind [counterPolarity] leaves unread, put by [source] — what the card's own other
+     * abilities do to a target that must bear one. Triad of Fates' fate counter is the price of
+     * its "exile target creature that has a fate counter on it": marking a creature is the
+     * targeting half of that removal, so it goes on theirs. A blink beside the removal (its
+     * other fate ability) is a choice either side can use and doesn't overturn it; a card whose
+     * keyed abilities only help or only disagree reads that way. Null when no ability of
+     * [source] keys a target on the counter. The keyed abilities are read without [source], so
+     * a marker reading never recurses into another.
+     */
+    internal fun markerCounterPolarity(source: CardDefinition?, type: CounterType, definitions: CardLookup): TargetPolarity? {
+        if (source == null) return null
+        val readings = source.script.activatedAbilities.flatMap { ability ->
+            val reqs = ability.targetRequirements
+            val keyed = reqs.indices.filter { slot ->
+                objectFilter(reqs[slot])?.baseFilter?.statePredicates
+                    ?.any { it is StatePredicate.HasCounter && it.counterType == type } == true
+            }
+            if (keyed.isEmpty()) return@flatMap emptyList()
+            val slots = forRequirements(ability.effect, reqs, definitions)
+            keyed.mapNotNull { slots.getOrNull(it) }
+        }.filter { it != TargetPolarity.UNKNOWN }.toSet()
+        return when {
+            readings.isEmpty() -> null
+            TargetPolarity.HARMFUL in readings && TargetPolarity.BENEFICIAL !in readings -> TargetPolarity.HARMFUL
+            readings.size == 1 -> readings.single()
+            else -> TargetPolarity.FLEXIBLE
         }
     }
 
