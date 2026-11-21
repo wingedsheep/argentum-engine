@@ -3387,13 +3387,13 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Heroic Counters',
         colors: ['G', 'W'],
         keyCard: 'Chronicler of Heroes',
-        description: 'Grow heroic creatures like Setessan Battle Priest and Staunch-Hearted Warrior with +1/+1 counters, bestow Leafcrown Dryad, and spread counters with Centaur Battlemaster so Chronicler of Heroes draws a card. A midrange deck whose creatures outgrow the opponent\'s blockers.',
+        description: 'Grow heroic creatures like Staunch-Hearted Warrior, Wingsteed Rider and Centaur Battlemaster with +1/+1 counters from Auras, tricks and Ordeal of Heliod, so Chronicler of Heroes draws a card. A midrange deck whose creatures outgrow the opponent\'s blockers.',
       },
       {
         name: 'Devotion Drain',
         colors: ['W', 'B'],
         keyCard: 'Sentry of the Underworld',
-        description: 'Hold the ground with Sentry of the Underworld and Baleful Eidolon, fly over with Cavalry Pegasus and Wingsteed Rider, and stack black permanents so Gray Merchant of Asphodel drains for several. A grindy midrange deck that wins the long game.',
+        description: 'Hold the ground with Baleful Eidolon, fly over with Sentry of the Underworld and Cavalry Pegasus, and stack black permanents so Gray Merchant of Asphodel drains for several. A grindy midrange deck that wins the long game.',
       },
       {
         name: 'Spells',
