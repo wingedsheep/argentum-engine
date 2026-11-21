@@ -413,6 +413,14 @@ object SynergyAxes {
             else emptySet()
         // "Whenever you cast your second spell each turn" (Pyromancer's Assault) pays off a turn of
         // two spells, which the deck's cheap instants and sorceries are what make possible.
+        // "Whenever an instant or sorcery spell you control deals damage" (Blaze Commando, Satyr
+        // Firedancer, Bloodfeather Phoenix) is paid off by the deck's burn spells.
+        is EventPattern.DealsDamageEvent ->
+            pattern.sourceFilter.let { filter ->
+                if (filter != null &&
+                    filter.controllerPredicate == ControllerPredicate.ControlledByYou && rewardsSpells(filter)
+                ) setOf(SynergyAxis.SPELLS) else emptySet()
+            }
         is EventPattern.NthSpellCastEvent ->
             if (pattern.player == Player.You && pattern.nthSpell >= 2 &&
                 pattern.spellFilter.let { it == null || rewardsSpells(it) }

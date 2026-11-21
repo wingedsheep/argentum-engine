@@ -365,13 +365,29 @@ class DamageTriggerDetector(
         if (trigger !is EventPattern.DealsDamageEvent || ability.binding != TriggerBinding.ANY) return
         // Batch ("one or more") observers fire once per event batch, not once per
         // damage event — handled by detectDamageObserverBatchTriggers.
-        if (trigger.batch) return
+        if (trigger.batch || trigger.perInstruction) return
         if (!matcher.matchesDealsDamageTrigger(trigger, event, state, controllerId, sourceId)) return
         // When the trigger has a sourceFilter (e.g., "creature you control deals
         // combat damage"), the triggering entity is the damage SOURCE (the creature),
         // not the damage recipient. This allows effects like "exile it" to reference
         // the creature that dealt damage.
-        val context = if (trigger.sourceFilter != null && event.sourceId != null) {
+        triggers.add(
+            PendingTrigger(
+                ability = ability,
+                sourceId = sourceId,
+                sourceName = sourceName,
+                controllerId = controllerId,
+                triggerContext = observerContext(trigger, event, state)
+            )
+        )
+    }
+
+    private fun observerContext(
+        trigger: EventPattern.DealsDamageEvent,
+        event: DamageDealtEvent,
+        state: GameState
+    ): TriggerContext {
+        return if (trigger.sourceFilter != null && event.sourceId != null) {
             // The triggering entity is the damage SOURCE (e.g. "a source you
             // control deals damage… exile it"). Still carry the recipient creature's
             // toughness so "equal to that creature's toughness" payoffs (Taii Wakeen)
@@ -393,15 +409,6 @@ class DamageTriggerDetector(
         } else {
             TriggerContext.fromEvent(event)
         }
-        triggers.add(
-            PendingTrigger(
-                ability = ability,
-                sourceId = sourceId,
-                sourceName = sourceName,
-                controllerId = controllerId,
-                triggerContext = context
-            )
-        )
     }
 
     /**
@@ -416,6 +423,10 @@ class DamageTriggerDetector(
      * (damageType / recipient / sourceFilter / requireExcess) are evaluated per damage event via
      * the canonical [TriggerMatcher.matchesDealsDamageTrigger]; one matching event suffices.
      *
+     * Per-instruction observers (`DealsDamageEvent(perInstruction = true)`, Blaze Commando) fold
+     * here too, once per (damage source, damage instruction) — the instructions read off
+     * [DamageDealtEvent.continuesInstruction] in event order.
+     *
      * `triggeringEntityId` is the first matching recipient — batch triggers don't dispatch per
      * recipient, so cards needing per-recipient context use the singular (non-batch) trigger.
      */
@@ -427,10 +438,38 @@ class DamageTriggerDetector(
     ) {
         val damageEvents = events.filterIsInstance<DamageDealtEvent>()
         if (damageEvents.isEmpty()) return
+        // The damage instruction each event belongs to: a new one opens at every event that
+        // doesn't continue the one before it.
+        val instructions by lazy {
+            var ordinal = -1
+            damageEvents.map { if (!it.continuesInstruction || ordinal < 0) ++ordinal; ordinal }
+        }
 
         for (entry in index.damageObservers) {
             for (ability in entry.abilities) {
                 val trigger = ability.trigger
+                if (trigger is EventPattern.DealsDamageEvent && trigger.perInstruction &&
+                    ability.binding == TriggerBinding.ANY && isGeneralDamageObserver(ability)
+                ) {
+                    // Once per (source, instruction): the instruction's first matching event.
+                    val fired = mutableSetOf<Pair<com.wingedsheep.sdk.model.EntityId?, Int>>()
+                    damageEvents.forEachIndexed { i, event ->
+                        val key = event.sourceId to instructions[i]
+                        if (key in fired) return@forEachIndexed
+                        if (!matcher.matchesDealsDamageTrigger(trigger, event, state, entry.controllerId, entry.entityId)) return@forEachIndexed
+                        fired += key
+                        triggers.add(
+                            PendingTrigger(
+                                ability = ability,
+                                sourceId = entry.entityId,
+                                sourceName = entry.cardComponent.name,
+                                controllerId = entry.controllerId,
+                                triggerContext = observerContext(trigger, event, state)
+                            )
+                        )
+                    }
+                    continue
+                }
                 if (trigger !is EventPattern.DealsDamageEvent || !trigger.batch) continue
                 if (ability.binding != TriggerBinding.ANY) continue
                 if (!isGeneralDamageObserver(ability)) continue

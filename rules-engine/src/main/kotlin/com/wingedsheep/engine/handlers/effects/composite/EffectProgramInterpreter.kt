@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.composite
 
+import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.engine.core.CursorStep
 import com.wingedsheep.engine.core.EffectProgram
 import com.wingedsheep.engine.core.EntryDelta
@@ -213,7 +214,8 @@ class EffectProgramInterpreter(
             val inner = scopes.last()
             val cursor = ProgramCursor(inner.prefix + CursorStep.Child(path.last(), inner.delta))
             val frame = EffectProgram(root, origin, cursor, context)
-            val result = effectExecutor(state.pushContinuation(frame), leaf, context)
+            val leafContext = if (continuesDamageInstruction(leaf, path)) context.copy(continuesDamageInstruction = true) else context
+            val result = effectExecutor(state.pushContinuation(frame), leaf, leafContext)
             if (result.outcome is Outcome.Paused) {
                 // The frame waits beneath the leaf's own frames.
                 exitResult = EffectResult.propagatePause(result.state, events + result.events)
@@ -244,6 +246,19 @@ class EffectProgramInterpreter(
             }
             context = context.foldResult(result)
             return LeafOutcome.CONTINUE
+        }
+
+        /**
+         * "Deals 4 damage to target creature and 2 damage to that creature's controller" is one
+         * damage instruction authored as two adjacent damage steps: a damage effect directly after
+         * a damage effect with the same source in the same sequence continues it.
+         */
+        private fun continuesDamageInstruction(leaf: Effect, path: List<Int>): Boolean {
+            if (leaf !is DealDamageEffect) return false
+            val index = path.lastOrNull() ?: return false
+            if (index == 0) return false
+            val previous = scopes.last().composite.effects[index - 1] as? DealDamageEffect ?: return false
+            return previous.damageSource == leaf.damageSource
         }
 
         /**

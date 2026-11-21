@@ -307,7 +307,9 @@ class ObjectTriggerSubject internal constructor(
      * "deals damage [to [to]]". [batch] is the "one or more" template (CR 603.2c): on an observer
      * ([TriggerBinding.ANY]) "one or more … are dealt damage", on [self] "this deals damage to one
      * or more creatures" (Briarbridge Patrol) — once per batch, not per recipient; [requireExcess]
-     * is "excess damage". Combat damage is [dealsCombatDamage].
+     * is "excess damage"; [perInstruction] fires once per damage instruction ("whenever an
+     * instant or sorcery spell you control deals damage", Blaze Commando). Combat damage is
+     * [dealsCombatDamage].
      */
     fun dealsDamage(
         to: Recipient = Recipient.Any,
@@ -315,6 +317,7 @@ class ObjectTriggerSubject internal constructor(
         requireExcess: Boolean = false,
         batch: Boolean = false,
         requires: Set<DamagePredicate> = emptySet(),
+        perInstruction: Boolean = false,
     ): TriggerSpec = spec(
         DealsDamageEvent(
             damageType = damageType,
@@ -323,6 +326,7 @@ class ObjectTriggerSubject internal constructor(
             requires = requires,
             requireExcess = requireExcess,
             batch = batch,
+            perInstruction = perInstruction,
         )
     )
 

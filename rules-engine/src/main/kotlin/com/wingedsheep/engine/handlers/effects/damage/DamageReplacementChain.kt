@@ -99,8 +99,21 @@ object DamageReplacementChain {
                     val (gained, event) = DamageUtils.gainLife(working, controller, amount, predicateEvaluator = zones.predicateEvaluator)
                     working = gained; event?.let(events::add)
                 }
-                EffectResult.success(working, events)
+                EffectResult.success(working, markInstruction(events, context?.continuesDamageInstruction == true))
             }
+        }
+    }
+
+    /**
+     * One call is one damage instruction: every damage event after the first continues it, and
+     * the first continues the previous instruction when the caller says so (an adjacent damage
+     * effect of the same sentence — see `EffectContext.continuesDamageInstruction`).
+     */
+    private fun markInstruction(events: List<GameEvent>, continuesPrevious: Boolean): List<GameEvent> {
+        var first = true
+        return events.map { event ->
+            if (event !is DamageDealtEvent) event
+            else event.copy(continuesInstruction = !first || continuesPrevious).also { first = false }
         }
     }
 
