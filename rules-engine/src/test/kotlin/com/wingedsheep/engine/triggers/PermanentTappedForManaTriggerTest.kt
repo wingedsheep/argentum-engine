@@ -117,6 +117,24 @@ class PermanentTappedForManaTriggerTest : FunSpec({
         }
     }
 
+    // "Whenever you tap this creature for mana" — the SELF form names no permanent type.
+    val riderDork = card("Rider Self Dork") {
+        manaCost = "{0}"
+        typeLine = "Creature — Elf"
+        power = 1
+        toughness = 1
+        activatedAbility {
+            cost = Costs.Tap
+            effect = Effects.AddMana(Color.GREEN)
+            manaAbility = true
+            timing = TimingRule.ManaAbility
+        }
+        triggeredAbility {
+            trigger = Triggers.self.tappedForMana()
+            effect = Effects.GainLife(1)
+        }
+    }
+
     val golem = card("Rider Golem") {
         manaCost = "{1}"
         typeLine = "Artifact Creature — Golem"
@@ -132,7 +150,7 @@ class PermanentTappedForManaTriggerTest : FunSpec({
     }
 
     fun driver(): GameTestDriver = GameTestDriver().apply {
-        registerCards(TestCards.all + listOf(grove, bloodSpring, rock, landWatcher, artifactThief, creatureWatcher, dork, golem, bear))
+        registerCards(TestCards.all + listOf(grove, bloodSpring, rock, landWatcher, artifactThief, creatureWatcher, dork, riderDork, golem, bear))
         initMirrorMatch(deck = Deck.of("Island" to 40), startingLife = 20)
         passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -287,5 +305,23 @@ class PermanentTappedForManaTriggerTest : FunSpec({
         d.stackSize shouldBe 2
         d.bothPass()
         d.state.projectedState.getController(yourRock) shouldBe opponent
+    }
+
+    test("the self form fires for a non-land source: a creature tapped for its own mana") {
+        val d = driver()
+        val you = d.activePlayer!!
+        val self = d.putCreatureOnBattlefield(you, "Rider Self Dork")
+        val other = d.putCreatureOnBattlefield(you, "Rider Dork")
+        d.removeSummoningSickness(self)
+        d.removeSummoningSickness(other)
+
+        // Another creature tapping for mana is not "this creature".
+        d.submit(ActivateAbility(you, other, dork.activatedAbilities.single().id)).error shouldBe null
+        d.stackSize shouldBe 0
+
+        d.submit(ActivateAbility(you, self, riderDork.activatedAbilities.single().id)).error shouldBe null
+        d.stackSize shouldBe 1
+        d.bothPass()
+        d.getLifeTotal(you) shouldBe 21
     }
 })
