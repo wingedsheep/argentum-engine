@@ -8,9 +8,6 @@ import com.wingedsheep.sdk.model.Printing
 /**
  * Theros (2013)
  *
- * mtgish-tooling auto-generated seed: only the cards relocated here as their canonical
- * earliest printing. Intentionally incomplete relative to the official set.
- *
  * Set Code: THS
  * Release Date: 2013-09-27
  */
@@ -21,7 +18,6 @@ object TherosSet : MtgSet {
     override val releaseDate = "2013-09-27"
     override val block = "Theros"
     override val sealedSupported = false
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
