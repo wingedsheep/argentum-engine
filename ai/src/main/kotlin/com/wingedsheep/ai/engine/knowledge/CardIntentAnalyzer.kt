@@ -270,7 +270,8 @@ object CardIntentAnalyzer {
 
     /**
      * The [CardIntent] of casting [face] of [card] on its own — a split or aftermath half (CR
-     * 709.3: only the chosen half is on the stack). Unlike [analyzeFace], the face is read with
+     * 709.3: only the chosen half is on the stack), an Adventure, Omen or prepare spell, a modal
+     * DFC's back or a Room door: whatever face `CastSpell.faceIndex` puts on the stack. Unlike [analyzeFace], the face is read with
      * its *own* type line, cost and keywords: a split card's halves need not share them, so
      * Bustle (a sorcery) is no instant because Hustle, its first face, is one.
      */
