@@ -3124,6 +3124,56 @@
     ]
 }
 
+// Scab-Clan Giant
+{
+    "name": "Scab-Clan Giant",
+    "manaCost": "{4}{R}{G}",
+    "typeLine": "Creature — Giant Warrior",
+    "oracleText": "When this creature enters, it fights target creature an opponent controls chosen at random.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Scab-Clan Giant:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Fight",
+                    "target1": "Self",
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0",
+                    "chooser": "Random"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "UNCOMMON",
+        "artist": "Zoltan Boros",
+        "flavorText": "For the Gruul, bone-crushing rage is the first priority. Accuracy comes in a distant ninetieth.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a8e360ae-4c78-47a9-81d4-1849cfa518b7.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Selesnya Cluestone
 {
     "name": "Selesnya Cluestone",

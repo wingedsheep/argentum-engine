@@ -529,6 +529,8 @@ object CardLinter {
      *   than one opponent, the controller picks which); nothing else does.
      * - `TriggeringPlayer` / `ControllerOfTriggeringEntity` — triggered abilities only, because
      *   both are read off a trigger context that nothing else has.
+     * - `Random` ("… chosen at random") — triggered abilities only: the trigger announcement path
+     *   is the one that draws the target.
      *
      * Walks the JSON tree carrying which ability subtree we're inside, so the check covers every
      * container structurally (granted abilities, class levels, token abilities) regardless of which
@@ -552,7 +554,7 @@ object CardLinter {
                 if (type in CHOOSER_BEARING_TARGET_TYPES) {
                     val misplaced = when (chooser) {
                         "Opponent" -> !withinActivatedAbility && !withinTriggeredAbility
-                        "TriggeringPlayer", "ControllerOfTriggeringEntity" -> !withinTriggeredAbility
+                        "TriggeringPlayer", "ControllerOfTriggeringEntity", "Random" -> !withinTriggeredAbility
                         else -> false
                     }
                     if (misplaced) {
@@ -564,6 +566,7 @@ object CardLinter {
                         val wording = when (chooser) {
                             "Opponent" -> "… of an opponent's choice"
                             "TriggeringPlayer" -> "that player … of their choice"
+                            "Random" -> "target … chosen at random"
                             else -> "its controller chooses target …"
                         }
                         findings.add(

@@ -48,6 +48,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetChooser
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
@@ -548,6 +549,43 @@ class CardLinterTest : DescribeSpec({
                 .filterIsInstance<CardValidationError.UnsupportedOpponentChooser>()
             findings.shouldHaveSize(1)
             findings[0].message shouldContain "a triggered ability"
+        }
+
+        // Scab-Clan Giant: only the trigger announcement path draws a random target; on an
+        // activated ability the controller would silently pick it.
+        it("flags a TargetChooser.Random target on an activated ability") {
+            val card = instant(
+                "Wrongly Random-Chosen",
+                CardScript(
+                    activatedAbilities = listOf(
+                        ActivatedAbility(
+                            id = AbilityId("CardLinterTest_7"),
+                            cost = AbilityCost.Tap,
+                            effect = DealDamageEffect(DynamicAmount.Fixed(1), EffectTarget.ContextTarget(0)),
+                            targetRequirements = listOf(AnyTarget(chooser = TargetChooser.Random)),
+                        )
+                    ),
+                ),
+            )
+            val findings = CardLinter.lint(card)
+                .filterIsInstance<CardValidationError.UnsupportedOpponentChooser>()
+            findings.shouldHaveSize(1)
+            findings[0].message shouldContain "chosen at random"
+        }
+
+        it("rejects a random target that isn't one mandatory target") {
+            shouldThrow<IllegalArgumentException> {
+                TargetObject(filter = TargetFilter.Creature, optional = true, chooser = TargetChooser.Random)
+            }
+            shouldThrow<IllegalArgumentException> {
+                TriggeredAbility(
+                    id = AbilityId("CardLinterTest_8"),
+                    trigger = EventPattern.CastThisSpellEvent,
+                    effect = DealDamageEffect(DynamicAmount.Fixed(1), EffectTarget.ContextTarget(0)),
+                    targetRequirement = AnyTarget(chooser = TargetChooser.Random),
+                    additionalTargetRequirements = listOf(AnyTarget()),
+                )
+            }
         }
     }
 
