@@ -380,6 +380,7 @@ Akoum Warrior
 Akroan Conscriptor
 Akroan Crusader
 Akroan Hoplite
+Akroan Horse
 Akroan Jailer
 Akroan Line Breaker
 Akroan Mastiff
@@ -1536,6 +1537,7 @@ Battlegrowth
 Battlesong Berserker
 Battlewand Oak
 Battlewing Mystic
+Battlewise Hoplite
 Battlewise Valor
 Baxter Building
 Baxter Stockman
@@ -3477,6 +3479,7 @@ Colossapede
 Colossification	polarity: Aura>ModifyStats; polarity: Aura>TapUntapEffect
 Colossodon Yearling
 Colossus Hammer
+Colossus of Akros
 Colossus of Sardia
 Colossus of the Blood Age
 Combadge
@@ -3511,7 +3514,7 @@ Commander Sofia Daguerre
 Commander's Authority
 Commander's Sphere
 Commanding Presence
-Commando Raid	timing: GrantTriggeredAbilityEffect
+Commando Raid
 Commence the Endgame
 Commencement of Festivities
 Commercial District
@@ -4646,6 +4649,7 @@ Destined Confrontation
 Destiny Spinner
 Destroy Evil
 Destructive Digger
+Destructive Revelry
 Destructive Tampering
 Destructor Dragon
 Desynchronize
@@ -6742,6 +6746,7 @@ Flaying Tendrils
 Fledgling Dragon
 Fledgling Imp
 Fledgling Mawcor
+Fleecemane Lion
 Fleet Swallower
 Fleet-Footed Monk
 Fleetfeather Cockatrice
@@ -10463,6 +10468,7 @@ Kozilek, Butcher of Truth	intent: Pipeline(graveyard→library)
 Kozilek, the Broken Reality	polarity: DrawCardsEffect; polarity: ForEachEffect
 Kozilek, the Great Distortion
 Kragma Butcher
+Kragma Warcaller
 Kraken Hatchling
 Kraken of the Straits
 Kraken's Eye
@@ -13974,6 +13980,7 @@ Pollywog Prodigy
 Pollywog Symbiote
 Polukranos Reborn
 Polukranos, Unchained
+Polukranos, World Eater
 Polygraph Orb
 Polymorph
 Polymorphist's Jest
@@ -14214,6 +14221,7 @@ Propagator Drone
 Propeller Pioneer
 Prophesied End
 Prophet of Distortion
+Prophet of Kruphix
 Prophet of the Peak
 Prophetic Bolt
 Prophetic Flamespeaker
@@ -15169,6 +15177,7 @@ Return to the Ranks
 Return to the Sewers
 Returned Centaur
 Returned Pastcaller
+Returned Phalanx
 Returned Reveler
 Rev, Tithe Extractor
 Revealing Wind
@@ -17969,6 +17978,7 @@ Statute of Denial
 Staunch Crewmate
 Staunch Defenders
 Staunch Shieldmate
+Staunch-Hearted Warrior
 Stay Hidden, Stay Silent
 Steadfast Armasaur
 Steadfast Cathar
@@ -18885,7 +18895,7 @@ Teferi, Master of Time	intent: PhaseOutEffect; polarity: PhaseOutEffect
 Teferi, Temporal Pilgrim
 Teferi, Time Raveler	intent: GrantFlashToSpellsEffect
 Teferi, Timeless Voyager	intent: ForEach>PhaseOutEffect; polarity: ForEachEffect
-Teferi, Who Slows the Sunset	intent: CreatePermanentEmblemEffect; polarity: GainLifeEffect; polarity: Pipeline(ChosenTargets→?); polarity: TapUntapCollectionEffect
+Teferi, Who Slows the Sunset	polarity: GainLifeEffect; polarity: Pipeline(ChosenTargets→?); polarity: TapUntapCollectionEffect
 Tegwyll, Duke of Splendor
 Tek
 Tekuthal, Inquiry Dominus
@@ -19686,6 +19696,7 @@ Tireless Tribe
 Tishana's Tidebinder
 Tishana's Wayfinder
 Tishana, Voice of Thunder
+Titan of Eternal Fire
 Titan of Industry
 Titan's Grave
 Titan's Presence
@@ -19799,6 +19810,7 @@ Torment of Hailfire
 Torment of Scarabs
 Torment of Venom
 Tormented Angel
+Tormented Hero
 Tormented Soul
 Tormented Thoughts
 Tormenting Voice
@@ -20815,7 +20827,7 @@ Vigor Mortis
 Vigorbloom Annex
 Vigorbloom Charm
 Vigorbloom Vanguard
-Vigorous Charge	timing: GrantKeywordEffect; timing: GrantTriggeredAbilityEffect
+Vigorous Charge
 Vigorspore Wurm
 Vildin-Pack Outcast
 Vile Aggregate
@@ -20864,6 +20876,7 @@ Violent Impact
 Violent Outburst
 Violent Ultimatum
 Violent Urge
+Viper's Kiss
 Viral Spawning
 Viridescent Bog
 Viridian Acolyte
@@ -21292,6 +21305,7 @@ Warrior's Honor
 Warrior's Oath
 Warrior's Stand
 Warrior's Sword
+Warriors' Lesson
 Warship Flight Crew
 Warship Scout
 Warstorm Surge
@@ -21482,6 +21496,7 @@ When We Were Young
 Whims of the Fates
 Whip Sergeant
 Whip Silk
+Whip of Erebos
 Whipcorder
 Whipgrass Entangler	combat: GrantAttackBlockTaxPerCreatureTypeEffect; intent: GrantAttackBlockTaxPerCreatureTypeEffect; polarity: GrantAttackBlockTaxPerCreatureTypeEffect; timing: GrantAttackBlockTaxPerCreatureTypeEffect
 Whiplash Wordsmith
@@ -22063,7 +22078,7 @@ Zendikar's Roil
 Zenith Chronicler
 Zenith Flare
 Zenith Seeker
-Zenos yae Galvus	intent: ChooseOpponentForSourceEffect; polarity: CreateDelayedTriggerEffect
+Zenos yae Galvus	polarity: CreateDelayedTriggerEffect
 Zephid
 Zephid's Embrace
 Zephyr Boots
