@@ -20557,15 +20557,9 @@
                             "storeAs": "gathered0"
                         },
                         {
-                            "type": "ForEach",
-                            "space": {
-                                "type": "IterationSpace.Collection",
-                                "collection": "gathered0"
-                            },
-                            "body": {
-                                "type": "TurnFaceUp",
-                                "target": "IterationEntity"
-                            }
+                            "type": "RevealCollection",
+                            "from": "gathered0",
+                            "turnFaceUp": true
                         },
                         {
                             "type": "ConditionalOnCollection",

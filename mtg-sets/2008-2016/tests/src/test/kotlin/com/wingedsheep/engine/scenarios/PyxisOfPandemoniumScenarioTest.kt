@@ -1,12 +1,15 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.engine.view.ClientStateTransformer
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
 import io.kotest.assertions.withClue
@@ -71,6 +74,16 @@ class PyxisOfPandemoniumScenarioTest : ScenarioTestBase() {
                 game.faceDown(game.exiled(1, "Lightning Bolt")) shouldBe true
                 game.faceDown(game.exiled(2, "Hill Giant")) shouldBe true
                 game.faceDown(game.exiled(2, "Mountain")) shouldBe true
+            }
+
+            withClue("neither player may look at the exiled cards (2013-09-15 ruling)") {
+                val view = ClientStateTransformer(cardRegistry = cardRegistry, predicateEvaluator = PredicateEvaluator(cardRegistry = null))
+                for (viewer in listOf(game.player1Id, game.player2Id)) {
+                    val names = view.transform(game.state, viewingPlayerId = viewer).cards.values
+                        .filter { it.zone?.zoneType == Zone.EXILE }.map { it.name }
+                    names.size shouldBe 4
+                    names.none { it in setOf("Grizzly Bears", "Lightning Bolt", "Hill Giant", "Mountain") } shouldBe true
+                }
             }
 
             game.untap(pyxis)

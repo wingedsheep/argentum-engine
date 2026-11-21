@@ -1433,6 +1433,11 @@ object AiReadingAudit {
      */
     private fun noIntentPipeline(label: String, stages: List<Effect>): Boolean {
         if (label in NO_INTENT_PIPELINES) return true
+        // The source's own pile gathered and moved nowhere — turned face up or revealed in place
+        // (The Creation of Avacyn's chapter II) — is information, not an action: what the pile is
+        // for is read where it is filled or released, and a sibling leaf (the life it costs) is
+        // still asked about on its own.
+        if (label == LINKED_EXILE_PIPELINE + "?)") return true
         // A look at our own library top that only puts cards back or into our graveyard (Sage Owl,
         // Lluwen) reads as card selection: skipped like a scry leaf, so a sibling leaf is still asked about.
         if (label.startsWith("Pipeline(TopOfLibrary→") && CardIntentAnalyzer.selectsOwnLibraryTop(stages)) return true

@@ -27,8 +27,9 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * - I exiles the found card face down ([FaceDownMode.HIDDEN]) and links it to this Saga
  *   (`linkToSource`), so each Creation of Avacyn owns its own pile — the first ruling.
  * - II and III read that pile back with [CardSource.FromLinkedExile]. II turns every card in it face
- *   up ([Effects.TurnFaceUp] per card) and, if at least one is a creature card, you lose life equal
- *   to the *combined* mana value of the pile — the second ruling.
+ *   up in exile (the `turnFaceUp` pipeline step, which handles any card type) and, if at least
+ *   one is a creature card, you lose life equal to the *combined* mana value of the pile — the
+ *   second ruling.
  * - III: if the pile holds a creature card you may put all of its permanent cards onto the
  *   battlefield (all or none); whatever is still in exile afterwards goes to its owner's hand — the
  *   third ruling.
@@ -56,7 +57,7 @@ val TheCreationOfAvacyn = card("The Creation of Avacyn") {
     sagaChapter(2) {
         effect = Effects.Pipeline {
             val exiled = gather(CardSource.FromLinkedExile())
-            run(Effects.ForEachInCollection(exiled, Effects.TurnFaceUp(EffectTarget.IterationEntity)))
+            turnFaceUp(exiled)
             ifNotEmpty(exiled, filter = GameObjectFilter.Creature) {
                 run(Effects.LoseLife(DynamicAmounts.manaValueSumOf(exiled), EffectTarget.Controller))
             }

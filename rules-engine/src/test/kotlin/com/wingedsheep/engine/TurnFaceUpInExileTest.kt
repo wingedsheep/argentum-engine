@@ -59,6 +59,18 @@ class TurnFaceUpInExileTest : FunSpec({
         }
     }
 
+    // Hideaway's shape: look at the top card, then exile it face down.
+    val LookThenExileFaceDown = card("Look Then Exile Face Down Test") {
+        manaCost = "{U}"
+        typeLine = "Sorcery"
+        spell {
+            effect = Effects.Pipeline {
+                val top = gather(CardSource.TopOfLibrary(DynamicAmount.Fixed(1)))
+                exile(top, faceDown = FaceDownMode.HIDDEN)
+            }
+        }
+    }
+
     val ManifestThenTurnUp = card("Manifest Then Turn Up Test") {
         manaCost = "{U}"
         typeLine = "Sorcery"
@@ -72,7 +84,7 @@ class TurnFaceUpInExileTest : FunSpec({
     }
 
     fun newDriver(): GameTestDriver = GameTestDriver().apply {
-        registerCards(TestCards.all + listOf(ExileThenTurnUp, ExileFaceDown, ManifestThenTurnUp))
+        registerCards(TestCards.all + listOf(ExileThenTurnUp, ExileFaceDown, LookThenExileFaceDown, ManifestThenTurnUp))
         initMirrorMatch(deck = Deck.of("Island" to 40), skipMulligans = true)
         passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -122,6 +134,15 @@ class TurnFaceUpInExileTest : FunSpec({
         for (viewer in listOf(d.player1, d.player2)) {
             view.transform(d.state, viewingPlayerId = viewer).cards[top]!!.name shouldBe "Centaur Courser"
         }
+    }
+
+    test("a player who looked at a card before exiling it face down may keep looking (CR 406.3)") {
+        val d = newDriver()
+        val looked = d.state.getLibrary(d.player1).first()
+        d.cast("Look Then Exile Face Down Test")
+        val view = ClientStateTransformer(cardRegistry = d.cardRegistry, predicateEvaluator = PredicateEvaluator(cardRegistry = null))
+        view.transform(d.state, viewingPlayerId = d.player1).cards[looked]!!.name shouldBe "Island"
+        (view.transform(d.state, viewingPlayerId = d.player2).cards[looked]!!.name == "Island") shouldBe false
     }
 
     test("a face-down permanent in the collection stays face down") {

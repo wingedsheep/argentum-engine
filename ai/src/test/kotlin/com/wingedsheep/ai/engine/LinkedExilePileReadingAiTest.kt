@@ -79,6 +79,13 @@ class LinkedExilePileReadingAiTest : ScenarioTestBase() {
             }
         }
 
+        test("turning the source's own pile face up in place needs no intent of its own") {
+            // The Creation of Avacyn II: "Turn the exiled card face up. If it's a creature card, you
+            // lose life equal to its mana value." The tutor is read at chapter I; II only shows it.
+            val reading = AiReadingAudit.read(card("The Creation of Avacyn"))
+            withClue("The Creation of Avacyn: $reading") { reading.readFully shouldBe true }
+        }
+
         test("the draft heuristic pays for the exile the pile grant turns into a card") {
             val theater = card("Theater of Horrors")
             val withoutGrant = theater.copy(
