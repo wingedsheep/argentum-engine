@@ -361,6 +361,17 @@ object EffectWalker {
     }
 
     /**
+     * [leaves] plus what every delayed trigger among them does when it fires, recursively — for a
+     * reader that follows a collection the scheduling ability gathers into the delayed trigger
+     * that moves it (`carryCollections`): "return that card … at the beginning of your next
+     * upkeep" (Rescue from the Underworld) is still a return of the gathered card.
+     */
+    fun leavesThroughDelayed(effect: Effect, walk: (Effect) -> List<Effect> = ::leaves): List<Effect> =
+        walk(effect).flatMap { leaf ->
+            if (leaf is CreateDelayedTriggerEffect) listOf(leaf) + leavesThroughDelayed(leaf.effect, walk) else listOf(leaf)
+        }
+
+    /**
      * Whether the card's controller picks a [ChooseActionEffect]'s branch. Then every branch is
      * something the card can do, as a mode is: "add {R} or {G}", "protection from artifacts or from
      * the color of your choice". A branch someone else picks is the punisher shape — "that player

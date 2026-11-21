@@ -1,0 +1,1 @@
+- #4788 The AI reads a graveyard target returned by a delayed trigger (Rescue from the Underworld) as reanimation: it names its best creature card and knows the spell is recursion.

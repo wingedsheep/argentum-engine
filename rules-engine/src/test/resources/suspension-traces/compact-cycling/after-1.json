@@ -263,7 +263,8 @@
             "logicalZone": {
                 "ownerId": "player-1",
                 "zoneType": "Hand"
-            }
+            },
+            "previousGeneration": 1
         },
         "card-1006": {
             "generation": 2,

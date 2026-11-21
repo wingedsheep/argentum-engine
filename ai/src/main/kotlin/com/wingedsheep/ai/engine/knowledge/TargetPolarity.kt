@@ -1718,7 +1718,9 @@ object TargetPolarityAnalyzer {
      */
     private fun pipelineGraveyardReturnSlots(effect: Effect, requirements: List<TargetRequirement>): Set<Int> {
         fun inGraveyard(slot: Int) = objectFilter(requirements[slot])?.zone == Zone.GRAVEYARD
-        val leaves = EffectWalker.leaves(effect)
+        // The return may sit in a delayed trigger carrying the gathered card ("return that card …
+        // at the beginning of your next upkeep", Rescue from the Underworld).
+        val leaves = EffectWalker.leavesThroughDelayed(effect)
         val returned = mutableSetOf<Int>()
         for (gather in leaves.filterIsInstance<GatherCardsEffect>()) {
             val slots = when (val source = gather.source) {

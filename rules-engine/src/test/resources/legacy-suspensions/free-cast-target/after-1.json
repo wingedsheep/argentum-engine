@@ -317,7 +317,8 @@
             "logicalZone": {
                 "ownerId": "card-1001",
                 "zoneType": "Stack"
-            }
+            },
+            "previousGeneration": 1
         },
         "card-1002": {
             "generation": 2,

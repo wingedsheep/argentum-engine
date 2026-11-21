@@ -192,14 +192,16 @@
             "logicalZone": {
                 "ownerId": "player-1",
                 "zoneType": "Graveyard"
-            }
+            },
+            "previousGeneration": 3
         },
         "card-1002": {
             "generation": 4,
             "logicalZone": {
                 "ownerId": "player-2",
                 "zoneType": "Graveyard"
-            }
+            },
+            "previousGeneration": 2
         }
     },
     "timestamp": 1,

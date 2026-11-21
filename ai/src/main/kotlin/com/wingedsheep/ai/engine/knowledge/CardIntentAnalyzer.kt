@@ -1090,7 +1090,8 @@ object CardIntentAnalyzer {
      * attacking" (Alesha, Who Smiles at Death) is the same return behind its price.
      */
     internal fun putsChosenTargetsOntoOurBattlefield(effect: Effect): Boolean {
-        val leaves = EffectWalker.payoffLeaves(effect)
+        // A delayed trigger carrying the gathered targets returns them later (Rescue from the Underworld).
+        val leaves = EffectWalker.leavesThroughDelayed(effect, EffectWalker::payoffLeaves)
         val chosen = leaves.mapNotNullTo(HashSet()) { leaf ->
             (leaf as? GatherCardsEffect)?.takeIf { it.source == CardSource.ChosenTargets }?.storeAs
         }
