@@ -1,0 +1,1 @@
+- #TBD The AI holds a cantrip's combat lever (Stun, Timely Interference, Academic Dispute) for the window it works in instead of cashing it as a cantrip at the opponent's end step, and rates 48 split cards (Hustle // Bustle, the DSK rooms, …) from their pick tables instead of the effect heuristic

@@ -416,8 +416,14 @@ object AiReadingAudit {
                         // A lure on a spell ("target creature blocks this turn if able") is judged only
                         // when the whole spell is: castBuysNothing reads every leaf or none, and a
                         // rider beside the lure (Learn, a draw, a forced attack) leaves it unjudged.
-                        (leaf !is MarkMustBlockEffect && ExpiringGrantWindow.hasExpiringReading(leaf, creatureGrants = false)) ||
+                        (leaf !is MarkMustBlockEffect && leaf !is CantBlockEffect &&
+                            ExpiringGrantWindow.hasExpiringReading(leaf, creatureGrants = false)) ||
                             wholeRead ||
+                            // The same levers beside a draw or Learn (Stun, Timely Interference):
+                            // HoldPolicy floors the cast where the levers buy nothing, the riders
+                            // aside. Own spell only — HoldPolicy reads no face's effects.
+                            (script === card.script && card.cardFaces.isEmpty() &&
+                                ExpiringGrantWindow.readsCantripLever(spell)) ||
                             (heldWhole || (leaf is ModifyStatsEffect && IntentTag.COMBAT_TRICK in intent.tags)) ||
                             // A team pump, or a fight trick handed to the team (Dragonrage): HoldPolicy
                             // holds it as a combat trick until the team is in the fight.

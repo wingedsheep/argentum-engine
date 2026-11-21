@@ -278,6 +278,18 @@ class HoldPolicy(
             ) {
                 return TimingVerdict.NoWindow
             }
+            // A cantrip's combat lever where it buys nothing (Stun at their end step): the draw
+            // comes just the same when the instant is cast in the lever's window. Patience's
+            // releases still let it go as a plain cantrip.
+            if (resolves != null && intent.speed == Speed.INSTANT &&
+                ExpiringGrantWindow.cantripLeverBuysNothing(
+                    state, playerId, resolves, cast.targets + cast.modeTargetsOrdered.flatten(), intents,
+                    fightMustBeOn = state.stack.isEmpty(),
+                ) &&
+                !Patience.releasedOutright(state, state.projectedState, playerId)
+            ) {
+                return TimingVerdict.NoWindow
+            }
         }
         // A creature borrowed until end of turn after the turn's last fight goes home unused.
         if (borrowedCreaturesGoHome && cast != null) {
