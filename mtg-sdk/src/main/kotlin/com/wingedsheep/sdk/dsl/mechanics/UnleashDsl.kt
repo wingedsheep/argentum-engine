@@ -42,6 +42,8 @@ val UNLEASH_MODE_OPTIONS: List<ModeOption> = listOf(
  *  - a [CantBlock] gated on the source having **any** +1/+1 counter — not on the choice: a counter
  *    from any other source also stops it blocking, and once its counters are gone it can block
  *    again, even if it was unleashed.
+ *
+ * One instance per card: every call records into the same MODE slot (no printed card has two).
  */
 fun CardBuilder.unleash() {
     keywordSet.add(Keyword.UNLEASH)

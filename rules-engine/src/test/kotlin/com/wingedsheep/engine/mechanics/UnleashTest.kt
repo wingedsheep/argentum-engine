@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.UNLEASH_MODE_COUNTER
 import com.wingedsheep.sdk.dsl.UNLEASH_MODE_NONE
+import com.wingedsheep.sdk.dsl.UNLEASH_MODE_OPTIONS
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.dsl.unleash
 import com.wingedsheep.sdk.model.Deck
@@ -62,7 +63,7 @@ class UnleashTest : FunSpec({
 
     test("the keyword is displayed and the choice offers unleash or not") {
         unleasher.keywords shouldContain Keyword.UNLEASH
-        com.wingedsheep.sdk.dsl.UNLEASH_MODE_OPTIONS.map { it.id } shouldBe listOf(UNLEASH_MODE_COUNTER, UNLEASH_MODE_NONE)
+        UNLEASH_MODE_OPTIONS.map { it.id } shouldBe listOf(UNLEASH_MODE_COUNTER, UNLEASH_MODE_NONE)
     }
 
     test("unleashed: it enters with a +1/+1 counter and can't block") {

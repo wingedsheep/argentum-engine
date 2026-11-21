@@ -2699,13 +2699,13 @@
                     {
                         "id": "unleash_counter",
                         "label": "Unleash",
-                        "description": "Enters with a +1/+1 counter; can't block while it has one",
+                        "description": "+1/+1 counter; can't block while it has one",
                         "iconKey": "plusOneCounter"
                     },
                     {
                         "id": "unleash_none",
                         "label": "Don't unleash",
-                        "description": "Enters without a counter and can block"
+                        "description": "No counter; can block"
                     }
                 ]
             },

@@ -41,7 +41,7 @@ class UnleashChoiceAiTest : ScenarioTestBase() {
             game.castAndAiAnswer("Rakdos Drake") shouldBe "Unleash"
         }
 
-        // At 2 life against a 1/1 flier, the Drake is the only thing that can stop the lethal swing.
+        // At 2 life against two 1/1 fliers, blocking one with the Drake is what keeps the AI alive.
         test("at 2 life facing a lethal flier, the AI keeps Rakdos Drake able to block") {
             val game = scenario().withPlayers()
                 .withLandsOnBattlefield(1, "Swamp", 3)
