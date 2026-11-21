@@ -184,8 +184,8 @@ class GatherCardsExecutor(
 
             // The cards the permanents sacrificed this way (a cost or an earlier same-resolution
             // sacrifice) became: each is the very next object its card became, in whatever public
-            // zone it went to — its owner's graveyard, or exile / the command zone when a
-            // replacement sent it there instead. A card that has moved on again is yet another new
+            // zone it went to — its owner's graveyard, or exile when a replacement sent it
+            // there instead. A card that has moved on again is yet another new
             // object (CR 400.7), a card put into a hidden zone can't be followed, and a token is gone.
             is CardSource.SacrificedThisWay -> {
                 context.sacrificedPermanents.mapNotNull { snapshot ->

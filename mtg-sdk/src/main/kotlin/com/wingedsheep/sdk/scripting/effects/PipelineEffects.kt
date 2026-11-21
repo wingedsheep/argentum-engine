@@ -324,8 +324,8 @@ sealed interface CardSource {
      * counterpart of [ExiledAsCost] and [TappedAsCost].
      *
      * A card qualifies only while it is still the very object the sacrifice made, in the zone it
-     * went to — its owner's graveyard, or exile / the command zone when a replacement sent it there
-     * instead (Rescue from the Underworld: "the sacrificed card" returns from the zone it went to).
+     * went to — its owner's graveyard, or exile when a replacement sent it there instead (Rescue
+     * from the Underworld: "the sacrificed card" returns from the zone it went to).
      * A token has ceased to exist (CR 704.5d), a card that has since moved on again is a new object
      * (CR 400.7), and a card put into a hidden zone can't be followed, so none of those is gathered.
      */

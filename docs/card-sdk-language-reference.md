@@ -6046,12 +6046,11 @@ their library into their graveyard. If it's a creature card, you create a 2/2 bl
   "sacrifice all", or the variable-count `Costs.SacrificePermanents`) and an earlier same-resolution
   sacrifice effect alike. A self-sacrifice cost's source isn't among them — name it with `CardSource.Entity(EffectTarget.Self)`
   / `EffectTarget.Self`. Each card is found only while it is still the very object the sacrifice made:
-  normally in its owner's graveyard, but in exile (or the command zone) when a replacement sent it there
-  instead — the engine follows it by the object generation it entered that zone with
+  normally in its owner's graveyard, but in exile when a replacement sent it there instead — the engine follows it by the object generation it entered that zone with
   (`ObjectIdentity.previousGeneration`). Tokens (ceased to exist), cards that have moved on again since
   (new objects, CR 400.7) and cards put into a hidden zone aren't gathered. **Rescue from the
   Underworld**: "Return that card and the sacrificed card to the battlefield … at the beginning of your
-  next upkeep" — `gather(Entity(target))` and `gather(SacrificedThisWay)` carried onto an UPKEEP
+  next upkeep" — `gather(ChosenTargets)` and `gather(SacrificedThisWay)` carried onto an UPKEEP
   `CreateDelayedTrigger(carryCollections = …)`, so a Rest-in-Peace-exiled sacrifice still returns. **Sword of the Ages**: "{T}, Sacrifice this artifact and any number of creatures
   you control: … then exile this artifact and those creature cards" — `MoveToZone(Self, EXILE, fromZone =
   GRAVEYARD)` plus `gather(CardSource.SacrificedThisWay)` → `exile(...)`. Only a variable cost whose action is
