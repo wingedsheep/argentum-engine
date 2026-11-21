@@ -1500,6 +1500,7 @@ Baton of Morale	intent: GrantKeywordEffect; polarity: GrantKeywordEffect
 Battalion Foot Soldier
 Batterhorn
 Battering Craghorn
+Battering Krasis
 Battering Ram	intent: GrantKeywordEffect
 Battering Sliver
 Battershield Warrior
@@ -2219,6 +2220,7 @@ Boros Garrison
 Boros Guildgate
 Boros Guildmage
 Boros Locket
+Boros Mastiff
 Boros Recruit
 Boros Signet
 Boros Swiftblade
@@ -11660,6 +11662,11 @@ Maximum Overdrive
 Mayhem Devil
 Mayhem Patrol
 Mayor of Avabruck
+Maze Abomination
+Maze Behemoth
+Maze Glider
+Maze Rusher
+Maze Sentinel
 Maze Skullbomb
 Maze of Ith	timing: PreventDamageEffect
 Maze of Shadows	timing: PreventDamageEffect
@@ -12848,6 +12855,7 @@ Niv-Mizzet, Supreme
 Niv-Mizzet, Visionary
 Niv-Mizzet, the Firemind
 Nivix Barrier
+Nivix Cyclops
 No Admittance
 No Escape
 No More Lies
@@ -13203,6 +13211,7 @@ Oona's Prowler
 Oona, Queen of the Fae
 Ooze Patrol
 Ooze Spill
+Opal Lake Gatekeepers
 Opaline Unicorn
 Open Communications
 Open Fire
@@ -15615,6 +15624,7 @@ Rubble Slinger
 Rubbleback Rhino
 Rubblebelt Boar
 Rubblebelt Braggart	intent: SuspectEffect
+Rubblebelt Maaka
 Rubblebelt Maverick
 Rubblebelt Recluse
 Rubblebelt Rioters
@@ -15967,6 +15977,7 @@ Saru, Unthreatened
 Sarulf's Packmate
 Sarulf, Realm Eater
 Saruli Caretaker
+Saruli Gatekeepers
 Saruman of Many Colors
 Saruman the White
 Saruman's Trickery
@@ -17301,6 +17312,7 @@ Smaug's Fury
 Smaug, Wicked Worm
 Smaug, the Great Calamity
 Smelt
+Smelt-Ward Gatekeepers
 Smelt-Ward Ignus
 Smelt-Ward Minotaur
 Smelted Chargebug
@@ -18456,6 +18468,7 @@ Sunshot Militia
 Sunshower Druid
 Sunspear Shikari
 Sunspine Lynx
+Sunspire Gatekeepers
 Sunspire Griffin
 Sunstar Chaplain
 Sunstar Expansionist
@@ -19517,6 +19530,7 @@ Thrash // Threat
 Thrash of Raptors
 Thrashing Brontodon
 Thrashing Frontliner
+Thrashing Mossdog
 Thrashing Mudspawn
 Thrashing Wumpus
 Thrasios, Triton Hero
@@ -20242,6 +20256,7 @@ U.S.S. Excelsior, Cutting Edge
 U.S.S. Reliant, From Hell's Heart
 U.S.S. Voyager, Lone Wanderer
 Uba Mask
+Ubul Sar Gatekeepers
 Uchbenbak, the Great Mistake
 Ugin's Binding
 Ugin's Conjurant
