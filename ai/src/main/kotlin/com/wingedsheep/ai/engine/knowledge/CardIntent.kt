@@ -660,6 +660,17 @@ enum class IntentTag {
      * read as "abilities not recognised". Worth next to nothing in a Limited pick.
      */
     HIDDEN_INFO,
+
+    /**
+     * Lets its controller play on an opponent's turn — "you may cast creature spells as though they
+     * had flash" (Prophet of Kruphix, Vedalken Orrery, Leyline of Anticipation), or "untap all lands
+     * you control during each other player's untap step" (Prophet of Kruphix, Seedborn Muse), which
+     * hands back the mana to do it with. Its payoff is a card held up and cast where the board has
+     * moved on — an ambush blocker, a removal spell in their end step — which no board simulation
+     * sees when the permanent lands, so without the tag the static read as "abilities not
+     * recognised". A symmetric grant ("each player may …") helps the opponent as much and earns none.
+     */
+    OFF_TURN_PLAY,
 }
 
 /** When a card's payoff happens — the axis the hold policy reasons about. */

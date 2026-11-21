@@ -1058,6 +1058,9 @@ object LimitedCardRater {
         // Peeking at face-down creatures or the top of the library informs a block or a draw but
         // changes no board: a rounding error in a pick.
         IntentTag.HIDDEN_INFO to 0.05,
+        // Flash for a spell type, or lands untapped on the opponent's turn: flexibility that wins a
+        // combat or two in Limited, but casts nothing on its own — a little under a pump.
+        IntentTag.OFF_TURN_PLAY to 0.2,
         IntentTag.CARD_SELECTION to 0.15,
         IntentTag.LIFEGAIN to 0.1,
     )

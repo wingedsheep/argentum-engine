@@ -1,0 +1,2 @@
+- #TBD The AI no longer wastes a "gains 'whenever this creature deals combat damage to a player, draw a card'" until-end-of-turn spell (Warriors' Lesson, Commando Raid) where no attacker of its own can still connect — the opponent's turn, or after its own combat.
+- #TBD The AI reads "cast creature spells as though they had flash" and "untap your creatures and lands during each other player's untap step" (Prophet of Kruphix, Vedalken Orrery, Seedborn Muse) as off-turn play and a vigilance-like untap, so it rates and drafts those cards instead of seeing a blank.

@@ -68,6 +68,9 @@ import com.wingedsheep.sdk.scripting.costs.PermanentCostAction
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.UntapLimitPerStep
+import com.wingedsheep.sdk.scripting.GrantFlashToSpellType
+import com.wingedsheep.sdk.scripting.UntapDuringOtherUntapSteps
+import com.wingedsheep.sdk.scripting.UntapFilteredDuringOtherUntapSteps
 import com.wingedsheep.sdk.scripting.GrantChosenSubtype
 import com.wingedsheep.sdk.scripting.SuppressZoneChangeTriggers
 import com.wingedsheep.sdk.scripting.LookAtFaceDownCreatures
@@ -3799,6 +3802,17 @@ object CardIntentAnalyzer {
             CardPredicate.IsLand in static.filter.baseFilter.cardPredicates &&
             static.addSubtypes.any { subtype -> runCatching { Keyword.valueOf("${subtype.uppercase()}WALK") }.getOrNull() in keywords }
 
+    /** Whether [filter] names [predicate] anywhere — directly, inside an `Or`, or in an `anyOf` branch. */
+    private fun filterMentions(filter: GameObjectFilter, predicate: CardPredicate): Boolean {
+        fun inPredicate(p: CardPredicate): Boolean =
+            p == predicate || (p is CardPredicate.Or && p.predicates.any(::inPredicate))
+        return filter.cardPredicates.any(::inPredicate) || filter.anyOf.any { filterMentions(it, predicate) }
+    }
+
+    /** An untap filter that reaches creatures alone (Drumbellower, Ivorytusk Fortress) — no land or rock. */
+    private fun untapsCreaturesOnly(filter: GameObjectFilter): Boolean =
+        filter.anyOf.isEmpty() && CardPredicate.IsCreature in filter.cardPredicates
+
     /** An Aura's "enchanted permanent doesn't untap" — see [analyze]. */
     private fun locksEnchantedTapped(static: StaticAbility): Boolean =
         static is GrantKeyword && static.keyword in LOCKED_TAPPED_FLAGS && static.filter.scope == Scope.AttachedTo
@@ -3828,6 +3842,21 @@ object CardIntentAnalyzer {
         // "doesn't untap" lock reads. A symmetric cap (Damping Field, Winter Orb) binds its
         // controller too, so it reads as no plan of its own.
         is UntapLimitPerStep -> if (static.players in OPPONENT_PLAYERS) setOf(IntentTag.TAPPER) else emptySet()
+        // "Untap all permanents you control during each other player's untap step" (Seedborn Muse,
+        // Teferi, Who Slows the Sunset's emblem) and its filtered form — "… all creatures and lands
+        // you control" (Prophet of Kruphix), "… creatures" (Drumbellower), "… artifacts" (Unwinding
+        // Clock). An untapped creature attacks and still blocks, as vigilance does
+        // ([IntentTag.COMBAT_ENHANCEMENT]); an untapped land or rock is mana — and a tap ability —
+        // ready on their turn ([IntentTag.OFF_TURN_PLAY]).
+        is UntapDuringOtherUntapSteps -> setOf(IntentTag.COMBAT_ENHANCEMENT, IntentTag.OFF_TURN_PLAY)
+        is UntapFilteredDuringOtherUntapSteps -> buildSet {
+            if (filterMentions(static.filter, CardPredicate.IsCreature)) add(IntentTag.COMBAT_ENHANCEMENT)
+            if (!untapsCreaturesOnly(static.filter)) add(IntentTag.OFF_TURN_PLAY)
+        }
+        // "You may cast creature spells as though they had flash" (Prophet of Kruphix, Vedalken
+        // Orrery): a card held up and cast on the opponent's turn. A grant to every player (Quick
+        // Sliver's "any player may cast Sliver spells …") is as much theirs, so reads as no plan.
+        is GrantFlashToSpellType -> if (static.controllerOnly) setOf(IntentTag.OFF_TURN_PLAY) else emptySet()
         // "Can't be blocked by artifact creatures" (Audacious Infiltrator, Fen Hauler): partial
         // evasion is still evasion — the creature gets through whatever the filter shuts out.
         is CantBeBlockedBy -> setOf(IntentTag.EVASION_GRANT)
