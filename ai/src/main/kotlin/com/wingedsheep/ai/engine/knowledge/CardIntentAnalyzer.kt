@@ -1626,8 +1626,10 @@ object CardIntentAnalyzer {
      * creature card exiled with this permanent onto the battlefield under your control" (Tomb of the
      * Dusk Rose).
      *
-     * Only our graveyard (or that pile) and only to our side: reanimating an opponent's creature is a steal, and
-     * a graveyard exiled is graveyard hate, both read (or not) elsewhere.
+     * Only our graveyard, every graveyard, or that pile — and only to our side. "A creature card from a graveyard"
+     * (Entering, Victor) can take back our own, as the single-card "target creature card from a graveyard"
+     * (Rise from the Grave) reads; reanimating only an opponent's creature is a steal, and a graveyard exiled
+     * is graveyard hate, both read (or not) elsewhere.
      *
      * "Under its owner's control" hands the pile back to whoever owned each card — a release, not a
      * recursion — unless [ownPile]: the card only ever stashes its controller's own cards there
@@ -1638,7 +1640,7 @@ object CardIntentAnalyzer {
         val leaves = readingLeaves(root)
         val ourGraveyard = leaves.mapNotNullTo(HashSet()) { leaf ->
             val source = (leaf as? GatherCardsEffect)?.source as? CardSource.FromZone ?: return@mapNotNullTo null
-            leaf.storeAs.takeIf { source.zone == Zone.GRAVEYARD && source.player == Player.You }
+            leaf.storeAs.takeIf { source.zone == Zone.GRAVEYARD && (source.player == Player.You || source.player == Player.Each) }
         }
         // The pile this permanent exiled is a stock to bring back too, whoever owned the cards — but
         // only onto our battlefield (Tomb of the Dusk Rose). A hand is always its owner's, so

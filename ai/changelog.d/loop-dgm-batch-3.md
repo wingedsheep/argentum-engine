@@ -1,0 +1,1 @@
+- #<pr> The AI reads "put a creature card from a graveyard onto the battlefield under your control" (Breaking // Entering, Victor) as recursion, as it already read the single-card "target creature card from a graveyard" return.

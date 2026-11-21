@@ -33,6 +33,240 @@
     ]
 }
 
+// Alive // Well
+{
+    "name": "Alive // Well",
+    "manaCost": "",
+    "typeLine": "Sorcery",
+    "oracleText": "Create a 3/3 green Centaur creature token.\nFuse (You may cast one or both halves of this card from your hand.)\n//\nYou gain 2 life for each creature you control.\nFuse (You may cast one or both halves of this card from your hand.)",
+    "keywords": [
+        "FUSE"
+    ],
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "UNCOMMON",
+        "artist": "Nils Hamm",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/db84415e-048a-4cfc-9121-5ae17a412198.jpg?1783940017",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "If you cast Alive // Well as a fused split spell, the Centaur creature token will count toward the amount of life you gain."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Count the number of creatures you control when Well resolves to determine how much life you gain."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you're casting a split card with fuse from any zone other than your hand, you can't cast both halves. You'll only be able to cast one half or the other."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "To cast a fused split spell, pay both of its mana costs. While the spell is on the stack, its mana value is the total amount of mana in both costs."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When a fused split spell resolves, follow the instructions of the left half first, then the instructions on the right half."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "On the stack, a split spell that hasn't been fused has only that half's characteristics and mana value. The other half is treated as though it didn't exist."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Some split cards with fuse have two monocolor halves of different colors. If such a card is cast as a fused split spell, the resulting spell is multicolored. If only one half is cast, the spell is the color of that half. While not on the stack, such a card is multicolored."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you cast a split card with fuse from your hand without paying its mana cost, you can choose to use its fuse ability and cast both halves without paying their mana costs."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Alive",
+            "manaCost": "{3}{G}",
+            "typeLine": "Sorcery",
+            "oracleText": "Create a 3/3 green Centaur creature token.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Centaur"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Well",
+            "manaCost": "{W}",
+            "typeLine": "Sorcery",
+            "oracleText": "You gain 2 life for each creature you control.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "creature"
+                        },
+                        "multiplier": 2
+                    }
+                }
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
+// Armed // Dangerous
+{
+    "name": "Armed // Dangerous",
+    "manaCost": "",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature gets +1/+1 and gains double strike until end of turn.\nFuse (You may cast one or both halves of this card from your hand.)\n//\nAll creatures able to block target creature this turn do so.\nFuse (You may cast one or both halves of this card from your hand.)",
+    "keywords": [
+        "FUSE"
+    ],
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "UNCOMMON",
+        "artist": "David Palumbo",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff7f4fc2-6f76-44e7-a30b-7166a0d10d2a.jpg?1783940018",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "To cast a fused split spell, pay both of its mana costs. While the spell is on the stack, its mana value is the total amount of mana in both costs."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You can choose the same object as the target of each half of a fused split spell, if appropriate."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you're casting a split card with fuse from any zone other than your hand, you can't cast both halves. You'll only be able to cast one half or the other."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When resolving a fused split spell with multiple targets, treat it as you would any spell with multiple targets. If all targets are illegal when the spell tries to resolve, the spell doesn't resolve and none of its effects happen. If at least one target is still legal at that time, the spell resolves, but an illegal target can't perform any actions or have any actions performed on it."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When a fused split spell resolves, follow the instructions of the left half first, then the instructions on the right half."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "On the stack, a split spell that hasn't been fused has only that half's characteristics and mana value. The other half is treated as though it didn't exist."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Some split cards with fuse have two monocolor halves of different colors. If such a card is cast as a fused split spell, the resulting spell is multicolored. If only one half is cast, the spell is the color of that half. While not on the stack, such a card is multicolored."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you cast a split card with fuse from your hand without paying its mana cost, you can choose to use its fuse ability and cast both halves without paying their mana costs."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Dangerous doesn't give any creatures the ability to block the target creature. It just forces those creatures that are already able to block the creature to do so."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "As blockers are declared, any creature that's tapped or affected by a spell or ability that says it can't block doesn't block. If there's a cost associated with having the creature block, no player is forced to pay that cost, so it doesn't block if that cost isn't paid."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Armed",
+            "manaCost": "{1}{R}",
+            "typeLine": "Sorcery",
+            "oracleText": "Target creature gets +1/+1 and gains double strike until end of turn.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOUBLE_STRIKE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Dangerous",
+            "manaCost": "{3}{G}",
+            "typeLine": "Sorcery",
+            "oracleText": "All creatures able to block target creature this turn do so.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "MustBeBlocked",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
 // Armored Wolf-Rider
 {
     "name": "Armored Wolf-Rider",
@@ -251,6 +485,127 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Beck // Call
+{
+    "name": "Beck // Call",
+    "manaCost": "",
+    "typeLine": "Sorcery",
+    "oracleText": "Whenever a creature enters this turn, you may draw a card.\nFuse (You may cast one or both halves of this card from your hand.)\n//\nCreate four 1/1 white Bird creature tokens with flying.\nFuse (You may cast one or both halves of this card from your hand.)",
+    "keywords": [
+        "FUSE"
+    ],
+    "metadata": {
+        "collectorNumber": "123",
+        "rarity": "RARE",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a01d6540-9eaf-4e08-a62d-682551ee78e9.jpg?1783940017",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Beck triggers when any creature enters the battlefield, no matter who controls it."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you cast Beck // Call as a fused split spell, the triggered ability it creates will be in effect when the Bird creature tokens enter the battlefield. You'll draw up to four cards."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you're casting a split card with fuse from any zone other than your hand, you can't cast both halves. You'll only be able to cast one half or the other."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "To cast a fused split spell, pay both of its mana costs. While the spell is on the stack, its mana value is the total amount of mana in both costs."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When a fused split spell resolves, follow the instructions of the left half first, then the instructions on the right half."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "On the stack, a split spell that hasn't been fused has only that half's characteristics and mana value. The other half is treated as though it didn't exist."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Some split cards with fuse have two monocolor halves of different colors. If such a card is cast as a fused split spell, the resulting spell is multicolored. If only one half is cast, the spell is the color of that half. While not on the stack, such a card is multicolored."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Some split cards with fuse have two halves that are both multicolored. That card is multicolored no matter which half is cast, or if both halves are cast. It's also multicolored while not on the stack."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you cast a split card with fuse from your hand without paying its mana cost, you can choose to use its fuse ability and cast both halves without paying their mana costs."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE",
+        "BLUE"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Beck",
+            "manaCost": "{G}{U}",
+            "typeLine": "Sorcery",
+            "oracleText": "Whenever a creature enters this turn, you may draw a card.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "ZoneChangeEvent",
+                            "filter": "creature",
+                            "to": "Battlefield"
+                        },
+                        "binding": "ANY"
+                    }
+                }
+            }
+        },
+        {
+            "name": "Call",
+            "manaCost": "{4}{W}{U}",
+            "typeLine": "Sorcery",
+            "oracleText": "Create four 1/1 white Bird creature tokens with flying.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Bird"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/4/5/456832f6-60b5-46d7-b37e-4fb44e60e792.jpg?1783902809"
+                }
+            }
+        }
+    ],
+    "hasNoManaCost": true
 }
 
 // Beetleform Mage
@@ -580,6 +935,182 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Breaking // Entering
+{
+    "name": "Breaking // Entering",
+    "manaCost": "",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player mills eight cards.\nFuse (You may cast one or both halves of this card from your hand.)\n//\nPut a creature card from a graveyard onto the battlefield under your control. It gains haste until end of turn.\nFuse (You may cast one or both halves of this card from your hand.)",
+    "keywords": [
+        "FUSE"
+    ],
+    "metadata": {
+        "collectorNumber": "124",
+        "rarity": "RARE",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66724f4e-59dd-4c70-b09b-49947320e6d1.jpg?1783940017",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "If you're casting a split card with fuse from any zone other than your hand, you can't cast both halves. You'll only be able to cast one half or the other."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "To cast a fused split spell, pay both of its mana costs. While the spell is on the stack, its mana value is the total amount of mana in both costs."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You can choose the same object as the target of each half of a fused split spell, if appropriate."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When resolving a fused split spell with multiple targets, treat it as you would any spell with multiple targets. If all targets are illegal when the spell tries to resolve, the spell doesn't resolve and none of its effects happen. If at least one target is still legal at that time, the spell resolves, but an illegal target can't perform any actions or have any actions performed on it."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When a fused split spell resolves, follow the instructions of the left half first, then the instructions on the right half."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "On the stack, a split spell that hasn't been fused has only that half's characteristics and mana value. The other half is treated as though it didn't exist."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Some split cards with fuse have two monocolor halves of different colors. If such a card is cast as a fused split spell, the resulting spell is multicolored. If only one half is cast, the spell is the color of that half. While not on the stack, such a card is multicolored."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Some split cards with fuse have two halves that are both multicolored. That card is multicolored no matter which half is cast, or if both halves are cast. It's also multicolored while not on the stack."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a player names a card, the player may name either half of a split card, but not both. A split card has the chosen name if one of its two names matches the chosen name."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you cast a split card with fuse from your hand without paying its mana cost, you can choose to use its fuse ability and cast both halves without paying their mana costs."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Entering doesn't target any creature card. You choose which card you're putting onto the battlefield as Entering resolves. You can choose any creature card in a graveyard at time, including one put into a graveyard because of Breaking if you cast Breaking // Entering as a fused split spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Breaking",
+            "manaCost": "{U}{B}",
+            "typeLine": "Sorcery",
+            "oracleText": "Target player mills eight cards.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 8
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Entering",
+            "manaCost": "{4}{B}{R}",
+            "typeLine": "Sorcery",
+            "oracleText": "Put a creature card from a graveyard onto the battlefield under your control. It gains haste until end of turn.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "player": "Each",
+                                "filter": "creature"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Put a creature card from a graveyard onto the battlefield under your control",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "selected1",
+                            "ifNotEmpty": {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "selected1"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "hasNoManaCost": true
 }
 
 // Bred for the Hunt
@@ -1138,6 +1669,275 @@
     ]
 }
 
+// Down // Dirty
+{
+    "name": "Down // Dirty",
+    "manaCost": "",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player discards two cards.\nFuse (You may cast one or both halves of this card from your hand.)\n//\nReturn target card from your graveyard to your hand.\nFuse (You may cast one or both halves of this card from your hand.)",
+    "keywords": [
+        "FUSE"
+    ],
+    "metadata": {
+        "collectorNumber": "126",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c35c63c1-6344-4d8c-8f7d-cd253d12f9ae.jpg?1783940016",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "If you're casting a split card with fuse from any zone other than your hand, you can't cast both halves. You'll only be able to cast one half or the other."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "To cast a fused split spell, pay both of its mana costs. While the spell is on the stack, its mana value is the total amount of mana in both costs."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You can choose the same object as the target of each half of a fused split spell, if appropriate."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When resolving a fused split spell with multiple targets, treat it as you would any spell with multiple targets. If all targets are illegal when the spell tries to resolve, the spell doesn't resolve and none of its effects happen. If at least one target is still legal at that time, the spell resolves, but an illegal target can't perform any actions or have any actions performed on it."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When a fused split spell resolves, follow the instructions of the left half first, then the instructions on the right half."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "On the stack, a split spell that hasn't been fused has only that half's characteristics and mana value. The other half is treated as though it didn't exist."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Some split cards with fuse have two monocolor halves of different colors. If such a card is cast as a fused split spell, the resulting spell is multicolored. If only one half is cast, the spell is the color of that half. While not on the stack, such a card is multicolored."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Some split cards with fuse have two halves that are both multicolored. That card is multicolored no matter which half is cast, or if both halves are cast. It's also multicolored while not on the stack."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a player names a card, the player may name either half of a split card, but not both. A split card has the chosen name if one of its two names matches the chosen name."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you cast a split card with fuse from your hand without paying its mana cost, you can choose to use its fuse ability and cast both halves without paying their mana costs."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Down",
+            "manaCost": "{3}{B}",
+            "typeLine": "Sorcery",
+            "oracleText": "Target player discards two cards.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 2 cards to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Dirty",
+            "manaCost": "{2}{G}",
+            "typeLine": "Sorcery",
+            "oracleText": "Return target card from your graveyard to your hand.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
+// Far // Away
+{
+    "name": "Far // Away",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Return target creature to its owner's hand.\nFuse (You may cast one or both halves of this card from your hand.)\n//\nTarget player sacrifices a creature of their choice.\nFuse (You may cast one or both halves of this card from your hand.)",
+    "keywords": [
+        "FUSE"
+    ],
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Staples",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d13cdb71-a499-41db-84e6-95f84650c524.jpg?1783940016",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "If you're casting a split card with fuse from any zone other than your hand, you can't cast both halves. You'll only be able to cast one half or the other."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "To cast a fused split spell, pay both of its mana costs. While the spell is on the stack, its mana value is the total amount of mana in both costs."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You can choose the same object as the target of each half of a fused split spell, if appropriate."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When resolving a fused split spell with multiple targets, treat it as you would any spell with multiple targets. If all targets are illegal when the spell tries to resolve, the spell doesn't resolve and none of its effects happen. If at least one target is still legal at that time, the spell resolves, but an illegal target can't perform any actions or have any actions performed on it."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When a fused split spell resolves, follow the instructions of the left half first, then the instructions on the right half."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "On the stack, a split spell that hasn't been fused has only that half's characteristics and mana value. The other half is treated as though it didn't exist."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Some split cards with fuse have two monocolor halves of different colors. If such a card is cast as a fused split spell, the resulting spell is multicolored. If only one half is cast, the spell is the color of that half. While not on the stack, such a card is multicolored."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Some split cards with fuse have two halves that are both multicolored. That card is multicolored no matter which half is cast, or if both halves are cast. It's also multicolored while not on the stack."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a player names a card, the player may name either half of a split card, but not both. A split card has the chosen name if one of its two names matches the chosen name."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you cast a split card with fuse from your hand without paying its mana cost, you can choose to use its fuse ability and cast both halves without paying their mana costs."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Away targets only a player. It doesn't target any creatures. The target player chooses which creature to sacrifice as the spell resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Far",
+            "manaCost": "{1}{U}",
+            "typeLine": "Instant",
+            "oracleText": "Return target creature to its owner's hand.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Away",
+            "manaCost": "{2}{B}",
+            "typeLine": "Instant",
+            "oracleText": "Target player sacrifices a creature of their choice.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "ForceSacrifice",
+                    "filter": "creature",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t1"
+                    }
+                ]
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
 // Fatal Fumes
 {
     "name": "Fatal Fumes",
@@ -1179,6 +1979,342 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Flesh // Blood
+{
+    "name": "Flesh // Blood",
+    "manaCost": "",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile target creature card from a graveyard. Put X +1/+1 counters on target creature, where X is the power of the card you exiled.\nFuse (You may cast one or both halves of this card from your hand.)\n//\nTarget creature you control deals damage equal to its power to any target.\nFuse (You may cast one or both halves of this card from your hand.)",
+    "keywords": [
+        "FUSE"
+    ],
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "RARE",
+        "artist": "Lucas Graciano",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/02b40fe4-901a-4832-8d52-a6bb5cc07b63.jpg?1783940015",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "As Flesh is resolving, if the creature is an illegal target but the creature card is still a legal target, the creature card will be exiled but no counters will be put onto the creature. If the creature is the only legal target, Flesh will still resolve but will have no effect as you didn't exile a card."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The number of +1/+1 counters is based on the power of the creature card as it last existed in the graveyard."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you cast Flesh // Blood as a fused split card, the +1/+1 counters will have been placed before the amount of damage is determined."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you're casting a split card with fuse from any zone other than your hand, you can't cast both halves. You'll only be able to cast one half or the other."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "To cast a fused split spell, pay both of its mana costs. While the spell is on the stack, its mana value is the total amount of mana in both costs."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You can choose the same object as the target of each half of a fused split spell, if appropriate."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When resolving a fused split spell with multiple targets, treat it as you would any spell with multiple targets. If all targets are illegal when the spell tries to resolve, the spell doesn't resolve and none of its effects happen. If at least one target is still legal at that time, the spell resolves, but an illegal target can't perform any actions or have any actions performed on it."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When a fused split spell resolves, follow the instructions of the left half first, then the instructions on the right half."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "On the stack, a split spell that hasn't been fused has only that half's characteristics and mana value. The other half is treated as though it didn't exist."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Some split cards with fuse have two monocolor halves of different colors. If such a card is cast as a fused split spell, the resulting spell is multicolored. If only one half is cast, the spell is the color of that half. While not on the stack, such a card is multicolored."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Some split cards with fuse have two halves that are both multicolored. That card is multicolored no matter which half is cast, or if both halves are cast. It's also multicolored while not on the stack."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a player names a card, the player may name either half of a split card, but not both. A split card has the chosen name if one of its two names matches the chosen name."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you cast a split card with fuse from your hand without paying its mana cost, you can choose to use its fuse ability and cast both halves without paying their mana costs."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "As Blood is resolving, if only one of the targets is legal, Blood will still resolve but will have no effect: If the first target is illegal, it can't deal damage to anything. If the second target is illegal, it can't be dealt damage."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The amount of damage dealt is based on the first target creature's power as Blood resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED",
+        "GREEN"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Flesh",
+            "manaCost": "{3}{B}{G}",
+            "typeLine": "Sorcery",
+            "oracleText": "Exile target creature card from a graveyard. Put X +1/+1 counters on target creature, where X is the power of the card you exiled.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "AddDynamicCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "numericProperty": "Power"
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    },
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Blood",
+            "manaCost": "{R}{G}",
+            "typeLine": "Sorcery",
+            "oracleText": "Target creature you control deals damage equal to its power to any target.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t2"
+                        },
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t3"
+                    },
+                    "damageSource": {
+                        "type": "BoundVariable",
+                        "name": "t2"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t2"
+                    },
+                    {
+                        "type": "AnyTarget",
+                        "id": "t3"
+                    }
+                ]
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
+// Give // Take
+{
+    "name": "Give // Take",
+    "manaCost": "",
+    "typeLine": "Sorcery",
+    "oracleText": "Put three +1/+1 counters on target creature.\nFuse (You may cast one or both halves of this card from your hand.)\n//\nRemove all +1/+1 counters from target creature you control. Draw that many cards.\nFuse (You may cast one or both halves of this card from your hand.)",
+    "keywords": [
+        "FUSE"
+    ],
+    "metadata": {
+        "collectorNumber": "129",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Prescott",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/a/9af07d28-45a2-45d6-b1cb-0858c609a881.jpg?1783940016",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "If you cast Give // Take as a fused split spell, you can target the same creature for both parts. If you do so, you will first put three +1/+1 counters on that creature, then remove all +1/+1 counters from it, then draw that many cards."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you're casting a split card with fuse from any zone other than your hand, you can't cast both halves. You'll only be able to cast one half or the other."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "To cast a fused split spell, pay both of its mana costs. While the spell is on the stack, its mana value is the total amount of mana in both costs."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You can choose the same object as the target of each half of a fused split spell, if appropriate."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When resolving a fused split spell with multiple targets, treat it as you would any spell with multiple targets. If all targets are illegal when the spell tries to resolve, the spell doesn't resolve and none of its effects happen. If at least one target is still legal at that time, the spell resolves, but an illegal target can't perform any actions or have any actions performed on it."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When a fused split spell resolves, follow the instructions of the left half first, then the instructions on the right half."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "On the stack, a split spell that hasn't been fused has only that half's characteristics and mana value. The other half is treated as though it didn't exist."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Some split cards with fuse have two monocolor halves of different colors. If such a card is cast as a fused split spell, the resulting spell is multicolored. If only one half is cast, the spell is the color of that half. While not on the stack, such a card is multicolored."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Some split cards with fuse have two halves that are both multicolored. That card is multicolored no matter which half is cast, or if both halves are cast. It's also multicolored while not on the stack."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a player names a card, the player may name either half of a split card, but not both. A split card has the chosen name if one of its two names matches the chosen name."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you cast a split card with fuse from your hand without paying its mana cost, you can choose to use its fuse ability and cast both halves without paying their mana costs."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You can target any creature you control with Take; the target does not need to have any +1/+1 counters on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Give",
+            "manaCost": "{2}{G}",
+            "typeLine": "Sorcery",
+            "oracleText": "Put three +1/+1 counters on target creature.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 3,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Take",
+            "manaCost": "{2}{U}",
+            "typeLine": "Sorcery",
+            "oracleText": "Remove all +1/+1 counters from target creature you control. Draw that many cards.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "StoreNumber",
+                            "name": "give_take_removed",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": "PLUS_ONE_PLUS_ONE"
+                                }
+                            }
+                        },
+                        {
+                            "type": "RemoveAllCountersOfType",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "VariableReference",
+                                "variableName": "give_take_removed"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        }
+    ],
+    "hasNoManaCost": true
 }
 
 // Gleam of Battle
@@ -3298,6 +4434,262 @@
     ]
 }
 
+// Profit // Loss
+{
+    "name": "Profit // Loss",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Creatures you control get +1/+1 until end of turn.\nFuse (You may cast one or both halves of this card from your hand.)\n//\nCreatures your opponents control get -1/-1 until end of turn.\nFuse (You may cast one or both halves of this card from your hand.)",
+    "keywords": [
+        "FUSE"
+    ],
+    "metadata": {
+        "collectorNumber": "130",
+        "rarity": "UNCOMMON",
+        "artist": "Kev Walker",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0eb3ce46-ddd2-43b3-9e45-019ae91df686.jpg?1783940015",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "If you're casting a split card with fuse from any zone other than your hand, you can't cast both halves. You'll only be able to cast one half or the other."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "To cast a fused split spell, pay both of its mana costs. While the spell is on the stack, its mana value is the total amount of mana in both costs."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You can choose the same object as the target of each half of a fused split spell, if appropriate."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When resolving a fused split spell with multiple targets, treat it as you would any spell with multiple targets. If all targets are illegal when the spell tries to resolve, the spell doesn't resolve and none of its effects happen. If at least one target is still legal at that time, the spell resolves, but an illegal target can't perform any actions or have any actions performed on it."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When a fused split spell resolves, follow the instructions of the left half first, then the instructions on the right half."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "On the stack, a split spell that hasn't been fused has only that half's characteristics and mana value. The other half is treated as though it didn't exist."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Some split cards with fuse have two monocolor halves of different colors. If such a card is cast as a fused split spell, the resulting spell is multicolored. If only one half is cast, the spell is the color of that half. While not on the stack, such a card is multicolored."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Some split cards with fuse have two halves that are both multicolored. That card is multicolored no matter which half is cast, or if both halves are cast. It's also multicolored while not on the stack."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a player names a card, the player may name either half of a split card, but not both. A split card has the chosen name if one of its two names matches the chosen name."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you cast a split card with fuse from your hand without paying its mana cost, you can choose to use its fuse ability and cast both halves without paying their mana costs."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Profit",
+            "manaCost": "{1}{W}",
+            "typeLine": "Instant",
+            "oracleText": "Creatures you control get +1/+1 until end of turn.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        },
+        {
+            "name": "Loss",
+            "manaCost": "{2}{B}",
+            "typeLine": "Instant",
+            "oracleText": "Creatures your opponents control get -1/-1 until end of turn.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
+// Protect // Serve
+{
+    "name": "Protect // Serve",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +2/+4 until end of turn.\nFuse (You may cast one or both halves of this card from your hand.)\n//\nTarget creature gets -6/-0 until end of turn.\nFuse (You may cast one or both halves of this card from your hand.)",
+    "keywords": [
+        "FUSE"
+    ],
+    "metadata": {
+        "collectorNumber": "131",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Barger",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/b/9b8acd7d-f3e2-4358-91ab-40901b68d64c.jpg?1783940016",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "If you're casting a split card with fuse from any zone other than your hand, you can't cast both halves. You'll only be able to cast one half or the other."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "To cast a fused split spell, pay both of its mana costs. While the spell is on the stack, its mana value is the total amount of mana in both costs."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You can choose the same object as the target of each half of a fused split spell, if appropriate."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When resolving a fused split spell with multiple targets, treat it as you would any spell with multiple targets. If all targets are illegal when the spell tries to resolve, the spell doesn't resolve and none of its effects happen. If at least one target is still legal at that time, the spell resolves, but an illegal target can't perform any actions or have any actions performed on it."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When a fused split spell resolves, follow the instructions of the left half first, then the instructions on the right half."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "On the stack, a split spell that hasn't been fused has only that half's characteristics and mana value. The other half is treated as though it didn't exist."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Some split cards with fuse have two monocolor halves of different colors. If such a card is cast as a fused split spell, the resulting spell is multicolored. If only one half is cast, the spell is the color of that half. While not on the stack, such a card is multicolored."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Some split cards with fuse have two halves that are both multicolored. That card is multicolored no matter which half is cast, or if both halves are cast. It's also multicolored while not on the stack."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a player names a card, the player may name either half of a split card, but not both. A split card has the chosen name if one of its two names matches the chosen name."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you cast a split card with fuse from your hand without paying its mana cost, you can choose to use its fuse ability and cast both halves without paying their mana costs."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Protect",
+            "manaCost": "{2}{W}",
+            "typeLine": "Instant",
+            "oracleText": "Target creature gets +2/+4 until end of turn.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Serve",
+            "manaCost": "{1}{U}",
+            "typeLine": "Instant",
+            "oracleText": "Target creature gets -6/-0 until end of turn.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -6
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
 // Pyrewild Shaman
 {
     "name": "Pyrewild Shaman",
@@ -3535,6 +4927,168 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Ready // Willing
+{
+    "name": "Ready // Willing",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Creatures you control gain indestructible until end of turn. Untap each creature you control.\nFuse (You may cast one or both halves of this card from your hand.)\n//\nCreatures you control gain deathtouch and lifelink until end of turn.\nFuse (You may cast one or both halves of this card from your hand.)",
+    "keywords": [
+        "FUSE"
+    ],
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/22081f95-dc8e-41ed-b609-b6a22ee5428b.jpg?1783940014",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "A creature that comes under your control after Ready resolves will not be granted by this effect."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "To cast a fused split spell, pay both of its mana costs. While the spell is on the stack, its mana value is the total amount of mana in both costs."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You can choose the same object as the target of each half of a fused split spell, if appropriate."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When resolving a fused split spell with multiple targets, treat it as you would any spell with multiple targets. If all targets are illegal when the spell tries to resolve, the spell doesn't resolve and none of its effects happen. If at least one target is still legal at that time, the spell resolves, but an illegal target can't perform any actions or have any actions performed on it."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When a fused split spell resolves, follow the instructions of the left half first, then the instructions on the right half."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "On the stack, a split spell that hasn't been fused has only that half's characteristics and mana value. The other half is treated as though it didn't exist."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Some split cards with fuse have two monocolor halves of different colors. If such a card is cast as a fused split spell, the resulting spell is multicolored. If only one half is cast, the spell is the color of that half. While not on the stack, such a card is multicolored."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Some split cards with fuse have two halves that are both multicolored. That card is multicolored no matter which half is cast, or if both halves are cast. It's also multicolored while not on the stack."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a player names a card, the player may name either half of a split card, but not both. A split card has the chosen name if one of its two names matches the chosen name."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you cast a split card with fuse from your hand without paying its mana cost, you can choose to use its fuse ability and cast both halves without paying their mana costs."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Multiple instances of deathtouch or lifelink are redundant."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you're casting a split card with fuse from any zone other than your hand, you can't cast both halves. You'll only be able to cast one half or the other."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "A creature that comes under your control after Willing resolves won't have deathtouch or lifelink, because adding abilities does change a creature's characteristics."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK",
+        "GREEN"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Ready",
+            "manaCost": "{1}{G}{W}",
+            "typeLine": "Instant",
+            "oracleText": "Creatures you control gain indestructible until end of turn. Untap each creature you control.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:you"
+                                }
+                            },
+                            "body": {
+                                "type": "GrantKeyword",
+                                "keyword": "INDESTRUCTIBLE",
+                                "target": "IterationEntity"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:you"
+                                }
+                            },
+                            "body": {
+                                "type": "TapUntap",
+                                "target": "IterationEntity",
+                                "tap": false
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Willing",
+            "manaCost": "{1}{W}{B}",
+            "typeLine": "Instant",
+            "oracleText": "Creatures you control gain deathtouch and lifelink until end of turn.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:you"
+                                }
+                            },
+                            "body": {
+                                "type": "GrantKeyword",
+                                "keyword": "DEATHTOUCH",
+                                "target": "IterationEntity"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:you"
+                                }
+                            },
+                            "body": {
+                                "type": "GrantKeyword",
+                                "keyword": "LIFELINK",
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "hasNoManaCost": true
 }
 
 // Renegade Krasis
@@ -4800,6 +6354,325 @@
         "WHITE",
         "BLACK"
     ]
+}
+
+// Toil // Trouble
+{
+    "name": "Toil // Trouble",
+    "manaCost": "",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player draws two cards and loses 2 life.\nFuse (You may cast one or both halves of this card from your hand.)\n//\nTrouble deals damage to target player equal to the number of cards in that player's hand.\nFuse (You may cast one or both halves of this card from your hand.)",
+    "keywords": [
+        "FUSE"
+    ],
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "UNCOMMON",
+        "artist": "Nils Hamm",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/15bb3454-e3bb-4af9-9e93-461e210c26b7.jpg?1783940014",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "If you cast Toil // Trouble as a fused split card and choose to target the same player twice, the two drawn cards are counted when determining how much damage is dealt. The player can't do anything between the effects of Toil and Trouble to have fewer cards in their hand."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you're casting a split card with fuse from any zone other than your hand, you can't cast both halves. You'll only be able to cast one half or the other."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "To cast a fused split spell, pay both of its mana costs. While the spell is on the stack, its mana value is the total amount of mana in both costs."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You can choose the same object as the target of each half of a fused split spell, if appropriate."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When resolving a fused split spell with multiple targets, treat it as you would any spell with multiple targets. If all targets are illegal when the spell tries to resolve, the spell doesn't resolve and none of its effects happen. If at least one target is still legal at that time, the spell resolves, but an illegal target can't perform any actions or have any actions performed on it."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When a fused split spell resolves, follow the instructions of the left half first, then the instructions on the right half."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "On the stack, a split spell that hasn't been fused has only that half's characteristics and mana value. The other half is treated as though it didn't exist."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Some split cards with fuse have two monocolor halves of different colors. If such a card is cast as a fused split spell, the resulting spell is multicolored. If only one half is cast, the spell is the color of that half. While not on the stack, such a card is multicolored."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Some split cards with fuse have two halves that are both multicolored. That card is multicolored no matter which half is cast, or if both halves are cast. It's also multicolored while not on the stack."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a player names a card, the player may name either half of a split card, but not both. A split card has the chosen name if one of its two names matches the chosen name."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you cast a split card with fuse from your hand without paying its mana cost, you can choose to use its fuse ability and cast both halves without paying their mana costs."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Toil",
+            "manaCost": "{2}{B}",
+            "typeLine": "Sorcery",
+            "oracleText": "Target player draws two cards and loses 2 life.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Trouble",
+            "manaCost": "{2}{R}",
+            "typeLine": "Sorcery",
+            "oracleText": "Trouble deals damage to target player equal to the number of cards in that player's hand.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "AggregateZone",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "zone": "Hand"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t1"
+                    }
+                ]
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
+// Turn // Burn
+{
+    "name": "Turn // Burn",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Until end of turn, target creature loses all abilities and becomes a red Weird with base power and toughness 0/1.\nFuse (You may cast one or both halves of this card from your hand.)\n//\nBurn deals 2 damage to any target.\nFuse (You may cast one or both halves of this card from your hand.)",
+    "keywords": [
+        "FUSE"
+    ],
+    "metadata": {
+        "collectorNumber": "134",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Barger",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d7fdd59-6d76-4a0c-ac75-816345ef4a39.jpg?1783940014",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Turn will cause the creature lose all other colors and creature types, but it will retain any other card types (such as artifact) it may have."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Turn overwrites all previous effects that set the targeted creature's power or toughness to specific values. Effects that set its power or toughness to specific values that start to apply after Turn resolves will overwrite this effect."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Turn doesn't counter abilities that have already triggered or been activated. In particular, there is no way to cast this to stop a creature's \"At the beginning of your upkeep\" or \"When this creature enters the battlefield\" abilities from triggering."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the affected creature gains an ability after Turn resolves, it will keep that ability."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Effects that modify the targeted creature's power or toughness, such as the effects of Phytoburst or Legion's Initiative, will apply to it no matter when they started to take effect. The same is true for counters that change the creature's power or toughness (such as +1/+1 counters) and effects that switch its power and toughness."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you're casting a split card with fuse from any zone other than your hand, you can't cast both halves. You'll only be able to cast one half or the other."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "To cast a fused split spell, pay both of its mana costs. While the spell is on the stack, its mana value is the total amount of mana in both costs."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You can choose the same object as the target of each half of a fused split spell, if appropriate."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When resolving a fused split spell with multiple targets, treat it as you would any spell with multiple targets. If all targets are illegal when the spell tries to resolve, the spell doesn't resolve and none of its effects happen. If at least one target is still legal at that time, the spell resolves, but an illegal target can't perform any actions or have any actions performed on it."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When a fused split spell resolves, follow the instructions of the left half first, then the instructions on the right half."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "On the stack, a split spell that hasn't been fused has only that half's characteristics and mana value. The other half is treated as though it didn't exist."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Some split cards with fuse have two monocolor halves of different colors. If such a card is cast as a fused split spell, the resulting spell is multicolored. If only one half is cast, the spell is the color of that half. While not on the stack, such a card is multicolored."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Some split cards with fuse have two halves that are both multicolored. That card is multicolored no matter which half is cast, or if both halves are cast. It's also multicolored while not on the stack."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a player names a card, the player may name either half of a split card, but not both. A split card has the chosen name if one of its two names matches the chosen name."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you cast a split card with fuse from your hand without paying its mana cost, you can choose to use its fuse ability and cast both halves without paying their mana costs."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Turn",
+            "manaCost": "{2}{U}",
+            "typeLine": "Instant",
+            "oracleText": "Until end of turn, target creature loses all abilities and becomes a red Weird with base power and toughness 0/1.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RemoveAllAbilities",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "SetCreatureSubtypes",
+                            "subtypes": [
+                                "Weird"
+                            ],
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "EndOfTurn"
+                        },
+                        {
+                            "type": "ChangeColor",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "colors": [
+                                "RED"
+                            ]
+                        },
+                        {
+                            "type": "SetBaseStats",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "duration": "EndOfTurn"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Burn",
+            "manaCost": "{1}{R}",
+            "typeLine": "Instant",
+            "oracleText": "Burn deals 2 damage to any target.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t1"
+                    }
+                ]
+            }
+        }
+    ],
+    "hasNoManaCost": true
 }
 
 // Ubul Sar Gatekeepers
