@@ -199,6 +199,15 @@ data class EntitySnapshot(
     @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val wasRingBearer: Boolean = false,
+    /**
+     * True if this permanent had the monstrous designation (CR 701.37b) when it left. The marker
+     * lives on the permanent and is gone after the zone change (CR 400.7), so "if this creature is
+     * monstrous" rechecked on resolution after its source left (CR 603.4) reads it from here —
+     * Polis Crusher's ruling: once the ability triggers, it resolves even if the creature is gone.
+     */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val wasMonstrous: Boolean = false,
     /** The zone it was cast from (hand, graveyard, library, exile) when it left; null if not cast or untracked. */
     @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
@@ -582,6 +591,7 @@ fun captureLastKnown(state: GameState, entityId: EntityId): EntitySnapshot {
         damageSources = damagedBySourcesOf(state, entityId),
         wasCast = container?.has<com.wingedsheep.engine.state.components.battlefield.WasCastComponent>() == true,
         wasRingBearer = com.wingedsheep.engine.mechanics.targeting.SourceKindProtection.isRingBearer(state, entityId),
+        wasMonstrous = container?.has<com.wingedsheep.engine.state.components.battlefield.MonstrousComponent>() == true,
         castFromZone = container?.let(::castFromZoneOf),
         enteredFromZone = container?.get<com.wingedsheep.engine.state.components.battlefield.EnteredFromZoneComponent>()?.zone,
         attachmentIds = attachmentIdsOf(state, entityId),
