@@ -1,0 +1,109 @@
+{
+  "Blast of Genius": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Catch // Release": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Clear a Path": [
+    "removal",
+    "creature-removal"
+  ],
+  "Drown in Filth": [
+    "removal",
+    "creature-removal"
+  ],
+  "Far // Away": [
+    "removal",
+    "creature-removal"
+  ],
+  "Fatal Fumes": [
+    "removal",
+    "creature-removal"
+  ],
+  "Flesh // Blood": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Gaze of Granite": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Korozda Gorgon": [
+    "removal",
+    "creature-removal"
+  ],
+  "Krasis Incubation": [
+    "removal",
+    "creature-removal"
+  ],
+  "Morgue Burst": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Mutant's Prey": [
+    "removal",
+    "creature-removal"
+  ],
+  "Profit // Loss": [
+    "removal",
+    "creature-removal"
+  ],
+  "Punish the Enemy": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Putrefy": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Ral Zarek": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Renounce the Guilds": [
+    "removal",
+    "creature-removal"
+  ],
+  "Runner's Bane": [
+    "removal",
+    "creature-removal"
+  ],
+  "Scab-Clan Giant": [
+    "removal",
+    "creature-removal"
+  ],
+  "Turn // Burn": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Ubul Sar Gatekeepers": [
+    "removal",
+    "creature-removal"
+  ],
+  "Warleader's Helix": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Wear // Tear": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ]
+}

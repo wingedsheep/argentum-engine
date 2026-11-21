@@ -167,6 +167,92 @@
     ]
 }
 
+// Battering Krasis
+{
+    "name": "Battering Krasis",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Shark Beast",
+    "oracleText": "Trample\nEvolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "TRAMPLE",
+        "EVOLVE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Battering Krasis:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "EmitKeywordCounterEvent",
+                            "keyword": "EVOLVE"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Power"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Power"
+                            }
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Toughness"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Toughness"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Evolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "artist": "Jack Wang",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5d9aa740-9adf-412a-b6ec-0b9bb1b4618b.jpg?1783940036"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Beetleform Mage
 {
     "name": "Beetleform Mage",
@@ -386,6 +472,47 @@
     },
     "colorIdentityOverride": [
         "RED",
+        "WHITE"
+    ]
+}
+
+// Boros Mastiff
+{
+    "name": "Boros Mastiff",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Dog",
+    "oracleText": "Battalion — Whenever this creature and at least two other creatures attack, this creature gains lifelink until end of turn. (Damage dealt by a creature with lifelink also causes its controller to gain that much life.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Boros Mastiff:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        {
+                            "type": "AttackerCountAtLeast",
+                            "n": 3
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "artist": "Kev Walker",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/27a3bfb6-3843-4bda-bbcb-905e4b351dea.jpg?1783940045"
+    },
+    "colorIdentityOverride": [
         "WHITE"
     ]
 }
@@ -1478,6 +1605,210 @@
     ]
 }
 
+// Maze Abomination
+{
+    "name": "Maze Abomination",
+    "manaCost": "{5}{B}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Deathtouch (Any amount of damage this deals to a creature is enough to destroy it.)\nMulticolored creatures you control have deathtouch.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DEATHTOUCH",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsMulticolored"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "artist": "Yeong-Hao Han",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd84659f-4209-42a2-800a-61706470ce54.jpg?1783940039"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Maze Behemoth
+{
+    "name": "Maze Behemoth",
+    "manaCost": "{5}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Trample\nMulticolored creatures you control have trample.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsMulticolored"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "It returned to the leylines as quickly as it had appeared, leaving only broken bodies to mark its passage.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a7c9678-dea7-4219-bac0-9e1cef531f54.jpg?1783940035"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Maze Glider
+{
+    "name": "Maze Glider",
+    "manaCost": "{5}{U}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Flying\nMulticolored creatures you control have flying.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsMulticolored"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "The pattern of the Implicit Maze extends in more than two dimensions.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d1d20281-49c0-4fd0-91f2-390506ac33f6.jpg?1783940042"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Maze Rusher
+{
+    "name": "Maze Rusher",
+    "manaCost": "{5}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Haste\nMulticolored creatures you control have haste.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 3
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsMulticolored"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "\"The maze seems to fight us at every turn, resisting our efforts to solve it.\"\n—Niv-Mizzet",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/864d2eb8-e27f-4f84-9725-d2ae6446e217.jpg?1783940037"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Maze Sentinel
+{
+    "name": "Maze Sentinel",
+    "manaCost": "{5}{W}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Vigilance\nMulticolored creatures you control have vigilance.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 6
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsMulticolored"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "The route has been known for millennia, but only by those with no means to tell it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7a977e2d-a2bc-42d1-be7d-36a822c6a66e.jpg?1783940044"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Maze's End
 {
     "name": "Maze's End",
@@ -1759,6 +2090,77 @@
     ]
 }
 
+// Nivix Cyclops
+{
+    "name": "Nivix Cyclops",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Creature — Cyclops",
+    "oracleText": "Defender\nWhenever you cast an instant or sorcery spell, this creature gets +3/+0 until end of turn and can attack this turn as though it didn't have defender.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nivix Cyclops:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "Self"
+                        },
+                        "CanAttackDespiteDefenderThisTurn"
+                    ]
+                },
+                "descriptionOverride": "Whenever you cast an instant or sorcery spell, this creature gets +3/+0 until end of turn and can attack this turn as though it didn't have defender."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "artist": "Wayne Reynolds",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5d7a0e26-8cd4-4f53-8922-93ca28b1879b.jpg?1783940025",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Nivix Cyclops still has defender after its triggered ability resolves, although it will be able to attack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Notion Thief
 {
     "name": "Notion Thief",
@@ -1858,6 +2260,62 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLACK"
+    ]
+}
+
+// Opal Lake Gatekeepers
+{
+    "name": "Opal Lake Gatekeepers",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Vedalken Soldier",
+    "oracleText": "When this creature enters, if you control two or more Gates, you may draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Opal Lake Gatekeepers:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land Gate"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "artist": "Seb McKinnon",
+        "flavorText": "Sentries guard Ravnica's landmarks and outlying districts, unaware of these places' import to the maze.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f43ac38f-5cd0-46cf-8623-d82cb8fb719b.jpg?1783940042"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -2322,6 +2780,73 @@
     ]
 }
 
+// Rubblebelt Maaka
+{
+    "name": "Rubblebelt Maaka",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Cat",
+    "oracleText": "Bloodrush — {R}, Discard this card: Target attacking creature gets +3/+3 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Rubblebelt Maaka:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{R}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature attacking"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Bloodrush — {R}, Discard this card: Target attacking creature gets +3/+3 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "artist": "Eric Velhagen",
+        "flavorText": "\"The maaka remain loyal to us in this time of strife. We don't even have to feed them—our enemies do.\"\n—Nedja, Gruul shaman",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bc802d62-6559-45b9-ad11-de5887aece2b.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Runner's Bane
 {
     "name": "Runner's Bane",
@@ -2418,6 +2943,58 @@
     },
     "colorIdentityOverride": [
         "RED",
+        "GREEN"
+    ]
+}
+
+// Saruli Gatekeepers
+{
+    "name": "Saruli Gatekeepers",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Elf Warrior",
+    "oracleText": "When this creature enters, if you control two or more Gates, you gain 7 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Saruli Gatekeepers:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land Gate"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "artist": "Chris Rahn",
+        "flavorText": "In Ravnica's wilder districts, nature still stirs, and its protectors still mind their posts.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/471a5b1d-e2e5-4d90-b72a-ffae81ad6602.jpg?1783940035"
+    },
+    "colorIdentityOverride": [
         "GREEN"
     ]
 }
@@ -2644,6 +3221,86 @@
     ]
 }
 
+// Smelt-Ward Gatekeepers
+{
+    "name": "Smelt-Ward Gatekeepers",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "When this creature enters, if you control two or more Gates, gain control of target creature an opponent controls until end of turn. Untap that creature. It gains haste until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Smelt-Ward Gatekeepers:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainControl",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "EndOfTurn"
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "tap": false
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land Gate"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/2/8237b11f-36d2-4624-a0ef-520663385891.jpg?1783940037"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Species Gorger
 {
     "name": "Species Gorger",
@@ -2763,6 +3420,201 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Sunspire Gatekeepers
+{
+    "name": "Sunspire Gatekeepers",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "When this creature enters, if you control two or more Gates, create a 2/2 white Knight creature token with vigilance.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sunspire Gatekeepers:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Knight"
+                    ],
+                    "keywords": [
+                        "VIGILANCE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/3/d/3df61c33-38b3-4549-9e5d-ae1b5c1afd62.jpg?1783915260"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land Gate"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "artist": "Chippy",
+        "flavorText": "\"You will pass with respect, or you will not pass at all.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a3bc6b9-475b-4257-a3bc-1a0b70d45f79.jpg?1783940043"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Thrashing Mossdog
+{
+    "name": "Thrashing Mossdog",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Plant Dog",
+    "oracleText": "Reach (This creature can block creatures with flying.)\nScavenge {4}{G}{G} ({4}{G}{G}, Exile this card from your graveyard: Put a number of +1/+1 counters equal to this card's power on target creature. Scavenge only as a sorcery.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Thrashing Mossdog:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}{G}{G}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Scavenge {4}{G}{G}"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "artist": "Ryan Barger",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ffd0d63a-d947-4ce4-8e34-5c1521955b18.jpg?1783940034"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Ubul Sar Gatekeepers
+{
+    "name": "Ubul Sar Gatekeepers",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Zombie Soldier",
+    "oracleText": "When this creature enters, if you control two or more Gates, target creature an opponent controls gets -2/-2 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ubul Sar Gatekeepers:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land Gate"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "artist": "Volkan Baǵa",
+        "flavorText": "There are many gates into the undercity, but few ways out.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f5b2e327-adfd-459b-8d18-faa39d88b5de.jpg?1783940038"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
