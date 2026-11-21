@@ -608,6 +608,7 @@ class ZoneTransitionService(
                 wasModified = lastKnownWasModified,
                 wasCast = container.has<com.wingedsheep.engine.state.components.battlefield.WasCastComponent>(),
                 wasRingBearer = com.wingedsheep.engine.mechanics.targeting.SourceKindProtection.isRingBearer(state, entityId),
+                wasMonstrous = container.has<com.wingedsheep.engine.state.components.battlefield.MonstrousComponent>(),
                 castFromZone = com.wingedsheep.engine.state.components.stack.castFromZoneOf(container),
                 enteredFromZone = container.get<
                     com.wingedsheep.engine.state.components.battlefield.EnteredFromZoneComponent

@@ -404,6 +404,7 @@ class PredicateEvaluator(
             StatePredicate.IsTapped -> snapshot.wasTapped
             StatePredicate.IsUntapped -> !snapshot.wasTapped
             StatePredicate.IsModified -> snapshot.wasModified
+            StatePredicate.IsMonstrous -> snapshot.wasMonstrous
             StatePredicate.IsEnchanted -> snapshot.attachments.any { it.hasSubtype(Subtype.AURA) }
             StatePredicate.IsFaceDown -> snapshot.wasFaceDown
             StatePredicate.IsFaceUp -> !snapshot.wasFaceDown
@@ -2748,8 +2749,13 @@ class PredicateEvaluator(
             // (CR 702.112b). Sticky until the permanent leaves the battlefield.
             StatePredicate.IsRenowned -> container.has<RenownedComponent>()
             // Monstrous marker — set by BecomeMonstrousExecutor when a monstrosity ability
-            // resolves (CR 701.37b). Sticky until the permanent leaves the battlefield.
-            StatePredicate.IsMonstrous -> container.has<MonstrousComponent>()
+            // resolves (CR 701.37b). Sticky until the permanent leaves the battlefield; once it
+            // has left, the frozen last-known snapshot answers, as for IsModified — Polis
+            // Crusher's "if this creature is monstrous" rechecked on resolution (CR 603.4) after
+            // the creature is gone (ruling 2013-09-15).
+            StatePredicate.IsMonstrous ->
+                container.has<MonstrousComponent>() ||
+                    container.get<LastKnownPermanentComponent>()?.snapshot?.wasMonstrous == true
             // Embalmed — a token created by a resolving embalm ability (CR 702.128b).
             StatePredicate.IsEmbalmed -> container.has<com.wingedsheep.engine.state.components.identity.EmbalmedComponent>()
 

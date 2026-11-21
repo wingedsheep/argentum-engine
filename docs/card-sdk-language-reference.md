@@ -7993,7 +7993,8 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   "unrenown", and it is not a copiable value. Reads the state renown's own intervening-`if` negates
   and its payoffs gate on ("as long as this creature is renowned", "if it's renowned").
 - `.monstrous()` — permanent has the **monstrous** designation (CR 701.37b); backed by
-  `StatePredicate.IsMonstrous` and the engine's `MonstrousComponent`. Sticky like `.renowned()`.
+  `StatePredicate.IsMonstrous` and the engine's `MonstrousComponent`. Sticky like `.renowned()`;
+  a permanent that has left the battlefield answers from its last-known snapshot, like `.modified()`.
 - `.embalmed()` — a token that is **embalmed**, i.e. created by a resolving embalm ability (CR 702.128b);
   backed by `StatePredicate.IsEmbalmed` and the engine's `EmbalmedComponent`, stamped by
   `CreateTokenCopyOfTargetEffect(embalmed = true)` — which `embalmAbility(cost)` (printed `embalm(cost)`
@@ -17464,7 +17465,10 @@ that works in both resolution and static-ability (projection) contexts.
   "Except if Vizier of Many Faces was embalmed, …" — an `EntersAsCopy.conditionalExceptions` clause.
 - `SourceIsMonstrous` — source has the monstrous designation (CR 701.37b). "As long as this
   creature is monstrous, it has flying" (Chillerpillar); negated, it is the check inside
-  `Effects.Monstrosity`.
+  `Effects.Monstrosity`. As an `interveningIf` it is rechecked on resolution against the source's
+  last-known information once the source has left the battlefield (`EntitySnapshot.wasMonstrous`):
+  Polis Crusher's "whenever this creature deals combat damage to a player, if this creature is
+  monstrous, destroy target enchantment that player controls" still resolves after it dies.
 - `SourceIsSolved` — source has the solved designation (CR 719.3b). The gate behind every
   "Solved —" ability (CR 702.169); a Case author writes `solvedStaticAbility` /
   `solvedTriggeredAbility` / `solvedActivatedAbility` instead of applying it by hand. Wrapped in
