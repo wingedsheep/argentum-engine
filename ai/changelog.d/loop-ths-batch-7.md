@@ -1,1 +1,1 @@
-- #TBD Reads a marker counter (Triad of Fates' fate counter) by what the card's own abilities do to creatures bearing it, so it marks an opponent's creature for the exile ability instead of guessing
+- #4790 Reads a marker counter (Triad of Fates' fate counter) by what the card's own abilities do to creatures bearing it, so it marks an opponent's creature for the exile ability instead of guessing
