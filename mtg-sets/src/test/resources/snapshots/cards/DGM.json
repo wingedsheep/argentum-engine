@@ -2658,6 +2658,79 @@
     ]
 }
 
+// Rakdos Drake
+{
+    "name": "Rakdos Drake",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Drake",
+    "oracleText": "Flying\nUnleash (You may have this creature enter with a +1/+1 counter on it. It can't block as long as it has a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "UNLEASH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "CantBlock",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "unleash_counter",
+                        "label": "Unleash",
+                        "description": "+1/+1 counter; can't block while it has one",
+                        "iconKey": "plusOneCounter"
+                    },
+                    {
+                        "id": "unleash_none",
+                        "label": "Don't unleash",
+                        "description": "No counter; can block"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "unleash_counter"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "artist": "Karl Kopinski",
+        "flavorText": "Rakdos rioters paint their faces to resemble the drakes' bloodied muzzles.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b9c1bfd7-b8b2-4db7-9ea7-a2d643a83589.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Riot Control
 {
     "name": "Riot Control",

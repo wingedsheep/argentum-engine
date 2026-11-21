@@ -188,6 +188,7 @@ export enum Keyword {
   // ETB modification
   AMPLIFY = 'AMPLIFY',
   RIOT = 'RIOT',
+  UNLEASH = 'UNLEASH',
   READ_AHEAD = 'READ_AHEAD',
   // Defense
   DEFENDER = 'DEFENDER',
@@ -364,6 +365,7 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.BANDING]: 'Banding',
   [Keyword.AMPLIFY]: 'Amplify',
   [Keyword.RIOT]: 'Riot',
+  [Keyword.UNLEASH]: 'Unleash',
   [Keyword.READ_AHEAD]: 'Read ahead',
   [Keyword.DEFENDER]: 'Defender',
   [Keyword.INDESTRUCTIBLE]: 'Indestructible',
