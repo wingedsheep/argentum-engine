@@ -1475,6 +1475,33 @@ object SetArchetypes {
                     "Play creatures with enters-the-battlefield effects like Frost Lynx, Kapsho Kitefins and Shaman of Spring, then rebuy them with Roaring Primadox and Invasive Species. A value midrange deck that gets two uses out of every creature."),
             )
         ),
+        "THS" to SetSynergies(
+            setCode = "THS",
+            setName = "Theros",
+            archetypes = listOf(
+                Archetype("Heroic Fliers", listOf(Color.WHITE, Color.BLUE),
+                    "Target heroic creatures like Battlewise Hoplite, Phalanx Leader and Wingsteed Rider with Ordeal of Thassa, Gods Willing and bestow creatures like Hopeful Eidolon, then fly over a stalled ground. A tempo deck that makes one evasive threat bigger every turn."),
+                Archetype("Control", listOf(Color.BLUE, Color.BLACK),
+                    "Trade early with Omenspeaker and Returned Centaur, answer threats with Dissolve, Sip of Hemlock and Lash of the Whip, and pick off attackers with Shipwreck Singer. A controlling deck that outdraws the opponent with Thassa's Bounty in the long game."),
+                Archetype("Minotaur Aggro", listOf(Color.BLACK, Color.RED),
+                    "Curve out with Minotaurs like Deathbellow Raider, Felhide Minotaur and Borderland Minotaur, give them haste and extra power with Kragma Warcaller, and finish with Lightning Strike. A fast tribal deck that races before the opponent can stabilize.",
+                    creatureTypes = listOf("Minotaur")),
+                Archetype("Monstrous Beats", listOf(Color.RED, Color.GREEN),
+                    "Play big creatures with monstrosity like Nessian Asp, Ill-Tempered Cyclops and Stoneshock Giant, pump mana into them once the board stalls, and break the opponent's Auras with Destructive Revelry. A midrange deck whose top end outsizes everything else."),
+                Archetype("Heroic Counters", listOf(Color.GREEN, Color.WHITE),
+                    "Grow heroic creatures like Setessan Battle Priest and Staunch-Hearted Warrior with +1/+1 counters, bestow Leafcrown Dryad, and spread counters with Centaur Battlemaster so Chronicler of Heroes draws a card. A midrange deck whose creatures outgrow the opponent's blockers."),
+                Archetype("Devotion Drain", listOf(Color.WHITE, Color.BLACK),
+                    "Hold the ground with Sentry of the Underworld and Baleful Eidolon, fly over with Cavalry Pegasus and Wingsteed Rider, and stack black permanents so Gray Merchant of Asphodel drains for several. A grindy midrange deck that wins the long game."),
+                Archetype("Spells", listOf(Color.BLUE, Color.RED),
+                    "Fill your graveyard with instants and sorceries like Magma Jet, Lightning Strike and Voyage's End, scry with Prescient Chimera to power up Flamespeaker Adept, and fly in with Spellheart Chimera. A tempo deck that wins by spells as much as by creatures."),
+                Archetype("Graveyard Value", listOf(Color.BLACK, Color.GREEN),
+                    "Fill your graveyard with Commune with the Gods and Returned Centaur, trade creatures freely, then rebuy creatures and enchantments with Pharika's Mender and cast Nemesis of Mortals for cheap. A grindy deck that gets two uses out of every card."),
+                Archetype("Heroic Aggro", listOf(Color.RED, Color.WHITE),
+                    "Target heroic creatures like Akroan Crusader and Phalanx Leader with Titan's Strength and Gods Willing to go wide and fast, then swing with Akroan Hoplite growing for every attacker. An aggressive deck that ends the game before blockers matter."),
+                Archetype("Ramp", listOf(Color.GREEN, Color.BLUE),
+                    "Ramp with Voyaging Satyr and Karametra's Acolyte into big creatures like Nessian Asp and Arbor Colossus, while Horizon Chimera and Prognostic Sphinx hold the air. A devotion deck that turns extra mana into the biggest threats on the table."),
+            )
+        ),
         "BNG" to SetSynergies(
             setCode = "BNG",
             setName = "Born of the Gods",

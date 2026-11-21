@@ -452,6 +452,26 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Clash', inPlay: 'Both players reveal their top card for a bonus, which also lets you send bad draws to the bottom.' },
     ],
   },
+  THS: {
+    tagline: 'A Greek-myth format of heroic creatures, bestow Auras and monsters, where targeting your own creatures pays off and gods wake up for the deck most devoted to their colour.',
+    setting: 'Theros, a plane of Greek myth where the gods of Nyx meddle in the lives of mortal heroes.',
+    gameplay: 'Games revolve around combat. Heroic creatures grow every time you target them with an Aura or trick, so a single well-protected creature can carry a game, and a removal spell in response can swing it back. Bestow creatures double as Auras late, so enchantment-heavy decks get value out of every card. Monstrosity turns spare mana into a much bigger creature, which breaks the stalls that slower decks build, and Gray Merchant of Asphodel drains hard in black devotion decks.',
+    tips: [
+      'Bestow creatures are two cards in one: a body early, or an Aura that stays behind as a creature when its host dies. Value them highly.',
+      'Hold up a protection trick like Gods Willing before loading Auras onto a heroic creature; a two-for-one in response loses the game.',
+      'Monstrous creatures are threats in the late game, so leave mana up for the activation rather than spending it on a weaker card.',
+    ],
+    tryIf: 'heroic combat tricks, enchantment-rich decks and building towards a god',
+    power: 3, speed: 3, complexity: 3,
+    themes: ['aggro', 'counters', 'bigThings'],
+    mechanics: [
+      { name: 'Heroic', inPlay: 'Targeting your own creature with Auras and tricks grows it, rewarding aggression but leaving you open to removal in response.' },
+      { name: 'Bestow', inPlay: 'Cast early as a creature or late as an Aura; when the enchanted creature dies the Aura falls off and stays as a creature.' },
+      { name: 'Monstrosity', inPlay: 'Spare mana late in the game makes a creature monstrous once, adding counters and often a one-time effect, so big creatures scale.' },
+      { name: 'Devotion', inPlay: 'Gods and devotion payoffs like Gray Merchant of Asphodel count your coloured mana symbols, rewarding heavy commitment to one or two colours.' },
+      { name: 'Scry', inPlay: 'Many spells let you scry, so you smooth your draws and dig for the right trick or land.' },
+    ],
+  },
   BNG: {
     tagline: 'An aggressive Greek-myth format of heroic Auras, bestow and tribute creatures, where inspired attackers and early pressure beat the slow, durdly enchantment deck.',
     setting: 'Theros again, as the satyr Xenagos ascends to godhood and lesser gods like Ephara and Phenax join the pantheon.',
