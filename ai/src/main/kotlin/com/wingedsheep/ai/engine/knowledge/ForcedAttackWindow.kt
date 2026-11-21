@@ -52,6 +52,17 @@ object ForcedAttackWindow {
         return projected.getBattlefieldControlledBy(attacker).any { couldAttackUnforced(state, projected, it) }
     }
 
+    /**
+     * Whether an attack requirement for the turn on [creature] ("target creature attacks this turn
+     * if able", Hustle) would still force an attack of an opponent's: it is their turn, before
+     * attackers are declared, and the creature is theirs and could attack but isn't required to.
+     */
+    fun canStillBeForcedToAttack(state: GameState, projected: ProjectedState, playerId: EntityId, creature: EntityId): Boolean {
+        if (state.isActiveTurnFor(playerId) || state.step !in BEFORE_THEIR_ATTACK) return false
+        if (projected.getController(creature) != state.activePlayerId) return false
+        return couldAttackUnforced(state, projected, creature)
+    }
+
     /** A creature that could be declared as an attacker now and isn't already required to attack. */
     private fun couldAttackUnforced(state: GameState, projected: ProjectedState, id: EntityId): Boolean {
         if (!projected.isCreature(id) || projected.cantAttack(id) || projected.mustAttack(id)) return false

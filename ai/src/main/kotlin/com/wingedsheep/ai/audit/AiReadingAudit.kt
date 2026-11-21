@@ -346,6 +346,14 @@ object AiReadingAudit {
         }
     }
 
+    /**
+     * Whether HoldPolicy reads what a cast of [script] resolves: the card's own spell when it has
+     * no faces, or one of its [CardDefinition.cardFaces] — the half a split, aftermath, Adventure
+     * or prepare cast puts on the stack (`CastSpell.faceIndex`). Not a transformed back face.
+     */
+    private fun holdReadsCastOf(card: CardDefinition, script: CardScript): Boolean =
+        (script === card.script && card.cardFaces.isEmpty()) || card.cardFaces.any { it.script === script }
+
     /** Every effect root a script can resolve: spell, triggers, state triggers, non-mana abilities. */
     private fun roots(script: CardScript): List<Effect> =
         EffectWalker.slots(script).map { it.effect } + script.stateTriggeredAbilities.map { it.effect }
@@ -421,9 +429,8 @@ object AiReadingAudit {
                             wholeRead ||
                             // The same levers beside a draw or Learn (Stun, Timely Interference):
                             // HoldPolicy floors the cast where the levers buy nothing, the riders
-                            // aside. Own spell only — HoldPolicy reads no face's effects.
-                            (script === card.script && card.cardFaces.isEmpty() &&
-                                ExpiringGrantWindow.readsCantripLever(spell)) ||
+                            // aside — a split or Adventure half's too, cast alone.
+                            (holdReadsCastOf(card, script) && ExpiringGrantWindow.readsCantripLever(spell)) ||
                             (heldWhole || (leaf is ModifyStatsEffect && IntentTag.COMBAT_TRICK in intent.tags)) ||
                             // A team pump, or a fight trick handed to the team (Dragonrage): HoldPolicy
                             // holds it as a combat trick until the team is in the fight.
@@ -468,10 +475,9 @@ object AiReadingAudit {
                             (leaf is MustAttackGroupEffect && IntentTag.FORCED_ATTACK in intent.tags &&
                                 script === card.script && card.cardFaces.isEmpty()) ||
                             // A spell that only grants keywords until end of turn is floored where no
-                            // fight is left; the floor asks it of the whole spell, not one leaf. Not
-                            // an Adventure or prepare face: HoldPolicy reads no face's effects.
-                            (script === card.script && card.cardFaces.isEmpty() &&
-                                ExpiringGrantWindow.readsSpellKeywordGrant(spell)) ||
+                            // fight is left; the floor asks it of the whole spell, not one leaf — of
+                            // the half cast, for a split, Adventure or prepare face.
+                            (holdReadsCastOf(card, script) && ExpiringGrantWindow.readsSpellKeywordGrant(spell)) ||
                             // An expiring protective keyword beside a payoff that outlives the turn
                             // (Snakeskin Veil's counter, Moogles' Valor's tokens): the lasting part pays
                             // for the card whenever it is cast, and simulation prices it in every window,

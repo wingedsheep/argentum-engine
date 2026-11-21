@@ -178,6 +178,7 @@ object CardIntentAnalyzer {
     private val inPlayCache = ConcurrentHashMap<String, CardIntent>()
     private val ownSweepCache = ConcurrentHashMap<String, Boolean>()
     private val faceCache = ConcurrentHashMap<FaceKey, CardIntent>()
+    private val castFaceCache = ConcurrentHashMap<FaceKey, CardIntent>()
 
     private data class FaceKey(val cardName: String, val faceName: String)
     private val sagaInPlayCache = ConcurrentHashMap<Pair<String, Int>, CardIntent>()
@@ -266,6 +267,20 @@ object CardIntentAnalyzer {
      */
     fun analyzeFace(card: CardDefinition, face: CardFace): CardIntent =
         faceCache.getOrPut(FaceKey(card.name, face.name)) { compute(card, listOf(face.script)) }
+
+    /**
+     * The [CardIntent] of casting [face] of [card] on its own — a split or aftermath half (CR
+     * 709.3: only the chosen half is on the stack). Unlike [analyzeFace], the face is read with
+     * its *own* type line, cost and keywords: a split card's halves need not share them, so
+     * Bustle (a sorcery) is no instant because Hustle, its first face, is one.
+     */
+    fun analyzeCastFace(card: CardDefinition, face: CardFace): CardIntent =
+        castFaceCache.getOrPut(FaceKey(card.name, face.name)) {
+            compute(
+                card.copy(typeLine = face.typeLine, manaCost = face.manaCost, keywords = face.keywords, cardFaces = emptyList()),
+                listOf(face.script),
+            )
+        }
 
     /**
      * What one [effect] does, with no card behind it — the reading an ability *already on the

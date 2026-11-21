@@ -31,7 +31,9 @@ import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.CantAttackEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
+import com.wingedsheep.sdk.scripting.effects.MarkMustAttackEffect
 import com.wingedsheep.sdk.scripting.effects.MarkMustBlockEffect
+import com.wingedsheep.sdk.scripting.effects.MustAttackWindow
 import com.wingedsheep.sdk.scripting.effects.CantBlockGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
@@ -346,6 +348,7 @@ internal object ExpiringGrantWindow {
         // sweep is the removal's question, so the leaf keeps it.
         if (payoffs.any {
                 it.kind in SHRINK_KINDS && it.kind != PayoffKind.STRIP && it.kind != PayoffKind.LURE &&
+                    it.kind != PayoffKind.FORCED_ATTACK &&
                     it.target == EffectTarget.IterationEntity
             }
         ) return false
@@ -376,6 +379,10 @@ internal object ExpiringGrantWindow {
                 val lured = affectedBy(state, projected, playerId, payoff.target, sourceId, targets) ?: return false
                 return@none state.isActiveTurnFor(playerId) &&
                     lured.any { projected.getController(it) != playerId && opposingCanStillBeBlockedOut(state, it) }
+            }
+            if (payoff.kind == PayoffKind.FORCED_ATTACK) {
+                val forced = affectedBy(state, projected, playerId, payoff.target, sourceId, targets) ?: return false
+                return@none forced.any { ForcedAttackWindow.canStillBeForcedToAttack(state, projected, playerId, it) }
             }
             if (payoff.kind == PayoffKind.STRIP) {
                 val keyword = payoff.keyword ?: return false
@@ -415,7 +422,7 @@ internal object ExpiringGrantWindow {
                 }
                 PayoffKind.LAND -> affected.any { canStillMatter(state, projected, playerId, it) }
                 PayoffKind.SHIELD, PayoffKind.SILENCE, PayoffKind.CONNECT, PayoffKind.STRIP, PayoffKind.ACTIVATION,
-                PayoffKind.LURE -> true // answered above
+                PayoffKind.LURE, PayoffKind.FORCED_ATTACK -> true // answered above
                 PayoffKind.BORROW -> affected.any { projected.isCreature(it) } &&
                     (state.step in UNTIL_ATTACKERS_DECLARED || state.step in FIGHT_STILL_AHEAD ||
                         controlsASacrificeOutlet(state, playerId, intents))
@@ -1399,6 +1406,17 @@ internal object ExpiringGrantWindow {
         LURE,
 
         /**
+         * An attack requirement for the turn on a creature that is not the source — "target
+         * creature attacks this turn if able" (Hustle's first half). It drags an opposing creature
+         * into an attack its controller didn't choose, which only exists on their turn before
+         * attackers are declared, on a creature that could attack and isn't already required to
+         * ([ForcedAttackWindow.canStillBeForcedToAttack]). On our own creature it forces nothing
+         * we couldn't choose; on our turn, or after their attack, "this turn" binds no attack of
+         * theirs. Read with the shrinks, like [LURE], its blocking twin.
+         */
+        FORCED_ATTACK,
+
+        /**
          * Control of a creature until end of turn — "gain control of target creature until end of
          * turn" (Threaten, Involuntary Employment, Sibling Rivalry). It goes home at cleanup, so it
          * buys only what the creature does before then: an attack or a block on our side, or a fight
@@ -1477,7 +1495,9 @@ internal object ExpiringGrantWindow {
         state.stack.isNotEmpty() && payoffs.any { it.kind == PayoffKind.SHIELD || it.kind == PayoffKind.SILENCE }
 
     /** The opponent-side debuffs [nothingCanSpend] reads under `readShrinks` alone, without the grants. */
-    private val SHRINK_KINDS = setOf(PayoffKind.SHRINK, PayoffKind.SET_BASE, PayoffKind.RETYPE, PayoffKind.STRIP, PayoffKind.LURE)
+    private val SHRINK_KINDS = setOf(
+        PayoffKind.SHRINK, PayoffKind.SET_BASE, PayoffKind.RETYPE, PayoffKind.STRIP, PayoffKind.LURE, PayoffKind.FORCED_ATTACK,
+    )
 
     /** The payoffs [holds]' deferral holds for a later window this turn. */
     private val DEFERRABLE = setOf(PayoffKind.CREATURE, PayoffKind.SHIELD, PayoffKind.SILENCE, PayoffKind.CONNECT)
@@ -1740,6 +1760,11 @@ internal object ExpiringGrantWindow {
                 readShrinks && leaf is MarkMustBlockEffect && leaf.target != EffectTarget.Self &&
                     (leaf.duration == Duration.EndOfTurn || leaf.duration == Duration.EndOfCombat) ->
                     payoffs += Payoff(PayoffKind.LURE, leaf.target)
+                // "Target creature attacks this turn if able" (Hustle): the lure's attacking twin,
+                // spent on their turn before attacks — see [PayoffKind.FORCED_ATTACK].
+                readShrinks && leaf is MarkMustAttackEffect && leaf.target != EffectTarget.Self &&
+                    leaf.target != EffectTarget.IterationEntity && leaf.window == MustAttackWindow.ThisTurn ->
+                    payoffs += Payoff(PayoffKind.FORCED_ATTACK, leaf.target)
                 // "Target creature can't block this turn" (Stun): the lure's mirror, spent in the
                 // same window — see [PayoffKind.LURE].
                 readShrinks && leaf is CantBlockEffect && leaf.target != EffectTarget.Self &&

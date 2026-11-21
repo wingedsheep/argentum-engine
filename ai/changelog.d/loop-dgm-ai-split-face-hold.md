@@ -1,0 +1,1 @@
+- #TBD The AI reads a split or Adventure half cast alone — its own effect and speed — so it no longer throws Hustle away after the turn's fights, and reads Bustle as the sorcery pump it is

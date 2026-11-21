@@ -353,13 +353,18 @@ class HoldPolicy(
     }
 
     /**
-     * What [cast] resolves: the spell's effect, or for a modal spell the modes it chose. Null for a
-     * shape this does not read — a split or adventure face, a fused cast, or a modal spell cast
-     * without its modes named.
+     * What [cast] resolves: the spell's effect, or for a modal spell the modes it chose — of the
+     * half it casts, for one half of a split or aftermath card (CR 709.3). Null for a shape this
+     * does not read — a fused cast, a card with faces cast whole (an Adventure's creature, a modal
+     * DFC's front), or a modal spell cast without its modes named.
      */
     private fun castEffects(definition: CardDefinition, cast: CastSpell): List<Effect>? {
-        if (cast.faceIndex != null || cast.castFused || definition.cardFaces.isNotEmpty()) return null
-        val effect = definition.script.spellEffect ?: return null
+        if (cast.castFused) return null
+        val script = when (val index = cast.faceIndex) {
+            null -> definition.script.takeIf { definition.cardFaces.isEmpty() }
+            else -> definition.cardFaces.getOrNull(index)?.script
+        } ?: return null
+        val effect = script.spellEffect ?: return null
         if (effect !is ModalEffect) return listOf(effect)
         if (cast.chosenModes.isEmpty()) return null
         return cast.chosenModes.map { effect.modes.getOrNull(it)?.effect ?: return null }
