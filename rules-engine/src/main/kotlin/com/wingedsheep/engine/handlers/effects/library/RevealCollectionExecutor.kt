@@ -7,6 +7,9 @@ import com.wingedsheep.engine.handlers.PipelineState
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownModeComponent
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
 import kotlin.reflect.KClass
 
@@ -14,7 +17,9 @@ import kotlin.reflect.KClass
  * Executor for [RevealCollectionEffect].
  *
  * Emits a [CardsRevealedEvent] for all cards in the named stored collection.
- * Does not move or modify any cards — purely an event/information step.
+ * Does not move any cards. With [RevealCollectionEffect.turnFaceUp] it first turns each card that
+ * sits face down in exile face up in place (drops its face-down markers — same object, still in
+ * the same linked-exile pile); otherwise it is purely an event/information step.
  *
  * If the collection is empty, no event is emitted.
  */
@@ -32,6 +37,18 @@ class RevealCollectionExecutor : EffectExecutor<RevealCollectionEffect> {
 
         if (cards.isEmpty()) {
             return EffectResult.success(state)
+        }
+
+        var newState = state
+        if (effect.turnFaceUp) {
+            for (cardId in cards) {
+                val container = newState.getEntity(cardId) ?: continue
+                if (!container.has<FaceDownComponent>()) continue
+                if (newState.logicalZone(cardId)?.zoneType != Zone.EXILE) continue
+                newState = newState.updateEntity(cardId) { c ->
+                    c.without<FaceDownComponent>().without<FaceDownModeComponent>()
+                }
+            }
         }
 
         val cardNames = cards.map { cardId ->
@@ -55,7 +72,7 @@ class RevealCollectionExecutor : EffectExecutor<RevealCollectionEffect> {
 
         // Everyone has now seen these cards, so later steps may skip on them (#3340).
         val revealed = (context.pipeline.storedCollections[PipelineState.REVEALED_KEY].orEmpty() + cards).distinct()
-        return EffectResult.success(state, listOf(event))
+        return EffectResult.success(newState, listOf(event))
             .copy(updatedCollections = mapOf(PipelineState.REVEALED_KEY to revealed))
     }
 }

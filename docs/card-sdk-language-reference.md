@@ -5901,6 +5901,7 @@ with cards):
 | `copyCard(source)` / `copyCards(from)` | `CopyCardIntoCollectionEffect` / `CopyCollectionIntoCollectionEffect` |
 | `pairWithSource(from)` (soulbond, CR 702.95a — empty `from` is a legal no-op, i.e. a declined "you may pair") | `PairWithSourceEffect` |
 | `reveal(from, …)` | `RevealCollectionEffect` |
+| `turnFaceUp(from)` → every card of `from` that sits **face down in exile** is turned face up in place (same object, same zone and linked-exile pile, face-down markers dropped) and revealed to all players; face-down permanents and face-up cards are only revealed. **Pyxis of Pandemonium** ("each player turns face up all cards they own exiled with this artifact, then puts all permanent cards among them onto the battlefield"): `gather(FromLinkedExile())` → `turnFaceUp(pile)` → `move(pile, → battlefield, underOwnersControl = true, filter = Permanent)` | `RevealCollectionEffect(turnFaceUp = true)` |
 | `captureControllers(from, asLastBlockedBy?)` | `CaptureControllersEffect` |
 | `forEachCaptured(collection, original, controllers) { count -> … }` | `ForEachCapturedControllerEffect` |
 | `forEachPlayerCollecting(players) { …; listOf(slotA, slotB) }` → the per-iteration collections unioned across players | `ForEachPlayerCollectingEffect` |

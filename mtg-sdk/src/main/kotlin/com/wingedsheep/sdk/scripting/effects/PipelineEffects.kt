@@ -1240,7 +1240,7 @@ data class GatherUntilMatchEffect(
 
 /**
  * Emit a [com.wingedsheep.engine.core.CardsRevealedEvent] for all cards in the
- * named stored collection. Does not move or change any cards.
+ * named stored collection. Does not move any cards, and changes none unless [turnFaceUp].
  *
  * @property from Name of the stored collection to reveal
  * @property revealToSelf When false, the revealing player does not see the reveal
@@ -1254,6 +1254,11 @@ data class GatherUntilMatchEffect(
  *   Without this, public-info cards would be hidden from the overlay and shown only
  *   as a behold-pulse on the permanent.
  * @property toZone Optional destination zone for the reveal context. See [fromZone].
+ * @property turnFaceUp "Turn face up all cards exiled with …" (Pyxis of Pandemonium, Grimoire
+ *   Thief): every card of the collection that sits face down in exile is turned face up *where it
+ *   is* and stays face up — the same object, no zone change, so it is still "exiled with" its
+ *   source and later steps (a type filter, a move) read its real characteristics. Cards that are
+ *   already face up, or not in exile, are only revealed. The only step that changes cards.
  */
 @SerialName("RevealCollection")
 @Serializable
@@ -1261,9 +1266,11 @@ data class RevealCollectionEffect(
     val from: String,
     val revealToSelf: Boolean = true,
     val fromZone: com.wingedsheep.sdk.core.Zone? = null,
-    val toZone: com.wingedsheep.sdk.core.Zone? = null
+    val toZone: com.wingedsheep.sdk.core.Zone? = null,
+    val turnFaceUp: Boolean = false
 ) : Effect {
-    override val description: String = "Reveal those cards"
+    override val description: String =
+        if (turnFaceUp) "Turn those cards face up" else "Reveal those cards"
 }
 
 /**
