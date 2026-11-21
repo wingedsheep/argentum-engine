@@ -1,0 +1,1 @@
+- #<pr> The AI reads reanimating a creature card from any graveyard onto its own battlefield (Breaking // Entering, Victor, Animate Dead, Liliana the Necromancer) as recursion, as it already read the single-card "target creature card from a graveyard" return; mass returns to their owners (Living Death) stay unread as recursion.

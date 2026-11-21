@@ -1626,8 +1626,12 @@ object CardIntentAnalyzer {
      * creature card exiled with this permanent onto the battlefield under your control" (Tomb of the
      * Dusk Rose).
      *
-     * Only our graveyard (or that pile) and only to our side: reanimating an opponent's creature is a steal, and
-     * a graveyard exiled is graveyard hate, both read (or not) elsewhere.
+     * Only our graveyard, every graveyard, or that pile — and only to our side. "Put a creature card from a
+     * graveyard onto the battlefield under your control" (Entering, Victor) can take back our own, as the
+     * single-card "target creature card from a graveyard" (Rise from the Grave) reads — but only onto our
+     * battlefield under our control: every graveyard returned to its owners (Living Death) is a reset.
+     * Reanimating only an opponent's creature is a steal, and a graveyard exiled is graveyard hate, both read
+     * (or not) elsewhere.
      *
      * "Under its owner's control" hands the pile back to whoever owned each card — a release, not a
      * recursion — unless [ownPile]: the card only ever stashes its controller's own cards there
@@ -1657,11 +1661,16 @@ object CardIntentAnalyzer {
         // (Gift of Immortality): the dying card itself, gathered as the trigger's object, put straight
         // back — the single-card `MoveToZoneEffect` return from the graveyard (Unholy Indenture) in its
         // pipeline spelling.
+        // "A creature card from a graveyard" (Entering, Victor): every graveyard, ours among them.
+        val everyGraveyard = leaves.mapNotNullTo(HashSet()) { leaf ->
+            val source = (leaf as? GatherCardsEffect)?.source as? CardSource.FromZone ?: return@mapNotNullTo null
+            leaf.storeAs.takeIf { source.zone == Zone.GRAVEYARD && source.player == Player.Each }
+        }
         val triggeringCard = leaves.mapNotNullTo(HashSet()) { leaf ->
             (leaf as? GatherCardsEffect)
                 ?.takeIf { (it.source as? CardSource.Entity)?.entity == EffectTarget.TriggeringEntity }?.storeAs
         }
-        if (ourGraveyard.isEmpty() && linkedExile.isEmpty() && triggeringCard.isEmpty()) return emptySet()
+        if (ourGraveyard.isEmpty() && everyGraveyard.isEmpty() && linkedExile.isEmpty() && triggeringCard.isEmpty()) return emptySet()
         fun closed(seed: MutableSet<String>): Set<String> {
             do {
                 val before = seed.size
@@ -1671,6 +1680,7 @@ object CardIntentAnalyzer {
         }
         val fromGraveyard = closed(ourGraveyard)
         val fromLinkedExile = closed(linkedExile)
+        val fromEveryGraveyard = closed(everyGraveyard)
         val returnsThem = leaves.any { leaf ->
             val move = (leaf as? MoveCollectionEffect)?.takeIf { it.faceDown == null } ?: return@any false
             val to = move.destination as? CardDestination.ToZone ?: return@any false
@@ -1680,6 +1690,9 @@ object CardIntentAnalyzer {
                 // Stash) is a regrowth paid for with the next draw, as the single-card move is.
                 in fromGraveyard -> to.zone == Zone.HAND || to.zone == Zone.BATTLEFIELD ||
                     (to.zone == Zone.LIBRARY && to.placement == ZonePlacement.Top)
+                // Onto our battlefield under our control only: "each player returns the creature cards from
+                // their graveyard" (Living Death) hands every card back to its owner — a symmetric reset.
+                in fromEveryGraveyard -> to.zone == Zone.BATTLEFIELD && !move.underOwnersControl
                 // The dying card returned (Gift of Immortality), whoever's control it comes back under.
                 in triggeringCard -> to.zone == Zone.BATTLEFIELD
                 // "Under their owners' control" hands the pile back (Lagrella), unless only our
