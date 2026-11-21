@@ -478,6 +478,9 @@ object AiReadingAudit {
                             // fight is left; the floor asks it of the whole spell, not one leaf — of
                             // the half cast, for a split, Adventure or prepare face.
                             (holdReadsCastOf(card, script) && ExpiringGrantWindow.readsSpellKeywordGrant(spell)) ||
+                            // The same floor for a granted dies trigger (Showstopper): spent only if
+                            // the creature dies before cleanup — in a fight or to the stack.
+                            (holdReadsCastOf(card, script) && ExpiringGrantWindow.readsSpellDeathGrant(spell)) ||
                             // An expiring protective keyword beside a payoff that outlives the turn
                             // (Snakeskin Veil's counter, Moogles' Valor's tokens): the lasting part pays
                             // for the card whenever it is cast, and simulation prices it in every window,

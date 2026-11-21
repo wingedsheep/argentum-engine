@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.PreventDamage
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
+import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.AdditionalManaOnTap
 import com.wingedsheep.sdk.scripting.AdditionalSourceTriggers
@@ -2641,8 +2642,18 @@ object TargetPolarityAnalyzer {
         for (ability in card.script.triggeredAbilities) readings += hostStepTriggerReadings(ability)
         for (ability in card.script.triggeredAbilities) readings += hostAttackCopyReadings(ability)
         for (ability in card.script.triggeredAbilities) readings += hostCombatTriggerReadings(ability, definitions)
-        val abilityEffects = card.script.triggeredAbilities.map { it.effect } +
-            card.script.activatedAbilities.map { it.effect }
+        // "{1}{G}{U}, Return this Aura to its owner's hand: Put two +1/+1 counters on enchanted
+        // creature" (Krasis Incubation): an activation whose cost takes the attachment off the
+        // board ends whatever else it does to the host, and only its controller chooses to pay
+        // it — a parting gift that lifts the curse, a consolation as a granted ability is. Beside
+        // an Arrest lock it never makes the Aura a gift, so a harm outranks it.
+        val (releases, keeps) = card.script.activatedAbilities.partition { removesAttachment(it.cost) }
+        val abilityEffects = card.script.triggeredAbilities.map { it.effect } + keeps.map { it.effect }
+        for (effect in releases.map { it.effect }) {
+            consolations += EffectWalker.payoffLeaves(effect).flatMap { leaf ->
+                classify(leaf, definitions).filter { (target, _) -> target in HOST_TARGETS }.map { it.second }
+            }
+        }
         for (effect in abilityEffects) {
             // "Enchanted creature" and "enchanted permanent" (Flood the Engine's "tap
             // enchanted permanent") both name the object the Aura is cast on.
@@ -2695,6 +2706,13 @@ object TargetPolarityAnalyzer {
         for (ability in card.script.triggeredAbilities) readings += hostDeathReturnReadings(ability)
         if (payPrices) readings += prices
         return readings
+    }
+
+    /** Whether paying [cost] takes the attachment itself off the battlefield (return, sacrifice, exile it). */
+    private fun removesAttachment(cost: AbilityCost): Boolean = when (cost) {
+        AbilityCost.ReturnSelfToHand, AbilityCost.SacrificeSelf, AbilityCost.ExileSelf -> true
+        is AbilityCost.Composite -> cost.costs.any(::removesAttachment)
+        else -> false
     }
 
     /**

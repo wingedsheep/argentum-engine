@@ -356,6 +356,9 @@ internal object ExpiringGrantWindow {
         val shrinkLoss = shrinkLosses(state, playerId, payoffs, sourceId, targets, xValue, intents) ?: return false
         return payoffs.none { payoff ->
             if (payoff.kind == PayoffKind.SHIELD) {
+                // A granted dies trigger is also spent by sacrificing the creature to an outlet of
+                // ours, at any time — the same third way [PayoffKind.BORROW] reads.
+                if (payoff.diesPayoff && controlsASacrificeOutlet(state, playerId, intents)) return@none true
                 return@none shieldCanStillPrevent(state, projected, playerId, payoff.target, sourceId, targets, sourceTaps)
                     ?: return false
             }
@@ -480,6 +483,28 @@ internal object ExpiringGrantWindow {
     }
 
     /**
+     * Whether a **spell**'s whole payoff is a "when this creature dies, …" trigger granted until end
+     * of turn — "until end of turn, creatures you control gain 'When this creature dies, it deals 2
+     * damage to target creature an opponent controls'" (Showstopper). Like Whisperwood Elemental's
+     * sacrifice, it is a [PayoffKind.SHIELD]: spent only if one of those creatures dies before
+     * cleanup, in a fight still ahead or to something on the stack. Cast with neither left — our
+     * second main phase, their end step — it is a card thrown away, and [castBuysNothing] reads it
+     * beside the keyword grants. A death-return grant (Feign Death) keeps [HoldPolicy]'s
+     * protection reading, which also waits for the removal it answers.
+     *
+     * Public for the AI card-reading audit, which asks it of the whole spell.
+     */
+    fun readsSpellDeathGrant(effect: Effect): Boolean {
+        // A group grant is a `ForEachEffect` over the group ("creatures you control"), whose body
+        // holds the grant — [EffectWalker.leaves] stops at the iteration.
+        val grants = EffectWalker.leaves(effect)
+            .flatMap { if (it is ForEachEffect) EffectWalker.leaves(it.body) else listOf(it) }
+            .filterIsInstance<GrantTriggeredAbilityEffect>()
+        return grants.isNotEmpty() && grants.all(::paysOffIfItDiesThisTurn) && grants.none(::returnsFromDeathThisTurn) &&
+            expiringPayoffs(effect)?.all { it.kind == PayoffKind.SHIELD } == true
+    }
+
+    /**
      * Whether a spell's whole payoff is a `{T}` ability granted until end of turn, to a group of ours
      * or to its target ([PayoffKind.ACTIVATION]) — the grant [castBuysNothing] reads beside the
      * keyword grants.
@@ -571,7 +596,8 @@ internal object ExpiringGrantWindow {
             sourceTaps = false,
             pendingSelfGrant = false,
             intents = intents,
-            readGrants = readKeywordGrants && (readsSpellKeywordGrant(effect) || readsSpellActivationGrant(effect)),
+            readGrants = readKeywordGrants &&
+                (readsSpellKeywordGrant(effect) || readsSpellActivationGrant(effect) || readsSpellDeathGrant(effect)),
             readShrinks = readShrinks,
             readBorrows = readBorrows,
             fightMustBeOn = fightMustBeOn,
@@ -1517,6 +1543,8 @@ internal object ExpiringGrantWindow {
         val toughnessModifier: DynamicAmount? = null,
         /** For a [PayoffKind.SET_BASE]: the base toughness it sets, or null when it sets power only. */
         val setToughness: Int? = null,
+        /** For a [PayoffKind.SHIELD]: a granted dies trigger, which a sacrifice outlet of ours also spends. */
+        val diesPayoff: Boolean = false,
         /** For a [PayoffKind.CREATURE]: the payoff is the body itself — see [canStillFight]'s `animates`. */
         val animates: Boolean = false,
         /** For a [PayoffKind.CREATURE]: the payoff is only more blocks — see [canStillFight]'s `blocks`. */
@@ -1704,7 +1732,7 @@ internal object ExpiringGrantWindow {
                 // dies, manifest the top card of your library'" (Whisperwood Elemental): any granted
                 // dies trigger pays off the same way — only if the creature dies before cleanup.
                 returnsFromDeathThisTurn(leaf) || paysOffIfItDiesThisTurn(leaf) ->
-                    payoffs += Payoff(PayoffKind.SHIELD, (leaf as GrantTriggeredAbilityEffect).target)
+                    payoffs += Payoff(PayoffKind.SHIELD, (leaf as GrantTriggeredAbilityEffect).target, diesPayoff = true)
                 // "Until end of turn, whenever one or more Snakes you control deal combat damage to a
                 // player, …" (Aphelia, Viper Whisperer; Jace, Cunning Castaway): see [PayoffKind.CONNECT].
                 leaf is CreateGlobalTriggeredAbilityEffect && leaf.duration == Duration.EndOfTurn &&
