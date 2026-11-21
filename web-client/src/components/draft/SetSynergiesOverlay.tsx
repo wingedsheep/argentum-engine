@@ -3354,6 +3354,73 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  THS: {
+    setCode: 'THS',
+    setName: 'Theros',
+    archetypes: [
+      {
+        name: 'Heroic Fliers',
+        colors: ['W', 'U'],
+        keyCard: 'Battlewise Hoplite',
+        description: 'Target heroic creatures like Battlewise Hoplite, Phalanx Leader and Wingsteed Rider with Ordeal of Thassa, Gods Willing and bestow creatures like Hopeful Eidolon, then fly over a stalled ground. A tempo deck that makes one evasive threat bigger every turn.',
+      },
+      {
+        name: 'Control',
+        colors: ['U', 'B'],
+        keyCard: 'Shipwreck Singer',
+        description: 'Trade early with Omenspeaker and Returned Centaur, answer threats with Dissolve, Sip of Hemlock and Lash of the Whip, and pick off attackers with Shipwreck Singer. A controlling deck that outdraws the opponent with Thassa\'s Bounty in the long game.',
+      },
+      {
+        name: 'Minotaur Aggro',
+        colors: ['B', 'R'],
+        keyCard: 'Kragma Warcaller',
+        description: 'Curve out with Minotaurs like Deathbellow Raider, Felhide Minotaur and Borderland Minotaur, give them haste and extra power with Kragma Warcaller, and finish with Lightning Strike. A fast tribal deck that races before the opponent can stabilize.',
+        creatureTypes: ['Minotaur'],
+      },
+      {
+        name: 'Monstrous Beats',
+        colors: ['R', 'G'],
+        keyCard: 'Destructive Revelry',
+        description: 'Play big creatures with monstrosity like Nessian Asp, Ill-Tempered Cyclops and Stoneshock Giant, pump mana into them once the board stalls, and break the opponent\'s Auras with Destructive Revelry. A midrange deck whose top end outsizes everything else.',
+      },
+      {
+        name: 'Heroic Counters',
+        colors: ['G', 'W'],
+        keyCard: 'Chronicler of Heroes',
+        description: 'Grow heroic creatures like Staunch-Hearted Warrior, Wingsteed Rider and Centaur Battlemaster with +1/+1 counters from Auras, tricks and Ordeal of Heliod, so Chronicler of Heroes draws a card. A midrange deck whose creatures outgrow the opponent\'s blockers.',
+      },
+      {
+        name: 'Devotion Drain',
+        colors: ['W', 'B'],
+        keyCard: 'Sentry of the Underworld',
+        description: 'Hold the ground with Baleful Eidolon, fly over with Sentry of the Underworld and Cavalry Pegasus, and stack black permanents so Gray Merchant of Asphodel drains for several. A grindy midrange deck that wins the long game.',
+      },
+      {
+        name: 'Spells',
+        colors: ['U', 'R'],
+        keyCard: 'Spellheart Chimera',
+        description: 'Fill your graveyard with instants and sorceries like Magma Jet, Lightning Strike and Voyage\'s End, scry with Prescient Chimera to power up Flamespeaker Adept, and fly in with Spellheart Chimera. A tempo deck that wins by spells as much as by creatures.',
+      },
+      {
+        name: 'Graveyard Value',
+        colors: ['B', 'G'],
+        keyCard: 'Pharika\'s Mender',
+        description: 'Fill your graveyard with Commune with the Gods and Returned Centaur, trade creatures freely, then rebuy creatures and enchantments with Pharika\'s Mender and cast Nemesis of Mortals for cheap. A grindy deck that gets two uses out of every card.',
+      },
+      {
+        name: 'Heroic Aggro',
+        colors: ['R', 'W'],
+        keyCard: 'Akroan Hoplite',
+        description: 'Target heroic creatures like Akroan Crusader and Phalanx Leader with Titan\'s Strength and Gods Willing to go wide and fast, then swing with Akroan Hoplite growing for every attacker. An aggressive deck that ends the game before blockers matter.',
+      },
+      {
+        name: 'Ramp',
+        colors: ['G', 'U'],
+        keyCard: 'Horizon Chimera',
+        description: 'Ramp with Voyaging Satyr and Karametra\'s Acolyte into big creatures like Nessian Asp and Arbor Colossus, while Horizon Chimera and Prognostic Sphinx hold the air. A devotion deck that turns extra mana into the biggest threats on the table.',
+      },
+    ],
+  },
   BNG: {
     setCode: 'BNG',
     setName: 'Born of the Gods',

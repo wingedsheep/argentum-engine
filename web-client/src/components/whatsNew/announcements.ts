@@ -30,6 +30,15 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-ths',
+    date: '2026-11-21',
+    kind: 'set',
+    setCode: 'THS',
+    title: 'Theros is complete',
+    body: "The Greek-myth plane where gods walk among mortals. Heroic creatures grow every time you target them, bestow creatures double as Auras, monstrosity turns late-game mana into giants, and devotion wakes the gods, with ten two-colour archetypes from white-blue heroic fliers to black-red Minotaurs.",
+    tryIf: 'heroic combat tricks, enchantment-rich decks and building towards a god',
+  },
+  {
     id: 'set-bng',
     date: '2026-11-20',
     kind: 'set',

@@ -68,6 +68,38 @@ class SetArchetypesTest : StringSpec({
         synergies.archetypes.all { it.creatureTypes.isEmpty() } shouldBe true
     }
 
+    "Theros exposes its ten gold-uncommon signposts, only the Minotaurs tribal" {
+        val synergies = requireNotNull(SetArchetypes.getForSet("ths"))
+
+        synergies.setName shouldBe "Theros"
+        synergies.archetypes.map { it.name } shouldContainExactly listOf(
+            "Heroic Fliers",
+            "Control",
+            "Minotaur Aggro",
+            "Monstrous Beats",
+            "Heroic Counters",
+            "Devotion Drain",
+            "Spells",
+            "Graveyard Value",
+            "Heroic Aggro",
+            "Ramp",
+        )
+        synergies.archetypes.map { it.colors.toSet() } shouldContainExactly listOf(
+            setOf(Color.WHITE, Color.BLUE),
+            setOf(Color.BLUE, Color.BLACK),
+            setOf(Color.BLACK, Color.RED),
+            setOf(Color.RED, Color.GREEN),
+            setOf(Color.GREEN, Color.WHITE),
+            setOf(Color.WHITE, Color.BLACK),
+            setOf(Color.BLUE, Color.RED),
+            setOf(Color.BLACK, Color.GREEN),
+            setOf(Color.RED, Color.WHITE),
+            setOf(Color.GREEN, Color.BLUE),
+        )
+        synergies.archetypes.filter { it.creatureTypes.isNotEmpty() }.map { it.name to it.creatureTypes } shouldContainExactly
+            listOf("Minotaur Aggro" to listOf("Minotaur"))
+    }
+
     "Born of the Gods exposes its five allied gold-uncommon signposts, only the Minotaurs tribal" {
         val synergies = requireNotNull(SetArchetypes.getForSet("bng"))
 
