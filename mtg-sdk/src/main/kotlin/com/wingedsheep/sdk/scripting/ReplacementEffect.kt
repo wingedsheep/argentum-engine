@@ -2991,6 +2991,8 @@ enum class ChoiceType {
  *   an artifact card name").
  * - [NONARTIFACT_NONLAND] — every registered card name that is neither an artifact nor a land (Lost
  *   Legacy: "choose a nonartifact, nonland card name").
+ * - [NONCREATURE_NONLAND] — every registered card name that is neither a creature nor a land
+ *   (Council of the Absolute: "choose a noncreature, nonland card name").
  * - [CREATURE] — every registered card name whose type line includes Creature (Infinite
  *   Obliteration: "choose a creature card name").
  * - [ANY] — every registered card name (Sorcerous Spyglass / Pithing Needle: "choose any card
@@ -3003,6 +3005,7 @@ enum class CardNamePool {
     NONBASIC_LAND,
     ARTIFACT,
     NONARTIFACT_NONLAND,
+    NONCREATURE_NONLAND,
     CREATURE,
     ANY;
 
@@ -3014,6 +3017,7 @@ enum class CardNamePool {
             NONBASIC_LAND -> "a nonbasic land card name"
             ARTIFACT -> "an artifact card name"
             NONARTIFACT_NONLAND -> "a nonartifact, nonland card name"
+            NONCREATURE_NONLAND -> "a noncreature, nonland card name"
             CREATURE -> "a creature card name"
             ANY -> "a card name"
         }
