@@ -2108,7 +2108,7 @@ Boil
 Boilerbilges Ripper
 Boiling Earth
 Boiling Rock Prison
-Boiling Rock Rioter	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(FromLinkedExile→?)
+Boiling Rock Rioter	intent: CastFromCollectionWithoutPayingCostEffect
 Boiling Seas
 Bojuka Bog
 Bola Slinger
@@ -10079,7 +10079,7 @@ Karlach, Fury of Avernus
 Karlov Watchdog
 Karlov of the Ghost Council
 Karma
-Karn Liberated	intent: Pipeline(FromLinkedExile→?); intent: RestartGameEffect
+Karn Liberated	intent: RestartGameEffect
 Karn's Bastion
 Karn's Sylex
 Karn's Temporal Sundering	polarity: TakeExtraTurnEffect
@@ -10274,7 +10274,7 @@ King Crab
 King Darien XLVIII
 King Harald's Revenge
 King Macar, the Gold-Cursed
-King Narfi's Betrayal	intent: ForEach>Pipeline(graveyard→?); intent: GrantMayPlayFromExileEffect; intent: Pipeline(FromLinkedExile→?); intent: Pipeline(TopOfLibrary→exile|graveyard)
+King Narfi's Betrayal	intent: ForEach>Pipeline(graveyard→?); intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile|graveyard)
 King Suleiman
 King T'Challa
 King of the Oathbreakers	intent: PhaseOutEffect
@@ -10405,7 +10405,7 @@ Kodama's Might
 Kodama's Reach
 Kogla and Yidaro
 Kogla, the Titan Ape
-Koh, the Face Stealer	intent: Pipeline(FromLinkedExile→?); intent: RecordChosenLinkedExileEffect
+Koh, the Face Stealer	intent: RecordChosenLinkedExileEffect
 Koilos Roc
 Kokusho, the Evening Star
 Kolaghan Aspirant
@@ -10559,7 +10559,7 @@ Kwende, Pride of Femeref
 Kwia Vigorbloom
 Kykar, Wind's Fury
 Kykar, Zephyr Awakener
-Kylox's Voltstrider	intent: CastFromCollectionWithoutPayingCostEffect; intent: Pipeline(FromLinkedExile→?)
+Kylox's Voltstrider	intent: CastFromCollectionWithoutPayingCostEffect
 Kylox, Visionary Inventor
 Kyodai, Soul of Kamigawa
 Kyoshi Battle Fan
@@ -14383,6 +14383,7 @@ Pyrotechnics
 Pyrrhic Blast
 Pyrrhic Strike
 Python
+Pyxis of Pandemonium
 Q Continuum
 Q, Stacking the Deck	intent: GatherUntilMatchEffect; intent: GrantActivatedAbilityEffect; intent: Pipeline(?→exile)
 Qal Sisma Behemoth
@@ -14699,7 +14700,7 @@ Rapacious Guest
 Raph & Leo, Sibling Rivals	intent: AddCombatPhaseEffect
 Raph & Mikey, Troublemakers
 Raphael's Technique
-Raphael, Most Attitude	intent: GrantMayPlayFromExileEffect; intent: Pipeline(FromLinkedExile→?); intent: Pipeline(TopOfLibrary→exile)
+Raphael, Most Attitude	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Raphael, Ninja Destroyer
 Raphael, Tough Turtle
 Raphael, the Nightwatcher
@@ -19169,7 +19170,7 @@ The City on the Edge of Forever
 The Clone Saga
 The Cloning of Shredder
 The Coming of Galactus
-The Creation of Avacyn	intent: ForEach>TurnFaceUpEffect; intent: Pipeline(FromLinkedExile→?)
+The Creation of Avacyn
 The Cruelty of Gix
 The Crystal's Chosen
 The Darkness Crystal	polarity: MoveToZoneEffect
