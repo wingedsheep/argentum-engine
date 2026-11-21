@@ -16067,6 +16067,14 @@ MacCready, Lamplight Mayor (granted).
   control change (see "Continuous control" under state predicates). An unaffordable cost skips straight to the
   sacrifice. **Scope:** mana echo costs; Time Spiral's non-mana ones ("Echo—Discard a card") aren't covered.
   Mogg War Marshal. Engine test: `EchoTest`.
+- `Unleash` — "Unleash (You may have this creature enter with a +1/+1 counter on it. It can't block as long as it has a
+  +1/+1 counter on it.)" (CR 702.98). Display-only keyword; wire it with the `card { unleash() }` builder helper
+  (`dsl/mechanics/UnleashDsl.kt`), which composes the Riot/Tribute shape: an `EntersWithChoice(ChoiceType.MODE,
+  UNLEASH_MODE_OPTIONS)` asked of the controller as it enters (unleash / don't) + a mode-gated `EntersWithCounters(count = 1,
+  selfOnly = true, condition = SourceChosenModeIs(UNLEASH_MODE_COUNTER))` + `ConditionalStaticAbility(CantBlock(GroupFilter.source()),
+  Conditions.SourceHasCounter(PLUS_ONE_PLUS_ONE))`. The blocking half reads the permanent's +1/+1 counters, not the
+  choice: a counter from any source stops it blocking, and once they're gone it can block again. **Scope:** printed
+  unleash; a *granted* unleash isn't synthesized (no card grants it). Rakdos Drake. Engine test: `UnleashTest`.
 - `Riot` — "Riot (This creature enters with your choice of a +1/+1 counter or haste.)" (CR 702.136). Display-only
   keyword; wire it with the `card { riot() }` builder helper, which composes the Khans-Siege
   `EntersWithChoice(ChoiceType.MODE, [counter, haste])` + a mode-gated `EntersWithCounters(count = 1, selfOnly = true,

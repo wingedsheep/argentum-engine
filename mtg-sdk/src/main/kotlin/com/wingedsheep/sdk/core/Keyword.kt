@@ -155,6 +155,16 @@ enum class Keyword(val displayName: String) {
     RIOT("Riot"),
 
     /**
+     * Unleash (CR 702.98). "You may have this permanent enter with an additional +1/+1 counter on
+     * it" and "This permanent can't block as long as it has a +1/+1 counter on it." A display tag;
+     * the mechanic is composed in the DSL via [com.wingedsheep.sdk.dsl.unleash], which pairs an
+     * optional [com.wingedsheep.sdk.scripting.EntersWithChoice] (ChoiceType.MODE, counter|none) and
+     * a mode-gated [com.wingedsheep.sdk.scripting.EntersWithCounters] with a
+     * [com.wingedsheep.sdk.scripting.CantBlock] gated on the source having any +1/+1 counter.
+     */
+    UNLEASH("Unleash"),
+
+    /**
      * Read ahead (CR 702.155). Found on Sagas: "As this Saga enters, choose a number between one
      * and this Saga's final chapter number" and "This Saga enters with the chosen number of lore
      * counters on it" (CR 714.3b), plus "Chapter abilities of this Saga can't trigger the turn it
