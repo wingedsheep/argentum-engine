@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.conditions.AllConditions
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.targets.TargetChooser
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.text.TextReplaceable
 import com.wingedsheep.sdk.scripting.text.TextReplacer
@@ -183,6 +184,11 @@ data class TriggeredAbility(
         }
         require(triggersPerTurn == null || !oncePerTurn) {
             "A triggered ability sets either oncePerTurn or triggersPerTurn, not both"
+        }
+        // The announcement path draws a random target only when it is the ability's one target;
+        // beside other targets the controller would silently pick it instead.
+        require(allTargetRequirements.none { it.chooser == TargetChooser.Random } || allTargetRequirements.size == 1) {
+            "A TargetChooser.Random target must be the triggered ability's only target requirement"
         }
     }
 

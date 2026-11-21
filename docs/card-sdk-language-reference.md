@@ -7160,6 +7160,15 @@ Every `TargetRequirement` carries count semantics (defaults shown):
   - `TargetChooser.ControllerOfTriggeringEntity` — "**its controller** chooses target …" (Confusion in
     the Ranks). An enters trigger's triggering entity is the *permanent*, so the deciding player is read
     off it.
+  - `TargetChooser.Random` — "target … **chosen at random**" (Scab-Clan Giant: "When this creature
+    enters, it fights target creature an opponent controls chosen at random" —
+    `target(TargetFilter.CreatureOpponentControls, chooser = TargetChooser.Random)` with
+    `Effects.Fight(EffectTarget.Self, theirs)`). Nobody decides: as the trigger goes on the stack the
+    engine draws one legal target uniformly from the game's seeded RNG and announces it with no
+    decision. It is still a real target — hexproof/protection keep an object out of the draw, no legal
+    target removes the trigger (CR 603.3d), an illegal one at resolution fizzles it. Only one mandatory
+    target can be drawn: `TargetObject`/`AnyTarget` reject any other count, `TriggeredAbility` rejects a
+    random target beside other targets, and `CardLinter` fails it outside a triggered ability.
 
   A chooser that resolves to nobody falls back to the controller rather than dropping the trigger: a
   legal target was already found, so somebody has to pick it. Choosers must agree across a trigger's whole

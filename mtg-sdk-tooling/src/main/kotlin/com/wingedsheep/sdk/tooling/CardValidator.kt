@@ -327,8 +327,8 @@ sealed interface CardValidationError {
     /**
      * A `TargetChooser` target requirement in a context that doesn't route the selection to the
      * named player. `Opponent` is honored by the activated- and triggered-ability announcement
-     * paths (both pin the deciding opponent before raising the decision); `TriggeringPlayer` and
-     * `ControllerOfTriggeringEntity` by triggered ones only. Anywhere else (a spell, a kicker
+     * paths (both pin the deciding opponent before raising the decision); `TriggeringPlayer`,
+     * `ControllerOfTriggeringEntity` and `Random` by triggered ones only. Anywhere else (a spell, a kicker
      * target, a saga chapter) the controller would silently pick the target instead. Fail at card
      * load rather than mis-resolve.
      */

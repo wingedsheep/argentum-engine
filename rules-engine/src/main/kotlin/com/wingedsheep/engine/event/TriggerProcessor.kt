@@ -329,6 +329,15 @@ class TriggerProcessor(
             return putTriggerOnStack(state, trigger, emptyList())
         }
 
+        // "… chosen at random" (Scab-Clan Giant): the engine, not a player, draws the target from the
+        // legal ones as the ability goes on the stack — no decision. The SDK pins the shape to one
+        // mandatory target, and the fizzle loop above already removed a trigger with none to draw.
+        if (allRequirements.size == 1 && allRequirements[0].chooser == TargetChooser.Random) {
+            val legalTargets = allLegalTargets[0].orEmpty()
+            val (pick, advanced) = state.nextRandom { nextInt(legalTargets.size) }
+            return putTriggerOnStack(advanced, trigger, listOf(createChosenTarget(advanced, legalTargets[pick])))
+        }
+
         // Auto-select player targets when there's exactly one legal target and requirement is for exactly one target.
         // Only applies for single-target abilities (not multi-target).
         //
@@ -1216,7 +1225,8 @@ class TriggerProcessor(
         val choosers = requirements.map { it.chooser }.distinct()
         val chooser = choosers.singleOrNull() ?: return controller
         return when (chooser) {
-            TargetChooser.Controller -> controller
+            // Random never reaches a decision: processTargetedTrigger draws it before raising one.
+            TargetChooser.Controller, TargetChooser.Random -> controller
             // "… of an opponent's choice" (Mausoleum Turnkey). Pinned before the decision is
             // raised; see the note above for why it cannot be computed from the trigger alone.
             TargetChooser.Opponent -> trigger.opponentTargetChooserId ?: controller

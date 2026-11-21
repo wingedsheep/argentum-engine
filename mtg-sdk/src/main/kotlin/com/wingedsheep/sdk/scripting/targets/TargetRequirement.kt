@@ -85,7 +85,18 @@ enum class TargetChooser {
      * target permanent …" (Confusion in the Ranks). Distinct from [TriggeringPlayer], which treats
      * the triggering entity itself as the deciding player.
      */
-    ControllerOfTriggeringEntity
+    ControllerOfTriggeringEntity,
+
+    /**
+     * Nobody decides — "target creature an opponent controls **chosen at random**" (Scab-Clan
+     * Giant). As the triggered ability is put on the stack the engine draws one legal target
+     * uniformly from the game's seeded RNG and announces it with no decision; it is still a real
+     * target (hexproof and protection keep a creature out of the draw, and an illegal target at
+     * resolution fizzles the ability, CR 608.2b). Only a single mandatory target can be drawn —
+     * [TargetObject] and [AnyTarget] reject any other count — and only the triggered-ability
+     * announcement path honors it (`CardLinter` fails it anywhere else).
+     */
+    Random
 }
 
 /**
@@ -270,8 +281,22 @@ data class AnyTarget(
             )
             if (filter != GameObjectFilter.Any) append(" that ${filter.description}")
             if (chooser == TargetChooser.Opponent) append(" of an opponent's choice")
+            if (chooser == TargetChooser.Random) append(" chosen at random")
         }
+
+    init {
+        require(chooser != TargetChooser.Random || isSingleMandatoryTarget(count, minCount, optional, unlimited, dynamicMaxCount)) {
+            RANDOM_CHOOSER_SHAPE
+        }
+    }
 }
+
+/** A [TargetChooser.Random] draw picks exactly one mandatory target. */
+private fun isSingleMandatoryTarget(count: Int, minCount: Int, optional: Boolean, unlimited: Boolean, dynamicMax: DynamicAmount?) =
+    count == 1 && minCount == 1 && !optional && !unlimited && dynamicMax == null
+
+private const val RANDOM_CHOOSER_SHAPE =
+    "TargetChooser.Random draws exactly one mandatory target: count and minCount must be 1, not optional, unlimited or dynamic"
 
 /**
  * "Target creature or player" - classic burn spell targeting.
@@ -627,6 +652,11 @@ data class TargetObject(
             !onePerCardType && !onePerColor)) {
             "differentNumericProperty doesn't combine with sameNumericProperty, ownerDistribution or one-per-category targets"
         }
+        require(chooser != TargetChooser.Random ||
+            (isSingleMandatoryTarget(count, minCount, optional, unlimited, dynamicMaxCount) && dynamicMinCount == null &&
+                ownerDistribution == null && !onePerCardType && !onePerColor)) {
+            RANDOM_CHOOSER_SHAPE
+        }
     }
 
     /**
@@ -681,7 +711,8 @@ data class TargetObject(
         }
         val numericQualified = sameNumericProperty?.let { "$qualified with equal ${it.description}" }
             ?: differentNumericProperty?.let { "$qualified with different ${it.pluralDescription}" } ?: qualified
-        totalAtMost?.let { "$numericQualified with ${it.description}" } ?: numericQualified
+        val capped = totalAtMost?.let { "$numericQualified with ${it.description}" } ?: numericQualified
+        if (chooser == TargetChooser.Random) "$capped chosen at random" else capped
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): TargetRequirement {
