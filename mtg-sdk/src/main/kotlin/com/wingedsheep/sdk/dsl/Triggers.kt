@@ -394,8 +394,9 @@ class ObjectTriggerSubject internal constructor(
      * "Whenever you tap this land / creature for mana" — a *non-mana* rider on the permanent's own
      * {T} mana ability (Forbidden Orchard, Zhur-Taa Druid). Under [Triggers.self] it names no
      * permanent type: the source is the permanent, whatever it is. It fires however the permanent
-     * was tapped to pay (manual activation or auto-pay) and goes on the stack, so it may target. A rider that *adds* mana is a triggered
-     * mana ability (CR 605.1b) — author that as `AdditionalManaOnSourceTap`.
+     * was tapped to pay (manual activation or auto-pay) and goes on the stack, so it may target.
+     * A rider that *adds* mana is a triggered mana ability (CR 605.1b) — author that as
+     * `AdditionalManaOnSourceTap`.
      *
      * Under [Triggers.attached] it is "Whenever enchanted / fortified land is tapped for mana"
      * (C.A.M.P.) — by *any* player, since the passive voice names no tapper. The resolving effect
