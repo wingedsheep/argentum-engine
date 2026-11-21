@@ -1,0 +1,1 @@
+- #4789 The AI now reads a linked-exile pile banked off every library top and put onto the battlefield (Pyxis of Pandemonium) as free permanents, instead of seeing two unreadable abilities

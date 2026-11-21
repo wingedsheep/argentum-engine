@@ -98,6 +98,14 @@ internal class CardProjector(
         // Handle face-down card masking
         // Opponents and spectators see modified stats but no card information
         // Controller sees real card info + morph cost (but not spectators)
+        // Exile gets no controller baseline (CR 708.5 — see Visibility): a card exiled face down
+        // by a plain rider (Pyxis of Pandemonium, Bottled Cloister) is hidden from its owner too,
+        // who sees it only through an effect that grants the look (foretell, a may-play or look
+        // grant). Without one the owner gets the same masked card as everyone else.
+        val ownerLocked = frame.isFaceDown && !isSpectator && zoneKey.zoneType == Zone.EXILE &&
+            frame.controllerId == viewingPlayerId &&
+            !visibility.isCardIdentityVisibleTo(state, zoneKey, entityId, viewingPlayerId, isSpectator)
+        if (ownerLocked) return hiddenExiledCard(frame, isRevealedToViewer = false)
         if (frame.isFaceDown && (isSpectator || frame.controllerId != viewingPlayerId)) {
             // Check if the face-down card has been revealed to the viewing player (e.g., via Spy Network)
             // Also check LookAtFaceDownCreatures (e.g., Lens of Clarity) — only for battlefield creatures,

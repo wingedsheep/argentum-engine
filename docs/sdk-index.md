@@ -1076,7 +1076,7 @@ Families:
 - `ReturnSpellOrPermanentToOwnersHandEffect(target: EffectTarget)` — Return a single target — which may be a **spell on the stack** or a **permanent on the battlefield** — to its owner's hand.
 - `ReturnSpellToOwnersHandEffect` — Remove a target spell from the stack and put it into its owner's hand.
 - `RevealCardInHandEffect(target: EffectTarget, duration: Duration)` — "That player plays with that card revealed in their hand" for duration — one card in a hand stays face up to every player for the whole window (Firestorm Phoenix, paired with a card-targeted CantPl…
-- `RevealCollectionEffect(from: String, revealToSelf: Boolean, fromZone: Zone?, toZone: Zone?)` — Emit a com.wingedsheep.engine.core.CardsRevealedEvent for all cards in the named stored collection.
+- `RevealCollectionEffect(from: String, revealToSelf: Boolean, fromZone: Zone?, toZone: Zone?, turnFaceUp: Boolean)` — Emit a com.wingedsheep.engine.core.CardsRevealedEvent for all cards in the named stored collection.
 - `RevealFaceDownPermanentEffect(target: EffectTarget)` — Reveal a face-down permanent: make the identity of the card under a face-down permanent public (CR 708 — a face-down permanent's hidden card characteristics are shown to all players).
 - `RevealHandEffect(target: EffectTarget)` — Reveal a player's hand (publicly visible to all players).
 - `RollDiceEffect(count: DynamicAmount, sides: Int, player: EffectTarget, resultCounts: Map<String, Set<Int>>, modifier: DynamicAmount, storeTotalAs: String?)` — Roll count independent sides-sided dice for player.

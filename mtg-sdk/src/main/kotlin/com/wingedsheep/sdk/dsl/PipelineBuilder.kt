@@ -994,6 +994,15 @@ class PipelineBuilder private constructor(private val shared: Shared) {
     }
 
     /**
+     * Turn every face-down exiled card in [from] face up where it is, revealing it to all players
+     * ([RevealCollectionEffect.turnFaceUp]) — "turn face up all cards exiled with ~".
+     */
+    fun turnFaceUp(from: CollectionSlot) {
+        nextIndex()
+        steps += RevealCollectionEffect(from = from.key, turnFaceUp = true)
+    }
+
+    /**
      * A player picks one of two (or, with [additionalPiles], more) piles; the pick is re-stored as
      * chosen and every other pile, merged, as other ([ChoosePileEffect]). [atRandom] has the engine
      * pick uniformly instead — "chooses one of their piles at random".

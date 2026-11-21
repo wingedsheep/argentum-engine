@@ -8729,6 +8729,111 @@
     ]
 }
 
+// Pyxis of Pandemonium
+{
+    "name": "Pyxis of Pandemonium",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Each player exiles the top card of their library face down.\n{7}, {T}, Sacrifice this artifact: Each player turns face up all cards they own exiled with this artifact, then puts all permanent cards among them onto the battlefield.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Pyxis of Pandemonium:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": "Each"
+                            },
+                            "storeAs": "gathered0",
+                            "lookAudience": "None"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true,
+                            "faceDown": "HIDDEN"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{T}: Each player exiles the top card of their library face down."
+            },
+            {
+                "id": "Pyxis of Pandemonium:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{7}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "gathered0",
+                            "turnFaceUp": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true,
+                            "filter": "permanent"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{7}, {T}, Sacrifice this artifact: Each player turns face up all cards they own exiled with this artifact, then puts all permanent cards among them onto the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "220",
+        "rarity": "RARE",
+        "artist": "David Palumbo",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/dbc6a246-f32a-4dc0-9785-4038804f372f.jpg?1783939717",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Neither player can look at cards exiled with Pyxis of Pandemonium until those cards are turned face up."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If Pyxis of Pandemonium leaves the battlefield, and later another Pyxis of Pandemonium enters the battlefield, it is a new object (even if the two were represented the same card). Cards exiled by the original one can't be turned face up or put onto the battlefield by the second one."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Rage of Purphoros
 {
     "name": "Rage of Purphoros",

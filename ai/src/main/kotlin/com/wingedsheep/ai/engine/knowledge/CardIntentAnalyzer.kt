@@ -1443,6 +1443,7 @@ object CardIntentAnalyzer {
             .any { Zone.EXILE in it.zones && namesLinkedPile(it.filter) }
         if (playsThePile) add(IntentTag.DRAW)
         if (banksOwnLibraryForHand(scripts)) add(IntentTag.DRAW)
+        if (banksLibrariesForBattlefield(scripts)) add(IntentTag.FREE_SPELL)
     }
 
     /** Whether [filter] (or one of its `or` branches) is "cards exiled with this" ([StatePredicate.ExiledWithSource]). */
@@ -1461,7 +1462,28 @@ object CardIntentAnalyzer {
      * spell exile, exile-until-leaves, a zone-change redirect, a top-of-library exile that can reach
      * another player's library — may hand an opponent their own card back, and answers false.
      */
-    private fun banksOwnLibraryForHand(scripts: List<CardScript>): Boolean {
+    private fun banksOwnLibraryForHand(scripts: List<CardScript>): Boolean =
+        banksLibraryTop(scripts, Zone.HAND) { it == Player.You }
+
+    /**
+     * Whether [scripts] stock their linked-exile pile only off library tops that include **ours**
+     * and have an ability that puts the pile's cards onto the battlefield — "{T}: Each player exiles
+     * the top card of their library face down … Sacrifice this: each player … puts all permanent
+     * cards among them onto the battlefield" (Pyxis of Pandemonium). Our share of the pile enters
+     * under our control without its mana cost being paid: a banked [IntentTag.FREE_SPELL], which
+     * the fill ([pileFillTags]) and the release ([pileReleaseTags]) both read. Every player's share
+     * comes back to them alike, so the symmetry costs us nothing we gain.
+     */
+    private fun banksLibrariesForBattlefield(scripts: List<CardScript>): Boolean =
+        banksLibraryTop(scripts, Zone.BATTLEFIELD) { it == Player.You || it == Player.Each }
+
+    /**
+     * Whether every filler of [scripts]' linked-exile pile is a library top [whose] accepts and some
+     * ability moves the pile to [releaseZone]. Conservative: any other way of filling the pile — a
+     * single-card or spell exile, exile-until-leaves, a zone-change redirect, another player's
+     * library alone — answers false.
+     */
+    private fun banksLibraryTop(scripts: List<CardScript>, releaseZone: Zone, whose: (Player) -> Boolean): Boolean {
         var filled = false
         var released = false
         for (script in scripts) {
@@ -1471,21 +1493,21 @@ object CardIntentAnalyzer {
             ) return false
             for (slot in EffectWalker.slots(script)) {
                 val leaves = EffectWalker.leaves(slot.effect)
-                val ownTop = collectionsFromTop(leaves) { it == Player.You }
+                val ownTop = collectionsFromTop(leaves, whose)
                 for (leaf in leaves) when {
                     leaf is MoveCollectionEffect && leaf.linkToSource -> if (leaf.from in ownTop) filled = true else return false
                     leaf is MoveToZoneEffect && leaf.linkToSource -> return false
                     leaf is ExileUntilLeavesEffect -> return false
                     leaf is ExileTargetSpellEffect && leaf.linkToSource -> return false
                 }
-                if (releasesPileToHand(leaves)) released = true
+                if (releasesPile(leaves, releaseZone)) released = true
             }
         }
         return filled && released
     }
 
-    /** Whether [leaves] gather the source's linked-exile pile and move those cards to a hand. */
-    private fun releasesPileToHand(leaves: List<Effect>): Boolean {
+    /** Whether [leaves] gather the source's linked-exile pile and move those cards to [zone]. */
+    private fun releasesPile(leaves: List<Effect>, zone: Zone): Boolean {
         val pile = leaves.mapNotNullTo(HashSet()) { leaf ->
             (leaf as? GatherCardsEffect)?.takeIf { it.source is CardSource.FromLinkedExile }?.storeAs
         }
@@ -1496,17 +1518,22 @@ object CardIntentAnalyzer {
         } while (pile.size != before)
         return leaves.any { leaf ->
             leaf is MoveCollectionEffect && leaf.from in pile &&
-                (leaf.destination as? CardDestination.ToZone)?.zone == Zone.HAND
+                (leaf.destination as? CardDestination.ToZone)?.zone == zone
         }
     }
 
     /**
      * The release half of [banksOwnLibraryForHand]: an ability putting the pile into a hand when
-     * [pileCast] says the pile is a banked draw. A pile the card may cast from ([pileCastTags]'s
+     * [pileCast] says the pile is a banked draw — or onto the battlefield when it is a banked free
+     * permanent ([banksLibrariesForBattlefield]). A pile the card may cast from ([pileCastTags]'s
      * grant) is ours to cast too, so handing it over is the same draw.
      */
-    private fun pileReleaseTags(root: Effect, pileCast: Set<IntentTag>): Set<IntentTag> =
-        if (IntentTag.DRAW in pileCast && releasesPileToHand(readingLeaves(root))) setOf(IntentTag.DRAW) else emptySet()
+    private fun pileReleaseTags(root: Effect, pileCast: Set<IntentTag>): Set<IntentTag> = buildSet {
+        val leaves = readingLeaves(root)
+        if (IntentTag.DRAW in pileCast && releasesPile(leaves, Zone.HAND)) add(IntentTag.DRAW)
+        // The battlefield release of a banked pile (Pyxis of Pandemonium): see [banksLibrariesForBattlefield].
+        if (IntentTag.FREE_SPELL in pileCast && releasesPile(leaves, Zone.BATTLEFIELD)) add(IntentTag.FREE_SPELL)
+    }
 
     /**
      * "Exile the top two cards of target opponent's library" into a pile this permanent can cast
