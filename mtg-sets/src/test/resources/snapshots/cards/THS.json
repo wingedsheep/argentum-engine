@@ -984,6 +984,183 @@
     ]
 }
 
+// Ashiok, Nightmare Weaver
+{
+    "name": "Ashiok, Nightmare Weaver",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Legendary Planeswalker — Ashiok",
+    "oracleText": "+2: Exile the top three cards of target opponent's library.\n−X: Put a creature card with mana value X exiled with Ashiok onto the battlefield under your control. That creature is a Nightmare in addition to its other types.\n−10: Exile all cards from all opponents' hands and graveyards.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ashiok, Nightmare Weaver:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "player": "TargetOpponent"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Exile the top three cards of target opponent's library."
+            },
+            {
+                "id": "Ashiok, Nightmare Weaver:2",
+                "cost": "CostLoyaltyX",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "CompareNumericProperty",
+                                        "property": "MANA_VALUE",
+                                        "operator": "EQ",
+                                        "amount": "XValue"
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Choose a creature card with mana value X exiled with Ashiok to put onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "entersWith": {
+                                "addedSubtypes": [
+                                    "Nightmare"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Put a creature card with mana value X exiled with Ashiok onto the battlefield under your control. That creature is a Nightmare in addition to its other types."
+            },
+            {
+                "id": "Ashiok, Nightmare Weaver:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -10
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromMultipleZones",
+                                "zones": [
+                                    "Hand",
+                                    "Graveyard"
+                                ],
+                                "player": "EachOpponent"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Exile all cards from all opponents' hands and graveyards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "188",
+        "rarity": "MYTHIC",
+        "artist": "Karla Ortiz",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/599c3c9f-dfb7-4357-9d9c-9a1a4616b103.jpg?1783939731",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Ashiok's second ability refers to any creature card exiled because of Ashiok's first or third ability."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Ashiok's second ability doesn't target any creature card. You choose which creature card to return when that ability resolves, but you must choose one with mana value equal to the value you chose for X when activating the ability."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If Ashiok leaves the battlefield, and later another Ashiok enters the battlefield, it is a new object (even if the two were represented by the same card). Creature cards exiled by the original Ashiok can't be put onto the battlefield by the second ability of the new Ashiok."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If you put a creature card with bestow onto the battlefield, it will be a creature on the battlefield, not an Aura."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If you put a creature card with {X} in its mana cost onto the battlefield, the value of that X is 0."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Asphodel Wanderer
 {
     "name": "Asphodel Wanderer",
@@ -2166,6 +2343,76 @@
     ]
 }
 
+// Chronicler of Heroes
+{
+    "name": "Chronicler of Heroes",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Creature — Centaur Wizard",
+    "oracleText": "When this creature enters, draw a card if you control a creature with a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Chronicler of Heroes:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "PLUS_ONE_PLUS_ONE"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "descriptionOverride": "When this creature enters, draw a card if you control a creature with a +1/+1 counter on it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "rarity": "UNCOMMON",
+        "artist": "John Stanko",
+        "flavorText": "She paints pictures with words, though not all pictures show the truth.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/de1cbee6-61f4-40f0-86fe-93831a0b87d8.jpg?1783939731",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "Whether you control a creature with a +1/+1 counter on it is checked only when Chronicler of Heroes's ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Coastline Chimera
 {
     "name": "Coastline Chimera",
@@ -2762,6 +3009,97 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Daxos of Meletis
+{
+    "name": "Daxos of Meletis",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "Daxos can't be blocked by creatures with power 3 or greater.\nWhenever Daxos deals combat damage to a player, exile the top card of that player's library. You gain life equal to that card's mana value. Until end of turn, you may cast that card and you may spend mana as though it were mana of any color to cast that spell.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Daxos of Meletis:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": "TriggeringPlayer"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": "TriggeringPlayer"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "StoredCardManaValue",
+                                "collectionName": "gathered0"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "gathered0",
+                            "withAnyManaColor": true,
+                            "nonLandOnly": true
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Daxos deals combat damage to a player, exile the top card of that player's library. You gain life equal to that card's mana value. Until end of turn, you may cast that card and you may spend mana as though it were mana of any color to cast that spell."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "PowerAtLeast",
+                            "min": 3
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "rarity": "RARE",
+        "artist": "Karla Ortiz",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6bb68644-e99d-4ecb-a804-8d4ad1c3325d.jpg?1783939731"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
     ]
 }
 
@@ -8556,6 +8894,94 @@
     "colorIdentityOverride": []
 }
 
+// Psychic Intrusion
+{
+    "name": "Psychic Intrusion",
+    "manaCost": "{3}{U}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent reveals their hand. You choose a nonland card from that player's graveyard or hand and exile it. You may cast that card for as long as it remains exiled, and you may spend mana as though it were mana of any color to cast that spell.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RevealHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromMultipleZones",
+                        "zones": [
+                            "Hand",
+                            "Graveyard"
+                        ],
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "nonland",
+                    "storeSelected": "selected2",
+                    "prompt": "Choose a nonland card from their hand or graveyard to exile — you may cast it",
+                    "showAllCards": true,
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                {
+                    "type": "GrantMayPlayFromExile",
+                    "from": "selected2",
+                    "expiry": "Permanent",
+                    "withAnyManaColor": true,
+                    "nonLandOnly": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "RARE",
+        "artist": "Jaime Jones",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2b6e1d03-ad24-4bde-ab3c-28f94e776a4e.jpg?1783939728"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Purphoros's Emissary
 {
     "name": "Purphoros's Emissary",
@@ -10046,6 +10472,101 @@
     ]
 }
 
+// Shipwreck Singer
+{
+    "name": "Shipwreck Singer",
+    "manaCost": "{U}{B}",
+    "typeLine": "Creature — Siren",
+    "oracleText": "Flying\n{1}{U}: Target creature an opponent controls attacks this turn if able.\n{1}{B}, {T}: Attacking creatures get -1/-1 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Shipwreck Singer:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "MarkMustAttack",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Target creature an opponent controls attacks this turn if able."
+            },
+            {
+                "id": "Shipwreck Singer:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature attacking"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Attacking creatures get -1/-1 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "flavorText": "Her melody melds death and beauty with such artistry that even the gods weep to hear it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/13ad0c03-66d9-4fe3-bc0d-ca67d959c285.jpg?1783939725"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Shredding Winds
 {
     "name": "Shredding Winds",
@@ -10368,6 +10889,47 @@
     ]
 }
 
+// Spellheart Chimera
+{
+    "name": "Spellheart Chimera",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Creature — Chimera",
+    "oracleText": "Flying, trample\nSpellheart Chimera's power is equal to the number of instant and sorcery cards in your graveyard.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "Count",
+                "player": "You",
+                "zone": "Graveyard",
+                "filter": "instant|sorcery"
+            }
+        },
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "metadata": {
+        "collectorNumber": "204",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "Thaumaturges remain silent around chimeras, lest their words conjure even stranger beasts.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a19670c-5afa-4e22-b3ff-258faca19556.jpg?1783939724",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "The ability that defines Spellheart Chimera's power functions in all zones, not just the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Staunch-Hearted Warrior
 {
     "name": "Staunch-Hearted Warrior",
@@ -10421,6 +10983,80 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Steam Augury
+{
+    "name": "Steam Augury",
+    "manaCost": "{2}{U}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Reveal the top five cards of your library and separate them into two piles. An opponent chooses one of those piles. Put that pile into your hand and the other into your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 5
+                        }
+                    },
+                    "storeAs": "gathered0",
+                    "revealed": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": "ChooseAnyNumber",
+                    "storeSelected": "selected1",
+                    "storeRemainder": "remainder1",
+                    "prompt": "Separate the revealed cards into two piles. The cards you select form Pile 1; the rest form Pile 2.",
+                    "selectedLabel": "Pile 1",
+                    "remainderLabel": "Pile 2",
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "ChoosePile",
+                    "pileA": "selected1",
+                    "pileB": "remainder1",
+                    "chooser": "Opponent",
+                    "storeChosenAs": "chosenPile2",
+                    "storeOtherAs": "otherPile2",
+                    "prompt": "Choose which pile goes to your opponent's hand; the other goes to their graveyard."
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "chosenPile2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "otherPile2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "RARE",
+        "artist": "Dave Kendall",
+        "flavorText": "Keranos is a fickle god, delivering punishment as readily as prophecy.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6eb69801-b574-4b5f-82e7-8fd34cdadf74.jpg?1783939724"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
     ]
 }
 
@@ -11653,6 +12289,188 @@
     ]
 }
 
+// Triad of Fates
+{
+    "name": "Triad of Fates",
+    "manaCost": "{2}{W}{B}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "{1}, {T}: Put a fate counter on another target creature.\n{W}, {T}: Exile target creature that has a fate counter on it, then return it to the battlefield under its owner's control.\n{B}, {T}: Exile target creature that has a fate counter on it. Its controller draws two cards.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Triad of Fates:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "FATE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{1}, {T}: Put a fate counter on another target creature."
+            },
+            {
+                "id": "Triad of Fates:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "destination": "Battlefield"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "FATE"
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "{W}, {T}: Exile target creature that has a fate counter on it, then return it to the battlefield under its owner's control."
+            },
+            {
+                "id": "Triad of Fates:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{B}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t2"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": "TargetController"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "FATE"
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "t2"
+                    }
+                ],
+                "descriptionOverride": "{B}, {T}: Exile target creature that has a fate counter on it. Its controller draws two cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/588a8f90-4344-4882-9671-4c7295186a58.jpg?1783939723",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "The creature that returns to the battlefield during the resolution of Triad of the Fate's middle ability does so as a new object, with no memory of its previous existence. It won't have a fate counter on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Triton Fortune Hunter
 {
     "name": "Triton Fortune Hunter",
@@ -11949,6 +12767,86 @@
         "artist": "Volkan Baǵa",
         "flavorText": "His memories remained in the Underworld, but his cruelty crossed the Rivers with him.",
         "imageUri": "https://cards.scryfall.io/normal/front/4/c/4c4ce848-a57d-4e88-8093-9fb1408523bc.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
+// Underworld Cerberus
+{
+    "name": "Underworld Cerberus",
+    "manaCost": "{3}{B}{R}",
+    "typeLine": "Creature — Dog",
+    "oracleText": "This creature can't be blocked except by three or more creatures.\nCards in graveyards can't be the targets of spells or abilities.\nWhen this creature dies, exile it and each player returns all creature cards from their graveyard to their hand.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Underworld Cerberus:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Exile",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "player": "Each",
+                                "filter": "creature"
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedByFewerThan",
+                "minBlockers": 3
+            },
+            "CardsInZonesCantBeTargeted"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "208",
+        "rarity": "MYTHIC",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3a078c3d-88db-4459-9667-ce610ae2f660.jpg?1783939723",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "If you can't exile Underworld Cerberus when its last ability resolves, perhaps because it's been exiled by another spell or ability, each player will still return all creature cards from their graveyard to their hand."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If two of these die at the same time, the last ability of each will trigger. If each player controlled one, the nonactive player's ability will resolve first. The Underworld Cerberus controlled by that player will be exiled, and all other creature cards in graveyards (including the Underworld Cerberus controlled by the active player) will be returned to their owners' hands. Then the active player's ability will resolve. That Underworld Cerberus won't be exiled, but any creature cards in graveyards at that time, perhaps because they died in response to this ability, will be returned to their owners' hands."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK",
@@ -12708,6 +13606,128 @@
         "imageUri": "https://cards.scryfall.io/normal/front/6/d/6d989daa-78eb-4120-81b5-7866a7b04590.jpg?1783939715"
     },
     "colorIdentityOverride": []
+}
+
+// Xenagos, the Reveler
+{
+    "name": "Xenagos, the Reveler",
+    "manaCost": "{2}{R}{G}",
+    "typeLine": "Legendary Planeswalker — Xenagos",
+    "oracleText": "+1: Add X mana in any combination of {R} and/or {G}, where X is the number of creatures you control.\n0: Create a 2/2 red and green Satyr creature token with haste.\n−6: Exile the top seven cards of your library. You may put any number of creature and/or land cards from among them onto the battlefield.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Xenagos, the Reveler:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "AddDynamicMana",
+                    "amountSource": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    },
+                    "allowedColors": [
+                        "RED",
+                        "GREEN"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Add X mana in any combination of {R} and/or {G}, where X is the number of creatures you control."
+            },
+            {
+                "id": "Xenagos, the Reveler:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 0
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "RED",
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Satyr"
+                    ],
+                    "keywords": [
+                        "HASTE"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Create a 2/2 red and green Satyr creature token with haste."
+            },
+            {
+                "id": "Xenagos, the Reveler:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -6
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 7
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "filter": "creature|land",
+                            "storeSelected": "selected2",
+                            "prompt": "Put any number of creature and/or land cards onto the battlefield",
+                            "selectedLabel": "Put onto the battlefield",
+                            "remainderLabel": "Leave in exile"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Exile the top seven cards of your library. You may put any number of creature and/or land cards from among them onto the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "rarity": "MYTHIC",
+        "artist": "Jason Chan",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3aecfe99-9c4b-4087-84ee-fb208fd22820.jpg?1783939722"
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
 }
 
 // Yoked Ox
