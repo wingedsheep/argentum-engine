@@ -59,6 +59,15 @@ data class EffectContext(
      */
     val abilityIdentity: com.wingedsheep.sdk.scripting.AbilityIdentity? = null,
     /**
+     * The damage this leaf deals continues the damage instruction the previous leaf began: set by
+     * the effect program on a damage effect whose preceding sibling in the same sequence is a
+     * damage effect from the same source — "deals 4 damage to target creature and 2 damage to
+     * that creature's controller" authored as two steps is one "deals". Stamped onto the
+     * resulting [com.wingedsheep.engine.core.DamageDealtEvent.continuesInstruction]; read only by
+     * per-instruction damage triggers.
+     */
+    val continuesDamageInstruction: Boolean = false,
+    /**
      * The concrete ability captured at activation. Resolution must not rediscover it from a
      * source or grant that can change before resolving (including "retain this ability" copies).
      * Null for spells, triggers, and synthesized activations without an ActivatedAbility.

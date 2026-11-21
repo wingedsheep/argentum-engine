@@ -8,6 +8,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
+import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
@@ -79,10 +80,13 @@ class StaticPriorPlayoutsTest : ScenarioTestBase() {
 
     init {
         test("fccf5763 T12: the AI deploys a creature instead of passing with four castable") {
-            // The seeds at which the profile without the prior passed; the rest it already cast at.
-            for (seed in listOf(4L, 16L, 24L)) {
+            // The seeds at which the profile without the prior passes (4, 16 and 24 when this was
+            // found; which ones shifts with anything that moves the playouts' values, so they are
+            // found rather than pinned). The reproduction needs at least one.
+            val passing = (1L..24L).filter { seed -> position(seed).let { it.castName(it.choice(before)) == null } }
+            passing.shouldNotBeEmpty()
+            for (seed in passing) {
                 val game = position(seed)
-                game.castName(game.choice(before)) shouldBe null
                 game.castName(game.choice()) shouldNotBe null
             }
         }

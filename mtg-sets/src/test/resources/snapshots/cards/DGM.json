@@ -314,6 +314,71 @@
     ]
 }
 
+// Blaze Commando
+{
+    "name": "Blaze Commando",
+    "manaCost": "{3}{R}{W}",
+    "typeLine": "Creature — Minotaur Soldier",
+    "oracleText": "Whenever an instant or sorcery spell you control deals damage, create two 1/1 red and white Soldier creature tokens with haste.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Blaze Commando:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "sourceFilter": "instant|sorcery ctrl:you",
+                    "perInstruction": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED",
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ],
+                    "keywords": [
+                        "HASTE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/a/8/a8a5a5a5-a8ae-41ed-9af5-b99d80ce0b35.jpg?1783940147"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "UNCOMMON",
+        "artist": "James Ryman",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/e/5e179f0d-2965-44e4-8483-67b330a8608c.jpg?1783940033",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Blaze Commando's ability triggers each time an instant or sorcery spell you control deals damage (or, put another way, the number of times the word \"deals\" appears in its instructions), no matter how much damage is dealt or how many players or permanents are dealt damage. For example, if you cast Punish the Enemy and it \"deals 3 damage to target player or planeswalker and 3 damage to target creature,\" Blaze Commando's ability will trigger once and you'll get two Soldier tokens."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Some instant or sorcery spells cause other objects to deal damage, rather than deal damage themselves. Such spells don't cause Blaze Commando to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Boros Battleshaper
 {
     "name": "Boros Battleshaper",

@@ -1,0 +1,1 @@
+- #4803 Reads "whenever an instant or sorcery spell you control deals damage" observers (Blaze Commando, Satyr Firedancer, Bloodfeather Phoenix) as spells payoffs, so it drafts and builds them beside burn

@@ -213,7 +213,8 @@ class EffectProgramInterpreter(
             val inner = scopes.last()
             val cursor = ProgramCursor(inner.prefix + CursorStep.Child(path.last(), inner.delta))
             val frame = EffectProgram(root, origin, cursor, context)
-            val result = effectExecutor(state.pushContinuation(frame), leaf, context)
+            val leafContext = if (continuesDamageInstruction(leaf, path)) context.copy(continuesDamageInstruction = true) else context
+            val result = effectExecutor(state.pushContinuation(frame), leaf, leafContext)
             if (result.outcome is Outcome.Paused) {
                 // The frame waits beneath the leaf's own frames.
                 exitResult = EffectResult.propagatePause(result.state, events + result.events)
@@ -244,6 +245,21 @@ class EffectProgramInterpreter(
             }
             context = context.foldResult(result)
             return LeafOutcome.CONTINUE
+        }
+
+        /**
+         * "Deals 4 damage to target creature and 2 damage to that creature's controller" is one
+         * damage instruction authored as two adjacent damage steps: a damage step directly after
+         * a damage step with the same source in the same sequence continues it. A step is a damage
+         * effect or a simultaneous damage loop ("2 damage to each creature and each player",
+         * Volcanic Fallout's two loops).
+         */
+        private fun continuesDamageInstruction(leaf: Effect, path: List<Int>): Boolean {
+            val damage = simultaneousDamageOf(leaf) ?: return false
+            val index = path.lastOrNull() ?: return false
+            if (index == 0) return false
+            val previous = simultaneousDamageOf(scopes.last().composite.effects[index - 1]) ?: return false
+            return previous.damageSource == damage.damageSource
         }
 
         /**

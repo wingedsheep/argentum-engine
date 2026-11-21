@@ -225,6 +225,14 @@ data class DamageDealtEvent(
      * reads a source gone from the battlefield (a token that traded in combat) from it.
      */
     val sourceLastKnown: com.wingedsheep.engine.state.components.stack.EntitySnapshot? = null,
+    /**
+     * True when this event belongs to the same damage *instruction* as the [DamageDealtEvent]
+     * before it in the event stream — another recipient of one simultaneous damage effect, or the
+     * "and N damage to …" half of one sentence authored as adjacent damage effects. False opens a
+     * new instruction. Read by per-instruction damage triggers
+     * (`DealsDamageEvent(perInstruction = true)`, Blaze Commando); everything else ignores it.
+     */
+    val continuesInstruction: Boolean = false,
 ) : GameEvent
 
 /**

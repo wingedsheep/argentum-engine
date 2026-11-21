@@ -86,13 +86,8 @@ class ForEachExecutor(
             }
         }
 
-        val damage = effect.body as? com.wingedsheep.sdk.scripting.effects.DealDamageEffect
-        val simultaneousDamage = when (effect.space) {
-            IterationSpace.Targets, is IterationSpace.TargetsOf,
-            is IterationSpace.Group, is IterationSpace.Collection, is IterationSpace.Players -> true
-            else -> false
-        }
-        if (damage != null && simultaneousDamage && damageExecutor != null) {
+        val damage = simultaneousDamageOf(effect)
+        if (damage != null && damageExecutor != null) {
             // Atomic damage is one instruction across all recipients. A composite body remains
             // a per-item sequence; it can contain intervening choices or state-changing effects.
             // Preparation is already in the paused state. Replaying the damage instruction
@@ -403,4 +398,20 @@ class ForEachExecutor(
             context = context
         )
     }
+}
+
+/**
+ * The damage effect [effect] deals as one simultaneous instruction: a bare damage effect, or a
+ * loop whose body is one damage effect over a space dealt all at once ("deals 2 damage to each
+ * creature and each player" is one instruction per loop). Null for anything else.
+ */
+internal fun simultaneousDamageOf(effect: com.wingedsheep.sdk.scripting.effects.Effect): com.wingedsheep.sdk.scripting.effects.DealDamageEffect? = when (effect) {
+    is com.wingedsheep.sdk.scripting.effects.DealDamageEffect -> effect
+    is ForEachEffect -> when (effect.space) {
+        IterationSpace.Targets, is IterationSpace.TargetsOf,
+        is IterationSpace.Group, is IterationSpace.Collection, is IterationSpace.Players ->
+            effect.body as? com.wingedsheep.sdk.scripting.effects.DealDamageEffect
+        else -> null
+    }
+    else -> null
 }

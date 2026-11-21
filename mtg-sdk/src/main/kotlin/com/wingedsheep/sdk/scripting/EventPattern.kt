@@ -1680,8 +1680,27 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
          * damage to one or more creatures" (Briarbridge Patrol): once per batch however many
          * matching recipients the source hit, where the unbatched form fires per recipient.
          */
-        val batch: Boolean = false
+        val batch: Boolean = false,
+        /**
+         * Per-instruction semantics: the trigger fires once each time a matching source *deals
+         * damage* as one instruction — however many recipients that instruction hits — and again
+         * for every separate damage instruction, even inside one resolution. Blaze Commando's
+         * "whenever an instant or sorcery spell you control deals damage" (2013-04-15 ruling: it
+         * triggers once per "deals" in the spell's text, so Punish the Enemy's "deals 3 damage to
+         * target player or planeswalker and 3 damage to target creature" triggers it once).
+         * Neither the per-recipient default (one firing per damaged object) nor [batch] (one
+         * firing per event batch, merging a spell's separate instructions) says that. The engine
+         * groups the damage events of one instruction (one damage effect, and adjacent damage
+         * effects with the same source in one sequence — the "and N damage to …" of one
+         * sentence); the trigger context is the instruction's first matching event. Battlefield
+         * observers (binding ANY) only; exclusive with [batch].
+         */
+        val perInstruction: Boolean = false
     ) : EventPattern {
+        init {
+            require(!(batch && perInstruction)) { "DealsDamageEvent: batch and perInstruction are exclusive" }
+        }
+
         override val description: String = buildString {
             if (batch) {
                 // Recipient-side batch wording: "one or more [recipients] are dealt … damage".
