@@ -92,7 +92,8 @@ class IntentCatalog private constructor(private val registry: CardRegistry?) {
 
     /**
      * The intent of casting the card called [cardName] the way [cast] does: for a modal spell with
-     * its modes chosen, what *those* modes do ([CardIntentAnalyzer.analyzeModes]); otherwise the
+     * its modes chosen, what *those* modes do ([CardIntentAnalyzer.analyzeModes]); for a face cast
+     * alone (a split half, an Adventure, a Room door), that face alone ([CardIntentAnalyzer.analyzeCastFace]); otherwise the
      * card's own reading, exactly [forName]. The reading every "is this the window?" question about
      * a materialized cast should ask — a charm's union of modes answers "what is it worth in hand",
      * not "what does this cast do".
@@ -101,6 +102,10 @@ class IntentCatalog private constructor(private val registry: CardRegistry?) {
         val definition = registry?.getCard(cardName) ?: return null
         if (cast.faceIndex == null && !cast.castFused) {
             CardIntentAnalyzer.analyzeModes(definition, cast.chosenModes)?.let { return it }
+        }
+        // A face cast alone (a split half, CR 709.3; an Adventure; a Room door) is the spell on the stack.
+        if (!cast.castFused) {
+            cast.faceIndex?.let { definition.cardFaces.getOrNull(it) }?.let { return CardIntentAnalyzer.analyzeCastFace(definition, it) }
         }
         return CardIntentAnalyzer.analyze(definition)
     }

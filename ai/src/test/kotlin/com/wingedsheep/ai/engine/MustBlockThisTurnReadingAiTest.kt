@@ -50,13 +50,11 @@ class MustBlockThisTurnReadingAiTest : ScenarioTestBase() {
                 withClue("$name: $reading") { reading.flags.none { "MarkMustBlockEffect" in it.key } shouldBe true }
             }
             // A lure *spell* beside a draw or Learn is judged by cantripLeverBuysNothing
-            // (CantripLeverTimingAiTest); Hustle's forced attack, a face HoldPolicy doesn't read,
-            // leaves only its timing unread — and says so.
+            // (CantripLeverTimingAiTest); Hustle's, beside its forced attack, by castBuysNothing on
+            // the half cast (SplitFaceCastTimingAiTest).
             for (name in listOf("Academic Dispute", "Timely Interference", "Hustle // Bustle")) {
                 val reading = AiReadingAudit.read(card(name))
-                withClue("$name: $reading") {
-                    reading.flags.none { "MarkMustBlockEffect" in it.key && !it.key.startsWith("timing") } shouldBe true
-                }
+                withClue("$name: $reading") { reading.flags.none { "MarkMustBlockEffect" in it.key } shouldBe true }
             }
             withClue("Academic Dispute's reach lets the forced blocker meet our flier; it is no gift") {
                 TargetPolarityAnalyzer.forSpell(card("Academic Dispute")) shouldBe listOf(TargetPolarity.HARMFUL)
