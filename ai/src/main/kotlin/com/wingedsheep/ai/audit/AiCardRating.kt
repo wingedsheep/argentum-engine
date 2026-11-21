@@ -339,6 +339,7 @@ object AiCardRating {
         IntentTag.TURN_CONTROL to "Controls an opponent's next turn",
         IntentTag.FREE_SPELL to "Casts spells for free",
         IntentTag.HIDDEN_INFO to "Shows hidden information",
+        IntentTag.OFF_TURN_PLAY to "Plays on opponents' turns",
         IntentTag.SPELL_TAX to "Taxes opponents' spells",
         IntentTag.OWN_SPELL_TAX to "Taxes its controller's own spells",
         IntentTag.COMBAT_RESTRICTION to "Combat restriction",

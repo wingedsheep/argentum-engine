@@ -55,6 +55,64 @@
     ]
 }
 
+// Destructive Revelry
+{
+    "name": "Destructive Revelry",
+    "manaCost": "{R}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target artifact or enchantment. Destructive Revelry deals 2 damage to that permanent's controller.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "TargetController"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|enchantment"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "rarity": "UNCOMMON",
+        "artist": "Kev Walker",
+        "flavorText": "\"Stoke a fire hot enough and you'll never run out of things to burn.\"\n—Xenagos, the Reveler",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bc2eb53a-3d0f-4bb3-be36-f8024f2a1d4d.jpg?1783939837",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "You must target an artifact or enchantment to cast Destructive Revelry. If that artifact or enchantment is an illegal target when Destructive Revelry tries to resolve, it won't resolve and none of its effects will happen. No damage will be dealt. However, if Destructive Revelry resolves and the artifact or enchantment isn't destroyed (perhaps because it has indestructible), damage will be dealt."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Ordeal of Purphoros
 {
     "name": "Ordeal of Purphoros",
@@ -151,6 +209,144 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Polukranos, World Eater
+{
+    "name": "Polukranos, World Eater",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Legendary Creature — Hydra",
+    "oracleText": "{X}{X}{G}: Monstrosity X. (If this creature isn't monstrous, put X +1/+1 counters on it and it becomes monstrous.)\nWhen Polukranos becomes monstrous, it deals X damage divided as you choose among any number of target creatures your opponents control. Each of those creatures deals damage equal to its power to Polukranos.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Polukranos, World Eater:2",
+                "trigger": "BecameMonstrousEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DividedDamage",
+                            "totalDamage": 0,
+                            "dynamicTotal": "XValue"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.TargetsOf",
+                                "group": "t0"
+                            },
+                            "body": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "EntityProperty",
+                                    "entity": "IterationEntity",
+                                    "numericProperty": "Power"
+                                },
+                                "target": "Self",
+                                "damageSource": "IterationEntity"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "unlimited": true,
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0",
+                    "dynamicMaxCount": "XValue"
+                },
+                "descriptionOverride": "When Polukranos becomes monstrous, it deals X damage divided as you choose among any number of target creatures your opponents control. Each of those creatures deals damage equal to its power to Polukranos."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Polukranos, World Eater:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{X}{X}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        "IsMonstrous"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddDynamicCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": "XValue",
+                                "target": "Self"
+                            },
+                            {
+                                "type": "BecomeMonstrous",
+                                "x": "XValue"
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "Monstrosity X. (If this creature isn't monstrous, put X +1/+1 counters on it and it becomes monstrous.)"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "rarity": "MYTHIC",
+        "artist": "Karl Kopinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b5a1182-c707-4024-9000-de57793fba0d.jpg?1783939843",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "The value of X in Polukranos's last ability is equal to the value chosen for X when its activated ability was activated."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "You choose the division of damage as you put the ability on the stack, not as it resolves. Each target must be assigned at least 1 damage. In multiplayer games, you may choose creatures controlled by different opponents."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If some, but not all, of the ability's targets become illegal, you can't change the division of damage. Damage that would've been dealt to illegal targets simply isn't dealt."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "As Polukranos's triggered ability resolves, Polukranos deals damage first, then the target creatures do. Although no creature will die until after the ability finishes resolving, the order could matter if Polukranos has wither or infect."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Once a creature becomes monstrous, it can't become monstrous again. If the creature is already monstrous when the monstrosity ability resolves, nothing happens."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "An ability that triggers when a creature becomes monstrous won't trigger if that creature isn't on the battlefield when its monstrosity ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 

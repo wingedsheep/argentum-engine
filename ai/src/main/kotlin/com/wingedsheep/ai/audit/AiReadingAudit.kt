@@ -41,6 +41,7 @@ import com.wingedsheep.sdk.scripting.effects.ChangeColorEffect
 import com.wingedsheep.sdk.scripting.effects.AddCardTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.GrantHexproofFromChosenColorEffect
+import com.wingedsheep.sdk.scripting.effects.ChooseOpponentForSourceEffect
 import com.wingedsheep.sdk.scripting.effects.GiveControlToTargetPlayerEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.GrantProtectionFromChosenColorEffect
@@ -914,6 +915,7 @@ object AiReadingAudit {
         IntentTag.TURN_CONTROL -> "controls an opponent during their next turn"
         IntentTag.FREE_SPELL -> "casts a spell without paying its mana cost"
         IntentTag.HIDDEN_INFO -> "lets its controller look at hidden cards"
+        IntentTag.OFF_TURN_PLAY -> "lets its controller cast spells or have mana on an opponent's turn"
         IntentTag.IMPULSE -> "exiles cards to play this turn"
         IntentTag.COST_REDUCER -> "makes your spells or abilities cheaper"
         else -> tag.name.lowercase(Locale.ROOT).replace('_', ' ')
@@ -1046,6 +1048,10 @@ object AiReadingAudit {
         // one: nothing of ours is gained, and whether to pass it is the simulation's call on the
         // board. Giving away another permanent stays flagged.
         if (leaf is GiveControlToTargetPlayerEffect && leaf.permanent == EffectTarget.Self) return true
+        // "An opponent gains control of it" spelled as choose-then-give (Akroan Horse): the choice only
+        // records which opponent the following step reads back through `Player.ChosenOpponent`. Setup,
+        // never a payoff of its own — what the ability is for is the step that reads the choice.
+        if (leaf is ChooseOpponentForSourceEffect) return true
         // Its controller sacrificing permanents of its own choosing — Lotus Field's two lands, Korvold's
         // "sacrifice another permanent", forage's Food — is the same price with the pick left to
         // resolution: no target, nothing to time, and what is lost is the board the simulation sees.

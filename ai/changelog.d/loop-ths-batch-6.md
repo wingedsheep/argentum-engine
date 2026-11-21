@@ -1,0 +1,1 @@
+- #4787 The AI times until-end-of-turn "deals combat damage to a player, draw" grants (Warriors' Lesson, Commando Raid) for when its own attackers can still connect, and reads flash-granting and untap-during-other-players'-untap-steps statics (Prophet of Kruphix, Vedalken Orrery, Seedborn Muse) as off-turn play instead of a blank.

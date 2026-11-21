@@ -298,6 +298,90 @@
     ]
 }
 
+// Akroan Horse
+{
+    "name": "Akroan Horse",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Horse",
+    "oracleText": "Defender\nWhen this creature enters, an opponent gains control of it.\nAt the beginning of your upkeep, each opponent creates a 1/1 white Soldier creature token.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Akroan Horse:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ChooseOpponentForSource",
+                            "prompt": "Choose an opponent to gain control of Akroan Horse"
+                        },
+                        {
+                            "type": "GiveControlToTargetPlayer",
+                            "permanent": "Self",
+                            "newController": {
+                                "type": "PlayerRef",
+                                "player": "ChosenOpponent"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Akroan Horse:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/3/1/31f320f4-baae-46cb-840e-421f010a0a20.jpg?1783939699",
+                    "controller": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "210",
+        "rarity": "RARE",
+        "artist": "Seb McKinnon",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ec95a60f-5164-47f9-9430-11b114c87815.jpg?1783939722",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Akroan Horse's enters-the-battlefield ability doesn't target any opponent. In a multiplayer game, you choose the opponent as the ability resolves."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "In the last ability, \"each opponent\" refers to opponents of Akroan Horse's controller. In most situations in two-player games, your opponent will control Akroan Horse and you'll put Soldier tokens onto the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Anger of the Gods
 {
     "name": "Anger of the Gods",
@@ -1001,6 +1085,72 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Battlewise Hoplite
+{
+    "name": "Battlewise Hoplite",
+    "manaCost": "{W}{U}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Heroic — Whenever you cast a spell that targets this creature, put a +1/+1 counter on this creature, then scry 1. (To scry 1, look at the top card of your library, then you may put that card on the bottom.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Battlewise Hoplite:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Scry",
+                            "count": 1
+                        }
+                    ]
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, put a +1/+1 counter on this creature, then scry 1."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "rarity": "UNCOMMON",
+        "artist": "Willian Murai",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4c929a57-2c23-4bbf-b265-666630a4fde8.jpg?1783939731",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
     ]
 }
 
@@ -2071,6 +2221,125 @@
         "BLUE",
         "WHITE"
     ]
+}
+
+// Colossus of Akros
+{
+    "name": "Colossus of Akros",
+    "manaCost": "{8}",
+    "typeLine": "Artifact Creature — Golem",
+    "oracleText": "Defender, indestructible\n{10}: Monstrosity 10. (If this creature isn't monstrous, put ten +1/+1 counters on it and it becomes monstrous.)\nAs long as this creature is monstrous, it has trample and can attack as though it didn't have defender.",
+    "creatureStats": {
+        "power": 10,
+        "toughness": 10
+    },
+    "keywords": [
+        "DEFENDER",
+        "INDESTRUCTIBLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Colossus of Akros:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{10}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        "IsMonstrous"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddDynamicCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 10
+                                },
+                                "target": "Self"
+                            },
+                            "BecomeMonstrous"
+                        ]
+                    },
+                    "descriptionOverride": "Monstrosity 10. (If this creature isn't monstrous, put 10 +1/+1 counters on it and it becomes monstrous.)"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "IsMonstrous"
+                        ]
+                    }
+                }
+            },
+            {
+                "type": "CanAttackDespiteDefender",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "IsMonstrous"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "214",
+        "rarity": "RARE",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3e394ffe-7460-4c59-a403-e9404b0d10c1.jpg?1783939720",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Colossus of Akros doesn't lose defender when it's monstrous. It's just able to attack."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Once a creature becomes monstrous, it can't become monstrous again. If the creature is already monstrous when the monstrosity ability resolves, nothing happens."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Monstrous isn't an ability that a creature has. It's just something true about that creature. If the creature stops being a creature or loses its abilities, it will continue to be monstrous."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Commune with the Gods
@@ -3878,6 +4147,124 @@
     ]
 }
 
+// Fleecemane Lion
+{
+    "name": "Fleecemane Lion",
+    "manaCost": "{G}{W}",
+    "typeLine": "Creature — Cat",
+    "oracleText": "{3}{G}{W}: Monstrosity 1. (If this creature isn't monstrous, put a +1/+1 counter on it and it becomes monstrous.)\nAs long as this creature is monstrous, it has hexproof and indestructible.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Fleecemane Lion:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{G}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        "IsMonstrous"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddDynamicCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "Self"
+                            },
+                            "BecomeMonstrous"
+                        ]
+                    },
+                    "descriptionOverride": "Monstrosity 1. (If this creature isn't monstrous, put a +1/+1 counter on it and it becomes monstrous.)"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "IsMonstrous"
+                        ]
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "IsMonstrous"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "193",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/622d6c46-82bb-4a97-abe6-b388def44bda.jpg?1783939730",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Once a creature becomes monstrous, it can't become monstrous again. If the creature is already monstrous when the monstrosity ability resolves, nothing happens."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Monstrous isn't an ability that a creature has. It's just something true about that creature. If the creature stops being a creature or loses its abilities, it will continue to be monstrous."
+            }
+        ]
+    }
+}
+
 // Fleetfeather Sandals
 {
     "name": "Fleetfeather Sandals",
@@ -5290,6 +5677,63 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Kragma Warcaller
+{
+    "name": "Kragma Warcaller",
+    "manaCost": "{3}{B}{R}",
+    "typeLine": "Creature — Minotaur Warrior",
+    "oracleText": "Minotaur creatures you control have haste.\nWhenever a Minotaur you control attacks, it gets +2/+0 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kragma Warcaller:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "creature Minotaur ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "TriggeringEntity"
+                },
+                "descriptionOverride": "Whenever a Minotaur you control attacks, it gets +2/+0 until end of turn."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE",
+                "filter": {
+                    "baseFilter": "creature Minotaur ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "195",
+        "rarity": "UNCOMMON",
+        "artist": "Gabor Szikszai",
+        "flavorText": "A warcaller merely brings the herd together. After that, the meat-hunger is all the encouragement they need.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/78791fc6-054f-45eb-b8b0-28f2512d72b6.jpg?1783939730"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -7991,6 +8435,60 @@
     ]
 }
 
+// Prophet of Kruphix
+{
+    "name": "Prophet of Kruphix",
+    "manaCost": "{3}{G}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Untap all creatures and lands you control during each other player's untap step.\nYou may cast creature spells as though they had flash.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "UntapFilteredDuringOtherUntapSteps",
+                "filter": "creature|land"
+            },
+            {
+                "type": "GrantFlashToSpellType",
+                "filter": "creature",
+                "controllerOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "199",
+        "rarity": "RARE",
+        "artist": "Winona Nelson",
+        "flavorText": "\"Time is fluid as a dance, and truth as fleeting.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/45de923f-fdab-460c-96f4-f62aefa9ad73.jpg?1783939727",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Effects that state a creature or land you control doesn't untap during your untap step won't apply during another player's untap step."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Controlling more than one Prophet of Kruphix doesn't allow you to untap any creature or land more than once during a single untap step."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "If you're casting a creature spell with bestow, whether or not it has flash will depend on if you're casting it as a creature or as an Aura. Prophet of Kruphix won't give flash to a spell with bestow you're casting as an Aura."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "The last ability applies to creature cards in any zone, provided something is allowing you to cast them."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Prowler's Helm
 {
     "name": "Prowler's Helm",
@@ -8560,6 +9058,47 @@
         "imageUri": "https://cards.scryfall.io/normal/front/1/0/1067cf71-a270-4b1b-aa06-0ec0e732ed16.jpg"
     },
     "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Returned Phalanx
+{
+    "name": "Returned Phalanx",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Zombie Soldier",
+    "oracleText": "Defender\n{1}{U}: This creature can attack this turn as though it didn't have defender.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Returned Phalanx:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{U}"
+                    }
+                },
+                "effect": "CanAttackDespiteDefenderThisTurn",
+                "descriptionOverride": "{1}{U}: This creature can attack this turn as though it didn't have defender."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "artist": "Seb McKinnon",
+        "flavorText": "They lived in different nations and fought in different eras, but as the Returned, they link arms as one.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/93613e23-b363-4bcb-8f63-8f1d25f7f174.jpg?1783939771"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
         "BLACK"
     ]
 }
@@ -9627,6 +10166,62 @@
     ]
 }
 
+// Staunch-Hearted Warrior
+{
+    "name": "Staunch-Hearted Warrior",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Heroic — Whenever you cast a spell that targets this creature, put two +1/+1 counters on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Staunch-Hearted Warrior:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, put two +1/+1 counters on this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "artist": "Greg Staples",
+        "flavorText": "As soon as she faces a monster, she begins composing its epitaph.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/4/3485eb83-f83c-4776-b164-abd72f3c9547.jpg?1783939737",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Stoneshock Giant
 {
     "name": "Stoneshock Giant",
@@ -10658,6 +11253,73 @@
     ]
 }
 
+// Titan of Eternal Fire
+{
+    "name": "Titan of Eternal Fire",
+    "manaCost": "{5}{R}",
+    "typeLine": "Creature — Giant",
+    "oracleText": "Each Human creature you control has \"{R}, {T}: This creature deals 1 damage to any target.\"",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 6
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Titan of Eternal Fire:1",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{R}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "damageSource": "Self"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "AnyTarget",
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "{R}, {T}: This creature deals 1 damage to any target."
+                },
+                "filter": {
+                    "baseFilter": "creature Human ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "144",
+        "rarity": "RARE",
+        "artist": "Aleksi Briclot",
+        "flavorText": "There is no gift more precious or more perilous than fire.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/eeb8e4df-930c-4fb1-9258-184ff6c415d0.jpg?1783939752"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Titan's Strength
 {
     "name": "Titan's Strength",
@@ -10706,6 +11368,66 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Tormented Hero
+{
+    "name": "Tormented Hero",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "This creature enters tapped.\nHeroic — Whenever you cast a spell that targets this creature, each opponent loses 1 life. You gain life equal to the life lost this way.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tormented Hero:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellTargetsSource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Heroic — Whenever you cast a spell that targets this creature, each opponent loses 1 life. You gain life equal to the life lost this way."
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "rarity": "UNCOMMON",
+        "artist": "Winona Nelson",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/1/c101cf1b-cedf-4b74-9e3c-35f9a8695a8f.jpg?1783939772",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will resolve before the spell that caused them to trigger."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities will trigger only once per spell, even if that spell targets the creature with the heroic ability multiple times."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Heroic abilities won't trigger when a copy of a spell is created on the stack or when a spell's targets are changed to include a creature with a heroic ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -11169,6 +11891,49 @@
     ]
 }
 
+// Viper's Kiss
+{
+    "name": "Viper's Kiss",
+    "manaCost": "{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets -1/-1, and its activated abilities can't be activated.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": -1,
+                "toughnessBonus": -1
+            },
+            {
+                "type": "PreventActivatedAbilities",
+                "filter": {
+                    "cardPredicates": [
+                        "IsPermanent"
+                    ],
+                    "statePredicates": [
+                        "IsAttachedToBySource"
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"I could heal a snakebite. Looks like you got bitten by a constellation.\"\n—Aescalos, healer of Pharika",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/0906ebfc-4756-4caf-83ff-859e181f3bef.jpg?1783939769"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Voyage's End
 {
     "name": "Voyage's End",
@@ -11284,6 +12049,67 @@
     ]
 }
 
+// Warriors' Lesson
+{
+    "name": "Warriors' Lesson",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Until end of turn, up to two target creatures you control each gain \"Whenever this creature deals combat damage to a player, draw a card.\"",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Warriors' Lesson:1",
+                    "trigger": {
+                        "type": "DealsDamageEvent",
+                        "damageType": "DamageCombat",
+                        "recipient": {
+                            "type": "RecipientPlayer",
+                            "player": "Any"
+                        }
+                    },
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "descriptionOverride": "Whenever this creature deals combat damage to a player, draw a card."
+                },
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "184",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Prescott",
+        "flavorText": "\"Let each challenge make you a better warrior.\"\n—Anthousa of Setessa",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/63f7e81a-6f9e-4cad-a911-fba7a431cd55.jpg?1783939734"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Wavecrash Triton
 {
     "name": "Wavecrash Triton",
@@ -11366,6 +12192,134 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Whip of Erebos
+{
+    "name": "Whip of Erebos",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Legendary Enchantment Artifact",
+    "oracleText": "Creatures you control have lifelink.\n{2}{B}{B}, {T}: Return target creature card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step. If it would leave the battlefield, exile it instead of putting it anywhere else. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Whip of Erebos:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}{B}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "storeMovedAs": "moved1"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "moved1",
+                            "ifNotEmpty": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "HASTE",
+                                        "target": {
+                                            "type": "PipelineTarget",
+                                            "collectionName": "moved1"
+                                        },
+                                        "duration": "Permanent"
+                                    },
+                                    {
+                                        "type": "CreateDelayedTrigger",
+                                        "step": "END",
+                                        "effect": {
+                                            "type": "MoveToZone",
+                                            "target": {
+                                                "type": "PipelineTarget",
+                                                "collectionName": "moved1"
+                                            },
+                                            "destination": "Exile"
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantExileOnLeave",
+                                        "target": {
+                                            "type": "PipelineTarget",
+                                            "collectionName": "moved1"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Return target creature card from your graveyard to the battlefield with haste; exile it at the next end step or if it would leave the battlefield"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "LIFELINK",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "rarity": "RARE",
+        "artist": "Yeong-Hao Han",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e5ec47c-47a2-4eda-b81a-4a07f04e5989.jpg?1783939768",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "At the beginning of the next end step, the creature returned to the battlefield with Whip of Erebos is exiled. This is a delayed triggered ability. If the ability is countered, the creature will stay on the battlefield and the delayed trigger won't trigger again. However, the replacement effect will still exile the creature when it eventually leaves the battlefield."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "Whip of Erebos grants haste to the creature that's returned to the battlefield. However, neither of the \"exile\" abilities is granted to that creature. If that creature loses all its abilities, it will still be exiled at the beginning of the end step, and if it would leave the battlefield, it is still exiled instead."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "The exiled creature is never put into the graveyard. Any abilities the creature has that trigger when it dies won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

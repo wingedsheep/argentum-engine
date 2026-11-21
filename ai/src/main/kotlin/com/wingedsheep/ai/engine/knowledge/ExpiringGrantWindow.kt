@@ -394,7 +394,10 @@ internal object ExpiringGrantWindow {
                         alreadyHas || (pendingOnSelf && (keyword != null || payoff.animates))
                     }
                     fresh.any {
-                        canStillFight(state, projected, playerId, it, sourceId, sourceTaps, keyword, payoff.animates, blocks = payoff.blocks)
+                        canStillFight(
+                            state, projected, playerId, it, sourceId, sourceTaps, keyword, payoff.animates,
+                            connects = payoff.connects, blocks = payoff.blocks,
+                        )
                     }
                 }
                 PayoffKind.LAND -> affected.any { canStillMatter(state, projected, playerId, it) }
@@ -438,6 +441,11 @@ internal object ExpiringGrantWindow {
      * our turn, with their attack still to block on theirs. Cast in our second main phase or their
      * end step, the land is a creature until cleanup and nothing else.
      *
+     * So does a **trigger only a fight fires**, granted for the turn — "up to two target creatures
+     * you control each gain 'whenever this creature deals combat damage to a player, draw a card'"
+     * (Warriors' Lesson): cast after the last fight it is a card thrown away, and the
+     * combat-damage-to-a-player form is spent only by an attacker of ours that gets through.
+     *
      * Left out: a stat pump, which is [HoldPolicy]'s combat trick; a keyword-less evasion grant;
      * and haste, whose payoff is lifting the summoning sickness [canStillFight] would count against it.
      *
@@ -446,7 +454,8 @@ internal object ExpiringGrantWindow {
     fun readsSpellKeywordGrant(effect: Effect): Boolean {
         val payoffs = expiringPayoffs(effect, readShrinks = true) ?: return false
         val grants = payoffs.filter { it.kind == PayoffKind.CREATURE }
-        return grants.isNotEmpty() && grants.all { it.animates || it.blocks || (it.keyword != null && it.keyword != HASTE) }
+        return grants.isNotEmpty() &&
+            grants.all { it.animates || it.blocks || it.firesInFight || (it.keyword != null && it.keyword != HASTE) }
     }
 
     /**
@@ -1381,6 +1390,16 @@ internal object ExpiringGrantWindow {
         val animates: Boolean = false,
         /** For a [PayoffKind.CREATURE]: the payoff is only more blocks — see [canStillFight]'s `blocks`. */
         val blocks: Boolean = false,
+        /**
+         * For a [PayoffKind.CREATURE]: the payoff is a trigger granted for the turn that only a fight
+         * fires ([firesOnlyInAFight]) — read with the keyword grants by [readsSpellKeywordGrant].
+         */
+        val firesInFight: Boolean = false,
+        /**
+         * For a [PayoffKind.CREATURE]: that trigger fires only on combat damage to a player — see
+         * [canStillFight]'s `connects`.
+         */
+        val connects: Boolean = false,
         /** For a [PayoffKind.CONNECT]: the creatures of ours whose combat damage fires the trigger. */
         val matching: GameObjectFilter? = null,
         /**
@@ -1554,9 +1573,15 @@ internal object ExpiringGrantWindow {
                 leaf is CreateGlobalTriggeredAbilityEffect && leaf.duration == Duration.EndOfTurn &&
                     combatDamageConnectors(leaf.ability) != null ->
                     payoffs += Payoff(PayoffKind.CONNECT, null, matching = combatDamageConnectors(leaf.ability))
+                // "Until end of turn, up to two target creatures you control each gain 'whenever this
+                // creature deals combat damage to a player, draw a card'" (Warriors' Lesson, Commando
+                // Raid): spent only in this turn's fight, like a keyword grant — and one that pays on a
+                // hit to a player only in our own attack, by a creature that gets through.
                 leaf is GrantTriggeredAbilityEffect && leaf.duration == Duration.EndOfTurn &&
                     firesOnlyInAFight(leaf.ability) ->
-                    payoffs += Payoff(PayoffKind.CREATURE, leaf.target)
+                    payoffs += Payoff(
+                        PayoffKind.CREATURE, leaf.target, firesInFight = true, connects = hitsAPlayerOnly(leaf.ability),
+                    )
                 // "… with '{0}: Switch this creature's power and toughness until end of turn'"
                 // (Wandering Fumarole) granted for the turn: a trick on the holder's own stats,
                 // spent in this turn's fight like the pump it resembles.
@@ -1693,6 +1718,17 @@ internal object ExpiringGrantWindow {
             }
             else -> null
         }
+
+    /**
+     * Whether [ability] — a trigger bound to the creature holding it — fires only on that creature's
+     * combat damage to a player ("whenever this creature deals combat damage to a player, draw a
+     * card"): see [canStillFight]'s `connects`.
+     */
+    private fun hitsAPlayerOnly(ability: TriggeredAbility): Boolean {
+        val pattern = ability.trigger as? EventPattern.DealsDamageEvent ?: return false
+        return ability.binding == TriggerBinding.SELF && pattern.damageType == DamageType.Combat &&
+            pattern.recipient in PLAYER_RECIPIENTS
+    }
 
     private val PLAYER_RECIPIENTS = setOf(Recipient.AnyPlayer, Recipient.Opponent, Recipient.AnotherPlayer)
 
