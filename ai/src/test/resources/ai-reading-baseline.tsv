@@ -551,6 +551,7 @@ Analyze the Pollen
 Anara, Wolvid Familiar
 Anarchist
 Anarchy
+Anax and Cymede
 Anax, Hardened in the Forge
 Ancestor Dragon
 Ancestor's Chosen
@@ -1032,6 +1033,7 @@ Ashiok's Reaper
 Ashiok's Skulker
 Ashiok, Dream Render
 Ashiok, Nightmare Muse	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: Pipeline(exile→?)
+Ashiok, Nightmare Weaver
 Ashiok, Sculptor of Fears
 Ashiok, Wicked Manipulator
 Ashling the Pilgrim
@@ -3195,6 +3197,7 @@ Chromeshell Crab
 Chromium
 Chromium, the Mutable	timing: RemoveAllAbilitiesEffect; timing: SetCreatureSubtypesEffect
 Chronicle of Victory
+Chronicler of Heroes
 Chronosavant
 Chronostutter
 Chthonian Nightmare
@@ -4295,6 +4298,7 @@ Dawnstrider
 Dawnstrike Paladin
 Dawnstrike Vanguard
 Dawnwing Marshal
+Daxos of Meletis
 Daxos, Blessed by the Sun
 Day of Black Sun
 Day of Judgment
@@ -14279,6 +14283,7 @@ Psychic Battle
 Psychic Corrosion
 Psychic Drain
 Psychic Frog
+Psychic Intrusion
 Psychic Membrane
 Psychic Pickpocket
 Psychic Puppetry
@@ -16735,6 +16740,7 @@ Shipwreck Marsh
 Shipwreck Moray
 Shipwreck Sentry
 Shipwreck Sifters
+Shipwreck Singer
 Shire Scarecrow
 Shire Shirriff
 Shire Terrace
@@ -17619,6 +17625,7 @@ Spellbook Vendor
 Spelleater Wolverine
 Spellgorger Weird
 Spellgyre
+Spellheart Chimera
 Spellkeeper Weird
 Spellrune Painter
 Spellscorn Coven
@@ -17995,6 +18002,7 @@ Steal Artifact
 Steal the Show
 Stealer of Secrets
 Stealth Mission
+Steam Augury
 Steam Blast
 Steam Catapult
 Steam Frigate
@@ -20004,6 +20012,7 @@ Trespasser's Curse
 Trestle Troll
 Treva's Attendant
 Treva, the Renewer
+Triad of Fates
 Trial of Agony	polarity: DealDamageEffect; polarity: ForEachEffect; polarity: Pipeline(ChosenTargets→?)
 Trial of Ambition
 Trial of Knowledge
@@ -20348,6 +20357,7 @@ Undertaker
 Undertow
 Underwater Tunnel // Slimy Aquarium
 Underworld Breach
+Underworld Cerberus
 Underworld Charger
 Underworld Coinsmith
 Underworld Dreams
@@ -21939,6 +21949,7 @@ Xantid Swarm
 Xathrid Necromancer
 Xathrid Slyblade
 Xenagos, God of Revels
+Xenagos, the Reveler
 Xenic Poltergeist
 Xenobotanist
 Xerex Strobe-Knight
