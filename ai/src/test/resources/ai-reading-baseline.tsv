@@ -86,7 +86,7 @@ Abzan Monument
 Abzan Runemark
 Abzan Skycaptain
 Academic Ascent
-Academic Dispute	timing: GrantKeywordEffect; timing: MarkMustBlockEffect
+Academic Dispute
 Academic Probation
 Academy Drake
 Academy Instructor
@@ -18288,7 +18288,7 @@ Studious First-Year
 Study Break
 Stuffed Bear
 Stump Stomp
-Stun	timing: CantBlockEffect
+Stun
 Stymied Hopes
 Su-Chi
 Su-Chi Cave Guard
@@ -19687,7 +19687,7 @@ Timeless Lotus
 Timeless Witness
 Timeline Culler
 Timely Hordemate
-Timely Interference	timing: MarkMustBlockEffect
+Timely Interference
 Timesifter	intent: ExileTopCardContestEffect; intent: TakeExtraTurnEffect
 Timestream Navigator
 Timetwister
