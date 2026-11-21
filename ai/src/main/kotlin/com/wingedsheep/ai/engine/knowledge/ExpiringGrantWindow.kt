@@ -1567,6 +1567,12 @@ internal object ExpiringGrantWindow {
                     PayoffKind.SILENCE,
                     (leaf as PreventDamageEffect).target.takeUnless { leaf.sourceFilter is PreventionSourceFilter.Chosen },
                 )
+                // "Target creature blocks this turn if able. You may have it gain reach until end of
+                // turn" (Academic Dispute): the reach only lets the forced blocker meet our flier, so
+                // it is spent in the block the lure drags it into — a rider watching the lure's target.
+                readShrinks && leaf is GrantKeywordEffect && leaf.duration == Duration.EndOfTurn &&
+                    leaf.keyword == Keyword.REACH.name && leaves.any { it is MarkMustBlockEffect && it.target == leaf.target } ->
+                    watchRiders += leaf.target
                 leaf is GrantKeywordEffect && leaf.duration == Duration.EndOfTurn ->
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target, leaf.keyword)
                 // "This creature can block an additional creature this turn" (Coastline Chimera):

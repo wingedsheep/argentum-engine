@@ -86,7 +86,7 @@ Abzan Monument
 Abzan Runemark
 Abzan Skycaptain
 Academic Ascent
-Academic Dispute	timing: GrantKeywordEffect
+Academic Dispute	timing: GrantKeywordEffect; timing: MarkMustBlockEffect
 Academic Probation
 Academy Drake
 Academy Instructor
@@ -2210,6 +2210,7 @@ Boris Devilboon
 Born to Drive
 Borne Upon a Wind	timing: GrantFlashToSpellsEffect
 Boromir, Warden of the Tower
+Boros Battleshaper
 Boros Challenger
 Boros Charm
 Boros Cluestone
@@ -9142,7 +9143,7 @@ Hushwing Gryff
 Hushwood Verge
 Huskburster Swarm
 Hussar Patrol
-Hustle // Bustle
+Hustle // Bustle	timing: MarkMustBlockEffect
 Hyalopterous Lemure
 Hydra Broodmaster
 Hydra Trainer
@@ -19686,7 +19687,7 @@ Timeless Lotus
 Timeless Witness
 Timeline Culler
 Timely Hordemate
-Timely Interference
+Timely Interference	timing: MarkMustBlockEffect
 Timesifter	intent: ExileTopCardContestEffect; intent: TakeExtraTurnEffect
 Timestream Navigator
 Timetwister

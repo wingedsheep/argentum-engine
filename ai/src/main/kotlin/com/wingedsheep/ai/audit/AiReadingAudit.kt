@@ -413,7 +413,11 @@ object AiReadingAudit {
                     // another (Gift of Tusks' "loses all abilities" riding on its 3/3) is read with it.
                     val wholeRead by lazy { ExpiringGrantWindow.hasExpiringReading(spell, creatureGrants = false) }
                     timing(spell, sink) { leaf ->
-                        ExpiringGrantWindow.hasExpiringReading(leaf, creatureGrants = false) || wholeRead ||
+                        // A lure on a spell ("target creature blocks this turn if able") is judged only
+                        // when the whole spell is: castBuysNothing reads every leaf or none, and a
+                        // rider beside the lure (Learn, a draw, a forced attack) leaves it unjudged.
+                        (leaf !is MarkMustBlockEffect && ExpiringGrantWindow.hasExpiringReading(leaf, creatureGrants = false)) ||
+                            wholeRead ||
                             (heldWhole || (leaf is ModifyStatsEffect && IntentTag.COMBAT_TRICK in intent.tags)) ||
                             // A team pump, or a fight trick handed to the team (Dragonrage): HoldPolicy
                             // holds it as a combat trick until the team is in the fight.
@@ -820,12 +824,7 @@ object AiReadingAudit {
             // so it is timed as the whole ability is.
             val ridesOnGrant = expiring is RemoveKeywordEffect && expiring.target == EffectTarget.Self &&
                 expiring.keyword != Keyword.DEFENDER.name && isRead(effect)
-            // "Target creature blocks this turn if able. You may have it gain reach until end of
-            // turn" (Academic Dispute): the reach only lets the forced blocker meet our flier, so it
-            // is spent in the block the lure drags it into and is timed as the lure is.
-            val ridesOnLure = expiring is GrantKeywordEffect &&
-                leaves.any { it is MarkMustBlockEffect && it.target == expiring.target && isRead(it) }
-            if (isRead(leaf) || ridesOnRemoval || ridesOnCopy || spentWithCast || colourOnly || ridesOnGrant || ridesOnLure) {
+            if (isRead(leaf) || ridesOnRemoval || ridesOnCopy || spentWithCast || colourOnly || ridesOnGrant) {
                 sink += Finding(
                     Check.TIMING, read = true, reason = "knows when to spend this until-end-of-turn effect",
                     effectType = label, step = step(leaves, leaf)?.index?.plus(1), stepText = stepText(leaf),

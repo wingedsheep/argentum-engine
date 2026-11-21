@@ -17,7 +17,8 @@ import io.kotest.matchers.shouldNotBe
  *   able and up to one target creature can't attack or block this combat.
  *
  * Covers the active player's forced creature having to attack, an opponent's forced creature having
- * to block, the second target sitting combat out, and both effects ending with the combat phase.
+ * to block, the trigger on the opponent's combat too, the second target sitting combat out, and both
+ * effects ending with the combat phase.
  */
 class BorosBattleshaperScenarioTest : ScenarioTestBase() {
 
@@ -88,6 +89,31 @@ class BorosBattleshaperScenarioTest : ScenarioTestBase() {
                     game.declareNoBlockers().error shouldNotBe null
                 }
                 game.declareBlockers(mapOf("Grizzly Bears" to listOf("Hill Giant"))).error shouldBe null
+            }
+
+            test("it triggers on the opponent's combat too: their forced creature attacks, the restrained one sits out") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Boros Battleshaper")
+                    .withCardOnBattlefield(2, "Grizzly Bears")
+                    .withCardOnBattlefield(2, "Hill Giant")
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val bears = game.findPermanent("Grizzly Bears")!!
+                val giant = game.findPermanent("Hill Giant")!!
+                game.passUntilPhase(Phase.COMBAT, Step.BEGIN_COMBAT)
+                game.chooseBoth(forced = giant, restrained = bears)
+
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                withClue("the Hill Giant must attack") {
+                    game.declareAttackers(emptyMap()).error shouldNotBe null
+                }
+                withClue("the Bears can't attack this combat") {
+                    game.declareAttackers(mapOf("Grizzly Bears" to 1, "Hill Giant" to 1)).error shouldNotBe null
+                }
+                game.declareAttackers(mapOf("Hill Giant" to 1)).error shouldBe null
             }
 
             test("the same creature chosen for both targets can't attack, and is excused from attacking") {

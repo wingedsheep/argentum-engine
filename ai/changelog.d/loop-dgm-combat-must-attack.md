@@ -1,1 +1,1 @@
-- #4793 The AI now judges a "target creature blocks this turn / this combat if able" spell like the same lure on an activation: worth casting only on its own turn before blocks, on an untapped opposing creature, with any reach it grants the forced blocker timed with it.
+- #4793 The AI now refuses a "target creature blocks this turn / this combat if able" activation or lure spell where it buys nothing — on the opponent's turn, or once blocks are past — including any reach it hands the forced blocker.
