@@ -33,6 +33,7 @@ import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.costs.CostAtom
+import com.wingedsheep.sdk.scripting.effects.MarkMustBlockEffect
 import com.wingedsheep.sdk.scripting.effects.ChangeColorToChosenEffect
 import com.wingedsheep.sdk.scripting.effects.DamageCantBePreventedThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.MarkSpellExileWithCountersEffect
@@ -412,7 +413,11 @@ object AiReadingAudit {
                     // another (Gift of Tusks' "loses all abilities" riding on its 3/3) is read with it.
                     val wholeRead by lazy { ExpiringGrantWindow.hasExpiringReading(spell, creatureGrants = false) }
                     timing(spell, sink) { leaf ->
-                        ExpiringGrantWindow.hasExpiringReading(leaf, creatureGrants = false) || wholeRead ||
+                        // A lure on a spell ("target creature blocks this turn if able") is judged only
+                        // when the whole spell is: castBuysNothing reads every leaf or none, and a
+                        // rider beside the lure (Learn, a draw, a forced attack) leaves it unjudged.
+                        (leaf !is MarkMustBlockEffect && ExpiringGrantWindow.hasExpiringReading(leaf, creatureGrants = false)) ||
+                            wholeRead ||
                             (heldWhole || (leaf is ModifyStatsEffect && IntentTag.COMBAT_TRICK in intent.tags)) ||
                             // A team pump, or a fight trick handed to the team (Dragonrage): HoldPolicy
                             // holds it as a combat trick until the team is in the fight.

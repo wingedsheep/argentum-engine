@@ -1,0 +1,1 @@
+- #4793 The AI now refuses a "target creature blocks this turn / this combat if able" activation or lure spell where it buys nothing — on the opponent's turn, or once blocks are past — including any reach it hands the forced blocker.

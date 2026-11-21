@@ -3,6 +3,9 @@ package com.wingedsheep.engine.handlers.effects.combat
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.mechanics.layers.Layer
+import com.wingedsheep.engine.mechanics.layers.SerializableModification
+import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.combat.MustAttackNextCombatComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackNextTurnComponent
@@ -11,6 +14,8 @@ import com.wingedsheep.engine.state.components.combat.MustAttackThisTurnComponen
 import com.wingedsheep.engine.state.components.combat.NamedAttackDefenders
 import com.wingedsheep.engine.state.components.identity.PlayerComponent
 import com.wingedsheep.sdk.core.Phase
+import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.MustAttackDefender
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.scripting.effects.MarkMustAttackEffect
@@ -21,7 +26,8 @@ import kotlin.reflect.KClass
  * Executor for [MarkMustAttackEffect]: puts the requirement for its window on the target creature
  * — [MustAttackThisTurnComponent] for this turn, [MustAttackDefendersThisTurnComponent] when the
  * effect names the player or planeswalker to attack (encore), [MustAttackNextCombatComponent] for
- * its controller's next combat phase, or [MustAttackNextTurnComponent] for its controller's next
+ * its controller's next combat phase, a floating `SetMustAttack` that ends with the current combat
+ * phase for this combat, or [MustAttackNextTurnComponent] for its controller's next
  * turn (Gideon, Battle-Forged).
  */
 class MarkMustAttackExecutor : EffectExecutor<MarkMustAttackEffect> {
@@ -54,6 +60,15 @@ class MarkMustAttackExecutor : EffectExecutor<MarkMustAttackEffect> {
                     }
                 }
             }
+            // "Attacks this combat if able": a floating requirement that the end of this combat
+            // phase sweeps away, so an extra combat later in the turn doesn't inherit it.
+            MustAttackWindow.ThisCombat -> state.addFloatingEffect(
+                layer = Layer.ABILITY,
+                modification = SerializableModification.SetMustAttack(MustAttackDefender.Any),
+                affectedEntities = setOf(targetId),
+                duration = Duration.EndOfCombat,
+                context = context
+            )
             MustAttackWindow.ControllersNextTurn -> {
                 val named = effect.defender?.let {
                     resolveDefender(state, it, context) ?: return EffectResult.success(state)

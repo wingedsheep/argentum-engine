@@ -228,6 +228,102 @@
     ]
 }
 
+// Boros Battleshaper
+{
+    "name": "Boros Battleshaper",
+    "manaCost": "{5}{R}{W}",
+    "typeLine": "Creature — Minotaur Soldier",
+    "oracleText": "At the beginning of each combat, up to one target creature attacks or blocks this combat if able and up to one target creature can't attack or block this combat.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Boros Battleshaper:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MarkMustAttack",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "window": "ThisCombat"
+                        },
+                        {
+                            "type": "MarkMustBlock",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "EndOfCombat"
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "CantAttack",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    },
+                                    "duration": "EndOfCombat"
+                                },
+                                {
+                                    "type": "CantBlockTargetCreatures",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    },
+                                    "duration": "EndOfCombat"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "additionalTargetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros",
+        "flavorText": "Leaders shape the minds of their allies. It takes a master to shape the minds of enemies.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6c43e449-acf2-4e94-b7cf-8c84d70191da.jpg?1783940032"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Boros Cluestone
 {
     "name": "Boros Cluestone",

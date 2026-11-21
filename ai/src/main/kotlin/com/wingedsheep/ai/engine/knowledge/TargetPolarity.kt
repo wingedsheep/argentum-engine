@@ -132,7 +132,7 @@ import com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.MarkExileOnDeathEffect
 import com.wingedsheep.sdk.scripting.effects.MustBeBlockedEffect
 import com.wingedsheep.sdk.scripting.effects.MarkMustAttackEffect
-import com.wingedsheep.sdk.scripting.effects.MarkMustBlockThisTurnEffect
+import com.wingedsheep.sdk.scripting.effects.MarkMustBlockEffect
 import com.wingedsheep.sdk.scripting.effects.ForceBlockEffect
 import com.wingedsheep.sdk.scripting.effects.TransformEffect
 import com.wingedsheep.sdk.scripting.effects.TurnFaceDownEffect
@@ -565,7 +565,7 @@ object TargetPolarityAnalyzer {
         // "Target creature blocks this turn if able. You may have it gain reach until end of turn"
         // (Academic Dispute): the reach lets the forced blocker meet our flier — part of dragging it
         // into the block, not a gift to it.
-        val forcedBlockers = targetLeaves(effect).filterIsInstance<MarkMustBlockThisTurnEffect>().mapTo(HashSet()) { it.target }
+        val forcedBlockers = targetLeaves(effect).filterIsInstance<MarkMustBlockEffect>().mapTo(HashSet()) { it.target }
         for (leaf in targetLeaves(effect)) {
             if (blinks.any { it === leaf }) continue
             if (leaf is GrantKeywordEffect && leaf.keyword == Keyword.REACH.name && leaf.target in forcedBlockers) continue
@@ -1994,7 +1994,7 @@ object TargetPolarityAnalyzer {
             // "Target creature blocks this turn if able" (Peema Aether-Seer, Culvert Ambusher):
             // takes the block choice away from its controller, dragging the creature into a block
             // it would not have made — the opponent's creature, like "can't block" above.
-            is MarkMustBlockThisTurnEffect -> leaf.target to TargetPolarity.HARMFUL
+            is MarkMustBlockEffect -> leaf.target to TargetPolarity.HARMFUL
             // "Target creature an opponent controls attacks … if able" (Alluring Siren, Gideon,
             // Battle-Forged): the attack choice taken away — the attacking mirror of the forced block.
             is MarkMustAttackEffect -> leaf.target to TargetPolarity.HARMFUL

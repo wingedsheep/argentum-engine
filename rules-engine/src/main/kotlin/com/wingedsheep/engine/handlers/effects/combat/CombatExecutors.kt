@@ -36,7 +36,7 @@ class CombatExecutors(
         OpponentGuessesTopCardKindExecutor(),
         PlayerGuessesConditionExecutor(),
         MarkMustAttackExecutor(),
-        MarkMustBlockThisTurnExecutor(),
+        MarkMustBlockExecutor(),
         GoadExecutor(),
         CanAttackDespiteDefenderThisTurnExecutor(),
         RedirectNextDamageExecutor(),

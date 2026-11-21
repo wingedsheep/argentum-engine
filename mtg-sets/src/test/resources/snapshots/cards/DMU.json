@@ -16326,7 +16326,7 @@
                         "condition": "WasKicked"
                     },
                     "then": {
-                        "type": "MarkMustBlockThisTurn",
+                        "type": "MarkMustBlock",
                         "target": {
                             "type": "BoundVariable",
                             "name": "t0"
