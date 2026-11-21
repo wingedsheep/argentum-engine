@@ -391,9 +391,10 @@ class ObjectTriggerSubject internal constructor(
     fun becomesUntapped(): TriggerSpec = spec(UntapEvent(filter = filter))
 
     /**
-     * "Whenever you tap this land for mana" — a *non-mana* rider on the land's own mana ability
-     * (Forbidden Orchard). It fires however the land was tapped to pay (manual activation or
-     * auto-pay) and goes on the stack, so it may target. A rider that *adds* mana is a triggered
+     * "Whenever you tap this land / creature for mana" — a *non-mana* rider on the permanent's own
+     * {T} mana ability (Forbidden Orchard, Zhur-Taa Druid). Under [Triggers.self] it names no
+     * permanent type: the source is the permanent, whatever it is. It fires however the permanent
+     * was tapped to pay (manual activation or auto-pay) and goes on the stack, so it may target. A rider that *adds* mana is a triggered
      * mana ability (CR 605.1b) — author that as `AdditionalManaOnSourceTap`.
      *
      * Under [Triggers.attached] it is "Whenever enchanted / fortified land is tapped for mana"
@@ -404,8 +405,12 @@ class ObjectTriggerSubject internal constructor(
     fun tappedForMana(): TriggerSpec {
         only("tappedForMana", TriggerBinding.SELF, TriggerBinding.ATTACHED)
         unfiltered("tappedForMana")
-        val tapper = if (binding == TriggerBinding.ATTACHED) Player.Each else Player.You
-        return spec(PermanentTappedForMana(player = tapper, permanentFilter = GameObjectFilter.Land))
+        // ATTACHED is "enchanted / fortified land"; SELF is this permanent, land or not.
+        return if (binding == TriggerBinding.ATTACHED) {
+            spec(PermanentTappedForMana(player = Player.Each, permanentFilter = GameObjectFilter.Land))
+        } else {
+            spec(PermanentTappedForMana(player = Player.You, permanentFilter = null))
+        }
     }
 
     /**

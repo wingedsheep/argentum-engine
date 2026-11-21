@@ -10289,7 +10289,8 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   *projected* characteristics, and the tapped permanent is the triggering entity, so the effect can act on it
   ("gain control of **that artifact**"; it is gone if a Treasure was sacrificed for the mana, and the control
   change finds nothing). `Triggers.self.tappedForMana()`
-  is "whenever you tap **this** land for mana" (Forbidden Orchard — no subject filter);
+  is "whenever you tap **this** land / creature for mana" (Forbidden Orchard, Zhur-Taa Druid — no type
+  filter: the source is whatever permanent it is, so a mana creature's rider fires too);
   `Triggers.attached.tappedForMana()` is "whenever enchanted / fortified land is tapped for mana" (C.A.M.P.)
   — by any player (`Player.Each`), detected on the ATTACHED path. The event carries the colors the permanent's
   mana ability produced (`PermanentTappedForManaEvent.producedColors` → `TriggerContext.producedManaColors`);

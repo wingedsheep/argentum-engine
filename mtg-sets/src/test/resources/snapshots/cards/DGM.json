@@ -4133,3 +4133,60 @@
         "BLACK"
     ]
 }
+
+// Zhur-Taa Druid
+{
+    "name": "Zhur-Taa Druid",
+    "manaCost": "{R}{G}",
+    "typeLine": "Creature — Human Druid",
+    "oracleText": "{T}: Add {G}.\nWhenever you tap this creature for mana, it deals 1 damage to each opponent.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Zhur-Taa Druid:2",
+                "trigger": {
+                    "type": "PermanentTappedForMana",
+                    "player": "You"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "descriptionOverride": "Whenever you tap this creature for mana, it deals 1 damage to each opponent."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Zhur-Taa Druid:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "artist": "Mark Winters",
+        "flavorText": "\"Only the decadent think magic should be pristine and without cost.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd565782-8b2f-4b9f-a62d-4af60af20a82.jpg?1783940018"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
