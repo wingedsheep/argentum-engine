@@ -25,7 +25,8 @@ class SpellDamageObserverSynergyAiTest : ScenarioTestBase() {
         }
 
         test("a creature-damage observer is not a spells payoff") {
-            axes("Grizzly Bears").rewards shouldNotContain SynergyAxis.SPELLS
+            // "Whenever a creature you control deals combat damage to a player" (Lavacore Elemental).
+            axes("Lavacore Elemental").rewards shouldNotContain SynergyAxis.SPELLS
         }
     }
 }

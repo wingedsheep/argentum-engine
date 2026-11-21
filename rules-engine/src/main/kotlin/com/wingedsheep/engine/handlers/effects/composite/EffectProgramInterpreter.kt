@@ -1,6 +1,5 @@
 package com.wingedsheep.engine.handlers.effects.composite
 
-import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.engine.core.CursorStep
 import com.wingedsheep.engine.core.EffectProgram
 import com.wingedsheep.engine.core.EntryDelta
@@ -250,15 +249,17 @@ class EffectProgramInterpreter(
 
         /**
          * "Deals 4 damage to target creature and 2 damage to that creature's controller" is one
-         * damage instruction authored as two adjacent damage steps: a damage effect directly after
-         * a damage effect with the same source in the same sequence continues it.
+         * damage instruction authored as two adjacent damage steps: a damage step directly after
+         * a damage step with the same source in the same sequence continues it. A step is a damage
+         * effect or a simultaneous damage loop ("2 damage to each creature and each player",
+         * Volcanic Fallout's two loops).
          */
         private fun continuesDamageInstruction(leaf: Effect, path: List<Int>): Boolean {
-            if (leaf !is DealDamageEffect) return false
+            val damage = simultaneousDamageOf(leaf) ?: return false
             val index = path.lastOrNull() ?: return false
             if (index == 0) return false
-            val previous = scopes.last().composite.effects[index - 1] as? DealDamageEffect ?: return false
-            return previous.damageSource == leaf.damageSource
+            val previous = simultaneousDamageOf(scopes.last().composite.effects[index - 1]) ?: return false
+            return previous.damageSource == damage.damageSource
         }
 
         /**

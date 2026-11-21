@@ -1,5 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
@@ -94,11 +97,10 @@ class BlazeCommandoScenarioTest : ScenarioTestBase() {
                 game.soldiers().size shouldBe 4
             }
 
-            test("an opponent's spell and creature combat damage don't trigger it") {
+            test("an opponent's spell doesn't trigger it") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
                     .withCardOnBattlefield(1, "Blaze Commando")
-                    .withCardOnBattlefield(1, "Grizzly Bears")
                     .withCardInHand(2, "Lightning Bolt")
                     .withLandsOnBattlefield(2, "Mountain", 1)
                     .withCardInLibrary(1, "Mountain")
@@ -110,6 +112,38 @@ class BlazeCommandoScenarioTest : ScenarioTestBase() {
                 game.resolveStack()
                 game.getLifeTotal(1) shouldBe 17
                 game.soldiers().size shouldBe 0
+            }
+
+            test("a spell that makes creatures fight deals no damage itself") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Blaze Commando")
+                    .withCardOnBattlefield(1, "Hill Giant")
+                    .withCardOnBattlefield(2, "Grizzly Bears")
+                    .withCardInHand(1, "Prey Upon")
+                    .withLandsOnBattlefield(1, "Forest", 1)
+                    .withCardInLibrary(1, "Mountain")
+                    .withCardInLibrary(2, "Mountain")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                val targets = listOf(game.findPermanent("Hill Giant")!!, game.findPermanent("Grizzly Bears")!!)
+                    .map { ChosenTarget.Permanent(it) }
+                val prey = game.state.getHand(game.player1Id)
+                    .first { game.state.getEntity(it)?.get<CardComponent>()?.name == "Prey Upon" }
+                game.execute(CastSpell(game.player1Id, prey, targets)).error shouldBe null
+                game.resolveStack()
+                game.isInGraveyard(2, "Grizzly Bears") shouldBe true
+                withClue("the creatures deal the damage, not the spell") { game.soldiers().size shouldBe 0 }
+            }
+
+            test("a sweeper's two loops are one \"deals\"") {
+                val game = board("Volcanic Fallout", opponentCreatures = listOf("Grizzly Bears"))
+                game.castSpell(1, "Volcanic Fallout").error shouldBe null
+                game.resolveStack()
+                game.isInGraveyard(2, "Grizzly Bears") shouldBe true
+                game.getLifeTotal(2) shouldBe 18
+                withClue("each creature and each player is one instruction") { game.soldiers().size shouldBe 2 }
             }
 
             test("its own combat damage doesn't trigger it") {
