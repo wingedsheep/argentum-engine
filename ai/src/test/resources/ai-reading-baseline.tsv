@@ -2072,7 +2072,7 @@ Body Dropper
 Body Launderer
 Body of Knowledge
 Body of Research
-Bofur, Reliable Guardian	timing: GrantKeywordEffect
+Bofur, Reliable Guardian
 Bog Badger
 Bog Elemental
 Bog Glider
@@ -5776,7 +5776,7 @@ Enchantment Alteration	intent: AttachToChosenHostEffect; polarity: AttachToChose
 Enchantress's Presence
 Encircling Fissure
 Encounter the Unknown
-Encouraging Aviator	timing: GrantKeywordEffect
+Encouraging Aviator
 Encroaching Dragonstorm
 Encroaching Mycosynth
 Encroaching Wastes
@@ -9143,7 +9143,7 @@ Hushwing Gryff
 Hushwood Verge
 Huskburster Swarm
 Hussar Patrol
-Hustle // Bustle	timing: MarkMustBlockEffect
+Hustle // Bustle
 Hyalopterous Lemure
 Hydra Broodmaster
 Hydra Trainer
@@ -20205,7 +20205,7 @@ Twitching Doll
 Two-Headed Cerberus
 Two-Headed Giant	intent: FlipTwoCoinsEffect
 Two-Headed Giant of Foriys
-Two-Headed Hunter	timing: GrantKeywordEffect
+Two-Headed Hunter
 Two-Headed Sliver
 Two-Headed Zombie
 Ty Lee, Artful Acrobat
