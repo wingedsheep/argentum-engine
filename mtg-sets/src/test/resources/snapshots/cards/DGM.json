@@ -623,6 +623,75 @@
     ]
 }
 
+// Carnage Gladiator
+{
+    "name": "Carnage Gladiator",
+    "manaCost": "{2}{B}{R}",
+    "typeLine": "Creature — Skeleton Warrior",
+    "oracleText": "Whenever a creature blocks, that creature's controller loses 1 life.\n{1}{B}{R}: Regenerate this creature.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Carnage Gladiator:1",
+                "trigger": {
+                    "type": "BlockEvent",
+                    "filter": "creature"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "ControllerOfTriggeringEntity"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Carnage Gladiator:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{B}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Barger",
+        "flavorText": "Not the foulest or bloodiest act at Rix Maadi by a stretch.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/20bde6c1-917c-4860-a8d0-a9d7c461f8d2.jpg?1783940031",
+        "rulings": [
+            {
+                "date": "2017-03-14",
+                "text": "Carnage Gladiator's ability triggers whenever any creature blocks, regardless of who controls that creature or which creature it blocked."
+            },
+            {
+                "date": "2017-03-14",
+                "text": "If a creature can block multiple creatures and does so, Carnage Gladiator's ability triggers only once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Catch // Release
 {
     "name": "Catch // Release",
@@ -1047,6 +1116,43 @@
     ]
 }
 
+// Gleam of Battle
+{
+    "name": "Gleam of Battle",
+    "manaCost": "{4}{R}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a creature you control attacks, put a +1/+1 counter on it.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gleam of Battle:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "TriggeringEntity"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "rarity": "UNCOMMON",
+        "artist": "Raymond Swanland",
+        "flavorText": "Every soldier returns from battle changed: by hardship, by blood, by a glimpse of glory.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/5/e5f0feef-1a71-4c8c-9fd1-f5cbe718a988.jpg?1783940028"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Golgari Cluestone
 {
     "name": "Golgari Cluestone",
@@ -1305,6 +1411,119 @@
     ]
 }
 
+// Hired Torturer
+{
+    "name": "Hired Torturer",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Defender\n{3}{B}, {T}: Target opponent loses 2 life, then reveals a card at random from their hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hired Torturer:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{B}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand",
+                                        "player": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "Random",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected1"
+                                },
+                                {
+                                    "type": "RevealCollection",
+                                    "from": "selected1"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "artist": "Winona Nelson",
+        "flavorText": "\"Follow your passion, I always say. Might as well get paid to do what you love.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/62e9f79e-6606-4c9b-838c-eda5d8cc612c.jpg?1783940039",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "The card stops being revealed after Hired Torturer's ability resolves."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You can choose an opponent with no cards in hand as the target of Hired Torturer's ability. If the target opponent has no cards in hand when the ability resolves, that player will just lose 2 life."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Each card in the opponent's hand has an equal chance of being revealed, even if it was previously revealed because of Hired Torturer's ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Izzet Cluestone
 {
     "name": "Izzet Cluestone",
@@ -1428,6 +1647,172 @@
     ]
 }
 
+// Korozda Gorgon
+{
+    "name": "Korozda Gorgon",
+    "manaCost": "{3}{B}{G}",
+    "typeLine": "Creature — Gorgon",
+    "oracleText": "Deathtouch\n{2}, Remove a +1/+1 counter from a creature you control: Target creature gets -1/-1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Korozda Gorgon:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "filter": "creature ctrl:you"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}, Remove a +1/+1 counter from a creature you control: Target creature gets -1/-1 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "UNCOMMON",
+        "artist": "Volkan Baǵa",
+        "flavorText": "\"Welcome to my collection.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/0/7006e5b9-d6a3-43ce-904b-b2ac0fea67e5.jpg?1783940028"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
+// Krasis Incubation
+{
+    "name": "Krasis Incubation",
+    "manaCost": "{2}{G}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature can't attack or block, and its activated abilities can't be activated.\n{1}{G}{U}, Return this Aura to its owner's hand: Put two +1/+1 counters on enchanted creature.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Krasis Incubation:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{G}{U}"
+                            }
+                        },
+                        "CostReturnSelfToHand"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": "EnchantedCreature"
+                },
+                "descriptionOverride": "{1}{G}{U}, Return this Aura to its owner's hand: Put two +1/+1 counters on enchanted creature."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "PreventActivatedAbilities",
+                "filter": {
+                    "cardPredicates": [
+                        "IsPermanent"
+                    ],
+                    "statePredicates": [
+                        "IsAttachedToBySource"
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "rarity": "UNCOMMON",
+        "artist": "Marco Nelor",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8da986da-e8ee-4b53-8bbd-9285d0f7f3cb.jpg?1783940027",
+        "rulings": [
+            {
+                "date": "2016-06-08",
+                "text": "Activated abilities contain a colon. They're generally written \"[Cost]: [Effect].\" Some keywords are activated abilities and will have colons in their reminder text."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Returning Krasis Incubation to its owner's hand is part of the cost to activate its last ability. Once that ability is announced, players can't respond to it until after you've paid its activation cost and returned Krasis Incubation to hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Kraul Warrior
 {
     "name": "Kraul Warrior",
@@ -1472,6 +1857,129 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Legion's Initiative
+{
+    "name": "Legion's Initiative",
+    "manaCost": "{R}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Red creatures you control get +1/+0.\nWhite creatures you control get +0/+1.\n{R}{W}, Exile this enchantment: Exile all creatures you control. At the beginning of the next combat, return those cards to the battlefield under their owner's control and those creatures gain haste until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Legion's Initiative:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{R}{W}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "creature",
+                                "player": "You"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "step": "BEGIN_COMBAT",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "gathered0",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield"
+                                        },
+                                        "storeMovedAs": "moved2",
+                                        "underOwnersControl": true
+                                    },
+                                    {
+                                        "type": "ForEach",
+                                        "space": {
+                                            "type": "IterationSpace.Collection",
+                                            "collection": "moved2"
+                                        },
+                                        "body": {
+                                            "type": "GrantKeyword",
+                                            "keyword": "HASTE",
+                                            "target": "IterationEntity"
+                                        }
+                                    }
+                                ]
+                            },
+                            "carryCollections": [
+                                "gathered0"
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "Exile all creatures you control. At the beginning of the next combat, return them with haste."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": "creature red ctrl:you"
+                }
+            },
+            {
+                "type": "ModifyStats",
+                "powerBonus": 0,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature white ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "MYTHIC",
+        "artist": "Jaime Jones",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/672051a6-d232-4546-842a-369d412c38d2.jpg?1783940026",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "The beginning of the next combat will happen even if the player whose turn it is doesn't intend to attack with any creatures."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "A creature that's both red and white will get +1/+1 from Legion's Initiative."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
     ]
 }
 
@@ -2006,6 +2514,87 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Morgue Burst
+{
+    "name": "Morgue Burst",
+    "manaCost": "{4}{B}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target creature card from your graveyard to your hand. Morgue Burst deals damage to any target equal to the power of the card returned this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "StoreNumber",
+                    "name": "morgue_burst_power",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "Power"
+                    }
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "VariableReference",
+                        "variableName": "morgue_burst_power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "damageSource": "Self"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "AnyTarget",
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "artist": "Raymond Swanland",
+        "flavorText": "\"Let him in. He's on the list.\"\n—Olrich, Rakdos club owner",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b3c2909-87ab-4027-9b56-58a2abae3fa3.jpg?1783940025",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Use the power of the card as it last existed in your graveyard to determine how much damage will be dealt."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the creature card is an illegal target when Morgue Burst tries to resolve (most likely because it was exiled in response), it won't be returned to your hand and no damage will be dealt to the target."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -2592,6 +3181,106 @@
     ]
 }
 
+// Pyrewild Shaman
+{
+    "name": "Pyrewild Shaman",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Goblin Shaman",
+    "oracleText": "Bloodrush — {1}{R}, Discard this card: Target attacking creature gets +3/+1 until end of turn.\nWhenever one or more creatures you control deal combat damage to a player, if this card is in your graveyard, you may pay {3}. If you do, return this card to your hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pyrewild Shaman:2",
+                "trigger": "OneOrMoreDealCombatDamageToPlayerEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{3}"
+                        }
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Hand",
+                        "fromZone": "Graveyard"
+                    }
+                },
+                "activeZones": [
+                    "Graveyard"
+                ],
+                "interveningIf": {
+                    "type": "SourceInZone",
+                    "zones": [
+                        "Graveyard"
+                    ]
+                },
+                "descriptionOverride": "Whenever one or more creatures you control deal combat damage to a player, if this card is in your graveyard, you may pay {3}. If you do, return this card to your hand."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Pyrewild Shaman:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{R}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature attacking"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Bloodrush — {1}{R}, Discard this card: Target attacking creature gets +3/+1 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "RARE",
+        "artist": "Lucas Graciano",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8c6f6e45-f613-420d-83d2-d93c643265ee.jpg?1783940037"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Rakdos Cluestone
 {
     "name": "Rakdos Cluestone",
@@ -2729,6 +3418,131 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Renegade Krasis
+{
+    "name": "Renegade Krasis",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Beast Mutant",
+    "oracleText": "Evolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)\nWhenever this creature evolves, put a +1/+1 counter on each other creature you control with a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "EVOLVE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Renegade Krasis:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "EmitKeywordCounterEvent",
+                            "keyword": "EVOLVE"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Power"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Power"
+                            }
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Toughness"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Toughness"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Evolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)"
+            },
+            {
+                "id": "Renegade Krasis:2",
+                "trigger": "EvolvedEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "PLUS_ONE_PLUS_ONE"
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            },
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever this creature evolves, put a +1/+1 counter on each other creature you control with a +1/+1 counter on it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "RARE",
+        "artist": "Howard Lyon",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/23b68921-0c34-4d92-83c3-21542f62c7f6.jpg?1783940034",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Renegade Krasis “evolves” when its evolve ability resolves and a +1/+1 counter is put on it. If a replacement effect such as Doubling Season’s causes the evolve ability to put more than one +1/+1 counter on Renegade Krasis, its last ability triggers only once. If no +1/+1 counter is put on it (perhaps because it left the battlefield in response to its evolve ability triggering), then its last ability doesn’t trigger."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Renegade Krasis’s last ability won’t trigger if a +1/+1 counter is put on it for any reason other than its evolve ability resolving."
+            }
+        ]
+    }
 }
 
 // Riot Control
@@ -3174,6 +3988,63 @@
     ]
 }
 
+// Scion of Vitu-Ghazi
+{
+    "name": "Scion of Vitu-Ghazi",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "When this creature enters, if you cast it from your hand, create a 1/1 white Bird creature token with flying, then populate. (Create a token that's a copy of a creature token you control.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Scion of Vitu-Ghazi:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "WHITE"
+                            ],
+                            "creatureTypes": [
+                                "Bird"
+                            ],
+                            "keywords": [
+                                "FLYING"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b0c59f8-b407-47e7-8885-8c968f4ceecf.jpg?1783914993"
+                        },
+                        {
+                            "type": "CreateTokenCopyOfChosenPermanent",
+                            "filter": "creature token"
+                        }
+                    ]
+                },
+                "interveningIf": "WasCastFromHand"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "RARE",
+        "artist": "Willian Murai",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3cd20865-0a9a-4a72-92f9-77c8d6384b46.jpg?1783940044"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Selesnya Cluestone
 {
     "name": "Selesnya Cluestone",
@@ -3237,6 +4108,77 @@
     "colorIdentityOverride": [
         "GREEN",
         "WHITE"
+    ]
+}
+
+// Showstopper
+{
+    "name": "Showstopper",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Until end of turn, creatures you control gain \"When this creature dies, it deals 2 damage to target creature an opponent controls.\"",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            "body": {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Showstopper:1",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "from": "Battlefield",
+                        "to": "Graveyard"
+                    },
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        },
+                        "id": "t0"
+                    },
+                    "descriptionOverride": "When this creature dies, it deals 2 damage to target creature an opponent controls."
+                },
+                "target": "IterationEntity"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Prescott",
+        "flavorText": "The audience quickly realized a few things: it wasn't a magic trick, there wasn't candy in there, and they'd need new clothes.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2fd1f68b-3f16-484e-95c9-5cfa8da218c9.jpg?1783940021",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Creatures that come under your control after Showstopper resolves won't have the ability."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If another player gains control of a creature you control after Showstopper resolves, and then later that turn that creature dies, the creature's controller when it died controls the triggered ability. That player chooses a creature that one of their opponents controls as a target."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -3674,6 +4616,75 @@
     ]
 }
 
+// Tithe Drinker
+{
+    "name": "Tithe Drinker",
+    "manaCost": "{W}{B}",
+    "typeLine": "Creature — Vampire",
+    "oracleText": "Lifelink (Damage dealt by this creature also causes you to gain that much life.)\nExtort (Whenever you cast a spell, you may pay {W/B}. If you do, each opponent loses 1 life and you gain that much life.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tithe Drinker:1",
+                "trigger": "SpellCastEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{W/B}"
+                        }
+                    },
+                    "then": {
+                        "type": "DrainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "descriptionOverride": "Extort (Whenever you cast a spell, you may pay {W/B}. If you do, each opponent loses 1 life and you gain that much life.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e069aa06-35b0-4af8-89cb-af653708ed32.jpg?1783940020",
+        "rulings": [
+            {
+                "date": "2024-01-12",
+                "text": "You may pay {W/B} a maximum of one time for each extort triggered ability. You decide whether to pay when the ability resolves."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "The amount of life you gain from extort is based on the total amount of life lost, not necessarily the number of opponents you have. For example, if your opponent's life total can't change (perhaps because that player controls Platinum Emperion), you won't gain any life."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "The extort ability doesn't target any player."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "The extort ability resolves before the spell that caused it to trigger. The ability resolves even if that spell is countered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Ubul Sar Gatekeepers
 {
     "name": "Ubul Sar Gatekeepers",
@@ -3988,6 +4999,128 @@
     ]
 }
 
+// Weapon Surge
+{
+    "name": "Weapon Surge",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control gets +1/+0 and gains first strike until end of turn.\nOverload {1}{R} (You may cast this spell for its overload cost. If you do, change \"target\" in its text to \"each.\")",
+    "keywords": [
+        "OVERLOAD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Overload",
+            "cost": "{1}{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ],
+        "overloadSpellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "FIRST_STRIKE",
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "artist": "Jason Felix",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f28df164-8bff-4428-b7dd-2974c288f1d3.jpg?1783940036",
+        "rulings": [
+            {
+                "date": "2024-01-12",
+                "text": "Because a spell with overload doesn't target when its overload cost is paid, it may affect permanents with hexproof or with protection from the appropriate color."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "If you don't pay the overload cost of a spell with overload, that spell will have a single target. If you pay the overload cost, the spell won't have any targets."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying (such as an overload cost), add any cost increases, then apply any cost reductions. The mana value of the spell remains unchanged, no matter what the total cost to cast it was."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "If you are instructed to cast a spell with overload \"without paying its mana cost,\" you can't choose to pay its overload cost instead."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Wear // Tear
 {
     "name": "Wear // Tear",
@@ -4131,6 +5264,37 @@
     "colorIdentityOverride": [
         "BLUE",
         "BLACK"
+    ]
+}
+
+// Zhur-Taa Ancient
+{
+    "name": "Zhur-Taa Ancient",
+    "manaCost": "{3}{R}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Whenever a player taps a land for mana, that player adds one mana of any type that land produced.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 5
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "AdditionalManaOnSourceTap",
+                "sourceFilter": "land"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "rarity": "RARE",
+        "artist": "Adam Paquette",
+        "flavorText": "Many Ravnicans think of nature as orderly groves and elf-tended rot farms. They haven't seen the Gruul wilds.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/2076308f-0f4e-4b31-9e75-c2965942e7d1.jpg?1783940018"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
     ]
 }
 

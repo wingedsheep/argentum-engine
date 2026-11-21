@@ -74,6 +74,8 @@ class FacadeBoundaryTest : FunSpec({
             "CreateDelayedTriggerEffect.carryCollections names the collections the delayed trigger remembers",
         "grn/cards/MnemonicBetrayal.kt" to
             "CreateDelayedTriggerEffect.carryCollections names the collections the delayed trigger remembers",
+        "dgm/cards/LegionsInitiative.kt" to
+            "CreateDelayedTriggerEffect.carryCollections names the collections the delayed trigger remembers",
         "lgn/cards/PlanarGuide.kt" to
             "CreateDelayedTriggerEffect.carryCollections names the collections the delayed trigger remembers",
         "mh3/cards/GlimpseTheImpossible.kt" to

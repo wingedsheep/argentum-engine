@@ -1,0 +1,2 @@
+- #<pr> An Arrest-style Aura whose own self-bounce or self-sacrifice activation gifts the host (Krasis Incubation's "return this Aura: put two +1/+1 counters on enchanted creature") is still read as a curse and goes on the opponent's creature.
+- #<pr> An instant that grants creatures an until-end-of-turn "when this creature dies" trigger (Showstopper) is no longer cast where none of them can die before cleanup (our second main phase, the opponent's end step with an empty stack).

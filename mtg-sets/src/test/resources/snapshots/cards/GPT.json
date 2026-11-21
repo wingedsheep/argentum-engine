@@ -146,6 +146,70 @@
     ]
 }
 
+// Feral Animist
+{
+    "name": "Feral Animist",
+    "manaCost": "{1}{R}{G}",
+    "typeLine": "Creature — Goblin Shaman",
+    "oracleText": "{3}: This creature gets +X/+0 until end of turn, where X is its power.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Feral Animist:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "IfPositive",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "Self",
+                            "numericProperty": "Power"
+                        }
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "{3}: This creature gets +X/+0 until end of turn, where X is its power."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "UNCOMMON",
+        "artist": "Ron Spears",
+        "flavorText": "He chanted over a pot of boiling blood and honey. His brain buzzed like a nest of hornets, and his muscles rippled with the might of the bear.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/ad65c721-b601-46f9-ba0b-ac4d96567cee.jpg?1783943479",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "You don't choose the value of X. The bonus Feral Animist gets is based on its power when the ability resolves. For example, if you activate the ability twice, the first ability will give it +2/+0 and the second one will give it +4/+0."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If this creature's power is negative as its ability resolves, X is considered to be 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Frazzle
 {
     "name": "Frazzle",
