@@ -709,19 +709,24 @@ class PipelineBuilder private constructor(private val shared: Shared) {
      * categories. Returns the collection of everyone's picks; feed it to [exclude] for "the rest",
      * or — with [purpose] [CategoryPickPurpose.SACRIFICE] — straight to [sacrifice] for a
      * per-category edict ("sacrifices an artifact creature and a nonartifact creature").
+     * [distinctPicks] makes each permanent answer only one category and forces as many picks as the
+     * board allows — the overlapping-category edict ("sacrifices an artifact, a creature, an
+     * enchantment, a land, and a planeswalker", Release).
      */
     fun chooseOnePerCategory(
         from: CollectionSlot,
         categories: List<GameObjectFilter>,
         name: String? = null,
-        purpose: CategoryPickPurpose = CategoryPickPurpose.KEEP
+        purpose: CategoryPickPurpose = CategoryPickPurpose.KEEP,
+        distinctPicks: Boolean = false
     ): CollectionSlot {
         val slot = CollectionSlot(slotKey(if (purpose == CategoryPickPurpose.KEEP) "kept" else "picked", nextIndex(), name))
         steps += ChooseOnePerCategoryEffect(
             from = from.key,
             categories = categories,
             storeAs = slot.key,
-            purpose = purpose
+            purpose = purpose,
+            distinctPicks = distinctPicks
         )
         return slot
     }

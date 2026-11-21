@@ -2477,7 +2477,17 @@ data class FilterCollectionEffect(
  * [CategoryPickPurpose.SACRIFICE] and feeds the picks themselves to the move step, so every pick is
  * sacrificed at once rather than one edict after another. Give a SACRIFICE step **disjoint**
  * categories: the picks are deduplicated (so a keep can spare one permanent as several types), so
- * overlapping categories would let a single permanent answer two of them.
+ * overlapping categories would let a single permanent answer two of them — unless [distinctPicks]
+ * is set.
+ *
+ * [distinctPicks] is the overlapping-category edict: "each player sacrifices an artifact, a creature,
+ * an enchantment, a land, and a planeswalker of their choice" (Release). There one permanent answers
+ * **one** category only (an artifact creature is the artifact *or* the creature), and the chooser must
+ * end up with as many picks as their board allows (Release's ruling: with an artifact creature and a
+ * nonartifact creature, the artifact creature must be the artifact). The executor enforces both: a
+ * permanent already picked is no longer a candidate, and each prompt offers only the candidates that
+ * still leave a maximum set of distinct picks reachable for the remaining categories (a bipartite
+ * matching over the chooser's own permanents), so no sequence of choices strands a category.
  *
  * @property from Collection to choose from — every candidate, across all affected players.
  * @property categories One filter per choice each controller makes, in the order they are offered.
@@ -2485,6 +2495,8 @@ data class FilterCollectionEffect(
  * @property purpose What the picks are for — what the chooser is asked ("… to keep" / "… to
  *   sacrifice"), and so which end of their board an AI chooser reaches for. The step itself still
  *   moves nothing.
+ * @property distinctPicks Each permanent may answer only one category, and the chooser must pick as
+ *   many distinct permanents as possible (Release). Default false: one permanent may cover several.
  */
 @SerialName("ChooseOnePerCategory")
 @Serializable
@@ -2492,7 +2504,8 @@ data class ChooseOnePerCategoryEffect(
     val from: String,
     val categories: List<GameObjectFilter>,
     val storeAs: String,
-    val purpose: CategoryPickPurpose = CategoryPickPurpose.KEEP
+    val purpose: CategoryPickPurpose = CategoryPickPurpose.KEEP,
+    val distinctPicks: Boolean = false
 ) : Effect {
     init {
         require(categories.isNotEmpty()) {

@@ -496,6 +496,172 @@
     ]
 }
 
+// Catch // Release
+{
+    "name": "Catch // Release",
+    "manaCost": "",
+    "typeLine": "Sorcery",
+    "oracleText": "Gain control of target permanent until end of turn. Untap it. It gains haste until end of turn.\nFuse (You may cast one or both halves of this card from your hand.)\n//\nEach player sacrifices an artifact, a creature, an enchantment, a land, and a planeswalker of their choice.\nFuse (You may cast one or both halves of this card from your hand.)",
+    "keywords": [
+        "FUSE"
+    ],
+    "metadata": {
+        "collectorNumber": "125",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/29968873-56f3-4528-ab0b-f11dd67dd162.jpg?1783940017",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Catch can target any permanent, including one that's untapped or one you already control."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you cast Catch/Release as a fused split spell, you can sacrifice the permanent you just gained control of."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "To resolve Release, the active player chooses a permanent they control for each of the listed types, then each other player in turn order does the same, then all the chosen permanents are sacrificed simultaneously."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you control an artifact creature, a nonartifact creature, and no other artifacts or creatures, you must sacrifice both permanents. You must choose the artifact creature as the artifact and the nonartifact creature as the creature. The same is true for any combination of types—you sacrifice a number of permanents as close to five as possible."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you're casting a split card with fuse from any zone other than your hand, you can't cast both halves. You'll only be able to cast one half or the other."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "To cast a fused split spell, pay both of its mana costs. While the spell is on the stack, its mana value is the total amount of mana in both costs."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When a fused split spell resolves, follow the instructions of the left half first, then the instructions on the right half."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED",
+        "WHITE"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Catch",
+            "manaCost": "{1}{U}{R}",
+            "typeLine": "Sorcery",
+            "oracleText": "Gain control of target permanent until end of turn. Untap it. It gains haste until end of turn.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainControl",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "EndOfTurn"
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "tap": false
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Release",
+            "manaCost": "{4}{R}{W}",
+            "typeLine": "Sorcery",
+            "oracleText": "Each player sacrifices an artifact, a creature, an enchantment, a land, and a planeswalker of their choice.\nFuse (You may cast one or both halves of this card from your hand.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "permanent"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "ChooseOnePerCategory",
+                            "from": "gathered0",
+                            "categories": [
+                                {
+                                    "cardPredicates": [
+                                        "IsArtifact"
+                                    ]
+                                },
+                                {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ]
+                                },
+                                {
+                                    "cardPredicates": [
+                                        "IsEnchantment"
+                                    ]
+                                },
+                                {
+                                    "cardPredicates": [
+                                        "IsLand"
+                                    ]
+                                },
+                                {
+                                    "cardPredicates": [
+                                        "IsPlaneswalker"
+                                    ]
+                                }
+                            ],
+                            "storeAs": "picked1",
+                            "purpose": "SACRIFICE",
+                            "distinctPicks": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "picked1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Sacrifice"
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
 // Clear a Path
 {
     "name": "Clear a Path",
