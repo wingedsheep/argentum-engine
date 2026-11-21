@@ -17,7 +17,7 @@ import kotlin.reflect.KClass
  *
  * Mirrors [MustAttackGroupExecutor]: one floating [SerializableModification.SetMustBlock] over a
  * dynamic group, so creatures that arrive later are bound too (CR 611.2c). That is the projection
- * the static `MustBlock` (Grand Melee) and [MarkMustBlockThisTurnExecutor] write, so
+ * the static `MustBlock` (Grand Melee) and [MarkMustBlockExecutor] write, so
  * `BlockPhaseManager.validateProjectedMustBlockRequirements` enforces it with no further wiring.
  */
 class MustBlockGroupExecutor(

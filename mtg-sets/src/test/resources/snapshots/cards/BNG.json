@@ -1714,7 +1714,7 @@
     "oracleText": "Target creature blocks this turn if able.",
     "script": {
         "spellEffect": {
-            "type": "MarkMustBlockThisTurn",
+            "type": "MarkMustBlock",
             "target": {
                 "type": "BoundVariable",
                 "name": "t0"

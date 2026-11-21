@@ -75,7 +75,7 @@ import com.wingedsheep.sdk.scripting.effects.MarkMustAttackEffect
 import com.wingedsheep.sdk.scripting.effects.MustAttackWindow
 import com.wingedsheep.sdk.scripting.effects.MustAttackGroupEffect
 import com.wingedsheep.sdk.scripting.MustAttackDefender
-import com.wingedsheep.sdk.scripting.effects.MarkMustBlockThisTurnEffect
+import com.wingedsheep.sdk.scripting.effects.MarkMustBlockEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveSuspectedEffect
 import com.wingedsheep.sdk.scripting.effects.SuspectEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockGroupEffect
@@ -6712,6 +6712,13 @@ object Effects {
         MarkMustAttackEffect(target, MustAttackWindow.ControllersNextCombat)
 
     /**
+     * "[target] attacks this combat if able" (Boros Battleshaper) — binds only the combat phase in
+     * progress; an extra combat phase later in the turn is free of it.
+     */
+    fun MarkMustAttackThisCombat(target: EffectTarget): Effect =
+        MarkMustAttackEffect(target, MustAttackWindow.ThisCombat)
+
+    /**
      * "[target] attacks [defender] during its controller's next turn if able" — every combat of
      * that turn (Gideon, Battle-Forged: `MarkMustAttackNextTurn(ContextTarget(0), EffectTarget.Self)`).
      * With no [defender] the creature may attack anyone. The mark waits for the next turn of
@@ -6729,7 +6736,14 @@ object Effects {
      * creature that is tapped or otherwise unable to block just doesn't block (CR 509.1c).
      */
     fun MarkMustBlockThisTurn(target: EffectTarget): Effect =
-        MarkMustBlockThisTurnEffect(target)
+        MarkMustBlockEffect(target, Duration.EndOfTurn)
+
+    /**
+     * "[target] blocks this combat if able" (Boros Battleshaper) — like [MarkMustBlockThisTurn], but
+     * the requirement ends with the current combat phase, so an extra combat later in the turn is free.
+     */
+    fun MarkMustBlockThisCombat(target: EffectTarget): Effect =
+        MarkMustBlockEffect(target, Duration.EndOfCombat)
 
     /**
      * Target creature becomes suspected (CR 701.60) — the named "suspected" designation together

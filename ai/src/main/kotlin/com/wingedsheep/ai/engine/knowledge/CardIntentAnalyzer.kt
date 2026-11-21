@@ -2845,7 +2845,7 @@ object CardIntentAnalyzer {
         // "Target creature blocks this turn if able" (Peema Aether-Seer, Culvert Ambusher): the
         // other half of a lure — the attacker drags an opposing creature into a block it would not
         // choose, onto a deathtoucher or a bigger attacker. Read for our attack, like the lure.
-        is MarkMustBlockThisTurnEffect -> if (hitsAnotherPermanent(effect.target)) setOf(IntentTag.COMBAT_ENHANCEMENT) else emptySet()
+        is MarkMustBlockEffect -> if (hitsAnotherPermanent(effect.target)) setOf(IntentTag.COMBAT_ENHANCEMENT) else emptySet()
         // "Target creature defending player controls blocks it this combat if able" (Impetuous
         // Devils, Avalanche Tusker): the same lure, pinned to the attacker that names it.
         is ForceBlockEffect -> if (hitsAnotherPermanent(effect.target)) setOf(IntentTag.COMBAT_ENHANCEMENT) else emptySet()

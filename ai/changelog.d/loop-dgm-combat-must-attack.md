@@ -1,0 +1,1 @@
+- #4793 The AI now judges a "target creature blocks this turn / this combat if able" spell like the same lure on an activation: worth casting only on its own turn before blocks, on an untapped opposing creature, with any reach it grants the forced blocker timed with it.

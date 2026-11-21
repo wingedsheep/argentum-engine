@@ -31,6 +31,7 @@ import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.CantAttackEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
+import com.wingedsheep.sdk.scripting.effects.MarkMustBlockEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockGroupEffect
 import com.wingedsheep.sdk.scripting.effects.ChangeColorEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -340,7 +341,11 @@ internal object ExpiringGrantWindow {
         // Drag to the Bottom) is a sweeper: [affectedBy] reads the iteration entity as our own
         // creatures, which would call a wipe of their board wasted whenever ours is empty. When to
         // sweep is the removal's question, so the leaf keeps it.
-        if (payoffs.any { it.kind in SHRINK_KINDS && it.kind != PayoffKind.STRIP && it.target == EffectTarget.IterationEntity }) return false
+        if (payoffs.any {
+                it.kind in SHRINK_KINDS && it.kind != PayoffKind.STRIP && it.kind != PayoffKind.LURE &&
+                    it.target == EffectTarget.IterationEntity
+            }
+        ) return false
         val projected = state.projectedState
         val shrinkLoss = shrinkLosses(state, playerId, payoffs, sourceId, targets, xValue, intents) ?: return false
         return payoffs.none { payoff ->
@@ -363,6 +368,11 @@ internal object ExpiringGrantWindow {
                     affectedBy(state, projected, playerId, payoff.target, sourceId, targets)
                 }) ?: return false
                 return@none members.any { !(sourceTaps && it == sourceId) && canStillTap(state, projected, playerId, it) }
+            }
+            if (payoff.kind == PayoffKind.LURE) {
+                val lured = affectedBy(state, projected, playerId, payoff.target, sourceId, targets) ?: return false
+                return@none state.isActiveTurnFor(playerId) &&
+                    lured.any { projected.getController(it) != playerId && opposingCanStillBeBlockedOut(state, it) }
             }
             if (payoff.kind == PayoffKind.STRIP) {
                 val keyword = payoff.keyword ?: return false
@@ -401,7 +411,8 @@ internal object ExpiringGrantWindow {
                     }
                 }
                 PayoffKind.LAND -> affected.any { canStillMatter(state, projected, playerId, it) }
-                PayoffKind.SHIELD, PayoffKind.SILENCE, PayoffKind.CONNECT, PayoffKind.STRIP, PayoffKind.ACTIVATION -> true // answered above
+                PayoffKind.SHIELD, PayoffKind.SILENCE, PayoffKind.CONNECT, PayoffKind.STRIP, PayoffKind.ACTIVATION,
+                PayoffKind.LURE -> true // answered above
                 PayoffKind.BORROW -> affected.any { projected.isCreature(it) } &&
                     (state.step in UNTIL_ATTACKERS_DECLARED || state.step in FIGHT_STILL_AHEAD ||
                         controlsASacrificeOutlet(state, playerId, intents))
@@ -602,6 +613,8 @@ internal object ExpiringGrantWindow {
      *    on a creature that could attack ([CombatMath.getCreaturesThatCanAttack]).
      *  - **Can't block** — on our own turn, before blockers are declared, on an untapped creature
      *    (and once attackers are declared, only while something is attacking).
+     *  - **Must block** ("target creature blocks this turn if able", Peema Aether-Seer) — the same
+     *    window as can't block: only an attack of ours gives the creature something to block.
      *  - **Tapped and locked** — "tap target creature or planeswalker; its activated abilities can't
      *    be activated this turn" (Deadlock Trap, Koma's serpent sacrifice): the lock buys something
      *    whenever the permanent has an activated ability to lose, so it is the leaf's call then.
@@ -651,7 +664,7 @@ internal object ExpiringGrantWindow {
                 if (kind == Restriction.TAPPED_AND_LOCKED && !ourTurn && state.isActiveTurnFor(controller) &&
                     state.getEntity(permanent)?.has<TappedComponent>() == false
                 ) return false
-                val cantAttack = kind != Restriction.CANT_BLOCK &&
+                val cantAttack = (kind == Restriction.CANT_ATTACK || kind == Restriction.TAPPED_AND_LOCKED) &&
                     state.isActiveTurnFor(controller) && state.step in UNTIL_ATTACKERS_DECLARED &&
                     permanent in CombatMath.getCreaturesThatCanAttack(state, projected, controller)
                 val cantBlock = kind != Restriction.CANT_ATTACK && ourTurn && opposingCanStillBeBlockedOut(state, permanent)
@@ -701,7 +714,7 @@ internal object ExpiringGrantWindow {
     }
 
     /** What one restriction of [restrictionShape] keeps the permanent from doing this turn. */
-    private enum class Restriction { CANT_ATTACK, CANT_BLOCK, TAPPED_AND_LOCKED }
+    private enum class Restriction { CANT_ATTACK, CANT_BLOCK, MUST_BLOCK, TAPPED_AND_LOCKED }
 
     /**
      * Whether [permanent] currently has an activated ability a lock would take away — printed,
@@ -748,6 +761,11 @@ internal object ExpiringGrantWindow {
             when {
                 leaf is CantAttackEffect && leaf.duration == Duration.EndOfTurn -> restrictions += Restriction.CANT_ATTACK to leaf.target
                 leaf is CantBlockEffect && leaf.duration == Duration.EndOfTurn -> restrictions += Restriction.CANT_BLOCK to leaf.target
+                // "Target creature blocks this turn / this combat if able" (Peema Aether-Seer): a lure
+                // drags an opposing creature into a block only in can't-block's own window, our turn
+                // before blocks, on an untapped creature.
+                leaf is MarkMustBlockEffect && (leaf.duration == Duration.EndOfTurn || leaf.duration == Duration.EndOfCombat) ->
+                    restrictions += Restriction.MUST_BLOCK to leaf.target
                 leaf is CantBlockGroupEffect && leaf.duration == Duration.EndOfTurn && isPlainBattlefieldGroup(leaf.filter) ->
                     groupCantBlocks += leaf.filter
                 locksActivatedAbilities(leaf) -> restrictions += Restriction.TAPPED_AND_LOCKED to (leaf as GrantStaticAbilityEffect).target
@@ -1288,6 +1306,18 @@ internal object ExpiringGrantWindow {
         STRIP,
 
         /**
+         * A block requirement on a creature that is not the source, gone at cleanup or with this
+         * combat — "target creature blocks this turn if able" (Academic Dispute, Timely
+         * Interference's kicker, Hustle). The other opponent-side combat lever: it drags their
+         * creature into a block of our attacker, so it buys something only on our turn, before
+         * blocks, on an untapped opposing creature that still has an attack of ours to meet
+         * ([opposingCanStillBeBlockedOut]) — the window [restrictionHasNoWindow] gives the same
+         * lure on an activation. On our own creature, or on their turn, it changes nothing. Read
+         * with the shrinks, under [com.wingedsheep.ai.engine.AiProfile.refuseWastedPayoffs].
+         */
+        LURE,
+
+        /**
          * Control of a creature until end of turn — "gain control of target creature until end of
          * turn" (Threaten, Involuntary Employment, Sibling Rivalry). It goes home at cleanup, so it
          * buys only what the creature does before then: an attack or a block on our side, or a fight
@@ -1366,7 +1396,7 @@ internal object ExpiringGrantWindow {
         state.stack.isNotEmpty() && payoffs.any { it.kind == PayoffKind.SHIELD || it.kind == PayoffKind.SILENCE }
 
     /** The opponent-side debuffs [nothingCanSpend] reads under `readShrinks` alone, without the grants. */
-    private val SHRINK_KINDS = setOf(PayoffKind.SHRINK, PayoffKind.SET_BASE, PayoffKind.RETYPE, PayoffKind.STRIP)
+    private val SHRINK_KINDS = setOf(PayoffKind.SHRINK, PayoffKind.SET_BASE, PayoffKind.RETYPE, PayoffKind.STRIP, PayoffKind.LURE)
 
     /** The payoffs [holds]' deferral holds for a later window this turn. */
     private val DEFERRABLE = setOf(PayoffKind.CREATURE, PayoffKind.SHIELD, PayoffKind.SILENCE, PayoffKind.CONNECT)
@@ -1620,6 +1650,9 @@ internal object ExpiringGrantWindow {
                         neutralizes = leaf.target in neutralized,
                     )
                 }
+                readShrinks && leaf is MarkMustBlockEffect && leaf.target != EffectTarget.Self &&
+                    (leaf.duration == Duration.EndOfTurn || leaf.duration == Duration.EndOfCombat) ->
+                    payoffs += Payoff(PayoffKind.LURE, leaf.target)
                 readShrinks && leaf is RemoveKeywordEffect && leaf.duration == Duration.EndOfTurn &&
                     leaf.target != EffectTarget.Self ->
                     payoffs += Payoff(PayoffKind.STRIP, leaf.target, leaf.keyword)

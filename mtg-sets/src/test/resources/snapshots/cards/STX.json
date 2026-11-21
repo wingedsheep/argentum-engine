@@ -9,7 +9,7 @@
             "type": "Composite",
             "effects": [
                 {
-                    "type": "MarkMustBlockThisTurn",
+                    "type": "MarkMustBlock",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t0"

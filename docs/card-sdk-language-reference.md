@@ -1683,7 +1683,7 @@ serialized shape; the facade for each is:
 | `LoseLifeEffect` | `Effects.LoseLife` |
 | `MarkExileControllerGraveyardOnDeathEffect` | `Effects.MarkExileControllerGraveyardOnDeath` |
 | `MarkExileOnDeathEffect` | `Effects.MarkExileOnDeath` |
-| `MarkMustAttackEffect` | `Effects.MarkMustAttackThisTurn`, `Effects.MarkMustAttackNextCombat`, `Effects.MarkMustAttackNextTurn` |
+| `MarkMustAttackEffect` | `Effects.MarkMustAttackThisTurn`, `Effects.MarkMustAttackThisCombat`, `Effects.MarkMustAttackNextCombat`, `Effects.MarkMustAttackNextTurn` |
 | `MustAttackGroupEffect` | `Effects.MustAttackGroup` |
 | `MarkSpellExileWithCountersEffect` | `Effects.MarkSpellExileWithCounters` |
 | `MarkSpellExileOnResolveEffect` | `Effects.MarkSpellExileOnResolve` |
@@ -3955,8 +3955,16 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   turn begins whose active player controls the creature, then becomes that turn's
   `MarkMustAttackThisTurn` marks (directed or not), so it follows a change of control to the new controller's
   next turn, and one landing during its controller's own turn waits for the following one. `defender` follows
-  the directed rules above. `ControllersNextCombat` is the only window that takes no `defender`.
-- `Effects.MarkMustBlockThisTurn(target = ContextTarget(0))` (`MarkMustBlockThisTurnEffect`) —
+  the directed rules above. `ControllersNextCombat` and `ThisCombat` take no `defender`.
+- `Effects.MarkMustAttackThisCombat(target)` (`MarkMustAttackEffect`, window `MustAttackWindow.ThisCombat`)
+  — "[target] attacks this combat if able" (Boros Battleshaper). A `Layer.ABILITY` floating
+  `SetMustAttack` for `Duration.EndOfCombat`: it binds the combat phase in progress and is swept away when
+  that phase ends, so an extra combat phase later in the turn is not bound.
+- `Effects.MarkMustBlockThisCombat(target)` (`MarkMustBlockEffect`, `duration = Duration.EndOfCombat`) —
+  "[target] blocks this combat if able"; the combat-scoped form of `MarkMustBlockThisTurn` below.
+  "Attacks or blocks this combat if able" on one creature is both marks in sequence: only the one that
+  fits its controller's role this combat can bind it.
+- `Effects.MarkMustBlockThisTurn(target = ContextTarget(0))` (`MarkMustBlockEffect`, `duration = Duration.EndOfTurn`) —
   "target creature blocks this turn if able". Adds a `Layer.ABILITY` floating
   `SerializableModification.SetMustBlock` for `Duration.EndOfTurn`, i.e. the same projected
   `mustBlock` the *static* `MustBlock` (Grand Melee) writes, so

@@ -577,7 +577,7 @@ data class CantBlockGroupEffect(
  * opponents control block this turn if able".
  *
  * The durational, group-wide counterpart of the printed [com.wingedsheep.sdk.scripting.MustBlock]
- * static (Grand Melee), and the group sibling of [MarkMustBlockThisTurnEffect], which marks one
+ * static (Grand Melee), and the group sibling of [MarkMustBlockEffect], which marks one
  * creature and never reaches a later one. A rule-modifying effect, so — like [CantBlockGroupEffect]
  * — it binds every creature matching [filter] when blockers are declared, including ones that
  * arrived after it resolved (Rule 611.2c). "You" in [filter] is the effect's controller, fixed when
@@ -755,7 +755,8 @@ data class RemoveFromCombatEffect(
  * planeswalker or battle, another player) breaks the requirement; if it can't attack that defender
  * at all (the player has left the game, the planeswalker has left the battlefield or stopped being
  * a planeswalker, a "can't attack you" effect protects them), it is under no requirement and may
- * attack anyone or not attack. [MustAttackWindow.ControllersNextCombat] takes no defender.
+ * attack anyone or not attack. [MustAttackWindow.ControllersNextCombat] and
+ * [MustAttackWindow.ThisCombat] take no defender.
  *
  * @property target The creature to mark (typically EffectTarget.IterationEntity within ForEachInGroup)
  * @property window How long the requirement binds — see [MustAttackWindow].
@@ -770,8 +771,8 @@ data class MarkMustAttackEffect(
     val defender: EffectTarget? = null
 ) : Effect {
     init {
-        require(defender == null || window != MustAttackWindow.ControllersNextCombat) {
-            "MarkMustAttackEffect names no defender for MustAttackWindow.ControllersNextCombat"
+        require(defender == null || (window != MustAttackWindow.ControllersNextCombat && window != MustAttackWindow.ThisCombat)) {
+            "MarkMustAttackEffect names no defender for MustAttackWindow.$window"
         }
     }
 
@@ -787,6 +788,12 @@ data class MarkMustAttackEffect(
 enum class MustAttackWindow(val phrase: String) {
     /** Every combat of the current turn; gone in the cleanup step. */
     ThisTurn("this turn"),
+
+    /**
+     * Only the combat phase in progress ("attacks this combat if able", Boros Battleshaper); gone
+     * when that combat phase ends, so an extra combat phase later in the turn is not bound.
+     */
+    ThisCombat("this combat"),
 
     /**
      * The next combat phase of the creature's controller — the one in progress counts only if
@@ -805,12 +812,14 @@ enum class MustAttackWindow(val phrase: String) {
 }
 
 /**
- * Mark a creature as "blocks this turn if able" (Culvert Ambusher).
+ * Mark a creature as required to block if able for [duration] — "target creature blocks this turn
+ * if able" (Culvert Ambusher, [Duration.EndOfTurn]) or "… blocks this combat if able" (Boros
+ * Battleshaper, [Duration.EndOfCombat], which an extra combat phase later in the turn doesn't inherit).
  *
  * The blocking mirror of [MarkMustAttackEffect], and the *unrestricted* sibling of
  * [ForceBlockEffect]: this requires the creature to block **some** attacker, not a named one, and
  * the ability's source need not be attacking (or even be a creature). It is the one-shot,
- * turn-scoped form of the static [com.wingedsheep.sdk.scripting.MustBlock] (Grand Melee) — both
+ * per-object form of the static [com.wingedsheep.sdk.scripting.MustBlock] (Grand Melee) — both
  * project the same "must block" requirement that the block-declaration validator enforces.
  *
  * Only a *requirement*, never a guarantee (CR 509.1c): a creature that is tapped, that can't block,
@@ -818,13 +827,21 @@ enum class MustAttackWindow(val phrase: String) {
  * to pay a cost associated with blocking.
  *
  * @property target The creature to mark (typically `EffectTarget.ContextTarget(0)` — the ability's target)
+ * @property duration How long the requirement binds.
  */
-@SerialName("MarkMustBlockThisTurn")
+@SerialName("MarkMustBlock")
 @Serializable
-data class MarkMustBlockThisTurnEffect(
-    val target: EffectTarget = EffectTarget.ContextTarget(0)
+data class MarkMustBlockEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0),
+    val duration: Duration = Duration.EndOfTurn
 ) : Effect {
-    override val description: String = "${target.description} blocks this turn if able"
+    override val description: String = "${target.description} blocks ${
+        when (duration) {
+            Duration.EndOfTurn -> "this turn"
+            Duration.EndOfCombat -> "this combat"
+            else -> duration.description
+        }
+    } if able"
 }
 
 /**

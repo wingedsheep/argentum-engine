@@ -3,22 +3,26 @@ package com.wingedsheep.ai.engine
 import com.wingedsheep.ai.audit.AiReadingAudit
 import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.CombatReach
+import com.wingedsheep.ai.engine.knowledge.HoldPolicy
 import com.wingedsheep.ai.engine.knowledge.IntentCatalog
 import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.ai.engine.knowledge.TargetPolarity
 import com.wingedsheep.ai.engine.knowledge.TargetPolarityAnalyzer
+import com.wingedsheep.ai.engine.knowledge.TimingVerdict
 import com.wingedsheep.ai.puzzles.advanceToPriority
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 
 /**
- * "Target creature blocks this turn if able" ([com.wingedsheep.sdk.scripting.effects.MarkMustBlockThisTurnEffect]):
+ * "Target creature blocks this turn if able" ([com.wingedsheep.sdk.scripting.effects.MarkMustBlockEffect]):
  * the attacker's half of a lure, dragging an opposing creature into a block it would not choose.
  * Its slot reads [TargetPolarity.HARMFUL], it is a [IntentTag.COMBAT_ENHANCEMENT], and an
  * activation of it is a combat response ([CombatReach.FIGHT]) the combat simulation tries.
@@ -37,13 +41,44 @@ class MustBlockThisTurnReadingAiTest : ScenarioTestBase() {
             TargetPolarityAnalyzer.forAbility(peema, ability) shouldBe listOf(TargetPolarity.HARMFUL)
             CardIntentAnalyzer.analyzeEffect(ability.effect, ability.targetRequirements).tags shouldContain IntentTag.COMBAT_ENHANCEMENT
             CombatReach.of(ability) shouldContain CombatReach.FIGHT
-            for (name in listOf("Peema Aether-Seer", "Culvert Ambusher", "Shessra, Death's Whisper", "Academic Dispute")) {
+            // A lure spell's timing too (Academic Dispute, Timely Interference, Hustle): the same
+            // window as the activation — our turn, before blocks.
+            for (name in listOf(
+                "Peema Aether-Seer", "Culvert Ambusher", "Shessra, Death's Whisper", "Academic Dispute",
+                "Timely Interference", "Hustle // Bustle", "Boros Battleshaper",
+            )) {
                 val reading = AiReadingAudit.read(card(name))
-                withClue("$name: $reading") { reading.flags.none { "MarkMustBlockThisTurnEffect" in it.key } shouldBe true }
+                withClue("$name: $reading") { reading.flags.none { "MarkMustBlockEffect" in it.key } shouldBe true }
+            }
+            withClue("Academic Dispute's reach rides on the lure's timing") {
+                AiReadingAudit.read(card("Academic Dispute")).flags shouldBe emptyList()
             }
             withClue("Academic Dispute's reach lets the forced blocker meet our flier; it is no gift") {
                 TargetPolarityAnalyzer.forSpell(card("Academic Dispute")) shouldBe listOf(TargetPolarity.HARMFUL)
             }
+        }
+
+        test("Peema's forced block buys something only on our turn, before blocks") {
+            fun verdict(activePlayer: Int): TimingVerdict {
+                val game = scenario()
+                    .withPlayers()
+                    .withActivePlayer(activePlayer)
+                    .withCardOnBattlefield(1, "Peema Aether-Seer")
+                    .withCardOnBattlefield(2, "Grizzly Bears")
+                    .build()
+                    .advanceToPriority(1, Step.PRECOMBAT_MAIN)
+                val peema = game.findPermanent("Peema Aether-Seer")!!
+                val intents = IntentCatalog.of(cardRegistry)
+                return HoldPolicy(intents, refuseWastedPayoffs = true).verdictFor(
+                    game.state, game.player1Id, "Peema Aether-Seer",
+                    activation = ActivateAbility(
+                        game.player1Id, peema, intents.definition("Peema Aether-Seer")!!.script.activatedAbilities.single().id,
+                        targets = listOf(ChosenTarget.Permanent(game.findPermanent("Grizzly Bears")!!)),
+                    ),
+                )
+            }
+            withClue("on their turn their creature has nothing of ours to block") { verdict(activePlayer = 2) shouldBe TimingVerdict.NoWindow }
+            withClue("on our turn before blocks the lure is live") { verdict(activePlayer = 1) shouldNotBe TimingVerdict.NoWindow }
         }
 
         test("Peema's forced block is not aimed at our own creature when theirs can't be targeted") {

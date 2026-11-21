@@ -33,6 +33,7 @@ import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.costs.CostAtom
+import com.wingedsheep.sdk.scripting.effects.MarkMustBlockEffect
 import com.wingedsheep.sdk.scripting.effects.ChangeColorToChosenEffect
 import com.wingedsheep.sdk.scripting.effects.DamageCantBePreventedThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.MarkSpellExileWithCountersEffect
@@ -819,7 +820,12 @@ object AiReadingAudit {
             // so it is timed as the whole ability is.
             val ridesOnGrant = expiring is RemoveKeywordEffect && expiring.target == EffectTarget.Self &&
                 expiring.keyword != Keyword.DEFENDER.name && isRead(effect)
-            if (isRead(leaf) || ridesOnRemoval || ridesOnCopy || spentWithCast || colourOnly || ridesOnGrant) {
+            // "Target creature blocks this turn if able. You may have it gain reach until end of
+            // turn" (Academic Dispute): the reach only lets the forced blocker meet our flier, so it
+            // is spent in the block the lure drags it into and is timed as the lure is.
+            val ridesOnLure = expiring is GrantKeywordEffect &&
+                leaves.any { it is MarkMustBlockEffect && it.target == expiring.target && isRead(it) }
+            if (isRead(leaf) || ridesOnRemoval || ridesOnCopy || spentWithCast || colourOnly || ridesOnGrant || ridesOnLure) {
                 sink += Finding(
                     Check.TIMING, read = true, reason = "knows when to spend this until-end-of-turn effect",
                     effectType = label, step = step(leaves, leaf)?.index?.plus(1), stepText = stepText(leaf),

@@ -164,7 +164,7 @@ MustBeBlocked, the code reading found more:
 | `SetBasePowerToughnessStatic` | `SetBaseStatsEffect` |
 | `GrantColor` | `AddColorEffect` |
 | `ControlEnchantedPermanent` | `GainControlEffect` |
-| `MustBlock` | `MarkMustBlockThisTurnEffect` |
+| `MustBlock` | `MarkMustBlockEffect` |
 | `MustAttack` | `MarkMustAttackThisTurnEffect` |
 
 **Where the pairs genuinely diverge:**
