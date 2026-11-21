@@ -4279,7 +4279,13 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   picks are sacrificed at once — never two `ForceSacrifice` edicts in a row. A category the chooser
   controls nothing of is skipped, so an opponent with only artifact creatures loses one. Keep the
   categories disjoint: picks are deduplicated, so overlapping ones would let one permanent answer
-  two of them.
+  two of them — unless the wording lists overlapping *types* ("each player sacrifices an artifact, a
+  creature, an enchantment, a land, and a planeswalker of their choice", Release). Then pass
+  `distinctPicks = true`: a permanent answers one category only, and each prompt offers just the
+  candidates that keep the most distinct picks reachable, so a player with an artifact creature and a
+  nonartifact creature must give up both (Release's ruling) — `chooseOnePerCategory(gather(Permanent),
+  listOf(Artifact, Creature, Enchantment, Land, Planeswalker), purpose = SACRIFICE, distinctPicks =
+  true)` → `sacrifice(picked)`.
 - "Return a permanent you control [to its owner's hand]" is a pipeline composition, not an effect type:
   `GatherCards(BattlefieldMatching(filter, Player.You, excludeSelf?))` →
   `SelectFromCollection(ChooseExactly(1), useTargetingUI = true)` → `MoveCollection(→ HAND)` (the
@@ -5903,7 +5909,7 @@ with cards):
 | `flipOntoBattlefield(filter = Permanent)` → the permanents it touches (empty unless it turned over completely) | `FlipOntoBattlefieldEffect` |
 | `chooseExactly(n, from)` / `chooseUpTo` / `chooseAnyNumber` / `chooseRandom` / `chooseSpell` / `selectAll` (+ `chooseExactlySplit` / `chooseUpToSplit` / `chooseAnyNumberSplit` / `chooseRandomSplit` / `selectAllSplit` returning `(selected, remainder)`; `n` is an `Int` or a `DynamicAmount`) | `SelectFromCollectionEffect` |
 | `filter(from, filter)` / `filter(from, collectionFilter, matching?)` / `filterSplit(…)` → `(matching, rest)` / `exclude(from, minus)` (set difference via `CollectionFilter.ExcludeOtherCollection`) | `FilterCollectionEffect` |
-| `chooseOnePerCategory(from, categories, purpose = KEEP)` | `ChooseOnePerCategoryEffect` |
+| `chooseOnePerCategory(from, categories, purpose = KEEP, distinctPicks = false)` | `ChooseOnePerCategoryEffect` |
 | `shufflePile(listOf(a, b, …))` → one pile holding every card of the collections (each once), in a random order. Every card of it that is **face down outside the library** gets a fresh id as the pile is shuffled (`GameState.reidentify`: same components, zone, object generation, exile link and play grants — no event, no new object), so nobody can follow a card through the shuffle; face-up cards keep theirs. The pile's cards are dealt back into the zone slots they held in the shuffled order, so a pile left in exile can't be matched up by position either. Other stored collections of the same pipeline block naming a renamed card are rewritten to its new id. **Jeskai Infiltrator** ("exile it and the top card of your library in a face-down pile, shuffle that pile, then manifest those cards"): `gather(Entity(Self))` (identity-gated: empty once it has left) + `gather(TopOfLibrary(1))` → `exile(each, faceDown = HIDDEN)` → `shufflePile(listOf(self, top))` → `move(pile, → battlefield, faceDown = MANIFEST)` | `ShufflePileEffect` |
 | `move(from, destination, …)` / `moveTracked(…)` (all `MoveCollectionEffect` options: `order`, `moveType`, `faceDown`, `lookableInExile`, `underOwnersControl`, `addCounterType`, `markEnteredViaSourceAbility`, `filter`, `attachTo`, …) / sugar `destroy`, `sacrifice`, `discard`, `exile`, `toHand`, `toGraveyard`, `toLibraryTop`, `toLibraryBottom` | `MoveCollectionEffect` |
 | `copyCard(source)` / `copyCards(from)` | `CopyCardIntoCollectionEffect` / `CopyCollectionIntoCollectionEffect` |
@@ -5970,7 +5976,12 @@ creature) — which is why this is a sequence of one-of-each choices and not a s
 its types. The step moves nothing; pair it with `exclude` for "the rest" and any move step for their
 fate. `purpose` (`CategoryPickPurpose.KEEP`, the default, or `SACRIFICE`) is what the chooser is asked
 — "Choose an artifact to keep" vs "… to sacrifice" — and so which end of the board an AI chooser
-gives up; with `SACRIFICE` the picks themselves go to `sacrifice(…)` (Perilous Predicament):
+gives up; with `SACRIFICE` the picks themselves go to `sacrifice(…)` (Perilous Predicament).
+`distinctPicks = true` flips the overlap rule for edicts over overlapping types (Release): each
+permanent answers one category, a picked permanent is no longer a candidate, and every prompt offers
+only the candidates that leave a maximum matching of the remaining categories onto the chooser's
+unpicked permanents — so the chooser ends with as many picks as their board allows, and a category
+whose only remaining candidates would strand a later one resolves itself:
 
 ```kotlin
 // Liliana, Dreadhorde General −9: "Each opponent chooses a permanent they control of each

@@ -37,6 +37,12 @@ import kotlin.reflect.KClass
  *
  * A category the chooser controls nothing of is skipped and a category with a single candidate
  * resolves itself, so a board with one permanent per type asks nothing at all.
+ *
+ * With `distinctPicks` (Release) a permanent answers one category only and the chooser must keep as
+ * many picks as possible: each prompt offers just the candidates that leave a maximum matching of
+ * the remaining categories onto the chooser's unpicked permanents ([allowedDistinct]). A category
+ * with any candidate is always coverable by some maximum matching (swap the neighbour's edge), so a
+ * category is never skipped while it has an unpicked candidate.
  */
 class ChooseOnePerCategoryExecutor(
     private val predicateEvaluator: PredicateEvaluator,
@@ -91,7 +97,11 @@ class ChooseOnePerCategoryExecutor(
         for ((offset, playerId) in pendingPlayers.withIndex()) {
             val firstCategory = if (offset == 0) startCategory else 0
             for (categoryIndex in firstCategory until effect.categories.size) {
-                val candidates = candidatesFor(state, pool, playerId, effect, categoryIndex, sourceId)
+                val candidates = if (effect.distinctPicks) {
+                    allowedDistinct(state, pool, playerId, effect, categoryIndex, accumulated, sourceId)
+                } else {
+                    candidatesFor(state, pool, playerId, effect, categoryIndex, sourceId)
+                }
                 if (candidates.isEmpty()) continue
                 // Every candidate is already being kept for an earlier category — the pick is
                 // forced, so don't ask.
@@ -153,6 +163,54 @@ class ChooseOnePerCategoryExecutor(
             controllerOf(state, id) == playerId &&
                 predicateEvaluator.matches(state, projected, id, category, predicateContext)
         }
+    }
+
+    /**
+     * The candidates for the category at [categoryIndex] under `distinctPicks`: [playerId]'s unpicked
+     * members of the category whose choice still leaves the largest reachable number of distinct
+     * picks for this and every later category. Empty when the category has no unpicked candidate.
+     */
+    private fun allowedDistinct(
+        state: GameState,
+        pool: List<EntityId>,
+        playerId: EntityId,
+        effect: ChooseOnePerCategoryEffect,
+        categoryIndex: Int,
+        picked: List<EntityId>,
+        sourceId: EntityId?
+    ): List<EntityId> {
+        val taken = picked.toHashSet()
+        val remaining = (categoryIndex until effect.categories.size).map { index ->
+            candidatesFor(state, pool, playerId, effect, index, sourceId).filter { it !in taken }
+        }
+        val here = remaining.first()
+        if (here.size <= 1) return here
+        val best = maxDistinctPicks(remaining)
+        val later = remaining.drop(1)
+        return here.filter { candidate ->
+            1 + maxDistinctPicks(later.map { options -> options.filter { it != candidate } }) == best
+        }
+    }
+
+    /**
+     * The size of a maximum matching of categories (each a list of its candidates) onto distinct
+     * permanents — Kuhn's augmenting paths; the boards are a handful of permanents by five
+     * categories, so the cubic bound never matters.
+     */
+    private fun maxDistinctPicks(categories: List<List<EntityId>>): Int {
+        val owner = HashMap<EntityId, Int>()
+        fun augment(category: Int, seen: MutableSet<EntityId>): Boolean {
+            for (candidate in categories[category]) {
+                if (!seen.add(candidate)) continue
+                val holder = owner[candidate]
+                if (holder == null || augment(holder, seen)) {
+                    owner[candidate] = category
+                    return true
+                }
+            }
+            return false
+        }
+        return categories.indices.count { augment(it, HashSet()) }
     }
 
     /** Projected control first, so control-changing effects decide who chooses. */
