@@ -869,6 +869,17 @@ data class GameState(
 
     fun isCurrentObject(ref: ObjectRef): Boolean = objectRef(ref.entityId) == ref
 
+    /**
+     * The zone holding the object [ref]'s card became by its very next zone change, or null when
+     * that card is still [ref] itself, has ceased to exist, or has changed zones again since —
+     * each further move makes another new object (CR 400.7).
+     */
+    fun successorZone(ref: ObjectRef): ZoneKey? {
+        if (ref.entityId !in entities) return null
+        val identity = objectIdentities[ref.entityId] ?: return null
+        return identity.logicalZone.takeIf { identity.previousGeneration == ref.generation }
+    }
+
     /** Retains STACK while a popped spell resolves, and the origin during source-list removal. */
     fun logicalZone(entityId: EntityId): ZoneKey? = objectIdentities[entityId]?.logicalZone
 
@@ -890,7 +901,7 @@ data class GameState(
             )
         }
         return copy(
-            objectIdentities = objectIdentities + (entityId to ObjectIdentity(nextObjectGeneration, key)),
+            objectIdentities = objectIdentities + (entityId to ObjectIdentity(nextObjectGeneration, key, old?.generation)),
             nextObjectGeneration = nextObjectGeneration + 1
         )
     }

@@ -312,7 +312,7 @@ sealed interface CardSource {
     }
 
     /**
-     * The cards sacrificed "this way" that are still in their owner's graveyard — read from the
+     * The cards the permanents sacrificed "this way" became, in whatever public zone each went to — read from the
      * same `EffectContext.sacrificedPermanents` snapshots that
      * [com.wingedsheep.sdk.scripting.values.DynamicAmount.TotalPowerSacrificedThisWay] sums, so it
      * covers both a sacrifice *cost* (recorded at activation, CR 602.2b) and a sacrifice effect
@@ -323,9 +323,11 @@ sealed interface CardSource {
      * creatures you control: … then exile this artifact and those creature cards." The sacrifice
      * counterpart of [ExiledAsCost] and [TappedAsCost].
      *
-     * A card qualifies only while it is still the object the sacrifice put into the graveyard: a
-     * token has ceased to exist (CR 704.5d), and a card that has since left the graveyard is a new
-     * object (CR 400.7), so neither is gathered.
+     * A card qualifies only while it is still the very object the sacrifice made, in the zone it
+     * went to — its owner's graveyard, or exile / the command zone when a replacement sent it there
+     * instead (Rescue from the Underworld: "the sacrificed card" returns from the zone it went to).
+     * A token has ceased to exist (CR 704.5d), a card that has since moved on again is a new object
+     * (CR 400.7), and a card put into a hidden zone can't be followed, so none of those is gathered.
      */
     @SerialName("SacrificedThisWay")
     @Serializable

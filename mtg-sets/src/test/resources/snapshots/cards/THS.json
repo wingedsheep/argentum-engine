@@ -8993,6 +8993,103 @@
     ]
 }
 
+// Rescue from the Underworld
+{
+    "name": "Rescue from the Underworld",
+    "manaCost": "{4}{B}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, sacrifice a creature.\nChoose target creature card in your graveyard. Return that card and the sacrificed card to the battlefield under your control at the beginning of your next upkeep. Exile Rescue from the Underworld.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "rescueChosen"
+                },
+                {
+                    "type": "GatherCards",
+                    "source": "SacrificedThisWay",
+                    "storeAs": "rescueSacrificed"
+                },
+                {
+                    "type": "CreateDelayedTrigger",
+                    "step": "UPKEEP",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveCollection",
+                                "from": "rescueChosen",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "rescueSacrificed",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            }
+                        ]
+                    },
+                    "fireOnPlayer": {
+                        "type": "PlayerRef",
+                        "player": "You"
+                    },
+                    "carryCollections": [
+                        "rescueChosen",
+                        "rescueSacrificed"
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "creature"
+                }
+            }
+        ],
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "rarity": "UNCOMMON",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e46aa9c-7a29-4eb4-bc44-a201c22824d2.jpg?1783939771",
+        "rulings": [
+            {
+                "date": "2013-09-15",
+                "text": "If either the sacrificed creature or the target creature card leaves the graveyard before the delayed triggered ability resolves during your next upkeep, it won't return."
+            },
+            {
+                "date": "2013-09-15",
+                "text": "However, if the sacrificed creature is put into another public zone instead of the graveyard, perhaps because it's your commander or because of another replacement effect, it will return to the battlefield from the zone it went to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Returned Centaur
 {
     "name": "Returned Centaur",

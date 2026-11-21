@@ -449,4 +449,23 @@ class ObjectIdentityTest : FunSpec({
         captured!!.objectReferences.origin shouldBe played.state.objectRef(cardId)
     }
 
+    test("successorZone follows an object to its very next zone and no further (CR 400.7)") {
+        val onBattlefield = inZone(Zone.BATTLEFIELD)
+        val battlefieldRef = onBattlefield.objectRef(cardId)!!
+        onBattlefield.successorZone(battlefieldRef) shouldBe null
+
+        // A replacement sent the card to exile instead of the graveyard: still followed.
+        val exiled = onBattlefield.moveToZone(cardId, ZoneKey(owner, Zone.BATTLEFIELD), ZoneKey(owner, Zone.EXILE))
+        exiled.successorZone(battlefieldRef) shouldBe ZoneKey(owner, Zone.EXILE)
+        exiled.objectIdentities.getValue(cardId).previousGeneration shouldBe battlefieldRef.generation
+
+        // Moving on again is yet another new object: no longer the successor.
+        val movedAgain = exiled.moveToZone(cardId, ZoneKey(owner, Zone.EXILE), ZoneKey(owner, Zone.GRAVEYARD))
+        movedAgain.successorZone(battlefieldRef) shouldBe null
+
+        // Survives a serialization round trip.
+        val restored = json.decodeFromString(GameState.serializer(), json.encodeToString(GameState.serializer(), exiled))
+        restored.successorZone(battlefieldRef) shouldBe ZoneKey(owner, Zone.EXILE)
+    }
+
 })

@@ -9,13 +9,17 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.RedirectZoneChange
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 
 /**
- * `CardSource.SacrificedThisWay` — the cards a sacrifice (cost or same-resolution effect) put into
- * the graveyard, gathered only while they are still there.
+ * `CardSource.SacrificedThisWay` — the cards a sacrifice (cost or same-resolution effect) made, in
+ * whatever public zone each went to (graveyard, or exile under a redirect replacement), gathered only
+ * while each is still the object the sacrifice made (CR 400.7).
  */
 class SacrificedThisWayGatherTest : ScenarioTestBase() {
 
@@ -54,8 +58,19 @@ class SacrificedThisWayGatherTest : ScenarioTestBase() {
         }
     }
 
+    private val graveyardExiler = card("Test Graveyard Exiler") {
+        manaCost = "{0}"
+        typeLine = "Enchantment"
+        replacementEffect(
+            RedirectZoneChange(
+                newDestination = Zone.EXILE,
+                appliesTo = EventPattern.ZoneChangeEvent(filter = GameObjectFilter.Any, to = Zone.GRAVEYARD),
+            )
+        )
+    }
+
     init {
-        listOf(sacReturner, exileReturner, tapReturner, effectReturner).forEach(cardRegistry::register)
+        listOf(sacReturner, exileReturner, tapReturner, effectReturner, graveyardExiler).forEach(cardRegistry::register)
 
         fun board(artifact: String, token: Boolean = false) = scenario()
             .withPlayers("P1", "P2")
@@ -91,6 +106,41 @@ class SacrificedThisWayGatherTest : ScenarioTestBase() {
             activate(game, "Test Sacrifice Returner", listOf(game.findPermanent("Grizzly Bears")!!, game.findPermanent("Hill Giant")!!))
             game.isInHand(1, "Grizzly Bears") shouldBe true
             game.isInHand(1, "Hill Giant") shouldBe false
+        }
+
+        test("a sacrificed card a replacement exiled instead is gathered from exile") {
+            val game = scenario()
+                .withPlayers("P1", "P2")
+                .withCardOnBattlefield(1, "Test Sacrifice Returner")
+                .withCardOnBattlefield(1, "Test Graveyard Exiler")
+                .withCardOnBattlefield(1, "Grizzly Bears")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            activate(game, "Test Sacrifice Returner", listOf(game.findPermanent("Grizzly Bears")!!))
+            game.isInHand(1, "Grizzly Bears") shouldBe true
+        }
+
+        test("a sacrificed card that has left the graveyard since is a new object and isn't gathered") {
+            val game = board("Test Sacrifice Returner")
+            val bears = game.findPermanent("Grizzly Bears")!!
+            val source = game.findPermanent("Test Sacrifice Returner")!!
+            val ability = sacReturner.activatedAbilities.single().id
+            game.execute(
+                ActivateAbility(
+                    game.player1Id, source, ability,
+                    costPayment = AdditionalCostPayment(variableCostPermanents = listOf(bears))
+                )
+            ).error shouldBe null
+            // With the ability on the stack, the card leaves the graveyard for exile.
+            game.state = game.state.moveToZone(
+                bears,
+                com.wingedsheep.engine.state.ZoneKey(game.player1Id, Zone.GRAVEYARD),
+                com.wingedsheep.engine.state.ZoneKey(game.player1Id, Zone.EXILE),
+            )
+            game.resolveStack()
+            game.isInExile(1, "Grizzly Bears") shouldBe true
+            game.isInHand(1, "Grizzly Bears") shouldBe false
         }
 
         test("an exile variable cost sacrifices nothing") {

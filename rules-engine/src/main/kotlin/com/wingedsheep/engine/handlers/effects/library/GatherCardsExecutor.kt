@@ -182,15 +182,26 @@ class GatherCardsExecutor(
                 }
             }
 
-            // The permanents sacrificed this way (a cost or an earlier same-resolution sacrifice),
-            // kept only while each is still in its owner's graveyard — a card that has moved on is
-            // a new object (CR 400.7), and a token is gone entirely.
+            // The cards the permanents sacrificed this way (a cost or an earlier same-resolution
+            // sacrifice) became: each is the very next object its card became, in whatever public
+            // zone it went to — its owner's graveyard, or exile / the command zone when a
+            // replacement sent it there instead. A card that has moved on again is yet another new
+            // object (CR 400.7), a card put into a hidden zone can't be followed, and a token is gone.
             is CardSource.SacrificedThisWay -> {
                 context.sacrificedPermanents.mapNotNull { snapshot ->
                     val cardId = snapshot.entityId
-                    val ownerId = state.getEntity(cardId)?.get<OwnerComponent>()?.playerId
-                        ?: return@mapNotNull null
-                    cardId.takeIf { it in state.getZone(ZoneKey(ownerId, Zone.GRAVEYARD)) }
+                    val ref = snapshot.objectRef
+                    if (ref == null) {
+                        // Legacy snapshot without a recorded visit: the graveyard read.
+                        val ownerId = state.getEntity(cardId)?.get<OwnerComponent>()?.playerId
+                            ?: return@mapNotNull null
+                        return@mapNotNull cardId.takeIf { it in state.getZone(ZoneKey(ownerId, Zone.GRAVEYARD)) }
+                    }
+                    val zone = state.successorZone(ref) ?: return@mapNotNull null
+                    cardId.takeIf {
+                        zone.zoneType.isPublic && zone.zoneType != Zone.BATTLEFIELD &&
+                            zone.zoneType != Zone.STACK && it in state.getZone(zone)
+                    }
                 }.distinct()
             }
 
