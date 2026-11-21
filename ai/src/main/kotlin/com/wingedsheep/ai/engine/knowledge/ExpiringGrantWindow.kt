@@ -602,6 +602,11 @@ internal object ExpiringGrantWindow {
         fightMustBeOn: Boolean,
     ): Boolean {
         val levers = effects.singleOrNull()?.let(::cantripLevers) ?: return false
+        // Aimed only at our own creatures (their board is empty, so ours are the only targets):
+        // the levers have no window on any turn, and holding would never cycle the card.
+        val projected = state.projectedState
+        val aimed = targets.mapNotNull { (it as? ChosenTarget.Permanent)?.entityId }
+        if (aimed.isNotEmpty() && aimed.all { projected.getController(it) == playerId }) return false
         return nothingCanSpend(
             state, playerId, levers,
             sourceId = null,

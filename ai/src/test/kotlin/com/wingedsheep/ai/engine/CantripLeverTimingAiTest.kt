@@ -61,6 +61,14 @@ class CantripLeverTimingAiTest : ScenarioTestBase() {
             }
         }
 
+        test("aimed at our own creature, with no opposing one to aim at, Stun is a plain cantrip") {
+            val game = position("Stun", activePlayer = 2, step = Step.END)
+            val stun = game.state.getZone(game.player1Id, Zone.HAND).first { game.state.getEntity(it)?.get<CardComponent>()?.name == "Stun" }
+            val cast = CastSpell(game.player1Id, stun, targets = listOf(ChosenTarget.Permanent(game.findPermanent("Hill Giant")!!)))
+            HoldPolicy(intents, refuseWastedPayoffs = true).verdictFor(game.state, game.player1Id, "Stun", cast = cast) shouldNotBe
+                TimingVerdict.NoWindow
+        }
+
         test("the live AI holds Stun at the opponent's end step instead of cashing it as a cantrip") {
             val game = position("Stun", activePlayer = 2, step = Step.END)
             val choice = AIPlayer.create(cardRegistry, game.player1Id, AiProfile.LIVE).chooseAction(game.state)
