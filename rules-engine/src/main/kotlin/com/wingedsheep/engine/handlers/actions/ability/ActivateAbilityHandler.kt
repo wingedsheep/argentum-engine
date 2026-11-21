@@ -187,8 +187,10 @@ class ActivateAbilityHandler(
             return ExecutionResult.error(state, "The source is already tapped and cannot pay its tap cost")
         }
 
-        // 2. Choices still to be made before any cost is paid (CR 601.2b–c): an opponent's targets,
-        //    X, which objects pay a cost, a target bounded by a cost-defined X.
+        // 2. Choices still to be made before any cost is paid (CR 601.2b–c): a target chosen at
+        //    random, an opponent's targets, X, which objects pay a cost, a target bounded by a
+        //    cost-defined X.
+        drawRandomTarget(state, activation, lockedCost, lockedX)?.let { return it }
         choicePauses.firstPendingChoice(state, activation)?.let { return it }
 
         // 3. Pay the total cost (CR 601.2g–h): mana abilities first, then every cost atom.
@@ -453,6 +455,36 @@ class ActivateAbilityHandler(
             }
         }
         return currentState
+    }
+
+    /**
+     * "… any target **chosen at random**" (Goblin Test Pilot): nobody picks the target — as the
+     * ability is announced, before any cost is paid (CR 601.2c precedes 601.2g–h), the engine draws
+     * one legal target uniformly from the game's seeded RNG, then re-enters the activation on the
+     * advanced state with the drawn target on the action, marked
+     * [ActivateAbility.opponentTargetsChosen] so the re-entry neither draws again nor routes the
+     * target to anyone. The SDK pins a random target to an ability's only, single, mandatory
+     * target requirement. `null` when this activation has no draw to make.
+     */
+    private fun drawRandomTarget(
+        state: GameState,
+        activation: Activation,
+        lockedCost: AbilityCost?,
+        lockedX: Int?
+    ): ExecutionResult? {
+        val action = activation.action
+        if (action.opponentTargetsChosen) return null
+        val requirement = activation.targetRequirements.singleOrNull()
+            ?.takeIf { it.chooser == TargetChooser.Random } ?: return null
+        val legalTargets = targetFinder.findLegalTargets(
+            state, requirement, action.playerId, action.sourceId,
+            targetingSourceType = TargetingSourceType.ACTIVATED_ABILITY
+        )
+        // No legal target: the ability can't be activated (CR 601.2c via 602.2b).
+        if (legalTargets.isEmpty()) return ExecutionResult.error(state, "${activation.sourceName} has no legal target to choose at random")
+        val (pick, drawn) = state.nextRandom { nextInt(legalTargets.size) }
+        val target = com.wingedsheep.engine.handlers.continuations.entityIdToChosenTarget(drawn, legalTargets[pick])
+        return executeActivation(drawn, action.copy(targets = listOf(target), opponentTargetsChosen = true), lockedCost, lockedX)
     }
 
     /**

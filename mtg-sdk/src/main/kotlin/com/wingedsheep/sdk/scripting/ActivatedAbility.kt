@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.scripting.effects.UnattachEquipmentEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.targets.TargetChooser
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.text.TextReplaceable
@@ -265,6 +266,14 @@ data class ActivatedAbility(
         // silently ignore it, so refuse the combination when the card is built.
         require(payOnlyWithManaOf == null || !isManaAbility) {
             "payOnlyWithManaOf is not supported on mana abilities"
+        }
+        // The activation path draws a random target only when it is the ability's one target and
+        // no mode adds more; beside other targets the controller would silently pick it instead.
+        val modeTargets = (effect as? com.wingedsheep.sdk.scripting.effects.ModalEffect)
+            ?.modes?.flatMap { it.targetRequirements }.orEmpty()
+        require((targetRequirements + modeTargets).none { it.chooser == TargetChooser.Random } ||
+            (targetRequirements.size == 1 && modeTargets.isEmpty() && !isManaAbility)) {
+            "A TargetChooser.Random target must be a non-mana activated ability's only target requirement"
         }
     }
 

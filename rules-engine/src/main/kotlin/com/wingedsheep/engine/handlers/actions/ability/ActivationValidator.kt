@@ -665,6 +665,11 @@ internal class ActivationValidator(
     ): String? {
         if (effectiveTargetReqs.isEmpty() && action.targets.isNotEmpty()) return "This ability has no targets"
         val controllerTargetReqs = effectiveTargetReqs.filter { it.chooser == TargetChooser.Controller }
+        // Every target is someone else's pick (an opponent's, or drawn at random): the engine
+        // chooses them during execute(), so a client-sent target would skip that choice.
+        if (controllerTargetReqs.isEmpty() && action.targets.isNotEmpty()) {
+            return "This ability's targets aren't chosen by its controller"
+        }
         // For a variable-count "exile/sacrifice one or more permanents you control" cost, X is
         // defined by the payer's cost choice (CR 601.2b) — the chosen set's total mana value
         // (Fabrication Foundry, whose reanimation target's "mana value X or less" legality is

@@ -529,8 +529,8 @@ object CardLinter {
      *   than one opponent, the controller picks which); nothing else does.
      * - `TriggeringPlayer` / `ControllerOfTriggeringEntity` — triggered abilities only, because
      *   both are read off a trigger context that nothing else has.
-     * - `Random` ("… chosen at random") — triggered abilities only: the trigger announcement path
-     *   is the one that draws the target.
+     * - `Random` ("… chosen at random") — activated or triggered abilities: both announcement
+     *   paths draw the target.
      *
      * Walks the JSON tree carrying which ability subtree we're inside, so the check covers every
      * container structurally (granted abilities, class levels, token abilities) regardless of which
@@ -553,13 +553,13 @@ object CardLinter {
                 val chooser = (element["chooser"] as? JsonPrimitive)?.contentOrNull
                 if (type in CHOOSER_BEARING_TARGET_TYPES) {
                     val misplaced = when (chooser) {
-                        "Opponent" -> !withinActivatedAbility && !withinTriggeredAbility
-                        "TriggeringPlayer", "ControllerOfTriggeringEntity", "Random" -> !withinTriggeredAbility
+                        "Opponent", "Random" -> !withinActivatedAbility && !withinTriggeredAbility
+                        "TriggeringPlayer", "ControllerOfTriggeringEntity" -> !withinTriggeredAbility
                         else -> false
                     }
                     if (misplaced) {
                         val expected =
-                            if (chooser == "Opponent") "an activated or triggered ability"
+                            if (chooser == "Opponent" || chooser == "Random") "an activated or triggered ability"
                             else "a triggered ability"
                         // Name the printed wording, not just the enum: that is what lets an author
                         // recognise the clause they were modelling.

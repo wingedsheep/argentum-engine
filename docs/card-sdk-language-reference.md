@@ -7163,12 +7163,17 @@ Every `TargetRequirement` carries count semantics (defaults shown):
   - `TargetChooser.Random` — "target … **chosen at random**" (Scab-Clan Giant: "When this creature
     enters, it fights target creature an opponent controls chosen at random" —
     `target(TargetFilter.CreatureOpponentControls, chooser = TargetChooser.Random)` with
-    `Effects.Fight(EffectTarget.Self, theirs)`). Nobody decides: as the trigger goes on the stack the
-    engine draws one legal target uniformly from the game's seeded RNG and announces it with no
-    decision. It is still a real target — hexproof/protection keep an object out of the draw, no legal
-    target removes the trigger (CR 603.3d), an illegal one at resolution fizzles it. Only one mandatory
-    target can be drawn: `TargetObject`/`AnyTarget` reject any other count, `TriggeredAbility` rejects a
-    random target beside other targets, and `CardLinter` fails it outside a triggered ability.
+    `Effects.Fight(EffectTarget.Self, theirs)`; Goblin Test Pilot: "{T}: This creature deals 2 damage
+    to any target chosen at random" — `target(AnyTarget(chooser = TargetChooser.Random))` on an
+    `activatedAbility`). Nobody decides: as the trigger goes on the stack, or as the activated ability
+    is announced (before its costs are paid), the engine draws one legal target uniformly from the
+    game's seeded RNG with no decision. It is still a real target — hexproof/protection keep an object
+    out of the draw, no legal target removes the trigger (CR 603.3d) or keeps the ability from being
+    activated, an illegal one at resolution fizzles it. The activation is offered with no target to
+    pick, and a client-sent target for it is refused. Only one mandatory target can be drawn:
+    `TargetObject`/`AnyTarget` reject any other count, `TriggeredAbility` and `ActivatedAbility`
+    reject a random target beside other targets (or modes, or on a mana ability), and `CardLinter`
+    fails it outside an activated or triggered ability.
 
   A chooser that resolves to nobody falls back to the controller rather than dropping the trigger: a
   legal target was already found, so somebody has to pick it. Choosers must agree across a trigger's whole

@@ -551,26 +551,39 @@ class CardLinterTest : DescribeSpec({
             findings[0].message shouldContain "a triggered ability"
         }
 
-        // Scab-Clan Giant: only the trigger announcement path draws a random target; on an
-        // activated ability the controller would silently pick it.
-        it("flags a TargetChooser.Random target on an activated ability") {
+        // Goblin Test Pilot: the activation path draws a random target too, so an activated
+        // ability may carry one; a spell has no path that draws it.
+        it("accepts a TargetChooser.Random target on an activated ability") {
             val card = instant(
-                "Wrongly Random-Chosen",
+                "Randomly Aimed",
                 CardScript(
                     activatedAbilities = listOf(
                         ActivatedAbility(
                             id = AbilityId("CardLinterTest_7"),
                             cost = AbilityCost.Tap,
-                            effect = DealDamageEffect(DynamicAmount.Fixed(1), EffectTarget.ContextTarget(0)),
+                            effect = DealDamageEffect(DynamicAmount.Fixed(2), EffectTarget.ContextTarget(0)),
                             targetRequirements = listOf(AnyTarget(chooser = TargetChooser.Random)),
                         )
                     ),
+                ),
+            )
+            CardLinter.lint(card).filterIsInstance<CardValidationError.UnsupportedOpponentChooser>()
+                .shouldBeEmpty()
+        }
+
+        it("flags a TargetChooser.Random target on a spell") {
+            val card = instant(
+                "Wrongly Random-Chosen",
+                CardScript(
+                    spellEffect = DealDamageEffect(DynamicAmount.Fixed(1), EffectTarget.ContextTarget(0)),
+                    targetRequirements = listOf(AnyTarget(chooser = TargetChooser.Random)),
                 ),
             )
             val findings = CardLinter.lint(card)
                 .filterIsInstance<CardValidationError.UnsupportedOpponentChooser>()
             findings.shouldHaveSize(1)
             findings[0].message shouldContain "chosen at random"
+            findings[0].message shouldContain "an activated or triggered ability"
         }
 
         it("rejects a random target that isn't one mandatory target") {
@@ -584,6 +597,14 @@ class CardLinterTest : DescribeSpec({
                     effect = DealDamageEffect(DynamicAmount.Fixed(1), EffectTarget.ContextTarget(0)),
                     targetRequirement = AnyTarget(chooser = TargetChooser.Random),
                     additionalTargetRequirements = listOf(AnyTarget()),
+                )
+            }
+            shouldThrow<IllegalArgumentException> {
+                ActivatedAbility(
+                    id = AbilityId("CardLinterTest_RandomPair"),
+                    cost = AbilityCost.Tap,
+                    effect = DealDamageEffect(DynamicAmount.Fixed(1), EffectTarget.ContextTarget(0)),
+                    targetRequirements = listOf(AnyTarget(chooser = TargetChooser.Random), AnyTarget()),
                 )
             }
         }

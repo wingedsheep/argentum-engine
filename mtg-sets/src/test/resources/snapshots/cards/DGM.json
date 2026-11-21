@@ -1218,6 +1218,58 @@
     ]
 }
 
+// Goblin Test Pilot
+{
+    "name": "Goblin Test Pilot",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Creature — Goblin Pilot Wizard",
+    "oracleText": "Flying\n{T}: This creature deals 2 damage to any target chosen at random.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Goblin Test Pilot:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0",
+                        "chooser": "Random"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"All pilots and prototypes destroyed. Extensive collateral damage inflicted. Conclusion: flawless design.\"\n—*Manual of Melek*",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a8dbb9aa-1bf8-447d-a96c-33e2248bfb01.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Golgari Cluestone
 {
     "name": "Golgari Cluestone",
