@@ -1939,7 +1939,7 @@
                         }
                     ]
                 },
-                "descriptionOverride": "Exile all creatures you control. At the beginning of the next combat, return them with haste."
+                "descriptionOverride": "{R}{W}, Exile this enchantment: Exile all creatures you control. At the beginning of the next combat, return those cards to the battlefield under their owner's control and those creatures gain haste until end of turn."
             }
         ],
         "staticAbilities": [

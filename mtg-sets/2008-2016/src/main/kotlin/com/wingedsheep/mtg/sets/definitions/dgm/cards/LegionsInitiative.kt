@@ -74,7 +74,9 @@ val LegionsInitiative = card("Legion's Initiative") {
                 carryCollections = listOf(exiled.key)
             ))
         }
-        description = "Exile all creatures you control. At the beginning of the next combat, return them with haste."
+        description = "{R}{W}, Exile this enchantment: Exile all creatures you control. At the beginning of the next " +
+            "combat, return those cards to the battlefield under their owner's control and those creatures " +
+            "gain haste until end of turn."
     }
 
     metadata {

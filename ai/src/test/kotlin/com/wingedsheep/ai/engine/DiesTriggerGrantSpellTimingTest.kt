@@ -55,6 +55,21 @@ class DiesTriggerGrantSpellTimingTest : ScenarioTestBase() {
             game.verdict() shouldBe TimingVerdict.NoWindow
         }
 
+        test("a sacrifice outlet of ours spends the granted trigger at any time") {
+            val game = scenario().withPlayers()
+                .withActivePlayer(1)
+                .withCardInHand(1, SHOWSTOPPER)
+                .withLandsOnBattlefield(1, "Swamp", 2)
+                .withLandsOnBattlefield(1, "Mountain", 1)
+                .withCardOnBattlefield(1, "Grizzly Bears")
+                .withCardOnBattlefield(1, "Ashnod's Altar")
+                .withCardOnBattlefield(2, "Hill Giant")
+                .apply { repeat(3) { withCardInLibrary(1, "Forest"); withCardInLibrary(2, "Swamp") } }
+                .build()
+                .advanceToPriority(1, Step.POSTCOMBAT_MAIN)
+            game.verdict() shouldNotBe TimingVerdict.NoWindow
+        }
+
         test("removal aimed at our Bears: the granted trigger can still pay off") {
             val game = board(active = 2).advanceToPriority(2, Step.PRECOMBAT_MAIN)
             game.castSpell(2, "Murder", game.findPermanent("Grizzly Bears")!!).error shouldBe null

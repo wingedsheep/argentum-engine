@@ -356,6 +356,9 @@ internal object ExpiringGrantWindow {
         val shrinkLoss = shrinkLosses(state, playerId, payoffs, sourceId, targets, xValue, intents) ?: return false
         return payoffs.none { payoff ->
             if (payoff.kind == PayoffKind.SHIELD) {
+                // A granted dies trigger is also spent by sacrificing the creature to an outlet of
+                // ours, at any time — the same third way [PayoffKind.BORROW] reads.
+                if (payoff.diesPayoff && controlsASacrificeOutlet(state, playerId, intents)) return@none true
                 return@none shieldCanStillPrevent(state, projected, playerId, payoff.target, sourceId, targets, sourceTaps)
                     ?: return false
             }
@@ -1540,6 +1543,8 @@ internal object ExpiringGrantWindow {
         val toughnessModifier: DynamicAmount? = null,
         /** For a [PayoffKind.SET_BASE]: the base toughness it sets, or null when it sets power only. */
         val setToughness: Int? = null,
+        /** For a [PayoffKind.SHIELD]: a granted dies trigger, which a sacrifice outlet of ours also spends. */
+        val diesPayoff: Boolean = false,
         /** For a [PayoffKind.CREATURE]: the payoff is the body itself — see [canStillFight]'s `animates`. */
         val animates: Boolean = false,
         /** For a [PayoffKind.CREATURE]: the payoff is only more blocks — see [canStillFight]'s `blocks`. */
@@ -1727,7 +1732,7 @@ internal object ExpiringGrantWindow {
                 // dies, manifest the top card of your library'" (Whisperwood Elemental): any granted
                 // dies trigger pays off the same way — only if the creature dies before cleanup.
                 returnsFromDeathThisTurn(leaf) || paysOffIfItDiesThisTurn(leaf) ->
-                    payoffs += Payoff(PayoffKind.SHIELD, (leaf as GrantTriggeredAbilityEffect).target)
+                    payoffs += Payoff(PayoffKind.SHIELD, (leaf as GrantTriggeredAbilityEffect).target, diesPayoff = true)
                 // "Until end of turn, whenever one or more Snakes you control deal combat damage to a
                 // player, …" (Aphelia, Viper Whisperer; Jace, Cunning Castaway): see [PayoffKind.CONNECT].
                 leaf is CreateGlobalTriggeredAbilityEffect && leaf.duration == Duration.EndOfTurn &&

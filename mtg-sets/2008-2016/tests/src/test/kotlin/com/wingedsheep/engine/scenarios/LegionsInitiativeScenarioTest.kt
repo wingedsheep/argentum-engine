@@ -112,6 +112,7 @@ class LegionsInitiativeScenarioTest : ScenarioTestBase() {
                     .withCardOnBattlefield(1, "Hill Giant", summoningSickness = false)
                     .withLandsOnBattlefield(1, "Mountain", 1)
                     .withLandsOnBattlefield(1, "Plains", 1)
+                    .apply { repeat(3) { withCardInLibrary(1, "Mountain"); withCardInLibrary(2, "Mountain") } }
                     .withActivePlayer(1)
                     .inPhase(Phase.COMBAT, Step.BEGIN_COMBAT)
                     .build()
@@ -125,6 +126,15 @@ class LegionsInitiativeScenarioTest : ScenarioTestBase() {
                 game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
                 withClue("this turn's beginning of combat had already begun, so the giant stays exiled") {
                     game.isInExile(1, "Hill Giant") shouldBe true
+                }
+
+                game.passUntilPhase(Phase.COMBAT, Step.BEGIN_COMBAT)
+                game.resolveStack()
+                val giant = game.findPermanent("Hill Giant")
+                withClue("the next combat (the opponent's turn) returns it under its owner's control, with haste") {
+                    (giant != null) shouldBe true
+                    game.state.projectedState.getController(giant!!) shouldBe game.player1Id
+                    game.state.projectedState.hasKeyword(giant, Keyword.HASTE) shouldBe true
                 }
             }
         }
