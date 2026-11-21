@@ -447,6 +447,7 @@ Alien Symbiosis
 Aligned Hedron Network
 Alirios, Enraptured
 Alisaie Leveilleur	polarity: ForEachEffect
+Alive // Well
 All Good Things...
 All Hallow's Eve	intent: Pipeline(graveyard→battlefield)
 All That Glitters
@@ -672,7 +673,7 @@ Animal Magnetism
 Animal Sanctuary
 Animar, Soul of Elements
 Animate Artifact	polarity: Aura>CompositeStaticAbility
-Animate Dead	intent: EnchantPutOntoBattlefieldEffect; intent: Pipeline(graveyard→battlefield)
+Animate Dead
 Animate Wall	polarity: Aura>CanAttackDespiteDefender
 Animating Faerie
 Animation Module
@@ -928,6 +929,7 @@ Armament Corps
 Armament Dragon
 Armament of Nyx
 Armasaur Guide
+Armed // Dangerous
 Armed and Armored	timing: ForEach>AddCardTypeEffect
 Armguard Familiar	intent: UnattachEquipmentEffect
 Armillary Sphere
@@ -1585,6 +1587,7 @@ Beasts of Bogardan
 Beatrix, Loyal General
 Bebop & Rocksteady
 Bebop, Warthog Warrior
+Beck // Call
 Beckett Mariner, Impetuous Ensign
 Become Brutes
 Become Immense
@@ -2351,6 +2354,7 @@ Break Under Pressure
 Break the Spell
 Breaker of Armies
 Breaker of Creation
+Breaking // Entering
 Breaking Wave
 Breaking of the Fellowship
 Breakneck Berserker
@@ -5004,6 +5008,7 @@ Dovin's Veto
 Dovin, Architect of Law	polarity: SkipStepOrPhaseEffect
 Dovin, Grand Arbiter
 Dovin, Hand of Control
+Down // Dirty
 Down in the Valley
 Down, Down to Goblin-town
 Downwind Ambusher
@@ -6313,6 +6318,7 @@ Fangorn, Tree Shepherd
 Fangren Hunter
 Fangren Pathcutter
 Fangs of Kalonia
+Far // Away
 Far Fortune, End Boss
 Faramir, Field Commander
 Faramir, Prince of Ithilien	polarity: CreateDelayedTriggerEffect
@@ -6774,6 +6780,7 @@ Fleeting Reflection
 Fleeting Spirit
 Fleetwheel Cruiser
 Flensing Raptor
+Flesh // Blood
 Flesh Burrower
 Flesh to Dust
 Fleshbag Marauder
@@ -7590,6 +7597,7 @@ Gishath, Sun's Avatar
 Gitaxian Anatomist
 Gitaxian Probe
 Gitaxian Raptor
+Give // Take
 Give In to Violence
 Give No Ground
 Gix's Caress
@@ -10923,7 +10931,7 @@ Lightwheel Enhancements
 Lignify
 Likeness Looter
 Lilah, Undefeated Slickshot	intent: MarkSpellExileOnResolveEffect
-Liliana Vess	intent: Pipeline(graveyard→battlefield)
+Liliana Vess
 Liliana of the Dark Realms	polarity: mixed(ModifyStatsEffect)
 Liliana of the Veil
 Liliana the Faultless
@@ -14227,6 +14235,7 @@ Professor Zei, Anthropologist
 Professor of Symbology
 Professor of Zoomancy
 Professor's Warning
+Profit // Loss
 Profound Journey
 Proft's Eidetic Memory
 Proft, Consulting Detective
@@ -14265,6 +14274,7 @@ Prosthetic Injector
 Protean Hulk
 Protean Raider
 Protean Thaumaturge
+Protect // Serve
 Protect the Negotiators
 Protection of the Hekma
 Protective Bubble
@@ -14838,6 +14848,7 @@ Reach the Horizon
 Read the Bones
 Read the Runes
 Read the Tides
+Ready // Willing
 Ready to Rumble
 Reality Heist
 Reality Hemorrhage
@@ -15375,7 +15386,7 @@ Rise from the Wreck
 Rise of Eagles
 Rise of Extus
 Rise of the Ants
-Rise of the Dark Realms	intent: Pipeline(graveyard→battlefield)
+Rise of the Dark Realms
 Rise of the Deathbringer
 Rise of the Dread Marn
 Rise of the Varmints
@@ -16703,7 +16714,7 @@ Sheltering Boughs
 Sheltering Landscape
 Sheltering Light
 Sheltering Word
-Sheoldred	intent: Pipeline(graveyard→battlefield)
+Sheoldred
 Sheoldred's Edict
 Sheoldred's Headcleaver
 Sheoldred's Restoration
@@ -17526,7 +17537,7 @@ Soul of New Phyrexia
 Soul of Ravnica
 Soul of Shandalar
 Soul of Theros
-Soul of Windgrace	intent: Pipeline(graveyard→battlefield)
+Soul of Windgrace
 Soul of Zendikar
 Soul of the Harvest
 Soul of the Rapids
@@ -19776,6 +19787,7 @@ Tocasia's Welcome
 Tocasia, Dig Site Mentor
 Tocatli Honor Guard
 Together as One
+Toil // Trouble
 Tokka & Rahzar, Terrible Twos
 Tolaria	polarity: RemoveKeywordEffect
 Tolarian Academy
@@ -20170,6 +20182,7 @@ Tunneler Wurm
 Tunneling Geopede
 Tura Kennerüd, Skyknight
 Turf Wound	polarity: PreventLandPlaysThisTurnEffect
+Turn // Burn
 Turn Against
 Turn Aside
 Turn Inside Out
