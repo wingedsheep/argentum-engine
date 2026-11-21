@@ -146,6 +146,16 @@ class CardRegistryTest : FunSpec({
         overlay.cardNamesIn(CardNamePool.NONARTIFACT_NONLAND) shouldContainExactlyInAnyOrder listOf("Grizzly Bears", "Hill Giant")
     }
 
+    test("the noncreature-nonland pool drops creatures, lands and artifact creatures, keeps noncreature artifacts") {
+        val live = CardRegistry().apply {
+            register(listOf(forest(), land("Darksteel Relic", "Artifact"), typedCreature("Ornithopter", "Artifact Creature"), bear("Grizzly Bears", 2)))
+        }
+        val overlay = CardRegistry(parent = live).apply { register(land("Sol Ring", "Artifact")) }
+
+        live.cardNamesIn(CardNamePool.NONCREATURE_NONLAND) shouldContainExactly listOf("Darksteel Relic")
+        overlay.cardNamesIn(CardNamePool.NONCREATURE_NONLAND) shouldContainExactlyInAnyOrder listOf("Darksteel Relic", "Sol Ring")
+    }
+
     test("the creature pool offers creature names, artifact creatures included, across both layers") {
         val live = CardRegistry().apply {
             register(listOf(forest(), land("Darksteel Relic", "Artifact"), typedCreature("Dryad Arbor", "Land Creature — Forest Dryad"), bear("Grizzly Bears", 2)))
