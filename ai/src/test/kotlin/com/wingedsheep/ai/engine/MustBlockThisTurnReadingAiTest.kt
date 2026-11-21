@@ -49,8 +49,9 @@ class MustBlockThisTurnReadingAiTest : ScenarioTestBase() {
                 val reading = AiReadingAudit.read(card(name))
                 withClue("$name: $reading") { reading.flags.none { "MarkMustBlockEffect" in it.key } shouldBe true }
             }
-            // A lure *spell* beside a rider castBuysNothing can't judge (Learn, a draw, a forced
-            // attack) is unjudged as a whole, so only its timing is unread — and says so.
+            // A lure *spell* beside a draw or Learn is judged by cantripLeverBuysNothing
+            // (CantripLeverTimingAiTest); Hustle's forced attack, a face HoldPolicy doesn't read,
+            // leaves only its timing unread — and says so.
             for (name in listOf("Academic Dispute", "Timely Interference", "Hustle // Bustle")) {
                 val reading = AiReadingAudit.read(card(name))
                 withClue("$name: $reading") {

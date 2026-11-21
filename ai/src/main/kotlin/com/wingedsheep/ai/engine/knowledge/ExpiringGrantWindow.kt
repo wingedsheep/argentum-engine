@@ -33,6 +33,9 @@ import com.wingedsheep.sdk.scripting.effects.CantAttackEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
 import com.wingedsheep.sdk.scripting.effects.MarkMustBlockEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockGroupEffect
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
+import com.wingedsheep.sdk.scripting.effects.LearnEffect
 import com.wingedsheep.sdk.scripting.effects.ChangeColorEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
@@ -569,6 +572,82 @@ internal object ExpiringGrantWindow {
             canWaitForATarget = canWaitForATarget,
         )
     }
+
+    /**
+     * Whether an instant's **combat lever is thrown away** here while the card it draws is not —
+     * the cantrip half [castBuysNothing] cannot judge, because it reads every leaf or none and a
+     * draw always buys something.
+     *
+     * The shape is a spell that is a sequence of end-of-turn combat levers — a lure or block ban
+     * ([PayoffKind.LURE]), a shrink, a keyword riding on the lure — beside lasting riders that
+     * only put cards in hand: "target creature can't block this turn. Draw a card." (Stun),
+     * "target creature gets -1/-0 until end of turn … draw a card" (Timely Interference), "target
+     * creature blocks this turn if able … Learn" (Academic Dispute). Cast at the opponent's end
+     * step it is a cantrip and nothing more, and the end-step reward for cantrips paid the AI to
+     * cast it there. The same instant cast in the lever's own window draws the same card, so the
+     * riders are no reason to spend it where the lever buys nothing; [nothingCanSpend] judges the
+     * levers alone, with [castBuysNothing]'s own guards (a threat on the stack releases it, a
+     * stat change counts only on a creature in the fight while the stack is empty).
+     *
+     * Read under [com.wingedsheep.ai.engine.AiProfile.refuseWastedPayoffs]; [HoldPolicy] lets
+     * [Patience.releasedOutright] cash it as a plain cantrip all the same.
+     */
+    fun cantripLeverBuysNothing(
+        state: GameState,
+        playerId: EntityId,
+        effects: List<Effect>,
+        targets: List<ChosenTarget>,
+        intents: IntentCatalog,
+        /** The stack is empty — see [castBuysNothing]'s `fightMustBeOn`. */
+        fightMustBeOn: Boolean,
+    ): Boolean {
+        val levers = effects.singleOrNull()?.let(::cantripLevers) ?: return false
+        // Aimed only at our own creatures (their board is empty, so ours are the only targets):
+        // the levers have no window on any turn, and holding would never cycle the card.
+        val projected = state.projectedState
+        val aimed = targets.mapNotNull { (it as? ChosenTarget.Permanent)?.entityId }
+        if (aimed.isNotEmpty() && aimed.all { projected.getController(it) == playerId }) return false
+        return nothingCanSpend(
+            state, playerId, levers,
+            sourceId = null,
+            targets = targets,
+            sourceTaps = false,
+            pendingSelfGrant = false,
+            intents = intents,
+            readGrants = readsLeverGrants(levers),
+            readShrinks = true,
+            fightMustBeOn = fightMustBeOn,
+            canWaitForATarget = true,
+        )
+    }
+
+    /**
+     * Whether [effect] is the shape [cantripLeverBuysNothing] judges. Public for the AI
+     * card-reading audit, which asks it of the whole spell.
+     */
+    fun readsCantripLever(effect: Effect): Boolean =
+        cantripLevers(effect)?.let { levers -> expiringPayoffs(levers, readShrinks = true) != null } == true
+
+    /**
+     * The levers of a top-level sequence whose other steps are card-in-hand riders, or null when
+     * the spell is not that shape — no rider, no lever, or a rider that does anything else.
+     */
+    private fun cantripLevers(effect: Effect): Effect? {
+        val steps = (effect as? CompositeEffect)?.takeIf { !it.stopOnError }?.effects ?: return null
+        val (riders, levers) = steps.partition { it is DrawCardsEffect || it is LearnEffect }
+        if (riders.isEmpty() || levers.isEmpty()) return null
+        if (riders.any { it is DrawCardsEffect && it.target != EffectTarget.Controller }) return null
+        val lever = levers.singleOrNull() ?: CompositeEffect(levers)
+        val payoffs = expiringPayoffs(lever, readShrinks = true) ?: return null
+        // A grant is read here only as the lure's rider (Academic Dispute's reach): a keyword grant
+        // of its own is a combat trick's question, not this one.
+        if (payoffs.none { it.kind in SHRINK_KINDS }) return null
+        return lever
+    }
+
+    /** Whether [levers] carry a keyword grant beside the lure or shrink it rides on. */
+    private fun readsLeverGrants(levers: Effect): Boolean =
+        expiringPayoffs(levers, readShrinks = true)?.any { it.kind !in SHRINK_KINDS } == true
 
     /** Whether [creature] is attacking or blocking in a combat whose damage is still to come. */
     internal fun inFightNow(state: GameState, creature: EntityId): Boolean {
@@ -1308,8 +1387,10 @@ internal object ExpiringGrantWindow {
         /**
          * A block requirement on a creature that is not the source, gone at cleanup or with this
          * combat — "target creature blocks this turn if able" (Academic Dispute, Timely
-         * Interference's kicker, Hustle). The other opponent-side combat lever: it drags their
-         * creature into a block of our attacker, so it buys something only on our turn, before
+         * Interference's kicker, Hustle) — or its mirror, a block ban for the turn ("target
+         * creature can't block this turn", Stun). The other opponent-side combat lever: it drags
+         * their creature into a block of our attacker, or keeps it out of one, so it buys something
+         * only on our turn, before
          * blocks, on an untapped opposing creature that still has an attack of ours to meet
          * ([opposingCanStillBeBlockedOut]) — the window [restrictionHasNoWindow] gives the same
          * lure on an activation. On our own creature, or on their turn, it changes nothing. Read
@@ -1658,6 +1739,11 @@ internal object ExpiringGrantWindow {
                 }
                 readShrinks && leaf is MarkMustBlockEffect && leaf.target != EffectTarget.Self &&
                     (leaf.duration == Duration.EndOfTurn || leaf.duration == Duration.EndOfCombat) ->
+                    payoffs += Payoff(PayoffKind.LURE, leaf.target)
+                // "Target creature can't block this turn" (Stun): the lure's mirror, spent in the
+                // same window — see [PayoffKind.LURE].
+                readShrinks && leaf is CantBlockEffect && leaf.target != EffectTarget.Self &&
+                    leaf.duration == Duration.EndOfTurn && leaf.attacker == null ->
                     payoffs += Payoff(PayoffKind.LURE, leaf.target)
                 readShrinks && leaf is RemoveKeywordEffect && leaf.duration == Duration.EndOfTurn &&
                     leaf.target != EffectTarget.Self ->

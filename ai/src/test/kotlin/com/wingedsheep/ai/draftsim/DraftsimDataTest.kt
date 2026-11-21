@@ -118,6 +118,22 @@ class DraftsimDataTest : FunSpec({
         withClue("unnormalized keys: $offenders") { offenders.isEmpty() shouldBe true }
     }
 
+    // A split card joins on its first face ("hustle"), never on its faces run together
+    // ("hustle bustle", the shape several vendored tables shipped): that key matches no card, so
+    // the card fell through to the effect heuristic.
+    test("no ratings table keys a split card by its faces run together") {
+        val splits = MtgSetCatalog.all.flatMap { it.cards }.map { it.name }.filter { "//" in it }.toSet()
+        val offenders = DraftsimData.ratedSetCodes().associateWith { code ->
+            val ratings = DraftsimData.tablesFor(listOf(code)).ratings
+            splits.filter { name ->
+                val joined = DraftsimData.nameKey(name.replace("//", " ").replace(Regex("\\s+"), " "))
+                joined in ratings && DraftsimData.nameKey(name) !in ratings
+            }
+        }.filterValues { it.isNotEmpty() }
+        withClue("split cards keyed by joined faces: $offenders") { offenders.isEmpty() shouldBe true }
+        DraftsimData.tablesFor(listOf("MKM")).ratings[DraftsimData.nameKey("Hustle // Bustle")] shouldNotBe null
+    }
+
     // ----- the join against our real card DB -----
 
     // Every table covers a whole set's booster pool, so our implemented subset should land almost
