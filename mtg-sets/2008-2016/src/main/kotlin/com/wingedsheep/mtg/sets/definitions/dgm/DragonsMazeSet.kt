@@ -15,7 +15,6 @@ object DragonsMazeSet : MtgSet {
     override val code = "DGM"
     override val displayName = "Dragon's Maze"
     override val releaseDate = "2013-05-03"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)

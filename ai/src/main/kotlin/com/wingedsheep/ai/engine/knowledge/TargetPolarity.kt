@@ -103,6 +103,7 @@ import com.wingedsheep.sdk.scripting.events.Recipient
 import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.CounterTargetSource
 import com.wingedsheep.sdk.scripting.effects.CreateAuraTokenEffect
+import com.wingedsheep.sdk.scripting.effects.ChangeWordInTextEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
@@ -1985,6 +1986,13 @@ object TargetPolarityAnalyzer {
             // teammates. Neither the one-blocker nor the all-blockers form fixes a target side;
             // keep both sides available to simulation, including beside a pump (Emergent Growth).
             is MustBeBlockedEffect -> leaf.target to TargetPolarity.FLEXIBLE
+            // "Change the text of target spell or permanent by replacing all instances of one color
+            // word with another" (Sleight of Mind, Trait Doctoring, Crystal Spray's basic land type):
+            // its worth is the words the target carries — our creature's "protection from white"
+            // turned to the opponent's colour, or their "islandwalk" turned to a land we don't
+            // control — and the words are chosen on resolution. Neither side is fixed, so both stay
+            // open and the simulation weighs what each candidate's rewritten text does.
+            is ChangeWordInTextEffect -> leaf.target to TargetPolarity.FLEXIBLE
             // "Target land becomes a 3/3 Elemental creature with haste until end of turn" (Embodiment
             // of Fury): a body-sized animate names nothing here, like a large base above, and alone it
             // reads as a gift ([animateSlots]). Beside an effect that reads the slot one way (Lizard,

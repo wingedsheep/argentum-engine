@@ -1,0 +1,1 @@
+- #4809 Reads populate (Wake the Reflections, Muster the Departed) as token making, a colour-word or land-type text rewrite (Trait Doctoring, Crystal Spray, Sleight of Mind) as a two-sided target the simulation picks, and an Aura whose granted trigger makes its host's controller lose life (Sinister Possession, Contaminated Bond, Relic Bane) as a drain on that player

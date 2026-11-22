@@ -452,6 +452,25 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Clash', inPlay: 'Both players reveal their top card for a bonus, which also lets you send bad draws to the bottom.' },
     ],
   },
+  DGM: {
+    tagline: 'All ten Ravnica guilds in one small set: gold cards, fuse split spells and Guildgates everywhere, so games reward the drafter who settles into a two-colour guild and splashes a third.',
+    setting: 'Ravnica during the Implicit Maze race, with every guild sending a runner through the city to claim the prize at its end.',
+    gameplay: 'Games play at a midrange pace. Nearly every pack holds a Guildgate or a gold card, so fixing is plentiful and three-colour decks are common. Each guild brings back its own mechanic, from Boros battalion and Gruul bloodrush to Orzhov extort and Azorius detain, and fuse split cards give two-colour decks a cheap half early and both halves late. Gatekeepers reward decks that play two or more Gates, and each guild\'s legendary Maze runner is a gold bomb to build around.',
+    tips: [
+      'Take Guildgates highly; they fix your mana and turn on Gatekeepers, so a three-colour deck stays consistent.',
+      'Fuse split cards fit two guilds at once: cast either half alone early, and keep both halves for a two-for-one late.',
+      'Pick a guild pair early but stay open to a splash; the gold rares and uncommons are the strongest cards in the set.',
+    ],
+    tryIf: 'gold cards, guild identity and three-colour decks with plenty of fixing',
+    power: 3, speed: 3, complexity: 4,
+    themes: ['multicolor'],
+    mechanics: [
+      { name: 'Fuse', inPlay: 'Split cards cast one half from your hand, or both for the combined cost, so every card is flexible across the game.' },
+      { name: 'Guild mechanics', inPlay: 'Battalion, bloodrush, extort, evolve, detain, overload, unleash and populate return, so each guild pair plays the way it did in its home set.' },
+      { name: 'Gatekeepers', inPlay: 'Creatures with a bonus on entering if you control two or more Gates, which makes Guildgates worth playing over basics.' },
+      { name: 'Maze runners', inPlay: 'Each guild has a legendary champion racing the Maze, a gold rare strong enough to pull you into its colour pair.' },
+    ],
+  },
   THS: {
     tagline: 'A Greek-myth format of heroic creatures, bestow Auras and monsters, where targeting your own creatures pays off and gods wake up for the deck most devoted to their colour.',
     setting: 'Theros, a plane of Greek myth where the gods of Nyx meddle in the lives of mortal heroes.',
