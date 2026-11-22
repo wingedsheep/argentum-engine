@@ -26,6 +26,7 @@ import com.wingedsheep.sdk.scripting.conditions.PlayerCastSpellsThisTurn
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
+import com.wingedsheep.sdk.scripting.effects.DoubleCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllLastKnownCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCountersEachKindMissingEffect
@@ -742,9 +743,14 @@ object SynergyAxes {
         return names
     }
 
+    // Doubling the counters on a permanent — every kind (Vorel of the Hull Clade; Zimone, Paradox
+    // Sculptor over each of its targets) or the +1/+1 kind (Biogenic Upgrade) — cashes them in the
+    // same way: with none placed, there is nothing to double.
     private fun carriesCounters(effect: Effect): Boolean = EffectWalker.leaves(effect).any {
-        it is MoveAllCountersEffect || it is MoveAllLastKnownCountersEffect || it is MoveCountersEffect ||
-            it is MoveChosenCountersToTargetEffect || it is MoveCountersEachKindMissingEffect
+        (it is ForEachEffect && carriesCounters(it.body)) ||
+            it is MoveAllCountersEffect || it is MoveAllLastKnownCountersEffect || it is MoveCountersEffect ||
+            it is MoveChosenCountersToTargetEffect || it is MoveCountersEachKindMissingEffect ||
+            (it is DoubleCountersEffect && (it.counterType == null || it.counterType == CounterType.PLUS_ONE_PLUS_ONE))
     }
 
     /**

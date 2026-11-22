@@ -1184,6 +1184,10 @@ object AiReadingAudit {
         // counter on target permanent or player", Skyship Plunderer) aims its one holder by polarity —
         // TargetPolarityAnalyzer reads it either way, and the simulation weighs each candidate's counters.
         if (leaf is ProliferateEffect) return true
+        // "Double the number of each kind of counter on target permanent" (Vorel of the Hull Clade,
+        // Zimone, Paradox Sculptor) is that targeted proliferate many times over: more of whatever the
+        // holder carries, which TargetPolarityAnalyzer reads FLEXIBLE for the simulation to weigh.
+        if (leaf is DoubleCountersEffect && leaf.counterType == null) return true
         // Its controller venturing into the dungeon (Planar Ally's attack, Clattering Skeletons' ETB, Dungeon
         // Map) has no target to aim and no window to hold it for: which dungeon and room is chosen at
         // resolution, and the room's own trigger (a scry, a Treasure, a draw) is what the simulation prices.
