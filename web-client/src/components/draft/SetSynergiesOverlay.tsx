@@ -4059,13 +4059,13 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Orzhov Drain',
         colors: ['W', 'B'],
         keyCard: 'Maw of the Obzedat',
-        description: "Make sturdy blockers, drain the opponent with life-loss effects and sacrifice spare creatures for a final team pump. A grindy midrange deck that wins the race on life totals.",
+        description: "Drain the opponent with life-loss and lifelink effects, then sacrifice spare creatures for a final team pump. A grindy midrange deck that wins the race on life totals.",
       },
       {
         name: 'Izzet Spells',
         colors: ['U', 'R'],
         keyCard: 'Fluxcharger',
-        description: "Fill the deck with instants and sorceries, then reward every spell with flyers that grow and burn that deals the finishing damage. A spells-matter tempo deck that wins with card quality and reach.",
+        description: "Fill the deck with instants and sorceries, then reward every spell with flyers that swap power and toughness to hit hard and burn that deals the finishing damage. A spells-matter tempo deck that wins with card quality and reach.",
       },
       {
         name: 'Golgari Counters',
