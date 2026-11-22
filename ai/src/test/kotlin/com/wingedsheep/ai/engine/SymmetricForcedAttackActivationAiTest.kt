@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
@@ -39,14 +40,14 @@ class SymmetricForcedAttackActivationAiTest : ScenarioTestBase() {
      * opponent's turn ([theirTurn]) the AI holds priority in their precombat main phase — the
      * window before their attack that auto-pass leaves it — else in its own.
      */
-    private fun diplomats(theirTurn: Boolean) = { s: ScenarioBuilder ->
+    private fun diplomats(theirTurn: Boolean, blocker: Boolean = true) = { s: ScenarioBuilder ->
         s.withPlayers()
             .withTurnNumber(5)
             .let { if (theirTurn) it.withActivePlayer(2) else it }
             .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
             .withLandsOnBattlefield(1, "Mountain", 2)
             .withCardOnBattlefield(1, "Goblin Diplomats")
-            .withCardOnBattlefield(1, "Horned Turtle")
+            .let { if (blocker) it.withCardOnBattlefield(1, "Horned Turtle") else it }
             .withLandsOnBattlefield(2, "Forest", 2)
             .withCardOnBattlefield(2, "Grizzly Bears")
             .let { b -> (1..10).fold(b) { acc, _ -> acc.withCardInLibrary(1, "Mountain").withCardInLibrary(2, "Forest") } }
@@ -86,6 +87,11 @@ class SymmetricForcedAttackActivationAiTest : ScenarioTestBase() {
             diplomats(theirTurn = true)(scenario()).diplomatsVerdict()
                 .shouldBeInstanceOf<TimingVerdict.Adjust>().reason shouldBe "forces their attack"
             diplomats(theirTurn = false)(scenario()).diplomatsVerdict() shouldBe TimingVerdict.NoWindow
+        }
+
+        test("not rewarded when tapping it leaves us no blocker") {
+            diplomats(theirTurn = true, blocker = false)(scenario()).diplomatsVerdict()
+                .let { (it as? TimingVerdict.Adjust)?.reason } shouldNotBe "forces their attack"
         }
 
         test("the AI activates Goblin Diplomats in the opponent's main phase, before they attack") {

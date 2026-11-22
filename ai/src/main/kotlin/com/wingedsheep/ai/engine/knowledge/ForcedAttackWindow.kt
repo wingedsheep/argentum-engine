@@ -25,8 +25,8 @@ import com.wingedsheep.sdk.scripting.effects.MustAttackGroupEffect
  *
  * So the window is the opponent's turn from upkeep through the beginning of combat, and only while
  * they control a creature that could attack now and isn't already required to. Only a
- * "this turn" requirement ([Duration.EndOfTurn]) on the card's own spell reads; a trigger's
- * (Kardur's entry) is priced by the body it comes with.
+ * "this turn" requirement ([Duration.EndOfTurn]) on the card's own spell or on its activated ability
+ * (Goblin Diplomats) reads; a trigger's (Kardur's entry) is priced by the body it comes with.
  */
 object ForcedAttackWindow {
 
@@ -98,6 +98,17 @@ object ForcedAttackWindow {
         if (entity.has<TappedComponent>()) return false
         return !entity.has<SummoningSicknessComponent>() ||
             projected.hasKeyword(id, Keyword.HASTE) || projected.canAttackAsThoughHasty(id)
+    }
+
+    /**
+     * Whether [playerId] keeps an untapped creature other than [source] to block the attack it would
+     * force: tapping the only blocker to make them attack (Goblin Diplomats) forces damage onto us.
+     */
+    fun keepsABlocker(state: GameState, playerId: EntityId, source: EntityId): Boolean {
+        val projected = state.projectedState
+        return projected.getBattlefieldControlledBy(playerId).any { id ->
+            id != source && projected.isCreature(id) && state.getEntity(id)?.has<TappedComponent>() == false
+        }
     }
 
     /** The steps of an opponent's turn before attackers are declared. */

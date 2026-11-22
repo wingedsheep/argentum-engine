@@ -435,12 +435,13 @@ class HoldPolicy(
             ?: return TimingVerdict.Neutral
         // "{T}: Each creature attacks this turn if able" (Goblin Diplomats): on the opponent's turn
         // before they attack it forces their attack — the activation twin of the spell reading in
-        // [verdictFor]. On our own turn the same requirement binds only our creatures: a price.
+        // [verdictFor]. On our own turn the same requirement binds only our creatures: a price. Only
+        // rewarded while another untapped creature of ours is left to block the attack it forces.
         if (forcedAttacksOnTheirTurn) {
             if (ForcedAttackWindow.bindsOwnAttackNow(state, playerId, ability.effect)) return TimingVerdict.NoWindow
             if (ForcedAttackWindow.forcesAnAttack(
                     state, playerId, ability.effect, activation.targets.mapNotNull { (it as? ChosenTarget.Player)?.playerId },
-                )
+                ) && ForcedAttackWindow.keepsABlocker(state, playerId, activation.sourceId)
             ) {
                 return TimingVerdict.Adjust(FORCED_ATTACK_WINDOW, reason = "forces their attack")
             }
