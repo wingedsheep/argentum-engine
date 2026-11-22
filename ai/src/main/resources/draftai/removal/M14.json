@@ -85,6 +85,10 @@
     "removal",
     "creature-removal"
   ],
+  "Liliana of the Dark Realms": [
+    "removal",
+    "creature-removal"
+  ],
   "Liturgy of Blood": [
     "removal",
     "creature-removal"
@@ -160,6 +164,10 @@
     "removal",
     "creature-removal",
     "planeswalker-removal"
+  ],
+  "Time Ebb": [
+    "removal",
+    "creature-removal"
   ],
   "Volcanic Geyser": [
     "removal",

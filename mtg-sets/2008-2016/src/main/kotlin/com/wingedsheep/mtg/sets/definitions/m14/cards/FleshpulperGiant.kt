@@ -32,7 +32,7 @@ val FleshpulperGiant = card("Fleshpulper Giant") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "140"
         artist = "Alex Horley-Orlandelli"
-        flavorText = "\"He doesn't hate small folk. He just likes the squishing sound they make.\""
+        flavorText = "He doesn't hate small folk. He just likes the squishing sound they make."
         imageUri = "https://cards.scryfall.io/normal/front/f/2/f2726d3c-c182-4d8a-a723-0de2c5c4b152.jpg?1783939913"
     }
 }
