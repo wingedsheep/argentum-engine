@@ -34,7 +34,7 @@ class StackExecutors(
         CopyTargetSpellOrAbilityExecutor(dynamicAmountEvaluator = amountEvaluator, targetFinder = targetFinder),
         CopyNextSpellCastExecutor(),
         CopyEachSpellCastExecutor(),
-        MakeNextSpellUncounterableExecutor(),
+        GrantNextSpellRiderExecutor(),
         GrantNextSpellResolveDestinationExecutor(),
         GrantNextSpellAffinityExecutor(),
         GrantNextSpellKeywordExecutor(),

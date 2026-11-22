@@ -6259,7 +6259,28 @@ object Effects {
      */
     fun MakeNextSpellUncounterable(
         spellFilter: GameObjectFilter = GameObjectFilter.Any
-    ): Effect = com.wingedsheep.sdk.scripting.effects.MakeNextSpellUncounterableEffect(spellFilter)
+    ): Effect = com.wingedsheep.sdk.scripting.effects.GrantNextSpellRiderEffect(
+        com.wingedsheep.sdk.scripting.effects.ManaSpellRider.MakesSpellUncounterable(),
+        spellFilter
+    )
+
+    /**
+     * The next spell matching [spellFilter] you cast this turn enters with [count] additional
+     * [counterType] counters (one-shot; Savage Summoning: "That creature enters with an additional
+     * +1/+1 counter on it."). The counters are owed on the spell and placed as the permanent enters,
+     * so counter-placement replacements apply then; a countered spell or a non-permanent spell gets
+     * nothing, and the rider is spent either way.
+     */
+    fun GrantNextSpellEntryCounters(
+        spellFilter: GameObjectFilter = GameObjectFilter.Creature,
+        counterType: com.wingedsheep.sdk.core.CounterType = com.wingedsheep.sdk.core.CounterType.PLUS_ONE_PLUS_ONE,
+        count: Int = 1,
+    ): Effect = com.wingedsheep.sdk.scripting.effects.GrantNextSpellRiderEffect(
+        com.wingedsheep.sdk.scripting.effects.ManaSpellRider.EntersWithCountersWhenSpent(
+            GameObjectFilter.Any, counterType, count
+        ),
+        spellFilter
+    )
 
     /**
      * The next spell matching [spellFilter] you cast (from [fromZones], `null` = anywhere) this turn

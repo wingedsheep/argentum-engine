@@ -10283,7 +10283,10 @@
                         "CostTap"
                     ]
                 },
-                "effect": "MakeNextSpellUncounterable",
+                "effect": {
+                    "type": "GrantNextSpellRider",
+                    "rider": "MakesSpellUncounterable"
+                },
                 "descriptionOverride": "The next spell you cast this turn can't be countered."
             }
         ],

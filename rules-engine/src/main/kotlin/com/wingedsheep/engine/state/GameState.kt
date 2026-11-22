@@ -278,8 +278,8 @@ data class GameState(
     /** Pending spell copies — copy the next instant/sorcery spell cast by a player (e.g., Howl of the Horde) */
     val pendingSpellCopies: List<PendingSpellCopy> = emptyList(),
 
-    /** Pending "next spell can't be countered" riders — stamp the next matching spell cast (e.g., Mistrise Village) */
-    val pendingUncounterableSpells: List<PendingUncounterableSpell> = emptyList(),
+    /** Pending "the next spell you cast this turn gets <rider>" grants (Mistrise Village, Savage Summoning) */
+    val pendingNextSpellRiders: List<PendingNextSpellRider> = emptyList(),
     val pendingNextSpellAffinities: List<PendingNextSpellAffinity> = emptyList(),
 
     /**

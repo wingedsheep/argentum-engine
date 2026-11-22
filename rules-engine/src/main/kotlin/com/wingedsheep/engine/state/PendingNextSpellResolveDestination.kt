@@ -12,7 +12,7 @@ import kotlinx.serialization.Serializable
  * [com.wingedsheep.sdk.scripting.effects.GrantNextSpellResolveDestinationEffect] (Soulfire Grand
  * Master).
  *
- * Sibling of [PendingUncounterableSpell]: when [controllerId] next casts a matching spell from one of
+ * Sibling of [PendingNextSpellRider]: when [controllerId] next casts a matching spell from one of
  * [fromZones], `CastTriggers.consumeResolveDestinationRiders` consumes every matching entry and stamps that spell with an
  * [com.wingedsheep.engine.state.components.identity.AfterResolveDestinationComponent] that applies
  * only if it resolves. Cleared at every turn boundary by

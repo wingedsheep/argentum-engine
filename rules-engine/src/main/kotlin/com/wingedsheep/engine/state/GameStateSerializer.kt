@@ -29,8 +29,13 @@ object GameStateSerializer : JsonTransformingSerializer<GameState>(GameState.gen
         if (stack?.any { it is JsonObject && "decisionId" in it } == true) {
             throw UnsupportedGameStateFormatException("Unsupported GameState format: continuation decisionId")
         }
+        // The pending can't-be-countered riders became general next-spell riders; an entry without
+        // a `rider` decodes as the can't-be-countered stamp (the field's default).
+        val renamed = state["pendingUncounterableSpells"]?.let { old ->
+            JsonObject(state - "pendingUncounterableSpells" + ("pendingNextSpellRiders" to old))
+        } ?: state
         // Trigger facts used to be flat fields on each carrier; move them into the nested record
         // before permissive decoding (ignoreUnknownKeys) can discard them.
-        return ExtraTurnsPendingLift.lift(PendingTriggersFrameLift.lift(RetiredSdkTypeLift.lift(LegacyEffectContinuationLift.lift(LegacyTriggerContextLift.lift(state)))))
+        return ExtraTurnsPendingLift.lift(PendingTriggersFrameLift.lift(RetiredSdkTypeLift.lift(LegacyEffectContinuationLift.lift(LegacyTriggerContextLift.lift(renamed)))))
     }
 }

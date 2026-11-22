@@ -15,7 +15,7 @@ import kotlin.reflect.KClass
  * Adds a [PendingNextSpellAffinity] rider to the game state. The cost calculator reduces the
  * controller's next matching spell by their count of the rider's card type, and
  * [com.wingedsheep.engine.handlers.actions.spell.CastSpellHandler] consumes the rider on that cast.
- * Mirrors [MakeNextSpellUncounterableExecutor].
+ * Mirrors [GrantNextSpellRiderExecutor].
  */
 class GrantNextSpellAffinityExecutor : EffectExecutor<GrantNextSpellAffinityEffect> {
 

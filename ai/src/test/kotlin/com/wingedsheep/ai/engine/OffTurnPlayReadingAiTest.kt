@@ -34,4 +34,14 @@ class OffTurnPlayReadingAiTest : FunSpec({
         drumbellower shouldContain IntentTag.COMBAT_ENHANCEMENT
         withClue("no land or rock untaps") { drumbellower shouldNotContain IntentTag.OFF_TURN_PLAY }
     }
+
+    test("a one-shot next-spell flash grant reads as off-turn play, its riders as protection and growth") {
+        val summoning = tags("Savage Summoning")
+        summoning shouldContainAll listOf(IntentTag.OFF_TURN_PLAY, IntentTag.PROTECTION, IntentTag.PUMP)
+        tags("Quicken") shouldContain IntentTag.OFF_TURN_PLAY
+    }
+
+    test("a next-spell can't-be-countered rider reads as protecting the spell") {
+        tags("Mistrise Village") shouldContain IntentTag.PROTECTION
+    }
 })
