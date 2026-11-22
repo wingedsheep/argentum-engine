@@ -920,7 +920,7 @@ Ark of Hunger
 Arlinn Kord
 Arlinn's Wolf
 Arlinn, Voice of the Pack
-Arlinn, the Pack's Hope	intent: GrantFlashToSpellsEffect; intent: GrantReplacementEffectEffect
+Arlinn, the Pack's Hope
 Arm the Cathars
 Armada Wurm
 Armadillo Cloak
@@ -5741,7 +5741,7 @@ Embrace the Paradox
 Emerald Dragonfly
 Emerald Medallion
 Emerge from the Cocoon
-Emergence Zone	intent: GrantFlashToSpellsEffect
+Emergence Zone
 Emergency Eject
 Emergency Holographic Crew
 Emergency Medical Hologram
@@ -12142,7 +12142,7 @@ Mistform Warchief	intent: BecomeCreatureTypeEffect; timing: BecomeCreatureTypeEf
 Misthoof Kirin
 Mistmeadow Council
 Mistral Singer
-Mistrise Village	intent: MakeNextSpellUncounterableEffect
+Mistrise Village
 Mists of Littjara
 Mistvault Bridge
 Mistwalker
@@ -16077,6 +16077,7 @@ Savage Offensive
 Savage Punch
 Savage Smash
 Savage Stomp
+Savage Summoning
 Savage Surge
 Savage Thallid
 Savage Twister
@@ -18988,7 +18989,7 @@ Teferi's Wavecaster
 Teferi, Hero of Dominaria
 Teferi, Master of Time	intent: PhaseOutEffect; polarity: PhaseOutEffect
 Teferi, Temporal Pilgrim
-Teferi, Time Raveler	intent: GrantFlashToSpellsEffect
+Teferi, Time Raveler
 Teferi, Timeless Voyager	intent: ForEach>PhaseOutEffect; polarity: ForEachEffect
 Teferi, Who Slows the Sunset	polarity: GainLifeEffect; polarity: Pipeline(ChosenTargets→?); polarity: TapUntapCollectionEffect
 Tegwyll, Duke of Splendor
@@ -19459,7 +19460,7 @@ Thelonite Druid
 Thelonite Hermit
 Thelonite Monk	intent: SetLandTypeEffect; polarity: SetLandTypeEffect
 Theoretical Necromancer
-Theorist's Proxy	intent: MakeNextSpellUncounterableEffect
+Theorist's Proxy
 Theorist's Sanctum
 Theorix Annex
 Theorix Charm
