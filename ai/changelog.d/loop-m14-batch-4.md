@@ -1,0 +1,1 @@
+- #TBD Reads "creatures of the chosen type" payoffs (Door of Destinies, Banner of Kinship) as tribal, fed by the pool's biggest tribe, and a creature land that gains all creature types (Mutavault) as a member of every tribe.

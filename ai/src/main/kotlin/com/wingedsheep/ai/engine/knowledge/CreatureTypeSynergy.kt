@@ -6,7 +6,21 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
+import com.wingedsheep.sdk.scripting.CompositeStaticAbility
+import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.GrantDynamicStats
+import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.ModifySpellCost
+import com.wingedsheep.sdk.scripting.ModifyStats
+import com.wingedsheep.sdk.scripting.SpellCostTarget
+import com.wingedsheep.sdk.scripting.StaticAbility
+import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
+import com.wingedsheep.sdk.scripting.filters.unified.Scope
+import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.serialization.CardSerialization
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -53,6 +67,8 @@ internal object CreatureTypeSynergy {
                 if (leaf is CreateTokenEffect) leaf.creatureTypes.filter { it in CREATURE_TYPES }.mapTo(this, ::Subtype)
             }
         }
+        // A creature land is its animation's types while it fights (Treetop Village is an Ape).
+        for (animation in selfAnimations(card)) animation.creatureTypes.filter { it in CREATURE_TYPES }.mapTo(this, ::Subtype)
     }
 
     /** Broad own-team conversion needs both off-tribe bodies and a tribal payoff. */
@@ -60,8 +76,51 @@ internal object CreatureTypeSynergy {
         script.staticAbilities.any { it is GrantChosenSubtype && it.filter == GroupFilter.AllCreaturesYouControl }
     }
 
-    /** A changeling is every creature type, so it feeds every tribe. */
-    fun everyType(card: CardDefinition): Boolean = Keyword.CHANGELING in card.keywords
+    /**
+     * A payoff for "the chosen creature type": a static that helps your creatures of the type named
+     * as it entered ("creatures you control of the chosen type get +1/+1", Banner of Kinship, Door
+     * of Destinies) or makes your spells of that type cheaper. Which type is a game choice, so it
+     * rewards whichever tribe the deck has most of ([DeckSynergy.Counts.bestTribeMembers]).
+     */
+    fun rewardsChosenTribe(card: CardDefinition): Boolean = scripts(card).any { script ->
+        script.staticAbilities.flatMap(::unwrap).any(::helpsChosenType)
+    }
+
+    private fun helpsChosenType(ability: StaticAbility): Boolean {
+        if (ability is ModifySpellCost) {
+            val filter = (ability.target as? SpellCostTarget.YouCast)?.filter ?: return false
+            return CardPredicate.HasChosenSubtype in filter.cardPredicates
+        }
+        val group: GroupFilter = when (ability) {
+            is ModifyStats -> ability.filter.takeIf { ability.powerBonus + ability.toughnessBonus > 0 }
+            is GrantDynamicStats -> ability.filter
+            is GrantKeyword -> ability.filter
+            else -> null
+        } ?: return false
+        return group.chosenSubtypeKey != null && group.scope is Scope.Battlefield && !opponents(group.baseFilter)
+    }
+
+    private fun opponents(filter: GameObjectFilter): Boolean =
+        filter.controllerPredicate == ControllerPredicate.ControlledByOpponent || filter.anyOf.any(::opponents)
+
+    private fun unwrap(ability: StaticAbility): List<StaticAbility> = when (ability) {
+        is ConditionalStaticAbility -> unwrap(ability.ability)
+        is CompositeStaticAbility -> ability.abilities.flatMap(::unwrap)
+        else -> listOf(ability)
+    }
+
+    /**
+     * A changeling is every creature type, so it feeds every tribe — printed, or granted by the
+     * card's own animation ("becomes a 2/2 creature with all creature types", Mutavault).
+     */
+    fun everyType(card: CardDefinition): Boolean = Keyword.CHANGELING in card.keywords ||
+        selfAnimations(card).any { Keyword.CHANGELING in it.keywords }
+
+    /** "This land becomes a … creature" effects the card's own non-mana activated abilities make. */
+    private fun selfAnimations(card: CardDefinition): List<BecomeCreatureEffect> = scripts(card).flatMap { script ->
+        script.activatedAbilities.filterNot { it.isManaAbility }.flatMap { EffectWalker.leaves(it.effect) }
+            .filterIsInstance<BecomeCreatureEffect>().filter { it.target == EffectTarget.Self }
+    }
 
     private fun scripts(card: CardDefinition): List<CardScript> = listOf(card.script) + card.cardFaces.map { it.script }
 

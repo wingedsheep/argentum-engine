@@ -108,7 +108,11 @@ private fun report(card: CardDefinition, reading: AiReadingAudit.CardReading, ra
         else listOfNotNull(
             synergy.feeds.takeIf { it.isNotEmpty() }?.let { "feeds " + it.joinToString(", ", transform = ::axisLabel) },
             synergy.rewards.takeIf { it.isNotEmpty() }?.let { "rewards " + it.joinToString(", ", transform = ::axisLabel) },
+            "is every creature type".takeIf { synergy.everyTribe },
+            synergy.tribes.takeIf { it.isNotEmpty() && !synergy.everyTribe && synergy.card?.typeLine?.isCreature != true }
+                ?.let { "makes " + it.joinToString(", ") { t -> t.value } },
             "converts creatures to a chosen tribe".takeIf { synergy.grantsChosenTribe },
+            "asks for creatures of the chosen type".takeIf { synergy.rewardsChosenTribe },
             synergy.tribesRewarded.takeIf { it.isNotEmpty() }?.let { "asks for " + it.joinToString(", ") { t -> t.value } },
             synergy.asks.takeIf { it.isNotEmpty() }
                 ?.let { "asks for " + it.joinToString(", ") { ask -> "${ask.filter.description} (${ask.wanted.toInt()})" } },

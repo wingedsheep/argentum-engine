@@ -142,6 +142,11 @@ data class SynergyProfile(
     val everyTribe: Boolean = false,
     /** Converts our creatures to one chosen tribe; it is not itself a member of every tribe. */
     val grantsChosenTribe: Boolean = false,
+    /**
+     * Pays off "the chosen creature type" (Door of Destinies, Banner of Kinship): its controller
+     * names a type as it enters, so it rewards whichever tribe the deck has the most of.
+     */
+    val rewardsChosenTribe: Boolean = false,
     val asks: List<CardAsk> = emptyList(),
     val card: CardDefinition? = null,
     val standsAlone: Boolean = false,
@@ -151,10 +156,10 @@ data class SynergyProfile(
     /** No synergy reading at all — though [card] may still match another card's [asks]. */
     val isEmpty: Boolean
         get() = feeds.isEmpty() && rewards.isEmpty() && tribes.isEmpty() && tribesRewarded.isEmpty() &&
-            !everyTribe && !grantsChosenTribe && asks.isEmpty() && punishes.isEmpty()
+            !everyTribe && !grantsChosenTribe && !rewardsChosenTribe && asks.isEmpty() && punishes.isEmpty()
 
     /** Rewards an axis or asks for a kind of card: a card whose value hangs on the rest of the deck. */
-    val isPayoff: Boolean get() = grantsChosenTribe || rewards.isNotEmpty() || tribesRewarded.isNotEmpty() || asks.isNotEmpty()
+    val isPayoff: Boolean get() = grantsChosenTribe || rewardsChosenTribe || rewards.isNotEmpty() || tribesRewarded.isNotEmpty() || asks.isNotEmpty()
 
     /** Feeds an axis, is (or makes) some creature type, or is a printed card some ask can match. */
     val isFeeder: Boolean get() = feeds.isNotEmpty() || tribes.isNotEmpty() || everyTribe || card != null
@@ -327,6 +332,7 @@ object SynergyAxes {
             tribesRewarded = CreatureTypeSynergy.rewarded(card),
             everyTribe = CreatureTypeSynergy.everyType(card),
             grantsChosenTribe = CreatureTypeSynergy.grantsChosenTribe(card),
+            rewardsChosenTribe = CreatureTypeSynergy.rewardsChosenTribe(card),
             asks = CardAsks.of(card),
             card = card,
             standsAlone = CardIntentAnalyzer.analyze(card).tags.any { it in ANSWERS },

@@ -313,6 +313,84 @@
     ]
 }
 
+// Door of Destinies
+{
+    "name": "Door of Destinies",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "As this artifact enters, choose a creature type.\nWhenever you cast a spell of the chosen type, put a charge counter on this artifact.\nCreatures you control of the chosen type get +1/+1 for each charge counter on this artifact.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Door of Destinies:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "HasChosenSubtype"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "CHARGE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "creature ctrl:you",
+                    "chosenSubtypeKey": "chosenCreatureType"
+                },
+                "powerBonus": {
+                    "type": "EntityProperty",
+                    "entity": "Self",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": "CHARGE"
+                    }
+                },
+                "toughnessBonus": {
+                    "type": "EntityProperty",
+                    "entity": "Self",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": "CHARGE"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CREATURE_TYPE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "rarity": "RARE",
+        "artist": "Larry MacDougall",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac4800be-5f77-42f5-914c-2a8e647e3af5.jpg?1783942774",
+        "rulings": [
+            {
+                "date": "2008-04-01",
+                "text": "If you cast a creature spell of the chosen type, Door of Destinies will get a charge counter before the creature enters. The creature will enter with the additional boost to its power and toughness."
+            },
+            {
+                "date": "2013-07-01",
+                "text": "Creature types, such as Human or Sliver, appear after the dash on the type line of creatures. Notably, artifact is not a creature type. A creature may have more than one creature type, such as Goblin Warrior. Such a creature would benefit from Door of Destinies if the chosen creature type was Goblin or Warrior."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Fertilid
 {
     "name": "Fertilid",
@@ -614,6 +692,68 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Mutavault
+{
+    "name": "Mutavault",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{1}: This land becomes a 2/2 creature with all creature types until end of turn. It's still a land.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mutavault:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Mutavault:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "keywords": [
+                        "CHANGELING"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "rarity": "RARE",
+        "artist": "Fred Fields",
+        "flavorText": "Some changelings born at Velis Vel never return, but their essence never leaves.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8ca3c48b-f104-4292-9a4e-2ce87a65893c.jpg?1783942774",
+        "rulings": [
+            {
+                "date": "2025-07-25",
+                "text": "If this land becomes a creature but you haven't controlled it continuously since your most recent turn began, you won't be able to activate its mana ability or attack with it that turn."
+            }
+        ]
+    }
 }
 
 // Negate

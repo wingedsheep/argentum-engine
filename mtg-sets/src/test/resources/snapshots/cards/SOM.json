@@ -3711,6 +3711,91 @@
     ]
 }
 
+// Ratchet Bomb
+{
+    "name": "Ratchet Bomb",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Put a charge counter on this artifact.\n{T}, Sacrifice this artifact: Destroy each nonland permanent with mana value equal to the number of charge counters on this artifact.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ratchet Bomb:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "CHARGE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "{T}: Put a charge counter on this artifact."
+            },
+            {
+                "id": "Ratchet Bomb:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsNonland",
+                                        "IsPermanent",
+                                        {
+                                            "type": "ManaValueEqualsDynamic",
+                                            "amount": {
+                                                "type": "LastKnownSourceCounters",
+                                                "counterType": "CHARGE"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{T}, Sacrifice this artifact: Destroy each nonland permanent with mana value equal to the number of charge counters on this artifact."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "rarity": "RARE",
+        "artist": "Austin Hsu",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c3db7645-20b9-4884-849b-a7d4b6d3aa00.jpg?1783941698",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "Tokens that aren't a copy of something else don't have a mana cost. Anything without a mana cost normally has a mana value of 0."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "If a permanent has {X} in its mana cost, X is considered to be 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Razorfield Thresher
 {
     "name": "Razorfield Thresher",

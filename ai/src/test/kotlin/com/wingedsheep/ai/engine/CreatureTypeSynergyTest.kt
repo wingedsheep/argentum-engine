@@ -83,4 +83,24 @@ class CreatureTypeSynergyTest : FunSpec({
         // opponents control" both name the opponent's Walls.
         read("Siege Dragon").tribesRewarded.shouldBeEmpty()
     }
+    test("a chosen-type payoff is fed by the deck's biggest tribe; a creature land with all types feeds every tribe") {
+        // "Creatures you control of the chosen type get +1/+1 for each charge counter."
+        for (name in listOf("Door of Destinies", "Banner of Kinship")) {
+            read(name).rewardsChosenTribe shouldBe true
+            read(name).isPayoff shouldBe true
+        }
+        read("Arcane Adaptation").rewardsChosenTribe shouldBe false
+        read("Goblin King").rewardsChosenTribe shouldBe false
+        // "{1}: becomes a 2/2 creature with all creature types until end of turn."
+        read("Mutavault").everyTribe shouldBe true
+        read("Mishra's Factory").everyTribe shouldBe false
+        // Treetop Village becomes a 3/3 Ape.
+        read("Treetop Village").tribes shouldContain Subtype("Ape")
+
+        val door = read("Door of Destinies")
+        fun share(vararg names: String) = DeckSynergy.fedShare(door, DeckSynergy.counts(names.map(::read) + door))
+        share() shouldBe 0.0
+        share("Goblin Piker", "Goblin Piker", "Ironclaw Orcs") shouldBe (0.4 plusOrMinus 1e-9)
+        share("Goblin Piker", "Goblin Piker", "Goblin Piker", "Goblin Piker", "Mutavault") shouldBe 1.0
+    }
 })
