@@ -2670,6 +2670,20 @@ class PredicateEvaluator(
                 matches(state, projected, attached.targetId, predicate.filter, ctx)
             }
 
+            // Inverse attachment match — the candidate is the host, and the nested filter runs
+            // against each permanent attached to it. With `attachedToBySource()` inside, this
+            // reaches the host of the source's own host (Artificer's Hex: the creature its
+            // enchanted Equipment is attached to).
+            is StatePredicate.HasAttached -> {
+                val attachments = container.get<AttachmentsComponent>() ?: return false
+                val ctx = context ?: PredicateContext(
+                    controllerId = projected.getController(entityId)
+                        ?: container.get<ControllerComponent>()?.playerId
+                        ?: return false
+                )
+                attachments.attachedIds.any { matches(state, projected, it, predicate.filter, ctx) }
+            }
+
             // "whose controller controls an Island" (Seasinger), "whose controller has eight or
             // more cards in their graveyard" (Lullmage's Domination). The condition is evaluated
             // with its "you" rebound to the candidate's controller — not to the ability's

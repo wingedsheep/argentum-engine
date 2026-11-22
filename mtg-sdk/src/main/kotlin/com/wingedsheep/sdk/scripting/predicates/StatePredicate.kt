@@ -1411,6 +1411,29 @@ sealed interface StatePredicate {
     }
 
     /**
+     * Has at least one permanent attached that matches [filter] — the inverse direction of
+     * [AttachedTo]: the candidate is the *host*, and [filter] is evaluated against each Aura,
+     * Equipment or Fortification attached to it (read from the candidate's `AttachmentsComponent`).
+     * [IsEquipped] and [IsEnchanted] are the fixed-filter special cases; use this one when the
+     * attachment itself needs a constraint the adjectives can't spell.
+     *
+     * Chains through two attachments: with [filter] = `IsAttachedToBySource`, the candidate is
+     * "the permanent that the permanent this source is attached to is attached to" — Artificer's
+     * Hex's "if enchanted Equipment is attached to a creature, destroy that creature" is the
+     * creature matching `Creature.hasAttached(Any.attachedToBySource())`.
+     *
+     * The "you" of any controller predicate in [filter] is the controller supplied in the
+     * evaluation context. False if nothing is attached to the candidate. Not evaluated during
+     * group-static layer projection (like [AttachedTo]); target, condition and group-effect
+     * contexts only.
+     */
+    @SerialName("HasAttached")
+    @Serializable
+    data class HasAttached(val filter: com.wingedsheep.sdk.scripting.GameObjectFilter) : Entity {
+        override val description: String = "with ${filter.description} attached"
+    }
+
+    /**
      * The candidate's *controller* satisfies [condition] — "target creature whose controller controls
      * an Island" (Seasinger: `Conditions.YouControl(Island)`), "a creature whose controller has eight
      * or more cards in their graveyard" (Lullmage's Domination). Every "you" inside [condition] is

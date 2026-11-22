@@ -1002,6 +1002,14 @@ interface ObjectFilterBuilder<out Self> {
      */
     fun attachedTo(hostFilter: GameObjectFilter) = withStatePredicate(StatePredicate.AttachedTo(hostFilter))
 
+    /**
+     * Must have at least one permanent attached that matches [attachmentFilter] — the inverse of
+     * [attachedTo]. Chains through an attachment: `Creature.hasAttached(Any.attachedToBySource())`
+     * is "the creature the permanent this source enchants is attached to" (Artificer's Hex).
+     * See [StatePredicate.HasAttached].
+     */
+    fun hasAttached(attachmentFilter: GameObjectFilter) = withStatePredicate(StatePredicate.HasAttached(attachmentFilter))
+
     /** Must be attacking or blocking */
     fun attackingOrBlocking() =
         withStatePredicate(StatePredicate.Or(listOf(StatePredicate.IsAttacking, StatePredicate.IsBlocking)))

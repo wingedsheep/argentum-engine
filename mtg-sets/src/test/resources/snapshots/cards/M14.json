@@ -297,6 +297,99 @@
     ]
 }
 
+// Artificer's Hex
+{
+    "name": "Artificer's Hex",
+    "manaCost": "{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant Equipment\nAt the beginning of your upkeep, if enchanted Equipment is attached to a creature, destroy that creature.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Artificer's Hex:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "HasAttached",
+                                            "filter": {
+                                                "statePredicates": [
+                                                    "IsAttachedToBySource"
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "Each",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "HasAttached",
+                                "filter": {
+                                    "statePredicates": [
+                                        "IsAttachedToBySource"
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, if enchanted Equipment is attached to a creature, destroy that creature."
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "artifact Equipment"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "rarity": "UNCOMMON",
+        "artist": "Franz Vohwinkel",
+        "flavorText": "\"Some treasures aren't worth finding, let alone stealing.\"\n—Dack Fayden",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3a5cd9a1-da2e-44ef-9f2e-352dc9f92c50.jpg?1783939927"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Banisher Priest
 {
     "name": "Banisher Priest",
