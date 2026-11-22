@@ -1,0 +1,1 @@
+- #4816 The AI reads "distribute +1/+1 counters among creatures you control" (Vastwood Hydra) as a pump feeding +1/+1-counter synergies, and "cast spells / play cards from the top of your library" (Garruk's Horde, Future Sight) as card draw.

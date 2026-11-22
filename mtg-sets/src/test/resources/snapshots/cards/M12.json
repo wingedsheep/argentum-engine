@@ -630,6 +630,61 @@
     ]
 }
 
+// Garruk's Horde
+{
+    "name": "Garruk's Horde",
+    "manaCost": "{5}{G}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Trample\nPlay with the top card of your library revealed.\nYou may cast creature spells from the top of your library. (Do this only any time you could cast that creature spell. You still pay the spell's costs.)",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "staticAbilities": [
+            "RevealTopOfLibrary",
+            {
+                "type": "CastSpellTypesFromTopOfLibrary",
+                "filter": "creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "rarity": "RARE",
+        "artist": "Steve Prescott",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/563c6959-9131-40a6-97ec-12baf6fb7ca0.jpg?1783941059",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "The top card of your library isn't in your hand, so you can't suspend it, cycle it, discard it, or activate any of its activated abilities."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the top card of your library changes while you're casting a spell, playing a land, or activating an ability, the new top card won't be revealed until you finish doing so."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "Normally, Garruk's Horde allows you to cast the top card of your library if it's a creature card, it's your main phase, and the stack is empty. If that creature card has flash, you'll be able to cast it at the time you could cast an instant, even on an opponent's turn."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "You'll still pay all costs for that spell, including additional costs. You may also pay alternative costs."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "If the top card of your library is Dryad Arbor (the only card that's both a creature and a land), you can't play it this way. Dryad Arbor can't be cast as a spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Gideon's Lawkeeper
 {
     "name": "Gideon's Lawkeeper",
