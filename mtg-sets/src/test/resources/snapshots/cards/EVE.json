@@ -50,6 +50,64 @@
     ]
 }
 
+// Beckon Apparition
+{
+    "name": "Beckon Apparition",
+    "manaCost": "{W/B}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target card from a graveyard. Create a 1/1 white and black Spirit creature token with flying.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE",
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "artist": "Larry MacDougall",
+        "flavorText": "When a graveyard is full, the gwyllions rattle the tombs and unleash the spirits into the sky.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3bae1a3b-881b-4b10-ac5f-822c809edc36.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Cascade Bluffs
 {
     "name": "Cascade Bluffs",
