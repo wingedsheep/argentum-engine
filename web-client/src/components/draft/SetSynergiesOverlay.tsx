@@ -3478,7 +3478,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Steal and Sacrifice',
         colors: ['B', 'R'],
         keyCard: 'Barrage of Expendables',
-        description: 'Borrow a blocker with Act of Treason, attack with it, then cash it in with Barrage of Expendables, Altar\'s Reap or Vampire Warlord. An aggressive attrition deck that turns every expendable body into damage or cards.',
+        description: 'Borrow a blocker with Act of Treason, attack with it, then cash it in with Barrage of Expendables or Altar\'s Reap. An aggressive attrition deck that turns every expendable body into damage or cards.',
       },
       {
         name: 'Big Creatures',
@@ -3490,7 +3490,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Go Wide',
         colors: ['G', 'W'],
         keyCard: 'Hive Stirrings',
-        description: 'Flood the board with Hive Stirrings, Brindle Boar and Ajani\'s Chosen cats, then pump the whole team with Path of Bravery, Fortify and Primeval Bounty. A go-wide deck whose crowd of small bodies outnumbers every blocker.',
+        description: 'Flood the board with Hive Stirrings tokens, Ajani\'s Chosen cats and Primeval Bounty beasts, then pump the whole team with Path of Bravery and Fortify. A go-wide deck whose crowd of small bodies outnumbers every blocker.',
       },
       {
         name: 'Lifegain',
@@ -3502,7 +3502,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Spells',
         colors: ['U', 'R'],
         keyCard: 'Young Pyromancer',
-        description: 'Chain cheap instants and sorceries like Shock, Opportunity and Divination to make Elemental tokens with Young Pyromancer, and recast a favourite instant every turn with Elite Arcanist. A tempo deck that wins by spells as much as by creatures.',
+        description: 'Chain instants and sorceries like Shock, Divination and Opportunity to make Elemental tokens with Young Pyromancer, and recast a favourite instant every turn with Elite Arcanist. A tempo deck that wins by spells as much as by creatures.',
       },
       {
         name: 'Graveyard Value',
