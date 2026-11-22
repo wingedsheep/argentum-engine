@@ -6418,6 +6418,77 @@
     ]
 }
 
+// Traumatize
+{
+    "name": "Traumatize",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player mills half their library, rounded down.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Divide",
+                            "numerator": {
+                                "type": "AggregateZone",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "zone": "Library"
+                            },
+                            "denominator": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "roundUp": false
+                        },
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "isMill": true
+                    },
+                    "storeAs": "milled"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "milled",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "rarity": "RARE",
+        "artist": "Greg Staples",
+        "flavorText": "Dreads had half a mind to leave.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4cad8762-ff91-4971-84be-f643c7795679.jpg?1783945252"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Treetop Sentinel
 {
     "name": "Treetop Sentinel",
