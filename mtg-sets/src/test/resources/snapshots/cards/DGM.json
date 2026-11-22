@@ -315,6 +315,46 @@
     ]
 }
 
+// Awe for the Guilds
+{
+    "name": "Awe for the Guilds",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Monocolored creatures can't block this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "CantBlockGroup",
+            "filter": {
+                "baseFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        "IsMonocolored"
+                    ]
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "artist": "Mathias Kollros",
+        "flavorText": "When the guilds cooperate, the guildless celebrate their peaceful society. When the guilds clash, the guildless just try to keep out of the way.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ec644ac3-07a2-43de-8173-9cc18e2ea2d9.jpg?1783940038",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "A monocolored creature is exactly one color. (Colorless creatures aren't monocolored.)"
+            },
+            {
+                "date": "2013-04-15",
+                "text": "No monocolored creature will be able to block that turn, including monocolored creatures that enter the battlefield after Awe for the Guilds resolves. A creature that's monocolored when Awe for the Guilds resolves but somehow becomes multicolored before blockers are declared will be able to block."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Azorius Cluestone
 {
     "name": "Azorius Cluestone",
@@ -669,6 +709,101 @@
     ]
 }
 
+// Blast of Genius
+{
+    "name": "Blast of Genius",
+    "manaCost": "{4}{U}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose any target. Draw three cards, then discard a card. Blast of Genius deals damage equal to the discarded card's mana value to that permanent or player.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "StoredCardManaValue",
+                        "collectionName": "discarded"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "rarity": "UNCOMMON",
+        "artist": "Terese Nielsen",
+        "flavorText": "Ral Zarek's brainstorms bring actual thunder and lightning.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b2ff592c-bd35-4947-ba17-8b6170d5388e.jpg?1783940032",
+        "rulings": [
+            {
+                "date": "2018-12-07",
+                "text": "If the target permanent or player becomes an illegal target for Blast of Genius, the spell doesn't resolve. You don't draw or discard any cards."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "If a discarded card has {X} in its mana cost, X is considered to be 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Blaze Commando
 {
     "name": "Blaze Commando",
@@ -732,6 +867,70 @@
         "RED",
         "WHITE"
     ]
+}
+
+// Blood Scrivener
+{
+    "name": "Blood Scrivener",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Zombie Wizard",
+    "oracleText": "If you would draw a card while you have no cards in hand, instead you draw two cards and you lose 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "ReplaceDrawWith",
+                "replacementEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                },
+                "restrictions": [
+                    {
+                        "type": "Exists",
+                        "player": "You",
+                        "zone": "Hand",
+                        "negate": true
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "RARE",
+        "artist": "Peter Mohrbacher",
+        "flavorText": "Make sure you bleed the fine print.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9ea8179a-d3c9-4cdc-a5b5-68cc73279050.jpg?1783940040",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Any time you are instructed to draw more than one card, you draw them one at a time. For example, if you control Blood Scrivener and have no cards in hand and you're instructed to \"draw two cards,\" your first card draw is replaced by drawing two cards and losing 1 life, then you'll draw the second card from the original instruction. In total, you'll draw three cards and lose 1 life."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Each additional Blood Scrivener you control will effectively add one card and 1 life lost. Say you control two Blood Scriveners and would draw a card while you have no cards in hand. The effect of one Blood Scrivener will replace the event \"draw a card\" with \"draw two cards and lose 1 life.\" The effect of the other Blood Scrivener will replace the drawing of the first of those two cards with \"draw two cards and lose 1 life.\" You'll draw two cards and lose 1 life, then draw another card and lose another 1 life."
+            }
+        ]
+    }
 }
 
 // Boros Battleshaper
@@ -1547,6 +1746,216 @@
     ]
 }
 
+// Crypt Incursion
+{
+    "name": "Crypt Incursion",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Exile all creature cards from target player's graveyard. You gain 3 life for each card exiled this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "filter": "creature"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeMovedAs": "moved1"
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "DistinctEntitiesInCollections",
+                            "collections": [
+                                "moved1"
+                            ]
+                        },
+                        "multiplier": 3
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "artist": "Svetlin Velinov",
+        "flavorText": "The Golgari maze-runner Varolz hungers to prove his fortitude in battle, and his trail of victims feeds other hungers.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c3b71cc5-0a81-4cab-bae3-49335c04aaaa.jpg?1783940040"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Deadbridge Chant
+{
+    "name": "Deadbridge Chant",
+    "manaCost": "{4}{B}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, mill ten cards.\nAt the beginning of your upkeep, choose a card at random in your graveyard. If it's a creature card, put it onto the battlefield. Otherwise, put it into your hand.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Deadbridge Chant:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 10
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this enchantment enters, mill ten cards."
+            },
+            {
+                "id": "Deadbridge Chant:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "Random",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "selected1",
+                            "filter": "creature",
+                            "storeMatching": "matching2",
+                            "storeNonMatching": "rest2"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matching2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, choose a card at random in your graveyard. If it's a creature card, put it onto the battlefield. Otherwise, put it into your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "MYTHIC",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/6/26417a58-b0c9-49fa-956c-794ee1c09a4f.jpg?1783940031"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
+// Debt to the Deathless
+{
+    "name": "Debt to the Deathless",
+    "manaCost": "{X}{W}{W}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each opponent loses two times X life. You gain life equal to the life lost this way.",
+    "script": {
+        "spellEffect": {
+            "type": "DrainLife",
+            "amount": {
+                "type": "Multiply",
+                "amount": "XValue",
+                "multiplier": 2
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "UNCOMMON",
+        "artist": "Seb McKinnon",
+        "flavorText": "Some of Orzhov's cruelest collectors remember their debtors by taste alone.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/610e5a91-857b-4121-8b75-dbbea27aa0aa.jpg?1783940030"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Deputy of Acquittals
 {
     "name": "Deputy of Acquittals",
@@ -1818,6 +2227,93 @@
         }
     ],
     "hasNoManaCost": true
+}
+
+// Drown in Filth
+{
+    "name": "Drown in Filth",
+    "manaCost": "{B}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose target creature. Mill four cards, then that creature gets -1/-1 until end of turn for each land card in your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 4
+                        },
+                        "isMill": true
+                    },
+                    "storeAs": "milled"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "milled",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                },
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Graveyard",
+                            "filter": "land"
+                        },
+                        "multiplier": -1
+                    },
+                    "toughnessModifier": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Graveyard",
+                            "filter": "land"
+                        },
+                        "multiplier": -1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "artist": "Seb McKinnon",
+        "flavorText": "The rot farmer's first rite of passage is to craft a pair of work stilts.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/22feacda-01e0-4f0d-a3c7-a22e3d40bf4e.jpg?1783940030",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "You choose the target of Drown in Filth as you cast the spell. You won't necessarily know what will happen to that creature's power and toughness at that time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
 }
 
 // Far // Away
@@ -2162,6 +2658,68 @@
         }
     ],
     "hasNoManaCost": true
+}
+
+// Gaze of Granite
+{
+    "name": "Gaze of Granite",
+    "manaCost": "{X}{B}{B}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy each nonland permanent with mana value X or less.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsNonland",
+                                "IsPermanent",
+                                {
+                                    "type": "ManaValueAtMostDynamic",
+                                    "amount": "XValue"
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "destroyAll_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "destroyAll_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "rarity": "RARE",
+        "artist": "Nils Hamm",
+        "flavorText": "Golgari reclaimers resent the gorgons, begrudging the loss of so many fine nutrients locked away in stone.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/96c9ac10-d114-4aa5-87ac-f1069cde8e40.jpg?1783940029",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "If a permanent has {X} in its mana cost, the value of that X is 0."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The mana value of a creature token is 0 unless that token is a copy of another creature, in which case it copies that creature's mana cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
 }
 
 // Give // Take
@@ -2661,6 +3219,161 @@
     "colorIdentityOverride": [
         "BLUE",
         "BLACK"
+    ]
+}
+
+// Hidden Strings
+{
+    "name": "Hidden Strings",
+    "manaCost": "{1}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "You may tap or untap target permanent, then you may tap or untap another target permanent.\nCipher (Then you may exile this spell card encoded on a creature you control. Whenever that creature deals combat damage to a player, its controller may cast a copy of the encoded card without paying its mana cost.)",
+    "keywords": [
+        "CIPHER"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Modal",
+                        "modes": [
+                            {
+                                "effect": {
+                                    "type": "TapUntap",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "description": "Tap that permanent"
+                            },
+                            {
+                                "effect": {
+                                    "type": "TapUntap",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "tap": false
+                                },
+                                "description": "Untap that permanent"
+                            }
+                        ],
+                        "countsAsModalSpell": false
+                    },
+                    "descriptionOverride": "You may tap or untap that permanent"
+                },
+                {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Modal",
+                        "modes": [
+                            {
+                                "effect": {
+                                    "type": "TapUntap",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    }
+                                },
+                                "description": "Tap that permanent"
+                            },
+                            {
+                                "effect": {
+                                    "type": "TapUntap",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    },
+                                    "tap": false
+                                },
+                                "description": "Untap that permanent"
+                            }
+                        ],
+                        "countsAsModalSpell": false
+                    },
+                    "descriptionOverride": "You may tap or untap that permanent"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "permanent"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetOther",
+                "baseRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent"
+                    }
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/216e8047-6f54-49ce-bf86-27dc8fc8c8f7.jpg?1783940042",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "The spell with cipher is encoded on the creature as part of that spell's resolution, just after the spell's other effects. That card goes directly from the stack to exile. It never goes to the graveyard."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You choose the creature as the spell resolves. The cipher ability doesn't target that creature, although the spell with cipher may target that creature (or a different creature) because of its other abilities."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the spell with cipher doesn't resolve, none of its effects will happen, including cipher. The card will go to its owner's graveyard and won't be encoded on a creature."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the creature leaves the battlefield, the exiled card will no longer be encoded on any creature. It will stay exiled."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you want to encode the card with cipher onto a noncreature permanent such as a Keyrune that can turn into a creature, that permanent has to be a creature before the spell with cipher starts resolving. You can choose only a creature to encode the card onto."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The copy of the card with cipher is created in and cast from exile."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You cast the copy of the card with cipher during the resolution of the triggered ability. Ignore timing restrictions based on the card's type."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you choose not to cast the copy, or you can't cast it (perhaps because there are no legal targets available), the copy will cease to exist the next time state-based actions are performed. You won't get a chance to cast the copy at a later time."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The exiled card with cipher grants a triggered ability to the creature it's encoded on. If that creature loses that ability and subsequently deals combat damage to a player, the triggered ability won't trigger. However, the exiled card will continue to be encoded on that creature."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If another player gains control of the creature, that player will control the triggered ability. That player will create a copy of the encoded card and may cast it."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a creature with an encoded card deals combat damage to more than one player simultaneously (perhaps because some of the combat damage was redirected), the triggered ability will trigger once for each player it deals combat damage to. Each ability will create a copy of the exiled card and allow you to cast it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3232,6 +3945,80 @@
     },
     "colorIdentityOverride": [
         "RED",
+        "WHITE"
+    ]
+}
+
+// Lyev Decree
+{
+    "name": "Lyev Decree",
+    "manaCost": "{1}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Detain up to two target creatures your opponents control. (Until your next turn, those creatures can't attack or block and their activated abilities can't be activated.)",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "CantAttack",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "duration": "UntilYourNextTurn"
+                    },
+                    {
+                        "type": "CantBlockTargetCreatures",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "duration": "UntilYourNextTurn"
+                    },
+                    {
+                        "type": "GrantStaticAbility",
+                        "ability": {
+                            "type": "PreventActivatedAbilities",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsPermanent"
+                                ],
+                                "statePredicates": [
+                                    "IsSource"
+                                ]
+                            }
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "duration": "UntilYourNextTurn"
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "artist": "Kev Walker",
+        "flavorText": "The Azorius have so many codes and statutes that you're always in violation of one of them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/7/773cf2aa-4337-4d14-8a8e-ff8b1fdec1b5.jpg"
+    },
+    "colorIdentityOverride": [
         "WHITE"
     ]
 }
@@ -4690,6 +5477,75 @@
     "hasNoManaCost": true
 }
 
+// Punish the Enemy
+{
+    "name": "Punish the Enemy",
+    "manaCost": "{4}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Punish the Enemy deals 3 damage to target player or planeswalker and 3 damage to target creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayerOrPlaneswalker",
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "artist": "Slawomir Maniak",
+        "flavorText": "\"When justice descends, the servant will burn with the master.\"\n—Aurelia",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/4179a72b-8482-46ec-9815-f5d6d94b5aa5.jpg?1783940037",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "You must be able to target a player and a creature in order to cast Punish the Enemy."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If one of Punish the Enemy's targets is illegal when it tries to resolve, it will still deal damage to the remaining legal target."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Pyrewild Shaman
 {
     "name": "Pyrewild Shaman",
@@ -5091,6 +5947,46 @@
     "hasNoManaCost": true
 }
 
+// Render Silent
+{
+    "name": "Render Silent",
+    "manaCost": "{W}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell. Its controller can't cast spells this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CantCastSpells",
+                    "target": "TargetController"
+                },
+                "Counter"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "rarity": "RARE",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e3f3d6e4-0abe-4042-a7f6-0395683e8582.jpg?1783940023"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Renegade Krasis
 {
     "name": "Renegade Krasis",
@@ -5214,6 +6110,68 @@
             }
         ]
     }
+}
+
+// Restore the Peace
+{
+    "name": "Restore the Peace",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Return each creature that dealt damage this turn to its owner's hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "HasDealtDamage",
+                                    "thisTurnOnly": true
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "returnAllToHand_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "returnAllToHand_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "rarity": "UNCOMMON",
+        "artist": "Kev Walker",
+        "flavorText": "\"You can always count on the Azorius to ruin a party.\"\n—Massacre Girl",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/0/105902f6-99d0-4bee-9dfd-87a92ac04d91.jpg?1783940023",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Restore the Peace has no effect on the damage that was dealt."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Only creatures on the battlefield will be returned. If a creature dealt damage and then died, the creature card won't be returned from the graveyard to its owner's hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
 }
 
 // Riot Control
@@ -6742,6 +7700,76 @@
     ]
 }
 
+// Uncovered Clues
+{
+    "name": "Uncovered Clues",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Look at the top four cards of your library. You may reveal up to two instant and/or sorcery cards from among them and put the revealed cards into your hand. Put the rest on the bottom of your library in any order.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    },
+                    "storeAs": "looked"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "looked",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "filter": "instant|sorcery",
+                    "storeSelected": "kept",
+                    "storeRemainder": "rest",
+                    "prompt": "You may reveal up to two instant and/or sorcery cards and put them into your hand",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "kept",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "rest",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    },
+                    "order": "ControllerChooses"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "artist": "Jaime Jones",
+        "flavorText": "The Implicit Maze winds through Ravnica, connecting arcane landmarks of all ten guilds.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9dd24556-994f-4480-835e-11d4443f0700.jpg?1783940040"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Unflinching Courage
 {
     "name": "Unflinching Courage",
@@ -6986,6 +8014,67 @@
     "colorIdentityOverride": [
         "RED",
         "WHITE"
+    ]
+}
+
+// Warped Physique
+{
+    "name": "Warped Physique",
+    "manaCost": "{U}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +X/-X until end of turn, where X is the number of cards in your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "ModifyStats",
+            "powerModifier": {
+                "type": "Count",
+                "player": "You",
+                "zone": "Hand"
+            },
+            "toughnessModifier": {
+                "type": "Multiply",
+                "amount": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Hand"
+                },
+                "multiplier": -1
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "rarity": "UNCOMMON",
+        "artist": "Karl Kopinski",
+        "flavorText": "The Gruul seek unbounded strength. The Dimir deliver cruel irony.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/134802b2-7c5c-4eda-a879-b29bc06faaed.jpg?1783940018",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Use the number of cards in your hand as Warped Physique resolves to determine the value of X. Warped Physique won't be in your hand at that time."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Once Warped Physique resolves, the effect won't change if the number of cards in your hand changes."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 

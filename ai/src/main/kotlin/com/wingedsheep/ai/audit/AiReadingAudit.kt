@@ -52,6 +52,7 @@ import com.wingedsheep.sdk.scripting.effects.BecomeAuraEffect
 import com.wingedsheep.sdk.scripting.effects.DoubleCountersEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
+import com.wingedsheep.sdk.scripting.effects.CounterEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CreateAuraTokenEffect
@@ -839,7 +840,13 @@ object AiReadingAudit {
             // so it is timed as the whole ability is.
             val ridesOnGrant = expiring is RemoveKeywordEffect && expiring.target == EffectTarget.Self &&
                 expiring.keyword != Keyword.DEFENDER.name && isRead(effect)
-            if (isRead(leaf) || ridesOnRemoval || ridesOnCopy || spentWithCast || colourOnly || ridesOnGrant) {
+            // "Counter target spell. Its controller can't cast spells this turn" (Render Silent): the
+            // ban binds the countered spell's controller and is spent in the counter's own window —
+            // a spell on the stack — so when to cast it is the counter's question, which the
+            // counterspell readers answer.
+            val ridesOnCounter = expiring is CantCastSpellsEffect && expiring.target == EffectTarget.TargetController &&
+                leaves.any { it is CounterEffect }
+            if (isRead(leaf) || ridesOnRemoval || ridesOnCopy || spentWithCast || colourOnly || ridesOnGrant || ridesOnCounter) {
                 sink += Finding(
                     Check.TIMING, read = true, reason = "knows when to spend this until-end-of-turn effect",
                     effectType = label, step = step(leaves, leaf)?.index?.plus(1), stepText = stepText(leaf),
