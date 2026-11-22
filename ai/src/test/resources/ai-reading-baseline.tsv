@@ -2103,6 +2103,7 @@ Bog Wreckage
 Bog-Strider Ash
 Bogardan Dragonheart
 Bogardan Rager
+Bogbrew Witch
 Boggart Birth Rite
 Boggart Brute
 Boggart Cursecrafter
@@ -2507,6 +2508,7 @@ Brute Suit
 Bruvac the Grandiloquent
 Bubble Smuggler
 Bubble Snare
+Bubbling Cauldron
 Buccaneer's Bravado
 Bucolic Ranch
 Budding Insurgent
@@ -3497,6 +3499,7 @@ Colossal Majesty
 Colossal Plow
 Colossal Rattlewurm
 Colossal Skyturtle
+Colossal Whale
 Colossapede
 Colossification	polarity: Aura>ModifyStats; polarity: Aura>TapUntapEffect
 Colossodon Yearling
@@ -4850,6 +4853,7 @@ Dismal Backwater
 Dismantling Blow
 Dismember
 Dismiss
+Dismiss into Dream
 Dismissive Pyromancer
 Disorder
 Disowned Ancestor
@@ -4958,6 +4962,7 @@ Dollhouse of Horrors
 Dollmaker's Shop // Porcelain Gallery
 Dolmen Gate
 Domesticated Hydra
+Domestication
 Dominating Vampire
 Dominator Drone
 Domineer
@@ -5625,6 +5630,7 @@ Elim Garak, Simple Tailor
 Eliminate
 Eliminate the Competition
 Eliminate the Impossible
+Elite Arcanist
 Elite Archers
 Elite Arrester
 Elite Cat Warrior
@@ -6541,6 +6547,7 @@ Festering Evil
 Festering Goblin
 Festering Gulch
 Festering Mummy
+Festering Newt
 Festering Thicket
 Festerleech
 Festival	intent: CantAttackGroupEffect; timing: CantAttackGroupEffect
@@ -8227,6 +8234,7 @@ Grim Reaper's Sprint
 Grim Reaper, Lethal Legionnaire
 Grim Reminder
 Grim Repriser
+Grim Return
 Grim Servant
 Grim Strider
 Grim Tutor
@@ -9298,6 +9306,7 @@ Illuminate History
 Illuminator Virtuoso
 Illuna, Apex of Wishes
 Illusion Spinners
+Illusionary Armor
 Illusionary Mask
 Illusionist's Gambit	timing: ForEach>GrantStaticAbilityEffect
 Illusionist's Stratagem
@@ -9757,7 +9766,7 @@ Isildur's Fateful Strike
 Island Fish Jasconius
 Island Sanctuary
 Island of Wak-Wak
-Isochron Scepter	intent: Pipeline(hand→exile)
+Isochron Scepter
 Isolate
 Isolated Chapel
 Isolation Zone
@@ -9807,6 +9816,7 @@ Jace's Archivist
 Jace's Defeat
 Jace's Ingenuity
 Jace's Machinations
+Jace's Mindseeker
 Jace's Projection	intent: AddCountersEffect
 Jace's Ruse
 Jace's Sanctum
@@ -9816,6 +9826,7 @@ Jace's Triumph
 Jace, Arcane Strategist	combat: CantBeBlockedGroupEffect
 Jace, Cunning Castaway
 Jace, Ingenious Mind-Mage
+Jace, Memory Adept
 Jace, Mirror Mage
 Jace, Reality Sculptor	intent: ForEach>Pipeline(TopOfLibrary→exile)
 Jace, Unraveler of Secrets
@@ -10894,6 +10905,7 @@ Life Matrix	polarity: AddCountersEffect
 Life from the Loam
 Life of Toshiro Umezawa
 Life's Legacy
+Lifebane Zombie
 Lifeblood
 Lifecraft Awakening
 Lifecraft Cavalry
@@ -10973,6 +10985,7 @@ Liliana's Elite
 Liliana's Indignation
 Liliana's Influence
 Liliana's Mastery
+Liliana's Reaver
 Liliana's Scorn
 Liliana's Scrounger	intent: AddCountersToCollectionEffect; intent: SelectTargetEffect
 Liliana's Specter
@@ -11834,6 +11847,7 @@ Merfolk Secretkeeper
 Merfolk Skydiver
 Merfolk Skyscout
 Merfolk Sovereign
+Merfolk Spy
 Merfolk Trickster
 Merfolk Wayfinder
 Merfolk Windrobber
@@ -20059,6 +20073,7 @@ Trash the Town
 Traumatic Critique
 Traumatic Revelation
 Traumatic Visions
+Traumatize
 Travel Preparations
 Travel the Overworld
 Traveler's Amulet
@@ -21313,7 +21328,7 @@ Wallop
 Walltop Sentries
 Waltz of Rage	polarity: ForEachEffect
 Wan Shi Tong, Librarian
-Wand of Ith	intent: PayOrSufferEffect; intent: Pipeline(hand→?); polarity: PayOrSufferEffect; polarity: Pipeline(hand→?)
+Wand of Ith	polarity: PayOrSufferEffect; polarity: Pipeline(hand→?)
 Wand of Vertebrae
 Wand of the Elements
 Wander Off
