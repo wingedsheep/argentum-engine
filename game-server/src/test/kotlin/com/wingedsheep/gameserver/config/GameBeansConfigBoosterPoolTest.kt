@@ -509,6 +509,76 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         }
     }
 
+    test("Dragon's Maze draft pack is 10 commons, 3 uncommons, a rare or mythic and a Guildgate, Maze's End or shockland") {
+        // Draft Booster (mtg.wtf/pack/dgm): 10 commons, 3 uncommons, a rare or mythic (35 rares 2/80, 10 mythics
+        // 1/80) and a land slot that never holds a basic: a Guildgate (23/242 each), Maze's End (2/242) or an
+        // RTR/GTC shockland (1/242 each). The foil replacing a common in 9 packs of 40 is cosmetic.
+        val dgm = boosterGenerator.availableSets["DGM"].shouldNotBeNull()
+        dgm.fullyImplemented shouldBe true
+        dgm.block shouldBe "Return to Ravnica"
+        dgm.boosterStrategy.shouldBeInstanceOf<DedicatedSlotBooster>()
+        val guildgates = setOf(
+            "Azorius Guildgate", "Boros Guildgate", "Dimir Guildgate", "Golgari Guildgate", "Gruul Guildgate",
+            "Izzet Guildgate", "Orzhov Guildgate", "Rakdos Guildgate", "Selesnya Guildgate", "Simic Guildgate",
+        )
+        val rtrShocks = setOf("Blood Crypt", "Hallowed Fountain", "Overgrown Tomb", "Steam Vents", "Temple Garden")
+        val gtcShocks = setOf("Breeding Pool", "Godless Shrine", "Sacred Foundry", "Stomping Ground", "Watery Grave")
+        val shocks = rtrShocks + gtcShocks
+        val landSlot = guildgates + shocks + "Maze's End"
+        dgm.guestCardNames shouldBe shocks
+        // The shocklands open as their Return to Ravnica / Gatecrash printing, at rare.
+        dgm.cards.filter { it.name in shocks }.forEach { shock ->
+            shock.metadata.rarity shouldBe Rarity.RARE
+            shock.metadata.inBooster shouldBe true
+            shock.setCode shouldBe (if (shock.name in rtrShocks) "RTR" else "GTC")
+        }
+        val eligible = dgm.cards.filter { it.metadata.inBooster && !it.typeLine.isFreelyAddedBasicLand }
+        // Scryfall `set:dgm is:booster -t:basic` (70 / 40 / 35 / 11), plus the ten guest shocklands at rare.
+        eligible.filterNot { it.name in shocks }.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 70, Rarity.UNCOMMON to 40, Rarity.RARE to 35, Rarity.MYTHIC to 11,
+        )
+        // The guests never count as Dragon's Maze cards.
+        dgm.distinctCardCount shouldBe dgm.cards.map { it.name }.toSet().size - shocks.size
+        val eligibleNames = eligible.mapTo(hashSetOf()) { it.name }
+        var mythics = 0
+        var shockPacks = 0
+        var mazesEnds = 0
+        val packs = 6000
+        repeat(packs) {
+            val pack = boosterGenerator.generateBooster("DGM")
+            withClue("pack ${pack.map { it.name }}") {
+                pack.size shouldBe 15
+                pack.map { it.name }.toSet().size shouldBe 15
+                pack.all { it.name in eligibleNames } shouldBe true
+                pack.none { it.typeLine.isFreelyAddedBasicLand } shouldBe true
+                // Exactly one land-slot card, and it is the last one: Guildgates and Maze's End never
+                // open on the ordinary sheets.
+                pack.count { it.name in landSlot } shouldBe 1
+                pack.last().name shouldBeIn landSlot
+                val body = pack.dropLast(1)
+                body.count { it.metadata.rarity == Rarity.COMMON } shouldBe 10
+                body.count { it.metadata.rarity == Rarity.UNCOMMON } shouldBe 3
+                body.count { it.metadata.rarity == Rarity.RARE || it.metadata.rarity == Rarity.MYTHIC } shouldBe 1
+                mythics += body.count { it.metadata.rarity == Rarity.MYTHIC }
+            }
+            if (pack.last().name in shocks) shockPacks++
+            if (pack.last().name == "Maze's End") mazesEnds++
+        }
+        (mythics.toDouble() / packs) shouldBe (0.125 plusOrMinus 0.02)
+        // 10 of 242 land-slot sheet positions are shocklands, 2 are Maze's End.
+        (shockPacks.toDouble() / packs) shouldBe ((10.0 / 242) plusOrMinus 0.012)
+        (mazesEnds.toDouble() / packs) shouldBe ((2.0 / 242) plusOrMinus 0.006)
+
+        // Banning the shocklands and Maze's End leaves the land slot to the Guildgates.
+        repeat(200) {
+            val pack = boosterGenerator.generateBooster("DGM", bannedCardNames = shocks + "Maze's End")
+            withClue("pack ${pack.map { it.name }}") {
+                pack.size shouldBe 15
+                pack.last().name shouldBeIn guildgates
+            }
+        }
+    }
+
     test("Theros draft pack is 10 commons, 3 uncommons and one rare or mythic") {
         // Draft Booster (mtg.wtf/pack/ths): 10 commons, 3 uncommons, a rare or mythic (rares 2/121, mythics 1/121)
         // and a basic land (supplied at deck building). The foil replacing a common in 9 packs of 40 is cosmetic.

@@ -875,6 +875,25 @@ class SetArchetypesTest : StringSpec({
             "Humans" to listOf("Human"),
         )
     }
+    "Dragon's Maze exposes its ten guild color-pair archetypes" {
+        val synergies = requireNotNull(SetArchetypes.getForSet("dgm"))
+
+        synergies.setName shouldBe "Dragon's Maze"
+        synergies.archetypes.map { it.name } shouldContainExactly listOf(
+            "Azorius Skies",
+            "Dimir Control",
+            "Rakdos Aggro",
+            "Gruul Stompy",
+            "Selesnya Tokens",
+            "Orzhov Drain",
+            "Izzet Spells",
+            "Golgari Counters",
+            "Boros Attackers",
+            "Simic Counters",
+        )
+        synergies.archetypes.map { it.colors.toSet() } shouldContainExactly ALL_COLOR_PAIRS.toList()
+        synergies.archetypes.all { it.creatureTypes.isEmpty() } shouldBe true
+    }
     "Star Trek exposes its ten signpost color-pair archetypes" {
         val synergies = requireNotNull(SetArchetypes.getForSet("trk"))
 
