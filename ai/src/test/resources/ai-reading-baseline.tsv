@@ -340,6 +340,7 @@ Ajani Unrelenting
 Ajani Unyielding
 Ajani's Aid
 Ajani's Anguish
+Ajani's Chosen
 Ajani's Comrade
 Ajani's Influence
 Ajani's Last Stand
@@ -2330,6 +2331,7 @@ Brass's Tunnel-Grinder
 Brassclaw Orcs
 Braulios of Pheres Band
 Brave Brawler
+Brave the Elements
 Brave the Sands
 Brave the Wilds
 Brave-Kin Duo
@@ -4720,6 +4722,7 @@ Devouring Tendrils
 Devout Chaplain
 Devout Decree
 Devout Harpist
+Devout Invocation
 Devout Lightcaster
 Devout Monk
 Devout Witness
@@ -7306,6 +7309,7 @@ Garruk Wildspeaker
 Garruk's Companion
 Garruk's Gorehorn
 Garruk's Harbinger
+Garruk's Horde
 Garruk's Packleader
 Garruk's Uprising
 Garruk's Warsteed
@@ -9354,6 +9358,7 @@ Implement of Malice
 Implements of Sacrifice
 Implode
 Impolite Entrance
+Imposing Sovereign
 Imposing Vantasaur
 Imposing Visage
 Impossible Choice
@@ -9409,6 +9414,7 @@ Indatha Triome
 Indebted Spirit
 Indentured Oaf
 Independent Troops
+Indestructibility
 Indestructible Aura
 Index
 Indoctrination Attendant
@@ -9585,6 +9591,7 @@ Into the Night
 Into the Roil
 Into the Story
 Into the Void
+Into the Wilds
 Intrepid Adversary
 Intrepid Hero
 Intrepid Outlander
@@ -11652,6 +11659,7 @@ Master of Barbs
 Master of Ceremonies
 Master of Cruelties	intent: GrantKeywordEffect
 Master of Dark Rites
+Master of Diversion
 Master of Etherium
 Master of Pearls
 Master of Predicaments
@@ -13598,6 +13606,7 @@ Patchwork Crawler
 Patchwork Gnomes
 Path of Ancestry
 Path of Annihilation
+Path of Bravery
 Path of Discovery
 Path of Mettle
 Path of Peace
@@ -13628,6 +13637,7 @@ Pavel Maliki
 Pawn of Ulamog
 Pawpatch Formation
 Pawpatch Recruit
+Pay No Heed
 Peace and Quiet
 Peace in Our Time
 Peace of Mind
@@ -16541,6 +16551,7 @@ Seraph of New Capenna
 Seraph of the Masses
 Seraph of the Scales
 Seraph of the Suns
+Seraph of the Sword
 Seraphic Steed
 Serendib Djinn
 Serendib Efreet
@@ -19725,6 +19736,7 @@ Tidal Visionary	intent: ChangeColorToChosenEffect; polarity: ChangeColorToChosen
 Tide Drifter
 Tide Skimmer
 Tide of War	intent: FlipCoinEffect
+Tidebinder Mage
 Tidecaller Mentor
 Tidehollow Strix
 Tidepool Turtle
@@ -20754,6 +20766,7 @@ Vassal's Duty	polarity: RedirectNextDamageEffect; timing: RedirectNextDamageEffe
 Vastlands Scavenger
 Vastwood Fortification
 Vastwood Gorger
+Vastwood Hydra
 Vastwood Surge
 Vat Emergence
 Vat of Rebirth
@@ -21166,6 +21179,7 @@ Voracious Typhon
 Voracious Vampire
 Voracious Varmint
 Voracious Vermin
+Voracious Wurm
 Vorel of the Hull Clade
 Vorinclex
 Vorinclex, Monstrous Raider
@@ -21873,6 +21887,7 @@ Witch-king of Angmar
 Witch-king, Bringer of Ruin
 Witches' Eye
 Witching Well
+Witchstalker
 Witchstalker Frenzy
 With Great Power . . .	polarity: Aura>GrantDynamicStats
 Wither and Bloom

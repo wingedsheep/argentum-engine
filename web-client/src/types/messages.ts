@@ -3591,6 +3591,7 @@ export type DeckFormat =
   | 'PREMODERN'
   | 'HIGHLANDER'
   | 'CANADIAN_HIGHLANDER'
+  | 'PRIMORDIAL'
 
 export interface QuickGameLobbyStateMessage {
   readonly type: 'quickGameLobbyState'

@@ -223,7 +223,10 @@ class DecksController(
         // an absent field means the (legacy) Map-based validation path, which doesn't enforce
         // commander rules. When [cardEntries] is also present, [DeckRequestConverter] folds
         // the rich entries into the Deck so pinned printings are validated.
-        if (request.commander != null || !request.companion.isNullOrBlank()) {
+        // Primordial's copy caps and 10-card limit count the sideboard, so a Primordial deck with
+        // one takes the structured path too.
+        val setBasedSideboard = request.format?.isSetBased == true && !request.sideboard.isNullOrEmpty()
+        if (request.commander != null || !request.companion.isNullOrBlank() || setBasedSideboard) {
             val deck = DeckRequestConverter.toDeck(
                 deckList = request.deckList,
                 cardEntries = request.cardEntries,

@@ -62,6 +62,7 @@ class ConstructedDeckGenerator(
     private val random: Random = Random.Default,
 ) {
     private val cardPool = FormatCardPool(boosterGenerator, cardRegistry)
+    private val primordial by lazy { PrimordialDeckBuilder(boosterGenerator, cardRegistry, random) }
 
     /**
      * Builds a format-legal deck from the cards printed in [setCodes].
@@ -85,6 +86,8 @@ class ConstructedDeckGenerator(
                 "ConstructedDeckGenerator only builds the 60-card constructed shape. " +
                 "Use CommanderDeckGenerator instead."
         }
+        // Primordial is set-based with a rarity budget: one block or set, 2 rares, 6 uncommons, 40 cards.
+        if (format == DeckFormat.PRIMORDIAL) return primordial.generate(setCodes)
 
         val shape = if (format.isHighlanderShape) DeckShape.HIGHLANDER else DeckShape.CONSTRUCTED
         val pool = cardPool.legalPool(setCodes, format).let { legal ->
