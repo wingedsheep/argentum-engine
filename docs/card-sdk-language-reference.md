@@ -19200,6 +19200,12 @@ Army just amassed by a sibling/action effect, or any cost-chosen entity. The plu
   card for each card type among cards discarded this way" (Kefka, Court Mage) — collection-scoped
   sibling of the `LINKED_EXILE_DISTINCT_CARD_TYPE_COUNT` context property and of
   `SpellsCastThisTurn(countDistinctCardTypes = true)`.
+- `DistinctNamesInCollections(collections)` — number of *different names* among the cards in the
+  named pipeline collections (union, de-duplicated by card name). Facade: `DynamicAmounts.distinctNamesIn(slot)`
+  / `distinctNamesIn(vararg)`. Cards are read by entity id, so it stays correct after they move zones.
+  "If you reveal three cards with different names" (Signal the Clans) is
+  `Conditions.Compare(DynamicAmounts.distinctNamesIn(found), GTE, Fixed(3))` — finding fewer than three
+  cards, or two sharing a name, both leave the count below three.
 - `StoredCardManaValue(collectionName)` — mana value of the **first** card in a named pipeline
   collection (Erratic Explosion-style "that card's mana value").
 - `ManaValueSumOfCollection(collectionName)` — **total** mana value of *every* card in a named

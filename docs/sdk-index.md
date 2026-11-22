@@ -666,6 +666,7 @@ Families:
 - `DynamicAmount.DistinctCardTypesInCollections(collections: List<String>)` — Number of distinct *card types* among the cards in the named pipeline collections (the union of every collection, de-duplicated by card type).
 - `DynamicAmount.DistinctColorsManaSpent(payment: ManaPayment)` — The number of distinct *colors* of mana spent to cast the source spell (0–5).
 - `DynamicAmount.DistinctEntitiesInCollections(collections: List<String>)` — Number of *distinct* entities across several named pipeline collections.
+- `DynamicAmount.DistinctNamesInCollections(collections: List<String>)` — Number of distinct *names* among the cards in the named pipeline collections (the union of every collection, de-duplicated by card name).
 - `DynamicAmount.Divide(numerator: DynamicAmount, denominator: DynamicAmount, roundUp: Boolean)` — Divide one dynamic amount by another, with configurable rounding.
 - `DynamicAmount.DungeonsCompleted(player: Player, dungeon: String?, distinctNames: Boolean)` — How many dungeons player has completed this game (CR 309.7 — a player completes a dungeon as it is removed from the game).
 - `DynamicAmount.EntityProperty(entity: EffectTarget.SingleEntity, numericProperty: EntityNumericProperty)` — Read a numeric property from a referenced entity.

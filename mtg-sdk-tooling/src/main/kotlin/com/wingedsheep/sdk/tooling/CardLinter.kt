@@ -806,6 +806,7 @@ object CardLinter {
         put("DistributeDamageAmongCollection" to "collectionName", read(Space.COLLECTION))
         put("DistinctEntitiesInCollections" to "collections", read(Space.COLLECTION))
         put("DistinctCardTypesInCollections" to "collections", read(Space.COLLECTION))
+        put("DistinctNamesInCollections" to "collections", read(Space.COLLECTION))
         put("ShufflePile" to "from", read(Space.COLLECTION))
         put("ExcludeOtherCollection" to "otherCollectionName", read(Space.COLLECTION))
         put("VariableReference" to "variableName", read(Space.NUMBER))

@@ -14,6 +14,7 @@ import com.wingedsheep.ai.engine.knowledge.IntentCatalog
 import com.wingedsheep.ai.engine.knowledge.TargetPolarity
 import com.wingedsheep.ai.engine.knowledge.TargetPolarityAnalyzer
 import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.handlers.effects.composite.asConditional
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.engine.mechanics.targeting.NumericTargetEquality
 import com.wingedsheep.sdk.scripting.values.CardNumericProperty
@@ -953,19 +954,47 @@ class DecisionResponder(
      * pick it could have spent on the next-best distinct card.
      */
     private fun distinctPicks(state: GameState, decision: SelectCardsDecision, ranked: List<EntityId>): List<EntityId> {
-        if (!decision.onePerManaValue && !decision.onePerPower && !decision.onePerCardName) return ranked
+        val onePerName = decision.onePerCardName || selectionCountedByName(state, decision)
+        if (!decision.onePerManaValue && !decision.onePerPower && !onePerName) return ranked
         val claimed = mutableSetOf<Any>()
         return ranked.filter { id ->
             val card = state.getEntity(id)?.get<CardComponent>()
             val keys = buildList {
                 if (decision.onePerManaValue) add("mv" to NumericTargetEquality.value(state, id, CardNumericProperty.MANA_VALUE))
                 if (decision.onePerPower) add("power" to card?.baseStats?.basePower)
-                if (decision.onePerCardName) add("name" to card?.name)
+                if (onePerName) add("name" to card?.name)
             }
             // A card with no fixed power can't be kept under onePerPower; the server drops it too.
             if (decision.onePerPower && card?.baseStats?.basePower == null) return@filter false
             if (keys.any { it in claimed }) false else { claimed.addAll(keys); true }
         }
+    }
+
+    /**
+     * Whether a later step of the resolving program counts the cards this selection stores by
+     * different names — "if you reveal three cards with different names, …" (Signal the Clans,
+     * a `Compare` over [com.wingedsheep.sdk.scripting.values.DynamicAmount.DistinctNamesInCollections]).
+     * Two copies of one card would switch the payoff off, so the picks are kept one per name, as
+     * an `onePerCardName` restriction would keep them.
+     */
+    private fun selectionCountedByName(state: GameState, decision: SelectCardsDecision): Boolean {
+        val select = (state.peekContinuation() as? Suspension)?.takeIf { it.question.id == decision.id }
+            ?.answer as? SelectFromCollectionContinuation ?: return false
+        // The program that owns this suspension is the topmost one below it.
+        val owner = state.continuationStack.lastOrNull { it is EffectProgram } as? EffectProgram ?: return false
+        return countsByName(owner.root, select.storeSelected)
+    }
+
+    private fun countsByName(effect: com.wingedsheep.sdk.scripting.effects.Effect, key: String): Boolean {
+        effect.asConditional()?.let { branch ->
+            val condition = branch.condition as? com.wingedsheep.sdk.scripting.conditions.Compare
+            if (condition != null && listOf(condition.left, condition.right).any {
+                    it is com.wingedsheep.sdk.scripting.values.DynamicAmount.DistinctNamesInCollections && key in it.collections
+                }
+            ) return true
+            return countsByName(branch.then, key) || branch.otherwise?.let { countsByName(it, key) } == true
+        }
+        return effect is com.wingedsheep.sdk.scripting.effects.CompositeEffect && effect.effects.any { countsByName(it, key) }
     }
 
     /** Prefer the smallest legal selection, honoring reductions such as “discard two unless one is a creature.” */

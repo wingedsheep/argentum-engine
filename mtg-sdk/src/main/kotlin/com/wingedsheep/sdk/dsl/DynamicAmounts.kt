@@ -684,6 +684,14 @@ object DynamicAmounts {
         DynamicAmount.DistinctCardTypesInCollections(collections.toList())
 
     /**
+     * Number of different card names among the cards in the named pipeline collections (union,
+     * de-duplicated by name) — "if you reveal three cards with different names". See
+     * [DynamicAmount.DistinctNamesInCollections].
+     */
+    fun distinctNamesIn(vararg collections: String): DynamicAmount =
+        DynamicAmount.DistinctNamesInCollections(collections.toList())
+
+    /**
      * Total mana value of every card in a named pipeline collection (e.g. the cards just milled
      * into a "milled" collection). Reads each card by entity id, so it stays correct after the
      * collection has moved zones. See [DynamicAmount.ManaValueSumOfCollection].
@@ -1468,6 +1476,13 @@ object DynamicAmounts {
     /** How many distinct card types appear across the pipeline [collections] (typed form). */
     fun distinctCardTypesIn(collections: List<CollectionSlot>): DynamicAmount =
         DynamicAmount.DistinctCardTypesInCollections(collections.map { it.key })
+
+    /** How many different names are among the cards in the pipeline [collection] (typed form). */
+    fun distinctNamesIn(collection: CollectionSlot): DynamicAmount = distinctNamesIn(listOf(collection))
+
+    /** How many different names appear across the pipeline [collections] (typed form). */
+    fun distinctNamesIn(collections: List<CollectionSlot>): DynamicAmount =
+        DynamicAmount.DistinctNamesInCollections(collections.map { it.key })
 
     /** The total mana value of the cards in [collection]. */
     fun manaValueSumOf(collection: CollectionSlot): DynamicAmount = manaValueSumOf(collection.key)

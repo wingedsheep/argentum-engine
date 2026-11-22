@@ -395,6 +395,7 @@ class CreateDelayedTriggerExecutor(
     private fun readsPipeline(amount: DynamicAmount, stored: Set<String>): Boolean = when (amount) {
         is DynamicAmount.DistinctEntitiesInCollections -> amount.collections.any { it in stored }
         is DynamicAmount.DistinctCardTypesInCollections -> amount.collections.any { it in stored }
+        is DynamicAmount.DistinctNamesInCollections -> amount.collections.any { it in stored }
         is DynamicAmount.ManaValueSumOfCollection -> amount.collectionName in stored
         // "<collection>_count" is a collection read like the ones above; a plain name is a stored number.
         is DynamicAmount.VariableReference ->
