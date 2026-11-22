@@ -4021,6 +4021,72 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  DGM: {
+    setCode: 'DGM',
+    setName: "Dragon's Maze",
+    archetypes: [
+      {
+        name: 'Azorius Skies',
+        colors: ['W', 'U'],
+        keyCard: 'Ascended Lawmage',
+        description: "Hold the ground with tappers and bounce, then win in the air with hexproof and vigilant flyers. A tempo-control deck that answers threats at instant speed while evasive creatures close the game.",
+      },
+      {
+        name: 'Dimir Control',
+        colors: ['U', 'B'],
+        keyCard: 'Haunter of Nightveil',
+        description: "Shrink the opponent's attackers, trade removal and bounce for their threats and grind with card draw. A patient control deck that wins once the opponent runs out of gas.",
+      },
+      {
+        name: 'Rakdos Aggro',
+        colors: ['B', 'R'],
+        keyCard: 'Spike Jester',
+        description: "Curve out with hasty and unleashed creatures, punish every block and burn out the last points of life. A fast aggro deck that keeps attacking whatever the board looks like.",
+      },
+      {
+        name: 'Gruul Stompy',
+        colors: ['R', 'G'],
+        keyCard: 'Gruul War Chant',
+        description: "Play the biggest creatures on the curve and give attackers menace and pump so blocks stop working. A beatdown deck that turns every combat step into heavy damage.",
+      },
+      {
+        name: 'Selesnya Tokens',
+        colors: ['G', 'W'],
+        keyCard: 'Bronzebeak Moa',
+        description: "Go wide with creature tokens and reward every creature that enters with bigger attacks. A go-wide midrange deck whose army outgrows the opponent's blockers.",
+      },
+      {
+        name: 'Orzhov Drain',
+        colors: ['W', 'B'],
+        keyCard: 'Maw of the Obzedat',
+        description: "Make sturdy blockers, drain the opponent with life-loss effects and sacrifice spare creatures for a final team pump. A grindy midrange deck that wins the race on life totals.",
+      },
+      {
+        name: 'Izzet Spells',
+        colors: ['U', 'R'],
+        keyCard: 'Fluxcharger',
+        description: "Fill the deck with instants and sorceries, then reward every spell with flyers that grow and burn that deals the finishing damage. A spells-matter tempo deck that wins with card quality and reach.",
+      },
+      {
+        name: 'Golgari Counters',
+        colors: ['B', 'G'],
+        keyCard: 'Korozda Gorgon',
+        description: "Grow creatures with +1/+1 counters, then spend those counters to shrink and kill blockers while recursive threats come back from the graveyard. A grindy midrange deck built on attrition.",
+      },
+      {
+        name: 'Boros Attackers',
+        colors: ['R', 'W'],
+        keyCard: 'Gleam of Battle',
+        description: "Swarm the board with cheap creatures and attack every turn, growing each attacker and burning down the rest. An aggressive deck that rewards all-out attacks.",
+      },
+      {
+        name: 'Simic Counters',
+        colors: ['G', 'U'],
+        keyCard: 'Bred for the Hunt',
+        description: "Put +1/+1 counters on your creatures and draw a card each time one connects. A midrange counters deck that grows its creatures and refuels through combat.",
+      },
+    ],
+  },
   TRK: {
     setCode: 'TRK',
     setName: 'Star Trek',

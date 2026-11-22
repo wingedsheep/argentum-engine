@@ -30,6 +30,15 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-dgm',
+    date: '2026-11-22',
+    kind: 'set',
+    setCode: 'DGM',
+    title: "Dragon's Maze is complete",
+    body: "The Return to Ravnica finale sends all ten guilds racing through the Implicit Maze. Fuse split cards let you cast one half or both, each guild's champion leads its colour pair, and a land slot full of Guildgates (and the odd shockland or Maze's End) makes ten two-colour archetypes, from Azorius flyers to Rakdos unleash aggro, easy to splash.",
+    tryIf: 'multicolour guild decks, flexible split cards and splashing a third colour',
+  },
+  {
     id: 'set-ths',
     date: '2026-11-21',
     kind: 'set',

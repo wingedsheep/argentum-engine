@@ -1726,6 +1726,32 @@ object SetArchetypes {
                     creatureTypes = listOf("Hero")),
             )
         ),
+        "DGM" to SetSynergies(
+            setCode = "DGM",
+            setName = "Dragon's Maze",
+            archetypes = listOf(
+                Archetype("Azorius Skies", listOf(Color.WHITE, Color.BLUE),
+                    "Hold the ground with tappers and bounce, then win in the air with hexproof and vigilant flyers. A tempo-control deck that answers threats at instant speed while evasive creatures close the game."),
+                Archetype("Dimir Control", listOf(Color.BLUE, Color.BLACK),
+                    "Shrink the opponent's attackers, trade removal and bounce for their threats and grind with card draw. A patient control deck that wins once the opponent runs out of gas."),
+                Archetype("Rakdos Aggro", listOf(Color.BLACK, Color.RED),
+                    "Curve out with hasty and unleashed creatures, punish every block and burn out the last points of life. A fast aggro deck that keeps attacking whatever the board looks like."),
+                Archetype("Gruul Stompy", listOf(Color.RED, Color.GREEN),
+                    "Play the biggest creatures on the curve and give attackers menace and pump so blocks stop working. A beatdown deck that turns every combat step into heavy damage."),
+                Archetype("Selesnya Tokens", listOf(Color.GREEN, Color.WHITE),
+                    "Go wide with creature tokens and reward every creature that enters with bigger attacks. A go-wide midrange deck whose army outgrows the opponent's blockers."),
+                Archetype("Orzhov Drain", listOf(Color.WHITE, Color.BLACK),
+                    "Make sturdy blockers, drain the opponent with life-loss effects and sacrifice spare creatures for a final team pump. A grindy midrange deck that wins the race on life totals."),
+                Archetype("Izzet Spells", listOf(Color.BLUE, Color.RED),
+                    "Fill the deck with instants and sorceries, then reward every spell with flyers that grow and burn that deals the finishing damage. A spells-matter tempo deck that wins with card quality and reach."),
+                Archetype("Golgari Counters", listOf(Color.BLACK, Color.GREEN),
+                    "Grow creatures with +1/+1 counters, then spend those counters to shrink and kill blockers while recursive threats come back from the graveyard. A grindy midrange deck built on attrition."),
+                Archetype("Boros Attackers", listOf(Color.RED, Color.WHITE),
+                    "Swarm the board with cheap creatures and attack every turn, growing each attacker and burning down the rest. An aggressive deck that rewards all-out attacks."),
+                Archetype("Simic Counters", listOf(Color.GREEN, Color.BLUE),
+                    "Put +1/+1 counters on your creatures and draw a card each time one connects. A midrange counters deck that grows its creatures and refuels through combat."),
+            )
+        ),
         "TRK" to SetSynergies(
             setCode = "TRK",
             setName = "Star Trek",
