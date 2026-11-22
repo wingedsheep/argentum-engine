@@ -306,6 +306,10 @@ object AiReadingAudit {
         // sources" (Gaea's Revenge): untargetability on itself, part of its body like hexproof —
         // projected as a keyword the board evaluator prices.
         is CantBeTargetedBy -> static.filter.scope == Scope.Self
+        // "This creature can't be the target of black or red spells your opponents control"
+        // (Fiendslayer Paladin): the same untargetability as a battlefield lock on itself.
+        is com.wingedsheep.sdk.scripting.CardsInZonesCantBeTargeted ->
+            com.wingedsheep.ai.engine.evaluation.BoardPresence.isSelfTargetLock(static)
         is ConditionalStaticAbility -> isBodyStatic(static.ability)
         is CompositeStaticAbility -> static.abilities.isNotEmpty() && static.abilities.all(::isBodyStatic)
         else -> false

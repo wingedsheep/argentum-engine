@@ -11657,6 +11657,14 @@ staticAbility {
 
   `UntargetableByRules.zoneLocks` reads player-held grants beside the battlefield's statics; the grant ends
   with its duration.
+
+  A permanent's own "this creature can't be the target of black or red spells your opponents control"
+  (Fiendslayer Paladin) is the same lock printed on it and narrowed to itself with
+  `filter = GameObjectFilter.Any.withStatePredicate(StatePredicate.IsSource)` (`IsSource` is the lock's
+  holder): opponents are relative to its current controller, it lifts when it loses its abilities, and —
+  unlike `CantBeTargetedBy(UntargetableBy.SourcesOfColor(...))` — it stops neither abilities nor its
+  controller's own spells. The AI reads such a self-lock as part of the creature's body
+  (`BoardPresence.isSelfTargetLock`).
 - `SetColors(colors, filter, offBattlefield = null)` — Layer 5 color-*setting* static (CR 613.1e): the objects
   `filter` matches have exactly `colors`, replacing their own; an empty set is "are colorless". The add-a-color
   siblings are `GrantColor` / `GrantChosenColor`. `offBattlefield` (a `Player`, read relative to the static's

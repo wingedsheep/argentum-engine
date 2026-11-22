@@ -201,6 +201,10 @@ object AiCardRating {
                     val v = body(power, toughness, setOf(UntargetableByRules.keyword(static.quality))) - base
                     if (v != 0.0) add(Part("Can't be targeted by ${static.quality.description}", v))
                 }
+                // … or a battlefield lock on itself ("… of black or red spells your opponents control").
+                if (card.script.staticAbilities.any(BoardPresence::isSelfTargetLock)) {
+                    add(Part("Can't be targeted by some opponents' spells", BoardPresence.SELF_TARGET_LOCK_VALUE))
+                }
             }
             return Board(
                 BoardKind.CREATURE, parts.sumOf { it.value }, parts,

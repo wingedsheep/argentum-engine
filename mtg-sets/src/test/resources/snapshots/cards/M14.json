@@ -1440,6 +1440,70 @@
     ]
 }
 
+// Fiendslayer Paladin
+{
+    "name": "Fiendslayer Paladin",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "First strike (This creature deals combat damage before creatures without first strike.)\nLifelink (Damage dealt by this creature also causes you to gain that much life.)\nThis creature can't be the target of black or red spells your opponents control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FIRST_STRIKE",
+        "LIFELINK"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CardsInZonesCantBeTargeted",
+                "zones": [
+                    "Battlefield"
+                ],
+                "filter": {
+                    "statePredicates": [
+                        "IsSource"
+                    ]
+                },
+                "sourceController": "EachOpponent",
+                "spellFilter": {
+                    "cardPredicates": [
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                {
+                                    "type": "HasColor",
+                                    "color": "BLACK"
+                                },
+                                {
+                                    "type": "HasColor",
+                                    "color": "RED"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "RARE",
+        "artist": "Wesley Burt",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5cfb0f4a-e273-4ffb-91cd-dd1a7b6f6a8f.jpg?1783939944",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "Fiendslayer Paladin can be affected by black or red spells that don't target it. For example, a red spell that \"deals 3 damage to each creature\" would deal damage to Fiendslayer Paladin."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Fleshpulper Giant
 {
     "name": "Fleshpulper Giant",
