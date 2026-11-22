@@ -18,7 +18,7 @@ import com.wingedsheep.sdk.scripting.references.Player
  * Artifact
  * {2}, {T}: You gain 5 life. Shuffle this artifact and your graveyard into their owner's library.
  *
- * The artifact (only while it is still this object on the battlefield) and every card in your
+ * The artifact (while it is still on the battlefield, whoever controls it) and every card in your
  * graveyard are gathered into one collection and moved in a single shuffled move: each card goes to
  * its owner's library and every affected library is shuffled once — a stolen Elixir goes home to
  * its owner's library while your graveyard goes into yours (the card's rulings). An Elixir already
@@ -37,10 +37,12 @@ val ElixirOfImmortality = card("Elixir of Immortality") {
             val elixirAndGraveyard = gather(
                 CardSource.FromMultipleZones(
                     zones = listOf(Zone.BATTLEFIELD, Zone.GRAVEYARD),
-                    player = Player.You,
+                    // Every player's zones, so the Elixir is found on the battlefield whoever controls
+                    // it now; the graveyard half is narrowed to the one you own.
+                    player = Player.Each,
                     filter = GameObjectFilter.Any.withStatePredicate(
-                        StatePredicate.Or(listOf(StatePredicate.IsSource, StatePredicate.InZone(Zone.GRAVEYARD)))
-                    ),
+                        StatePredicate.And(listOf(StatePredicate.IsSource, StatePredicate.InZone(Zone.BATTLEFIELD)))
+                    ) or GameObjectFilter.Any.ownedByYou().withStatePredicate(StatePredicate.InZone(Zone.GRAVEYARD)),
                 )
             )
             move(

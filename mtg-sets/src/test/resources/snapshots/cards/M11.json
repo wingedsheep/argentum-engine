@@ -957,17 +957,31 @@
                                     "Battlefield",
                                     "Graveyard"
                                 ],
+                                "player": "Each",
                                 "filter": {
-                                    "statePredicates": [
+                                    "anyOf": [
                                         {
-                                            "type": "StateOr",
-                                            "predicates": [
-                                                "IsSource",
+                                            "statePredicates": [
+                                                {
+                                                    "type": "StateAnd",
+                                                    "predicates": [
+                                                        "IsSource",
+                                                        {
+                                                            "type": "InZone",
+                                                            "zone": "Battlefield"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "statePredicates": [
                                                 {
                                                     "type": "InZone",
                                                     "zone": "Graveyard"
                                                 }
-                                            ]
+                                            ],
+                                            "controllerPredicate": "OwnedByYou"
                                         }
                                     ]
                                 }

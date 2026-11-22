@@ -2,6 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.LibraryShuffledEvent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.m11.cards.ElixirOfImmortality
@@ -96,6 +97,29 @@ class ElixirOfImmortalityScenarioTest : FunSpec({
         d.state.getZone(me, Zone.LIBRARY).size shouldBe librarySize + 2
         withClue("both the graveyard Elixir and the Bears are in the library") {
             (elixir in d.state.getZone(me, Zone.LIBRARY) && bears in d.state.getZone(me, Zone.LIBRARY)) shouldBe true
+        }
+    }
+    test("an Elixir whose control changed in response still goes home, and only your graveyard follows") {
+        val (d, me, elixir) = setUp()
+        val opp = d.getOpponent(me)
+        val mine = d.putCardInGraveyard(me, "Centaur Courser")
+        val theirs = d.putCardInGraveyard(opp, "Lightning Bolt")
+        val myLibrary = d.state.getZone(me, Zone.LIBRARY).size
+
+        d.giveColorlessMana(me, 2)
+        d.submitSuccess(ActivateAbility(me, elixir, abilityId))
+        d.replaceState(d.state.updateEntity(elixir) { it.with(ControllerComponent(opp)) })
+        resolveAll(d)
+
+        d.getLifeTotal(me) shouldBe 25
+        withClue("the Elixir left the battlefield for its owner's library") {
+            d.findPermanent(opp, "Elixir of Immortality") shouldBe null
+            (elixir in d.state.getZone(me, Zone.LIBRARY)) shouldBe true
+        }
+        (mine in d.state.getZone(me, Zone.LIBRARY)) shouldBe true
+        d.state.getZone(me, Zone.LIBRARY).size shouldBe myLibrary + 2
+        withClue("the opponent's graveyard is not yours") {
+            d.getGraveyard(opp).contains(theirs) shouldBe true
         }
     }
 })
