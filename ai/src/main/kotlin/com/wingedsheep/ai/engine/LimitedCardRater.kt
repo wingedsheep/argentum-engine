@@ -695,11 +695,13 @@ object LimitedCardRater {
         // A library search is priced at its own gather leaf, which a wish's gather isn't.
         if (IntentTag.TUTOR in tags) score += TAG_VALUE.getValue(IntentTag.TUTOR)
         // "Reveals cards until they reveal a land card, then puts them into their graveyard"
-        // (Mirko Vosk, Tunnel Vision): a mill of unknown depth no single leaf says.
-        if (IntentTag.MILL in tags) score += REVEAL_UNTIL_MILL_SCORE
+        // (Mirko Vosk, Tunnel Vision): a mill of unknown depth no single leaf says. A library
+        // exile toward an empty library (Supreme Inquisitor) tags MILL too, but isn't priced here.
+        if (IntentTag.MILL in tags && revealsUntilMatch(root)) score += REVEAL_UNTIL_MILL_SCORE
         return score
     }
 
+    /** Whether [body] walks a library until a match ("reveal cards until ..."), the gather a reveal-until mill reads from. */
     private fun revealsUntilMatch(body: Effect): Boolean =
         EffectWalker.payoffLeaves(body).any { it is com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect }
 

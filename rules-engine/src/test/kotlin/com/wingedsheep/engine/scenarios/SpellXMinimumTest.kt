@@ -23,6 +23,7 @@ import io.kotest.matchers.string.shouldContain
  *  - A cast without paying its mana cost has 0 as the only legal X (CR 107.3b), so it can't be cast
  *    at all — Mind Grind's ruling. The free-cast rail itself lives in [GrantFreeCastThisTurnTest];
  *    here a hand-built free cast is rejected by the validator whatever X it claims.
+ *  - Resolution-time free casts (cascade) refuse it too, via `resolutionCastProhibition`.
  *  - A spell with no floor still offers X = 0 (the default doesn't move).
  */
 class SpellXMinimumTest : ScenarioTestBase() {
@@ -130,6 +131,24 @@ class SpellXMinimumTest : ScenarioTestBase() {
                 )
                 cast.error.shouldNotBeNull() shouldContain "X can't be 0, so this spell can't be cast without paying its mana cost"
                 g.isInHand(1, "X Floored At One") shouldBe true
+            }
+
+            test("a cascade hit with an X floor is never offered and goes to the bottom") {
+                val g = scenario()
+                    .withPlayers()
+                    .withCardInHand(1, "Quandrix, the Proof")
+                    .withLandsOnBattlefield(1, "Forest", 5)
+                    .withLandsOnBattlefield(1, "Island", 2)
+                    .withCardInLibrary(1, "X Floored At One")
+                    .withCardInLibrary(1, "Mountain")
+                    .build()
+                g.castSpell(1, "Quandrix, the Proof").error shouldBe null
+                g.resolveStack()
+                withClue("cascade casts without paying the mana cost, so X would be 0 (CR 107.3b)") {
+                    g.getPendingDecision() shouldBe null
+                }
+                g.findCardsInLibrary(1, "X Floored At One").size shouldBe 1
+                g.getLifeTotal(1) shouldBe 20
             }
         }
     }

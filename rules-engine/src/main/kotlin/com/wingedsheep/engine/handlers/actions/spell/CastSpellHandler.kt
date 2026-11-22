@@ -215,9 +215,21 @@ class CastSpellHandler(
      * limit stops a second one. Checked against the card in the zone it is cast from, before any
      * free-cast grant or target prompt, so a forbidden cast simply never initiates and the effect
      * takes its "if you don't cast it" branch.
+     *
+     * Every such cast is made without paying the spell's mana cost, so its X must be 0 (CR 107.3b):
+     * a spell whose own X can't be 0 ([com.wingedsheep.sdk.model.CardScript.xMinimum], Mind Grind)
+     * can't be cast this way at all.
      */
     fun resolutionCastProhibition(state: GameState, action: CastSpell): String? =
         castPermissionUtils.castProhibition(state, action.playerId, action.cardId, action)
+            ?: freeCastXFloorProhibition(state, action)
+
+    private fun freeCastXFloorProhibition(state: GameState, action: CastSpell): String? {
+        val definitionId = state.getEntity(action.cardId)
+            ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.cardDefinitionId ?: return null
+        val floor = cardRegistry.getCard(definitionId)?.script?.xMinimum ?: 0
+        return if (floor > 0) "X can't be 0, so this spell can't be cast without paying its mana cost" else null
+    }
 
     /** Each cost the caster owes, reduced to the leg they took (see [SpellCosts.reduceAlternatives]). */
     private fun reduceCostAlternatives(
