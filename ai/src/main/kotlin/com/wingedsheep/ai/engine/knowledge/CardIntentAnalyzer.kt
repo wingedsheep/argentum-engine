@@ -3471,8 +3471,11 @@ object CardIntentAnalyzer {
      */
     val MARKED_FOR_REMOVAL_COUNTERS: Set<CounterType> = setOf(CounterType.PREY)
 
+    // "That player reveals … until …, then puts them into their graveyard" off a combat-damage
+    // trigger (Mirko Vosk, Mind Drinker): the player the trigger names is the one hit, as
+    // [isAnotherPlayersHand] reads the discard twin.
     private fun canMillOpponent(player: Player): Boolean = when (player) {
-        Player.EachOpponent, Player.TargetOpponent, Player.TargetPlayer,
+        Player.EachOpponent, Player.TargetOpponent, Player.TargetPlayer, Player.TriggeringPlayer,
         Player.EachTargetedPlayer, is Player.ContextPlayer, is Player.BoundVariable -> true
         else -> false
     }
