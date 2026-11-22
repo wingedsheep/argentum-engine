@@ -1247,11 +1247,19 @@ data class GrantSpellKeywordEffect(
  * permission is read at cast-legality time (CR 601.3) by `CastPermissionUtils.hasGrantedFlash`,
  * so it composes with every casting path that already honors flash.
  *
+ * **One-shot ("the next … spell").** With `duration = Duration.NextUse(…)` the grant covers only
+ * [target]'s *next* matching spell this turn: "The next sorcery spell you cast this turn can be cast
+ * as though it had flash" (Quicken, Savage Summoning). The first matching spell [target] casts this
+ * turn spends the grant — even one cast at a time it could have been cast anyway (Quicken and Savage
+ * Summoning rulings) — and several such grants are all spent by that one spell. An unspent grant
+ * lapses at end of turn.
+ *
  * @property target Whose spells gain flash (default: controller).
  * @property spellFilter Which spells gain flash (defaults to every spell).
  * @property duration How long the grant lasts (default: end of turn). The "as long as ~ is on
  *   the battlefield" variant is covered by [com.wingedsheep.sdk.scripting.GrantFlashToSpellType]
- *   instead, so this effect's typical durations are `EndOfTurn`, `UntilYourNextTurn`, etc.
+ *   instead, so this effect's typical durations are `EndOfTurn`, `UntilYourNextTurn`, and
+ *   `NextUse` for the one-shot "next spell" grant.
  */
 @SerialName("GrantFlashToSpells")
 @Serializable
@@ -1260,7 +1268,13 @@ data class GrantFlashToSpellsEffect(
     val spellFilter: GameObjectFilter = GameObjectFilter.Any,
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
-    override val description: String = buildString {
+    override val description: String = if (duration is Duration.NextUse) buildString {
+        append("The next ")
+        if (spellFilter != GameObjectFilter.Any) append("${spellFilter.description} ")
+        append("spell ")
+        append(if (target == EffectTarget.Controller) "you cast" else "${target.description} casts")
+        append(" this turn can be cast as though it had flash")
+    } else buildString {
         append(target.description.replaceFirstChar { it.uppercase() })
         append(" may cast ")
         append(if (spellFilter == GameObjectFilter.Any) "spells" else "${spellFilter.description} spells")

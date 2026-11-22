@@ -494,7 +494,25 @@ internal class PlayerActiveEffectsProjector(
         // "spells" so the Borne-Upon-a-Wind case reads naturally, and join multiple filter branches
         // with "or" to keep stacked grants grammatical.
         container.get<FlashGrantsComponent>()?.let { component ->
-            for ((removeOn, grants) in component.grants.groupBy { it.removeOn }) {
+            // One-shot "the next sorcery spell you cast this turn" grants (Quicken) get their own
+            // badge: they cover a single spell, not every matching spell for the window.
+            val (nextSpell, lasting) = component.grants.partition { it.nextSpellOnly }
+            if (nextSpell.isNotEmpty()) {
+                val rendered = nextSpell.map { it.filter }
+                    .map { if (it == GameObjectFilter.Any) "" else it.description.lowercase() }
+                    .filter { it.isNotEmpty() }
+                    .distinct()
+                val spellPhrase = if (rendered.isEmpty()) "spell" else "${rendered.joinToString(" or ")} spell"
+                effects.add(
+                    ClientPlayerEffect(
+                        effectId = "flash_grants_next_spell",
+                        name = "Flash",
+                        description = "The next $spellPhrase you cast this turn can be cast as though it had flash",
+                        icon = "lightning"
+                    )
+                )
+            }
+            for ((removeOn, grants) in lasting.groupBy { it.removeOn }) {
                 val rendered = grants.map { it.filter }
                     .map { if (it == GameObjectFilter.Any) "" else it.description.lowercase() }
                     .filter { it.isNotEmpty() }

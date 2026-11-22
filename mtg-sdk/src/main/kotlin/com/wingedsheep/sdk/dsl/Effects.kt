@@ -8271,4 +8271,21 @@ object Effects {
         spellFilter: com.wingedsheep.sdk.scripting.GameObjectFilter = com.wingedsheep.sdk.scripting.GameObjectFilter.Any,
         duration: com.wingedsheep.sdk.scripting.Duration = com.wingedsheep.sdk.scripting.Duration.EndOfTurn
     ): Effect = GrantFlashToSpellsEffect(target, spellFilter, duration)
+
+    /**
+     * "The next [spellFilter] spell you cast this turn can be cast as though it had flash" (Quicken,
+     * Savage Summoning) — a one-shot [GrantFlashToSpellsEffect] (`Duration.NextUse`) spent by the
+     * next matching spell you cast this turn, whether or not that spell needed flash.
+     */
+    fun GrantFlashToNextSpell(
+        spellFilter: com.wingedsheep.sdk.scripting.GameObjectFilter = com.wingedsheep.sdk.scripting.GameObjectFilter.Any
+    ): Effect = GrantFlashToSpellsEffect(
+        spellFilter = spellFilter,
+        duration = com.wingedsheep.sdk.scripting.Duration.NextUse(
+            if (spellFilter == com.wingedsheep.sdk.scripting.GameObjectFilter.Any) "you cast a spell"
+            else spellFilter.description.let { d ->
+                "you cast ${if (d.first().lowercaseChar() in "aeiou") "an" else "a"} $d spell"
+            }
+        )
+    )
 }

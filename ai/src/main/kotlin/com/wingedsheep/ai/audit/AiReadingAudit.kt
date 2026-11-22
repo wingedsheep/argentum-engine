@@ -75,6 +75,7 @@ import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersToCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.GrantFlashToSpellsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantStaticAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.GrantActivatedAbilityToGroupEffect
 import com.wingedsheep.sdk.scripting.effects.GrantLoyaltyActivationPermissionEffect
@@ -830,6 +831,12 @@ object AiReadingAudit {
             // to wait for.
             val spentWithCast = expiring is GrantStaticAbilityEffect && expiring.ability is AdditionalManaOnSourceTap &&
                 expiring.target == EffectTarget.Controller
+            // "You may cast spells this turn as though they had flash" (Borne Upon a Wind) granted to
+            // its caster: the grant is spent in the window it is cast in, on the spells it makes
+            // castable there — legal-action enumeration offers them at once and the evaluator weighs
+            // each (FlashGrantSpendAiTest). When to cast the granter is the question of what it rides
+            // beside (a cantrip's end-step hold), which that leaf's reading answers.
+            val flashSpentWithCast = expiring is GrantFlashToSpellsEffect && expiring.target == EffectTarget.Controller
             // "Target creature becomes red until end of turn" (Crimson Wisps, Cerulean Wisps): a
             // colour fights nothing of its own. What it changes — a protection from a colour it
             // slips, a colour-matters payoff that now counts it — is on the board the moment it
@@ -850,7 +857,7 @@ object AiReadingAudit {
             // counterspell readers answer.
             val ridesOnCounter = expiring is CantCastSpellsEffect && expiring.target == EffectTarget.TargetController &&
                 leaves.any { it is CounterEffect }
-            if (isRead(leaf) || ridesOnRemoval || ridesOnCopy || spentWithCast || colourOnly || ridesOnGrant || ridesOnCounter) {
+            if (isRead(leaf) || ridesOnRemoval || ridesOnCopy || spentWithCast || flashSpentWithCast || colourOnly || ridesOnGrant || ridesOnCounter) {
                 sink += Finding(
                     Check.TIMING, read = true, reason = "knows when to spend this until-end-of-turn effect",
                     effectType = label, step = step(leaves, leaf)?.index?.plus(1), stepText = stepText(leaf),

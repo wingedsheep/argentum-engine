@@ -1170,6 +1170,50 @@
     ]
 }
 
+// Quicken
+{
+    "name": "Quicken",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "The next sorcery spell you cast this turn can be cast as though it had flash. (It can be cast any time you could cast an instant.)\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GrantFlashToSpells",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsSorcery"
+                        ]
+                    },
+                    "duration": {
+                        "type": "NextUse",
+                        "sourceDescription": "you cast a sorcery spell"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "RARE",
+        "artist": "Aleksi Briclot",
+        "flavorText": "A skilled Izzet chronarch can carry out an epic vendetta between the fall of one hourglass grain and the next.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7a276b12-4647-4223-b89e-f55d72feb2d0.jpg?1783943518"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Repeal
 {
     "name": "Repeal",

@@ -1,0 +1,1 @@
+- #4812 Times a sorcery it may cast at instant speed through a flash grant (Borne Upon a Wind, Quicken) as the instant it is being cast as — a Divination flashed in at the opponent's end step is cast there instead of passed
