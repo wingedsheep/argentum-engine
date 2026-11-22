@@ -14,6 +14,7 @@ import com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent
 import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
 import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
+import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
@@ -694,6 +695,12 @@ class CreateDelayedTriggerExecutor(
             is AddColorlessManaEffect -> {
                 val snapshot = snapshotAmount(effect.amount, context, state)
                 if (snapshot !== effect.amount) effect.copy(amount = snapshot) else effect
+            }
+            // "Add X mana in any combination of colors, where X is that spell's mana value"
+            // (Plasm Capture): the same read-it-now rule as the two above.
+            is AddDynamicManaEffect -> {
+                val snapshot = snapshotAmount(effect.amountSource, context, state)
+                if (snapshot !== effect.amountSource) effect.copy(amountSource = snapshot) else effect
             }
             // "At the beginning of the next upkeep, create a 4/4 … token **for each creature
             // returned to your hand this way**" (The Eagles Are Coming!). The count reads the

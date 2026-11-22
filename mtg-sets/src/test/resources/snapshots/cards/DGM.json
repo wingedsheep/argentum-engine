@@ -5123,6 +5123,78 @@
     ]
 }
 
+// Plasm Capture
+{
+    "name": "Plasm Capture",
+    "manaCost": "{G}{G}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell. At the beginning of your next first main phase, add X mana in any combination of colors, where X is that spell's mana value.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateDelayedTrigger",
+                    "step": "PRECOMBAT_MAIN",
+                    "effect": {
+                        "type": "AddDynamicMana",
+                        "amountSource": {
+                            "type": "EntityProperty",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "numericProperty": "ManaValue"
+                        },
+                        "allowedColors": [
+                            "WHITE",
+                            "BLUE",
+                            "BLACK",
+                            "RED",
+                            "GREEN"
+                        ]
+                    },
+                    "fireOnPlayer": {
+                        "type": "PlayerRef",
+                        "player": "You"
+                    }
+                },
+                "Counter"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "rarity": "RARE",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0ffe8485-d5fb-47cc-af53-6e0fd062b7a2.jpg?1783940025",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "If the countered spell had {X} in its mana cost, include the value chosen for that X when determining how much mana to produce. For example, if you counter a spell that costs {X}{R} with X equal to 5, you'll produce six mana."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Your precombat main phase is the main phase that happens immediately after your draw step, not any other main phase."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Pontiff of Blight
 {
     "name": "Pontiff of Blight",

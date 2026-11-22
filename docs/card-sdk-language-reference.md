@@ -11228,8 +11228,8 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
     effect = Effects.GrantKeyword(Keyword.DOUBLE_STRIKE))` — "whenever you cast a noncreature spell
     this turn, target creature you control gains double strike". Works on both event-based and
     step-based delayed triggers; null (default) for non-targeting delayed triggers.
-  - **Amount snapshot at creation time.** When `effect` is an `AddManaEffect` / `AddColorlessManaEffect`
-    carrying a non-`Fixed` `DynamicAmount` that reads from the *current* resolution context — e.g.
+  - **Amount snapshot at creation time.** When `effect` is an `AddManaEffect` / `AddColorlessManaEffect` /
+    `AddDynamicManaEffect` (its `amountSource`) carrying a non-`Fixed` `DynamicAmount` that reads from the *current* resolution context — e.g.
     `DynamicAmounts.targetManaSpent(0)` (`EntityProperty(ContextTarget(0), ManaSpent)`) — the executor
     evaluates that amount **now** and bakes it into a `DynamicAmount.Fixed` literal, exactly as it
     bakes `ContextTarget(n)` target references into `SpecificEntity`. This is required for "at the
@@ -11237,7 +11237,9 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
     that spell" (**Mana Sculpt**): the referenced spell is gone by the time the delayed trigger fires,
     so a lazy read would yield 0 — author the gated delayed-trigger creation *before* the counter so
     the target spell is still on the stack when the snapshot is taken. Already-`Fixed` amounts pass
-    through untouched.
+    through untouched. **Plasm Capture** is the any-combination form: `CreateDelayedTrigger(step =
+    PRECOMBAT_MAIN, fireOnPlayer = PlayerRef(You), effect = AddManaInAnyCombination(manaValueOf(spell)))
+    then CounterSpell()` — X is frozen now, and the pips are coloured when the trigger resolves.
   - **Context-target baking covers `CreateTokenCopyOfTargetEffect`.** A delayed "at the beginning of the
     next end step, create a token that's a copy of that <permanent>" whose `target` is `TriggeringEntity` /
     `ContextTarget(n)` / `Self` is baked into a `SpecificEntity` at creation time (same mechanism that bakes
