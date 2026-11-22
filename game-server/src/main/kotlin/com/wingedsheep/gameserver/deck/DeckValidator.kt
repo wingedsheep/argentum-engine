@@ -6,6 +6,7 @@ import com.wingedsheep.gameserver.protocol.DeckEntryDTO
 import com.wingedsheep.sdk.core.CanadianHighlanderPoints
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.DeckFormat
+import com.wingedsheep.sdk.core.PrimordialFormat
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CommanderEligibility
 import com.wingedsheep.sdk.model.CompanionEligibility
@@ -32,6 +33,10 @@ import org.springframework.stereotype.Component
  *   - **Highlander / Canadian Highlander**: 100-card *minimum* singleton with no commander, over the
  *     Vintage pool (legality derived in `LegalityData`). Canadian Highlander also caps the deck at
  *     [CanadianHighlanderPoints.POINT_CAP] points and allows no sideboard.
+ *   - **Primordial** ([PrimordialFormat]): 40-card minimum, every card from one block or standalone
+ *     set, exactly 2 rares/mythics and 6 uncommons, copy caps by rarity (1 / 2 / 4) across deck and
+ *     sideboard, sideboard of at most 10. Legality comes from [PrimordialCardPool], not Scryfall;
+ *     the validator infers the deck's pool from its cards and reports it in [PrimordialSummary].
  *   - **Standard / Pioneer / Modern / Pauper / Legacy / Vintage / Premodern**: 60-card minimum,
  *     4-of (current default). Format-specific banned-list enforcement comes from the per-card
  *     legality data Scryfall publishes — `card.legalFormats` already encodes "is currently legal
@@ -49,10 +54,19 @@ class DeckValidator @Autowired constructor(
      * about printings), the printing check is skipped silently.
      */
     private val printingRegistry: PrintingRegistry? = null,
+    /**
+     * Primordial's per-pool printing index. Built from [printingRegistry] when not injected; with
+     * neither, Primordial decks are validated for shape only and report no pool.
+     */
+    injectedPrimordialPool: PrimordialCardPool? = null,
 ) {
 
     /** Convenience constructor for tests / callers that don't care about printings. */
     constructor(cardRegistry: CardRegistry) : this(cardRegistry, null)
+
+    private val primordialPool: PrimordialCardPool? by lazy {
+        injectedPrimordialPool ?: printingRegistry?.let(::PrimordialCardPool)
+    }
 
     fun validate(
         deckList: Map<String, Int>,
@@ -212,11 +226,13 @@ class DeckValidator @Autowired constructor(
             }
             countsByBaseName.merge(card.name, count, Int::plus)
         }
+        val setBased = format?.isSetBased == true
 
         for ((cardName, count) in countsByBaseName) {
             val card = cardRegistry.getCard(cardName) ?: continue
             val limit = copyLimitFor(card, profile)
-            if (limit != null && count > limit) {
+            // A set-based format's copy caps hang on the card's rarity in the deck's pool.
+            if (limit != null && count > limit && !setBased) {
                 errors += DeckValidationIssue(
                     code = "TOO_MANY_COPIES",
                     message = copyLimitMessage(cardName, count, limit, profile),
@@ -231,7 +247,8 @@ class DeckValidator @Autowired constructor(
             }
             // Format legality. Cards with no recorded legality (custom test cards, missing Scryfall
             // data) are accepted silently — only an explicit "this card is not in $format" rejects.
-            if (format != null && card.legalFormats.isNotEmpty() && format !in card.legalFormats) {
+            // Set-based formats (Primordial) decide legality per pool, below.
+            if (format != null && !setBased && card.legalFormats.isNotEmpty() && format !in card.legalFormats) {
                 errors += DeckValidationIssue(
                     code = "NOT_LEGAL_IN_FORMAT",
                     message = "$cardName is not legal in ${format.displayName}",
@@ -284,6 +301,12 @@ class DeckValidator @Autowired constructor(
             )
         }
 
+        val primordial = if (format == DeckFormat.PRIMORDIAL) {
+            primordialRules(countsByBaseName, sideboard, errors)
+        } else {
+            null
+        }
+
         if (companion != null) {
             validateCompanion(
                 companion = companion,
@@ -303,8 +326,181 @@ class DeckValidator @Autowired constructor(
             errors = errors,
             warnings = warnings,
             points = points,
+            primordial = primordial,
         )
     }
+
+    /**
+     * Primordial's deck-construction rules ([PrimordialFormat]) over the deck ([countsByBaseName])
+     * and its [sideboard]. Returns the summary the deckbuilder shows — the inferred pool and the
+     * rarity budget — whatever the outcome, so it can guide a deck that is still being built.
+     *
+     * The deck's pool is inferred, not chosen: the pools every non-basic card is printed in. When
+     * several fit (an all-reprint list), the one the deck breaks the fewest copy caps in wins, then
+     * the one nearest the rarity totals, newest first on a tie. When none fits, the pool most of the cards come from is the one
+     * reported, and each card outside it is an error naming it.
+     */
+    private fun primordialRules(
+        countsByBaseName: Map<String, Int>,
+        sideboard: List<String>,
+        errors: MutableList<DeckValidationIssue>,
+    ): PrimordialSummary? {
+        val index = primordialPool ?: return null
+        val label = DeckFormat.PRIMORDIAL.displayName
+        val sideboardCounts = sideboard.mapNotNull { cardRegistry.getCard(it)?.name }.groupingBy { it }.eachCount()
+        val combined = (countsByBaseName.keys + sideboardCounts.keys).associateWith {
+            (countsByBaseName[it] ?: 0) + (sideboardCounts[it] ?: 0)
+        }
+
+        // Cards that need a pool: everything but the five free basics.
+        val pooled = mutableListOf<String>()
+        for (name in combined.keys.sorted()) {
+            if (name in PrimordialFormat.FREE_BASIC_LANDS) continue
+            when {
+                PrimordialFormat.isBanned(name) -> errors += DeckValidationIssue(
+                    code = "NOT_LEGAL_IN_FORMAT",
+                    message = "$name is banned in $label",
+                    cardName = name,
+                )
+                index.poolsOf(name).isEmpty() -> errors += DeckValidationIssue(
+                    code = "NOT_LEGAL_IN_FORMAT",
+                    message = "$name isn't printed in any $label-legal block or set",
+                    cardName = name,
+                )
+                else -> pooled += name
+            }
+        }
+
+        val candidates = PrimordialFormat.pools.filter { pool -> pooled.all { pool in index.poolsOf(it) } }
+        val chosen = when {
+            pooled.isEmpty() -> null
+            candidates.isEmpty() -> PrimordialFormat.pools.maxBy { pool -> pooled.count { pool in index.poolsOf(it) } }
+            else -> candidates.minBy { pool -> primordialBudgetMisses(pool, index, countsByBaseName, combined) }
+        }
+        if (chosen == null) {
+            if (sideboard.size > PrimordialFormat.MAX_SIDEBOARD) errors += primordialSideboardIssue(sideboard.size)
+            return PrimordialSummary(
+                pool = null,
+                setCodes = emptyList(),
+                candidateSetCodes = emptyList(),
+                alternatives = emptyList(),
+                rares = 0,
+                uncommons = 0,
+                sideboard = sideboard.size,
+                slotByCard = emptyMap(),
+            )
+        }
+
+        if (candidates.isEmpty()) {
+            for (name in pooled) {
+                if (chosen in index.poolsOf(name)) continue
+                val elsewhere = index.poolsOf(name).keys.sortedBy { PrimordialFormat.pools.indexOf(it) }.first().name
+                errors += DeckValidationIssue(
+                    code = "PRIMORDIAL_OUTSIDE_POOL",
+                    message = "$name isn't in ${chosen.name} (it's from $elsewhere) — " +
+                        "every card in a $label deck comes from one block or set",
+                    cardName = name,
+                )
+            }
+        }
+
+        val slotByCard = pooled.mapNotNull { name -> index.poolsOf(name)[chosen]?.let { name to it } }.toMap()
+        val rares = slotByCard.filterValues { it == PrimordialFormat.Slot.RARE }.keys.sumOf { countsByBaseName[it] ?: 0 }
+        val uncommons = slotByCard.filterValues { it == PrimordialFormat.Slot.UNCOMMON }.keys.sumOf { countsByBaseName[it] ?: 0 }
+        if (rares != PrimordialFormat.RARE_SLOTS) {
+            errors += DeckValidationIssue(
+                code = "PRIMORDIAL_RARE_COUNT",
+                message = "$label decks need exactly ${PrimordialFormat.RARE_SLOTS} rares or mythics (have $rares)",
+                cardName = null,
+            )
+        }
+        if (uncommons != PrimordialFormat.UNCOMMON_SLOTS) {
+            errors += DeckValidationIssue(
+                code = "PRIMORDIAL_UNCOMMON_COUNT",
+                message = "$label decks need exactly ${PrimordialFormat.UNCOMMON_SLOTS} uncommons (have $uncommons)",
+                cardName = null,
+            )
+        }
+        for ((name, slot) in slotByCard) {
+            val limit = primordialCopyLimit(name, slot) ?: continue
+            val total = combined[name] ?: 0
+            if (total > limit) {
+                val onSideboard = sideboardCounts[name] ?: 0
+                val basis = if (onSideboard > 0) " (deck and sideboard together)" else ""
+                errors += DeckValidationIssue(
+                    code = "TOO_MANY_COPIES",
+                    message = "$total copies of $name — $label allows $limit of ${slotArticle(slot)}$basis",
+                    cardName = name,
+                )
+            }
+        }
+        if (sideboard.size > PrimordialFormat.MAX_SIDEBOARD) errors += primordialSideboardIssue(sideboard.size)
+
+        return PrimordialSummary(
+            pool = chosen.name,
+            setCodes = chosen.setCodes,
+            candidateSetCodes = (candidates.ifEmpty { listOf(chosen) }).flatMap { it.setCodes }.distinct(),
+            alternatives = candidates.filter { it != chosen }.map { it.name },
+            rares = rares,
+            uncommons = uncommons,
+            sideboard = sideboard.size,
+            slotByCard = slotByCard.mapValues { it.value.name },
+        )
+    }
+
+    /** How far [pool] leaves the deck from its rarity budget — the tie-breaker between candidate pools. */
+    private fun primordialBudgetMisses(
+        pool: PrimordialFormat.Pool,
+        index: PrimordialCardPool,
+        deck: Map<String, Int>,
+        combined: Map<String, Int>,
+    ): Int {
+        var rares = 0
+        var uncommons = 0
+        var overCap = 0
+        for ((name, total) in combined) {
+            val slot = index.poolsOf(name)[pool] ?: continue
+            val inDeck = deck[name] ?: 0
+            when (slot) {
+                PrimordialFormat.Slot.RARE -> rares += inDeck
+                PrimordialFormat.Slot.UNCOMMON -> uncommons += inDeck
+                PrimordialFormat.Slot.COMMON -> Unit
+            }
+            val limit = primordialCopyLimit(name, slot)
+            if (limit != null && total > limit) overCap += total - limit
+        }
+        // Breaking a copy cap is a mistake; missing the 2/6 totals is usually a deck still being built.
+        // So a pool that keeps every card within its cap always wins over one that is merely nearer
+        // the totals.
+        return overCap * OVER_CAP_WEIGHT + kotlin.math.abs(rares - PrimordialFormat.RARE_SLOTS) +
+            kotlin.math.abs(uncommons - PrimordialFormat.UNCOMMON_SLOTS)
+    }
+
+    /**
+     * The per-name cap for a card in [slot]; null for unlimited — a basic land (snow-covered ones
+     * included, once their pool allows them) or a card saying "A deck can have any number of cards
+     * named …". Such a card still spends its slot's budget for every copy.
+     */
+    private fun primordialCopyLimit(name: String, slot: PrimordialFormat.Slot): Int? {
+        val card = cardRegistry.getCard(name)
+        if (card != null) {
+            if (card.typeLine.isBasicLand) return null
+            parseDeckSizeOverride(card.oracleText, card.name)?.let { return it.cap.takeIf { cap -> cap != Int.MAX_VALUE } }
+        }
+        return slot.maxCopies
+    }
+
+    private fun slotArticle(slot: PrimordialFormat.Slot): String = when (slot) {
+        PrimordialFormat.Slot.RARE -> "a rare or mythic"
+        PrimordialFormat.Slot.UNCOMMON -> "an uncommon"
+        PrimordialFormat.Slot.COMMON -> "a common"
+    }
+
+    private fun primordialSideboardIssue(size: Int) = DeckValidationIssue(
+        code = "SIDEBOARD_TOO_LARGE",
+        message = "${DeckFormat.PRIMORDIAL.displayName} sideboards hold at most ${PrimordialFormat.MAX_SIDEBOARD} cards (have $size)",
+        cardName = null,
+    )
 
     /**
      * Tallies the deck's Canadian Highlander points and raises POINTS_OVER_CAP when it spends more
@@ -567,6 +763,12 @@ class DeckValidator @Autowired constructor(
             maxCopiesNonBasic = 1,
             formatLabel = format.displayName,
         )
+        DeckFormat.PRIMORDIAL -> FormatProfile(
+            minSize = PrimordialFormat.MIN_DECK_SIZE,
+            // Copy caps depend on the card's rarity in the deck's pool; primordialRules() owns them.
+            maxCopiesNonBasic = Int.MAX_VALUE,
+            formatLabel = format.displayName,
+        )
         DeckFormat.STANDARD_BRAWL -> FormatProfile(
             // 60-card singleton, Standard pool. Per-card legality is sourced from Scryfall's
             // `standardbrawl` legality field; the construction shape is enforced here.
@@ -712,6 +914,7 @@ class DeckValidator @Autowired constructor(
         // generically so a future 100-card singleton variant can reuse it without renaming.
         const val SINGLETON_HUNDRED_DECK_SIZE = 100
         const val STANDARD_BRAWL_DECK_SIZE = 60
+        private const val OVER_CAP_WEIGHT = 1_000
 
         // "A deck can have any number of cards named <Name>" → unlimited.
         // "A deck can have up to <N> cards named <Name>"     → cap at N.
@@ -768,6 +971,34 @@ data class DeckValidationResult(
     val warnings: List<DeckValidationIssue>,
     /** The deck's points tally, for formats with a points list (Canadian Highlander); else null. */
     val points: DeckPoints? = null,
+    /** The inferred pool and rarity budget of a Primordial deck; else null. */
+    val primordial: PrimordialSummary? = null,
+)
+
+/**
+ * Where a Primordial deck stands: the block or set its cards come from and how much of the rarity
+ * budget it spends. Present for every Primordial validation, so the deckbuilder can guide a deck
+ * that is still half built.
+ *
+ * @property pool The inferred block or set's name; null while the deck has no card needing one.
+ * @property setCodes That pool's set codes.
+ * @property candidateSetCodes Every set code of every pool the deck's cards all fit — what the
+ *   deckbuilder narrows its catalog to. An all-reprint list can fit several pools.
+ * @property alternatives The other pools that would also hold every card.
+ * @property slotByCard Each pooled card's slot in [pool]: `RARE`, `UNCOMMON` or `COMMON`.
+ */
+data class PrimordialSummary(
+    val pool: String?,
+    val setCodes: List<String>,
+    val candidateSetCodes: List<String>,
+    val alternatives: List<String>,
+    val rares: Int,
+    val uncommons: Int,
+    val sideboard: Int,
+    val slotByCard: Map<String, String>,
+    val rareSlots: Int = PrimordialFormat.RARE_SLOTS,
+    val uncommonSlots: Int = PrimordialFormat.UNCOMMON_SLOTS,
+    val sideboardMax: Int = PrimordialFormat.MAX_SIDEBOARD,
 )
 
 /**

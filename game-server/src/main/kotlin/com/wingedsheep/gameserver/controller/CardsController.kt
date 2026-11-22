@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.registry.PrintingRegistry
+import com.wingedsheep.gameserver.deck.PrimordialCardPool
+import com.wingedsheep.sdk.core.DeckFormat
 import com.wingedsheep.mtg.sets.tokens.PredefinedTokens
 import com.wingedsheep.search.ParseError
 import com.wingedsheep.search.SearchCard
@@ -37,6 +39,7 @@ import org.springframework.web.bind.annotation.RestController
 class CardsController(
     private val cardRegistry: CardRegistry,
     private val printingRegistry: PrintingRegistry,
+    private val primordialCardPool: PrimordialCardPool = PrimordialCardPool(printingRegistry),
 ) {
 
     @GetMapping
@@ -211,7 +214,10 @@ class CardsController(
             loyalty = if (loyaltyIsX) "X" else startingLoyalty?.toString(),
             imageUri = latest?.imageUri ?: metadata.imageUri,
             keywords = keywords.map { it.name }.sorted(),
-            legalFormats = legalFormats.map { it.name }.sorted(),
+            // Primordial has no Scryfall legality: a card is in when some legal block or set prints it.
+            legalFormats = (legalFormats.map { it.name } +
+                listOfNotNull(DeckFormat.PRIMORDIAL.name.takeIf { primordialCardPool.isLegal(name) }))
+                .distinct().sorted(),
             isDoubleFaced = isDoubleFaced,
             backFaceName = backFace?.name,
             backFaceImageUri = latest?.backFaceImageUri ?: backFace?.metadata?.imageUri,

@@ -19,6 +19,70 @@
 .statusBad { color: #ff8888; font-weight: 600; }
 .statusEmpty { color: var(--text-muted); }
 
+/* Primordial: the set the deck is built from and its rarity budgets. */
+.primordial {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1, 4px);
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.primordialPool {
+  font-weight: 600;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 65%;
+}
+
+.primordialAlt {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.budget {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.budgetPips {
+  display: inline-flex;
+  gap: 3px;
+}
+
+/* Rare pips gold, uncommon silver is too subtle at this size: one accent, state by fill. */
+.budgetPip {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.budgetPip[data-filled] {
+  background: #e8c15a;
+  border-color: #e8c15a;
+}
+
+.budgetPip[data-over] {
+  background: #ff8888;
+  border-color: #ff8888;
+}
+
+.budgetCount {
+  min-width: 2.6em;
+  text-align: right;
+  color: var(--text-secondary);
+}
+
+.budget[data-state='full'] .budgetCount { color: #6cc04a; font-weight: 600; }
+.budget[data-state='over'] .budgetCount { color: #ff8888; font-weight: 600; }
+
 .issues {
   list-style: none;
   margin: 0;

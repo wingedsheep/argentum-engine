@@ -38,17 +38,25 @@ enum class DeckFormat {
      * format's points list — powerful cards cost points and a deck may spend at most
      * [CanadianHighlanderPoints.POINT_CAP]. No sideboards.
      */
-    CANADIAN_HIGHLANDER;
+    CANADIAN_HIGHLANDER,
+
+    /**
+     * Primordial (<https://primordialformat.com/rules>): 40-card-minimum decks built from a single
+     * block or standalone set with a fixed rarity budget — exactly two rares/mythics, exactly six
+     * uncommons, any number of commons — plus the five basics. See [PrimordialFormat]. Scryfall
+     * tracks no legality for it; the deck validator reads the pools off the set printings.
+     */
+    PRIMORDIAL;
 
     /**
      * Lower-case identifier matching Scryfall's `legalities.<key>` field. Most enum names map
      * directly (`STANDARD` → `"standard"`); `STANDARD_BRAWL` is special-cased because Scryfall
-     * concatenates words. Null for the Highlander formats, which Scryfall doesn't track: their
-     * legality is derived from Vintage's at load time.
+     * concatenates words. Null for the formats Scryfall doesn't track: the Highlander formats'
+     * legality is derived from Vintage's at load time, Primordial's from the set printings.
      */
     val scryfallKey: String? get() = when (this) {
         STANDARD_BRAWL -> "standardbrawl"
-        HIGHLANDER, CANADIAN_HIGHLANDER -> null
+        HIGHLANDER, CANADIAN_HIGHLANDER, PRIMORDIAL -> null
         else -> name.lowercase()
     }
 
@@ -64,6 +72,12 @@ enum class DeckFormat {
      * constructed baseline's life total and table, and differ from it only in deck construction.
      */
     val isHighlanderShape: Boolean get() = this == HIGHLANDER || this == CANADIAN_HIGHLANDER
+
+    /**
+     * True for formats whose decks come from one set or block with a per-rarity budget (Primordial).
+     * Per-card legality there depends on the deck's chosen pool, not on the card alone.
+     */
+    val isSetBased: Boolean get() = this == PRIMORDIAL
 
     /**
      * True for singleton formats with a designated commander (Commander, Brawl, Standard Brawl).

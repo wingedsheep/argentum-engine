@@ -71,6 +71,7 @@ export const QUEUE_FORMATS: readonly QueueFormatOption[] = [
   { format: 'PREMODERN', label: 'Premodern' },
   { format: 'HIGHLANDER', label: 'Highlander' },
   { format: 'CANADIAN_HIGHLANDER', label: 'Canadian Highlander' },
+  { format: 'PRIMORDIAL', label: 'Primordial' },
   { format: 'COMMANDER', label: 'Commander' },
   { format: 'BRAWL', label: 'Brawl' },
   { format: 'STANDARD_BRAWL', label: 'Standard Brawl' },

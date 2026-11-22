@@ -1,0 +1,1 @@
+- #4817 In a Primordial game the AI builds a 40-card deck from one block or standalone set with exactly two rares and six uncommons, instead of a 60-card multi-set constructed deck.

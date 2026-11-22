@@ -116,6 +116,9 @@ class PrintingRegistry {
 
     fun hasPrinting(ref: PrintingRef): Boolean = ref in byRef
 
+    /** Every registered printing, in no particular order — for indexes built over the whole corpus. */
+    fun allPrintings(): Collection<Printing> = byRef.values.toList()
+
     val size: Int get() = byRef.size
 
     fun clear() {

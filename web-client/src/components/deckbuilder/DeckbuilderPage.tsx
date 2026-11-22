@@ -101,6 +101,7 @@ import {
 import {
   labelForFormat,
   DECK_FORMATS,
+  isPrimordialFormat,
   isSingletonFormat,
   useDeckLegalFormats,
 } from '@/utils/deckLegality'
@@ -112,6 +113,8 @@ import {
   statusLabel,
   pointsClass,
   pointsLabel,
+  primordialSlotCap,
+  BudgetPips,
   COLOR_DOT,
   type DeckValidationResult as ValidationResult,
   type DeckStats,
@@ -703,6 +706,24 @@ export function DeckbuilderPage() {
   // deck already has one, which the validator rejects and the player needs the panel to clear.
   const showSideboard = activeFormat !== 'CANADIAN_HIGHLANDER' || Object.keys(sideboardCards).length > 0
 
+  const [validation, setValidation] = useState<ValidationResult | null>(null)
+  // Primordial: one block or set per deck, copy caps by rarity. The server infers the deck's set
+  // and each card's rarity slot in it; the deckbuilder only reads that back — to cap `+` by slot
+  // and to narrow the catalogue to the set once the deck's cards have settled it.
+  const primordialFormat = isPrimordialFormat(activeFormat)
+  const primordialSummary = primordialFormat ? (validation?.primordial ?? null) : null
+  const primordialSlots = useMemo<Readonly<Record<string, string>> | null>(
+    () => (primordialFormat ? (primordialSummary?.slotByCard ?? {}) : null),
+    [primordialFormat, primordialSummary],
+  )
+  const poolSetCodes = primordialSummary?.candidateSetCodes ?? EMPTY_CODES
+  const poolKey = poolSetCodes.join(',')
+  const [restrictToPool, setRestrictToPool] = useState(true)
+  useEffect(() => {
+    if (poolKey) setRestrictToPool(true)
+  }, [poolKey])
+  const poolFilterActive = primordialFormat && poolSetCodes.length > 0 && restrictToPool
+
   useEffect(() => {
     if (!isCommanderFormat && commanders.length > 0) setCommanders([])
   }, [isCommanderFormat, commanders])
@@ -751,15 +772,19 @@ export function DeckbuilderPage() {
     if (identityFilterActive && catalogIdentity) {
       result = result.filter((c) => isWithinIdentity(c, catalogIdentity))
     }
+    if (poolFilterActive) {
+      const pool = new Set(poolKey.split(','))
+      result = result.filter((c) => (c.setCode != null && pool.has(c.setCode)) || (c.printingSetCodes ?? []).some((code) => pool.has(code)))
+    }
     return sortCards(result, sortMode)
-  }, [catalog, predicate, sortMode, activeFormat, identityFilterActive, catalogIdentity])
+  }, [catalog, predicate, sortMode, activeFormat, identityFilterActive, catalogIdentity, poolFilterActive, poolKey])
 
   // Pager: cap rendered tiles so a 1000+ card catalogue doesn't melt the browser.
   // Reset whenever the result set changes (new query / filter / sort).
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   useEffect(() => {
     setVisibleCount(PAGE_SIZE)
-  }, [query, sortMode, activeFormat, identityFilterActive, catalogIdentity])
+  }, [query, sortMode, activeFormat, identityFilterActive, catalogIdentity, poolFilterActive, poolKey])
 
   // Reprint override map: card name → the matching set's printing (ref + art). Populated
   // lazily via /api/printings whenever an `s:` filter is active and the visible set of
@@ -795,8 +820,8 @@ export function DeckbuilderPage() {
     [filteredWithArt, visibleCount],
   )
 
-  // Server-side validation (debounced via abort controllers, like DeckPicker).
-  const [validation, setValidation] = useState<ValidationResult | null>(null)
+  // Server-side validation (debounced via abort controllers, like DeckPicker). The state is
+  // declared up with the format, since Primordial's catalog narrowing reads it.
   const validateAbortRef = useRef<AbortController | null>(null)
   useEffect(() => {
     if (Object.keys(deckCards).length === 0) {
@@ -832,7 +857,11 @@ export function DeckbuilderPage() {
           ...(sendCommander && secondCommander ? { secondCommander } : {}),
           // A companion (CR 702.139) routes validation through the structured path, which checks
           // its condition against the deck — and, in Commander, its colour identity.
-          ...(sendCompanion ? { companion: sendCompanion, sideboard: sideboardCards } : {}),
+          ...(sendCompanion ? { companion: sendCompanion } : {}),
+          // Primordial's copy caps and 10-card limit count the sideboard too.
+          ...(sendCompanion || (isPrimordialFormat(activeFormat) && Object.keys(sideboardCards).length > 0)
+            ? { sideboard: sideboardCards }
+            : {}),
         }),
         signal: ctrl.signal,
       })
@@ -899,7 +928,7 @@ export function DeckbuilderPage() {
   const addCard = (card: CardSummary) => {
     setDeckCards((prev) => {
       const current = prev[card.name] ?? 0
-      const max = effectiveCopyCap(card, singletonFormat)
+      const max = effectiveCopyCap(card, singletonFormat, primordialSlots)
       if (current >= max) return prev
       return { ...prev, [card.name]: current + 1 }
     })
@@ -948,11 +977,11 @@ export function DeckbuilderPage() {
     setSideboardCards((prev) => {
       const inSide = prev[card.name] ?? 0
       const inDeck = deckCards[card.name] ?? 0
-      const cap = effectiveCopyCap(card, singletonFormat)
+      const cap = effectiveCopyCap(card, singletonFormat, primordialSlots)
       if (inDeck + inSide >= cap) return prev
       return { ...prev, [card.name]: inSide + 1 }
     })
-  }, [deckCards, singletonFormat])
+  }, [deckCards, singletonFormat, primordialSlots])
 
   const removeFromSideboard = useCallback((name: string) => {
     setSideboardCards((prev) => {
@@ -1580,7 +1609,21 @@ export function DeckbuilderPage() {
                   : `Showing ${displayed.length} of ${filtered.length}`
               }
               filterChip={
-                catalogIdentity != null ? (
+                primordialSummary?.pool && poolSetCodes.length > 0 ? (
+                  <button
+                    type="button"
+                    className={restrictToPool ? styles.identityChipOn : styles.identityChip}
+                    aria-pressed={restrictToPool}
+                    onClick={() => setRestrictToPool((v) => !v)}
+                    title={
+                      restrictToPool
+                        ? `Showing only cards from ${poolLabel(primordialSummary)} (${poolSetCodes.join(' · ')}) — the set your deck's cards come from. Click to show every Primordial card.`
+                        : `Show only cards from ${poolLabel(primordialSummary)}, the set your deck's cards come from.`
+                    }
+                  >
+                    ◆ {poolLabel(primordialSummary)} {restrictToPool ? 'only' : 'off'}
+                  </button>
+                ) : catalogIdentity != null ? (
                   <button
                     type="button"
                     className={restrictToIdentity ? styles.identityChipOn : styles.identityChip}
@@ -1635,6 +1678,7 @@ export function DeckbuilderPage() {
               onToggleCommander={handleToggleCommander}
               rowViolations={rowViolations}
               cardPoints={validation?.points?.byCard}
+              primordialSlots={primordialSlots}
               isCommanderFormat={isCommanderFormat}
               onSuggestBasics={handleSuggestBasics}
               pinnedPrintings={pinnedPrintings}
@@ -1713,6 +1757,7 @@ export function DeckbuilderPage() {
             onToggleCommander={handleToggleCommander}
             rowViolations={rowViolations}
             cardPoints={validation?.points?.byCard}
+            primordialSlots={primordialSlots}
             isCommanderFormat={isCommanderFormat}
             onHoverEnter={handleDeckHoverEnter}
             onHoverLeave={handleDeckHoverLeave}
@@ -1984,6 +2029,15 @@ function DeckCentricFooter({
         {pointsLabel(validation) && (
           <span className={`${styles.footerStatus} ${pointsClass(validation)}`}>
             {pointsLabel(validation)}
+          </span>
+        )}
+        {validation?.primordial && (
+          <span className={styles.footerPrimordial}>
+            {validation.primordial.pool && <span className={styles.footerPrimordialPool}>{validation.primordial.pool}</span>}
+            <span title="Rares and mythics: exactly 2">R</span>
+            <BudgetPips used={validation.primordial.rares} slots={validation.primordial.rareSlots} label="Rares and mythics" />
+            <span title="Uncommons: exactly 6">U</span>
+            <BudgetPips used={validation.primordial.uncommons} slots={validation.primordial.uncommonSlots} label="Uncommons" />
           </span>
         )}
         {showStats && (
@@ -2993,6 +3047,7 @@ function DeckListPanel({
   onToggleCommander,
   rowViolations,
   cardPoints,
+  primordialSlots = null,
   isCommanderFormat,
   onSuggestBasics,
   pinnedPrintings,
@@ -3013,6 +3068,8 @@ function DeckListPanel({
   rowViolations: Map<string, Set<string>>
   /** Points each card costs, for a points-list format (Canadian Highlander); from the server. */
   cardPoints?: Readonly<Record<string, number>> | undefined
+  /** Primordial only: each card's rarity slot in the deck's set, from the server. */
+  primordialSlots?: Readonly<Record<string, string>> | null
   isCommanderFormat: boolean
   onSuggestBasics: () => void
   pinnedPrintings: Record<string, PrintingRef>
@@ -3135,6 +3192,7 @@ function DeckListPanel({
               isCommanderFormat={isCommanderFormat}
               rowViolations={rowViolations}
               points={cardPoints?.[entry.name] ?? 0}
+              primordialSlot={primordialSlots ? (primordialSlots[entry.name] ?? null) : undefined}
               onAdd={onAdd}
               onRemove={onRemove}
               onToggleCommander={onToggleCommander}
@@ -3367,6 +3425,7 @@ const DeckRow = memo(function DeckRow({
   isCommanderFormat,
   rowViolations,
   points = 0,
+  primordialSlot,
   onAdd,
   onRemove,
   onToggleCommander,
@@ -3387,6 +3446,11 @@ const DeckRow = memo(function DeckRow({
   rowViolations: Map<string, Set<string>>
   /** Points this row costs in a points-list format; 0 hides the tag. */
   points?: number
+  /**
+   * Primordial only: the row's rarity slot in the deck's set (`RARE` / `UNCOMMON` / `COMMON`),
+   * null while the server hasn't placed it. Undefined outside Primordial.
+   */
+  primordialSlot?: string | null | undefined
   onAdd: (card: CardSummary) => void
   onRemove: (name: string) => void
   onToggleCommander: (name: string) => void
@@ -3430,7 +3494,11 @@ const DeckRow = memo(function DeckRow({
   // the user literally cannot exceed it; in commander-shape formats this is what
   // blocks adding a second copy of any non-basic non-override card.
   const cap = entry.card
-    ? effectiveCopyCap(entry.card, isSingletonFormat(activeFormat))
+    ? effectiveCopyCap(
+        entry.card,
+        isSingletonFormat(activeFormat),
+        primordialSlot !== undefined ? { [entry.name]: primordialSlot ?? entry.card.rarity } : null,
+      )
     : Number.POSITIVE_INFINITY
   const atCap = entry.count >= cap
   const rowClasses = [
@@ -3460,6 +3528,8 @@ const DeckRow = memo(function DeckRow({
     violationReasons.push(
       isSingletonFormat(activeFormat) && activeFormat
         ? `${labelForFormat(activeFormat)} is singleton — only 1 copy allowed`
+        : primordialSlot
+        ? `Primordial allows ${primordialSlotCap(primordialSlot)} of ${slotPhrase(primordialSlot)}, deck and sideboard together`
         : `Too many copies for ${activeFormat ? labelForFormat(activeFormat) : 'this format'}`,
     )
   }
@@ -3505,6 +3575,8 @@ const DeckRow = memo(function DeckRow({
             : atCap
             ? isCommanderFormat
               ? 'Singleton format — only 1 copy allowed'
+              : primordialSlot
+              ? `At Primordial's limit for ${slotPhrase(primordialSlot)} (${cap})`
               : `At copy limit (${cap})`
             : 'Add one'
         }
@@ -3519,6 +3591,18 @@ const DeckRow = memo(function DeckRow({
         {points > 0 && (
           <span className={styles.deckRowPointsTag} title={`Costs ${points} point${points === 1 ? '' : 's'}`}>
             {points} pt
+          </span>
+        )}
+        {(primordialSlot === 'RARE' || primordialSlot === 'UNCOMMON') && (
+          <span
+            className={primordialSlot === 'RARE' ? styles.deckRowRareTag : styles.deckRowUncommonTag}
+            title={
+              primordialSlot === 'RARE'
+                ? 'Spends one of the deck\'s 2 rare/mythic slots'
+                : 'Spends one of the deck\'s 6 uncommon slots per copy'
+            }
+          >
+            {primordialSlot === 'RARE' ? 'R' : 'U'}
           </span>
         )}
       </span>
@@ -3764,6 +3848,7 @@ function DeckCentricView({
   onToggleCommander,
   rowViolations,
   cardPoints,
+  primordialSlots = null,
   isCommanderFormat,
   onHoverEnter,
   onHoverLeave,
@@ -3782,6 +3867,8 @@ function DeckCentricView({
   rowViolations: Map<string, Set<string>>
   /** Points each card costs, for a points-list format (Canadian Highlander); from the server. */
   cardPoints?: Readonly<Record<string, number>> | undefined
+  /** Primordial only: each card's rarity slot in the deck's set, from the server. */
+  primordialSlots?: Readonly<Record<string, string>> | null
   isCommanderFormat: boolean
   onHoverEnter: (entry: { name: string; card: CardSummary | undefined }) => void
   onHoverLeave: () => void
@@ -3864,6 +3951,7 @@ function DeckCentricView({
                     isCommanderFormat={isCommanderFormat}
                     rowViolations={rowViolations}
                     points={cardPoints?.[entry.name] ?? 0}
+                    primordialSlot={primordialSlots ? (primordialSlots[entry.name] ?? null) : undefined}
                     onAdd={onAdd}
                     onRemove={onRemove}
                     onToggleCommander={onToggleCommander}
@@ -3951,11 +4039,34 @@ function parseDeckSizeOverride(card: CardSummary): number | null {
  * literally cannot exceed the cap from the deckbuilder UI. Server validation remains the
  * authoritative gate (e.g. for paste-imports that bypass these affordances).
  */
-function effectiveCopyCap(card: CardSummary, singleton: boolean): number {
+/**
+ * @param primordialSlots non-null in Primordial: the server's slot per card in the deck's set. A
+ *   card it hasn't placed yet (not in the deck) falls back to the catalogue's printed rarity; the
+ *   server's validation still has the last word.
+ */
+function effectiveCopyCap(
+  card: CardSummary,
+  singleton: boolean,
+  primordialSlots: Readonly<Record<string, string>> | null = null,
+): number {
   if (card.basicLand) return Number.POSITIVE_INFINITY
   const override = parseDeckSizeOverride(card)
   if (override !== null) return override
+  if (primordialSlots) return primordialSlotCap(primordialSlots[card.name] ?? card.rarity)
   return singleton ? 1 : 4
+}
+
+const EMPTY_CODES: string[] = []
+
+/** "a rare or mythic" / "an uncommon" / "a common" — for Primordial copy-cap messages. */
+function slotPhrase(slot: string): string {
+  return slot === 'RARE' || slot === 'MYTHIC' ? 'a rare or mythic' : slot === 'UNCOMMON' ? 'an uncommon' : 'a common'
+}
+
+/** The deck's Primordial set, or "N sets" when an all-reprint list still fits several. */
+function poolLabel(summary: { pool: string | null; alternatives: string[] }): string {
+  if (!summary.pool) return 'its set'
+  return summary.alternatives.length > 0 ? `${summary.alternatives.length + 1} sets` : summary.pool
 }
 
 /**

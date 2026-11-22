@@ -30,6 +30,14 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'mode-primordial',
+    date: '2026-11-22',
+    kind: 'mode',
+    title: 'Primordial',
+    body:
+      'A new constructed format built one set at a time: 40-card decks from a single block or standalone set — Zendikar block, Bloomburrow, Mirage block, Alpha — with exactly two rares or mythics, exactly six uncommons and as many commons as you like. Pick it in the deckbuilder and your first card settles the set: the catalogue narrows to it and the rarity budget fills in as you build. Also a lobby restriction and a Constructed format in matchmaking, where the AI brings a Primordial deck of its own.',
+  },
+  {
     id: 'set-dgm',
     date: '2026-11-22',
     kind: 'set',
