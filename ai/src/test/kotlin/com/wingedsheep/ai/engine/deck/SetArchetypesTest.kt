@@ -916,6 +916,28 @@ class SetArchetypesTest : StringSpec({
             "Borg Collective" to listOf("Borg"),
         )
     }
+    "Magic 2014 exposes its ten colour-pair archetypes with two Sliver decks" {
+        val synergies = requireNotNull(SetArchetypes.getForSet("m14"))
+
+        synergies.setName shouldBe "Magic 2014"
+        synergies.archetypes.map { it.name } shouldContainExactly listOf(
+            "Fliers",
+            "Mill Control",
+            "Steal and Sacrifice",
+            "Big Creatures",
+            "Go Wide",
+            "Lifegain",
+            "Spells",
+            "Graveyard Value",
+            "Sliver Aggro",
+            "Sliver Ramp",
+        )
+        synergies.archetypes.map { it.colors.toSet() } shouldContainExactly ALL_COLOR_PAIRS.toList()
+        synergies.archetypes.filter { it.creatureTypes.isNotEmpty() }.associate { it.name to it.creatureTypes } shouldBe mapOf(
+            "Sliver Aggro" to listOf("Sliver"),
+            "Sliver Ramp" to listOf("Sliver"),
+        )
+    }
 })
 
 private val ALL_COLOR_PAIRS = linkedSetOf(
