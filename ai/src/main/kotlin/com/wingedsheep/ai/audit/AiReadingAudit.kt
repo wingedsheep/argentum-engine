@@ -16,6 +16,8 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.scripting.CantBeTargetedBy
+import com.wingedsheep.ai.engine.evaluation.BoardPresence
+import com.wingedsheep.sdk.scripting.CardsInZonesCantBeTargeted
 import com.wingedsheep.sdk.scripting.AlternativeCrewCost
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.CompositeStaticAbility
@@ -308,8 +310,7 @@ object AiReadingAudit {
         is CantBeTargetedBy -> static.filter.scope == Scope.Self
         // "This creature can't be the target of black or red spells your opponents control"
         // (Fiendslayer Paladin): the same untargetability as a battlefield lock on itself.
-        is com.wingedsheep.sdk.scripting.CardsInZonesCantBeTargeted ->
-            com.wingedsheep.ai.engine.evaluation.BoardPresence.isSelfTargetLock(static)
+        is CardsInZonesCantBeTargeted -> BoardPresence.isSelfTargetLock(static)
         is ConditionalStaticAbility -> isBodyStatic(static.ability)
         is CompositeStaticAbility -> static.abilities.isNotEmpty() && static.abilities.all(::isBodyStatic)
         else -> false
