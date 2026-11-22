@@ -1,3 +1,93 @@
+// Academy Raider
+{
+    "name": "Academy Raider",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Intimidate (This creature can't be blocked except by artifact creatures and/or creatures that share a color with it.)\nWhenever this creature deals combat damage to a player, you may discard a card. If you do, draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "INTIMIDATE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Academy Raider:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "artist": "Karl Kopinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/6652ed29-ee90-4abc-a6cf-6b18a6cbae86.jpg?1783939917"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Accursed Spirit
 {
     "name": "Accursed Spirit",
@@ -926,6 +1016,117 @@
     ]
 }
 
+// Corpse Hauler
+{
+    "name": "Corpse Hauler",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "{2}{B}, Sacrifice this creature: Return target creature card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Corpse Hauler:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "artist": "Jesper Ejsing",
+        "flavorText": "\"He expects a reward, but the only piece of silver he'll get from me is my blade in his gut.\"\n—Shelac, necromancer",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca6adc5e-9221-4a18-8d41-4675797e5d46.jpg?1783939925"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Dark Prophecy
+{
+    "name": "Dark Prophecy",
+    "manaCost": "{B}{B}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a creature you control dies, you draw a card and you lose 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dark Prophecy:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "rarity": "RARE",
+        "artist": "Scott Chou",
+        "flavorText": "When the bog ran short on small animals, Ekri turned to the surrounding farmlands.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ecf82c3b-7a35-43dd-8bf3-ebc68dc1b8fc.jpg?1783939925"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Dawnstrike Paladin
 {
     "name": "Dawnstrike Paladin",
@@ -1236,6 +1437,59 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Fleshpulper Giant
+{
+    "name": "Fleshpulper Giant",
+    "manaCost": "{5}{R}{R}",
+    "typeLine": "Creature — Giant",
+    "oracleText": "When this creature enters, you may destroy target creature with toughness 2 or less.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fleshpulper Giant:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature tou<=2"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "rarity": "UNCOMMON",
+        "artist": "Alex Horley-Orlandelli",
+        "flavorText": "He doesn't hate small folk. He just likes the squishing sound they make.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2726d3c-c182-4d8a-a723-0de2c5c4b152.jpg?1783939913"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -2459,6 +2713,94 @@
     ]
 }
 
+// Ring of Three Wishes
+{
+    "name": "Ring of Three Wishes",
+    "manaCost": "{5}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact enters with three wish counters on it.\n{5}, {T}, Remove a wish counter from this artifact: Search your library for a card, put that card into your hand, then shuffle.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ring of Three Wishes:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "WISH",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a card to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "WISH",
+                "count": 3,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "216",
+        "rarity": "MYTHIC",
+        "artist": "Mark Winters",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/219ab03a-2b3b-4eef-8a42-2cbe793d2f33.jpg?1783939894"
+    }
+}
+
 // Rise of the Dark Realms
 {
     "name": "Rise of the Dark Realms",
@@ -3341,6 +3683,54 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Trained Condor
+{
+    "name": "Trained Condor",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying\nWhenever this creature attacks, another target creature you control gains flying until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Trained Condor:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "artist": "Alex Horley-Orlandelli",
+        "flavorText": "\"They're smart enough to understand that war means lots of carrion.\"\n—Griv, condor rider",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6e1eaa5a-3f9d-4166-b418-fd82fff86c73.jpg?1783939929"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
