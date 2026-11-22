@@ -16,7 +16,6 @@ object Magic2014Set : MtgSet {
     override val code = "M14"
     override val displayName = "Magic 2014"
     override val releaseDate = "2013-07-19"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
