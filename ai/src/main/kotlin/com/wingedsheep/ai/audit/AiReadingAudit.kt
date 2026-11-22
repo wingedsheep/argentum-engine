@@ -39,6 +39,7 @@ import com.wingedsheep.sdk.scripting.effects.DamageCantBePreventedThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.MarkSpellExileWithCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AdaptEffect
 import com.wingedsheep.sdk.scripting.effects.ChangeColorEffect
+import com.wingedsheep.sdk.scripting.effects.ChangeWordInTextEffect
 import com.wingedsheep.sdk.scripting.effects.AddCardTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.GrantHexproofFromChosenColorEffect
@@ -834,7 +835,10 @@ object AiReadingAudit {
             // slips, a colour-matters payoff that now counts it — is on the board the moment it
             // resolves, where the cast's simulation prices it; no later window buys it more. When
             // to cast it is the question of what it rides beside, which that leaf's reading answers.
-            val colourOnly = expiring is ChangeColorEffect || expiring is ChangeColorToChosenEffect
+            // A colour word or basic land type rewritten until end of turn (Crystal Spray, Magical
+            // Hack) is the same: the rewritten protection or landwalk is on the board as it resolves.
+            val colourOnly = expiring is ChangeColorEffect || expiring is ChangeColorToChosenEffect ||
+                expiring is ChangeWordInTextEffect
             // "Until end of turn, this creature loses hexproof and gains first strike and deathtouch"
             // (Xathrid Slyblade): the keyword its own source gives up rides on the grant beside it,
             // so it is timed as the whole ability is.
@@ -1019,6 +1023,12 @@ object AiReadingAudit {
         // Changeling granted: its payoff is whatever typal effects then see the creature, which the
         // simulation prices on the board; which creature gets it is the polarity check's (a gift).
         if (leaf is GrantKeywordEffect && leaf.keyword == Keyword.CHANGELING.name) return true
+        // "Change the text of target spell or permanent by replacing all instances of one color word
+        // with another" (Sleight of Mind, Trait Doctoring): the rewrite does nothing of its own — its
+        // payoff is whatever the rewritten protection, landwalk or colour-matters text then does,
+        // which the simulation prices on the board; which object gets it is the polarity check's
+        // (either side, [TargetPolarity.FLEXIBLE]).
+        if (leaf is ChangeWordInTextEffect) return true
         // "Each opponent may search their library for a basic land card …" (Old-Growth Dryads): an
         // opponents-only iteration whose body is only their gain is the card's drawback, with
         // nothing to aim or hold; the rater prices it as one.

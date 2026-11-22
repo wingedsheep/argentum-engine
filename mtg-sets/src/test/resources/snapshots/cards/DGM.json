@@ -5268,6 +5268,67 @@
     }
 }
 
+// Melek, Izzet Paragon
+{
+    "name": "Melek, Izzet Paragon",
+    "manaCost": "{4}{U}{R}",
+    "typeLine": "Legendary Creature — Weird Wizard",
+    "oracleText": "Play with the top card of your library revealed.\nYou may cast instant and sorcery spells from the top of your library.\nWhenever you cast an instant or sorcery spell from your library, copy it. You may choose new targets for the copy.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Melek, Izzet Paragon:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    },
+                    "requires": [
+                        {
+                            "type": "SpellCastFromZone",
+                            "zone": "Library"
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CopyTargetSpell",
+                    "target": "TriggeringEntity"
+                }
+            }
+        ],
+        "staticAbilities": [
+            "RevealTopOfLibrary",
+            {
+                "type": "CastSpellTypesFromTopOfLibrary",
+                "filter": "instant|sorcery"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "RARE",
+        "artist": "Jason Chan",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3e892d86-f443-4846-8049-40ec6b8c22b4.jpg?1783940025"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Mending Touch
 {
     "name": "Mending Touch",
@@ -6145,6 +6206,122 @@
     ]
 }
 
+// Possibility Storm
+{
+    "name": "Possibility Storm",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a player casts a spell from their hand, that player exiles it, then exiles cards from the top of their library until they exile a card that shares a card type with it. That player may cast that card without paying its mana cost. Then they put all cards exiled with this enchantment on the bottom of their library in a random order.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Possibility Storm:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "player": "Each",
+                    "requires": [
+                        {
+                            "type": "SpellCastFromZone",
+                            "zone": "Hand"
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "TriggeringPlayer"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ExileTargetSpell",
+                                "linkToSource": true,
+                                "spell": "CounterTargetSource.TriggeringEntity"
+                            },
+                            {
+                                "type": "GatherUntilMatch",
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "SharesCardTypeWith",
+                                            "entity": "TriggeringEntity"
+                                        }
+                                    ]
+                                },
+                                "storeMatch": "matched1",
+                                "storeRevealed": "revealed1"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "revealed1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                },
+                                "linkToSource": true
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "matched1",
+                                "ifNotEmpty": {
+                                    "type": "Gated",
+                                    "gate": "Gate.MayDecide",
+                                    "then": {
+                                        "type": "CastFromCollectionWithoutPayingCost",
+                                        "from": "matched1"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": "FromLinkedExile",
+                                "storeAs": "gathered5"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered5",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "placement": "Bottom"
+                                },
+                                "order": "Random"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever a player casts a spell from their hand, that player exiles it, then exiles cards from the top of their library until they exile a card that shares a card type with it. That player may cast that card without paying its mana cost. Then they put all cards exiled with this enchantment on the bottom of their library in a random order."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "RARE",
+        "artist": "Jason Felix",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/5/858aa831-b491-4f1e-bb56-33eeca14771d.jpg?1783940037",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "The original spell is part of the group of exiled cards put on the bottom of the library in a random order. If the exiled card that shared a card type with that card wasn't cast, it's also part of this group."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If Possibility Storm's ability doesn't exile the original spell (perhaps because another Possibility Storm already exiled it), you'll still exile cards from the top of your library until you exile a card that shares a card type with it and have the opportunity to cast that spell."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the spell you cast from exile has X in its mana cost, you must choose 0 as its value."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Profit // Loss
 {
     "name": "Profit // Loss",
@@ -6268,6 +6445,88 @@
         }
     ],
     "hasNoManaCost": true
+}
+
+// Progenitor Mimic
+{
+    "name": "Progenitor Mimic",
+    "manaCost": "{4}{G}{U}",
+    "typeLine": "Creature — Shapeshifter",
+    "oracleText": "You may have this creature enter as a copy of any creature on the battlefield, except it has \"At the beginning of your upkeep, if this creature isn't a token, create a token that's a copy of this creature.\"",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersAsCopy",
+                "exceptions": {
+                    "addedTriggeredAbilities": [
+                        {
+                            "id": "Progenitor Mimic:1",
+                            "trigger": {
+                                "type": "StepEvent",
+                                "step": "UPKEEP"
+                            },
+                            "binding": "ANY",
+                            "effect": "CreateTokenCopyOfSource",
+                            "interveningIf": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": "nontoken"
+                            },
+                            "descriptionOverride": "At the beginning of your upkeep, if this creature isn't a token, create a token that's a copy of this creature."
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "rarity": "MYTHIC",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3ad76314-b5d5-4353-86aa-e899e0d757a5.jpg",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Progenitor Mimic copies exactly what was printed on the original creature and nothing more (unless that creature is copying something else or is a token). It doesn't copy whether that creature is tapped or untapped, whether it has any counters on it or Auras attached to it, or any non-copy effects that have changed its power, toughness, types, color, or so on."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The original Progenitor Mimic will create tokens, but those token copies will not."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you choose to have Progenitor Mimic enter the battlefield as a copy of a creature, the triggered ability it gains will become part of its copiable values. For example, suppose Progenitor Mimic enters the battlefield as a copy of Runeclaw Bear, a 2/2 green Bear creature with mana cost {1}{G}. The resulting object is a 2/2 green Bear creature named Runeclaw Bear with mana cost {1}{G} and with \"At the beginning of your upkeep, if this creature isn't a token, put a token onto the battlefield that's a copy of this creature.\" If another Progenitor Mimic enters the battlefield as a copy of that creature, it will be a Runeclaw Bear with two instances of the triggered ability."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the chosen creature is a token, Progenitor Mimic copies the original characteristics of that token as stated by the effect that put it onto the battlefield. Copying a token doesn't make Progenitor Mimic become a token."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Any enters-the-battlefield abilities of the copied creature will trigger when Progenitor Mimic enters the battlefield. Any \"as [this creature] enters the battlefield\" or \"[this creature] enters the battlefield with\" abilities of the chosen creature will also work."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the chosen creature has {X} in its mana cost (such as Protean Hydra), X is considered to be zero."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If Progenitor Mimic somehow enters the battlefield at the same time as another creature, it can't become a copy of that creature. You may choose only a creature that's already on the battlefield."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You can choose not to copy anything. In that case, Progenitor Mimic enters the battlefield as a 0/0 Shapeshifter creature and is probably put into the graveyard immediately."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
 }
 
 // Protect // Serve
@@ -7003,6 +7262,173 @@
         }
     ],
     "hasNoManaCost": true
+}
+
+// Reap Intellect
+{
+    "name": "Reap Intellect",
+    "manaCost": "{X}{2}{U}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent reveals their hand. You choose up to X nonland cards from it and exile them. For each card exiled this way, search that player's graveyard, hand, and library for any number of cards with the same name as that card and exile them. Then that player shuffles.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RevealHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": "XValue"
+                    },
+                    "filter": "nonland",
+                    "storeSelected": "selected2",
+                    "prompt": "Choose up to X nonland cards to exile",
+                    "selectedLabel": "Exile",
+                    "showAllCards": true,
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "selected2",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "InZone",
+                                "zone": "Exile"
+                            }
+                        ]
+                    },
+                    "storeMatching": "matching4"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Collection",
+                        "collection": "matching4"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromMultipleZones",
+                                    "zones": [
+                                        "Graveyard",
+                                        "Hand",
+                                        "Library"
+                                    ],
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "filter": {
+                                        "cardPredicates": [
+                                            {
+                                                "type": "SharesNameWith",
+                                                "entity": "IterationEntity"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "storeAs": "gathered5",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered5",
+                                "selection": "ChooseAnyNumber",
+                                "storeSelected": "selected6",
+                                "prompt": "Choose any number of cards with the same name to exile",
+                                "selectedLabel": "Exile"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected6",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "ShuffleLibrary",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "rarity": "MYTHIC",
+        "artist": "Steven Belledin",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c6297df2-c67a-4054-9617-5c6202c76de8.jpg?1783940024",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Once Reap Intellect begins to resolve, no player can cast spells or activate abilities until it has completely resolved. For example, the opponent can't cast any cards that would be exiled after their hand is revealed."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You can choose to leave cards with those names in the zone they are in. You don't have to exile them."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you don't exile any cards from the player's hand, you don't search that player's library."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
 }
 
 // Render Silent
@@ -8072,6 +8498,65 @@
     ]
 }
 
+// Sinister Possession
+{
+    "name": "Sinister Possession",
+    "manaCost": "{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhenever enchanted creature attacks or blocks, its controller loses 2 life.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Sinister Possession:1",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": "Controller"
+                    },
+                    "descriptionOverride": "Whenever this creature attacks, its controller loses 2 life."
+                }
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Sinister Possession:2",
+                    "trigger": "BlockEvent",
+                    "effect": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": "Controller"
+                    },
+                    "descriptionOverride": "Whenever this creature blocks, its controller loses 2 life."
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "artist": "Anthony Palumbo",
+        "flavorText": "\"You caught something on a cold night's stroll? No, I'd say something caught you.\"\n—Mezim Magrah, civic healer",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f54c15b-fec0-49a6-8a49-d1af4eeee40e.jpg?1783940039"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Sire of Insanity
 {
     "name": "Sire of Insanity",
@@ -8876,6 +9361,118 @@
     "hasNoManaCost": true
 }
 
+// Trait Doctoring
+{
+    "name": "Trait Doctoring",
+    "manaCost": "{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Change the text of target permanent by replacing all instances of one color word with another or one basic land type with another until end of turn.\nCipher (Then you may exile this spell card encoded on a creature you control. Whenever that creature deals combat damage to a player, its controller may cast a copy of the encoded card without paying its mana cost.)",
+    "keywords": [
+        "CIPHER"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ChangeWordInText",
+            "categories": [
+                "COLOR_WORD",
+                "BASIC_LAND_TYPE"
+            ],
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "permanent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "RARE",
+        "artist": "Clint Cearley",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e21a7981-5940-4b75-907f-7600a742f946.jpg?1783940041",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "The spell with cipher is encoded on the creature as part of that spell's resolution, just after the spell's other effects. That card goes directly from the stack to exile. It never goes to the graveyard."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You choose the creature as the spell resolves. The cipher ability doesn't target that creature, although the spell with cipher may target that creature (or a different creature) because of its other abilities."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the spell with cipher doesn't resolve, none of its effects will happen, including cipher. The card will go to its owner's graveyard and won't be encoded on a creature."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the creature leaves the battlefield, the exiled card will no longer be encoded on any creature. It will stay exiled."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you want to encode the card with cipher onto a noncreature permanent such as a Keyrune that can turn into a creature, that permanent has to be a creature before the spell with cipher starts resolving. You can choose only a creature to encode the card onto."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The copy of the card with cipher is created in and cast from exile."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You cast the copy of the card with cipher during the resolution of the triggered ability. Ignore timing restrictions based on the card's type."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you choose not to cast the copy, or you can't cast it (perhaps because there are no legal targets available), the copy will cease to exist the next time state-based actions are performed. You won't get a chance to cast the copy at a later time."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The exiled card with cipher grants a triggered ability to the creature it's encoded on. If that creature loses that ability and subsequently deals combat damage to a player, the triggered ability won't trigger. However, the exiled card will continue to be encoded on that creature."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If another player gains control of the creature, that player will control the triggered ability. That player will create a copy of the encoded card and may cast it."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a creature with an encoded card deals combat damage to more than one player simultaneously (perhaps because some of the combat damage was redirected), the triggered ability will trigger once for each player it deals combat damage to. Each ability will create a copy of the exiled card and allow you to cast it."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Trait Doctoring changes the color word or basic land type each time it appears in the permanent's type line and/or rules text. It doesn't change the name of the card or any instances of the word being used as part of a card's name."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You choose what word you're changing and what word you're changing it to as Trait Doctoring resolves."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You can target any permanent with Trait Doctoring, including one with no color words or basic land types on it."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Trait Doctoring's effect changes only the text printed on the permanent. It can't change words found in abilities it's been granted. For example, if you've changed \"green\" to \"blue,\" and the permanent gains protection from green (as opposed to having protection from green printed on it), that protection ability is unaffected. The permanent will have protection from green."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the basic land type of a land is changed, the associated mana ability of that land will also change, but its name will not. For example, if you've changed \"Plains\" to \"Island,\" a card named Plains will have the basic land type Island and can be tapped for {U}, and it can no longer be tapped for {W}."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The type-changing effect can change part of a word such as \"nonblack\" or \"swampwalk\" if the part of the word is being used to refer to a color or basic land type."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Trostani's Summoner
 {
     "name": "Trostani's Summoner",
@@ -9313,6 +9910,118 @@
     ]
 }
 
+// Varolz, the Scar-Striped
+{
+    "name": "Varolz, the Scar-Striped",
+    "manaCost": "{1}{B}{G}",
+    "typeLine": "Legendary Creature — Troll Warrior",
+    "oracleText": "Each creature card in your graveyard has scavenge. The scavenge cost is equal to its mana cost. (Exile a creature card from your graveyard and pay its mana cost: Put a number of +1/+1 counters equal to that card's power on target creature. Scavenge only as a sorcery.)\nSacrifice another creature: Regenerate Varolz.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Varolz, the Scar-Striped:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "creature",
+                        "excludeSelf": true
+                    }
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "Self"
+                },
+                "descriptionOverride": "Sacrifice another creature: Regenerate Varolz."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "scavenge_own",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            "OwnManaCost",
+                            "CostExileSelf"
+                        ]
+                    },
+                    "effect": {
+                        "type": "AddDynamicCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "Self",
+                            "numericProperty": "Power"
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "activateFromZone": "Graveyard",
+                    "descriptionOverride": "Scavenge — its mana cost (Exile this card from your graveyard and pay its mana cost: Put a number of +1/+1 counters equal to this card's power on target creature. Scavenge only as a sorcery.)"
+                },
+                "filter": {
+                    "baseFilter": "creature own:you"
+                },
+                "recipientZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "RARE",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4c3ae3db-c14a-4ffc-805c-a3a51da9370d.jpg?1783940019",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Exiling the creature card with scavenge is part of the cost of activating the scavenge ability. Once the ability is activated and the cost is paid, it's too late to stop the ability from being activated by trying to remove the creature card from the graveyard."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "While Varolz, the Scar-Striped is on the battlefield, the scavenge cost of a creature card in your graveyard is equal to its mana cost, including any colored mana requirements."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Abilities that reduce the cost to cast a creature spell or alternative costs you can pay rather than a card's mana cost don't apply to activating a card's scavenge ability."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The number of counters that a card's scavenge ability puts on a creature is based on the card's power as it last existed in the graveyard."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the creature card you scavenge has {X} in its mana cost, X is 0."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a creature card has multiple instances of scavenge, you can activate either ability (but not both, as the card will be exiled when you activate one of them). Varolz's ability doesn't affect the scavenge cost of a creature's other scavenge ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Viashino Firstblade
 {
     "name": "Viashino Firstblade",
@@ -9532,6 +10241,29 @@
     "colorIdentityOverride": [
         "BLUE",
         "GREEN"
+    ]
+}
+
+// Wake the Reflections
+{
+    "name": "Wake the Reflections",
+    "manaCost": "{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Populate. (Create a token that's a copy of a creature token you control.)",
+    "script": {
+        "spellEffect": {
+            "type": "CreateTokenCopyOfChosenPermanent",
+            "filter": "creature token"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "artist": "Cynthia Sheppard",
+        "flavorText": "\"You see a bird, an oak, a packbeast. I see the potential for an army.\"\n—Lalia, Selesnya dryad",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3db0074c-95cf-4d15-8fe1-7282803ec757.jpg?1783940043"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

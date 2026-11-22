@@ -1,0 +1,1 @@
+- #TBD Reads populate (Wake the Reflections, Muster the Departed) as token making, a colour-word or land-type text rewrite (Trait Doctoring, Crystal Spray, Sleight of Mind) as a two-sided target the simulation picks, and an Aura that makes its host's controller lose life on attack or block (Sinister Possession, Contaminated Bond) as a drain on that player

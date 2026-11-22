@@ -40,6 +40,7 @@ import com.wingedsheep.sdk.scripting.effects.CopyEachTargetSpellEffect
 import com.wingedsheep.sdk.scripting.effects.CopyNextSpellCastEffect
 import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellEffect
 import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellOrAbilityEffect
+import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfChosenPermanentEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfSourceEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
@@ -610,7 +611,8 @@ object SynergyAxes {
 
     private fun leafFeeds(leaf: Any): Set<SynergyAxis> = when (leaf) {
         // A creature token is a body that enters and a body to sacrifice.
-        is CreateTokenEffect, is CreateTokenCopyOfSourceEffect, is CreateTokenCopyOfTargetEffect ->
+        is CreateTokenEffect, is CreateTokenCopyOfSourceEffect, is CreateTokenCopyOfTargetEffect,
+        is CreateTokenCopyOfChosenPermanentEffect ->
             setOf(SynergyAxis.TOKENS, SynergyAxis.CREATURES_ENTER, SynergyAxis.DEATH)
         is AddCountersEffect -> plusCounters(leaf.counterType)
         is AddDynamicCountersEffect -> plusCounters(leaf.counterType)

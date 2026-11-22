@@ -2805,8 +2805,11 @@ object CardIntentAnalyzer {
         // when it is a gain. A total set at or below 20 (Rebirth, Form of the Dragon, Angel of
         // Grace), one that hangs on the board, or another player's is no gain to read here.
         is SetLifeTotalEffect -> if (setsOwnLifeAboveStart(effect)) setOf(IntentTag.LIFEGAIN) else emptySet()
+        // "Choose a creature token you control. Create a token that's a copy of it" (populate: Wake
+        // the Reflections, Muster the Departed) copies a permanent of our own picked on resolution —
+        // another body of ours, as the targeted copy is.
         is CreateTokenEffect, is CreatePredefinedTokenEffect, is InvestigateEffect, is CreateTokenCopyOfTargetEffect,
-        is CreateTokenCopyOfSourceEffect -> setOf(IntentTag.TOKEN_MAKER)
+        is CreateTokenCopyOfSourceEffect, is CreateTokenCopyOfChosenPermanentEffect -> setOf(IntentTag.TOKEN_MAKER)
         // Amass makes the Army token when there is none and grows it when there is: either way a
         // creature body on the battlefield, the same payoff as the token it creates.
         is AmassEffect -> setOf(IntentTag.TOKEN_MAKER)
@@ -4035,6 +4038,15 @@ object CardIntentAnalyzer {
                 if (static.filter.scope == Scope.AttachedTo && growsItsHolder(static.ability.effect)) tags + IntentTag.PUMP
                 else tags
             }
+            // "Whenever enchanted creature attacks or blocks, its controller loses 2 life" (Sinister
+            // Possession, Contaminated Bond): a harmful trigger handed to the host — the Aura's
+            // polarity puts it on an opponent's creature — whose `you` is the host's controller, so
+            // every attack or block drains that opponent: [IntentTag.DAMAGE_TO_PLAYERS], as the same
+            // loss read over an iteration of opponents is ([visitedPlayerLosesLife]).
+            else if (static.filter.scope == Scope.AttachedTo &&
+                TargetPolarityAnalyzer.grantedTriggerPolarity(static.ability) == TargetPolarity.HARMFUL &&
+                visitedPlayerLosesLife(static.ability.effect)
+            ) setOf(IntentTag.DAMAGE_TO_PLAYERS)
             else emptySet()
         // "Enchanted creature has '{T}, Discard a card: Draw a card'" (Prophetic Ravings), an
         // Equipment's granted activation: the static form of [GrantActivatedAbilityEffect] — a mana
