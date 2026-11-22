@@ -1,2 +1,2 @@
-- #TBD Activates a symmetric forced attack (Goblin Diplomats' "each creature attacks this turn if able") on the opponent's turn before they attack, and never on its own turn
-- #TBD Reads "that much damage plus N" bonuses on its own sources (Pyromancer's Gauntlet, Torbran) as damage amplifiers worth keeping in play, and the Gauntlet as a payoff for its instants and sorceries
+- #4819 Activates a symmetric forced attack (Goblin Diplomats' "each creature attacks this turn if able") on the opponent's turn before they attack, and never on its own turn
+- #4819 Reads "that much damage plus N" bonuses on its own sources (Pyromancer's Gauntlet, Torbran) as damage amplifiers worth keeping in play, and the Gauntlet as a payoff for its instants and sorceries
