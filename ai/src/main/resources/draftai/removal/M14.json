@@ -1,0 +1,177 @@
+{
+  "Artificer's Hex": [
+    "removal",
+    "creature-removal"
+  ],
+  "Banisher Priest": [
+    "removal",
+    "creature-removal"
+  ],
+  "Barrage of Expendables": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Blightcaster": [
+    "removal",
+    "creature-removal"
+  ],
+  "Bramblecrush": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Celestial Flare": [
+    "removal",
+    "creature-removal"
+  ],
+  "Chandra's Outrage": [
+    "removal",
+    "creature-removal"
+  ],
+  "Chandra, Pyromaster": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Claustrophobia": [
+    "removal",
+    "creature-removal"
+  ],
+  "Colossal Whale": [
+    "removal",
+    "creature-removal"
+  ],
+  "Corrupt": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Demolish": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Dismiss into Dream": [
+    "removal",
+    "creature-removal"
+  ],
+  "Domestication": [
+    "removal",
+    "creature-removal"
+  ],
+  "Doom Blade": [
+    "removal",
+    "creature-removal"
+  ],
+  "Festering Newt": [
+    "removal",
+    "creature-removal"
+  ],
+  "Flames of the Firebrand": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Fleshpulper Giant": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hunt the Weak": [
+    "removal",
+    "creature-removal"
+  ],
+  "Lifebane Zombie": [
+    "removal",
+    "creature-removal"
+  ],
+  "Liturgy of Blood": [
+    "removal",
+    "creature-removal"
+  ],
+  "Naturalize": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Pacifism": [
+    "removal",
+    "creature-removal"
+  ],
+  "Pitchburn Devils": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Planar Cleansing": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Plummet": [
+    "removal",
+    "creature-removal"
+  ],
+  "Quag Sickness": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ratchet Bomb": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Rod of Ruin": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Scourge of Valkas": [
+    "removal",
+    "creature-removal"
+  ],
+  "Sensory Deprivation": [
+    "removal",
+    "creature-removal"
+  ],
+  "Shock": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Shrivel": [
+    "removal",
+    "creature-removal"
+  ],
+  "Smelt": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Solemn Offering": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Thorncaster Sliver": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Volcanic Geyser": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Windstorm": [
+    "removal",
+    "creature-removal"
+  ],
+  "Wring Flesh": [
+    "removal",
+    "creature-removal"
+  ]
+}

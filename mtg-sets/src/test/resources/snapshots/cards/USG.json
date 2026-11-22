@@ -4758,6 +4758,67 @@
     ]
 }
 
+// Shiv's Embrace
+{
+    "name": "Shiv's Embrace",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+2 and has flying.\n{R}: Enchanted creature gets +1/+0 until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Shiv's Embrace:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "EnchantedCreature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "216",
+        "rarity": "UNCOMMON",
+        "artist": "Bob Eggleton",
+        "flavorText": "\"Wear the foe's form to best it in battle. So sayeth the bey.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c9ba1a3-1de4-4771-b76a-89354bc799d3.jpg?1783946325"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Shivan Gorge
 {
     "name": "Shivan Gorge",
