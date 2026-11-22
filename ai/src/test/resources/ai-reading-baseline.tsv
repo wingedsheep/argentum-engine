@@ -2649,7 +2649,7 @@ Caldera Hellion
 Caldera Lake
 Caligo Skin-Witch
 Calix, Destiny's Hand	polarity: MoveUntilSourceLeavesEffect
-Calix, Guided by Fate	intent: CreateTokenCopyOfChosenPermanentEffect
+Calix, Guided by Fate
 Call Damage Control
 Call In a Professional	timing: LockLifeGainEffect
 Call a Surprise Witness
@@ -4002,7 +4002,7 @@ Crystal Quarry
 Crystal Rod
 Crystal Shard	intent: GatedEffect; polarity: GatedEffect
 Crystal Slipper
-Crystal Spray	polarity: ChangeWordInTextEffect; timing: ChangeWordInTextEffect
+Crystal Spray
 Crystal Vein
 Crystalline Entity
 Crystalline Giant
@@ -11343,7 +11343,7 @@ Maggot Therapy
 Magic Damper
 Magic Missile
 Magic Pot
-Magical Hack	intent: ChangeWordInTextEffect; polarity: ChangeWordInTextEffect
+Magical Hack
 Magistrate's Scepter
 Magitek Armor
 Magitek Infantry
@@ -11744,6 +11744,7 @@ Melancholic Poet
 Melded Moxite
 Meldweb Curator
 Meldweb Strider
+Melek, Izzet Paragon
 Melek, Reforged Researcher
 Melesse Spirit
 Meletis Astronomer
@@ -12456,7 +12457,7 @@ Muse Seeker
 Muse's Encouragement
 Museum Nightwatch
 Mushroom Watchdogs
-Muster the Departed	intent: CreateTokenCopyOfChosenPermanentEffect
+Muster the Departed
 Mutable Explorer
 Mutagen Connoisseur
 Mutagen Man, Living Ooze
@@ -14066,6 +14067,7 @@ Portent of Calamity
 Possessed Goat	intent: AddColorEffect; intent: AddCreatureTypeEffect
 Possessed Skaab
 Possession Engine
+Possibility Storm
 Possibility Technician	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile)
 Postmortem Professor
 Pothole Mole
@@ -14260,6 +14262,7 @@ Proft's Eidetic Memory
 Proft, Consulting Detective
 Proft, Sinister Mastermind
 Progenitor Exarch	intent: TransformEffect
+Progenitor Mimic
 Progenitus
 Prognostic Sphinx
 Prohibit
@@ -14883,6 +14886,7 @@ Realmbreaker's Grasp
 Realmbreaker, the Invasion Tree
 Realmwalker
 Reanimate
+Reap Intellect
 Reap What Is Sown
 Reaper King
 Reaper from the Abyss
@@ -17073,6 +17077,7 @@ Sinister Concoction
 Sinister Cryologist
 Sinister Hideout
 Sinister Monolith
+Sinister Possession
 Sinister Sabotage
 Sinister Starfish
 Sink into Stupor
@@ -17304,7 +17309,7 @@ Sleep-Cursed Faerie
 Sleeper Dart
 Sleeper's Robe
 Sleight of Hand
-Sleight of Mind	intent: ChangeWordInTextEffect; polarity: ChangeWordInTextEffect
+Sleight of Mind
 Slice and Dice
 Slice from the Shadows
 Slice in Twain
@@ -18426,7 +18431,7 @@ Summon: Fat Chocobo
 Summon: Fenrir
 Summon: G.F. Cerberus
 Summon: G.F. Ifrit
-Summon: Good King Mog XII	intent: CreateTokenCopyOfChosenPermanentEffect
+Summon: Good King Mog XII
 Summon: Ixion
 Summon: Knights of Round
 Summon: Kujata
@@ -19989,6 +19994,7 @@ Training Center
 Training Compound
 Training Grounds
 Training Regimen
+Trait Doctoring
 Traitorous Blood
 Traitorous Greed
 Tramway Station
@@ -20729,6 +20735,7 @@ Vaporkin
 Vaporous Djinn
 Variable Chaser
 Varis, Silverymoon Ranger
+Varolz, the Scar-Striped
 Varragoth, Bloodsky Sire	polarity: ForEachEffect
 Vash, Freelance Archaeologist
 Vassal Soul
@@ -21212,6 +21219,7 @@ Wakandan Royal Guard
 Wake Thrasher
 Wake the Dragon
 Wake the Past
+Wake the Reflections
 Wake to Slaughter
 Wakedancer
 Wakening Sun's Avatar
