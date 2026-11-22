@@ -1518,6 +1518,40 @@
     ]
 }
 
+// Pay No Heed
+{
+    "name": "Pay No Heed",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Prevent all damage a source of your choice would deal this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "PreventDamageShield",
+            "direction": "FromTarget",
+            "sourceFilter": "PreventFromChosen"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "artist": "Adam Rex",
+        "flavorText": "\"Inhale life. Exhale pain.\"\n—Mystic elder",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/9520a1be-db77-4f31-a67d-6309a3ddc566.jpg?1783945168",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "Pay No Heed doesn't target anything. You can choose a source with hexproof, for example. You choose the damage source as Pay No Heed resolves."
+            },
+            {
+                "date": "2013-07-01",
+                "text": "If the chosen source is a permanent spell, damage dealt later in the turn by the permanent it becomes will also be prevented."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Putrid Imp
 {
     "name": "Putrid Imp",

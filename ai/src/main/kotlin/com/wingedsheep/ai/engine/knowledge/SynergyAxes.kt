@@ -628,6 +628,8 @@ object SynergyAxes {
         is com.wingedsheep.sdk.scripting.effects.AddCountersToCollectionEffect -> plusCounters(leaf.counterType)
         // "Distribute four +1/+1 counters among any number of target creatures you control" (Verdurous Gearhulk).
         is com.wingedsheep.sdk.scripting.effects.DistributeCountersAmongTargetsEffect -> plusCounters(leaf.counterType)
+        // "Distribute that many +1/+1 counters among any number of creatures you control" (Vastwood Hydra).
+        is com.wingedsheep.sdk.scripting.effects.DistributeCountersAmongFilteredEffect -> plusCounters(leaf.counterType)
         is SurveilEffect -> setOf(SynergyAxis.GRAVEYARD)
         // Explore puts a +1/+1 counter on the explorer for a nonland card, which it may bin like a
         // surveil — both stocks Jadelight Ranger and its kin keep filling.

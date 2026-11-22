@@ -826,6 +826,42 @@
     ]
 }
 
+// Brave the Elements
+{
+    "name": "Brave the Elements",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Choose a color. White creatures you control gain protection from the chosen color until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ChooseColorThen",
+            "then": {
+                "type": "ForEach",
+                "space": {
+                    "type": "IterationSpace.Group",
+                    "filter": {
+                        "baseFilter": "creature white ctrl:you"
+                    }
+                },
+                "body": {
+                    "type": "GrantProtectionFromChosenColor",
+                    "target": "IterationEntity"
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "UNCOMMON",
+        "artist": "Goran Josic",
+        "flavorText": "\"Trust me, your lost fingers and toes are nothing compared to the lost treasures of Sejiri.\"\n—Zahr Gada, Halimar expedition leader",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/1/c14c492d-3fd7-4b2a-910e-bfcb33752eba.jpg?1783942176"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Burst Lightning
 {
     "name": "Burst Lightning",

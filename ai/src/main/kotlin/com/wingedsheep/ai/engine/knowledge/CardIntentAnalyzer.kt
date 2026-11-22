@@ -2736,6 +2736,10 @@ object CardIntentAnalyzer {
         // Divided among the targets (each a permanent), and doubling what one holds: the counter
         // decides it, as for a plain placement.
         is DistributeCountersAmongTargetsEffect -> counterTags(effect.counterType, EffectTarget.ContextTarget(0))
+        // Divided at resolution among the permanents a filter matches, no targets (Vastwood Hydra's
+        // dying gift to "any number of creatures you control"): the same placement on other
+        // permanents, so the counter decides it the same way.
+        is DistributeCountersAmongFilteredEffect -> counterTags(effect.counterType, EffectTarget.ContextTarget(0))
         is DoubleCountersEffect -> effect.counterType?.let { counterTags(it, effect.target) } ?: emptySet()
         // "A kind it doesn't have, from among …" reads by the listed kinds when they agree. A kind
         // chosen among those already on the recipient (Animation Module) names none — proliferate's
@@ -4217,6 +4221,13 @@ object CardIntentAnalyzer {
         // "You may look at face-down creatures you don't control any time" (Keeper of the Lens),
         // "…at the top card of your library any time" (Lens of Clarity): information, nothing more.
         is LookAtFaceDownCreatures, is LookAtTopOfLibrary -> setOf(IntentTag.HIDDEN_INFO)
+        // "You may cast creature spells from the top of your library" (Garruk's Horde, Elven Chorus),
+        // "…play lands and cast spells from the top of your library" (Future Sight, Courser of
+        // Kruphix's lands): every card played off the top is one we never had to draw — a standing
+        // stream of extra cards, read as card draw.
+        is com.wingedsheep.sdk.scripting.CastSpellTypesFromTopOfLibrary,
+        com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary,
+        is com.wingedsheep.sdk.scripting.PlayLandsAndCastFilteredFromTopOfLibrary -> setOf(IntentTag.DRAW)
         // "Players can't get counters" (Solemnity) and a battlefield-wide "can't have counters put
         // on them" lock counters out; an Aura's or the creature's own (Blossombind) is read by
         // whatever else the card does to what it enchants.

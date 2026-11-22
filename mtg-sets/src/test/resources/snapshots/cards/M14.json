@@ -162,6 +162,111 @@
     ]
 }
 
+// Ajani's Chosen
+{
+    "name": "Ajani's Chosen",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Creature — Cat Soldier",
+    "oracleText": "Whenever an enchantment you control enters, create a 2/2 white Cat creature token. If that enchantment is an Aura, you may attach it to the token.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ajani's Chosen:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "WHITE"
+                            ],
+                            "creatureTypes": [
+                                "Cat"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/d/b/db41ce71-52df-4bc1-884d-b09419d8dd13.jpg?1783939884"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "EntityMatches",
+                                    "entity": "TriggeringEntity",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsEnchantment",
+                                            {
+                                                "type": "HasSubtype",
+                                                "subtype": "Aura"
+                                            }
+                                        ],
+                                        "statePredicates": [
+                                            "IsOnBattlefield"
+                                        ]
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "AttachTargetEquipmentToCreature",
+                                    "equipmentTarget": "TriggeringEntity",
+                                    "creatureTarget": {
+                                        "type": "PipelineTarget",
+                                        "collectionName": "createdTokens"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever an enchantment you control enters, create a 2/2 white Cat creature token. If that enchantment is an Aura, you may attach it to the token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "RARE",
+        "artist": "Wayne Reynolds",
+        "flavorText": "\"United, our roar will level mountains.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/583bfbc1-638b-4de5-b865-0b00a69dd073.jpg?1783939947",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "If you cast an Aura targeting an opponent or a permanent controlled by an opponent, you control that Aura when it enters the battlefield. The ability of Ajani's Chosen will trigger."
+            },
+            {
+                "date": "2013-07-01",
+                "text": "You may attach the Aura to the token only if it can legally enchant that token. For example, if the enchantment that entered the battlefield is an Aura with \"enchant land,\" it won't become attached to that token."
+            },
+            {
+                "date": "2013-07-01",
+                "text": "The ability doesn't trigger until the enchantment enters the battlefield. This means that, for example, you can't cast an Aura with enchant creature if there are no legal targets available, hoping to enchant the Cat token. Ajani's Chosen itself, however, may be a legal target for the Aura."
+            },
+            {
+                "date": "2013-07-01",
+                "text": "You may attach the Aura to the Cat token only if the Aura and the token are both on the battlefield when the triggered ability resolves. If the Aura leaves the battlefield before the ability resolves, it won't become attached to that token. If the token leaves the battlefield before the ability resolves, the Aura won't become attached to that token."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Angelic Accord
 {
     "name": "Angelic Accord",
@@ -1270,6 +1375,76 @@
     ]
 }
 
+// Devout Invocation
+{
+    "name": "Devout Invocation",
+    "manaCost": "{6}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Tap any number of untapped creatures you control. Create a 4/4 white Angel creature token with flying for each creature tapped this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "ControlledPermanents",
+                        "filter": "creature untapped ctrl:you"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": "ChooseAnyNumber",
+                    "storeSelected": "selected1",
+                    "prompt": "Tap any number of untapped creatures you control",
+                    "useTargetingUI": true
+                },
+                {
+                    "type": "TapUntapCollection",
+                    "collectionName": "selected1"
+                },
+                {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "VariableReference",
+                        "variableName": "selected1_count"
+                    },
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Angel"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/8/2/826320b7-4ccf-4ace-8c2c-15052b6bad73.jpg?1783939887"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "MYTHIC",
+        "artist": "David Palumbo",
+        "flavorText": "A prayer to bring demons to their knees.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/a/8a286954-fb40-4440-9f0e-a28367c6823c.jpg?1783939944",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "You choose the creatures to tap as Devout Invocation resolves. Once it starts resolving, no player can respond to you tapping the creatures."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Dragon Egg
 {
     "name": "Dragon Egg",
@@ -2273,6 +2448,118 @@
     ]
 }
 
+// Imposing Sovereign
+{
+    "name": "Imposing Sovereign",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Noble",
+    "oracleText": "Creatures your opponents control enter tapped.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "PermanentsEnterTapped",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:opponent",
+                    "to": "Battlefield"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "RARE",
+        "artist": "Scott M. Fischer",
+        "flavorText": "Some are born to rule. The rest are born to bow before them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f672328-3361-498e-a9f4-2d8e69a8b072.jpg?1783939942"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Into the Wilds
+{
+    "name": "Into the Wilds",
+    "manaCost": "{3}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, look at the top card of your library. If it's a land card, you may put it onto the battlefield.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Into the Wilds:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "land",
+                            "storeSelected": "selected1",
+                            "prompt": "You may put the land onto the battlefield",
+                            "selectedLabel": "Put onto the battlefield",
+                            "remainderLabel": "Leave on top",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "rarity": "RARE",
+        "artist": "Véronique Meignaud",
+        "flavorText": "\"Wonders hide where the trees grow thickest.\"\n—Mul Daya proverb",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ecfa6c8d-b5b5-4b68-9ad4-c9d8169659d6.jpg?1783939903",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "Putting a land onto the battlefield this way doesn't count as playing a land. You'll still be able to play a land during one of your main phases."
+            },
+            {
+                "date": "2013-07-01",
+                "text": "If the card is not a land card, or you choose not to put it onto the battlefield, it will stay on top of your library. In most cases, you'll then draw it during your draw step."
+            }
+        ]
+    }
+}
+
 // Kalonian Hydra
 {
     "name": "Kalonian Hydra",
@@ -2439,6 +2726,54 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Master of Diversion
+{
+    "name": "Master of Diversion",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Scout",
+    "oracleText": "Whenever this creature attacks, tap target creature defending player controls.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Master of Diversion:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "controllerPredicate": "ControlledByDefendingPlayer"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "artist": "Michael Komarck",
+        "flavorText": "Choose your battles carefully. For example, avoid the big guy.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2bec89b3-640e-4093-a6e9-5639610769b9.jpg?1783939941"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -2719,6 +3054,86 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Path of Bravery
+{
+    "name": "Path of Bravery",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "As long as your life total is greater than or equal to your starting life total, creatures you control get +1/+1.\nWhenever one or more creatures you control attack, you gain life equal to the number of attacking creatures.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Path of Bravery:1",
+                "trigger": "YouAttackEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "Each",
+                        "filter": "creature attacking"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 1,
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "LifeTotal",
+                        "player": "You"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Add",
+                        "left": {
+                            "type": "StartingLifeTotal",
+                            "player": "You"
+                        },
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 0
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/5222e200-df1b-46c6-a194-c341e8c1d516.jpg?1783939941",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "If a creature you control is dealt damage at the same time that you gain life (most likely because a source you control with lifelink deals damage at the same time), and your life total becomes greater than or equal to your starting life total, apply Path of Bravery's effect before considering whether or not the damage dealt to that creature is lethal."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "Path of Bravery's triggered ability triggers only once, after attacking creatures are declared. For example, if you attack with five creatures, you'll gain 5 life as a single event."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "If a creature enters the battlefield attacking after attacking creatures have been declared, the ability won't trigger again because you didn't declare that creature as an attacking creature. However, if such a creature enters the battlefield before the ability resolves, it will be counted when determining how much life is gained."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -3217,6 +3632,50 @@
         "artist": "Maciej Kuciara",
         "flavorText": "Through its watchful gaze, all slivers may see.",
         "imageUri": "https://cards.scryfall.io/normal/front/7/4/74c28560-e6ac-4be9-a253-22c4613b0d90.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Seraph of the Sword
+{
+    "name": "Seraph of the Sword",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nPrevent all combat damage that would be dealt to this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": {
+                            "statePredicates": [
+                                "IsSource"
+                            ]
+                        }
+                    },
+                    "damageType": "DamageCombat"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "RARE",
+        "artist": "Jaime Jones",
+        "flavorText": "\"Only when my sword lies idle shall I rejoice.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d9789cac-5774-4f72-82c3-18f11f9d4a62.jpg?1783939941"
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -3901,6 +4360,79 @@
     ]
 }
 
+// Tidebinder Mage
+{
+    "name": "Tidebinder Mage",
+    "manaCost": "{U}{U}",
+    "typeLine": "Creature — Merfolk Wizard",
+    "oracleText": "When this creature enters, tap target red or green creature an opponent controls. That creature doesn't untap during its controller's untap step for as long as you control this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tidebinder Mage:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": {
+                                "type": "WhileYouControlSource",
+                                "sourceDescription": "Tidebinder Mage"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature red|green ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "rarity": "RARE",
+        "artist": "John Severin Brassell",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e032d1dd-6efc-4f6c-ad3b-30fe74845edf.jpg?1783939930",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "If you lose control of Tidebinder Mage between when it entered the battlefield and when the ability resolves, the target creature will become tapped. However, it won't be affected by the other effect and will untap as normal during its controller's untap step."
+            },
+            {
+                "date": "2013-07-01",
+                "text": "If another player gains control of Tidebinder Mage, the creature will no longer be affected by the ability preventing it from untapping, even if you later regain control of Tidebinder Mage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Trained Condor
 {
     "name": "Trained Condor",
@@ -4011,6 +4543,71 @@
     ]
 }
 
+// Vastwood Hydra
+{
+    "name": "Vastwood Hydra",
+    "manaCost": "{X}{G}{G}",
+    "typeLine": "Creature — Hydra",
+    "oracleText": "This creature enters with X +1/+1 counters on it.\nWhen this creature dies, you may distribute a number of +1/+1 counters equal to the number of +1/+1 counters on this creature among any number of creatures you control.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vastwood Hydra:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "DistributeCountersAmongFiltered",
+                        "totalCounters": {
+                            "type": "ContextProperty",
+                            "key": "LAST_KNOWN_PLUS_ONE_COUNTER_COUNT"
+                        },
+                        "filter": "creature ctrl:you"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e635174-7f7d-4c04-a6aa-8674da6863ff.jpg?1783939898",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "The ability that triggers when Vastwood Hydra dies doesn't target any of the creatures. You can choose to put counters on a creature with protection from green, for example."
+            },
+            {
+                "date": "2013-07-01",
+                "text": "You choose how the counters will be distributed when the ability resolves."
+            },
+            {
+                "date": "2013-07-01",
+                "text": "In some unusual cases, Vastwood Hydra will have enough -1/-1 counters put on it to make its toughness 0 or less. If this happens, the ability will still distribute a number of +1/+1 counters equal to the number of +1/+1 counters on Vastwood Hydra before the -1/-1 counters were put on it. For example, if Vastwood Hydra has two +1/+1 counters on it and three -1/-1 counters are put on it, two +1/+1 counters will be distributed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Vial of Poison
 {
     "name": "Vial of Poison",
@@ -4063,6 +4660,47 @@
         "imageUri": "https://cards.scryfall.io/normal/front/7/7/7769159b-5a6a-45e5-b69b-8db2a6ef5418.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Voracious Wurm
+{
+    "name": "Voracious Wurm",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Wurm",
+    "oracleText": "This creature enters with X +1/+1 counters on it, where X is the amount of life you've gained this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": {
+                    "type": "TurnTracking",
+                    "player": "You",
+                    "tracker": "LIFE_GAINED"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "flavorText": "Shepherds in Kalonia know it's better to let sheep roam than have them be trapped when the wurms are feeding.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/da15100b-2934-438c-9917-84ad8bdc4181.jpg?1783939898",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "Voracious Wurm's ability checks how much life you've gained during the turn, not what your life total is compared to what it was when the turn began. For example, if you start the turn at 10 life, gain 6 life during the turn, then lose 6 life later that turn, Voracious Wurm will enter the battlefield with six +1/+1 counters."
+            },
+            {
+                "date": "2013-07-01",
+                "text": "In a Two-Headed Giant game, life gained by your teammate isn't considered, even though it causes your team's life total to increase."
+            }
+        ]
+    }
 }
 
 // Warden of Evos Isle
@@ -4174,6 +4812,76 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Witchstalker
+{
+    "name": "Witchstalker",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Wolf",
+    "oracleText": "Hexproof (This creature can't be the target of spells or abilities your opponents control.)\nWhenever an opponent casts a blue or black spell during your turn, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "HEXPROOF"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Witchstalker:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "HasColor",
+                                        "color": "BLUE"
+                                    },
+                                    {
+                                        "type": "HasColor",
+                                        "color": "BLACK"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "triggerRestriction": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "202",
+        "rarity": "RARE",
+        "artist": "Christopher Moeller",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5a5ce47d-ea4f-4e15-adb6-5bb66981ed24.jpg?1783939897",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "The counter will be put on Witchstalker before the spell cast by an opponent resolves."
+            },
+            {
+                "date": "2013-07-01",
+                "text": "If an opponent casts a copy of a card that's blue or black during your turn (as opposed to putting a copy of such a spell directly on the stack), the ability will also trigger. Check for the word \"cast\" in the effect that creates the copy."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 

@@ -1475,6 +1475,47 @@
     ]
 }
 
+// Indestructibility
+{
+    "name": "Indestructibility",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant permanent\nEnchanted permanent has indestructible. (Effects that say \"destroy\" don't destroy that permanent. A creature with indestructible can't be destroyed by damage.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "INDESTRUCTIBLE"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "permanent"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "rarity": "RARE",
+        "artist": "Darrell Riche",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/ef8765a0-c2ae-4b1a-a3f5-0243b43e6da0.jpg?1783942401",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "If a creature enchanted by Indestructibility is dealt lethal damage, the creature isn't destroyed, but the damage remains marked on the creature. If Indestructibility stops enchanting that creature later in the turn, the creature will no longer have indestructible and will be destroyed."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "If an effect would simultaneously destroy Indestructibility and the creature it's enchanting, only Indestructibility is destroyed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Magma Phoenix
 {
     "name": "Magma Phoenix",
