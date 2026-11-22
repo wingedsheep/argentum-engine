@@ -1,1 +1,1 @@
-- #PR Drafts and builds Magic 2014 decks from a first-party pick-rating and removal table instead of guessing every M14 card from the effect heuristic
+- #4811 Drafts and builds Magic 2014 decks from a first-party pick-rating and removal table instead of guessing every M14 card from the effect heuristic
