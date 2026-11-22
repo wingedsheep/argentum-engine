@@ -49,7 +49,6 @@ val LilianasReaver = card("Liliana's Reaver") {
         rarity = Rarity.RARE
         collectorNumber = "103"
         artist = "Karl Kopinski"
-        flavorText = ""
         imageUri = "https://cards.scryfall.io/normal/front/a/7/a734c33c-4fa0-4f7a-943c-14a8aecea1a6.jpg?1783939922"
     }
 }

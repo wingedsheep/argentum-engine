@@ -1099,10 +1099,10 @@ object TargetPolarityAnalyzer {
         a is EffectTarget.BoundVariable && b is EffectTarget.BoundVariable &&
             a.name.substringBefore('[') == b.name.substringBefore('[')
 
-    /** Whether [this] names a chosen target rather than a fixed player or object. */
     /** A fixed draw this large can empty a Limited library: a mill-out threat, not only card advantage. */
     private const val DECKING_DRAW = 10
 
+    /** Whether [this] names a chosen target rather than a fixed player or object. */
     private fun EffectTarget.isSlot(): Boolean = this is EffectTarget.BoundVariable || this is EffectTarget.ContextTarget
 
     /**
