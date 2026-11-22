@@ -423,6 +423,18 @@ data class CardScript(
     val xMaximum: DynamicAmount? = null,
 
     /**
+     * "X can't be 0." — the smallest X this spell may be cast with (Mind Grind: `xMinimum = 1`),
+     * checked as X is announced (CR 601.2b) on every casting rail: the cast offer's X slider starts
+     * there, an offer whose affordable X falls short of it can't be cast, and the cast validator
+     * rejects a smaller announced X. Casting it without paying its mana cost leaves 0 as the only
+     * legal X (CR 107.3b), so such a cast is impossible. A copy isn't cast and keeps its X. `0`
+     * (the default) is no floor. Route-scoped floors ("if you cast this spell this way") stay on
+     * their route: `Flashback.minimumXValue`, `OptionalAdditionalCost.minimumXValue`. Declared with
+     * `spell { xMinimum = 1 }`.
+     */
+    val xMinimum: Int = 0,
+
+    /**
      * "If this card is in your opening hand, you may begin the game with it on the battlefield"
      * (CR 103.6a), with any condition, entry counters and "if you do" rider it prints. After all
      * mulligans and bottoming resolve, the engine walks each player in turn order (starting with

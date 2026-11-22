@@ -3026,6 +3026,68 @@
     "colorIdentityOverride": []
 }
 
+// Mind Grind
+{
+    "name": "Mind Grind",
+    "manaCost": "{X}{U}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each opponent reveals cards from the top of their library until they reveal X land cards, then puts all cards revealed this way into their graveyard. X can't be 0.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Players",
+                "players": "EachOpponent"
+            },
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherUntilMatch",
+                        "filter": "land",
+                        "storeMatch": "matched0",
+                        "storeRevealed": "revealed0",
+                        "count": "XValue"
+                    },
+                    {
+                        "type": "RevealCollection",
+                        "from": "revealed0"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "revealed0",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Graveyard"
+                        }
+                    }
+                ]
+            }
+        },
+        "xMinimum": 1
+    },
+    "metadata": {
+        "collectorNumber": "178",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/671eb9e8-1a69-4570-8972-2e7de371cef4.jpg?1783940104",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "If an opponent's library contains fewer than X land cards, all cards from that library are revealed and put into their graveyard."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If another spell or ability instructs you to cast Mind Grind \"without paying its mana cost,\" you won't be able to. You must pick 0 as the value of X in the mana cost of a spell being cast \"without paying its mana cost,\" but the X in Mind Grind's mana cost can't be 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Mindeye Drake
 {
     "name": "Mindeye Drake",

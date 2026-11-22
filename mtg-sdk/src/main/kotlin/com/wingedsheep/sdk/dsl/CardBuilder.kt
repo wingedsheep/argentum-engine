@@ -1012,6 +1012,7 @@ class CardBuilder(private val name: String) {
             selfAlternativeCost = selfAlternativeCost,
             xManaRestriction = spellBuilder?.xManaRestriction ?: emptySet(),
             xMaximum = spellBuilder?.xMaximum,
+            xMinimum = spellBuilder?.xMinimum ?: 0,
             beginOnBattlefield = beginOnBattlefield,
             openingHandReveal = openingHandReveal,
             castTimeCaptures = spellBuilder?.castTimeCaptures ?: emptyList()
@@ -1123,6 +1124,8 @@ class SpellBuilder(private val declaredTargets: TargetList = TargetList()) : Tar
     var xManaRestriction: Set<Color> = emptySet()
     /** "X can't be greater than [xMaximum]" — checked once, as X is announced (null = no cap). */
     var xMaximum: DynamicAmount? = null
+    /** "X can't be 0" — the smallest X the spell may be cast with (0 = no floor). */
+    var xMinimum: Int = 0
     private var selfExileOnResolve: Boolean = false
     private var selfExileTimeCounters: Int = 0
 

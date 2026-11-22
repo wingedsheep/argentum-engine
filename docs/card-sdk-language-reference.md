@@ -1173,6 +1173,14 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   once, as X is announced (CR 601.2b), never again: the cast offer's X slider is capped at it on every
   casting rail and the cast validator rejects a larger X; a copy of the spell isn't cast and keeps its X.
   Open the Way (`xMaximum = DynamicAmounts.playerCount(Player.Each)`) is the first user.
+- `xMinimum = n` (in `spell { }`) — "X can't be 0" on the spell's own X (`xMinimum = 1`, Mind Grind).
+  Checked as X is announced (CR 601.2b) on every casting rail: the cast offer's X slider starts at `n`
+  (`LegalAction.minX`), an offer whose affordable X is below it can't be cast, and the cast validator
+  rejects a smaller X. A cast without paying its mana cost has 0 as its only legal X (CR 107.3b), so
+  such a spell can't be cast that way at all (Mind Grind's ruling); a copy isn't cast and keeps its X.
+  Route-scoped floors ("if you cast this spell this way, X can't be 0") stay on their route:
+  `KeywordAbility.flashback(cost, minimumXValue = 1)`, `KeywordAbility.kicker("{X}", minimumXValue = 1)`;
+  an activated ability's floor is `activatedAbility { minimumXValue = 1 }`.
 
 **`Costs.additional.*`** (wraps `AdditionalCost`) — extra costs paid alongside the mana cost. Card
 definitions construct these through the facade, e.g. `Costs.additional.SacrificePermanent(Filters.Creature)`.

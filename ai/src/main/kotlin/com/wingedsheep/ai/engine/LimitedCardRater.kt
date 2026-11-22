@@ -694,8 +694,16 @@ object LimitedCardRater {
         // A wish (Burning Wish): the sideboard gather and the move to hand read as nothing alone.
         // A library search is priced at its own gather leaf, which a wish's gather isn't.
         if (IntentTag.TUTOR in tags) score += TAG_VALUE.getValue(IntentTag.TUTOR)
+        // "Reveals cards until they reveal a land card, then puts them into their graveyard"
+        // (Mirko Vosk, Tunnel Vision): a mill of unknown depth no single leaf says. A library
+        // exile toward an empty library (Supreme Inquisitor) tags MILL too, but isn't priced here.
+        if (IntentTag.MILL in tags && revealsUntilMatch(root)) score += REVEAL_UNTIL_MILL_SCORE
         return score
     }
+
+    /** Whether [body] walks a library until a match ("reveal cards until ..."), the gather a reveal-until mill reads from. */
+    private fun revealsUntilMatch(body: Effect): Boolean =
+        EffectWalker.payoffLeaves(body).any { it is com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect }
 
     /** How a limited rating folds an effect tree. See [EffectWalker.Fold]. */
     private class LimitedScoreFold(
@@ -846,6 +854,10 @@ object LimitedCardRater {
             // the analyzer's sweeper reading of it like the pipeline spelling (see [pipelineScore]).
             is ForEachEffect ->
                 if (IntentTag.SWEEPER in CardIntentAnalyzer.leafTags(effect)) DESTROY_SCORE
+                // "Each opponent reveals cards until they reveal X land cards, then puts them into
+                // their graveyard" (Mind Grind): the body's `you` is the opponent milled, which only
+                // the iteration's reading sees — price it like the single-player pipeline.
+                else if (IntentTag.MILL in CardIntentAnalyzer.leafTags(effect) && revealsUntilMatch(effect.body)) REVEAL_UNTIL_MILL_SCORE
                 // "Each opponent may search their library for a basic land" (Old-Growth Dryads):
                 // the body's gain is the opponent's, so it is the card's price, not a payoff.
                 else if (CardIntentAnalyzer.giftsOnlyToOpponents(effect)) -EffectWalker.fold(effect.body, LimitedScoreFold(source = source))
@@ -960,6 +972,8 @@ object LimitedCardRater {
 
     private const val DYNAMIC_STAT_GUESS = 2
     private const val DESTROY_SCORE = 1.5
+    /** A reveal-until mill: past a fixed mill's 0.4 cap only in depth, which Limited rarely cashes in. */
+    private const val REVEAL_UNTIL_MILL_SCORE = 0.4
     private const val LIFE_LOSS_SCORE = 0.2
     private const val COMPOSITE_CAP = 2.5
     private const val MODAL_FLEXIBILITY = 0.2

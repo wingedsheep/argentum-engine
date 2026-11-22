@@ -666,6 +666,16 @@ internal class CastValidator(
         legality.spellXMaximum(state, action.playerId, action.cardId, cardDef.script)?.let { cap ->
             if ((action.xValue ?: 0) > cap) return "X can't be greater than $cap"
         }
+        // "X can't be 0" (Mind Grind): the spell's own floor, on every casting rail. A cast without
+        // paying its mana cost has 0 as its only legal X (CR 107.3b), so with a floor it can't be
+        // cast at all, whatever X it claims. Resolution-time free casts (cascade, discover) are
+        // refused by CastSpellHandler.resolutionCastProhibition.
+        if (cardDef.script.xMinimum > 0 && action.useWithoutPayingManaCost) {
+            return "X can't be 0, so this spell can't be cast without paying its mana cost"
+        }
+        if ((action.xValue ?: 0) < cardDef.script.xMinimum) {
+            return if (cardDef.script.xMinimum == 1) "X can't be 0" else "X can't be less than ${cardDef.script.xMinimum}"
+        }
         if (action.useAlternativeCost && action.altAllows(AlternativeCostType.FLASHBACK)) {
             val minX = FlashbackGrants.effectiveFlashback(
                 state, action.cardId, cardDef, action.playerId, cardRegistry, predicateEvaluator
