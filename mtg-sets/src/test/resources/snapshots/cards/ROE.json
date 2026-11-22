@@ -904,6 +904,75 @@
     ]
 }
 
+// Domestication
+{
+    "name": "Domestication",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nYou control enchanted creature.\nAt the beginning of your end step, if enchanted creature's power is 4 or greater, sacrifice this Aura.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Domestication:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "SacrificeTarget",
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "EnchantedCreature",
+                        "numericProperty": "Power"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            "ControlEnchantedPermanent"
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Ejsing",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/1/e1f15831-8dfd-4232-875c-efa6744c9a12.jpg?1783941998",
+        "rulings": [
+            {
+                "date": "2010-06-15",
+                "text": "Domestication's triggered ability has an \"intervening 'if' clause.\" That means (1) the ability triggers only if the enchanted creature's power is 4 or greater as your end step begins, and (2) the ability does nothing if the enchanted creature's power is 3 or less by the time it resolves."
+            },
+            {
+                "date": "2010-06-15",
+                "text": "Domestication can target, and can enchant, a creature with power 4 or greater. The enchanted creature's power is checked only when the triggered ability triggers and resolves."
+            },
+            {
+                "date": "2010-06-15",
+                "text": "If an effect changes the enchanted creature's power until end of turn, it will still have the modified power during your end step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Dreamstone Hedron
 {
     "name": "Dreamstone Hedron",

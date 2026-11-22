@@ -811,6 +811,101 @@
     ]
 }
 
+// Bogbrew Witch
+{
+    "name": "Bogbrew Witch",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{2}, {T}: Search your library for a card named Festering Newt or Bubbling Cauldron, put it onto the battlefield tapped, then shuffle.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Bogbrew Witch:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                {
+                                                    "type": "NameEquals",
+                                                    "name": "Festering Newt"
+                                                },
+                                                {
+                                                    "type": "NameEquals",
+                                                    "name": "Bubbling Cauldron"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a card named Festering Newt or named Bubbling Cauldron to put onto the battlefield tapped",
+                            "selectedLabel": "Put onto the battlefield tapped"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "rarity": "RARE",
+        "artist": "Eric Deschamps",
+        "flavorText": "\"The hardest thing is finding the right ingredients.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/7559cf3e-7fad-4bcf-8551-045f9150e014.jpg?1783939926"
+    }
+}
+
 // Bonescythe Sliver
 {
     "name": "Bonescythe Sliver",
@@ -842,6 +937,84 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Bubbling Cauldron
+{
+    "name": "Bubbling Cauldron",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{1}, {T}, Sacrifice a creature: You gain 4 life.\n{1}, {T}, Sacrifice a creature named Festering Newt: Each opponent loses 4 life. You gain life equal to the life lost this way.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Bubbling Cauldron:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            },
+            {
+                "id": "Bubbling Cauldron:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature name:Festering Newt"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "UNCOMMON",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/a/9af87c24-a534-462b-968b-dccf6ac63299.jpg?1783939897"
+    }
 }
 
 // Celestial Flare
@@ -1214,6 +1387,90 @@
     ]
 }
 
+// Colossal Whale
+{
+    "name": "Colossal Whale",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Creature — Whale",
+    "oracleText": "Islandwalk (This creature can't be blocked as long as defending player controls an Island.)\nWhenever this creature attacks, you may exile target creature defending player controls until this creature leaves the battlefield. (That creature returns under its owner's control.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "ISLANDWALK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Colossal Whale:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveUntilSourceLeaves",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Exile"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "controllerPredicate": {
+                                "type": "ControlledByReferencedPlayer",
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "DefendingPlayer"
+                                }
+                            }
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "RARE",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7f7caca-14ee-4d6a-97c3-e19898f86635.jpg?1783939936",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "If a creature token is exiled, it ceases to exist. It won't be returned to the battlefield."
+            },
+            {
+                "date": "2013-07-01",
+                "text": "Colossal Whale's triggered ability triggers and resolves during the declare attackers step, before blocking creatures are declared."
+            },
+            {
+                "date": "2013-07-01",
+                "text": "Auras attached to the exiled creature will be put into their owners' graveyards. Equipment attached to the exiled creature will become unattached and remain on the battlefield. Any counters on the exiled creature will cease to exist."
+            },
+            {
+                "date": "2013-07-01",
+                "text": "If Colossal Whale leaves the battlefield before its triggered ability resolves, the target creature won't be exiled."
+            },
+            {
+                "date": "2013-07-01",
+                "text": "The exiled card returns to the battlefield immediately after Colossal Whale leaves the battlefield. Nothing happens between the two events, including state-based actions. The two creatures aren't on the battlefield at the same time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Corpse Hauler
 {
     "name": "Corpse Hauler",
@@ -1445,6 +1702,50 @@
     ]
 }
 
+// Dismiss into Dream
+{
+    "name": "Dismiss into Dream",
+    "manaCost": "{6}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Each creature your opponents control is an Illusion in addition to its other types and has \"When this creature becomes the target of a spell or ability, sacrifice it.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantSubtype",
+                "subtype": "Illusion",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                }
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Dismiss into Dream:1",
+                    "trigger": "BecomesTargetEvent",
+                    "effect": {
+                        "type": "SacrificeTarget",
+                        "target": "Self"
+                    },
+                    "descriptionOverride": "When this creature becomes the target of a spell or ability, sacrifice it."
+                },
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "rarity": "RARE",
+        "artist": "Sam Wolfe Connelly",
+        "flavorText": "\"You trust in the shadows of a breeze.\"\n—Noyan Dar, Tazeem lullmage",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/af4cd7fe-639c-45a5-97af-9529904e3975.jpg?1783939935"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Dragon Egg
 {
     "name": "Dragon Egg",
@@ -1520,6 +1821,152 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Elite Arcanist
+{
+    "name": "Elite Arcanist",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "When this creature enters, you may exile an instant card from your hand.\n{X}, {T}: Copy the exiled card. You may cast the copy without paying its mana cost. X is the mana value of the exiled card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Elite Arcanist:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "filter": "instant"
+                                },
+                                "storeAs": "chosenCardCandidates"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "chosenCardCandidates",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "chosenCard",
+                                "prompt": "Choose an instant card to exile"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "chosenCard",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                },
+                                "linkToSource": true
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "You may exile an instant card from your hand."
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Elite Arcanist:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{X}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": "FromLinkedExile",
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "CopyCollectionIntoCollection",
+                                "from": "gathered0",
+                                "storeAs": "copies1"
+                            },
+                            {
+                                "type": "CastFromCollectionWithoutPayingCost",
+                                "from": "copies1"
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "Copy the exiled card. You may cast the copy without paying its mana cost."
+                },
+                "xDefinedAs": {
+                    "type": "EntityProperty",
+                    "entity": "LinkedExiledCard",
+                    "numericProperty": "ManaValue"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "RARE",
+        "artist": "James Zapata",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/99b225fe-c07d-4d8a-bf2b-c1777bd29061.jpg?1783939934",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "You don't choose the value of {X} in the activation cost of Elite Arcanist's ability. It's defined by the mana value of the exiled instant card."
+            },
+            {
+                "date": "2013-07-01",
+                "text": "The copy is created in and cast from exile. You must still follow any timing restrictions, such as \"Cast [this spell] only during combat.\""
+            },
+            {
+                "date": "2013-07-01",
+                "text": "You can't pay any alternative costs such as overload costs. You can pay additional costs such as kicker costs. If the spell has any mandatory additional costs, you must pay those."
+            },
+            {
+                "date": "2013-07-01",
+                "text": "If the copied card has {X} in its mana cost, you must choose 0 as its value when casting the copy. Don't confuse that {X} with the {X} in the activation cost of Elite Arcanist's ability."
+            },
+            {
+                "date": "2013-07-01",
+                "text": "If the exiled card is a split card, then X is determined by the combined mana cost of both halves. However, when you cast the copy, you choose only one half to cast. You may cast a different half each time you create and cast a copy."
+            },
+            {
+                "date": "2013-07-01",
+                "text": "If Elite Arcanist leaves the battlefield, you will no longer be able to copy the exiled card. If it returns to the battlefield, you'll be able to exile another instant card from your hand, but Elite Arcanist will be a different permanent with no connection to the first exiled card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -1706,6 +2153,91 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Festering Newt
+{
+    "name": "Festering Newt",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Salamander",
+    "oracleText": "When this creature dies, target creature an opponent controls gets -1/-1 until end of turn. That creature gets -4/-4 instead if you control a creature named Bogbrew Witch.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Festering Newt:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "creature name:Bogbrew Witch"
+                        }
+                    },
+                    "then": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -4
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -4
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "otherwise": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "98",
+        "artist": "Eric Deschamps",
+        "flavorText": "Its back bubbles like a witch's cauldron, and it smells just as vile.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/eaee5261-416c-41e9-9ad7-bf7bd169aa08.jpg?1783939924",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "Whether you control a creature named Bogbrew Witch is checked only as the triggered ability resolves. How the target creature is affected won't change if you gain or lose control of all your Bogbrew Witches later in the turn."
+            }
+        ]
+    }
 }
 
 // Fiendslayer Paladin
@@ -2205,6 +2737,63 @@
     ]
 }
 
+// Grim Return
+{
+    "name": "Grim Return",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Choose target creature card in a graveyard that was put there from the battlefield this turn. Put that card onto the battlefield under your control.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Battlefield",
+            "controllerOverride": "Controller",
+            "fromZone": "Graveyard"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "PutIntoGraveyardFromBattlefieldThisTurn"
+                        ]
+                    },
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "rarity": "RARE",
+        "artist": "Seb McKinnon",
+        "flavorText": "The necromancer's touch strips away memory and loyalty, and only strength and malice remain.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/15b69f74-3b54-4db4-abf3-b71db8cc9562.jpg?1783939923",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "You can choose a creature card in any player's graveyard as long as that card was put there from the battlefield during the turn. A creature card that was put into a graveyard from anywhere else, such as a card that was discarded, can't be chosen as the target."
+            },
+            {
+                "date": "2013-07-01",
+                "text": "Creature spells that are countered never entered the battlefield, so those cards can't be chosen as the target of Grim Return."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Groundshaker Sliver
 {
     "name": "Groundshaker Sliver",
@@ -2448,6 +3037,57 @@
     ]
 }
 
+// Illusionary Armor
+{
+    "name": "Illusionary Armor",
+    "manaCost": "{4}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +4/+4.\nWhen enchanted creature becomes the target of a spell or ability, sacrifice this Aura.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Illusionary Armor:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "targetFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsAttachedToBySource"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": "SacrificeSelf",
+                "descriptionOverride": "When enchanted creature becomes the target of a spell or ability, sacrifice this Aura."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 4,
+                "toughnessBonus": 4
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d09346ff-6e63-499b-9265-c15a7b2cdece.jpg?1783939933"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Imposing Sovereign
 {
     "name": "Imposing Sovereign",
@@ -2560,6 +3200,109 @@
     }
 }
 
+// Jace's Mindseeker
+{
+    "name": "Jace's Mindseeker",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Creature — Fish Illusion",
+    "oracleText": "Flying\nWhen this creature enters, target opponent mills five cards. You may cast an instant or sorcery spell from among them without paying its mana cost.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jace's Mindseeker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                },
+                                "player": "TargetOpponent",
+                                "isMill": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "TargetOpponent"
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "instant|sorcery",
+                            "storeMatching": "matching2"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matching2",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected3",
+                            "selectedLabel": "Cast without paying its mana cost"
+                        },
+                        {
+                            "type": "CastFromCollectionWithoutPayingCost",
+                            "from": "selected3"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "RARE",
+        "artist": "Greg Staples",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f67852a6-ae75-44e7-9e2d-d458c7b9d869.jpg?1783939933",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "If you cast an instant or sorcery card this way, you do so while the ability of Jace's Mindseeker is resolving. If you choose not to (or can't), you won't get a chance to cast one later."
+            },
+            {
+                "date": "2013-07-01",
+                "text": "\"From among them\" means the five cards put into the graveyard, not all cards in that graveyard."
+            },
+            {
+                "date": "2013-07-01",
+                "text": "If the five cards are put into a public zone such as exile instead of a graveyard (perhaps due to the ability of Rest in Peace), you can cast one of those instant or sorcery cards from that zone."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Kalonian Hydra
 {
     "name": "Kalonian Hydra",
@@ -2637,6 +3380,187 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Lifebane Zombie
+{
+    "name": "Lifebane Zombie",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Creature — Zombie Warrior",
+    "oracleText": "Intimidate (This creature can't be blocked except by artifact creatures and/or creatures that share a color with it.)\nWhen this creature enters, target opponent reveals their hand. You choose a green or white creature card from it and exile that card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "INTIMIDATE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lifebane Zombie:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RevealHand",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "filter": "creature green|white"
+                            },
+                            "storeAs": "chosenCardCandidates"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "chosenCardCandidates",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "chosenCard",
+                            "prompt": "Choose a green or white creature card to exile"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "chosenCard",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, target opponent reveals their hand. You choose a green or white creature card from it and exile that card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "RARE",
+        "artist": "Min Yum",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/98370735-5303-40d4-9e80-cdb40dee18e2.jpg?1783939922"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Liliana's Reaver
+{
+    "name": "Liliana's Reaver",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "Deathtouch\nWhenever this creature deals combat damage to a player, that player discards a card and you create a tapped 2/2 black Zombie creature token.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Liliana's Reaver:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": "TriggeringPlayer"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "TriggeringPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "TriggeringPlayer"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "BLACK"
+                            ],
+                            "creatureTypes": [
+                                "Zombie"
+                            ],
+                            "tapped": true
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, that player discards a card and you create a tapped 2/2 black Zombie creature token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "rarity": "RARE",
+        "artist": "Karl Kopinski",
+        "flavorText": "",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a734c33c-4fa0-4f7a-943c-14a8aecea1a6.jpg?1783939922"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

@@ -1887,6 +1887,92 @@
     ]
 }
 
+// Merfolk Spy
+{
+    "name": "Merfolk Spy",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Merfolk Rogue",
+    "oracleText": "Islandwalk (This creature can't be blocked as long as defending player controls an Island.)\nWhenever this creature deals combat damage to a player, that player reveals a card at random from their hand.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "ISLANDWALK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Merfolk Spy:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": "TriggeringPlayer"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "Random",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "selected1"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "artist": "Matt Cavotta & Richard Whitters",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5ae05cc-116b-4268-ba78-709aeff36ab1.jpg?1783941823",
+        "rulings": [
+            {
+                "date": "2010-08-15",
+                "text": "Islandwalk cares about lands with the land type Island, not necessarily lands named Island."
+            },
+            {
+                "date": "2010-08-15",
+                "text": "The second ability triggers just once each time Merfolk Spy deals combat damage to a player, regardless of how much damage it deals."
+            },
+            {
+                "date": "2010-08-15",
+                "text": "After the second ability resolves, the revealed card stops being revealed in its owner's hand."
+            },
+            {
+                "date": "2010-08-15",
+                "text": "The next time Merfolk Spy deals combat damage to the same player, the card that's revealed at random may be the same card or may be a different card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Mighty Leap
 {
     "name": "Mighty Leap",

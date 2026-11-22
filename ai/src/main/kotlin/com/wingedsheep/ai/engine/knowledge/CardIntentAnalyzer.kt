@@ -1424,6 +1424,7 @@ object CardIntentAnalyzer {
         addAll(handToBattlefieldTags(root))
         addAll(manifestTags(root))
         addAll(ownBoardCounterTags(root))
+        if (revealsAnotherHand(readingLeaves(root))) add(IntentTag.HIDDEN_INFO)
         if (selectsOwnLibraryTop(readingLeaves(root))) add(IntentTag.CARD_SELECTION)
         if (EffectWalker.blinkMoves(root).isNotEmpty()) add(IntentTag.PROTECTION)
         // "Exile up to two target creatures you control, then return those cards to the battlefield"
@@ -1471,6 +1472,28 @@ object CardIntentAnalyzer {
         if (playsThePile) add(IntentTag.DRAW)
         if (banksOwnLibraryForHand(scripts)) add(IntentTag.DRAW)
         if (banksLibrariesForBattlefield(scripts)) add(IntentTag.FREE_SPELL)
+        // "{X}, {T}: Copy the exiled card. You may cast the copy without paying its mana cost"
+        // (Isochron Scepter, Elite Arcanist): an ability casting the pile — or copies of it — for
+        // free makes every card put there a banked [IntentTag.FREE_SPELL].
+        if (scripts.any { script -> EffectWalker.slots(script).any { castsPileFree(EffectWalker.leaves(it.effect)) } }) {
+            add(IntentTag.FREE_SPELL)
+        }
+    }
+
+    /** Whether [leaves] gather the source's linked-exile pile and cast it, or copies of it, without paying. */
+    private fun castsPileFree(leaves: List<Effect>): Boolean {
+        val pile = leaves.mapNotNullTo(HashSet()) { leaf ->
+            (leaf as? GatherCardsEffect)?.takeIf { it.source is CardSource.FromLinkedExile }?.storeAs
+        }
+        if (pile.isEmpty()) return false
+        do {
+            val before = pile.size
+            for (leaf in leaves) {
+                pile += derivedCollections(leaf, pile)
+                if (leaf is CopyCollectionIntoCollectionEffect && leaf.from in pile) pile += leaf.storeAs
+            }
+        } while (pile.size != before)
+        return leaves.any { it is CastFromCollectionWithoutPayingCostEffect && !it.payManaCost && it.from in pile }
     }
 
     /** Whether [filter] (or one of its `or` branches) is "cards exiled with this" ([StatePredicate.ExiledWithSource]). */
@@ -1577,7 +1600,48 @@ object CardIntentAnalyzer {
             it is MoveCollectionEffect && it.linkToSource && it.from in fromAnyTop &&
                 (it.destination as? CardDestination.ToZone)?.zone == Zone.EXILE
         }
-        return if (fillsThePile) pileCast else emptySet()
+        if (fillsThePile) return pileCast
+        // "When this enters, you may exile an instant card from your hand" (Elite Arcanist,
+        // Isochron Scepter's imprint): a card of our own hand banked in the pile is no new card —
+        // not [IntentTag.DRAW] — but a free cast stored for later when the pile is cast for free.
+        if (IntentTag.FREE_SPELL !in pileCast) return emptySet()
+        val ownHand = closedCollections(leaves) { (it as? CardSource.FromZone)?.let { s -> s.zone == Zone.HAND && s.player == Player.You } == true }
+        val banksOwnHand = leaves.any {
+            it is MoveCollectionEffect && it.linkToSource && it.from in ownHand &&
+                (it.destination as? CardDestination.ToZone)?.zone == Zone.EXILE
+        }
+        return if (banksOwnHand) setOf(IntentTag.FREE_SPELL) else emptySet()
+    }
+
+    /**
+     * "That player reveals a card at random from their hand" (Merfolk Spy, Hired Torturer): cards
+     * gathered from a hand that isn't its controller's and only revealed — moved nowhere. Nothing
+     * changes hands; the payoff is the better-informed play [IntentTag.HIDDEN_INFO] reads, which no
+     * board simulation sees. A pipeline that also moves those cards (a discard, an exile) is the
+     * disruption [handDisruptionTags] reads instead.
+     */
+    private fun revealsAnotherHand(leaves: List<Effect>): Boolean {
+        val hand = closedCollections(leaves) { (it as? CardSource.FromZone)?.let { s -> s.zone == Zone.HAND && s.player != Player.You } == true }
+        if (hand.isEmpty()) return false
+        if (leaves.any { it is MoveCollectionEffect && it.from in hand }) return false
+        return leaves.any { it is RevealCollectionEffect && it.from in hand }
+    }
+
+    /** Whether every payoff step of [effect] is its holder sacrificing itself ("sacrifice it"). */
+    private fun sacrificesItsHolder(effect: Effect): Boolean {
+        val leaves = EffectWalker.payoffLeaves(effect)
+        return leaves.isNotEmpty() && leaves.all { it is SacrificeTargetEffect && it.target == EffectTarget.Self }
+    }
+
+    /** The collections [leaves] gather from a source [accepts], with everything derived from them. */
+    private fun closedCollections(leaves: List<Effect>, accepts: (CardSource) -> Boolean): Set<String> {
+        val names = leaves.mapNotNullTo(HashSet()) { leaf -> (leaf as? GatherCardsEffect)?.takeIf { accepts(it.source) }?.storeAs }
+        if (names.isEmpty()) return names
+        do {
+            val before = names.size
+            for (leaf in leaves) names += derivedCollections(leaf, names)
+        } while (names.size != before)
+        return names
     }
 
     /**
@@ -4084,6 +4148,15 @@ object CardIntentAnalyzer {
                 TargetPolarityAnalyzer.grantedTriggerPolarity(static.ability) == TargetPolarity.HARMFUL &&
                 visitedPlayerLosesLife(static.ability.effect)
             ) setOf(IntentTag.DAMAGE_TO_PLAYERS)
+            // "Each creature your opponents control … has 'When this creature becomes the target of a
+            // spell or ability, sacrifice it'" (Dismiss into Dream): a trigger handed only to the
+            // opposing board that sacrifices its own holder turns every targeted spell or ability
+            // into removal — the lasting [IntentTag.REMOVAL] a "creatures your opponents control get
+            // -1/-1" static reads as.
+            else if (static.filter.scope == Scope.Battlefield &&
+                opponentsOnly(static.filter.baseFilter.controllerPredicate) &&
+                sacrificesItsHolder(static.ability.effect)
+            ) setOf(IntentTag.REMOVAL)
             else emptySet()
         // "Enchanted creature has '{T}, Discard a card: Draw a card'" (Prophetic Ravings), an
         // Equipment's granted activation: the static form of [GrantActivatedAbilityEffect] — a mana

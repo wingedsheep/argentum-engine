@@ -1100,6 +1100,9 @@ object TargetPolarityAnalyzer {
             a.name.substringBefore('[') == b.name.substringBefore('[')
 
     /** Whether [this] names a chosen target rather than a fixed player or object. */
+    /** A fixed draw this large can empty a Limited library: a mill-out threat, not only card advantage. */
+    private const val DECKING_DRAW = 10
+
     private fun EffectTarget.isSlot(): Boolean = this is EffectTarget.BoundVariable || this is EffectTarget.ContextTarget
 
     /**
@@ -2192,8 +2195,18 @@ object TargetPolarityAnalyzer {
             // to the damage dealt to target opponent this turn" (Knollspine Dragon): the controller
             // draws, so the draw is no gift or curse to the player the amount measures. The slot is
             // read, not acted on, so both sides stay open and the simulation weighs the candidates.
+            // "Any number of target players each draw twenty cards" (Jace, Memory Adept's −7): a draw
+            // big enough to empty a library is a mill-out on an opponent as much as card advantage
+            // for whoever can survive it, so the slot reads either way and the simulation weighs
+            // each player's library. A loop over the targets names each one as
+            // `PlayerRef(ContextPlayer(i))`, the player spelling of `ContextTarget(i)`.
             is DrawCardsEffect -> when {
-                leaf.target.isSlot() -> leaf.target to TargetPolarity.BENEFICIAL
+                leaf.target.isSlot() || (leaf.target as? EffectTarget.PlayerRef)?.player is Player.ContextPlayer -> {
+                    val slot = (((leaf.target as? EffectTarget.PlayerRef)?.player as? Player.ContextPlayer)
+                        ?.let { EffectTarget.ContextTarget(it.index) }) ?: leaf.target
+                    val decks = ((leaf.count as? DynamicAmount.Fixed)?.amount ?: 0) >= DECKING_DRAW
+                    slot to if (decks) TargetPolarity.FLEXIBLE else TargetPolarity.BENEFICIAL
+                }
                 else -> ((leaf.count as? DynamicAmount.TurnTracking)?.player as? Player.ContextPlayer)
                     ?.let { EffectTarget.ContextTarget(it.index) to TargetPolarity.FLEXIBLE }
                     ?: return emptyList()
