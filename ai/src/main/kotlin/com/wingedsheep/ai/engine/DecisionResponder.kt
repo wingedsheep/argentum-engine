@@ -980,9 +980,9 @@ class DecisionResponder(
     private fun selectionCountedByName(state: GameState, decision: SelectCardsDecision): Boolean {
         val select = (state.peekContinuation() as? Suspension)?.takeIf { it.question.id == decision.id }
             ?.answer as? SelectFromCollectionContinuation ?: return false
-        return state.continuationStack.any { frame ->
-            frame is EffectProgram && countsByName(frame.root, select.storeSelected)
-        }
+        // The program that owns this suspension is the topmost one below it.
+        val owner = state.continuationStack.lastOrNull { it is EffectProgram } as? EffectProgram ?: return false
+        return countsByName(owner.root, select.storeSelected)
     }
 
     private fun countsByName(effect: com.wingedsheep.sdk.scripting.effects.Effect, key: String): Boolean {
