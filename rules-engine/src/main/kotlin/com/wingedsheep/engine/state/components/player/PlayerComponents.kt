@@ -1240,12 +1240,16 @@ data class FlashGrantsComponent(
  * @property removeOn When this grant lapses.
  * @property expiresForPlayerId For [PlayerEffectRemoval.UntilYourNextTurn], whose "next turn" ends
  *   the grant. Null → the grant's holder (the normal case: "you may cast …").
+ * @property nextSpellOnly A one-shot "the next [filter] spell you cast this turn" grant (Quicken):
+ *   [com.wingedsheep.engine.handlers.actions.spell.CastTriggers] removes it once the holder casts a
+ *   matching spell, whether or not that spell needed flash.
  */
 @Serializable
 data class FlashGrant(
     val filter: GameObjectFilter,
     val removeOn: PlayerEffectRemoval = PlayerEffectRemoval.EndOfTurn,
-    val expiresForPlayerId: EntityId? = null
+    val expiresForPlayerId: EntityId? = null,
+    val nextSpellOnly: Boolean = false
 )
 
 /** Independent casting bans; cleanup removes only entries whose duration has ended. */

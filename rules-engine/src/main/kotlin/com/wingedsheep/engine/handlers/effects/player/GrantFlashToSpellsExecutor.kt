@@ -17,7 +17,8 @@ import kotlin.reflect.KClass
  * Appends a [FlashGrant] to the target's [FlashGrantsComponent] — multiple grants stack
  * additively (a second Borne Upon a Wind the same turn), and each expires on its own duration:
  * `EndOfTurn` at cleanup, `UntilYourNextTurn` after the granting player's next untap step
- * (Teferi, Time Raveler's +1), `Permanent` never.
+ * (Teferi, Time Raveler's +1), `Permanent` never. A `NextUse` grant (Quicken) is one-shot: it also
+ * lapses at end of turn, and the holder's next matching cast spends it (`CastTriggers`).
  *
  * Sibling of [GrantSpellsCantBeCounteredExecutor].
  */
@@ -47,7 +48,10 @@ class GrantFlashToSpellsExecutor : EffectExecutor<GrantFlashToSpellsEffect> {
         val grantingPlayer = context.effectControllerId ?: context.controllerId
         val expiresFor = if (removeOn == PlayerEffectRemoval.UntilYourNextTurn && grantingPlayer != targetId)
             grantingPlayer else null
-        val grant = FlashGrant(effect.spellFilter, removeOn, expiresFor)
+        val grant = FlashGrant(
+            effect.spellFilter, removeOn, expiresFor,
+            nextSpellOnly = effect.duration is Duration.NextUse
+        )
 
         val newState = state.updateEntity(targetId) { container ->
             val existing = container.get<FlashGrantsComponent>()?.grants ?: emptyList()

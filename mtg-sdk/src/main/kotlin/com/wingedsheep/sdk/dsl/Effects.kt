@@ -8271,4 +8271,16 @@ object Effects {
         spellFilter: com.wingedsheep.sdk.scripting.GameObjectFilter = com.wingedsheep.sdk.scripting.GameObjectFilter.Any,
         duration: com.wingedsheep.sdk.scripting.Duration = com.wingedsheep.sdk.scripting.Duration.EndOfTurn
     ): Effect = GrantFlashToSpellsEffect(target, spellFilter, duration)
+
+    /**
+     * "The next [spellFilter] spell you cast this turn can be cast as though it had flash" (Quicken,
+     * Savage Summoning) — a one-shot [GrantFlashToSpellsEffect] (`Duration.NextUse`) spent by the
+     * next matching spell you cast this turn, whether or not that spell needed flash.
+     */
+    fun GrantFlashToNextSpell(
+        spellFilter: com.wingedsheep.sdk.scripting.GameObjectFilter = com.wingedsheep.sdk.scripting.GameObjectFilter.Any
+    ): Effect = GrantFlashToSpellsEffect(
+        spellFilter = spellFilter,
+        duration = com.wingedsheep.sdk.scripting.Duration.NextUse("you cast a ${spellFilter.description} spell")
+    )
 }

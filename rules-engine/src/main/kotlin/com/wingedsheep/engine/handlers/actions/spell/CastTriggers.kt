@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.spell
 
+import com.wingedsheep.engine.state.components.player.FlashGrantsComponent
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
@@ -352,6 +353,7 @@ internal class CastTriggers(
         newState = consumeAffinityRiders(newState, spell)
         newState = consumeKeywordRiders(newState, spell)
         newState = consumeFreeCastRiders(newState, spell)
+        newState = consumeNextSpellFlashGrants(newState, spell)
         newState = consumeResolveDestinationRiders(newState, spell)
         newState = consumeNextSpellCostModifiers(newState, spell)
         return ExecutionResult.success(newState, events + copyEvents)
@@ -494,6 +496,24 @@ internal class CastTriggers(
         }
         if (matching.isEmpty()) return state
         return state.copy(pendingFreeCastSpells = state.pendingFreeCastSpells.filter { it !in matching })
+    }
+
+    /**
+     * One-shot "the next sorcery spell you cast this turn can be cast as though it had flash" grants
+     * (Quicken). Flash was already honoured at cast legality while the grant was live; the first
+     * matching cast spends every matching one-shot grant — even a spell cast at sorcery speed, per
+     * the Quicken ruling — while whole-duration grants (Borne Upon a Wind) are never consumed.
+     */
+    private fun consumeNextSpellFlashGrants(state: GameState, spell: CastSpellOnStack): GameState {
+        val casterId = spell.action.playerId
+        val component = state.getEntity(casterId)?.get<FlashGrantsComponent>() ?: return state
+        val remaining = component.grants.filterNot {
+            it.nextSpellOnly && spellMatchesRider(state, spell, casterId, null, it.filter)
+        }
+        if (remaining.size == component.grants.size) return state
+        return state.updateEntity(casterId) {
+            if (remaining.isEmpty()) it.without<FlashGrantsComponent>() else it.with(FlashGrantsComponent(remaining))
+        }
     }
 
     /**

@@ -326,7 +326,7 @@ class HoldPolicy(
             }
         }
 
-        val window = windowVerdictFor(state, playerId, intent, cast, leaf, cardName)
+        val window = windowVerdictFor(state, playerId, castSpeedIntent(state, playerId, intent, cast), cast, leaf, cardName)
         // A card that accomplishes nothing here is already floored below passing; there is no
         // target trade left to price on top of that.
         if (window is TimingVerdict.NoWindow) return window
@@ -892,6 +892,21 @@ class HoldPolicy(
     }
 
     /** The last window before our own turn — the deadline every "hold it" argument runs out at. */
+    /**
+     * [intent] as fast as the cast in hand actually is. A sorcery-speed card offered outside our own
+     * main phase on an empty stack can only be there through a flash grant — "you may cast spells
+     * this turn as though they had flash" (Borne Upon a Wind), "the next sorcery spell you cast this
+     * turn can be cast as though it had flash" (Quicken) — and is then timed as the instant it is
+     * being cast as: a Divination flashed in at the opponent's end step earns the cantrip's end-step
+     * window rather than tying with passing.
+     */
+    private fun castSpeedIntent(state: GameState, playerId: EntityId, intent: CardIntent, cast: CastSpell?): CardIntent {
+        if (cast == null || intent.speed != Speed.SORCERY) return intent
+        val sorceryTiming = state.activePlayerId == playerId && state.stack.isEmpty() &&
+            (state.step == Step.PRECOMBAT_MAIN || state.step == Step.POSTCOMBAT_MAIN)
+        return if (sorceryTiming) intent else intent.copy(speed = Speed.INSTANT)
+    }
+
     private fun isOpponentEndStep(state: GameState, playerId: EntityId): Boolean =
         state.activePlayerId != playerId && state.step == Step.END
 
