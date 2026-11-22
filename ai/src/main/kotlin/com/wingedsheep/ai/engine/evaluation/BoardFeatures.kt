@@ -28,6 +28,9 @@ import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.CardsInZonesCantBeTargeted
+import com.wingedsheep.sdk.scripting.StaticAbility
+import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -781,6 +784,23 @@ object BoardPresence : BoardFeature {
     /** Board value of one point of P/T an anthem hands to one creature. */
     private const val ANTHEM_VALUE_PER_STAT = 0.25
 
+    /**
+     * Board value of a permanent's lock on targeting *itself* — "this creature can't be the target
+     * of black or red spells your opponents control" (Fiendslayer Paladin): a slice of hexproof that
+     * shuts out some of the opponent's removal, priced like a single colour's
+     * [UntargetableByRules.COLOR_SOURCE_KEYWORDS].
+     */
+    internal const val SELF_TARGET_LOCK_VALUE = 0.3
+
+    /**
+     * Whether [static] is a [CardsInZonesCantBeTargeted] lock over the battlefield that covers only
+     * the permanent holding it ([StatePredicate.IsSource]) — part of that creature's body, like
+     * hexproof, rather than a rule about the board (Tomik's lands, Display of Dominance).
+     */
+    fun isSelfTargetLock(static: StaticAbility): Boolean =
+        static is CardsInZonesCantBeTargeted && Zone.BATTLEFIELD in static.zones &&
+            static.filter.anyOf.isEmpty() && StatePredicate.IsSource in static.filter.statePredicates
+
     /** Board value of one loyalty counter. Only reached with card knowledge on. */
     internal const val LOYALTY_VALUE = 0.8
 
@@ -910,6 +930,7 @@ object BoardPresence : BoardFeature {
         // Everything that is a property of the card's own body — stats, keywords, DEFENDER — is
         // [creatureBodyValue]; everything below is a property of this permanent in this position.
         var value = creatureBodyValue(strikingPower, toughness, keywords, settledPower, settledToughness, statContext)
+        if (projected.getStaticAbilities(entityId).any(::isSelfTargetLock)) value += SELF_TARGET_LOCK_VALUE
 
         if (!projected.cantBlock(entityId)) {
             value += extraBlockingValue(projected.getAdditionalBlockCount(entityId))

@@ -1,0 +1,1 @@
+- #4813 The AI reads a creature's own battlefield targeting lock ("can't be the target of black or red spells your opponents control" — Fiendslayer Paladin) as part of its body, like hexproof, and prices it in play.
