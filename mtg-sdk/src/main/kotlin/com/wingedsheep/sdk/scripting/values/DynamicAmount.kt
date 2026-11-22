@@ -1277,6 +1277,25 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     }
 
     /**
+     * Number of distinct *names* among the cards in the named pipeline collections (the union of
+     * every collection, de-duplicated by card name). Cards are read by entity id, so the value
+     * stays correct after the collection moved zones.
+     *
+     * "If you reveal three cards with different names" (Signal the Clans) is
+     * `Compare(DistinctNamesInCollections(found), GTE, 3)`: fewer than three cards found, or two
+     * sharing a name, both leave the count below three.
+     *
+     * Siblings: [DistinctEntitiesInCollections] de-duplicates by entity id (two copies of one card
+     * count twice) and [DistinctCardTypesInCollections] by card type (one card can count several
+     * times) — neither key is a name, and a card contributes exactly one name.
+     */
+    @SerialName("DistinctNamesInCollections")
+    @Serializable
+    data class DistinctNamesInCollections(val collections: List<String>) : DynamicAmount {
+        override val description: String = "the number of different names among those cards"
+    }
+
+    /**
      * Sum of the mana values of *every* card in a named pipeline collection.
      *
      * Unlike [StoredCardManaValue] (which reads only the first card), this totals the mana value

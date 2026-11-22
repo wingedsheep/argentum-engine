@@ -215,6 +215,7 @@ class DynamicAmountEvaluator(
         is DynamicAmount.CommanderColorIdentityCount,
         is DynamicAmount.DevotionTo,
         is DynamicAmount.DistinctCardTypesInCollections,
+        is DynamicAmount.DistinctNamesInCollections,
         is DynamicAmount.DistinctColorsManaSpent,
         is DynamicAmount.DistinctEntitiesInCollections,
         is DynamicAmount.Fixed,
@@ -552,6 +553,19 @@ class DynamicAmountEvaluator(
                     }
                 }
                 cardTypes.size
+            }
+
+            is DynamicAmount.DistinctNamesInCollections -> {
+                // Same reading as DistinctCardTypesInCollections, keyed by card name instead.
+                val names = mutableSetOf<String>()
+                for (collectionName in amount.collections) {
+                    for (cardId in context.pipeline.storedCollections[collectionName].orEmpty()) {
+                        if (cardId in context.pipeline.storedCollections[com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.UNDEFINED + ":" + collectionName].orEmpty()) continue
+                        val card = state.getEntity(cardId)?.get<CardComponent>() ?: continue
+                        names.add(card.name)
+                    }
+                }
+                names.size
             }
 
             is DynamicAmount.ManaValueSumOfCollection -> {

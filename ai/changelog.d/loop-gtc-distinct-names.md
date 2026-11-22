@@ -1,0 +1,1 @@
+- #TBD A library search whose payoff counts the found cards by different names (Signal the Clans) is answered one card per name, so the AI no longer switches the payoff off with two copies

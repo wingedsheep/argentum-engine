@@ -38,7 +38,8 @@ import kotlinx.serialization.json.encodeToJsonElement
 private val CONTEXT_SCOPED_SERIAL_NAMES: Set<String> = setOf(
     // DynamicAmount
     "XValue", "CastX", "CastChoice", "ContextProperty", "VariableReference", "StoredCardManaValue",
-    "DistinctEntitiesInCollections", "DistinctCardTypesInCollections", "ManaValueSumOfCollection",
+    "DistinctEntitiesInCollections", "DistinctCardTypesInCollections", "DistinctNamesInCollections",
+    "ManaValueSumOfCollection",
     "TotalManaSpent", "ManaSpentOnX", "PermanentsSacrificedThisWay",
     "TotalPowerSacrificedThisWay", "CountersRemovedAsCost", "StationCharge",
     "LastKnownSourceCounters", "LastKnownDamageDealtToSource",
