@@ -1,2 +1,2 @@
-- #TBD Reads "that player reveals until … then puts them into their graveyard" off a combat-damage trigger (Mirko Vosk, Mind Drinker) as milling the damaged opponent, and plays the card as a mill threat
-- #TBD Reads "double the number of each kind of counter on target permanent" (Vorel of the Hull Clade; Zimone, Paradox Sculptor) as understood and as a +1/+1 counter payoff, so deckbuilding pairs them with counter makers
+- #4808 Reads "that player reveals until … then puts them into their graveyard" off a combat-damage trigger (Mirko Vosk, Mind Drinker) as milling the damaged opponent, and plays the card as a mill threat
+- #4808 Reads "double the number of each kind of counter on target permanent" (Vorel of the Hull Clade; Zimone, Paradox Sculptor) as understood and as a +1/+1 counter payoff, so deckbuilding pairs them with counter makers
