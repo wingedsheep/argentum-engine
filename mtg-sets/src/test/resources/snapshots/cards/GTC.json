@@ -568,6 +568,118 @@
     ]
 }
 
+// Borborygmos Enraged
+{
+    "name": "Borborygmos Enraged",
+    "manaCost": "{4}{R}{R}{G}{G}",
+    "typeLine": "Legendary Creature — Cyclops",
+    "oracleText": "Trample\nWhenever Borborygmos Enraged deals combat damage to a player, reveal the top three cards of your library. Put all land cards revealed this way into your hand and the rest into your graveyard.\nDiscard a land card: Borborygmos Enraged deals 3 damage to any target.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 6
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Borborygmos Enraged:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "looked"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "looked",
+                            "filter": "land",
+                            "storeMatching": "kept",
+                            "storeNonMatching": "rest"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Borborygmos Enraged:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomDiscard",
+                        "filter": "land"
+                    }
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "rarity": "MYTHIC",
+        "artist": "Aleksi Briclot",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/8644c60f-7d06-4026-bcf3-df054701ca0a.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Boros Charm
 {
     "name": "Boros Charm",
@@ -696,6 +808,53 @@
     ]
 }
 
+// Burning-Tree Emissary
+{
+    "name": "Burning-Tree Emissary",
+    "manaCost": "{R/G}{R/G}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "When this creature enters, add {R}{G}.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Burning-Tree Emissary:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "RED"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "GREEN"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "216",
+        "rarity": "UNCOMMON",
+        "artist": "Izzy",
+        "flavorText": "Those who regard the Gruul as savage simpletons underestimate the subtle power of their shamans.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/899d5f35-3613-4c69-9176-13baf442fb50.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Burst of Strength
 {
     "name": "Burst of Strength",
@@ -742,6 +901,143 @@
         "imageUri": "https://cards.scryfall.io/normal/front/d/1/d1cbd617-9f2e-4882-b8f0-dfc2fced2281.jpg"
     },
     "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Cartel Aristocrat
+{
+    "name": "Cartel Aristocrat",
+    "manaCost": "{W}{B}",
+    "typeLine": "Creature — Human Advisor",
+    "oracleText": "Sacrifice another creature: This creature gains protection from the color of your choice until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Cartel Aristocrat:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "creature",
+                        "excludeSelf": true
+                    }
+                },
+                "effect": {
+                    "type": "ChooseColorThen",
+                    "then": {
+                        "type": "GrantProtectionFromChosenColor",
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "rarity": "UNCOMMON",
+        "artist": "James Ryman",
+        "flavorText": "\"Your life serves a higher purpose now: ensuring the continuation of my own.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/25bcfbc0-1401-4e5e-8145-c8936c4ff725.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
+// Clan Defiance
+{
+    "name": "Clan Defiance",
+    "manaCost": "{X}{R}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one or more —\n• Clan Defiance deals X damage to target creature with flying.\n• Clan Defiance deals X damage to target creature without flying.\n• Clan Defiance deals X damage to target player or planeswalker.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": "XValue",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature kw:flying"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Clan Defiance deals X damage to target creature with flying."
+                },
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": "XValue",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "NotKeyword",
+                                            "keyword": "FLYING"
+                                        }
+                                    ]
+                                }
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Clan Defiance deals X damage to target creature without flying."
+                },
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": "XValue",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t2"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayerOrPlaneswalker",
+                            "id": "t2"
+                        }
+                    ],
+                    "description": "Clan Defiance deals X damage to target player or planeswalker."
+                }
+            ],
+            "chooseCount": 3,
+            "minChooseCount": 1
+        }
+    },
+    "metadata": {
+        "collectorNumber": "151",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/efa05298-9c94-4179-b75a-49ee2ca92920.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED",
         "GREEN"
     ]
 }
@@ -1277,6 +1573,101 @@
     ]
 }
 
+// Foundry Champion
+{
+    "name": "Foundry Champion",
+    "manaCost": "{4}{R}{W}",
+    "typeLine": "Creature — Elemental Soldier",
+    "oracleText": "When this creature enters, it deals damage to any target equal to the number of creatures you control.\n{R}: This creature gets +1/+0 until end of turn.\n{W}: This creature gets +0/+1 until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Foundry Champion:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Foundry Champion:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Foundry Champion:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{W}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "rarity": "RARE",
+        "artist": "Todd Lockwood",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/84e39703-db78-4d3d-aacd-5396848253ed.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Foundry Street Denizen
 {
     "name": "Foundry Street Denizen",
@@ -1428,6 +1819,47 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Giant Adephage
+{
+    "name": "Giant Adephage",
+    "manaCost": "{5}{G}{G}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "Trample\nWhenever this creature deals combat damage to a player, create a token that's a copy of this creature.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Giant Adephage:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": "CreateTokenCopyOfSource"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "MYTHIC",
+        "artist": "Christine Choi",
+        "flavorText": "\"To a creature like that, we must seem like, well, bugs.\"\n—Dars Gostok, Firefist captain",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8bae725f-e582-4377-a855-51af035cdac3.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -1611,6 +2043,48 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLACK"
+    ]
+}
+
+// Ground Assault
+{
+    "name": "Ground Assault",
+    "manaCost": "{R}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Ground Assault deals damage to target creature equal to the number of lands you control.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land"
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "rarity": "UNCOMMON",
+        "artist": "Karl Kopinski",
+        "flavorText": "\"Taking down a dragon is easy. All you need is enough space to get in a good swing.\"\n—Narbulg Nine Fingers",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a4220348-f030-4639-b1a9-6f61ac6bb6a8.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
     ]
 }
 
@@ -2357,6 +2831,100 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Merciless Eviction
+{
+    "name": "Merciless Eviction",
+    "manaCost": "{4}{W}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Exile all artifacts.\n• Exile all creatures.\n• Exile all enchantments.\n• Exile all planeswalkers.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "artifact"
+                            }
+                        },
+                        "body": {
+                            "type": "MoveToZone",
+                            "target": "IterationEntity",
+                            "destination": "Exile"
+                        }
+                    },
+                    "description": "Exile all artifacts"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        },
+                        "body": {
+                            "type": "MoveToZone",
+                            "target": "IterationEntity",
+                            "destination": "Exile"
+                        }
+                    },
+                    "description": "Exile all creatures"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "enchantment"
+                            }
+                        },
+                        "body": {
+                            "type": "MoveToZone",
+                            "target": "IterationEntity",
+                            "destination": "Exile"
+                        }
+                    },
+                    "description": "Exile all enchantments"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "planeswalker"
+                            }
+                        },
+                        "body": {
+                            "type": "MoveToZone",
+                            "target": "IterationEntity",
+                            "destination": "Exile"
+                        }
+                    },
+                    "description": "Exile all planeswalkers"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "rarity": "RARE",
+        "artist": "Richard Wright",
+        "flavorText": "\"I once saw the Obzedat moved to action. Since that day, I've been thankful that they're mainly lazy, and dead.\"\n—Aurelia, to Gideon Jura",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d9876a4c-714b-47e5-9589-148a623af96a.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 
@@ -3298,6 +3866,54 @@
     ]
 }
 
+// Shadow Alley Denizen
+{
+    "name": "Shadow Alley Denizen",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Vampire Rogue",
+    "oracleText": "Whenever another black creature you control enters, target creature gains intimidate until end of turn. (It can't be blocked except by artifact creatures and/or creatures that share a color with it.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shadow Alley Denizen:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature black ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "INTIMIDATE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "artist": "Cynthia Sheppard",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/985997ae-59bc-49d7-87ca-e63ed9706fdf.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Shattering Blow
 {
     "name": "Shattering Blow",
@@ -3332,6 +3948,131 @@
     "colorIdentityOverride": [
         "WHITE",
         "RED"
+    ]
+}
+
+// Shielded Passage
+{
+    "name": "Shielded Passage",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Prevent all damage that would be dealt to target creature this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "PreventDamageShield",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "artist": "Raymond Swanland",
+        "flavorText": "Izzet delved into the depths of Ravnica's past, and Selesnya followed without fear.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/6546b6c4-73b2-41b3-9ff9-316e9ce916e5.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Simic Charm
+{
+    "name": "Simic Charm",
+    "manaCost": "{G}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Target creature gets +3/+3 until end of turn.\n• Permanents you control gain hexproof until end of turn.\n• Return target creature to its owner's hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Target creature gets +3/+3 until end of turn"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "permanent ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "GrantKeyword",
+                            "keyword": "HEXPROOF",
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "description": "Permanents you control gain hexproof until end of turn"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Hand"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Return target creature to its owner's hand"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "195",
+        "rarity": "UNCOMMON",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"We measure our progress in heartbeats.\"\n—Prime Speaker Zegana",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/97c27bdd-77f5-4e93-8f54-93a204fc980a.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "GREEN"
     ]
 }
 
@@ -3377,6 +4118,168 @@
     "colorIdentityOverride": [
         "BLUE",
         "GREEN"
+    ]
+}
+
+// Smog Elemental
+{
+    "name": "Smog Elemental",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Flying\nCreatures with flying your opponents control get -1/-1.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": -1,
+                "toughnessBonus": -1,
+                "filter": {
+                    "baseFilter": "creature kw:flying ctrl:opponent"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "\"The skies used to be my refuge, a place of peace away from the chaos below. Now, with every flight, death seems to follow me like a shadow.\"\n—Writings of Cica, Skyjek scout",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/667871d3-0d1b-496b-afbd-7504989798e4.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Spark Trooper
+{
+    "name": "Spark Trooper",
+    "manaCost": "{1}{R}{R}{W}",
+    "typeLine": "Creature — Elemental Soldier",
+    "oracleText": "Trample, lifelink, haste\nAt the beginning of the end step, sacrifice this creature.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 1
+    },
+    "keywords": [
+        "TRAMPLE",
+        "LIFELINK",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spark Trooper:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": "SacrificeSelf"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "199",
+        "rarity": "RARE",
+        "artist": "James Ryman",
+        "flavorText": "Izzet-designed conductors atop Sunhome charge empty sets of armor that give form to the fluctuating elementals.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/09eb69b5-b8e2-48c6-8c27-cb0108df8dad.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "RED"
+    ]
+}
+
+// Sunhome Guildmage
+{
+    "name": "Sunhome Guildmage",
+    "manaCost": "{R}{W}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{1}{R}{W}: Creatures you control get +1/+0 until end of turn.\n{2}{R}{W}: Create a 1/1 red and white Soldier creature token with haste.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sunhome Guildmage:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{R}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            },
+            {
+                "id": "Sunhome Guildmage:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{R}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED",
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ],
+                    "keywords": [
+                        "HASTE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/a/8/a8a5a5a5-a8ae-41ed-9af5-b99d80ce0b35.jpg?1783940147"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "UNCOMMON",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/42d1122a-099b-49bf-9b53-52429658816a.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "RED"
     ]
 }
 
@@ -3551,6 +4454,160 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Towering Thunderfist
+{
+    "name": "Towering Thunderfist",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Giant Soldier",
+    "oracleText": "{W}: This creature gains vigilance until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Towering Thunderfist:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{W}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "VIGILANCE",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"Nothing ruins a party like one of those big killjoys bursting through the door and setting all the guests free.\"\n—Ruba, Rakdos cultist",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d68e9280-cb1a-48e1-a91e-217e101f19c5.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "RED"
+    ]
+}
+
+// Truefire Paladin
+{
+    "name": "Truefire Paladin",
+    "manaCost": "{R}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Vigilance\n{R}{W}: This creature gets +2/+0 until end of turn.\n{R}{W}: This creature gains first strike until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Truefire Paladin:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Truefire Paladin:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "202",
+        "rarity": "UNCOMMON",
+        "artist": "Michael C. Hayes",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/39610192-6d3c-4d03-9c3e-cda966c924b1.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
+// Urbis Protector
+{
+    "name": "Urbis Protector",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "When this creature enters, create a 4/4 white Angel creature token with flying.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Urbis Protector:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Angel"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Argyle",
+        "flavorText": "\"I hear that Boros is losing its angels to the Gateless Movement. I'm sure this comes as no surprise to you.\"\n—Teysa, to Lazav",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/acf932ac-5ea5-491b-b555-5e9ea971d93d.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -3731,5 +4788,90 @@
     "colorIdentityOverride": [
         "BLUE",
         "BLACK"
+    ]
+}
+
+// Wildwood Rebirth
+{
+    "name": "Wildwood Rebirth",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Return target creature card from your graveyard to your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Hand"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "In Ravnica, there are maladies far more difficult to treat than death.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/713a93a1-4442-4d5b-ad7a-136b87b5f7ab.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Zarichi Tiger
+{
+    "name": "Zarichi Tiger",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Cat",
+    "oracleText": "{1}{W}, {T}: You gain 2 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Zarichi Tiger:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "artist": "Nic Klein",
+        "flavorText": "\"The taming and consecration of these creatures is evidence of our faith.\"\n—Resimir, Zarichi Temple priest",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7bf5efe4-d9a0-4704-b5ba-3213c946df37.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
