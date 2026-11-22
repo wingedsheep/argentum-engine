@@ -2317,6 +2317,72 @@
     ]
 }
 
+// Quag Sickness
+{
+    "name": "Quag Sickness",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets -1/-1 for each Swamp you control.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land Swamp"
+                    },
+                    "multiplier": -1
+                },
+                "toughnessBonus": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land Swamp"
+                    },
+                    "multiplier": -1
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "artist": "Martina Pilcerova",
+        "flavorText": "The dread gases didn't kill Farbid. But as he lay in the muck, miserable and helpless, watching ghouls and rats advance on him, he wished they had.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/21d56d13-b9de-44db-b235-4f7eea60f424.jpg?1783941812",
+        "rulings": [
+            {
+                "date": "2010-08-15",
+                "text": "This ability counts the number of Swamps controlled by Quag Sickness's controller, not the enchanted creature's controller (in case they're different players)."
+            },
+            {
+                "date": "2010-08-15",
+                "text": "This bonus is not fixed; it changes as the number of Swamps you control changes."
+            },
+            {
+                "date": "2010-08-15",
+                "text": "The ability cares about lands with the land type Swamp, not necessarily lands named Swamp."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Roc Egg
 {
     "name": "Roc Egg",

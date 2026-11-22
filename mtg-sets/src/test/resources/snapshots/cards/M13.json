@@ -1907,6 +1907,65 @@
     "colorIdentityOverride": []
 }
 
+// Vile Rebirth
+{
+    "name": "Vile Rebirth",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target creature card from a graveyard. Create a 2/2 black Zombie creature token.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "artist": "Erica Yang",
+        "flavorText": "\"'Here lies our beloved Gartu, the gentlest of all men.' Ooh, I love irony.\"\n—Jadar, ghoulcaller of Nephalia",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/965b5a48-d0ff-47ce-b44e-a1611fab1876.jpg?1783940489",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "If the creature card is an illegal target when Vile Rebirth tries to resolve, it won't resolve and none of its effects will happen. You won't put a Zombie token onto the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Watercourser
 {
     "name": "Watercourser",

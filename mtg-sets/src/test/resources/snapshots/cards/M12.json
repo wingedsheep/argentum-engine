@@ -366,6 +366,92 @@
     "colorIdentityOverride": []
 }
 
+// Chandra's Phoenix
+{
+    "name": "Chandra's Phoenix",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Creature — Phoenix",
+    "oracleText": "Flying\nHaste (This creature can attack and {T} as soon as it comes under your control.)\nWhenever an opponent is dealt damage by a red instant or sorcery spell you control or by a red planeswalker you control, return this card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Chandra's Phoenix:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "EachOpponent"
+                    },
+                    "sourceFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "And",
+                                        "predicates": [
+                                            {
+                                                "type": "Or",
+                                                "predicates": [
+                                                    "IsInstant",
+                                                    "IsSorcery"
+                                                ]
+                                            },
+                                            {
+                                                "type": "HasColor",
+                                                "color": "RED"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "And",
+                                        "predicates": [
+                                            "IsPlaneswalker",
+                                            {
+                                                "type": "HasColor",
+                                                "color": "RED"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand",
+                    "fromZone": "Graveyard"
+                },
+                "activeZones": [
+                    "Graveyard"
+                ],
+                "descriptionOverride": "Whenever an opponent is dealt damage by a red instant or sorcery spell you control or by a red planeswalker you control, return this card from your graveyard to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "rarity": "RARE",
+        "artist": "Aleksi Briclot",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e8371c83-d7c5-4432-8511-cb3c1dc7d59f.jpg?1783941073"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Circle of Flame
 {
     "name": "Circle of Flame",
