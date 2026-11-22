@@ -1,0 +1,1 @@
+- #TBD Reads a cast ban riding on a counterspell ("its controller can't cast spells this turn", Render Silent) as timed by the counter, so it is spent as a counterspell.
