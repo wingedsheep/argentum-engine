@@ -2216,6 +2216,7 @@ Boosted Sloop
 Boot Nipper
 Bootleggers' Stash
 Boots of Speed
+Borborygmos Enraged
 Borborygmos and Fblthp
 Border Guard
 Border Patrol
@@ -2572,6 +2573,7 @@ Burning Wish
 Burning of Xinye
 Burning-Fist Minotaur
 Burning-Rune Demon
+Burning-Tree Emissary
 Burning-Tree Vandal
 Burning-Yard Trainer
 Burnished Hart
@@ -2818,6 +2820,7 @@ Carrion Locust
 Carrion Screecher
 Carrion Wall
 Carrot Cake
+Cartel Aristocrat
 Carth the Lion
 Cartographer
 Cartographer's Companion
@@ -3296,6 +3299,7 @@ Claim the Precious
 Clammy Prowler
 Clamor Shaman
 Clamorous Ironclad
+Clan Defiance
 Clan Guildmage
 Clandestine Meddler	intent: SuspectEffect; polarity: SuspectEffect
 Clarion Cathars
@@ -7061,6 +7065,7 @@ Found Footage
 Foundation Breaker
 Founding the Third Path
 Foundry Assembler
+Foundry Champion
 Foundry Hornet
 Foundry Inspector
 Foundry Screecher
@@ -7538,6 +7543,7 @@ Ghoulsteed
 Ghoultree
 Ghyrson Starn, Kelermorph
 Giada, Font of Hope
+Giant Adephage
 Giant Beaver
 Giant Caterpillar
 Giant Cindermaw
@@ -8297,6 +8303,7 @@ Grotag Night-Runner
 Grotesque Demise
 Grotesque Mutation
 Grothama, All-Devouring	intent: EachPlayerDrawsForDamageDealtToSourceEffect
+Ground Assault
 Ground Rift
 Groundbreaker
 Groundchuck & Dirtbag
@@ -11852,6 +11859,7 @@ Merchant of the Vale
 Merchant's Dockhand
 Merciless Enforcers
 Merciless Eternal
+Merciless Eviction
 Merciless Executioner
 Merciless Javelineer
 Merciless Repurposing
@@ -16695,6 +16703,7 @@ Shackles of Treachery	polarity: mixed(GainControlEffect+GrantKeywordEffect+Grant
 Shade of Trokair
 Shade's Breath	timing: ChangeGroupColorEffect; timing: SetGroupCreatureSubtypesEffect
 Shadewing Laureate
+Shadow Alley Denizen
 Shadow Glider
 Shadow Prophecy
 Shadow Sliver
@@ -16848,6 +16857,7 @@ Shield of the Avatar
 Shield of the Realm
 Shield-Wall Sentinel
 Shielded Aether Thief
+Shielded Passage
 Shieldhide Dragon
 Shieldmage Elder
 Shieldmate's Blessing
@@ -17134,6 +17144,7 @@ Simian Simulacrum
 Simian Sling	intent: UnattachEquipmentEffect
 Simian Spirit Guide
 Simic Ascendancy
+Simic Charm
 Simic Cluestone
 Simic Growth Chamber
 Simic Guildgate
@@ -17461,6 +17472,7 @@ Smite the Deathless
 Smite the Monstrous
 Smiting Helix
 Smitten Swordmaster
+Smog Elemental
 Smoke
 Smoke Shroud
 Smoke Teller	intent: LookAtFaceDownEffect; polarity: LookAtFaceDownEffect
@@ -17707,6 +17719,7 @@ Spark Jolt
 Spark Reaper
 Spark Rupture
 Spark Spray
+Spark Trooper
 Spark of Creativity
 Sparkhunter Masticore
 Sparkmage Apprentice
@@ -18578,6 +18591,7 @@ Sungrace Pegasus
 Sungrass Egg
 Sungrass Prairie
 Sunhome Enforcer
+Sunhome Guildmage
 Sunhome Stalwart
 Sunhome, Fortress of the Legion
 Sunken Citadel
@@ -20034,6 +20048,7 @@ Tower of Murmurs
 Towering Baloth
 Towering Gibbon
 Towering Indrik
+Towering Thunderfist
 Towering-Wave Mystic
 Town Gossipmonger
 Town Greeter
@@ -20261,6 +20276,7 @@ True Love's Kiss
 True Polymorph
 True-Faith Censer
 Truefire Captain
+Truefire Paladin
 Trueheart Duelist
 Trueheart Twins
 Trufflesnout
@@ -20661,6 +20677,7 @@ Urabrask's Forge
 Urabrask, Heretic Praetor	intent: ReplaceNextDrawWithEffect
 Urban Retreat
 Urban Utopia
+Urbis Protector
 Urborg	polarity: RemoveKeywordEffect
 Urborg Drake
 Urborg Emissary
@@ -21812,6 +21829,7 @@ Wildvine Pummeler
 Wildwood Escort
 Wildwood Mentor
 Wildwood Patrol
+Wildwood Rebirth
 Wildwood Scourge
 Wildwood Tracker
 Wilhelt, the Rotcleaver
@@ -22251,6 +22269,7 @@ Zanarkand, Ancient Metropolis
 Zap
 Zar Ojanen, Scion of Efrava
 Zareth San, the Trickster	intent: Pipeline(Entity→battlefield)
+Zarichi Tiger
 Zariel, Archduke of Avernus	intent: CreateGlobalTriggeredAbilityEffect
 Zask, Skittering Swarmlord
 Zealot of the God-Pharaoh
