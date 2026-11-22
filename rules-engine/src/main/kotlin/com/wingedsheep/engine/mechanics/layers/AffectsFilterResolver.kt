@@ -864,6 +864,8 @@ internal class AffectsFilterResolver(
         // resolve that "you", so this predicate is only meaningful in target/condition contexts via
         // PredicateEvaluator (where the controllerId is supplied). Never match in projection.
         is StatePredicate.AttachedTo -> false
+        // Its inverse ("with <filter> attached") nests a filter the same way — same reasoning.
+        is StatePredicate.HasAttached -> false
         // "whose controller <condition>" needs a condition evaluated for the candidate's
         // controller, which the group-static projection pass cannot do here.
         // Only meaningful in target/condition contexts via PredicateEvaluator.

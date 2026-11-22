@@ -1,0 +1,1 @@
+- #TBD Reads an Aura that destroys the creature its enchanted Equipment is attached to (Artificer's Hex) as a curse on that Equipment's side and as spot removal, so it is aimed at an opponent's Equipment, never our own.

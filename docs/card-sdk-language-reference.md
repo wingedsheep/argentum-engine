@@ -8642,6 +8642,18 @@ work for abilities-on-stack (which carry no `CardComponent`).
   through its recursive predicate walk, so an `attachedTo(...)` reached mid-projection resolves the host's
   control against the base `ControllerComponent` (empty-fallback projection) instead of re-entering the
   lazy `GameState.projectedState` and recursing to a `StackOverflowError`.
+- `HasAttached(filter)` (filter builder `hasAttached(attachmentFilter)`) — the **inverse** of
+  `AttachedTo`: the candidate is the *host*, and the nested `GameObjectFilter` is evaluated against each
+  Aura/Equipment/Fortification in its `AttachmentsComponent`; true when any one matches. `IsEquipped` /
+  `IsEnchanted` are its fixed-filter special cases — reach for this one when the attachment needs a
+  constraint they can't spell. Nesting `attachedToBySource()` inside it walks **two attachments** from
+  the source — "the permanent that the permanent this Aura enchants is attached to":
+  **Artificer's Hex** ("Enchant Equipment. At the beginning of your upkeep, if enchanted Equipment is
+  attached to a creature, destroy that creature") is `interveningIf =
+  Conditions.AnyPlayerControls(Creature.hasAttached(Any.attachedToBySource()))` +
+  `Effects.DestroyAll(` the same filter `)`. Controller predicates in the nested filter read the
+  evaluation context's controller. Like `AttachedTo`, it never matches in group-static projection — use
+  it in target, condition and group-effect contexts.
 - `ExiledWithSource` (filter builder `exiledWithSource()`) — source-relative: the candidate card is
   one the effect's source permanent exiled, i.e. its id is recorded in the source's
   `LinkedExileComponent` (the same linkage set by `RedirectZoneChange(linkToSource = true)`,

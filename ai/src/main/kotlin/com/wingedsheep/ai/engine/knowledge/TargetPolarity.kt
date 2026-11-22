@@ -2678,6 +2678,7 @@ object TargetPolarityAnalyzer {
             // the host is the player, named by the leaves that act on them.
             readings += EffectWalker.payoffLeaves(effect).mapNotNull(::enchantedPlayerLeafPolarity)
             readings += hostControllerHarms(effect)
+            readings += hostCarrierHarms(effect)
         }
         // A replacement effect on an Aura (Sandskin's "prevent all combat damage dealt to and by
         // enchanted creature") is read nowhere above, and is often the whole card. Without it the
@@ -2986,6 +2987,38 @@ object TargetPolarityAnalyzer {
             }
         }
     }
+
+    /**
+     * Whether [filter] names the permanent the source's own host is attached to —
+     * `hasAttached(attachedToBySource())`, "the creature enchanted Equipment is attached to"
+     * (Artificer's Hex). At most one permanent ever matches.
+     */
+    internal fun carriesSourceHost(filter: GameObjectFilter): Boolean =
+        filter.statePredicates.any {
+            it is StatePredicate.HasAttached && StatePredicate.IsAttachedToBySource in it.filter.statePredicates
+        }
+
+    /**
+     * "If enchanted Equipment is attached to a creature, destroy that creature" (Artificer's Hex):
+     * a pipeline gathers the permanent carrying the host ([carriesSourceHost]) and moves it off the
+     * battlefield — destroyed, exiled, bounced or tucked. Whoever controls the host loses the
+     * creature wearing it, so each such move is a harm to the host's slot.
+     */
+    private fun hostCarrierHarms(effect: Effect): List<TargetPolarity> {
+        val leaves = EffectWalker.leaves(effect)
+        val carrierKeys = leaves.filterIsInstance<GatherCardsEffect>()
+            .filter { gather -> (gather.source as? CardSource.BattlefieldMatching)?.filter?.let(::carriesSourceHost) == true }
+            .mapTo(HashSet()) { it.storeAs }
+        if (carrierKeys.isEmpty()) return emptyList()
+        return leaves.filterIsInstance<MoveCollectionEffect>()
+            .filter { move ->
+                move.from in carrierKeys &&
+                    (move.destination as? CardDestination.ToZone)?.zone in CARRIER_REMOVAL_ZONES
+            }
+            .map { TargetPolarity.HARMFUL }
+    }
+
+    private val CARRIER_REMOVAL_ZONES = setOf(Zone.GRAVEYARD, Zone.EXILE, Zone.HAND, Zone.LIBRARY)
 
     /**
      * What an attachment's "whenever enchanted creature deals / is dealt damage" trigger does to

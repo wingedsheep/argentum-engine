@@ -1321,6 +1321,7 @@ StatePredicate.DealtDamageToSourceControllerThisTurn — StatePredicate
 StatePredicate.EnteredThisTurn — StatePredicate
 StatePredicate.ExiledWithSource — StatePredicate
 StatePredicate.HasAnyCounter — StatePredicate
+StatePredicate.HasAttached — StatePredicate
 StatePredicate.HasCounter — StatePredicate
 StatePredicate.HasDealtDamage — StatePredicate
 StatePredicate.HasDisguiseAbility — StatePredicate

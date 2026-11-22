@@ -2187,6 +2187,13 @@ object CardIntentAnalyzer {
                 is CardSource.FromMultipleZones -> if (Zone.BATTLEFIELD in source.zones) source.player to source.filter else continue
                 else -> continue
             }
+            // "Destroy the creature enchanted Equipment is attached to" (Artificer's Hex): a filter
+            // reaching through the source's own host names one permanent at most — spot removal
+            // aimed by where the Aura was cast, never a whole group.
+            if (TargetPolarityAnalyzer.carriesSourceHost(filter)) {
+                groups[leaf.storeAs] = groups[leaf.storeAs] ?: false
+                continue
+            }
             val ownOnly = player == Player.You || filter.controllerPredicate == ControllerPredicate.ControlledByYou
             if (ownOnly && eachPlayer == null) continue
             // "Exile those tokens when Mysterio leaves the battlefield", Tetravus taking its
