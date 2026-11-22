@@ -1262,6 +1262,7 @@ Awakened Awareness	polarity: Aura>AddDynamicCountersEffect; polarity: Aura>Condi
 Awakening Zone
 Awakening of Vitu-Ghazi
 Awe Strike
+Awe for the Guilds
 Axebane Beast
 Axebane Ferox
 Axebane Stag
@@ -1825,6 +1826,7 @@ Blanchwood Treefolk
 Blasphemous Act
 Blasphemous Edict
 Blast Zone
+Blast of Genius
 Blasted Landscape
 Blaster Mage
 Blastfire Bolt
@@ -1958,6 +1960,7 @@ Blood Petal Celebrant
 Blood Price
 Blood Researcher
 Blood Rites
+Blood Scrivener
 Blood Seeker
 Blood Servitor
 Blood Spatter Analysis
@@ -3968,6 +3971,7 @@ Crypt Angel
 Crypt Creeper
 Crypt Feaster
 Crypt Ghast
+Crypt Incursion
 Crypt Lurker
 Crypt Rats
 Crypt Ripper
@@ -4334,6 +4338,7 @@ Dead Revels
 Dead Weight
 Dead-Iron Sledge
 Deadapult
+Deadbridge Chant
 Deadbridge Goliath
 Deadbridge Shaman
 Deadeye Brawler
@@ -4419,6 +4424,7 @@ Deathsprout
 Debilitating Injury
 Debris Beetle
 Debris Field Crusher
+Debt to the Deathless
 Debt to the Kami
 Debtors' Transport
 Decadent Dragon
@@ -5248,6 +5254,7 @@ Drossforge Bridge
 Drove of Elves
 Drover Grizzly
 Drover of the Mighty
+Drown in Filth
 Drown in Ichor
 Drown in Sorrow
 Drown in the Loch
@@ -7335,6 +7342,7 @@ Gavony Silversmith
 Gavony Township
 Gavony Trapper
 Gavony Unhallowed
+Gaze of Granite
 Gaze of Justice
 Gaze of the Gorgon
 Gearbane Orangutan
@@ -8802,6 +8810,7 @@ Hidden Necropolis
 Hidden Nursery
 Hidden Path
 Hidden Stockpile
+Hidden Strings
 Hidden Volcano
 Hide in Plain Sight
 Hide on the Ceiling
@@ -11261,6 +11270,7 @@ Luxurious Libation
 Luxurious Locomotive
 Luxury Suite
 Lwaxana Troi, Charming Guest	intent: GrantStaticAbilityEffect
+Lyev Decree
 Lynx
 Lyra Dawnbringer
 Lyra, Archangel of Dawn
@@ -14353,6 +14363,7 @@ Pumpkin Bombardment
 Pumpkin Bombs
 Puncturing Blow
 Puncturing Light
+Punish the Enemy
 Punishing Punch
 Punk Frogs
 Puppet Crafting
@@ -15067,6 +15078,7 @@ Renata, Called to the Hunt
 Rend Flesh
 Rend Spirit
 Render Inert
+Render Silent
 Render Speechless
 Rending Flame
 Rending Volley
@@ -15183,6 +15195,7 @@ Restoration Magic
 Restoration Seminar
 Restoration Specialist
 Restorative Technique
+Restore the Peace
 Restore with Empathy
 Restrain
 Restricted Office // Lecture Hall
@@ -20362,6 +20375,7 @@ Uncontrollable Anger
 Uncontrolled Infestation
 Unconventional Tactics
 Uncover the Moon-Letters
+Uncovered Clues
 Unctus's Retrofitter
 Unctus, Grand Metatect	intent: AddCardTypeEffect; intent: AddColorEffect; polarity: AddCardTypeEffect; polarity: AddColorEffect
 Undead Augur
@@ -21349,6 +21363,7 @@ Warp Speed
 Warp World
 Warpath Ghoul
 Warped Landscape
+Warped Physique
 Warped Researcher
 Warped Tusker
 Warping Wail
