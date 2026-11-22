@@ -1255,6 +1255,7 @@ Aviation Pioneer
 Avid Reclaimer
 Avishkar Raceway
 Avoid Fate
+Awaken the Ancient
 Awaken the Bear
 Awaken the Erstwhile
 Awaken the Honored Dead
@@ -2554,6 +2555,7 @@ Burner Rocket
 Burning Anger
 Burning Cloak	polarity: mixed(DealDamageEffect+ModifyStatsEffect)
 Burning Curiosity
+Burning Earth
 Burning Fields
 Burning Hands
 Burning Prophet
@@ -3046,6 +3048,7 @@ Chandra's Ignition
 Chandra's Incinerator
 Chandra's Magmutt
 Chandra's Outrage
+Chandra's Phoenix
 Chandra's Pyreling
 Chandra's Pyrohelix
 Chandra's Regulator
@@ -4117,6 +4120,7 @@ Cyclopean Snare
 Cyclopean Tomb	intent: ForEach>RecordSourceObjectsEffect; intent: Pipeline(ChosenTargets→?); intent: Pipeline(SourceLinkedBattlefield→?); intent: RecordSourceObjectsEffect; intent: SetLandTypeEffect; polarity: SetLandTypeEffect
 Cyclops Electromancer
 Cyclops Superconductor
+Cyclops Tyrant
 Cyclops of Eternal Fury
 Cyclops of One-Eyed Pass
 Cylian Elf
@@ -7843,6 +7847,7 @@ Goblin Cratermaker
 Goblin Dark-Dwellers
 Goblin Deathraiders
 Goblin Digging Team
+Goblin Diplomats
 Goblin Dirigible
 Goblin Dynamo
 Goblin Electromancer
@@ -8340,6 +8345,7 @@ Guardian of Pilgrims
 Guardian of Solitude
 Guardian of Tazeem
 Guardian of Vitu-Ghazi
+Guardian of the Ages
 Guardian of the Forgotten
 Guardian of the Great Conduit
 Guardian of the Great Door
@@ -11537,6 +11543,7 @@ Marauding Dreadship
 Marauding Knight
 Marauding Looter
 Marauding Mako
+Marauding Maulhorn
 Marauding Raptor
 Marauding Sphinx
 Marble Chalice
@@ -12230,6 +12237,7 @@ Mole Man, Moloid Master
 Molecular Modifier
 Molimo, Maro-Sorcerer
 Molt Tender
+Molten Birth
 Molten Blast
 Molten Collapse
 Molten Duplication
@@ -14466,6 +14474,7 @@ Pyroclastic Elemental
 Pyroclastic Hellion
 Pyroconvergence
 Pyromancer's Assault
+Pyromancer's Gauntlet
 Pyromancer's Goggles
 Pyromania
 Pyrophobia
@@ -14488,6 +14497,7 @@ Qasali Slingers
 Qiqirn Merchant
 Qo'noS
 Quag Feast
+Quag Sickness
 Quagmire
 Quagmire Druid
 Quake, Agent of S.H.I.E.L.D.
@@ -16480,6 +16490,7 @@ Seismic Sense
 Seismic Shift
 Seismic Shudder
 Seismic Spike
+Seismic Stomp
 Seismic Strike
 Seismic Wave
 Seizan, Perverter of Truth
@@ -16667,6 +16678,7 @@ Shadow-Rite Priest
 Shadowbeast Sighting
 Shadowblood Egg
 Shadowblood Ridge
+Shadowborn Apostle
 Shadowborn Demon
 Shadowcloak Vampire
 Shadowed Caravel
@@ -19103,6 +19115,7 @@ Temur Runemark
 Temur Sabertooth
 Temur Tawnyback
 Temur War Shaman
+Tenacious Dead
 Tenacious Drone
 Tenacious Hunter
 Tenacious Tomeseeker
@@ -19549,6 +19562,7 @@ Thorn of Amethyst
 Thorn-Thrash Viashino
 Thornado
 Thornbow Archer
+Thorncaster Sliver
 Thorned Moloch
 Thornfist Striker
 Thornglint Bridge
@@ -20973,6 +20987,7 @@ Vile Deacon
 Vile Entomber
 Vile Manifestation
 Vile Mutilator
+Vile Rebirth
 Vile Redeemer
 Vilespawn Spider
 Vilis, Broker of Blood
