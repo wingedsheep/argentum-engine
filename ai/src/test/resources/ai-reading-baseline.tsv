@@ -5004,6 +5004,7 @@ Doomskar Oracle
 Doomskar Titan
 Doomskar Warrior	polarity: GrantTriggeredAbilityEffect
 Doomwake Giant
+Door of Destinies
 Doorkeeper Thrull
 Doors of Durin
 Doppelgang
@@ -5649,6 +5650,7 @@ Elite Skirmisher
 Elite Spellbinder	intent: ExileAndGrantOwnerPlayPermissionEffect; intent: LookAtTargetHandEffect; intent: Pipeline(hand→?)
 Elite Vanguard
 Elixir
+Elixir of Immortality
 Elixir of Vitality
 Ellywick Tumblestrum
 Elrond, Lord of Rivendell	intent: IncrementAbilityResolutionCountEffect
@@ -12503,6 +12505,7 @@ Mutant Town
 Mutant Town Musicians
 Mutant's Prey
 Mutational Advantage	timing: ForEach>GrantKeywordEffect
+Mutavault
 Mutinous Massacre
 Mutiny
 Mutual Destruction
@@ -14824,6 +14827,7 @@ Rat King, Verminister	polarity: ReturnSameNamedFromGraveyardEffect
 Rat Out
 Ratadrabik of Urborg
 Ratcatcher Trainee
+Ratchet Bomb
 Rath's Edge
 Rathi Assassin
 Rathi Dragon
@@ -18366,6 +18370,7 @@ Strider, Ranger of the North
 Strife Scholar
 Strike It Rich
 Striking Sliver
+Strionic Resonator
 Strip Mine
 Striped Riverwinder
 Strix Lookout
