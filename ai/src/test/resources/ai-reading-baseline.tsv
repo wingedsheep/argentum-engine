@@ -2219,7 +2219,7 @@ Boreal Outrider
 Borg Cube
 Boris Devilboon
 Born to Drive
-Borne Upon a Wind	timing: GrantFlashToSpellsEffect
+Borne Upon a Wind
 Boromir, Warden of the Tower
 Boros Battleshaper
 Boros Challenger
@@ -3560,7 +3560,7 @@ Compelling Deterrence
 Compleat Devotion
 Compleated Huntmaster
 Complete Disregard
-Complete the Circuit	timing: GrantFlashToSpellsEffect
+Complete the Circuit
 Complicate
 Component Collector
 Composite Golem
@@ -5740,7 +5740,7 @@ Embrace the Paradox
 Emerald Dragonfly
 Emerald Medallion
 Emerge from the Cocoon
-Emergence Zone	intent: GrantFlashToSpellsEffect; timing: GrantFlashToSpellsEffect
+Emergence Zone	intent: GrantFlashToSpellsEffect
 Emergency Eject
 Emergency Holographic Crew
 Emergency Medical Hologram
@@ -14509,6 +14509,7 @@ Quick-Draw Dagger
 Quick-Draw Katana
 Quickbeam, Upstart Ent
 Quickchange	polarity: ChangeColorToChosenEffect
+Quicken
 Quickling
 Quicksand
 Quicksand Whirlpool
