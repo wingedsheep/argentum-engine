@@ -30,6 +30,7 @@ export const DECK_FORMATS: ReadonlyArray<{ value: string; label: string }> = [
   { value: 'premodern', label: 'Premodern' },
   { value: 'highlander', label: 'Highlander' },
   { value: 'canadian_highlander', label: 'Canadian Highlander' },
+  { value: 'primordial', label: 'Primordial' },
 ]
 
 /**
@@ -43,11 +44,21 @@ const SINGLETON_FORMATS: ReadonlySet<string> = new Set([
 
 /**
  * Size of the deck the server auto-builds for a non-commander format: the Highlander formats'
- * 100-card singleton, otherwise constructed's 60.
+ * 100-card singleton, Primordial's 40 from one set, otherwise constructed's 60.
  */
 export function autoBuiltDeckSize(formatUpper: string | null): number {
   const f = formatUpper?.toUpperCase()
+  if (f === 'PRIMORDIAL') return 40
   return f === 'HIGHLANDER' || f === 'CANADIAN_HIGHLANDER' ? 100 : 60
+}
+
+/**
+ * Primordial: decks come from one block or standalone set with a rarity budget, so copy caps
+ * follow rarity and the deckbuilder narrows its catalog to the deck's set. The server decides
+ * the set and every rule; this only switches the deckbuilder's presentation.
+ */
+export function isPrimordialFormat(formatUpper: string | null): boolean {
+  return formatUpper?.toUpperCase() === 'PRIMORDIAL'
 }
 
 export function isSingletonFormat(formatUpper: string | null): boolean {

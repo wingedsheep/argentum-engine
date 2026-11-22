@@ -9,6 +9,7 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.registry.PrintingRegistry
 import com.wingedsheep.engine.registry.TokenArtRegistry
 import com.wingedsheep.gameserver.coverage.SetCoverageService
+import com.wingedsheep.gameserver.deck.PrimordialCardPool
 import com.wingedsheep.mtg.sets.tokens.TokenArtData
 import com.wingedsheep.mtg.sets.MtgSetCatalog
 import com.wingedsheep.mtg.sets.basicLandsFallback
@@ -85,6 +86,10 @@ class GameBeansConfig(
             register(set.printings)
         }
     }
+
+    /** Primordial's per-pool printing index, shared by the deck validator and the card catalog. */
+    @Bean
+    fun primordialCardPool(printingRegistry: PrintingRegistry): PrimordialCardPool = PrimordialCardPool(printingRegistry)
 
     /**
      * Per-set token art. A token has no `CardDefinition` and no `Printing` row, so this is the

@@ -365,11 +365,11 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     section: 'modes',
     title: 'Cards: Bring a deck',
     summary:
-      'Play a deck you built or pasted. Optionally restrict everyone to a constructed format — Standard, Pioneer, Modern, Pauper, Legacy, Vintage, Commander, Brawl, Standard Brawl, Premodern, Highlander or Canadian Highlander.',
+      'Play a deck you built or pasted. Optionally restrict everyone to a constructed format — Standard, Pioneer, Modern, Pauper, Legacy, Vintage, Commander, Brawl, Standard Brawl, Premodern, Highlander, Canadian Highlander or Primordial.',
     body: [
       { kind: 'p', text: '“No restriction” lets any legal-in-the-engine card in. The restriction is checked when a deck is submitted, not when it is built.' },
     ],
-    related: ['deckbuilder', 'highlander'],
+    related: ['deckbuilder', 'highlander', 'primordial'],
   },
   {
     id: 'highlander',
@@ -395,6 +395,33 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     ],
     related: ['cards-bring-a-deck', 'deck-legality', 'matchmaking'],
     links: [{ label: 'Canadian Highlander points list', href: 'https://www.canadianhighlander.ca/points-list/' }],
+  },
+  {
+    id: 'primordial',
+    section: 'modes',
+    title: 'Primordial',
+    summary:
+      'A set-based constructed format: 40-card decks from a single block or standalone set, with exactly two rares or mythics and exactly six uncommons. 1v1 at 20 life.',
+    body: [
+      { kind: 'p', text: 'Primordial is a deck-legality choice, like Highlander: pick it as the format in the deckbuilder, as the restriction under Cards → Bring a deck, or as the Constructed format in matchmaking. The game plays like any 1v1 constructed game.' },
+      {
+        kind: 'table',
+        head: ['', 'Rule'],
+        rows: [
+          ['Deck size', 'At least 40'],
+          ['Card pool', 'One block (Zendikar block: Zendikar, Worldwake, Rise of the Eldrazi) or one standalone set (Bloomburrow, Magic 2012, Alpha…), plus Plains, Island, Swamp, Mountain and Forest'],
+          ['Rares and mythics', 'Exactly 2, one of each'],
+          ['Uncommons', 'Exactly 6, at most two of each'],
+          ['Commons', 'Any number, at most four of each'],
+          ['Sideboard', 'Up to 10 cards from the same block or set; the copy limits count deck and sideboard together, the 2 and 6 only the deck'],
+        ],
+      },
+      { kind: 'p', text: 'You never pick the set yourself — your cards do. Add your first card and the deckbuilder works out which block or set it belongs to, narrows the catalogue to it (the “◆ only” chip next to the search bar turns that off), and shows two budgets beside the card count: rares and mythics, uncommons. Rare and uncommon rows in the deck list carry an R or U tag, and the + button stops at each rarity’s copy limit.' },
+      { kind: 'p', text: 'A card’s rarity is its lowest printing in the chosen block or set, so a card that is uncommon in one set of a block and common in another counts as a common. A reprint can fit several sets at once; the deck stays open between them until a card only one of them prints settles it.' },
+      { kind: 'tip', text: 'Some blocks are only partly implemented yet. A set’s cards join its Primordial pool as they are added — the Set Completion view shows how far each one is.' },
+    ],
+    related: ['cards-bring-a-deck', 'deck-legality', 'matchmaking', 'set-completion'],
+    links: [{ label: 'Primordial rules', href: 'https://primordialformat.com/rules' }],
   },
   {
     id: 'cards-random',
@@ -1570,13 +1597,13 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     section: 'decks',
     title: 'Formats and deck legality',
     summary:
-      'The deckbuilder’s format dropdown — Standard, Pioneer, Modern, Pauper, Legacy, Vintage, Commander, Brawl, Standard Brawl, Premodern, Highlander or Canadian Highlander — filters the catalogue to legal cards and checks the deck as you build: “Legal ✓” or “N issues”.',
+      'The deckbuilder’s format dropdown — Standard, Pioneer, Modern, Pauper, Legacy, Vintage, Commander, Brawl, Standard Brawl, Premodern, Highlander, Canadian Highlander or Primordial — filters the catalogue to legal cards and checks the deck as you build: “Legal ✓” or “N issues”.',
     body: [
       { kind: 'p', text: 'Hover the issue count for the list. Individual rows are flagged too: not legal in the format, too many copies, singleton violations, cards outside the commander’s colour identity.' },
       { kind: 'p', text: 'A lobby can restrict everyone to a format, in which case the deck is checked again when you submit it. “No format” lets in anything the engine implements.' },
       { kind: 'p', text: 'A card that imported but is not implemented yet is kept as a placeholder and marked; it cannot be played until it is.' },
     ],
-    related: ['deckbuilder', 'cards-bring-a-deck', 'set-completion', 'highlander'],
+    related: ['deckbuilder', 'cards-bring-a-deck', 'set-completion', 'highlander', 'primordial'],
   },
   {
     id: 'commander-decks',

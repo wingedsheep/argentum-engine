@@ -1606,6 +1606,44 @@
   vertical-align: middle;
 }
 
+/* Primordial: the row spends a rare or uncommon slot of the deck's budget. */
+.deckRowRareTag,
+.deckRowUncommonTag {
+  margin-left: 6px;
+  padding: 0 5px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  border-radius: 999px;
+  vertical-align: middle;
+  border: 1px solid;
+}
+
+.deckRowRareTag {
+  color: #e8c15a;
+  background: rgba(232, 193, 90, 0.12);
+  border-color: rgba(232, 193, 90, 0.4);
+}
+
+.deckRowUncommonTag {
+  color: #c4ccd6;
+  background: rgba(196, 204, 214, 0.1);
+  border-color: rgba(196, 204, 214, 0.35);
+}
+
+.footerPrimordial {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.footerPrimordialPool {
+  font-weight: 600;
+  color: var(--text-primary, inherit);
+  margin-right: 4px;
+}
+
 .deckRowPointsTag {
   margin-left: 6px;
   padding: 1px 6px;

@@ -19,6 +19,28 @@ export interface DeckPoints {
   byCard: Record<string, number>
 }
 
+/**
+ * Where a Primordial deck stands (server-computed): the block or set its cards come from and how
+ * much of the 2-rare / 6-uncommon budget it spends.
+ */
+export interface PrimordialSummary {
+  /** The inferred block or set; null while the deck holds only basics. */
+  pool: string | null
+  setCodes: string[]
+  /** Every set code of every pool all the deck's cards fit — the catalog narrows to these. */
+  candidateSetCodes: string[]
+  /** Other pools that would also hold every card (an all-reprint list). */
+  alternatives: string[]
+  rares: number
+  rareSlots: number
+  uncommons: number
+  uncommonSlots: number
+  sideboard: number
+  sideboardMax: number
+  /** Card name → `RARE` | `UNCOMMON` | `COMMON`, its slot in [pool]. */
+  slotByCard: Record<string, string>
+}
+
 export interface DeckValidationResult {
   valid: boolean
   totalCards: number
@@ -26,6 +48,76 @@ export interface DeckValidationResult {
   warnings: DeckValidationIssue[]
   /** Present only for a format with a points list. */
   points?: DeckPoints | null
+  /** Present only for Primordial. */
+  primordial?: PrimordialSummary | null
+}
+
+/** Copies a Primordial slot allows of one card: rare/mythic 1, uncommon 2, common 4. */
+export function primordialSlotCap(slot: string | undefined): number {
+  return slot === 'RARE' || slot === 'MYTHIC' ? 1 : slot === 'UNCOMMON' ? 2 : 4
+}
+
+/** One rarity budget as a row of pips — filled for each copy spent, red past the budget. */
+export function BudgetPips({ used, slots, label }: { used: number; slots: number; label: string }) {
+  const over = used > slots
+  const pips = Math.max(used, slots)
+  return (
+    <span
+      className={styles.budget}
+      title={`${label}: ${used} of exactly ${slots}`}
+      data-state={over ? 'over' : used === slots ? 'full' : 'open'}
+    >
+      <span className={styles.budgetPips} aria-hidden>
+        {Array.from({ length: pips }, (_, i) => (
+          <span key={i} className={styles.budgetPip} data-filled={i < used || undefined} data-over={i >= slots || undefined} />
+        ))}
+      </span>
+      <span className={styles.budgetCount}>{used} / {slots}</span>
+    </span>
+  )
+}
+
+/** The Primordial rows of the summary: pool, rare and uncommon budgets, sideboard. */
+function PrimordialRows({ summary }: { summary: PrimordialSummary }) {
+  const others = summary.alternatives.length
+  return (
+    <div className={styles.primordial}>
+      <div className={styles.summaryRow}>
+        <span>Set</span>
+        {summary.pool ? (
+          <span
+            className={styles.primordialPool}
+            title={
+              others > 0
+                ? `Your cards also all fit ${summary.alternatives.join(', ')}. The first card only one of them prints settles it.`
+                : `Every card comes from ${summary.pool} (${summary.setCodes.join(' · ')}), plus basic lands.`
+            }
+          >
+            {summary.pool}
+            {others > 0 && <span className={styles.primordialAlt}> +{others}</span>}
+          </span>
+        ) : (
+          <span className={styles.statusEmpty}>Your first card picks it</span>
+        )}
+      </div>
+      <div className={styles.summaryRow}>
+        <span>Rares &amp; mythics</span>
+        <BudgetPips used={summary.rares} slots={summary.rareSlots} label="Rares and mythics" />
+      </div>
+      <div className={styles.summaryRow}>
+        <span>Uncommons</span>
+        <BudgetPips used={summary.uncommons} slots={summary.uncommonSlots} label="Uncommons" />
+      </div>
+      {summary.sideboard > 0 && (
+        <div className={styles.summaryRow}>
+          <span>Sideboard</span>
+          <span className={summary.sideboard > summary.sideboardMax ? styles.statusBad : undefined}>
+            {summary.sideboard} / {summary.sideboardMax}
+          </span>
+        </div>
+      )}
+    </div>
+  )
 }
 
 /** "7 / 10 points", or null when the format has no points list. */
@@ -194,6 +286,8 @@ export function DeckSummary({
           <span className={pointsClass(validation)}>{pointsLabel(validation)}</span>
         </div>
       )}
+
+      {validation?.primordial && <PrimordialRows summary={validation.primordial} />}
 
       {validation && validation.errors.length > 0 && (
         <ul className={styles.issues}>
