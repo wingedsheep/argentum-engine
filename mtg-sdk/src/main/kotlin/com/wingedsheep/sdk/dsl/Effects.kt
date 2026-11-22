@@ -8281,6 +8281,11 @@ object Effects {
         spellFilter: com.wingedsheep.sdk.scripting.GameObjectFilter = com.wingedsheep.sdk.scripting.GameObjectFilter.Any
     ): Effect = GrantFlashToSpellsEffect(
         spellFilter = spellFilter,
-        duration = com.wingedsheep.sdk.scripting.Duration.NextUse("you cast a ${spellFilter.description} spell")
+        duration = com.wingedsheep.sdk.scripting.Duration.NextUse(
+            if (spellFilter == com.wingedsheep.sdk.scripting.GameObjectFilter.Any) "you cast a spell"
+            else spellFilter.description.let { d ->
+                "you cast ${if (d.first().lowercaseChar() in "aeiou") "an" else "a"} $d spell"
+            }
+        )
     )
 }

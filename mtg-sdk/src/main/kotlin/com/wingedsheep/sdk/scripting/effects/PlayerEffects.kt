@@ -1247,8 +1247,6 @@ data class GrantSpellKeywordEffect(
  * permission is read at cast-legality time (CR 601.3) by `CastPermissionUtils.hasGrantedFlash`,
  * so it composes with every casting path that already honors flash.
  *
- * @property target Whose spells gain flash (default: controller).
- * @property spellFilter Which spells gain flash (defaults to every spell).
  * **One-shot ("the next … spell").** With `duration = Duration.NextUse(…)` the grant covers only
  * [target]'s *next* matching spell this turn: "The next sorcery spell you cast this turn can be cast
  * as though it had flash" (Quicken, Savage Summoning). The first matching spell [target] casts this

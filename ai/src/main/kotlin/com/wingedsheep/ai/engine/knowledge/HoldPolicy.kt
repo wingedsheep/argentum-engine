@@ -891,7 +891,6 @@ class HoldPolicy(
         }
     }
 
-    /** The last window before our own turn — the deadline every "hold it" argument runs out at. */
     /**
      * [intent] as fast as the cast in hand actually is. A sorcery-speed card offered outside our own
      * main phase on an empty stack can only be there through a flash grant — "you may cast spells
@@ -907,6 +906,7 @@ class HoldPolicy(
         return if (sorceryTiming) intent else intent.copy(speed = Speed.INSTANT)
     }
 
+    /** The last window before our own turn — the deadline every "hold it" argument runs out at. */
     private fun isOpponentEndStep(state: GameState, playerId: EntityId): Boolean =
         state.activePlayerId != playerId && state.step == Step.END
 
