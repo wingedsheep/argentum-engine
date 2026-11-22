@@ -6,6 +6,7 @@ import com.wingedsheep.ai.engine.knowledge.CardLookup
 import com.wingedsheep.ai.engine.knowledge.CombatReach
 import com.wingedsheep.ai.engine.knowledge.EffectWalker
 import com.wingedsheep.ai.engine.knowledge.ExpiringGrantWindow
+import com.wingedsheep.ai.engine.knowledge.ForcedAttackWindow
 import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.ai.engine.knowledge.TargetPolarity
 import com.wingedsheep.ai.engine.knowledge.TargetPolarityAnalyzer
@@ -531,7 +532,10 @@ object AiReadingAudit {
                 timing(ability.effect, sink) {
                     restriction || ExpiringGrantWindow.hasExpiringReading(it, creatureGrants = true, source = card) ||
                         // An entry-exile shield needs no hold (Mistcaller) — see exilesEntriesThisTurn.
-                        ExpiringGrantWindow.exilesEntriesThisTurn(it)
+                        ExpiringGrantWindow.exilesEntriesThisTurn(it) ||
+                        // A forced attack (Goblin Diplomats): HoldPolicy rewards it on their turn before
+                        // they attack and refuses it on ours ([ForcedAttackWindow]).
+                        (it is MustAttackGroupEffect && ForcedAttackWindow.forcesThisTurn(it))
                 }
             }
             modal(ability.effect, sink)

@@ -2,6 +2,7 @@ package com.wingedsheep.ai.engine.knowledge
 
 import com.wingedsheep.sdk.scripting.DoubleDamage
 import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.ModifyDamageAmount
 import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.scripting.effects.AmplifyDamageThisTurnEffect
 import com.wingedsheep.sdk.scripting.events.AmountFilter
@@ -10,12 +11,21 @@ import com.wingedsheep.sdk.scripting.events.Recipient
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.references.Player
 
-/** Reads one-sided, unconditional damage multiplication without mistaking a symmetrical hazard for a payoff. */
+/**
+ * Reads one-sided, unconditional damage amplification — a multiplier ([DoubleDamage]) or a fixed
+ * "that much damage plus N" bonus ([ModifyDamageAmount], Torbran, Pyromancer's Gauntlet) — without
+ * mistaking a symmetrical hazard for a payoff.
+ */
 internal object DamageAmplifiers {
     fun reads(replacement: ReplacementEffect): Boolean {
-        val multiplier = replacement as? DoubleDamage ?: return false
-        if (multiplier.restrictions.isNotEmpty()) return false
-        val event = multiplier.appliesTo as? EventPattern.DamageEvent ?: return false
+        val scaled = when (replacement) {
+            is DoubleDamage -> replacement.multiplier > 1
+            // A fixed bonus only: a dynamic one needs a live-state reader, and a negative one shrinks.
+            is ModifyDamageAmount -> replacement.dynamicModifier == null && replacement.modifier > 0
+            else -> false
+        }
+        if (!scaled || replacement.restrictions.isNotEmpty()) return false
+        val event = replacement.appliesTo as? EventPattern.DamageEvent ?: return false
         return readsScope(event)
     }
 
@@ -44,6 +54,13 @@ internal object DamageAmplifiers {
         Recipient.AnotherPlayer -> false
     }
 
-    fun pickValue(replacement: ReplacementEffect): Double =
-        if (reads(replacement)) 0.9 * ((replacement as DoubleDamage).multiplier - 1) else 0.0
+    fun pickValue(replacement: ReplacementEffect): Double = when {
+        !reads(replacement) -> 0.0
+        replacement is DoubleDamage -> 0.9 * (replacement.multiplier - 1)
+        // "+2" is worth less than a doubling: it adds a fixed sum per hit, not one hit's worth.
+        replacement is ModifyDamageAmount -> (PLUS_DAMAGE_PICK * replacement.modifier).coerceAtMost(0.9)
+        else -> 0.0
+    }
+
+    private const val PLUS_DAMAGE_PICK = 0.3
 }

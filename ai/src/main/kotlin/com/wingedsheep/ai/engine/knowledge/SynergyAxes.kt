@@ -235,6 +235,16 @@ object SynergyAxes {
                 }
             ) add(SynergyAxis.SPELLS)
             if (Keyword.PROWESS in card.keywords) add(SynergyAxis.SPELLS)
+            // A damage amplifier whose sources are our instants and sorceries ("if a red instant or
+            // sorcery spell you control would deal damage, it deals that much damage plus 2",
+            // Pyromancer's Gauntlet) does nothing until the deck's burn spells deal that damage.
+            if (scripts.any { script ->
+                    script.replacementEffects.any { replacement ->
+                        DamageAmplifiers.reads(replacement) &&
+                            namesSpells((replacement.appliesTo as EventPattern.DamageEvent).source)
+                    }
+                }
+            ) add(SynergyAxis.SPELLS)
             if (GraveyardSynergy.isPayoff(card)) add(SynergyAxis.GRAVEYARD)
             // The processor cost spends an opponent's exiled card: with none there, the ability
             // can't be activated and the spell can't be cast.
@@ -468,6 +478,19 @@ object SynergyAxes {
     /** Every card predicate the filter names, with `Or` unions ("instant or sorcery") flattened. */
     private fun predicates(filter: GameObjectFilter): List<CardPredicate> =
         (filter.cardPredicates + filter.anyOf.flatMap { it.cardPredicates }).flatMap(::flatten)
+
+    /**
+     * Whether some branch of [filter] is an instant, sorcery or noncreature spell, looking through
+     * the `And` a coloured branch is ("red instant or sorcery spell … or red planeswalker").
+     */
+    private fun namesSpells(filter: GameObjectFilter): Boolean {
+        fun deep(p: CardPredicate): List<CardPredicate> = when (p) {
+            is CardPredicate.Or -> p.predicates.flatMap(::deep)
+            is CardPredicate.And -> p.predicates.flatMap(::deep)
+            else -> listOf(p)
+        }
+        return (filter.cardPredicates + filter.anyOf.flatMap { it.cardPredicates }).flatMap(::deep).any { it in SPELL_PREDICATES }
+    }
 
     private fun flatten(predicate: CardPredicate): List<CardPredicate> =
         if (predicate is CardPredicate.Or) predicate.predicates.flatMap(::flatten) else listOf(predicate)

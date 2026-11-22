@@ -3009,7 +3009,12 @@ object CardIntentAnalyzer {
         // "Creatures target opponent controls attack this turn if able" (Imaginary Threats), "each
         // creature your opponents control attacks … if able" (Kardur): an attack the
         // opponent didn't choose. A requirement on our own creatures is a price, not a payoff.
-        is MustAttackGroupEffect -> if (opponentsOnly(effect.filter.baseFilter.controllerPredicate)) setOf(IntentTag.FORCED_ATTACK) else emptySet()
+        // "Each creature attacks this turn if able" (Goblin Diplomats) binds every creature, but on
+        // the opponent's turn before they attack — the only window [ForcedAttackWindow] rewards —
+        // ours can't attack at all, so it is the same forced attack of theirs.
+        is MustAttackGroupEffect -> effect.filter.baseFilter.controllerPredicate.let { controller ->
+            if (controller == null || opponentsOnly(controller)) setOf(IntentTag.FORCED_ATTACK) else emptySet()
+        }
         // "Target creature an opponent controls attacks this turn / during its controller's next turn
         // if able" (Alluring Siren, Nettling Imp, Gideon, Battle-Forged): the single-creature form —
         // an attack its controller didn't choose, into our blockers or onto our planeswalker. Only a

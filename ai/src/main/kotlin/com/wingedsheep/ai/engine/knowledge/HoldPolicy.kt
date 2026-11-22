@@ -427,12 +427,24 @@ class HoldPolicy(
         if (activation == null) return TimingVerdict.Neutral
         if (!(holdExpiringGrantsForCombat || refuseUnspendableGrants || refuseDeadSearches ||
                 refuseEmptyPayoffs || drawWithIdleMana || refuseWastedPayoffs || tapToGrowAtTheirEndStep ||
-                tapToPingAtTheirEndStep)
+                tapToPingAtTheirEndStep || forcedAttacksOnTheirTurn)
         ) {
             return TimingVerdict.Neutral
         }
         val ability = intents.activatedAbility(cardName, activation.abilityId)
             ?: return TimingVerdict.Neutral
+        // "{T}: Each creature attacks this turn if able" (Goblin Diplomats): on the opponent's turn
+        // before they attack it forces their attack — the activation twin of the spell reading in
+        // [verdictFor]. On our own turn the same requirement binds only our creatures: a price.
+        if (forcedAttacksOnTheirTurn) {
+            if (ForcedAttackWindow.bindsOwnAttackNow(state, playerId, ability.effect)) return TimingVerdict.NoWindow
+            if (ForcedAttackWindow.forcesAnAttack(
+                    state, playerId, ability.effect, activation.targets.mapNotNull { (it as? ChosenTarget.Player)?.playerId },
+                )
+            ) {
+                return TimingVerdict.Adjust(FORCED_ATTACK_WINDOW, reason = "forces their attack")
+            }
+        }
         // A search that can find nothing is a lost permanent and a shuffle, in every window.
         if (refuseDeadSearches) {
             val predicates = intents.predicates
