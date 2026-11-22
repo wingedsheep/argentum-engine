@@ -231,6 +231,7 @@ Aetherflux Reservoir
 Aethergeode Miner
 Aetherize
 Aetherjacket
+Aetherling
 Aethershield Artificer
 Aethersnipe
 Aethersphere Harvester
@@ -1935,6 +1936,7 @@ Blood Age General
 Blood Artist
 Blood Aspirant
 Blood Bairn
+Blood Baron of Vizkopa
 Blood Beckoning
 Blood Burglar
 Blood Celebrant
@@ -4478,7 +4480,7 @@ Deep-Slumber Titan
 Deepchannel Duelist
 Deepfathom Echo
 Deepfathom Skulker
-Deepglow Skate	intent: ForEach>DoubleCountersEffect
+Deepglow Skate
 Deepmuck Desperado
 Deeproot Champion
 Deeproot Elite
@@ -5103,6 +5105,7 @@ Dragonrage
 Dragonscale Boon
 Dragonscale General
 Dragonsguard Elite
+Dragonshift
 Dragonskull Summit
 Dragonspark Reactor
 Dragonspeaker Shaman
@@ -5763,6 +5766,7 @@ Emissary Escort
 Emissary of Soulfire	intent: AddCountersEffect; polarity: AddCountersEffect
 Emissary of Sunrise
 Emissary of the Sleepless
+Emmara Tandris
 Emmara, Soul of the Accord
 Emmessi Tome
 Emperor of Bones
@@ -6071,6 +6075,7 @@ Evra, Halcyon Witness	intent: ExchangeLifeAndStatEffect
 Exalted Angel
 Exalted Flamer of Tzeentch
 Exalted Sunborn
+Exava, Rakdos Blood Witch
 Excalbian Gamemaster
 Excalibur II
 Excavated Wall
@@ -6866,6 +6871,7 @@ Flusterstorm
 Flutterfox
 Flux
 Flux Channeler
+Fluxcharger
 Fly	polarity: Aura>GrantKeyword; polarity: Aura>GrantTriggeredAbility
 Flycatcher Giraffid
 Flying Carpet
@@ -10717,6 +10723,7 @@ Lavaleaper
 Lavamancer's Skill
 Lavaspur Boots
 Lavastep Raider
+Lavinia of the Tenth
 Lavinia, Azorius Renegade
 Law-Rune Enforcer
 Lawbringer
@@ -11128,7 +11135,7 @@ Lord of the Nazgûl
 Lord of the Pit
 Lord of the Undead
 Lord of the Unreal
-Lord of the Void	intent: Pipeline(TopOfLibrary→battlefield|exile)
+Lord of the Void
 Lore Broker
 Lore Drakkis
 Lore, Positronic Provocateur
@@ -11925,7 +11932,7 @@ Mikey & Don, Party Planners
 Mikey & Leo, Chaos & Order
 Mila, Crafty Companion
 Mild-Mannered Librarian
-Miles Morales	combat: GrantEvasionKeywordEffect; intent: ForEach>DoubleCountersEffect
+Miles Morales	combat: GrantEvasionKeywordEffect
 Miles O'Brien, Transporter Ops
 Militant Inquisitor
 Militant Monk
@@ -12027,6 +12034,7 @@ Mire's Grasp
 Mire's Malice
 Mirelurk Queen	polarity: AddCountersEffect
 Miriam, Herd Whisperer
+Mirko Vosk, Mind Drinker
 Mirkwood
 Mirkwood Bats
 Mirkwood Channeler
@@ -14664,6 +14672,7 @@ Rakshasa Vizier
 Rakshasa's Bargain
 Rakshasa's Disdain
 Rakshasa's Secret
+Ral Zarek
 Ral Zarek, Guest Lecturer	intent: FlipCoinsEffect; intent: SkipNextTurnEffect; polarity: SkipNextTurnEffect
 Ral and the Implicit Maze
 Ral's Dispersal
@@ -14796,7 +14805,7 @@ Ravaging Blaze
 Ravaging Horde
 Raven Eagle
 Raven Guild Initiate
-Raven Guild Master	intent: Pipeline(TopOfLibrary→exile)
+Raven Guild Master
 Raven Wings
 Raven of Fell Omens
 Raven's Run Dragoon
@@ -15100,6 +15109,7 @@ Renewed Solidarity
 Renewing Dawn	polarity: GainLifeEffect
 Renewing Touch	intent: Pipeline(ChosenTargets→library)
 Reno and Rude
+Renounce the Guilds
 Renowned Weaponsmith
 Renowned Weaver
 Rent Is Due
@@ -15530,7 +15540,7 @@ Rodolf Duskbringer
 Rofellos, Llanowar Emissary
 Rograkh, Son of Rohgahh
 Rogue Artificial Intelligence
-Rogue Class	intent: Pipeline(TopOfLibrary→exile)
+Rogue Class
 Rogue Kavu
 Rogue Refiner
 Rogue's Gloves
@@ -17049,6 +17059,7 @@ Simoon
 Simulacrum
 Simulacrum Shaper
 Simulacrum Synthesizer
+Sin Collector
 Sin Prodder
 Sin, Spira's Punishment
 Sindbad
@@ -17075,6 +17086,7 @@ Siona, Captain of the Pyleas
 Sip of Hemlock
 Siphon Insight
 Sir Shandlar of Eberyn
+Sire of Insanity
 Sire of Seven Deaths
 Sire of Stagnation
 Sire of the Storm
@@ -18772,6 +18784,7 @@ Tainted Treats
 Tainted Well	polarity: Aura>DrawCardsEffect; polarity: Aura>SetEnchantedLandType
 Tainted Wood
 Taj-Nar Swordsmith
+Tajic, Blade of the Legion
 Tajic, Legion's Edge
 Tajuru Beastmaster
 Tajuru Blightblade
@@ -19148,6 +19161,7 @@ Teyo, Diamondblade Mage
 Teyo, Lightshield Expert
 Teyo, the Shieldmage
 Teysa Karlov
+Teysa, Envoy of Ghosts
 Teysa, Opulent Oligarch
 Teysa, Orzhov Scion
 Tezzeret the Schemer
@@ -20137,6 +20151,7 @@ Trophy Hunter
 Trophy Mage
 Tropical Island
 Trostani Discordant	intent: ForEach>GiveControlToTargetPlayerEffect
+Trostani's Summoner
 Trostani, Three Whispers
 Trouble in Pairs
 Troubled Healer
@@ -21133,6 +21148,7 @@ Voracious Typhon
 Voracious Vampire
 Voracious Varmint
 Voracious Vermin
+Vorel of the Hull Clade
 Vorinclex
 Vorinclex, Monstrous Raider
 Vorosh, the Hunter
@@ -22196,7 +22212,7 @@ Zilortha, Strength Incarnate
 Zimone and Dina
 Zimone's Experiment
 Zimone, All-Questioning
-Zimone, Paradox Sculptor	intent: ForEach>DoubleCountersEffect
+Zimone, Paradox Sculptor
 Zimone, Quandrix Prodigy
 Zinnia, Valley's Voice
 Zirda, the Dawnwaker
