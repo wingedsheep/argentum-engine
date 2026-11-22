@@ -611,9 +611,12 @@ object SynergyAxes {
 
     private fun leafFeeds(leaf: Any): Set<SynergyAxis> = when (leaf) {
         // A creature token is a body that enters and a body to sacrifice.
-        is CreateTokenEffect, is CreateTokenCopyOfSourceEffect, is CreateTokenCopyOfTargetEffect,
-        is CreateTokenCopyOfChosenPermanentEffect ->
+        is CreateTokenEffect, is CreateTokenCopyOfSourceEffect, is CreateTokenCopyOfTargetEffect ->
             setOf(SynergyAxis.TOKENS, SynergyAxis.CREATURES_ENTER, SynergyAxis.DEATH)
+        // Populate-style copies a chosen permanent; only a creature copy is a body (Calix copies enchantments).
+        is CreateTokenCopyOfChosenPermanentEffect ->
+            if (couldBeCreature(leaf.filter)) setOf(SynergyAxis.TOKENS, SynergyAxis.CREATURES_ENTER, SynergyAxis.DEATH)
+            else setOf(SynergyAxis.TOKENS)
         is AddCountersEffect -> plusCounters(leaf.counterType)
         is AddDynamicCountersEffect -> plusCounters(leaf.counterType)
         // "Tap any number of untapped Vampires you control; put a +1/+1 counter on each" (Urge to
