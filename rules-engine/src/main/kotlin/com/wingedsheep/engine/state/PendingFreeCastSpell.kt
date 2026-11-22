@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
  * the one-shot "the next … spell" rider (World War Hulk chapter I, [nextSpellOnly]) or the
  * whole-turn "until end of turn, you may cast spells from your hand …" (Chandra, Flame's Catalyst).
  *
- * Sibling of [PendingUncounterableSpell] and [PendingNextSpellAffinity]:
+ * Sibling of [PendingNextSpellRider] and [PendingNextSpellAffinity]:
  * [com.wingedsheep.engine.mechanics.mana.CostCalculator.hasFreeCastPermission] reads it so the
  * `CastSpell.useWithoutPayingManaCost` variant is offered for a matching card, and
  * [com.wingedsheep.engine.handlers.actions.spell.CastSpellHandler] removes a [nextSpellOnly] one once

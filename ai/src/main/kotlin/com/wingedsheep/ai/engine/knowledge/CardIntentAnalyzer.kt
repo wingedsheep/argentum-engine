@@ -1,5 +1,8 @@
 package com.wingedsheep.ai.engine.knowledge
 
+import com.wingedsheep.sdk.scripting.effects.ManaSpellRider
+import com.wingedsheep.sdk.scripting.effects.GrantNextSpellRiderEffect
+import com.wingedsheep.sdk.scripting.effects.GrantFlashToSpellsEffect
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
@@ -2836,6 +2839,15 @@ object CardIntentAnalyzer {
             else -> emptySet()
         }
 
+        // "Spells you cast this turn can be cast as though they had flash" / "the next creature spell
+        // you cast this turn can …" (Quicken, Savage Summoning): our own spells at instant speed —
+        // the effect form of the controller-only flash static. Granted to someone else it's no payoff.
+        is GrantFlashToSpellsEffect ->
+            if (effect.target == EffectTarget.Controller) setOf(IntentTag.OFF_TURN_PLAY) else emptySet()
+        // "The next spell you cast this turn gets <rider>" (Mistrise Village, Savage Summoning): read
+        // as what the rider does to our spell.
+        is GrantNextSpellRiderEffect -> nextSpellRiderTags(effect.rider)
+
         is RegenerateEffect, is HealDamageEffect -> setOf(IntentTag.PROTECTION)
         // A shield is protection; the reaction it carries ("for each 1 damage prevented this way,
         // create a 2/1 Inkling", Inkshield; "you gain that much life", Awe Strike) is a payoff the
@@ -3533,6 +3545,20 @@ object CardIntentAnalyzer {
      * [leafTagsOf] reads it as. The reset is cast or triggered when behind, where it restores the
      * life lost; a format's starting total (40 in Commander) is the game's, never a hard-coded 20.
      */
+    /**
+     * What a next-spell rider does for the spell it rides: "can't be countered" protects it, entry
+     * counters or an entry keyword grow the creature, a trigger is read as its effect, the commander
+     * scry as card selection.
+     */
+    private fun nextSpellRiderTags(rider: ManaSpellRider): Set<IntentTag> = when (rider) {
+        is ManaSpellRider.MakesSpellUncounterable -> setOf(IntentTag.PROTECTION)
+        is ManaSpellRider.EntersWithCountersWhenSpent ->
+            if (rider.counterType == CounterType.PLUS_ONE_PLUS_ONE) setOf(IntentTag.PUMP) else emptySet()
+        is ManaSpellRider.GrantsKeywordWhenSpent -> setOf(IntentTag.PUMP)
+        is ManaSpellRider.TriggersWhenSpent -> EffectWalker.leaves(rider.effect).flatMapTo(mutableSetOf()) { tagsOf(it) }
+        is ManaSpellRider.ScryOnSharedTypeWithCommander -> setOf(IntentTag.CARD_SELECTION)
+    }
+
     private fun setsOwnLifeAboveStart(effect: SetLifeTotalEffect): Boolean {
         val ours = effect.target == EffectTarget.Controller || effect.target == EffectTarget.PlayerRef(Player.You)
         return ours && when (val amount = effect.amount) {

@@ -3021,6 +3021,64 @@
     ]
 }
 
+// Savage Summoning
+{
+    "name": "Savage Summoning",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "This spell can't be countered.\nThe next creature spell you cast this turn can be cast as though it had flash. That spell can't be countered. That creature enters with an additional +1/+1 counter on it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GrantFlashToSpells",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    },
+                    "duration": {
+                        "type": "NextUse",
+                        "sourceDescription": "you cast a creature spell"
+                    }
+                },
+                {
+                    "type": "GrantNextSpellRider",
+                    "rider": "MakesSpellUncounterable",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                },
+                {
+                    "type": "GrantNextSpellRider",
+                    "rider": {
+                        "type": "EntersWithCountersWhenSpent",
+                        "spellFilter": {}
+                    },
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                }
+            ]
+        },
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "194",
+        "rarity": "RARE",
+        "artist": "Johann Bodin",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5346ed7-2e17-4d8c-9c4b-b5efdd26380d.jpg?1783939900"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Scourge of Valkas
 {
     "name": "Scourge of Valkas",

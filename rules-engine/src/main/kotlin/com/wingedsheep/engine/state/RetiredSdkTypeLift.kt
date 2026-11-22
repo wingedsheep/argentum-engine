@@ -131,6 +131,16 @@ internal object RetiredSdkTypeLift {
         "SkipDrawStep" to { _ -> static(SkipStepOrPhase(TurnPart.DRAW_STEP)) },
         "GrantHexproofFromMonocoloredToGroup" to { old -> hexproofGrant(ProtectionScope.Monocolored, old) },
         "GrantHexproofFromMulticoloredToGroup" to { old -> hexproofGrant(ProtectionScope.Multicolored, old) },
+        // Effect — the single-stamp next-spell rider, now the general one carrying a ManaSpellRider
+        "MakeNextSpellUncounterable" to { old ->
+            JsonObject(
+                buildMap {
+                    put("type", JsonPrimitive("GrantNextSpellRider"))
+                    put("rider", JsonObject(mapOf("type" to JsonPrimitive("MakesSpellUncounterable"))))
+                    old["spellFilter"]?.let { put("spellFilter", it) }
+                }
+            )
+        },
         // StaticAbility — the toughness-only base setter, now the null-power half of the fixed one
         "SetBaseToughnessForCreatureGroup" to { old ->
             JsonObject(old + ("type" to JsonPrimitive("SetBasePowerToughnessStatic")) + ("power" to JsonNull))

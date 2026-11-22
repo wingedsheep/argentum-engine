@@ -27,7 +27,7 @@ import com.wingedsheep.engine.core.Outcome
 
 /**
  * Tests for the one-shot "next spell can't be countered" rider
- * ([com.wingedsheep.sdk.scripting.effects.MakeNextSpellUncounterableEffect]).
+ * ([com.wingedsheep.sdk.scripting.effects.GrantNextSpellRiderEffect] with a can't-be-countered rider).
  *
  * Mistrise Village (CHK): Land — "{U}, {T}: The next spell you cast this turn can't be countered."
  *
@@ -147,7 +147,7 @@ class MakeNextSpellUncounterableTest : FunSpec({
         driver.castSpell(active, bear)
         driver.bothPass() // no one counters; it resolves
         driver.findPermanent(active, "Test Bear") shouldNotBe null
-        driver.state.pendingUncounterableSpells.shouldBeEmpty()
+        driver.state.pendingNextSpellRiders.shouldBeEmpty()
 
         // Second spell is no longer protected.
         driver.giveMana(active, Color.GREEN, 2)
@@ -176,11 +176,11 @@ class MakeNextSpellUncounterableTest : FunSpec({
 
         val village = driver.putLandOnBattlefield(active, "Mistrise Village")
         activateVillage(driver, active, village, mistriseAbilityId)
-        driver.state.pendingUncounterableSpells shouldNotBe emptyList<Any>()
+        driver.state.pendingNextSpellRiders shouldNotBe emptyList<Any>()
 
         // Pass through to the opponent's turn — the unused rider should be gone.
         driver.passPriorityUntil(Step.UPKEEP)
-        driver.state.pendingUncounterableSpells.shouldBeEmpty()
+        driver.state.pendingNextSpellRiders.shouldBeEmpty()
     }
 
     test("a creature-only rider ignores a noncreature spell and protects the next creature spell") {
@@ -200,13 +200,13 @@ class MakeNextSpellUncounterableTest : FunSpec({
         // Cast a noncreature spell first — it must NOT consume the creature-only rider.
         driver.giveMana(active, Color.RED, 1)
         driver.castSpellWithTargets(active, bolt, listOf(ChosenTarget.Player(opponent)))
-        driver.state.pendingUncounterableSpells shouldNotBe emptyList<Any>()
+        driver.state.pendingNextSpellRiders shouldNotBe emptyList<Any>()
         driver.bothPass() // resolve the bolt (creature spells need an empty stack to cast)
 
         // Now cast the creature spell — the rider matches and protects it.
         driver.giveMana(active, Color.GREEN, 2)
         driver.castSpell(active, bear)
-        driver.state.pendingUncounterableSpells.shouldBeEmpty()
+        driver.state.pendingNextSpellRiders.shouldBeEmpty()
         driver.passPriority(active)
 
         driver.giveMana(opponent, Color.BLUE, 2)

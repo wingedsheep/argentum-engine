@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 
 /**
  * Tracks a pending "the next [spellFilter] spell you cast this turn has affinity for [forType]"
- * rider (Don & Raph, Hard Science). One-shot counterpart of [PendingUncounterableSpell]: when
+ * rider (Don & Raph, Hard Science). One-shot counterpart of [PendingNextSpellRider]: when
  * [controllerId] next casts a spell matching [spellFilter] this turn, that spell's cost is reduced
  * by the number of [forType] permanents the controller has *at cast time* (the cost calculator
  * reads this rider) and the entry is consumed.

@@ -1,0 +1,1 @@
+- #TBD The AI reads "the next spell you cast this turn …" grants — flash (Quicken, Savage Summoning) as off-turn play, can't-be-countered (Mistrise Village) as protection, an extra +1/+1 counter as a pump that feeds +1/+1-counter synergies.

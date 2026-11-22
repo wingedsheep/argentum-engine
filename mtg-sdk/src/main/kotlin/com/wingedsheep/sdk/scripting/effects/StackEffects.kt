@@ -1363,25 +1363,44 @@ data class CopyEachSpellCastEffect(
 }
 
 /**
- * The next spell its controller casts this turn matching [spellFilter] can't be countered.
+ * The next spell its controller casts this turn matching [spellFilter] gets [rider] — a one-shot
+ * pending rider: it attaches to the very next matching spell that player casts and is then consumed.
+ * Non-matching casts leave it waiting; an unused rider clears at the turn boundary.
  *
- * One-shot rider: it attaches to the very next matching spell that player casts (stamping it
- * uncounterable for as long as it's on the stack) and is then consumed. Unlike
- * [com.wingedsheep.sdk.scripting.effects.GrantSpellsCantBeCounteredEffect], which protects
- * *every* matching spell cast for a whole duration, this protects only one spell. Mirrors the
- * pending-rider shape of [CopyNextSpellCastEffect] ("copy your next spell").
+ * The stamp is a [ManaSpellRider], the same vocabulary a mana ability uses for "if that mana is spent
+ * on …": the two differ only in what attaches the rider to the spell (the mana that paid for it vs.
+ * being the next matching cast). The rider's own filter is matched against the same spell, so author
+ * it as [GameObjectFilter.Any] and put the narrowing on [spellFilter].
  *
- * Used by Mistrise Village ("{U}, {T}: The next spell you cast this turn can't be countered.").
+ * - Mistrise Village: "The next spell you cast this turn can't be countered."
+ *   (`rider = ManaSpellRider.MakesSpellUncounterable()`).
+ * - Savage Summoning: "… That spell can't be countered. That creature enters with an additional
+ *   +1/+1 counter on it." (two of these, `spellFilter = Creature`, with
+ *   `MakesSpellUncounterable` and `EntersWithCountersWhenSpent`).
  *
+ * Neighbours: [CopyNextSpellCastEffect] and [GrantNextSpellResolveDestinationEffect] are the same
+ * pending next-cast shape, but their payloads (a copy trigger with per-copy retargeting, a resolution
+ * destination with a from-zone axis) are not stamps any [ManaSpellRider] expresses.
+ *
+ * @property rider What the next matching spell gets.
  * @property spellFilter Which spell the rider waits for (defaults to any spell).
  */
-@SerialName("MakeNextSpellUncounterable")
+@SerialName("GrantNextSpellRider")
 @Serializable
-data class MakeNextSpellUncounterableEffect(
+data class GrantNextSpellRiderEffect(
+    val rider: ManaSpellRider,
     val spellFilter: GameObjectFilter = GameObjectFilter.Any
 ) : Effect {
-    override val description: String =
-        "The next ${spellFilter.description} spell you cast this turn can't be countered"
+    override val description: String = run {
+        val next = "The next ${spellFilter.description} spell you cast this turn"
+        when (rider) {
+            is ManaSpellRider.MakesSpellUncounterable -> "$next can't be countered"
+            is ManaSpellRider.EntersWithCountersWhenSpent -> "$next enters with " +
+                (if (rider.count == 1) "an additional ${rider.counterType.printed} counter"
+                else "${rider.count} additional ${rider.counterType.printed} counters") + " on it"
+            else -> "$next: ${rider.description}"
+        }
+    }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect =
         copy(spellFilter = spellFilter.applyTextReplacement(replacer))
@@ -1395,10 +1414,10 @@ data class MakeNextSpellUncounterableEffect(
  * turn, put that card into your hand instead of into your graveyard as it resolves."
  *
  * This is not a triggered ability — nothing goes on the stack. It is the one-shot pending-rider
- * shape of [MakeNextSpellUncounterableEffect]: the first matching cast consumes it and stamps that
+ * shape of [GrantNextSpellRiderEffect]: the first matching cast consumes it and stamps that
  * spell with the resolution destination, whether or not the spell then resolves. Its two
  * neighbours don't take the axis: [MarkSpellExileOnResolveEffect] marks a spell that is *already*
- * on the stack (and only ever exiles it), and [MakeNextSpellUncounterableEffect] names a single,
+ * on the stack (and only ever exiles it), and [GrantNextSpellRiderEffect] names a single,
  * different stamp.
  *
  * The destination replaces only the resolution move (Soulfire rulings):
@@ -1459,7 +1478,7 @@ data class GrantNextSpellResolveDestinationEffect(
  * Two axes:
  *  - [nextSpellOnly] — `true` for the one-shot "the next … spell you cast this turn can be cast
  *    without paying its mana cost" (World War Hulk chapter I), the same rider shape as
- *    [MakeNextSpellUncounterableEffect] and [GrantNextSpellAffinityEffect]. **Consumption is by the
+ *    [GrantNextSpellRiderEffect] and [GrantNextSpellAffinityEffect]. **Consumption is by the
  *    cast, not by the discount** — the printed text names "the next" matching spell, so a matching
  *    spell cast for full price is that spell and spends the rider. `false` for "until end of turn,
  *    you may cast spells … without paying their mana costs" (Chandra, Flame's Catalyst −8): every
@@ -1502,7 +1521,7 @@ data class GrantFreeCastThisTurnEffect(
 
 /**
  * Grant the next [spellFilter] spell the controller casts this turn affinity for [forType] —
- * the same one-shot pending-rider shape as [MakeNextSpellUncounterableEffect], but the matched
+ * the same one-shot pending-rider shape as [GrantNextSpellRiderEffect], but the matched
  * spell costs {1} less to cast for each permanent of [forType] the controller has *at cast time*
  * (the reduction is dynamic, read by the cost calculator when the spell is cast).
  *

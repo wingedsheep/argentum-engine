@@ -161,7 +161,7 @@ class TurnManager(
             playerSpellsCastThisTurn = emptyMap(),
             spellsCastThisTurnByPlayer = emptyMap(),
             pendingSpellCopies = emptyList(),
-            pendingUncounterableSpells = emptyList(),
+            pendingNextSpellRiders = emptyList(),
             // "Next spell this turn has affinity" riders are turn-scoped — an unused grant (you
             // attacked with Don & Raph but cast no matching spell) must not leak into a later turn.
             pendingNextSpellAffinities = emptyList(),

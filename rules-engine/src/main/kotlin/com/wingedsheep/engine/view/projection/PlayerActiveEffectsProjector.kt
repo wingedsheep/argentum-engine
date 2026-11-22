@@ -34,6 +34,8 @@ import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerStepScope
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.GrantNextSpellRiderEffect
+import com.wingedsheep.sdk.scripting.effects.ManaSpellRider
 import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlinx.serialization.json.Json
@@ -834,17 +836,34 @@ internal class PlayerActiveEffectsProjector(
             )
         }
 
-        // Check for pending "next spell can't be countered" riders (e.g., Mistrise Village)
-        val pendingUncounterable = state.pendingUncounterableSpells.filter { it.controllerId == playerId }
-        if (pendingUncounterable.isNotEmpty()) {
-            val sourceName = pendingUncounterable.map { it.sourceName }.distinct().joinToString(", ")
-            val filterDesc = pendingUncounterable.map { it.spellFilter.description }.distinct().joinToString("/")
+        // Pending "the next spell you cast this turn gets <rider>" grants — Mistrise Village's
+        // can't-be-countered keeps its own badge; other stamps (Savage Summoning's +1/+1 counter)
+        // read as the grant's own text.
+        val pendingRiders = state.pendingNextSpellRiders.filter { it.controllerId == playerId }
+        val (uncounterable, otherRiders) = pendingRiders.partition { it.rider is ManaSpellRider.MakesSpellUncounterable }
+        if (uncounterable.isNotEmpty()) {
+            val sourceName = uncounterable.map { it.sourceName }.distinct().joinToString(", ")
+            val filterDesc = uncounterable.map { it.spellFilter.description }.distinct().joinToString("/")
             effects.add(
                 ClientPlayerEffect(
                     effectId = "pending_uncounterable_spell",
                     name = "Uncounterable",
                     description = "Your next $filterDesc spell can't be countered ($sourceName)",
                     icon = "no-counter"
+                )
+            )
+        }
+        otherRiders.groupBy { it.spellFilter to it.rider }.entries.forEachIndexed { index, (key, riders) ->
+            val sourceName = riders.map { it.sourceName }.distinct().joinToString(", ")
+            val text = GrantNextSpellRiderEffect(key.second, key.first).description
+                .replaceFirst("The next ", "Your next ").replace(" you cast this turn", "")
+            val times = if (riders.size > 1) " (×${riders.size})" else ""
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "pending_next_spell_rider_$index",
+                    name = "Next spell",
+                    description = "$text$times ($sourceName)",
+                    icon = "granted-ability"
                 )
             )
         }

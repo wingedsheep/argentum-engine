@@ -4,26 +4,25 @@ import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.PendingUncounterableSpell
+import com.wingedsheep.engine.state.PendingNextSpellRider
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.sdk.scripting.effects.MakeNextSpellUncounterableEffect
+import com.wingedsheep.sdk.scripting.effects.GrantNextSpellRiderEffect
 import kotlin.reflect.KClass
 
 /**
- * Executor for [MakeNextSpellUncounterableEffect].
+ * Executor for [GrantNextSpellRiderEffect].
  *
- * Adds a [PendingUncounterableSpell] rider to the game state. When the controller next casts
- * a matching spell this turn, [com.wingedsheep.engine.handlers.actions.spell.CastSpellHandler]
- * consumes it and stamps that spell uncounterable. Mirrors [CopyNextSpellCastExecutor].
+ * Adds a [PendingNextSpellRider] to the game state. When the controller next casts a matching
+ * spell this turn, [com.wingedsheep.engine.handlers.actions.spell.CastTriggers] consumes it and
+ * applies its rider to that spell. Mirrors [CopyNextSpellCastExecutor].
  */
-class MakeNextSpellUncounterableExecutor : EffectExecutor<MakeNextSpellUncounterableEffect> {
+class GrantNextSpellRiderExecutor : EffectExecutor<GrantNextSpellRiderEffect> {
 
-    override val effectType: KClass<MakeNextSpellUncounterableEffect> =
-        MakeNextSpellUncounterableEffect::class
+    override val effectType: KClass<GrantNextSpellRiderEffect> = GrantNextSpellRiderEffect::class
 
     override fun execute(
         state: GameState,
-        effect: MakeNextSpellUncounterableEffect,
+        effect: GrantNextSpellRiderEffect,
         context: EffectContext
     ): EffectResult {
         val (effectiveState, sourceId) = if (context.sourceId != null) {
@@ -34,15 +33,15 @@ class MakeNextSpellUncounterableExecutor : EffectExecutor<MakeNextSpellUncounter
         }
         val sourceName = effectiveState.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Unknown"
 
-        val pending = PendingUncounterableSpell(
+        val pending = PendingNextSpellRider(
             controllerId = context.controllerId,
             spellFilter = effect.spellFilter,
+            rider = effect.rider,
             sourceId = sourceId,
             sourceName = sourceName
         )
-        val newState = effectiveState.copy(
-            pendingUncounterableSpells = effectiveState.pendingUncounterableSpells + pending
+        return EffectResult.success(
+            effectiveState.copy(pendingNextSpellRiders = effectiveState.pendingNextSpellRiders + pending)
         )
-        return EffectResult.success(newState)
     }
 }

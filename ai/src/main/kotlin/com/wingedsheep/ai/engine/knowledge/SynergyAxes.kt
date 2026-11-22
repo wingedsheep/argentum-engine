@@ -619,6 +619,10 @@ object SynergyAxes {
             else setOf(SynergyAxis.TOKENS)
         is AddCountersEffect -> plusCounters(leaf.counterType)
         is AddDynamicCountersEffect -> plusCounters(leaf.counterType)
+        // "The next creature spell you cast this turn enters with an additional +1/+1 counter" (Savage Summoning).
+        is com.wingedsheep.sdk.scripting.effects.GrantNextSpellRiderEffect ->
+            (leaf.rider as? com.wingedsheep.sdk.scripting.effects.ManaSpellRider.EntersWithCountersWhenSpent)
+                ?.let { plusCounters(it.counterType) } ?: emptySet()
         // "Tap any number of untapped Vampires you control; put a +1/+1 counter on each" (Urge to
         // Feed): counters on each permanent of a gathered collection stock the same axis.
         is com.wingedsheep.sdk.scripting.effects.AddCountersToCollectionEffect -> plusCounters(leaf.counterType)

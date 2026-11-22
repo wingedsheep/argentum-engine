@@ -6,6 +6,9 @@ import com.wingedsheep.engine.core.PendingDecision
 import com.wingedsheep.engine.core.SubmitDecision
 import com.wingedsheep.engine.core.engineSerializersModule
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.Effect
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.SerializationException
@@ -50,7 +53,7 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
                 // bookkeeping starts empty.
                 val encoded = encodeState(state)
                 withoutPostCaptureCardDefaults(JsonObject(encoded - "continuationStack" - POST_CAPTURE_FIELDS)) shouldBe
-                    JsonObject(original - "continuationStack" - "pendingDecision")
+                    JsonObject(original - "continuationStack" - "pendingDecision" - RENAMED_FIELDS)
                 assertCurrentRoundTrip(state)
 
                 val actions = json.decodeFromString<List<GameAction>>(fixtureText(fixture, "actions.json"))
@@ -230,6 +233,15 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
             val stack = fixtureStack("repeat-while").toMutableList()
             stack[stack.lastIndex] = JsonObject(stack.last().jsonObject + ("phase" to JsonPrimitive("UNKNOWN")))
             expectMalformed(JsonObject(old + ("continuationStack" to JsonArray(stack))))
+        }
+
+        test("a retired next-spell uncounterable rider lifts to the general next-spell rider") {
+            val filter = json.encodeToJsonElement(GameObjectFilter.serializer(), GameObjectFilter.Creature)
+            val lifted = RetiredSdkTypeLift.lift(JsonObject(mapOf(
+                "type" to JsonPrimitive("MakeNextSpellUncounterable"), "spellFilter" to filter,
+            )))
+            json.decodeFromJsonElement(Effect.serializer(), lifted) shouldBe
+                Effects.MakeNextSpellUncounterable(GameObjectFilter.Creature)
         }
 
         test("legacy migration does not silently ignore unrelated unknown payload fields") {
@@ -460,9 +472,12 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
     companion object {
         private const val CORE = "com.wingedsheep.engine.core."
 
+        /** Saved fields renamed since these captures (GameStateSerializer moves them); all captured empty. */
+        private val RENAMED_FIELDS = setOf("pendingUncounterableSpells")
+
         /** Fields introduced after these captures; decoding supplies their defaults. */
         private val POST_CAPTURE_FIELDS = setOf(
-            "playerActionPermissions",
+            "playerActionPermissions", "pendingNextSpellRiders",
             "objectIdentities", "nextObjectGeneration", "zoneReturns", "pendingTriggers", "triggersBeingPlaced",
             "controlAtTurnStart", "untappedAtTurnStart", "controlAtUpkeepStart",
             "playersDealtNoncombatDamageThisTurn", "playersDealtNoncombatDamageLastTurn", "playersWhoLostLifeLastTurn",

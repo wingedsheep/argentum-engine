@@ -379,7 +379,7 @@ class HiddenIdentityForkChecker(private val registry: CardRegistry) {
         state.pendingNextSpellAffinities.any { it.sourceId == id } -> "pendingNextSpellAffinities"
         state.pendingNextSpellKeywords.any { it.sourceId == id } -> "pendingNextSpellKeywords"
         state.pendingSpellCopies.any { it.sourceId == id } -> "pendingSpellCopies"
-        state.pendingUncounterableSpells.any { it.sourceId == id } -> "pendingUncounterableSpells"
+        state.pendingNextSpellRiders.any { it.sourceId == id } -> "pendingNextSpellRiders"
         state.pendingNextSpellResolveDestinations.any { it.sourceId == id } -> "pendingNextSpellResolveDestinations"
         state.enlistmentsThisCombat.any { it.entityId == id } -> "enlistmentsThisCombat"
         state.resolutionControls.any { it.resolvingObject.entityId == id } -> "resolutionControls"

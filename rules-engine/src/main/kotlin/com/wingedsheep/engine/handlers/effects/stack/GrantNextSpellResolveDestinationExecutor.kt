@@ -14,7 +14,7 @@ import kotlin.reflect.KClass
  *
  * Adds a [PendingNextSpellResolveDestination] rider to the game state; the controller's next
  * matching cast consumes it (see [com.wingedsheep.engine.handlers.actions.spell.CastTriggers]).
- * Mirrors [MakeNextSpellUncounterableExecutor].
+ * Mirrors [GrantNextSpellRiderExecutor].
  */
 class GrantNextSpellResolveDestinationExecutor : EffectExecutor<GrantNextSpellResolveDestinationEffect> {
 

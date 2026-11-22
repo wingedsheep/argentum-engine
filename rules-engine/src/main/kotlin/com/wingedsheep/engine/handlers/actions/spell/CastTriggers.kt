@@ -62,7 +62,7 @@ internal class CastSpellOnStack(
  * - riders carried by the mana that paid (Cavern of Souls, Path of Ancestry, Pyromancer's Goggles, Scaled Nurturer,
  *   Carnelian Orb of Dragonkind);
  * - "the next spell you cast" riders — copies (Howl of the Horde), can't-be-countered (Mistrise
- *   Village), affinity (Don & Raph), free cast (World War Hulk I), resolution destination
+ *   Village) and other next-spell stamps (Savage Summoning), affinity (Don & Raph), free cast (World War Hulk I), resolution destination
  *   (Soulfire Grand Master).
  */
 internal class CastTriggers(
@@ -349,7 +349,7 @@ internal class CastTriggers(
             else -> if (copies.outcome !is Outcome.Done) return copies else copies.newState to copies.events
         }
         var newState = afterCopies
-        newState = consumeUncounterableRiders(newState, spell)
+        newState = consumeNextSpellRiderGrants(newState, spell)
         newState = consumeAffinityRiders(newState, spell)
         newState = consumeKeywordRiders(newState, spell)
         newState = consumeFreeCastRiders(newState, spell)
@@ -419,17 +419,20 @@ internal class CastTriggers(
     }
 
     /**
-     * "Next spell can't be countered" riders (e.g., Mistrise Village). The first matching cast
-     * stamps the spell uncounterable and consumes every matching entry; later spells aren't
-     * protected. Unlike the copy rider, face-down spells aren't excluded — a face-down spell is
-     * still "the next spell you cast", and the default Any filter matches it.
+     * "The next spell you cast this turn gets <rider>" grants (Mistrise Village's can't be countered,
+     * Savage Summoning's additional +1/+1 counter). The first matching cast consumes every matching
+     * entry and applies each one's rider to that spell, exactly as mana carrying the rider would have;
+     * later spells get nothing. Unlike the copy rider, face-down spells aren't excluded — a face-down
+     * spell is still "the next spell you cast", and the default Any filter matches it. A rider that
+     * queues a trigger (`TriggersWhenSpent`) joins the pending-trigger wave like a mana rider's does.
      */
-    private fun consumeUncounterableRiders(state: GameState, spell: CastSpellOnStack): GameState {
-        val matching = state.pendingUncounterableSpells.filter { spellMatchesRider(state, spell, it.controllerId, it.sourceId, it.spellFilter) }
+    private fun consumeNextSpellRiderGrants(state: GameState, spell: CastSpellOnStack): GameState {
+        val matching = state.pendingNextSpellRiders.filter { spellMatchesRider(state, spell, it.controllerId, it.sourceId, it.spellFilter) }
         if (matching.isEmpty()) return state
-        return state
-            .copy(pendingUncounterableSpells = state.pendingUncounterableSpells.filter { it !in matching })
-            .updateEntity(spell.action.cardId) { c -> c.with(CantBeCounteredComponent) }
+        val consumed = state.copy(pendingNextSpellRiders = state.pendingNextSpellRiders.filter { it !in matching })
+        val (afterRiders, triggers) = applyManaRiders(consumed, spell, matching.map { it.rider })
+        return if (triggers.isEmpty()) afterRiders
+        else afterRiders.copy(pendingTriggers = afterRiders.pendingTriggers + triggers)
     }
 
     /**
