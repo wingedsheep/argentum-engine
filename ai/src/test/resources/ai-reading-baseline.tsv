@@ -185,6 +185,7 @@ Aerial Doombot
 Aerial Engineer
 Aerial Formation
 Aerial Guide
+Aerial Maneuver
 Aerial Modification
 Aerial Predation
 Aerial Responder
@@ -296,6 +297,7 @@ Agonasaur Rex
 Agonizing Demise
 Agonizing Remorse
 Agonizing Syphon
+Agoraphobia
 Agrus Kos, Eternal Soldier
 Agrus Kos, Spirit of Justice
 Agrus Kos, Wojek Veteran
@@ -978,6 +980,7 @@ Arrogant Outlaw
 Arrogant Poet
 Arrogant Vampire
 Arrow Storm
+Arrows of Justice
 Arterial Flow
 Artful Maneuver
 Artful Takedown
@@ -1595,6 +1598,7 @@ Bebop & Rocksteady
 Bebop, Warthog Warrior
 Beck // Call
 Beckett Mariner, Impetuous Ensign
+Beckon Apparition
 Become Brutes
 Become Immense
 Bedeck // Bedazzle
@@ -2582,6 +2586,7 @@ Burrowing
 Burrowing Razormaw
 Burst Lightning
 Burst of Energy
+Burst of Strength
 Bury in Books
 Bushi Tenderfoot	intent: FlipEffect
 Bushmeat Poacher
@@ -3731,6 +3736,7 @@ Cormela, Glamour Thief
 Cornered Crook
 Cornered by Black Mages
 Corpse Appraiser	polarity: Pipeline(ChosenTargets|TopOfLibrary→exile|graveyard|hand)
+Corpse Blockade
 Corpse Churn
 Corpse Cobble
 Corpse Explosion
@@ -4418,6 +4424,7 @@ Deathcap Cultivator
 Deathcap Glade
 Deathcap Marionette
 Deathcoil Wurm
+Deathcult Rogue
 Deathcurse Ogre
 Deathgaze Cockatrice
 Deathgorge Scavenger
@@ -4834,6 +4841,7 @@ Disciple of Law
 Disciple of Malice
 Disciple of Perdition
 Disciple of Phenax
+Disciple of the Old Ways
 Disciple of the Ring
 Disciple of the Vault
 Disciples of Gix
@@ -5141,6 +5149,7 @@ Drake Hatcher
 Drake Hatchling
 Drake Haven
 Drake-Skull Cameo
+Drakewing Krasis
 Drakuseth, Maw of Flames
 Dramatic Accusation
 Dramatic Finale
@@ -5380,6 +5389,7 @@ Dutiful Griffin
 Dutiful Replicator
 Dutiful Return
 Dutiful Servants
+Dutiful Thrull
 Duty Beyond Death
 Dwalin, Weaponmaster	intent: ForEach>AddCountersEffect
 Dwarfhold Champion
@@ -6964,6 +6974,7 @@ Force of Nature
 Force of Negation
 Force of Vigor
 Force of Will
+Forced Adaptation
 Forced Fruition
 Forced Landing
 Forced March
@@ -7028,6 +7039,7 @@ Fortify
 Fortifying Draught
 Fortifying Provisions
 Fortress Crab
+Fortress Cyclops
 Fortress Kin-Guard
 Fortuitous Find
 Fortune Teller's Talent
@@ -7111,6 +7123,7 @@ Frightshroud Courier
 Frilled Cave-Wurm
 Frilled Deathspitter
 Frilled Mystic
+Frilled Oculus
 Frilled Sandwalla
 Frilled Sea Serpent
 Frilled Sparkshooter
@@ -7195,6 +7208,7 @@ Furious Assault
 Furious Bellow
 Furious Forebear
 Furious Reprisal
+Furious Resistance
 Furious Rise
 Furnace Gremlin
 Furnace Hellkite
@@ -7581,6 +7595,7 @@ Gift of Estates
 Gift of Fangs
 Gift of Growth
 Gift of Immortality
+Gift of Orzhova
 Gift of Paradise
 Gift of Strands
 Gift of Strength
@@ -9047,6 +9062,7 @@ Horrid Vigor
 Horrific Assault
 Horror of Horrors
 Horror of the Broken Lands
+Horror of the Dim
 Horses of the Bruinen
 Horseshoe Crab
 Horta
@@ -10289,6 +10305,7 @@ Ketria Crystal
 Ketria Triome
 Key to the City
 Key to the Side-Door
+Keymaster Rogue
 Keys to the House	intent: LockDoorEffect; intent: UnlockDoorEffect; polarity: LockDoorEffect; polarity: UnlockDoorEffect
 Khaaaaaaaaaaaannn!
 Khabál Ghoul
@@ -10425,6 +10442,7 @@ Klothys, God of Destiny
 Knife
 Knight Errant
 Knight Luminary
+Knight Watch
 Knight of Autumn
 Knight of Dawn's Light
 Knight of Doves
@@ -11347,6 +11365,7 @@ Madame Masque
 Madame Null, Power Broker
 Madame Web, Clairvoyant
 Madcap Experiment
+Madcap Skills
 Maddening Cacophony
 Maelstrom Artisan
 Maelstrom Colossus
@@ -11860,6 +11879,7 @@ Merfolk Spy
 Merfolk Trickster
 Merfolk Wayfinder
 Merfolk Windrobber
+Merfolk of the Depths
 Merfolk of the Pearl Trident
 Meria's Outrider
 Meria, Scholar of Antiquity
@@ -11979,6 +11999,7 @@ Military Intelligence
 Militia Bugler
 Militia Rallier
 Militia's Pride
+Millennial Gargoyle
 Millikin
 Millstone
 Mimeoplasm, Revered One
@@ -12012,6 +12033,7 @@ Mind's Eye
 Mindblaze	intent: ChooseNumberThenEffect; polarity: ChooseNumberThenEffect
 Mindbreak Trap	intent: ForEach>ExileTargetSpellEffect
 Mindcrank
+Mindeye Drake
 Mindful Biomancer
 Mindleech Ghoul
 Mindleech Mass
@@ -12384,6 +12406,7 @@ Mortify
 Mortipede
 Mortiphobia
 Mortuary Mire
+Mortus Strider
 Moseo, Vein's New Dean
 Moss Diamond
 Moss Kami
@@ -12455,6 +12478,7 @@ Muddle the Mixture
 Mudflat Village
 Muerra, Trash Tactician
 Mugato
+Mugging
 Mukotai Ambusher
 Mukotai Soulripper
 Mulch
@@ -12885,6 +12909,7 @@ Nimble Thopterist
 Nimble Trapfinder
 Nimble-Blade Khenra
 Nimbus Naiad
+Nimbus Swimmer
 Nimbus Wings
 Nimbus of the Isles
 Nimraiser Paladin
@@ -14227,6 +14252,7 @@ Primal Frenzy
 Primal Might
 Primal Prayers
 Primal Rage
+Primal Visitation
 Primal Whisperer
 Primal Witchstalker
 Primary Research
@@ -14426,6 +14452,7 @@ Pure Reflection
 Purelace	intent: ChangeColorEffect; polarity: ChangeColorEffect
 Puresteel Paladin
 Purge
+Purge the Profane
 Purging Stormbrood	intent: RemoveAllCountersEffect; timing: GrantEvasionKeywordEffect; timing: GrantKeywordEffect; timing: ModifyStatsEffect
 Purify
 Purify the Grave
@@ -14907,6 +14934,7 @@ Razorkin Hordecaller
 Razorkin Needlehead
 Razorlash Transmogrant
 Razortide Bridge
+Razortip Whip
 Razortrap Gorge
 Razorverge Thicket
 Razzle-Dazzler
@@ -15426,6 +15454,7 @@ Rinoa Heartilly
 Rionya, Fire Dancer
 Riot Control
 Riot Devils
+Riot Gear
 Riot Piker
 Riot Ringleader
 Rip Apart
@@ -16764,6 +16793,7 @@ Shattered Landscape
 Shattered Sanctum
 Shattered Seraph
 Shattered Wings
+Shattering Blow
 Shatterskull Charger
 Shatterskull Giant
 Shatterskull Minotaur
