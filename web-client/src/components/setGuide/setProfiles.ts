@@ -511,6 +511,22 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Devotion', inPlay: 'Gods and devotion payoffs reward heavy commitment to one or two colours, making splashes costlier.' },
     ],
   },
+  M14: {
+    tagline: 'A classic core set where the Slivers return: every Sliver shares its ability with the rest of the hive, beside evergreen flyers, deathtouch and burn.',
+    setting: 'A core set gathered from across the Multiverse, led by Chandra, Garruk, Liliana, Ajani and Jace, with the Slivers back after years away.',
+    gameplay: 'Games are straightforward and creature-driven, decided by curve, combat tricks and the removal at common. Slivers grant their abilities to every Sliver you control, so a few of them snowball into a hive that is hard to block. Each colour plays to type: white and green go wide or big, blue flies and taps, black trades and drains, red burns.',
+    tips: [
+      'Slivers are spread across all five colours, so pick the two colours with the most Slivers you have seen and stay there.',
+      'One removal spell can switch off an ability for the whole hive, so spread your threats rather than stacking every aura on one Sliver.',
+      'Removal like Shock, Celestial Flare and Quag Sickness is plentiful at common: pick it early.',
+    ],
+    tryIf: 'classic core-set Limited and creatures that make each other better',
+    power: 2, speed: 3, complexity: 2,
+    themes: ['tribal', 'flyers'],
+    mechanics: [
+      { name: 'Slivers', inPlay: 'Each Sliver gives its ability to every Sliver you control, so the hive gets stronger with each one, and one removal spell can switch an ability off for all of them.' },
+    ],
+  },
   M15: {
     tagline: 'A classic core set with a twist: convoke lets your creatures help cast spells, Slivers share abilities across the hive and Paragons lead mono-colour armies.',
     setting: 'A core set gathered from across the Multiverse, with Garruk hunting planeswalkers and a Soul for each colour.',

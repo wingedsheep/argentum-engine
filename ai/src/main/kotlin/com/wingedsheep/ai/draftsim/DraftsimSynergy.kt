@@ -39,7 +39,7 @@ internal class DraftsimSynergy(private val ops: DraftsimCardOps) {
     fun profile(card: ScorerCard): SynergyProfile {
         val read = ops.tables.axes[DraftsimData.nameKey(card.name)] ?: return SynergyProfile.NONE
         val tagged = ops.archRecord(card.name)?.archetypes?.isNotEmpty() == true
-        return if (tagged && read.isPayoff) read.copy(rewards = emptySet(), tribesRewarded = emptySet(), asks = emptyList(), grantsChosenTribe = false) else read
+        return if (tagged && read.isPayoff) read.copy(rewards = emptySet(), tribesRewarded = emptySet(), asks = emptyList(), grantsChosenTribe = false, rewardsChosenTribe = false) else read
     }
 
     /** Payoff-equivalents [nonland] keeps fed ([DeckSynergy.fedPayoffs]); zero when synergy is off. */
@@ -79,7 +79,10 @@ internal class DraftsimSynergy(private val ops: DraftsimCardOps) {
         if (points == 0.0) return null
         val wants = profile.rewards.map { it.name.lowercase() } + profile.tribesRewarded.map { it.value } +
             profile.asks.map { it.filter.description } +
-            listOfNotNull("tribal payoffs and off-tribe creatures".takeIf { profile.grantsChosenTribe })
+            listOfNotNull(
+                "tribal payoffs and off-tribe creatures".takeIf { profile.grantsChosenTribe },
+                "creatures of one type".takeIf { profile.rewardsChosenTribe },
+            )
         val reason = when {
             feeding < 0 -> "Shrunk by a card in pool (${profile.tribes.joinToString("/") { it.value }})"
             punishing > 0 -> "Shrinks creatures in pool (${profile.punishes.keys.joinToString("/") { it.value }})"

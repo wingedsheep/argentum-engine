@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-m14',
+    date: '2026-11-22',
+    kind: 'set',
+    setCode: 'M14',
+    title: 'Magic 2014 is complete',
+    body:
+      'The 2013 core set: Slivers return as a hive where every new Sliver hands its keyword to the rest, beside evergreen staples — flyers, deathtouch, auras and burn. Drafts are straightforward, board-driven Magic where curve and combat tricks decide games, with a Sliver pile always tempting the brave.',
+    tryIf: 'classic core-set Limited and creatures that make each other better',
+  },
+  {
     id: 'mode-primordial',
     date: '2026-11-22',
     kind: 'mode',

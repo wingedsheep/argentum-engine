@@ -53,6 +53,12 @@ object DeckSynergy {
         fun membersOf(tribe: Subtype): Int = (members[tribe] ?: 0) + everyTribe
         fun answersTo(ask: CardAsk): Int = answers[ask.filter] ?: 0
 
+        /** Members of the deck's biggest tribe, [payoff]'s own body set aside: what naming a type gets. */
+        fun bestTribeMembers(payoff: SynergyProfile): Int {
+            val best = members.maxOfOrNull { (tribe, n) -> n - if (!payoff.everyTribe && tribe in payoff.tribes) 1 else 0 } ?: 0
+            return (best + everyTribe - if (payoff.everyTribe) 1 else 0).coerceAtLeast(0)
+        }
+
         /** One chosen type, scored by the new members it enables beside an actual payoff. */
         fun chosenTribeShare(enabler: SynergyProfile): Double {
             val ownIndex = cards.indexOfFirst { it === enabler }
@@ -98,7 +104,8 @@ object DeckSynergy {
             val own = if (payoff.answers(ask)) 1 else 0
             min(1.0, (counts.answersTo(ask) - own).coerceAtLeast(0) / ask.wanted)
         } ?: 0.0
-        return maxOf(axes, tribes, asks, if (payoff.grantsChosenTribe) counts.chosenTribeShare(payoff) else 0.0)
+        val chosenTribe = if (payoff.rewardsChosenTribe) min(1.0, counts.bestTribeMembers(payoff) / TRIBE_MEMBERS_WANTED) else 0.0
+        return maxOf(axes, tribes, asks, chosenTribe, if (payoff.grantsChosenTribe) counts.chosenTribeShare(payoff) else 0.0)
     }
 
     /**

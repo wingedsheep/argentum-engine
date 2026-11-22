@@ -5884,6 +5884,65 @@
     ]
 }
 
+// Strionic Resonator
+{
+    "name": "Strionic Resonator",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{2}, {T}: Copy target triggered ability you control. You may choose new targets for the copy. (A triggered ability uses the words \"when,\" \"whenever,\" or \"at.\")",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Strionic Resonator:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CopyTargetTriggeredAbility",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsTriggeredAbility"
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            },
+                            "zone": "Stack"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}, {T}: Copy target triggered ability you control. You may choose new targets for the copy.",
+                "holdPriority": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "224",
+        "rarity": "RARE",
+        "artist": "Noah Bradley",
+        "flavorText": "Its tines cannot be rung by mere physical force. Only magic of great power can start its eldritch resonance.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/94d1fc0f-5c8b-4e47-aaf8-8888c025f70f.jpg?1783939893"
+    }
+}
+
 // Syphon Sliver
 {
     "name": "Syphon Sliver",

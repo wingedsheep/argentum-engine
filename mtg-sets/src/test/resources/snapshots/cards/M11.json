@@ -916,6 +916,121 @@
     ]
 }
 
+// Elixir of Immortality
+{
+    "name": "Elixir of Immortality",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "{2}, {T}: You gain 5 life. Shuffle this artifact and your graveyard into their owner's library.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Elixir of Immortality:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 5
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromMultipleZones",
+                                "zones": [
+                                    "Battlefield",
+                                    "Graveyard"
+                                ],
+                                "player": "Each",
+                                "filter": {
+                                    "anyOf": [
+                                        {
+                                            "statePredicates": [
+                                                {
+                                                    "type": "StateAnd",
+                                                    "predicates": [
+                                                        "IsSource",
+                                                        {
+                                                            "type": "InZone",
+                                                            "zone": "Battlefield"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "statePredicates": [
+                                                {
+                                                    "type": "InZone",
+                                                    "zone": "Graveyard"
+                                                }
+                                            ],
+                                            "controllerPredicate": "OwnedByYou"
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Shuffled"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{2}, {T}: You gain 5 life. Shuffle this artifact and your graveyard into their owner's library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "rarity": "UNCOMMON",
+        "artist": "Zoltan Boros & Gabor Szikszai",
+        "flavorText": "\"Bottled life. Not as tasty as I'm used to, rather stale, but it has the same effect.\"\n—Baron Sengir",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/99bd4740-9b1f-40a6-a14d-2c0d642b848b.jpg?1783941791",
+        "rulings": [
+            {
+                "date": "2011-09-22",
+                "text": "As the ability resolves, you’ll shuffle Elixir of Immortality into its owner’s library directly from the battlefield, if it’s still there."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "If Elixir of Immortality is in your graveyard at the time the ability resolves, you’ll still wind up shuffling it into your library because you shuffle your entire graveyard into your library. If it’s anywhere else by that time, including in another player’s graveyard, it remains where it is and you shuffle just your graveyard into your library."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "If you gain control of another player’s Elixir of Immortality and activate it, the Elixir of Immortality will be shuffled into its owner’s library and the cards in your graveyard will be shuffled into your library. You are considered to have shuffled each affected library (even if, as a shortcut, each player physically shuffles their own library)."
+            },
+            {
+                "date": "2010-08-15",
+                "text": "Paying the activation cost of Elixir of Immortality’s ability doesn’t cause it to leave the battlefield. If you have a way to untap it, you can activate the ability multiple times in response to itself."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Ember Hauler
 {
     "name": "Ember Hauler",
