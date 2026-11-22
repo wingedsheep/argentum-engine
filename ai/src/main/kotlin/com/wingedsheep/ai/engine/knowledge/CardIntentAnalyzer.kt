@@ -3539,13 +3539,6 @@ object CardIntentAnalyzer {
     }
 
     /**
-     * Whether [effect] sets its controller's own life total to a fixed number above the starting 20
-     * (Providence's 26), or back up to their own starting life total (Resolute Archangel, Oketra's
-     * Last Mercy, Long Rest: "your life total becomes your starting life total") — the gain
-     * [leafTagsOf] reads it as. The reset is cast or triggered when behind, where it restores the
-     * life lost; a format's starting total (40 in Commander) is the game's, never a hard-coded 20.
-     */
-    /**
      * What a next-spell rider does for the spell it rides: "can't be countered" protects it, entry
      * counters or an entry keyword grow the creature, a trigger is read as its effect, the commander
      * scry as card selection.
@@ -3559,6 +3552,13 @@ object CardIntentAnalyzer {
         is ManaSpellRider.ScryOnSharedTypeWithCommander -> setOf(IntentTag.CARD_SELECTION)
     }
 
+    /**
+     * Whether [effect] sets its controller's own life total to a fixed number above the starting 20
+     * (Providence's 26), or back up to their own starting life total (Resolute Archangel, Oketra's
+     * Last Mercy, Long Rest: "your life total becomes your starting life total") — the gain
+     * [leafTagsOf] reads it as. The reset is cast or triggered when behind, where it restores the
+     * life lost; a format's starting total (40 in Commander) is the game's, never a hard-coded 20.
+     */
     private fun setsOwnLifeAboveStart(effect: SetLifeTotalEffect): Boolean {
         val ours = effect.target == EffectTarget.Controller || effect.target == EffectTarget.PlayerRef(Player.You)
         return ours && when (val amount = effect.amount) {
