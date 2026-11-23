@@ -3946,6 +3946,7 @@ Crown of Fury	intent: GrantToEnchantedCreatureTypeGroupEffect; timing: GrantToEn
 Crown of Skemfar
 Crown of Suspicion	intent: GrantToEnchantedCreatureTypeGroupEffect; timing: GrantToEnchantedCreatureTypeGroupEffect
 Crown of Vigor	intent: GrantToEnchantedCreatureTypeGroupEffect; timing: GrantToEnchantedCreatureTypeGroupEffect
+Crowned Ceratok
 Crucible of Fire
 Crucible of Worlds
 Crucible of the Spirit Dragon
@@ -7518,6 +7519,7 @@ Ghitu Fire-Eater
 Ghitu Journeymage
 Ghitu Lavarunner
 Ghitu War Cry
+Ghor-Clan Rampager
 Ghor-Clan Wrecker
 Ghost Ship
 Ghost Tactician
@@ -8236,6 +8238,7 @@ Greenbelt Rampager
 Greenhouse // Rickety Gazebo
 Greenhouse Propagator
 Greenseeker
+Greenside Watcher
 Greenwarden of Murasa
 Greenweaver Druid
 Greenwheel Liberator
@@ -8343,9 +8346,12 @@ Gruff Triplets
 Grumgully, the Generous
 Grunn, the Lonely King
 Gruul Beastmaster
+Gruul Charm
 Gruul Cluestone
 Gruul Guildgate
+Gruul Keyrune
 Gruul Locket
+Gruul Ragebeast
 Gruul Signet
 Gruul Spellbreaker
 Gruul Turf
@@ -14007,6 +14013,7 @@ Pirate's Prize
 Pirated Copy
 Piston-Fist Cyclops
 Pit Automaton
+Pit Fight
 Pit Imp
 Pit Keeper
 Pit Raptor
@@ -15782,9 +15789,11 @@ Rubblebelt Boar
 Rubblebelt Braggart	intent: SuspectEffect
 Rubblebelt Maaka
 Rubblebelt Maverick
+Rubblebelt Raiders
 Rubblebelt Recluse
 Rubblebelt Rioters
 Rubblebelt Runner
+Rubblehulk
 Rubinia Soulsinger
 Ruby Leech
 Ruby Medallion
@@ -16207,6 +16216,7 @@ Sazacap's Brew
 Sazh Katzroy
 Sazh's Chocobo
 Scab-Clan Berserker
+Scab-Clan Charger
 Scab-Clan Giant
 Scalding Cauldron
 Scalding Devil
@@ -17234,6 +17244,8 @@ Sizzling Soloist
 Skaab Goliath
 Skaab Wrangler
 Skalla Wolf
+Skarrg Goliath
+Skarrg Guildmage
 Skarrgan Hellkite
 Skateboard
 Skatewing Spy
@@ -17409,6 +17421,7 @@ Slaughter Singer
 Slaughter Specialist
 Slaughter the Strong
 Slaughter-Priest of Mogis
+Slaughterhorn
 Slavering Branchsnapper
 Slay
 Slayer of the Wicked
@@ -22139,6 +22152,7 @@ Wreckage Wickerfolk
 Wrecking Beast
 Wrecking Crew
 Wrecking Gecko
+Wrecking Ogre
 Wren's Run Packmaster	intent: EmitChampionedEventEffect
 Wren's Run Vanquisher
 Wrench
@@ -22354,6 +22368,7 @@ Zhuge Jin, Wu Strategist
 Zhur-Taa Ancient
 Zhur-Taa Druid
 Zhur-Taa Goblin
+Zhur-Taa Swine
 Ziatora's Envoy
 Ziatora's Proving Ground
 Ziatora, the Incinerator
