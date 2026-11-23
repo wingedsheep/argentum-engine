@@ -268,7 +268,7 @@ class TargetValidator(
             }
 
             if (DynamicTargetCount.objectOf(requirement)?.ownerDistribution != null &&
-                !OwnerTargetDistribution.isSatisfied(state, targetsForReq.map { it.toEntityId() })) {
+                !OwnerTargetDistribution.isSatisfied(state, requirement, targetsForReq.map { it.toEntityId() })) {
                 return "Targets must come from different owner groups"
             }
             val numericProperty = (requirement as? TargetObject)?.sameNumericProperty

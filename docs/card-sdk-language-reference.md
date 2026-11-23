@@ -7031,6 +7031,12 @@ Every `TargetRequirement` carries count semantics (defaults shown):
   `targets(TargetFilter(GameObjectFilter.InstantOrSorcery, Zone.GRAVEYARD),
   ownerDistribution = OwnerDistribution.EXACTLY_ONE)` for Mysterious Stranger; then gather the chosen
   targets, track cards actually exiled, and gate its random-copy offer on at least two actual moves.
+- `distributeByController = false` — on `TargetObject`, only alongside `ownerDistribution`: groups the
+  candidates by their *projected controller* instead of their owner, so the count is one per player who
+  controls a legal candidate and a stolen permanent counts for its current controller. "For each
+  opponent, destroy target noncreature permanent that player controls" (Sylvan Primordial) is
+  `targets(TargetFilter.NoncreaturePermanent.opponentControls(), ownerDistribution =
+  OwnerDistribution.EXACTLY_ONE, distributeByController = true)`. Rejected without `ownerDistribution`.
 - `sameOwner = false` — on `TargetObject`; when `true` and the requirement picks more than one target,
   every chosen **card** target must share an owner ("**exile up to two target cards from a single
   graveyard**"). Enforced cross-target both at cast time (`TargetValidator`) and on triggered-ability

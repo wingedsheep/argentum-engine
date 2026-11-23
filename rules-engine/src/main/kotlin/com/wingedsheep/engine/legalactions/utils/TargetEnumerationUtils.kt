@@ -422,7 +422,7 @@ class TargetEnumerationUtils(
                 emptyList() else validTargets
             TargetInfo(
                 exclusiveGroups = if ((req as? TargetObject)?.ownerDistribution != null)
-                    com.wingedsheep.engine.mechanics.targeting.OwnerTargetDistribution.groups(state, validTargets)
+                    com.wingedsheep.engine.mechanics.targeting.OwnerTargetDistribution.groups(state, req, validTargets)
                     else differentValueGroups,
                 selectionGroups = equalityGroups,
                 index = index,

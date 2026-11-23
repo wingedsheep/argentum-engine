@@ -544,6 +544,15 @@ data class TargetObject(
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val ownerDistribution: OwnerDistribution? = null,
     /**
+     * With [ownerDistribution], group the candidates by their *projected controller* instead of their
+     * owner — "for each opponent, destroy target noncreature permanent that player controls" (Sylvan
+     * Primordial): one target per player who controls a legal candidate, so a stolen permanent counts
+     * for the player controlling it now. Meaningless (and rejected) without [ownerDistribution].
+     */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val distributeByController: Boolean = false,
+    /**
      * All targets in this requirement must have equal values of this property, both when chosen
      * and when resolving. Battlefield characteristics use projected state; other zones use the
      * card's characteristics. COUNTERS compares the total number of counters of every kind.
@@ -648,6 +657,9 @@ data class TargetObject(
     override val chooser: TargetChooser = TargetChooser.Controller
 ) : TargetRequirement {
     init {
+        require(!distributeByController || ownerDistribution != null) {
+            "distributeByController only regroups an ownerDistribution requirement"
+        }
         // Both are announced as exclusive pools (one pick per value / per owner) and an equality
         // restriction contradicts a difference one, so they don't combine on one requirement.
         require(differentNumericProperty == null || (sameNumericProperty == null && ownerDistribution == null &&
@@ -686,7 +698,8 @@ data class TargetObject(
             dynamicMaxCount == DynamicAmount.PlayerCount(com.wingedsheep.sdk.scripting.references.Player.EachOpponent)
         val target = if (other) "other target" else "target"
         val base = when {
-            ownerDistribution != null -> "${if (ownerDistribution == OwnerDistribution.UP_TO_ONE) "up to one" else "one"} $target $noun per eligible owner"
+            ownerDistribution != null -> "${if (ownerDistribution == OwnerDistribution.UP_TO_ONE) "up to one" else "one"} $target $noun per " +
+                if (distributeByController) "eligible controller" else "eligible owner"
             onePerCardType -> "up to one $target $noun of each card type"
             onePerColor -> "up to one $target $noun of each color"
             unlimited && minCount > 0 -> "${numberToWord(minCount)} or more $target $plural"
