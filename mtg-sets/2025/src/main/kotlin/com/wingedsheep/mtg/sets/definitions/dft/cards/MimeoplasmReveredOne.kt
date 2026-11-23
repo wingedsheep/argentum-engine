@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.dft.cards
 
+import com.wingedsheep.sdk.scripting.effects.CopySourceRead
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.DynamicAmounts
@@ -47,7 +48,7 @@ val MimeoplasmReveredOne = card("Mimeoplasm, Revered One") {
         effect = Effects.EachPermanentBecomesCopyOfTarget(
             target = creatureCard,
             affected = EffectTarget.Self,
-            sourceFromAnyZone = true,
+            sourceRead = CopySourceRead.ANY_ZONE,
             retainActivatingAbility = true,
             exceptions = CopyExceptions(powerOverride = 0, toughnessOverride = 0),
         )

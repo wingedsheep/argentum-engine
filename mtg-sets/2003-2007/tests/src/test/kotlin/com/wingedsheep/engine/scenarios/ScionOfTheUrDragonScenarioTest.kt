@@ -16,7 +16,7 @@ import io.kotest.matchers.shouldBe
  * it into your graveyard. If you do, Scion of the Ur-Dragon becomes a copy of that card until end of
  * turn. Then shuffle."
  *
- * Pins the composition: the copy reads the card in the graveyard (`sourceFromAnyZone`), is gated on
+ * Pins the composition: the copy reads the card in the graveyard (`sourceRead = ANY_ZONE`), is gated on
  * a card actually having been put there ("if you do"), and reverts at end of turn.
  */
 class ScionOfTheUrDragonScenarioTest : ScenarioTestBase() {

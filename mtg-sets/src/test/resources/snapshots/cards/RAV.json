@@ -4157,7 +4157,7 @@
                                 "name": "t0"
                             },
                             "affected": "Self",
-                            "sourceFromAnyZone": true,
+                            "sourceRead": "ANY_ZONE",
                             "retainActivatingAbility": true
                         }
                     ]

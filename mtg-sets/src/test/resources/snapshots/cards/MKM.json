@@ -12774,7 +12774,7 @@
                                 "type": "BoundVariable",
                                 "name": "t0"
                             },
-                            "sourceFromAnyZone": true,
+                            "sourceRead": "ANY_ZONE",
                             "exceptions": {
                                 "addedKeywords": [
                                     "FLYING"
@@ -13984,7 +13984,7 @@
                                 },
                                 "duration": "EndOfTurn",
                                 "affected": "Self",
-                                "sourceFromAnyZone": true
+                                "sourceRead": "ANY_ZONE"
                             }
                         }
                     ]

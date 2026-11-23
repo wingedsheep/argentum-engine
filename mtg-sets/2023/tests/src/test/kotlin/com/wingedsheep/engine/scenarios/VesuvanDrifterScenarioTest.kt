@@ -11,7 +11,7 @@ import io.kotest.matchers.shouldBe
 /**
  * Vesuvan Drifter (MAT #10): at the beginning of each combat, you may reveal the top card of your
  * library; if it's a creature card, Drifter becomes a copy of it until end of turn, except it has
- * flying. The copy source stays in the library (`sourceFromAnyZone`).
+ * flying. The copy source stays in the library (`sourceRead = ANY_ZONE`).
  */
 class VesuvanDrifterScenarioTest : ScenarioTestBase() {
 

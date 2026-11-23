@@ -7683,6 +7683,87 @@
     ]
 }
 
+// Lazav, Dimir Mastermind
+{
+    "name": "Lazav, Dimir Mastermind",
+    "manaCost": "{U}{U}{B}{B}",
+    "typeLine": "Legendary Creature — Shapeshifter",
+    "oracleText": "Hexproof\nWhenever a creature card is put into an opponent's graveyard from anywhere, you may have Lazav become a copy of that card, except its name is Lazav, Dimir Mastermind, it's legendary in addition to its other types, and it has hexproof and this ability.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "HEXPROOF"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lazav, Dimir Mastermind:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken own:opponent",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "sourceRequiredZone": "Battlefield"
+                    },
+                    "then": {
+                        "type": "EachPermanentBecomesCopyOfTarget",
+                        "target": "TriggeringEntity",
+                        "affected": "Self",
+                        "sourceRead": "CARD",
+                        "exceptions": {
+                            "nameOverride": "Lazav, Dimir Mastermind",
+                            "addedKeywords": [
+                                "HEXPROOF"
+                            ],
+                            "addedSupertypes": [
+                                "LEGENDARY"
+                            ],
+                            "retainResolvingTriggeredAbility": true
+                        }
+                    },
+                    "descriptionOverride": "Have Lazav become a copy of that card?"
+                },
+                "descriptionOverride": "Whenever a creature card is put into an opponent's graveyard from anywhere, you may have Lazav become a copy of that card, except its name is Lazav, Dimir Mastermind, it's legendary in addition to its other types, and it has hexproof and this ability."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "174",
+        "rarity": "MYTHIC",
+        "artist": "David Rapoza",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/69c8fcdb-4798-4961-995a-e128a3ff431a.jpg?1783940106",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "Lazav, Dimir Mastermind becomes a copy of the creature card in the graveyard. If that card is no longer in the graveyard when Lazav's ability resolves, use the characteristics of that card as it last existed in the graveyard. Notably, copy effects that applied to the creature card when it was on the battlefield won't be copied by Lazav. For example, if a Clone is put into an opponent's graveyard from the battlefield and you use Lazav's ability, it will become 0/0. It won't become a copy of whatever Clone was copying."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If multiple creature cards are put into an opponent's graveyard at the same time, you choose the order that Lazav's triggered abilities go on the stack."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "\"Enters\" abilities of the creature card Lazav is copying won't trigger as Lazav is already on the battlefield when it becomes a copy of that creature card."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "Token creatures dying won't cause Lazav's triggered ability to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Legion Loyalist
 {
     "name": "Legion Loyalist",

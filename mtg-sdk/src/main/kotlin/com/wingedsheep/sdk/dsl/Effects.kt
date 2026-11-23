@@ -8038,9 +8038,11 @@ object Effects {
      * (Fleeting Reflection) — then only that one resolved permanent becomes a copy of [target],
      * and [filter] / [excludeTarget] are ignored.
      *
-     * Pass [sourceFromAnyZone] = true to let the copy *source* ([target]) live outside the
-     * battlefield — its copiable characteristics are read wherever it currently is (e.g. a card in
-     * exile). Used by Lazav, Familiar Stranger: "become a copy of that [exiled] card."
+     * Pass [sourceRead] = [com.wingedsheep.sdk.scripting.effects.CopySourceRead.ANY_ZONE] to let the
+     * copy *source* ([target]) live outside the battlefield — its copiable characteristics are read
+     * wherever it currently is (Lazav, Familiar Stranger: "become a copy of that [exiled] card"), or
+     * [com.wingedsheep.sdk.scripting.effects.CopySourceRead.CARD] for "a copy of that card" naming
+     * the card in its new zone rather than the permanent it was (Lazav, Dimir Mastermind).
      *
      * Pass [exceptions] for the "except …" half of the copy (CR 707.9) — name, added or removed
      * types, added keywords, base P/T, colors. See
@@ -8055,7 +8057,8 @@ object Effects {
         duration: Duration = Duration.Permanent,
         excludeTarget: Boolean = false,
         affected: EffectTarget? = null,
-        sourceFromAnyZone: Boolean = false,
+        sourceRead: com.wingedsheep.sdk.scripting.effects.CopySourceRead =
+            com.wingedsheep.sdk.scripting.effects.CopySourceRead.PERMANENT,
         exceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions =
             com.wingedsheep.sdk.scripting.effects.CopyExceptions.None,
         retainActivatingAbility: Boolean = false,
@@ -8065,7 +8068,7 @@ object Effects {
         duration = duration,
         excludeTarget = excludeTarget,
         affected = affected,
-        sourceFromAnyZone = sourceFromAnyZone,
+        sourceRead = sourceRead,
         exceptions = exceptions,
         retainActivatingAbility = retainActivatingAbility,
     )

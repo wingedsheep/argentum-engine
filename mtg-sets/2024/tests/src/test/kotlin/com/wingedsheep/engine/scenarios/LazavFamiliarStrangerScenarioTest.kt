@@ -16,7 +16,7 @@ import io.kotest.matchers.shouldBe
  *   graveyard. If a creature card was exiled this way, you may have Lazav become a copy of that
  *   card until end of turn. This ability triggers only once each turn.
  *
- * Exercises the new `EachPermanentBecomesCopyOfTarget(sourceFromAnyZone = true)` path — Lazav
+ * Exercises the new `EachPermanentBecomesCopyOfTarget(sourceRead = CopySourceRead.ANY_ZONE)` path — Lazav
  * copies a creature card sitting in exile, not on the battlefield.
  */
 class LazavFamiliarStrangerScenarioTest : ScenarioTestBase() {

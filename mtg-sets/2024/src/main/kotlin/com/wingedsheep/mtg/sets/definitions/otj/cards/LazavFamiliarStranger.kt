@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.otj.cards
 
+import com.wingedsheep.sdk.scripting.effects.CopySourceRead
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
@@ -29,7 +30,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *     Declining (picking none) is the "may".
  *  3. Filter the exiled pick to creature cards. If a creature card was exiled, the controller may
  *     have Lazav become a copy of that card until end of turn —
- *     [Effects.EachPermanentBecomesCopyOfTarget] with `affected = Self`, `sourceFromAnyZone = true`
+ *     [Effects.EachPermanentBecomesCopyOfTarget] with `affected = Self`, `sourceRead = CopySourceRead.ANY_ZONE`
  *     (the copy source sits in exile, not on the battlefield), wrapped in [Effects.May] and gated on
  *     the creature filter via [Effects.If]. Copies copiable values only (Rule 707), so
  *     Lazav keeps his counters and stays a Shapeshifter creature.
@@ -75,7 +76,7 @@ val LazavFamiliarStranger = card("Lazav, Familiar Stranger") {
                             target = creatureExiled.asTarget,
                             duration = Duration.EndOfTurn,
                             affected = EffectTarget.Self,
-                            sourceFromAnyZone = true,
+                            sourceRead = CopySourceRead.ANY_ZONE,
                         ),
                         descriptionOverride = "You may have Lazav become a copy of that card until end of turn.",
                     ),

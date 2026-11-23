@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.rav.cards
 
+import com.wingedsheep.sdk.scripting.effects.CopySourceRead
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
@@ -17,7 +18,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * {1}{U}{B}: Exile target creature card from a graveyard. This creature becomes a copy of that
  * card, except it has this ability.
  *
- * The Likeness Looter shape with an exile step in front of it. `sourceFromAnyZone` is what makes the
+ * The Likeness Looter shape with an exile step in front of it. `sourceRead = ANY_ZONE` is what makes the
  * ordering work: the copy reads the card's copiable characteristics (CR 707.2) after it has already
  * left the graveyard for exile, and the target handle still names the same entity on the other side
  * of that zone change.
@@ -47,7 +48,7 @@ val DimirDoppelganger = card("Dimir Doppelganger") {
             Effects.EachPermanentBecomesCopyOfTarget(
                 target = creatureCard,
                 affected = EffectTarget.Self,
-                sourceFromAnyZone = true,
+                sourceRead = CopySourceRead.ANY_ZONE,
                 duration = Duration.Permanent,
                 retainActivatingAbility = true,
             )

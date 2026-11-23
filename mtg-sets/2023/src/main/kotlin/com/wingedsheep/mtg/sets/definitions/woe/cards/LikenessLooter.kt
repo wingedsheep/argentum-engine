@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.woe.cards
 
+import com.wingedsheep.sdk.scripting.effects.CopySourceRead
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
@@ -26,7 +27,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *
  * The copy ability is the Rydia, Summoner of Mist shape — an `{X}` activation whose chosen X
  * threads into the target filter via `manaValueEqualsX()`, so only a graveyard creature whose mana
- * value is exactly X is legal. `sourceFromAnyZone` lets the copy source stay in the graveyard
+ * value is exactly X is legal. `sourceRead = ANY_ZONE` lets the copy source stay in the graveyard
  * (CR 707.2 reads its copiable characteristics wherever it is), and `affected = Self` narrows the
  * usual mass-copy to this one permanent.
  *
@@ -63,7 +64,7 @@ val LikenessLooter = card("Likeness Looter") {
         effect = Effects.EachPermanentBecomesCopyOfTarget(
             target = creatureCard,
             affected = EffectTarget.Self,
-            sourceFromAnyZone = true,
+            sourceRead = CopySourceRead.ANY_ZONE,
             duration = Duration.Permanent,
             exceptions = CopyExceptions(addedKeywords = setOf(Keyword.FLYING)),
             retainActivatingAbility = true,

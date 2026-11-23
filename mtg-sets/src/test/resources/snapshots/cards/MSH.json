@@ -17222,7 +17222,7 @@
                     },
                     "duration": "UntilYourNextTurn",
                     "affected": "Self",
-                    "sourceFromAnyZone": true,
+                    "sourceRead": "ANY_ZONE",
                     "exceptions": {
                         "nameOverride": "Taskmaster, Mercenary Mimic",
                         "addedSupertypes": [

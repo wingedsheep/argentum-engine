@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.msh.cards
 
+import com.wingedsheep.sdk.scripting.effects.CopySourceRead
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Supertype
@@ -29,7 +30,7 @@ import com.wingedsheep.sdk.core.Step
  * [CopyExceptions] — with two differences that matter:
  *
  *  - The copy source may be a **card in a graveyard**, so the target is a cross-zone union
- *    (`TargetFilter.or`, the Sorceress's Schemes shape) and the effect needs `sourceFromAnyZone`
+ *    (`TargetFilter.or`, the Sorceress's Schemes shape) and the effect needs `sourceRead = ANY_ZONE`
  *    to read copiable characteristics outside the battlefield.
  *  - His type clause **replaces** rather than adds. Absorbing Man says "in addition to his other
  *    types" and Taskmaster deliberately does not. CR 205.1a is the default — a stated card type or
@@ -68,7 +69,7 @@ val TaskmasterMercenaryMimic = card("Taskmaster, Mercenary Mimic") {
             target = copySource,
             affected = EffectTarget.Self,
             duration = Duration.UntilYourNextTurn,
-            sourceFromAnyZone = true,
+            sourceRead = CopySourceRead.ANY_ZONE,
             exceptions = CopyExceptions(
                 nameOverride = "Taskmaster, Mercenary Mimic",
                 addedSupertypes = setOf(Supertype.LEGENDARY),

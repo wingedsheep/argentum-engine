@@ -12257,7 +12257,7 @@
                                 "baseFilter": "name:Shard ctrl:you"
                             },
                             "duration": "UntilNextEndStep",
-                            "sourceFromAnyZone": true
+                            "sourceRead": "ANY_ZONE"
                         }
                     ]
                 },

@@ -2059,7 +2059,7 @@
                                         "excludeSelf": true
                                     },
                                     "duration": "EndOfTurn",
-                                    "sourceFromAnyZone": true
+                                    "sourceRead": "ANY_ZONE"
                                 }
                             }
                         },

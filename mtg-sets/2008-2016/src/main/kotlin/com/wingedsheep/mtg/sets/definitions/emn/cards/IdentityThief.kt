@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.emn.cards
 
+import com.wingedsheep.sdk.scripting.effects.CopySourceRead
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.Triggers
@@ -24,7 +25,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *  2. [Effects.EachPermanentBecomesCopyOfTarget] with `affected = Self` makes Identity Thief the
  *     copy. The target left the battlefield earlier in this same resolution, so the executor reads
  *     its copiable values as it last existed there (CR 608.2h, CR 707.2) — the face shown, and what
- *     it was copying if it was a copy — never its counters or non-copy effects. `sourceFromAnyZone`
+ *     it was copying if it was a copy — never its counters or non-copy effects. `sourceRead = ANY_ZONE`
  *     is the fallback that lets the exiled source be read at all.
  *  3. [Duration.EndOfTurn] keeps the copy through the end step the card returns in (ruling) and
  *     drops it at cleanup.
@@ -52,7 +53,7 @@ val IdentityThief = card("Identity Thief") {
                     target = creature,
                     affected = EffectTarget.Self,
                     duration = Duration.EndOfTurn,
-                    sourceFromAnyZone = true,
+                    sourceRead = CopySourceRead.ANY_ZONE,
                 ),
             prompt = "Exile the target creature and have Identity Thief become a copy of it until end of turn?",
         )

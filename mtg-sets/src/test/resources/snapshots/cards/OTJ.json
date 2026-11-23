@@ -10503,7 +10503,7 @@
                                     },
                                     "duration": "EndOfTurn",
                                     "affected": "Self",
-                                    "sourceFromAnyZone": true
+                                    "sourceRead": "ANY_ZONE"
                                 },
                                 "descriptionOverride": "You may have Lazav become a copy of that card until end of turn."
                             }
