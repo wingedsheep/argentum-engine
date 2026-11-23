@@ -1208,11 +1208,12 @@ data class EntersAs(
         val parts = buildList {
             if (c.power != null) add("${c.power}/${c.toughness}")
             c.addedColors.forEach { add(it.displayName.lowercase()) }
+            c.creatureSubtypes?.forEach { add(it.value) }
             c.addedSubtypes.forEach { add(it.value) }
             c.addedCardTypes.forEach { add(it.name.lowercase()) }
         }
-        append(if (parts.isEmpty()) "it is" else "a ${parts.joinToString(" ")}")
-        append(" in addition to its other types")
+        append("a ${parts.joinToString(" ")}")
+        append(if (c.creatureSubtypes != null) " and loses all other creature types" else " in addition to its other types")
         if (condition != null) append(" if ${condition.description}")
     }
 

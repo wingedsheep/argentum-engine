@@ -20863,7 +20863,8 @@ The priority groups are (CR 616.1a–f):
   permanent applies to *other* permanents matching `appliesTo` as they enter (every entry path: cast,
   token, put onto the battlefield); set **`otherOnly`** on "each *other* …" so the carrier's own entry
   skips it, **`selfOnly`** on "this creature enters as …". `condition` is judged against the entering
-  permanent. Master Biomancer: `EntersAs(EntersWithCharacteristics(addedSubtypes = setOf(Subtype("Mutant"))), otherOnly = true)`
+  permanent. Pre-entry judgments (`EntryCharacteristics.projectedAsEntering` — "would a creature enter"
+  for Containment Priest-style redirects, Sunburst) see it too, via `EntersWithReplacements.applyEntersAsToScratch`. Master Biomancer: `EntersAs(EntersWithCharacteristics(addedSubtypes = setOf(Subtype("Mutant"))), otherOnly = true)`
   beside `EntersWithDynamicCounters(DynamicAmounts.powerOf(EffectTarget.GrantingSource), otherOnly = true)`.
 - `EntersWithDevour(multiplier, sacrificeFilter, counterType, variant)` — Devour (CR 702.82) and its
   printed variants. As the permanent resolves from the stack, the controller is prompted to pick any

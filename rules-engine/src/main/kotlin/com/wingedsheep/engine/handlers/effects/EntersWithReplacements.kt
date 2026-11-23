@@ -685,6 +685,50 @@ object EntersWithReplacements {
     }
 
     /**
+     * Apply every [EntersAs] that will change [entityId] as it enters — its own (not `otherOnly`) and
+     * those of other battlefield permanents and durational grants (not `selfOnly`, `appliesTo`
+     * matching) — to a **scratch** state where it already stands on the battlefield. This is what
+     * pre-entry judgments ([EntryCharacteristics.projectedAsEntering]: "would a creature enter",
+     * Sunburst) read, so they see the object as it will exist (CR 614.12); the real entry applies the
+     * same effects through [applyFromDefinition] / [applyGlobal]. Never call it on live state.
+     */
+    fun applyEntersAsToScratch(
+        scratch: GameState,
+        entityId: EntityId,
+        controllerId: EntityId,
+        cardRegistry: CardRegistry,
+        predicateEvaluator: PredicateEvaluator,
+    ): GameState {
+        var newState = scratch
+        val cardDef = scratch.getEntity(entityId)?.get<CardComponent>()
+            ?.let { cardRegistry.getCard(it.cardDefinitionId) }
+        cardDef?.script?.replacementEffects?.filterIsInstance<EntersAs>()?.forEach { effect ->
+            if (effect.otherOnly || Zone.BATTLEFIELD !in effect.activeZones) return@forEach
+            val context = EffectContext(sourceId = entityId, controllerId = controllerId)
+            if (effect.condition != null && !predicateEvaluator.conditions.evaluate(newState, effect.condition!!, context)) return@forEach
+            newState = CharacteristicsEntry.apply(newState, entityId, controllerId, effect.characteristics)
+        }
+        val sources = scratch.getBattlefield().filter { it != entityId }.flatMap { sourceId ->
+            val sourceController = scratch.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
+                ?: return@flatMap emptyList()
+            scratch.activeReplacementSource(sourceId)?.replacementEffects.orEmpty()
+                .filterIsInstance<EntersAs>().map { Triple(sourceId, sourceController, it) }
+        } + scratch.grantedReplacementEffects.mapNotNull { grant ->
+            (grant.replacement as? EntersAs)?.let { Triple(grant.entityId, grant.controllerId, it) }
+        }
+        for ((sourceId, sourceController, effect) in sources) {
+            if (effect.selfOnly || Zone.BATTLEFIELD !in effect.activeZones) continue
+            if (!matchesEnterFilter(effect.appliesTo, entityId, sourceId, sourceController, newState, predicateEvaluator)) continue
+            if (effect.condition != null) {
+                val context = EffectContext(sourceId = entityId, controllerId = sourceController, affectedEntityId = entityId)
+                if (!predicateEvaluator.conditions.evaluate(newState, effect.condition!!, context)) continue
+            }
+            newState = CharacteristicsEntry.apply(newState, entityId, controllerId, effect.characteristics)
+        }
+        return newState
+    }
+
+    /**
      * Mark a one-shot ([Duration.NextUse]) grant as spent once it has modified an entry. It keeps
      * applying to the objects entering simultaneously with this one and is purged at the next
      * event boundary ([com.wingedsheep.engine.replacement.ActiveReplacements.purgeSpent]).

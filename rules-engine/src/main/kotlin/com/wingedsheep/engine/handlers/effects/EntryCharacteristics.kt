@@ -76,6 +76,8 @@ object EntryCharacteristics {
         entersWith?.let {
             scratch = com.wingedsheep.engine.handlers.effects.zones.CharacteristicsEntry.apply(scratch, entityId, controller, it)
         }
+        // So are the printed "enters as a … in addition to its other types" replacements (EntersAs).
+        scratch = EntersWithReplacements.applyEntersAsToScratch(scratch, entityId, controller, cardRegistry, predicateEvaluator)
         return scratch.projectedState
     }
 

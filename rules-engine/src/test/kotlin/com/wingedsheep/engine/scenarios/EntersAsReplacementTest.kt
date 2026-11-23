@@ -183,6 +183,43 @@ class EntersAsReplacementTest : FunSpec({
         driver.isMutant(driver.named(me, "Grizzly Bears")) shouldBe false
     }
 
+    test("pre-entry judgments see a static EntersAs (would a creature enter)") {
+        val animator = card("Test Animator") {
+            manaCost = "{3}"
+            typeLine = "Artifact"
+            replacementEffect(
+                EntersAs(
+                    characteristics = EntersWithCharacteristics.creature(2, 2, "Construct"),
+                    otherOnly = true,
+                    appliesTo = com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent(
+                        filter = GameObjectFilter.Artifact.youControl(), to = Zone.BATTLEFIELD,
+                    ),
+                )
+            )
+        }
+        val trinket = card("Test Trinket") {
+            manaCost = "{1}"
+            typeLine = "Artifact"
+        }
+        val driver = newDriver()
+        driver.registerCards(listOf(animator, trinket))
+        val me = driver.activePlayer!!
+        val inHand = driver.putCardInHand(me, "Test Trinket")
+        fun wouldBeCreature() = com.wingedsheep.engine.handlers.effects.EntryCharacteristics.wouldBeCreature(
+            driver.state, inHand, me, null, false, driver.cardRegistry, driver.services.predicateEvaluator,
+        )
+        wouldBeCreature() shouldBe false
+
+        driver.putPermanentOnBattlefield(me, "Test Animator")
+        wouldBeCreature() shouldBe true
+
+        driver.giveMana(me, Color.GREEN, 1)
+        driver.castSpell(me, inHand)
+        driver.bothPass()
+        driver.state.projectedState.isCreature(inHand) shouldBe true
+        driver.state.projectedState.hasSubtype(inHand, "Construct") shouldBe true
+    }
+
     test("description reads as the printed wording") {
         EntersAs(characteristics = mutant, otherOnly = true).description.contains("enters as a Mutant in addition to its other types") shouldBe true
     }
