@@ -585,8 +585,9 @@ export function TargetingOverlay() {
   // A cost paid from hand ("exile a green card from your hand") is a card pick, not a permanent.
   const isHandPick = targetingState.targetZone === 'Hand'
   // A cost paid with spells on the stack ("exile an instant or sorcery spell you control") is
-  // clicked on the stack, not on a permanent. Zones come from server-sent card state.
-  const isStackPick = targetingState.validTargets.length > 0 &&
+  // clicked on the stack, not on a permanent. Only a cost selection — a counterspell's targets
+  // keep their own wording. Zones come from server-sent card state.
+  const isStackPick = isSacrifice && targetingState.validTargets.length > 0 &&
     targetingState.validTargets.every((id) => gameState?.cards[id]?.zone?.zoneType === ZoneType.STACK)
 
   // Split the server's valid targets by how the player can physically reach them: a graveyard or

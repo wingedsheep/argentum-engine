@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers
 
+import com.wingedsheep.engine.mechanics.stack.SpellCounterer
 import com.wingedsheep.engine.handlers.actions.ability.extractTapXPermanentsCost
 import com.wingedsheep.engine.handlers.actions.ability.excludingSourceFromTapPool
 import com.wingedsheep.engine.handlers.actions.ability.hasTapCost
@@ -50,9 +51,11 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
 /**
  * Validates and pays costs for spells and abilities.
  */
-class CostHandler(private val zones: ZoneTransitionService) {
+class CostHandler(
+    private val zones: ZoneTransitionService,
     /** Exiles a spell paid as an "exile a spell you control" cost, as "exile target spell" would. */
-    private val spellCounterer by lazy { com.wingedsheep.engine.mechanics.stack.SpellCounterer(zones) }
+    private val spellCounterer: SpellCounterer,
+) {
     /** The engine's evaluator, for the cost kinds that filter what can pay them. */
     val predicateEvaluator: PredicateEvaluator get() = zones.predicateEvaluator
 

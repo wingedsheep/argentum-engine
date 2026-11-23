@@ -36,7 +36,7 @@ class CostHandlerPayLifeTest : FunSpec({
     context("AbilityCost.PayLife — CR 119.4 boundary") {
         test("life == cost is payable (the boundary case)") {
             val (driver, player) = createDriver(initialLife = 3)
-            CostHandler(driver.zones).canPayAbilityCost(
+            CostHandler(driver.zones, com.wingedsheep.engine.mechanics.stack.SpellCounterer(driver.zones)).canPayAbilityCost(
                 state = driver.state,
                 cost = Costs.PayLife(3),
                 sourceId = player,
@@ -47,7 +47,7 @@ class CostHandlerPayLifeTest : FunSpec({
 
         test("life > cost is payable") {
             val (driver, player) = createDriver(initialLife = 20)
-            CostHandler(driver.zones).canPayAbilityCost(
+            CostHandler(driver.zones, com.wingedsheep.engine.mechanics.stack.SpellCounterer(driver.zones)).canPayAbilityCost(
                 state = driver.state,
                 cost = Costs.PayLife(3),
                 sourceId = player,
@@ -58,7 +58,7 @@ class CostHandlerPayLifeTest : FunSpec({
 
         test("life < cost is NOT payable") {
             val (driver, player) = createDriver(initialLife = 2)
-            CostHandler(driver.zones).canPayAbilityCost(
+            CostHandler(driver.zones, com.wingedsheep.engine.mechanics.stack.SpellCounterer(driver.zones)).canPayAbilityCost(
                 state = driver.state,
                 cost = Costs.PayLife(3),
                 sourceId = player,
@@ -71,7 +71,7 @@ class CostHandlerPayLifeTest : FunSpec({
     context("AdditionalCost.PayLife — CR 119.4 boundary (Bitter Triumph 'pay 3 life' mode)") {
         test("life == cost is payable (the boundary case)") {
             val (driver, player) = createDriver(initialLife = 3)
-            CostHandler(driver.zones).canPayAdditionalCost(
+            CostHandler(driver.zones, com.wingedsheep.engine.mechanics.stack.SpellCounterer(driver.zones)).canPayAdditionalCost(
                 state = driver.state,
                 cost = Costs.additional.PayLife(3),
                 controllerId = player
@@ -80,7 +80,7 @@ class CostHandlerPayLifeTest : FunSpec({
 
         test("life > cost is payable") {
             val (driver, player) = createDriver(initialLife = 20)
-            CostHandler(driver.zones).canPayAdditionalCost(
+            CostHandler(driver.zones, com.wingedsheep.engine.mechanics.stack.SpellCounterer(driver.zones)).canPayAdditionalCost(
                 state = driver.state,
                 cost = Costs.additional.PayLife(3),
                 controllerId = player
@@ -89,7 +89,7 @@ class CostHandlerPayLifeTest : FunSpec({
 
         test("life < cost is NOT payable") {
             val (driver, player) = createDriver(initialLife = 2)
-            CostHandler(driver.zones).canPayAdditionalCost(
+            CostHandler(driver.zones, com.wingedsheep.engine.mechanics.stack.SpellCounterer(driver.zones)).canPayAdditionalCost(
                 state = driver.state,
                 cost = Costs.additional.PayLife(3),
                 controllerId = player
