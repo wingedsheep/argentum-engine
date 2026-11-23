@@ -4350,6 +4350,51 @@
     ]
 }
 
+// Sphinx of the Chimes
+{
+    "name": "Sphinx of the Chimes",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Creature — Sphinx",
+    "oracleText": "Flying\nDiscard two nonland cards with the same name: Draw four cards.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sphinx of the Chimes:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomDiscard",
+                        "count": 2,
+                        "filter": "nonland",
+                        "sameName": true
+                    }
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "rarity": "RARE",
+        "artist": "Greg Staples",
+        "flavorText": "\"I've dreamt of the future, Isperia. Danger is on the horizon. You must heed my warning.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/31a0cae5-925f-4d00-a4da-1db8bae5511b.jpg?1783940365"
+    }
+}
+
 // Sphinx's Revelation
 {
     "name": "Sphinx's Revelation",

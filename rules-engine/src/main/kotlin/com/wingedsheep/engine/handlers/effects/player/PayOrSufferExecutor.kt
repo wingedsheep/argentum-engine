@@ -1100,7 +1100,9 @@ class PayOrSufferExecutor(
             is PayCost.DynamicLife -> true
             is PayCost.Choice -> cost.options.any { canPayCost(state, playerId, it, context) }
             is PayCost.Atom -> when (val atom = cost.atom) {
-                is CostAtom.Discard -> findValidCardsInHand(state, playerId, atom.filter, context).size >= atom.count
+                // A same-name discard is wired for activated-ability costs only (CostAtom.Discard.sameName).
+                is CostAtom.Discard -> !atom.sameName &&
+                    findValidCardsInHand(state, playerId, atom.filter, context).size >= atom.count
                 // Always payable: an empty hand discards nothing, and a cost of nothing is a cost
                 // you can pay (CR 118.3). Never filtered out, so the choice is always offered.
                 is CostAtom.DiscardHand -> true

@@ -802,3 +802,30 @@ describe('Discard X cards — exact-X discard picker', () => {
     expect(dropXCountPickerAtZero(rest, info, 0)).toEqual([{ type: 'targeting' }])
   })
 })
+
+describe('Same-name discard cost picker', () => {
+  it('narrows picks to one name group', () => {
+    const info = castAction({
+      description: 'Activate Sphinx of the Chimes',
+      additionalCostInfo: {
+        costType: 'DiscardCard',
+        description: 'Discard two nonland cards with the same name',
+        validDiscardTargets: ['bear1', 'bear2', 'shock1', 'shock2'],
+        discardCount: 2,
+        discardSelectionGroups: [['bear1', 'bear2'], ['shock1', 'shock2']],
+      },
+    })
+    let captured: Record<string, unknown> | null = null
+    const store = {
+      startTargeting: (arg: Record<string, unknown>) => { captured = arg },
+    } as unknown as Parameters<typeof enterPhase>[3]
+    enterPhase({ type: 'costPayment' }, info, info.action, store, undefined)
+    expect(captured).toMatchObject({
+      minTargets: 2,
+      maxTargets: 2,
+      isDiscardSelection: true,
+      selectionGroups: [['bear1', 'bear2'], ['shock1', 'shock2']],
+      targetDescription: 'Discard two nonland cards with the same name',
+    })
+  })
+})

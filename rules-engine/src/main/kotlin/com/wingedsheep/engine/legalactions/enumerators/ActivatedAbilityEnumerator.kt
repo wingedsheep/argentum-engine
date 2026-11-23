@@ -10,6 +10,7 @@ import com.wingedsheep.engine.state.LifePaymentPurpose
 import com.wingedsheep.engine.handlers.effects.AnnouncedDivision
 import com.wingedsheep.engine.handlers.effects.combat.eligibleLeavingAmountSources
 import com.wingedsheep.engine.mechanics.cost.SharedCreatureTypeTapCost
+import com.wingedsheep.engine.mechanics.cost.SameNameDiscardCost
 import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
 import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
@@ -391,7 +392,9 @@ class ActivatedAbilityEnumerator(
                             if (context.costUtils.findDiscardTargets(state, playerId, atom.filter).size < atom.count) continue
                         }
                         is CostAtom.Discard -> {
-                            val targets = context.costUtils.findDiscardTargets(state, playerId, atom.filter)
+                            val targets = SameNameDiscardCost.eligible(
+                                state, atom, context.costUtils.findDiscardTargets(state, playerId, atom.filter)
+                            )
                             if (targets.size < atom.count) continue
                             // Random discard is paid automatically at cost time — no player selection.
                             if (!atom.random) {
@@ -705,7 +708,9 @@ class ActivatedAbilityEnumerator(
                                         }
                                     }
                                     is CostAtom.Discard -> {
-                                        val targets = context.costUtils.findDiscardTargets(state, playerId, atom.filter)
+                                        val targets = SameNameDiscardCost.eligible(
+                                            state, atom, context.costUtils.findDiscardTargets(state, playerId, atom.filter)
+                                        )
                                         if (targets.size < atom.count) {
                                             costCanBePaid = false
                                             break
@@ -1050,6 +1055,7 @@ class ActivatedAbilityEnumerator(
                     tapBatchMaxActivations,
                     removeCountersAtom
                 ).withFixedCounterRemovalTotal(removeCountersAtom)
+                    ?.let { SameNameDiscardCost.withNameGroups(state, it) }
 
                 // "Exile an instant or sorcery spell you control" (Nivmagus Elemental) is only
                 // payable while our own spell waits on the stack — exactly the window auto-pass
@@ -1441,7 +1447,9 @@ class ActivatedAbilityEnumerator(
                     is AbilityCost.Atom -> {
                         when (val atom = effectiveCost.atom) {
                             is CostAtom.Discard -> {
-                                val targets = context.costUtils.findDiscardTargets(state, playerId, atom.filter)
+                                val targets = SameNameDiscardCost.eligible(
+                                    state, atom, context.costUtils.findDiscardTargets(state, playerId, atom.filter)
+                                )
                                 if (targets.size < atom.count) continue
                                 if (!atom.random) {
                                     discardCost = atom
@@ -1464,7 +1472,7 @@ class ActivatedAbilityEnumerator(
                 val costInfo = buildAdditionalCostInfo(
                     ability, null, null, false, null, null, null, null, emptyList(),
                     discardCost = discardCost, discardTargets = discardTargets
-                )
+                )?.let { SameNameDiscardCost.withNameGroups(state, it) }
 
                 // Check activation restrictions
                 if (!context.legality.activationRestrictionsMet(state, playerId, entityId, ability)) continue
@@ -1646,6 +1654,7 @@ class ActivatedAbilityEnumerator(
                 costType = "DiscardCard",
                 validDiscardTargets = discardTargets,
                 discardCount = discardCost.count,
+                discardSameName = discardCost.sameName,
                 counterRemovalCreatures = counterRemovalCreatures
             )
         }

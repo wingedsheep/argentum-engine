@@ -329,6 +329,7 @@ class LegalActionEnricher(
         validDiscardTargets = validDiscardTargets,
         discardCount = discardCount,
         discardMaxCount = discardMaxCount,
+        discardSelectionGroups = discardSelectionGroups,
         validBounceTargets = validBounceTargets,
         bounceCount = bounceCount,
         validExileTargets = validExileTargets,

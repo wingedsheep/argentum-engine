@@ -1114,6 +1114,11 @@ export function enterPhase(
           flags.isDiscardSelection = true
           // An exact X reads "Select card to discard (0/2)"; only a range names the cost.
           if (xCount == null && costInfo.discardMaxCount != null) flags.targetDescription = costInfo.description
+          // Same-name discard: once a card is picked, only cards of its name stay selectable.
+          if (costInfo.discardSelectionGroups) {
+            flags.selectionGroups = costInfo.discardSelectionGroups
+            flags.targetDescription = costInfo.description
+          }
           break
         }
         case 'ExileFromGraveyard':

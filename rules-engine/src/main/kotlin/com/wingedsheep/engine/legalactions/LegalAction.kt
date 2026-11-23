@@ -541,6 +541,17 @@ data class AdditionalCostData(
     val validDiscardTargets: List<EntityId> = emptyList(),
     val discardCount: Int = 0,
     /**
+     * The [discardCount] cards must all share one name ([com.wingedsheep.sdk.scripting.costs.CostAtom.Discard.sameName],
+     * Sphinx of the Chimes). [validDiscardTargets] already holds only cards whose name has enough
+     * copies, grouped by name, largest group first; a mixed-name payment is rejected at payment.
+     */
+    val discardSameName: Boolean = false,
+    /**
+     * For a [discardSameName] cost, [validDiscardTargets] split into its name groups: the cards one
+     * payment may take together, so the client narrows the picks to the first pick's name.
+     */
+    val discardSelectionGroups: List<List<EntityId>>? = null,
+    /**
      * Upper bound for a variable discard ("discard X cards", Channeled Force): the caster picks
      * [discardCount]..[discardMaxCount] cards. `null` means exactly [discardCount].
      */

@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.engine.state.LifePaymentPurpose
 
 import com.wingedsheep.engine.mechanics.cost.SharedCreatureTypeTapCost
+import com.wingedsheep.engine.mechanics.cost.SameNameDiscardCost
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
 import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
@@ -860,7 +861,9 @@ class CostHandler(
         }
         is CostAtom.Discard -> {
             val handZone = ZoneKey(controllerId, Zone.HAND)
-            findMatchingCardsUnified(state, state.getZone(handZone), atom.filter, controllerId).size >= atom.count
+            SameNameDiscardCost.eligible(
+                state, atom, findMatchingCardsUnified(state, state.getZone(handZone), atom.filter, controllerId)
+            ).size >= atom.count
         }
         is CostAtom.ExileFrom -> {
             // "from a single graveyard" (Night Soil): affordability is per-zone, not pooled —
@@ -1047,6 +1050,9 @@ class CostHandler(
                 ).toSet()
                 if (chosen.distinct().size != chosen.size || chosen.any { it !in eligible }) {
                     return CostPaymentResult.failure("Must choose ${atom.count} matching card(s) in hand to discard")
+                }
+                if (!SameNameDiscardCost.satisfiedBy(state, atom, chosen)) {
+                    return CostPaymentResult.failure("The discarded cards must have the same name")
                 }
                 chosen
             }

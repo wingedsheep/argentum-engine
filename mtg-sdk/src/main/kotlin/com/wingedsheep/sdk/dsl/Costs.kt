@@ -154,12 +154,15 @@ object Costs {
      *
      * @param count how many cards to discard
      * @param atRandom when true, the engine picks the discarded cards at random (no player choice)
+     * @param sameName when true the discarded cards must all have the same name — "Discard two
+     *   nonland cards with the same name" (Sphinx of the Chimes)
      */
     fun Discard(
         filter: GameObjectFilter = GameObjectFilter.Any,
         count: Int = 1,
-        atRandom: Boolean = false
-    ): AbilityCost = AbilityCost.Atom(CostAtom.Discard(count, filter, random = atRandom))
+        atRandom: Boolean = false,
+        sameName: Boolean = false
+    ): AbilityCost = AbilityCost.Atom(CostAtom.Discard(count, filter, random = atRandom, sameName = sameName))
 
     /**
      * Discard [count] cards chosen at random (e.g. Meteor Storm's "Discard two cards at random").

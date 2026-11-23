@@ -1464,6 +1464,11 @@ export interface AdditionalCostInfo {
   readonly validDiscardTargets?: readonly EntityId[]
   readonly discardCount?: number
   /**
+   * "Discard two cards with the same name" (Sphinx of the Chimes): validDiscardTargets split into
+   * name groups. One payment takes its cards from a single group.
+   */
+  readonly discardSelectionGroups?: readonly (readonly EntityId[])[] | null
+  /**
    * Upper bound for a variable discard ("discard X cards", Channeled Force): pick
    * discardCount..discardMaxCount cards. Absent means exactly discardCount.
    */

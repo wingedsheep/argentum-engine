@@ -325,20 +325,32 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
      * Discard [count] cards matching [filter].
      *
      * @property random when true the discard is at random (no player selection — e.g. Pillaging Horde).
+     * @property sameName when true the [count] discarded cards must all have the same name —
+     *   "discard two nonland cards with the same name" (Sphinx of the Chimes). The
+     *   [TapPermanents.sharedCreatureType] twin over names: payable only when some name is held by at
+     *   least [count] matching cards in hand, and a payment whose cards' names differ is rejected.
+     *   Wired for activated-ability costs; the spell additional-cost and "unless you pay" rails
+     *   report it unpayable. A chosen-card constraint, so it can't combine with [random].
      */
     @SerialName("AtomDiscard")
     @Serializable
     data class Discard(
         val count: Int = 1,
         val filter: GameObjectFilter = GameObjectFilter.Any,
-        val random: Boolean = false
+        val random: Boolean = false,
+        val sameName: Boolean = false
     ) : CostAtom {
+        init {
+            require(!(random && sameName)) { "A same-name discard is chosen, not random" }
+        }
+
         // A random discard is paid without the player choosing which cards, so it takes no selection.
         override val selectionCount: Int get() = if (random) 0 else count
         override val description: String get() = buildString {
             append("discard ")
             append(quantify(count, filter.description))
             if (random) append(" at random")
+            if (sameName) append(" with the same name")
         }
 
         override fun applyTextReplacement(replacer: TextReplacer): CostAtom {

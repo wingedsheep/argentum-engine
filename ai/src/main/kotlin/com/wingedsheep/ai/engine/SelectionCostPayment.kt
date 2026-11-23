@@ -129,8 +129,10 @@ internal object SelectionCostPayment {
         )
         // "Discard X cards" (Nahiri's Wrath): exactly the cast's announced X.
         "DiscardCard" -> existing.copy(
-            discardedCards = cheapestFirst.cardsInHand(info.validDiscardTargets)
-                .take(if (info.countIsX) xValue else info.discardCount)
+            discardedCards = discards(
+                cheapestFirst.state, info, cheapestFirst.cardsInHand(info.validDiscardTargets),
+                if (info.countIsX) xValue else info.discardCount
+            )
         )
         "SacrificePermanent" -> existing.copy(
             sacrificedPermanents = cheapestFirst.permanents(info.validSacrificeTargets).take(info.sacrificeCount)
@@ -176,6 +178,18 @@ internal object SelectionCostPayment {
     }
 
     /**
+     * The first [count] of [ranked] (best fodder first), honouring a same-name discard ("discard two
+     * nonland cards with the same name", Sphinx of the Chimes): then the cards come from the one name
+     * group whose best member ranks earliest, since a mixed-name payment is refused.
+     */
+    fun discards(state: GameState, info: AdditionalCostData, ranked: List<EntityId>, count: Int): List<EntityId> {
+        if (!info.discardSameName) return ranked.take(count)
+        val byName = ranked.groupBy { state.getEntity(it)?.get<CardComponent>()?.name }
+        return byName.entries.firstOrNull { (name, ids) -> name != null && ids.size >= count }
+            ?.value?.take(count) ?: ranked.take(count)
+    }
+
+    /**
      * Orders cost candidates least valuable first: permanents by [BoardPresence.permanentValue]
      * (the same price the craft-material pick and the sacrifice decision in [DecisionResponder]
      * use), cards in hand by [CardSelectionValue] (the discard decision's price). Stable, so equal
@@ -184,7 +198,7 @@ internal object SelectionCostPayment {
      * least valuable among equals ([SelectionCostPayment.discardsByManaValue]).
      */
     class CandidateOrder(
-        private val state: GameState,
+        val state: GameState,
         private val payerId: EntityId?,
         private val intents: IntentCatalog,
         private val discardsByManaValue: Boolean = false,

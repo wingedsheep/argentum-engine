@@ -347,6 +347,8 @@ data class AdditionalCostInfo(
     val discardCount: Int = 0,
     /** Upper bound of a variable discard ("discard X cards"); null means exactly [discardCount]. */
     val discardMaxCount: Int? = null,
+    /** Same-name discard (Sphinx of the Chimes): the candidates' name groups; one payment takes from one group. */
+    val discardSelectionGroups: List<List<EntityId>>? = null,
     val validBounceTargets: List<EntityId> = emptyList(),
     val bounceCount: Int = 0,
     val validExileTargets: List<EntityId> = emptyList(),
