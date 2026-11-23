@@ -656,6 +656,7 @@ Angelic Purge
 Angelic Quartermaster
 Angelic Renewal
 Angelic Shield
+Angelic Skirmisher
 Angelic Voices
 Angelic Wall
 Angelsong
@@ -952,6 +953,7 @@ Armored Kincaller
 Armored Pegasus
 Armored Scrapgorger
 Armored Skaab
+Armored Transport
 Armored Warhorse
 Armored Whirl Turtle
 Armored Wolf-Rider
@@ -1162,6 +1164,7 @@ Aura of Dominion	intent: TapUntapEffect
 Auramancer
 Auratog
 Auratouched Mage
+Aurelia's Fury
 Aurelia's Vindicator	intent: Pipeline(FromLinkedExile→hand)
 Aurelia, Exemplar of Justice
 Aurelia, the Law Above
@@ -2244,8 +2247,10 @@ Boros Fury-Shield
 Boros Garrison
 Boros Guildgate
 Boros Guildmage
+Boros Keyrune
 Boros Locket
 Boros Mastiff
+Boros Reckoner
 Boros Recruit
 Boros Signet
 Boros Swiftblade
@@ -4423,6 +4428,7 @@ Death Wind
 Death in the Family
 Death or Glory
 Death to Our Enemies
+Death's Approach
 Death's Oasis
 Death's-Head Buzzard
 Death-Priest of Myrkul
@@ -4462,6 +4468,7 @@ Debris Beetle
 Debris Field Crusher
 Debt to the Deathless
 Debt to the Kami
+Debtor's Pulpit
 Debtors' Transport
 Decadent Dragon
 Decanter of Endless Water
@@ -6140,6 +6147,7 @@ Excruciator
 Exdeath, Void Warlock
 Execute
 Executioner's Capsule
+Executioner's Swing
 Exemplar of Light
 Exemplar of Strength
 Exert Influence
@@ -6731,6 +6739,7 @@ Fireforger's Puzzleknot
 Fireglass Mentor
 Firehoof Cavalry
 Firemane Angel
+Firemane Avenger
 Firemane Commando
 Firemantle Mage
 Firemind Vessel
@@ -8397,6 +8406,7 @@ Guardian of Tazeem
 Guardian of Vitu-Ghazi
 Guardian of the Ages
 Guardian of the Forgotten
+Guardian of the Gateless
 Guardian of the Great Conduit
 Guardian of the Great Door
 Guardian of the Halls
@@ -8419,6 +8429,7 @@ Guild Summit
 Guild Thief
 Guildmages' Forum
 Guildpact Informant
+Guildscorn Ward
 Guile
 Guilty Conscience
 Gul Dukat, Colonial Prefect
@@ -8989,6 +9000,7 @@ Hog-Monkey
 Hold at Bay
 Hold for Questioning
 Hold for Ransom
+Hold the Gates
 Hold the Line
 Holdout Settlement
 Hollow Dogs
@@ -9008,6 +9020,7 @@ Holy Armor
 Holy Cow
 Holy Day
 Holy Light
+Holy Mantle
 Holy Strength
 Homarid
 Homarid Explorer
@@ -9368,6 +9381,7 @@ Illuna, Apex of Wishes
 Illusion Spinners
 Illusionary Armor
 Illusionary Mask
+Illusionist's Bracers
 Illusionist's Gambit	timing: ForEach>GrantStaticAbilityEffect
 Illusionist's Stratagem
 Illusory Ambusher
@@ -9393,6 +9407,7 @@ Immolating Glare
 Immolation
 Immolation Shaman
 Immortal Phoenix
+Immortal Servitude
 Imodane's Recruiter
 Imodane, the Pyrohammer
 Imp's Mischief
