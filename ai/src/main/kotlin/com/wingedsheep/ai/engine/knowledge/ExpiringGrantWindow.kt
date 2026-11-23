@@ -1515,10 +1515,11 @@ internal object ExpiringGrantWindow {
         /**
          * An entry replacement over our own creatures until end of turn — "this turn, each creature
          * you control enters with an additional +1/+1 counter on it" (Zameck Guildmage, Combine
-         * Guildmage). It is spent only by creatures of ours entering after it, and the ones we can
-         * choose to put down are cast in a main phase of our own turn. So it buys something on our
-         * turn until the ending phase — a main phase still ahead, or the one we are in — and
-         * nothing on theirs or in our end step, where it wears off with nothing having entered.
+         * Guildmage). It is spent only by creatures of ours entering after it, and most of the ones
+         * we can choose to put down are cast in a main phase of our own turn. So it is read as
+         * buying something on our turn until the ending phase — a main phase still ahead, or the one
+         * we are in — and nothing on theirs or in our end step. Deliberately conservative: pairing
+         * it with a flash creature on the opponent's turn is not modelled.
          * Not deferred ([holds]): our first main and our second are the same window for it.
          */
         ENTRY,

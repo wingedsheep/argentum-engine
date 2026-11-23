@@ -15,6 +15,7 @@ val UrbanEvolutionReprint = Printing(
     name = "Urban Evolution",
     setCode = "M3C",
     collectorNumber = "276",
+    scryfallId = "6eecff8f-89c6-425d-baf7-1148b3cfc381",
     artist = "Eytan Zana",
     imageUri = "https://cards.scryfall.io/normal/front/6/e/6eecff8f-89c6-425d-baf7-1148b3cfc381.jpg",
     releaseDate = "2024-06-14",
