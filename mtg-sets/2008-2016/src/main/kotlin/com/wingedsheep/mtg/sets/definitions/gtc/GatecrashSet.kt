@@ -8,8 +8,7 @@ import com.wingedsheep.sdk.model.Printing
 /**
  * Gatecrash (2013)
  *
- * mtgish-tooling auto-generated seed: only the cards relocated here as their canonical
- * earliest printing. Intentionally incomplete relative to the official set.
+ * Every card of the set is implemented; reprints carry `Printing` rows.
  *
  * Set Code: GTC
  * Release Date: 2013-02-01
@@ -21,7 +20,6 @@ object GatecrashSet : MtgSet {
     override val releaseDate = "2013-02-01"
     override val block = "Return to Ravnica"
     override val sealedSupported = false
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
