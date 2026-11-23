@@ -1484,6 +1484,8 @@ Bash to Bits
 Bashful Beastie
 Basic Conjuration
 Basilica Bell-Haunt
+Basilica Guards
+Basilica Screecher
 Basilica Shepherd
 Basilica Skullbomb
 Basilica Stalker
@@ -10384,6 +10386,7 @@ King of the Pride
 King's Assassin
 Kingfisher
 Kingpin's Enforcers
+Kingpin's Pet
 Kinjalli's Caller
 Kinjalli's Dawnrunner
 Kinjalli's Sunwing
@@ -10466,6 +10469,7 @@ Knight of Grace
 Knight of Malice
 Knight of Meadowgrain
 Knight of New Benalia
+Knight of Obligation
 Knight of Sorrows
 Knight of Stromgald
 Knight of Wundagore
@@ -13178,6 +13182,7 @@ Obstinate Gargoyle
 Obyra's Attendants
 Obyra, Dreaming Duelist
 Obzedat's Aid
+Obzedat, Ghost Council
 Ocelot Pride
 Ochran Assassin
 Ochre Jelly
@@ -13313,6 +13318,7 @@ Ondu War Cleric
 One Dozen Eyes
 One Last Job	polarity: PutOntoBattlefieldAttachedToChosenEffect
 One Ring to Rule Them All
+One Thousand Lashes
 One With the Wind
 One with Nature	polarity: Aura>EmitLibrarySearchedEventEffect; polarity: Aura>GatherCardsEffect; polarity: Aura>MoveCollectionEffect; polarity: Aura>SelectFromCollectionEffect; polarity: Aura>ShuffleLibraryEffect
 One with the Machine
@@ -13452,9 +13458,11 @@ Orthodoxy Enforcer
 Orvar, the All-Form
 Orysa, Tide Choreographer
 Orzhov Basilica
+Orzhov Charm
 Orzhov Cluestone
 Orzhov Enforcer
 Orzhov Guildgate
+Orzhov Keyrune
 Orzhov Locket
 Orzhov Racketeers
 Orzhov Signet
@@ -16719,6 +16727,7 @@ Shadewing Laureate
 Shadow Alley Denizen
 Shadow Glider
 Shadow Prophecy
+Shadow Slice
 Shadow Sliver
 Shadow Stinger
 Shadow Summoning
@@ -18843,6 +18852,7 @@ Synchronized Spellcraft
 Synchronized Strike
 Synchronous Sliver
 Syncopate
+Syndic of Tithes
 Syndicate Guildmage
 Syndicate Infiltrator
 Syndicate Liquidators
@@ -19754,6 +19764,7 @@ Through the Forest Gate
 Throw from the Saddle
 Throwing Knife
 Thrull Champion
+Thrull Parasite
 Thrull Retainer
 Thrull Wizard	intent: PayOrSufferEffect; polarity: PayOrSufferEffect
 Thrumming Hivepool
@@ -20181,6 +20192,7 @@ Treasure Nabber
 Treasure Trove
 Treasure Vault
 Treasured Find
+Treasury Thrull
 Tree Monkey
 Tree of Perdition	intent: ExchangeLifeAndStatEffect; polarity: ExchangeLifeAndStatEffect
 Tree of Tales
@@ -21177,6 +21189,7 @@ Vizier of the Anointed
 Vizier of the Menagerie
 Vizier of the Scorpion
 Vizier of the True
+Vizkopa Confessor
 Vizkopa Vampire
 Vizzerdrix
 Vnwxt, Verbose Host
