@@ -117,6 +117,15 @@ data class GroupFilter(
      */
     val excludeTriggeringEntity: Boolean = false,
     /**
+     * Specific objects left out of the group — the resolved form of [excludeTarget] and
+     * [excludeTriggeringEntity], never authored on a card. A floating group effect ("other
+     * creatures that player controls can't block this turn", Mark for Death) is read on every
+     * projection, long after the resolving context that knew its target is gone, so
+     * `ResolutionFilterBaker` pins the excluded object's id here as the effect is created. Only
+     * the exclusion is fixed; the rest of the group stays live (CR 611.2c).
+     */
+    val excludedEntities: Set<EntityId> = emptySet(),
+    /**
      * Where this filter applies. Defaults to scanning the battlefield. Use
      * [Scope.Self] for "this creature", [Scope.AttachedTo] for "enchanted/equipped
      * creature", or [Scope.Specific] for a bound entity. When non-Battlefield,
@@ -126,6 +135,9 @@ data class GroupFilter(
 ) : TextReplaceable<GroupFilter>, ObjectFilterBuilder<GroupFilter> {
     val description: String
         get() = buildDescription()
+
+    private val excludesOthers: Boolean
+        get() = excludeSelf || excludeTarget || excludeTriggeringEntity || excludedEntities.isNotEmpty()
 
     private fun buildDescription(): String = when (scope) {
         is Scope.Self -> "this creature"
@@ -137,7 +149,7 @@ data class GroupFilter(
         // and the noun plural, as Oracle prints a group.
         is Scope.Battlefield -> buildString {
             append("all ")
-            if (excludeSelf || excludeTarget || excludeTriggeringEntity) append("other ")
+            if (excludesOthers) append("other ")
             append(baseFilter.pluralPermanentDescription)
         }
     }
@@ -151,7 +163,7 @@ data class GroupFilter(
         get() = when (scope) {
             is Scope.Battlefield -> buildString {
                 append("each ")
-                if (excludeSelf || excludeTarget || excludeTriggeringEntity) append("other ")
+                if (excludesOthers) append("other ")
                 append(baseFilter.singularPermanentDescription)
             }
             else -> description

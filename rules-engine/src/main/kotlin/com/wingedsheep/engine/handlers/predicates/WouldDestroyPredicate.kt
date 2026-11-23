@@ -171,7 +171,10 @@ private class DestructionPreview(private val state: GameState, private val evalu
                 BattlefieldFilterUtils.findMatchingOnBattlefield(
                     state, filter.baseFilter, context, if (filter.excludeSelf) context.sourceId else null,
                     predicateEvaluator = evaluator,
-                ).filter { it != excludeTarget && (!filter.excludeTriggeringEntity || it != context.triggeringEntityId) }
+                ).filter {
+                    it != excludeTarget && it !in filter.excludedEntities &&
+                        (!filter.excludeTriggeringEntity || it != context.triggeringEntityId)
+                }
                     .map { bindIteration(context, it) }
             }
         }

@@ -1703,6 +1703,11 @@ class StaticAbilityHandler(
             return AffectsFilter.Generic(filter)
         }
 
+        // Pinned exclusions (a resolved "other than target") are honoured only by the generic resolver.
+        if (filter.excludedEntities.isNotEmpty()) {
+            return AffectsFilter.Generic(filter)
+        }
+
         // Handle "face-down creatures" pattern (e.g., "Face-down creatures get +1/+1")
         // Only use the simple filter when there's no controller restriction;
         // with a controller predicate (e.g., "you control"), fall through to Generic.

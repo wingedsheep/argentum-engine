@@ -85,6 +85,7 @@ object BattlefieldFilterUtils {
         val matched = findMatchingOnBattlefield(state, filter.baseFilter, context, excludeSelfId, predicateEvaluator = predicateEvaluator)
             .filter { excludeTargetId == null || it != excludeTargetId }
             .filter { !filter.excludeTriggeringEntity || it != context.triggeringEntityId }
+            .filter { it !in filter.excludedEntities }
 
         // Additionally filter by chosen subtype if specified
         return if (chosenSubtype != null) {

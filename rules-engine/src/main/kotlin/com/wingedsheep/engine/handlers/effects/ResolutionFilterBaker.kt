@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers.effects
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
@@ -27,7 +28,8 @@ import com.wingedsheep.sdk.serialization.ScriptTreeWalker
  * baked, never the matching objects.
  *
  * Context-bound references are rewritten to [EffectTarget.SpecificEntity]: positional, pipeline
- * and bound-variable targets, the target / triggering / chosen / defending player, and the
+ * and bound-variable targets, the first target's controller ([EffectTarget.TargetController] —
+ * Mark for Death's "creatures that player controls"), the target / triggering / chosen / defending player, and the
  * leaf predicates [ControllerPredicate.ControlledByTargetPlayer],
  * [ControllerPredicate.ControlledByTargetOpponent] and
  * [ControllerPredicate.ControlledByTriggeringPlayer]. Anything that doesn't resolve now (no
@@ -43,7 +45,10 @@ import com.wingedsheep.sdk.serialization.ScriptTreeWalker
  * that number can't block this turn" counts the +1/+1 counters as the ability resolves, while
  * which creatures have power that low stays live. Only the number is baked, never the matching
  * objects. The layer projector can't evaluate a dynamic amount (it has no resolving context), so
- * an unbaked dynamic predicate in a floating group filter matches nothing. Amounts phrased
+ * an unbaked dynamic predicate in a floating group filter matches nothing.
+ *
+ * A group's "other than the target / triggering object" exclusion is pinned the same way, to
+ * [GroupFilter.excludedEntities]. Amounts phrased
  * relative to the object under test (`Player.Candidate`) have no single value and stay symbolic.
  */
 object ResolutionFilterBaker {
@@ -55,7 +60,31 @@ object ResolutionFilterBaker {
         amounts: DynamicAmountEvaluator? = null
     ): GroupFilter {
         val baked = bake(filter.baseFilter, context, state, amounts)
-        return if (baked == filter.baseFilter) filter else filter.copy(baseFilter = baked)
+        val withBase = if (baked == filter.baseFilter) filter else filter.copy(baseFilter = baked)
+        return bakeExclusions(withBase, context)
+    }
+
+    /**
+     * "Other creatures that player controls" — [GroupFilter.excludeTarget] and
+     * [GroupFilter.excludeTriggeringEntity] name an object only the resolving context knows, so
+     * they are pinned to its id in [GroupFilter.excludedEntities]. A flag whose object this context
+     * doesn't have stays symbolic.
+     */
+    private fun bakeExclusions(filter: GroupFilter, context: EffectContext): GroupFilter {
+        val target = if (filter.excludeTarget) {
+            when (val first = context.targets.firstOrNull()) {
+                is ChosenTarget.Permanent -> first.entityId
+                is ChosenTarget.Card -> first.cardId
+                else -> null
+            }
+        } else null
+        val triggering = if (filter.excludeTriggeringEntity) context.triggeringEntityId else null
+        if (target == null && triggering == null) return filter
+        return filter.copy(
+            excludeTarget = filter.excludeTarget && target == null,
+            excludeTriggeringEntity = filter.excludeTriggeringEntity && triggering == null,
+            excludedEntities = filter.excludedEntities + listOfNotNull(target, triggering)
+        )
     }
 
     fun bake(
@@ -144,7 +173,8 @@ object ResolutionFilterBaker {
             ?.let { ControllerPredicate.ControlledByReferencedPlayer(EffectTarget.SpecificEntity(it)) }
 
     private fun isContextBound(target: EffectTarget): Boolean = when (target) {
-        is EffectTarget.PipelineTarget, is EffectTarget.ContextTarget, is EffectTarget.BoundVariable -> true
+        is EffectTarget.PipelineTarget, is EffectTarget.ContextTarget, is EffectTarget.BoundVariable,
+        EffectTarget.TargetController -> true
         is EffectTarget.PlayerRef -> when (target.player) {
             Player.TargetPlayer, Player.TargetOpponent, Player.Any, Player.TriggeringPlayer,
             Player.DefendingPlayer, Player.ChosenOpponent, Player.ChosenPlayer,

@@ -59,6 +59,10 @@ class MustBlockThisTurnReadingAiTest : ScenarioTestBase() {
             withClue("Academic Dispute's reach lets the forced blocker meet our flier; it is no gift") {
                 TargetPolarityAnalyzer.forSpell(card("Academic Dispute")) shouldBe listOf(TargetPolarity.HARMFUL)
             }
+            withClue("Mark for Death untaps its forced blocker so it can block; that is no gift either") {
+                TargetPolarityAnalyzer.forSpell(card("Mark for Death")) shouldBe listOf(TargetPolarity.HARMFUL)
+                AiReadingAudit.read(card("Mark for Death")).flags shouldBe emptyList()
+            }
         }
 
         test("Peema's forced block buys something only on our turn, before blocks") {
