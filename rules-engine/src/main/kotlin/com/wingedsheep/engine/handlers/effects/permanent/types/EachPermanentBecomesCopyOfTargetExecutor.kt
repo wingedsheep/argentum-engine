@@ -210,6 +210,10 @@ class EachPermanentBecomesCopyOfTargetExecutor(
         if (targetId in state.getBattlefield()) {
             container.get<CopyOfComponent>()?.originalCardComponent?.let { return it }
         }
+        // Manifested or exiled face down since: in the graveyard it was face up.
+        if (container.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>()) {
+            return container.get<CardComponent>()
+        }
         return container.copiableCardComponent()
     }
 }
