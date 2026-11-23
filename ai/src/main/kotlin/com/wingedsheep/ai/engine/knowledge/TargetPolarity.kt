@@ -941,6 +941,10 @@ object TargetPolarityAnalyzer {
                         slotOf(target, requirements) == slot && polarity == TargetPolarity.HARMFUL
                     } }.let { harmful -> harmful.isNotEmpty() && harmful.all { it is RemoveAllAbilitiesEffect } } ->
                     TargetPolarity.FLEXIBLE
+                // "Target player sacrifices a creature, then gains life equal to its toughness"
+                // (Devour Flesh): an edict on an opponent, or a creature we no longer need cashed in
+                // for life on ourselves — which side it serves is the board's to say.
+                sacrificeRepaidInLife(slot, readings, leaves, requirements, definitions, source) -> TargetPolarity.FLEXIBLE
                 drawsForItsLife(slot, readings, leaves, requirements, definitions, source) -> TargetPolarity.BENEFICIAL
                 // "Prevent all damage that would be dealt to and dealt by target permanent an opponent
                 // controls" (Kiora, the Crashing Wave; Dovin's −1): shielding a permanent and silencing
@@ -984,6 +988,31 @@ object TargetPolarityAnalyzer {
         val harmful = onSlot.filter { (_, polarities) -> TargetPolarity.HARMFUL in polarities }.map { it.first }
         return beneficial.isNotEmpty() && beneficial.all { it is DrawCardsEffect } &&
             harmful.isNotEmpty() && harmful.all { it is LoseLifeEffect }
+    }
+
+    /**
+     * A player slot whose only harm is a forced sacrifice and whose only help is life the same
+     * player gains (Devour Flesh): open, since the sacrificed creature is the whole price.
+     */
+    private fun sacrificeRepaidInLife(
+        slot: Int,
+        readings: List<TargetPolarity>,
+        leaves: List<Effect>,
+        requirements: List<TargetRequirement>,
+        definitions: CardLookup,
+        source: CardDefinition?,
+    ): Boolean {
+        if (readings.toSet() != setOf(TargetPolarity.HARMFUL, TargetPolarity.BENEFICIAL)) return false
+        val onSlot = leaves.mapNotNull { leaf ->
+            classify(leaf, definitions, source)
+                .filter { (target, _) -> slotOf(target, requirements) == slot }
+                .takeIf { it.isNotEmpty() }
+                ?.let { leaf to it.map { (_, polarity) -> polarity } }
+        }
+        val beneficial = onSlot.filter { (_, polarities) -> TargetPolarity.BENEFICIAL in polarities }.map { it.first }
+        val harmful = onSlot.filter { (_, polarities) -> TargetPolarity.HARMFUL in polarities }.map { it.first }
+        return beneficial.isNotEmpty() && beneficial.all { it is GainLifeEffect } &&
+            harmful.isNotEmpty() && harmful.all { it is ForceSacrificeEffect }
     }
 
     /** A stat change that only adds: "+3/+0", never "+2/-1" or an unread "+X". */
@@ -2700,6 +2729,7 @@ object TargetPolarityAnalyzer {
         if (animatesHost(card.script.staticAbilities)) readings += TargetPolarity.BENEFICIAL
         for (ability in card.script.triggeredAbilities) readings += hostDamageTriggerReadings(ability)
         for (ability in card.script.triggeredAbilities) readings += hostStepTriggerReadings(ability)
+        for (ability in card.script.triggeredAbilities) readings += hostTapTriggerReadings(ability)
         for (ability in card.script.triggeredAbilities) readings += hostAttackCopyReadings(ability)
         for (ability in card.script.triggeredAbilities) readings += hostCombatTriggerReadings(ability, definitions)
         // "{1}{G}{U}, Return this Aura to its owner's hand: Put two +1/+1 counters on enchanted
@@ -3117,6 +3147,23 @@ object TargetPolarityAnalyzer {
             when (leaf) {
                 is LoseLifeEffect -> TargetPolarity.HARMFUL.takeIf { leaf.target == thatPlayer }
                 is DealDamageEffect -> TargetPolarity.HARMFUL.takeIf { leaf.target == thatPlayer }
+                else -> null
+            }
+        }
+    }
+
+    /**
+     * What an attachment's "whenever enchanted land becomes tapped" trigger does to the host's
+     * side (`Triggers.attached.becomesTapped`): the tapped host is the triggering entity, so
+     * draining or burning its controller is a tax on using it — Psychic Venom, Contaminated Ground.
+     */
+    private fun hostTapTriggerReadings(ability: TriggeredAbility): List<TargetPolarity> {
+        if (ability.binding != TriggerBinding.ATTACHED || ability.trigger !is EventPattern.TapEvent) return emptyList()
+        val hostController = EffectTarget.ControllerOfTriggeringEntity
+        return EffectWalker.payoffLeaves(ability.effect).mapNotNull { leaf ->
+            when (leaf) {
+                is LoseLifeEffect -> TargetPolarity.HARMFUL.takeIf { leaf.target == hostController }
+                is DealDamageEffect -> TargetPolarity.HARMFUL.takeIf { leaf.target == hostController }
                 else -> null
             }
         }

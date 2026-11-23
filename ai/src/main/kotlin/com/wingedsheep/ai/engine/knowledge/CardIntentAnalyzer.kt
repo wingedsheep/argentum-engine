@@ -3372,10 +3372,12 @@ object CardIntentAnalyzer {
     /**
      * Whether a [LoseGameEffect] aimed at [target] costs an opponent the game: a chosen target
      * player, an opponent, or the player a trigger names ("whenever this creature deals damage to
-     * an opponent, that player loses the game"). Its controller losing is a price, not a win.
+     * an opponent, that player loses the game"), or the controller of the permanent a trigger
+     * names ("whenever enchanted land becomes tapped, its controller loses 2 life", Contaminated
+     * Ground). Its controller losing is a price, not a win.
      */
     private fun losesAnOpponent(target: EffectTarget): Boolean = when (target) {
-        is EffectTarget.ContextTarget, is EffectTarget.BoundVariable -> true
+        is EffectTarget.ContextTarget, is EffectTarget.BoundVariable, EffectTarget.ControllerOfTriggeringEntity -> true
         is EffectTarget.PlayerRef -> target.player in OPPONENT_PLAYERS || target.player == Player.TriggeringPlayer
         else -> false
     }
