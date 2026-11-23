@@ -8389,8 +8389,8 @@ work for abilities-on-stack (which carry no `CardComponent`).
   `EventPattern.DamageEvent(recipient = Recipient.Self, source = GameObjectFilter.Creature.blockedBySource())`
   it is "Prevent all damage that would be dealt to this creature by creatures it's blocking" (Wall
   of Vapor, Wall of Shadows) — the damage-replacement path supplies the host as the source. Also
-  live in a static ability's group filter (against the static's source); inert in untap and
-  trigger-gating contexts.
+  live in a static ability's group filter (against the static's source) and as a zone-change
+  trigger filter (see `IsBlockingSource`); inert in untap contexts.
 - `IsBlockingIterationEntity` (filter builder `blockingIterationEntity()`) — blocking the entity an
   enclosing `ForEachInGroup` is **currently iterating over**, rather than the effect's source:
   "creatures you control blocking **that creature**" (Tidal Flats), where "that creature" is the loop's
