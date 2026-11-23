@@ -1754,6 +1754,22 @@ object SetArchetypes {
                     creatureTypes = listOf("Hero")),
             )
         ),
+        "GTC" to SetSynergies(
+            setCode = "GTC",
+            setName = "Gatecrash",
+            archetypes = listOf(
+                Archetype("Boros Battalion", listOf(Color.RED, Color.WHITE),
+                    "Curve out with cheap soldiers and attack with three or more creatures every turn so battalion triggers fire, backed by burn and combat tricks. An aggressive deck that wins before the opponent stabilises."),
+                Archetype("Dimir Cipher", listOf(Color.BLUE, Color.BLACK),
+                    "Encode cipher spells on evasive creatures so every unblocked hit recasts them, while removal and milling grind the opponent down. A tempo-control deck that turns one flyer into a repeating engine."),
+                Archetype("Gruul Bloodrush", listOf(Color.RED, Color.GREEN),
+                    "Play big tramplers and discard bloodrush creatures straight from hand to pump attackers at instant speed. A stompy beatdown deck that never wastes a card on a bad block."),
+                Archetype("Orzhov Extort", listOf(Color.WHITE, Color.BLACK),
+                    "Extort on every spell drains the opponent a point at a time, while flyers, lifelink and removal hold the board. A grindy midrange deck that wins the long game on life totals."),
+                Archetype("Simic Evolve", listOf(Color.GREEN, Color.BLUE),
+                    "Cast creatures in rising size order so evolve keeps growing the team with +1/+1 counters, then cash those counters in for value. A midrange counters deck whose board outgrows the opponent's."),
+            )
+        ),
         "DGM" to SetSynergies(
             setCode = "DGM",
             setName = "Dragon's Maze",

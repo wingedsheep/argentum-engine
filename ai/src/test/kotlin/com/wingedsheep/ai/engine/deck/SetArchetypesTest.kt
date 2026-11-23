@@ -938,6 +938,26 @@ class SetArchetypesTest : StringSpec({
             "Sliver Ramp" to listOf("Sliver"),
         )
     }
+    "Gatecrash exposes its five guild archetypes, one per guild colour pair" {
+        val synergies = requireNotNull(SetArchetypes.getForSet("gtc"))
+
+        synergies.setName shouldBe "Gatecrash"
+        synergies.archetypes.map { it.name } shouldContainExactly listOf(
+            "Boros Battalion",
+            "Dimir Cipher",
+            "Gruul Bloodrush",
+            "Orzhov Extort",
+            "Simic Evolve",
+        )
+        synergies.archetypes.map { it.colors.toSet() } shouldContainExactly listOf(
+            setOf(Color.RED, Color.WHITE),
+            setOf(Color.BLUE, Color.BLACK),
+            setOf(Color.RED, Color.GREEN),
+            setOf(Color.WHITE, Color.BLACK),
+            setOf(Color.GREEN, Color.BLUE),
+        )
+        synergies.archetypes.all { it.creatureTypes.isEmpty() } shouldBe true
+    }
 })
 
 private val ALL_COLOR_PAIRS = linkedSetOf(
