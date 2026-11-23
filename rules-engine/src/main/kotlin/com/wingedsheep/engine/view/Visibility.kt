@@ -283,7 +283,13 @@ class Visibility(
      *   to play it until the card transforms). Kept separate from the may-play check above
      *   precisely because seeing and playing are different grants.
      *
-     * A card exiled face down by a plain rider grants none of the three, and stays hidden from
+     * - **A linked-exile look static** — [com.wingedsheep.sdk.scripting.MayLookAtLinkedExile]
+     *   (Bane Alley Broker: "You may look at cards exiled with this creature"). Read off the
+     *   permanent rather than stamped on the card, so the current controller of that permanent may look; [LinkedExileLook]'s latch keeps
+     *   the look for a player who loses control (Broker ruling: once allowed to look at a face-down
+     *   exiled card, you may keep looking for as long as it stays exiled).
+     *
+     * A card exiled face down by a plain rider grants none of these, and stays hidden from
      * everyone.
      */
     private fun grantsFaceDownExileAccessTo(
@@ -294,6 +300,7 @@ class Visibility(
         val container = state.getEntity(entityId)
         if (container?.get<ForetoldComponent>()?.controllerId == viewingPlayerId) return true
         if (container?.get<MayLookAtInExileComponent>()?.mayLook(viewingPlayerId) == true) return true
+        if (entityId in LinkedExileLook.cardsVisibleTo(state, viewingPlayerId, cardRegistry)) return true
         return state.hasMayPlayFor(entityId, viewingPlayerId, conditionEvaluator, cardRegistry)
     }
 

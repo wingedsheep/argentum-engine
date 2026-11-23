@@ -1,0 +1,1 @@
+- #TBD The AI reads a pile filled from its own hand (Bane Alley Broker) as its own cards, so returning one is recursion

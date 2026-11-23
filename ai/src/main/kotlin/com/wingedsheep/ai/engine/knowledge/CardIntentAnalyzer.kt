@@ -1649,10 +1649,11 @@ object CardIntentAnalyzer {
      * a single-target exile aimed only at "… you control" ("{2}, {T}: Exile target creature you
      * control" — Endless Sands, Safe Haven), or the spell's own "exile any number of … from your
      * hand / graveyard" discount cost, which only ever takes the caster's cards (Gorex, the
-     * Tombshell). Such a pile holds our own cards, so returning it "under its owner's control" or to
+     * Tombshell), or a pipeline exile of cards gathered from our own hand, library or graveyard (Bane
+     * Alley Broker). Such a pile holds our own cards, so returning it "under its owner's control" or to
      * "its owner's hand" brings them back to us ([regrowthTags]).
      *
-     * Conservative: any other way of filling the pile — a group or pipeline exile, exile-until-leaves,
+     * Conservative: any other way of filling the pile — a group exile, a pipeline exile of anything else, exile-until-leaves,
      * an exiled spell, a zone-change redirect — may reach another player's cards and answers false.
      */
     fun stashesOwnCards(scripts: List<CardScript>): Boolean {
@@ -1666,13 +1667,31 @@ object CardIntentAnalyzer {
                 }
             ) return false
             for (slot in EffectWalker.slots(script)) {
-                for (leaf in EffectWalker.leaves(slot.effect)) {
+                val leaves = EffectWalker.leaves(slot.effect)
+                // Cards gathered from our own hand, library or graveyard are ours whoever ends up
+                // controlling the pile ("draw a card, then exile a card from your hand face down" —
+                // Bane Alley Broker). The battlefield is left out: a permanent we control may be
+                // borrowed.
+                val ownCards by lazy {
+                    closedCollections(leaves) { source ->
+                        when (source) {
+                            is CardSource.FromZone -> source.player == Player.You &&
+                                source.zone in setOf(Zone.HAND, Zone.LIBRARY, Zone.GRAVEYARD)
+                            is CardSource.TopOfLibrary -> source.player == Player.You
+                            else -> false
+                        }
+                    }
+                }
+                for (leaf in leaves) {
                     when {
                         leaf is MoveToZoneEffect && leaf.linkToSource -> {
                             if (!TargetPolarityAnalyzer.targetsOwnSide(leaf.target, slot.targets)) return false
                             filled = true
                         }
-                        leaf is MoveCollectionEffect && leaf.linkToSource -> return false
+                        leaf is MoveCollectionEffect && leaf.linkToSource -> {
+                            if (leaf.from !in ownCards) return false
+                            filled = true
+                        }
                         leaf is ExileUntilLeavesEffect -> return false
                         leaf is ExileTargetSpellEffect && leaf.linkToSource -> return false
                     }
@@ -4341,7 +4360,8 @@ object CardIntentAnalyzer {
         is SuppressZoneChangeTriggers -> setOf(IntentTag.TRIGGER_LOCK)
         // "You may look at face-down creatures you don't control any time" (Keeper of the Lens),
         // "…at the top card of your library any time" (Lens of Clarity): information, nothing more.
-        is LookAtFaceDownCreatures, is LookAtTopOfLibrary -> setOf(IntentTag.HIDDEN_INFO)
+        is LookAtFaceDownCreatures, is LookAtTopOfLibrary,
+        is com.wingedsheep.sdk.scripting.MayLookAtLinkedExile -> setOf(IntentTag.HIDDEN_INFO)
         // "You may cast creature spells from the top of your library" (Garruk's Horde, Elven Chorus),
         // "…play lands and cast spells from the top of your library" (Future Sight, Courser of
         // Kruphix's lands): every card played off the top is one we never had to draw — a standing

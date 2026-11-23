@@ -906,6 +906,22 @@ data object LookAtFaceDownCreatures : StaticAbility {
 }
 
 /**
+ * "You may look at cards exiled with this creature." — the source's **current controller** may
+ * look at the face-down cards in its linked-exile pile (`LinkedExileComponent`) for as long as the
+ * source is on the battlefield.
+ *
+ * Distinct from `MoveCollectionEffect.lookableInExile`, which stamps a look grant on each card for
+ * the player who exiled it and lasts as long as the card stays exiled: this is a static ability of
+ * the permanent, so it follows a control change (the new controller looks, the old one no longer
+ * does) and ends when the permanent leaves the battlefield. Used for Bane Alley Broker.
+ */
+@SerialName("MayLookAtLinkedExile")
+@Serializable
+data object MayLookAtLinkedExile : StaticAbility {
+    override val description: String = "You may look at cards exiled with this permanent."
+}
+
+/**
  * Your opponents play with their hands revealed.
  * Used for Seer's Vision and similar "opponents reveal hands" enchantments.
  *

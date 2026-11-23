@@ -1509,6 +1509,7 @@ ManaAbilitiesCostAdditionalLife — StaticAbility
 MayCastFromGraveyard — StaticAbility
 MayCastSelfFromZones — StaticAbility
 MayCastWithoutPayingManaCost — StaticAbility
+MayLookAtLinkedExile — StaticAbility
 MayPlayCardsFromExile — StaticAbility
 MayPlayLandsFromGraveyard — StaticAbility
 MayPlayPermanentsFromGraveyard — StaticAbility
