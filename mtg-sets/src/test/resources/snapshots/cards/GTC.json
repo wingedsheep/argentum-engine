@@ -1186,6 +1186,95 @@
     ]
 }
 
+// Call of the Nightwing
+{
+    "name": "Call of the Nightwing",
+    "manaCost": "{2}{U}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create a 1/1 blue and black Horror creature token with flying.\nCipher (Then you may exile this spell card encoded on a creature you control. Whenever that creature deals combat damage to a player, its controller may cast a copy of the encoded card without paying its mana cost.)",
+    "keywords": [
+        "CIPHER"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "power": 1,
+            "toughness": 1,
+            "colors": [
+                "BLUE",
+                "BLACK"
+            ],
+            "creatureTypes": [
+                "Horror"
+            ],
+            "keywords": [
+                "FLYING"
+            ],
+            "imageUri": "https://cards.scryfall.io/normal/front/7/9/79a71b52-58f9-4945-9557-0fbcbbf5a241.jpg?1783940147"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "rarity": "UNCOMMON",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/ef30a570-b988-42e8-8910-41fe39ffa260.jpg?1783940112",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "You can exile Call of the Nightwing encoded on the Horror creature token it just created."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The spell with cipher is encoded on the creature as part of that spell's resolution, just after the spell's other effects. That card goes directly from the stack to exile. It never goes to the graveyard."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You choose the creature as the spell resolves. The cipher ability doesn't target that creature, although the spell with cipher may target that creature (or a different creature) because of its other abilities."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the spell with cipher doesn't resolve, none of its effects will happen, including cipher. The card will go to its owner's graveyard and won't be encoded on a creature."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the creature leaves the battlefield, the exiled card will no longer be encoded on any creature. It will stay exiled."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you want to encode the card with cipher onto a noncreature permanent such as a Keyrune that can turn into a creature, that permanent has to be a creature before the spell with cipher starts resolving. You can choose only a creature to encode the card onto."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The copy of the card with cipher is created in and cast from exile."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You cast the copy of the card with cipher during the resolution of the triggered ability. Ignore timing restrictions based on the card's type."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you choose not to cast the copy, or you can't cast it (perhaps because there are no legal targets available), the copy will cease to exist the next time state-based actions are performed. You won't get a chance to cast the copy at a later time."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The exiled card with cipher grants a triggered ability to the creature it's encoded on. If that creature loses that ability and subsequently deals combat damage to a player, the triggered ability won't trigger. However, the exiled card will continue to be encoded on that creature."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If another player gains control of the creature, that player will control the triggered ability. That player will create a copy of the encoded card and may cast it."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a creature with an encoded card deals combat damage to more than one player simultaneously (perhaps because some of the combat damage was redirected), the triggered ability will trigger once for each player it deals combat damage to. Each ability will create a copy of the exiled card and allow you to cast it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Cartel Aristocrat
 {
     "name": "Cartel Aristocrat",
@@ -1320,6 +1409,83 @@
     "colorIdentityOverride": [
         "RED",
         "GREEN"
+    ]
+}
+
+// Coerced Confession
+{
+    "name": "Coerced Confession",
+    "manaCost": "{4}{U/B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player mills four cards. You draw a card for each creature card put into their graveyard this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 4
+                        },
+                        "player": "TargetPlayer",
+                        "isMill": true
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": "TargetPlayer"
+                    }
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "gathered0",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "InZone",
+                                "zone": "Graveyard"
+                            }
+                        ]
+                    },
+                    "storeMatching": "matching2"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "VariableReference",
+                        "variableName": "matching2_count"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "217",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "flavorText": "\"Ask the right questions in the right way and truth is inevitable.\"\n—Lazav",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d76102f1-b05f-472b-81cf-eae424c55638.jpg?1783940095"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
@@ -1679,6 +1845,136 @@
     ]
 }
 
+// Dimir Charm
+{
+    "name": "Dimir Charm",
+    "manaCost": "{U}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Counter target sorcery spell.\n• Destroy target creature with power 2 or less.\n• Look at the top three cards of target player's library. Put one back and the rest into that player's graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": "Counter",
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "sorcery",
+                                "zone": "Stack"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Counter target sorcery spell"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature pow<=2"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Destroy target creature with power 2 or less"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    },
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t2"
+                                    }
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected1",
+                                "storeRemainder": "remainder1",
+                                "selectedLabel": "Put back on top",
+                                "remainderLabel": "Put into graveyard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t2"
+                                    },
+                                    "placement": "Top"
+                                }
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "remainder1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t2"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t2"
+                        }
+                    ],
+                    "description": "Look at the top three cards of target player's library. Put one back and the rest into that player's graveyard"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "rarity": "UNCOMMON",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"Dangerous to recognize. Deadly not to.\"\n—Lazav",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/3/f3f4cfa7-8ee4-4a85-9e6a-65a7541f62c1.jpg?1783940109"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Dimir Guildgate
 {
     "name": "Dimir Guildgate",
@@ -1717,6 +2013,187 @@
         "artist": "Cliff Childs",
         "flavorText": "Enter and become a mastermind of spies, lies, and deception.",
         "imageUri": "https://cards.scryfall.io/normal/front/4/9/4951bf75-1a88-4c85-b4e9-063d84f1dabf.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Dimir Keyrune
+{
+    "name": "Dimir Keyrune",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {U} or {B}.\n{U}{B}: This artifact becomes a 2/2 blue and black Horror artifact creature until end of turn and can't be blocked this turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Dimir Keyrune:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Dimir Keyrune:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Dimir Keyrune:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{U}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "BecomeCreature",
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "creatureTypes": [
+                                "Horror"
+                            ],
+                            "addTypes": [
+                                "ARTIFACT"
+                            ],
+                            "colors": [
+                                "BLUE",
+                                "BLACK"
+                            ]
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "CANT_BE_BLOCKED",
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "228",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4d91bb34-5d8d-48c9-ad19-d28884e083bc.jpg?1783940093"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Dinrova Horror
+{
+    "name": "Dinrova Horror",
+    "manaCost": "{4}{U}{B}",
+    "typeLine": "Creature — Horror",
+    "oracleText": "When this creature enters, return target permanent to its owner's hand, then that player discards a card.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dinrova Horror:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Hand"
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand",
+                                        "player": {
+                                            "type": "OwnerOf",
+                                            "targetDescription": "target permanent"
+                                        }
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "chooser": "ControllerOfSelection",
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard",
+                                        "player": {
+                                            "type": "OwnerOf",
+                                            "targetDescription": "target permanent"
+                                        }
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "rarity": "UNCOMMON",
+        "artist": "Johann Bodin",
+        "flavorText": "\"Welcome to the Dimir Public Offices. Not responsible for death or loss of property. Basement off-limits.\"\n—Sign outside Dinrova Building",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/398df5e6-6bda-467a-81e2-91be7e21d715.jpg?1783940109"
     },
     "colorIdentityOverride": [
         "BLUE",
@@ -1788,6 +2265,210 @@
     "colorIdentityOverride": [
         "BLUE",
         "GREEN"
+    ]
+}
+
+// Duskmantle Guildmage
+{
+    "name": "Duskmantle Guildmage",
+    "manaCost": "{U}{B}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{1}{U}{B}: Whenever a card is put into an opponent's graveyard from anywhere this turn, that player loses 1 life.\n{2}{U}{B}: Target player mills two cards.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Duskmantle Guildmage:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{U}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "Duskmantle Guildmage:1",
+                        "trigger": {
+                            "type": "ZoneChangeEvent",
+                            "filter": "nontoken own:opponent",
+                            "to": "Graveyard"
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "OwnerOfTriggeringEntity"
+                            }
+                        },
+                        "descriptionOverride": "Whenever a card is put into an opponent's graveyard from anywhere this turn, that player loses 1 life."
+                    },
+                    "duration": "EndOfTurn"
+                },
+                "descriptionOverride": "Whenever a card is put into an opponent's graveyard from anywhere this turn, that player loses 1 life."
+            },
+            {
+                "id": "Duskmantle Guildmage:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{U}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Target player mills two cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/a/9a1509ff-387e-4ccd-bda0-86e8738a98fb.jpg?1783940109",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "The first ability considers each of your opponents. You don't choose just one of them."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "Each time the first ability resolves, a delayed triggered ability is created. Whenever a card is put into an opponent's graveyard that turn, each of those abilities will trigger. For example, if you activate the first ability twice (and let those abilities resolve) and then activate the second ability targeting an opponent, that player will lose a total of 4 life."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "The delayed triggered ability created won't trigger if a token permanent is put into an opponent's graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Duskmantle Seer
+{
+    "name": "Duskmantle Seer",
+    "manaCost": "{2}{U}{B}",
+    "typeLine": "Creature — Vampire Wizard",
+    "oracleText": "Flying\nAt the beginning of your upkeep, each player reveals the top card of their library, loses life equal to that card's mana value, then puts it into their hand.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Duskmantle Seer:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeAs": "gathered0",
+                                "revealed": true
+                            },
+                            {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "StoredCardManaValue",
+                                    "collectionName": "gathered0"
+                                },
+                                "target": "Controller"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "MYTHIC",
+        "artist": "Kev Walker",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/63711861-87e0-4a63-8b7b-f834aa5f3f18.jpg?1783940108"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
@@ -4194,6 +4875,80 @@
     ]
 }
 
+// Last Thoughts
+{
+    "name": "Last Thoughts",
+    "manaCost": "{3}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw a card.\nCipher (Then you may exile this spell card encoded on a creature you control. Whenever that creature deals combat damage to a player, its controller may cast a copy of the encoded card without paying its mana cost.)",
+    "keywords": [
+        "CIPHER"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 1
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "artist": "Peter Mohrbacher",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c6033d07-124c-4001-81e1-c6eb99e07fdd.jpg?1783940136",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "The spell with cipher is encoded on the creature as part of that spell's resolution, just after the spell's other effects. That card goes directly from the stack to exile. It never goes to the graveyard."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You choose the creature as the spell resolves. The cipher ability doesn't target that creature, although the spell with cipher may target that creature (or a different creature) because of its other abilities."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the spell with cipher doesn't resolve, none of its effects will happen, including cipher. The card will go to its owner's graveyard and won't be encoded on a creature."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the creature leaves the battlefield, the exiled card will no longer be encoded on any creature. It will stay exiled."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you want to encode the card with cipher onto a noncreature permanent such as a Keyrune that can turn into a creature, that permanent has to be a creature before the spell with cipher starts resolving. You can choose only a creature to encode the card onto."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The copy of the card with cipher is created in and cast from exile."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You cast the copy of the card with cipher during the resolution of the triggered ability. Ignore timing restrictions based on the card's type."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you choose not to cast the copy, or you can't cast it (perhaps because there are no legal targets available), the copy will cease to exist the next time state-based actions are performed. You won't get a chance to cast the copy at a later time."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The exiled card with cipher grants a triggered ability to the creature it's encoded on. If that creature loses that ability and subsequently deals combat damage to a player, the triggered ability won't trigger. However, the exiled card will continue to be encoded on that creature."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If another player gains control of the creature, that player will control the triggered ability. That player will create a copy of the encoded card and may cast it."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a creature with an encoded card deals combat damage to more than one player simultaneously (perhaps because some of the combat damage was redirected), the triggered ability will trigger once for each player it deals combat damage to. Each ability will create a copy of the exiled card and allow you to cast it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Legion Loyalist
 {
     "name": "Legion Loyalist",
@@ -4604,6 +5359,124 @@
     ]
 }
 
+// Mental Vapors
+{
+    "name": "Mental Vapors",
+    "manaCost": "{3}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player discards a card.\nCipher (Then you may exile this spell card encoded on a creature you control. Whenever that creature deals combat damage to a player, its controller may cast a copy of the encoded card without paying its mana cost.)",
+    "keywords": [
+        "CIPHER"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "hand"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "hand",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "chooser": "TargetPlayer",
+                    "storeSelected": "discarded",
+                    "prompt": "Choose 1 card to discard"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "discarded",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "moveType": "Discard"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Winters",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/076e7c58-a6fe-4882-8f8d-698be9a7f22d.jpg?1783940129",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "The spell with cipher is encoded on the creature as part of that spell's resolution, just after the spell's other effects. That card goes directly from the stack to exile. It never goes to the graveyard."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You choose the creature as the spell resolves. The cipher ability doesn't target that creature, although the spell with cipher may target that creature (or a different creature) because of its other abilities."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the spell with cipher doesn't resolve, none of its effects will happen, including cipher. The card will go to its owner's graveyard and won't be encoded on a creature."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the creature leaves the battlefield, the exiled card will no longer be encoded on any creature. It will stay exiled."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you want to encode the card with cipher onto a noncreature permanent such as a Keyrune that can turn into a creature, that permanent has to be a creature before the spell with cipher starts resolving. You can choose only a creature to encode the card onto."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The copy of the card with cipher is created in and cast from exile."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You cast the copy of the card with cipher during the resolution of the triggered ability. Ignore timing restrictions based on the card's type."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you choose not to cast the copy, or you can't cast it (perhaps because there are no legal targets available), the copy will cease to exist the next time state-based actions are performed. You won't get a chance to cast the copy at a later time."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The exiled card with cipher grants a triggered ability to the creature it's encoded on. If that creature loses that ability and subsequently deals combat damage to a player, the triggered ability won't trigger. However, the exiled card will continue to be encoded on that creature."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If another player gains control of the creature, that player will control the triggered ability. That player will create a copy of the encoded card and may cast it."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a creature with an encoded card deals combat damage to more than one player simultaneously (perhaps because some of the combat damage was redirected), the triggered ability will trigger once for each player it deals combat damage to. Each ability will create a copy of the exiled card and allow you to cast it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Merciless Eviction
 {
     "name": "Merciless Eviction",
@@ -4771,6 +5644,91 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Midnight Recovery
+{
+    "name": "Midnight Recovery",
+    "manaCost": "{3}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target creature card from your graveyard to your hand.\nCipher (Then you may exile this spell card encoded on a creature you control. Whenever that creature deals combat damage to a player, its controller may cast a copy of the encoded card without paying its mana cost.)",
+    "keywords": [
+        "CIPHER"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Hand"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "artist": "Peter Mohrbacher",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4df40471-1118-4429-83bf-8225ea50b69f.jpg?1783940128",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "The spell with cipher is encoded on the creature as part of that spell's resolution, just after the spell's other effects. That card goes directly from the stack to exile. It never goes to the graveyard."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You choose the creature as the spell resolves. The cipher ability doesn't target that creature, although the spell with cipher may target that creature (or a different creature) because of its other abilities."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the spell with cipher doesn't resolve, none of its effects will happen, including cipher. The card will go to its owner's graveyard and won't be encoded on a creature."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the creature leaves the battlefield, the exiled card will no longer be encoded on any creature. It will stay exiled."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you want to encode the card with cipher onto a noncreature permanent such as a Keyrune that can turn into a creature, that permanent has to be a creature before the spell with cipher starts resolving. You can choose only a creature to encode the card onto."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The copy of the card with cipher is created in and cast from exile."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You cast the copy of the card with cipher during the resolution of the triggered ability. Ignore timing restrictions based on the card's type."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you choose not to cast the copy, or you can't cast it (perhaps because there are no legal targets available), the copy will cease to exist the next time state-based actions are performed. You won't get a chance to cast the copy at a later time."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The exiled card with cipher grants a triggered ability to the creature it's encoded on. If that creature loses that ability and subsequently deals combat damage to a player, the triggered ability won't trigger. However, the exiled card will continue to be encoded on that creature."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If another player gains control of the creature, that player will control the triggered ability. That player will create a copy of the encoded card and may cast it."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a creature with an encoded card deals combat damage to more than one player simultaneously (perhaps because some of the combat damage was redirected), the triggered ability will trigger once for each player it deals combat damage to. Each ability will create a copy of the exiled card and allow you to cast it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -5157,6 +6115,98 @@
     "colorIdentityOverride": [
         "GREEN",
         "BLUE"
+    ]
+}
+
+// Nightveil Specter
+{
+    "name": "Nightveil Specter",
+    "manaCost": "{U/B}{U/B}{U/B}",
+    "typeLine": "Creature — Specter",
+    "oracleText": "Flying\nWhenever this creature deals combat damage to a player, that player exiles the top card of their library.\nYou may play lands and cast spells from among cards exiled with this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nightveil Specter:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": "TriggeringPlayer"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": "TriggeringPlayer"
+                            },
+                            "linkToSource": true
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, that player exiles the top card of their library."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MayPlayCardsFromExile",
+                "filter": {
+                    "statePredicates": [
+                        "ExiledWithSource"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "RARE",
+        "artist": "Min Yum",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e3754b8c-16d2-41e3-b41b-4b2e70833e82.jpg?1783940094",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "The card is exiled face up. All players may look at it."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "Playing a card exiled with Nightveil Specter follows all the normal rules for playing that card. You must pay its costs, and you must follow all timing restrictions, for example."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "Nightveil Specter's last ability applies to cards exiled with that specific Nightveil Specter, not any other creature named Nightveil Specter. You should keep cards exiled by different Nightveil Specters separate."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
@@ -5819,6 +6869,113 @@
     ]
 }
 
+// Paranoid Delusions
+{
+    "name": "Paranoid Delusions",
+    "manaCost": "{U}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player mills three cards.\nCipher (Then you may exile this spell card encoded on a creature you control. Whenever that creature deals combat damage to a player, its controller may cast a copy of the encoded card without paying its mana cost.)",
+    "keywords": [
+        "CIPHER"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "isMill": true
+                    },
+                    "storeAs": "milled"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "milled",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "artist": "Christopher Moeller",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/af406038-91ce-41fe-8b6d-55408a96d0a2.jpg?1783940102",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "The spell with cipher is encoded on the creature as part of that spell's resolution, just after the spell's other effects. That card goes directly from the stack to exile. It never goes to the graveyard."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You choose the creature as the spell resolves. The cipher ability doesn't target that creature, although the spell with cipher may target that creature (or a different creature) because of its other abilities."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the spell with cipher doesn't resolve, none of its effects will happen, including cipher. The card will go to its owner's graveyard and won't be encoded on a creature."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the creature leaves the battlefield, the exiled card will no longer be encoded on any creature. It will stay exiled."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you want to encode the card with cipher onto a noncreature permanent such as a Keyrune that can turn into a creature, that permanent has to be a creature before the spell with cipher starts resolving. You can choose only a creature to encode the card onto."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The copy of the card with cipher is created in and cast from exile."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You cast the copy of the card with cipher during the resolution of the triggered ability. Ignore timing restrictions based on the card's type."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you choose not to cast the copy, or you can't cast it (perhaps because there are no legal targets available), the copy will cease to exist the next time state-based actions are performed. You won't get a chance to cast the copy at a later time."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The exiled card with cipher grants a triggered ability to the creature it's encoded on. If that creature loses that ability and subsequently deals combat damage to a player, the triggered ability won't trigger. However, the exiled card will continue to be encoded on that creature."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If another player gains control of the creature, that player will control the triggered ability. That player will create a copy of the encoded card and may cast it."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a creature with an encoded card deals combat damage to more than one player simultaneously (perhaps because some of the combat damage was redirected), the triggered ability will trigger once for each player it deals combat damage to. Each ability will create a copy of the exiled card and allow you to cast it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Pit Fight
 {
     "name": "Pit Fight",
@@ -5982,6 +7139,85 @@
     "colorIdentityOverride": [
         "GREEN",
         "BLUE"
+    ]
+}
+
+// Psychic Strike
+{
+    "name": "Psychic Strike",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell. Its controller mills two cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                "Counter",
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "player": {
+                                    "type": "ControllerOf",
+                                    "targetDescription": "target spell"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "ControllerOf",
+                                    "targetDescription": "target spell"
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "artist": "Mathias Kollros",
+        "flavorText": "Until more information could be gleaned about Niv-Mizzet's intentions, Lazav took every opportunity to stall his experiments.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0d87927c-80a6-4146-92a5-58c510ce7958.jpg?1783940102",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "If the target spell is an illegal target when Psychic Strike tries to resolve, Psychic Strike won't resolve and none of its effects will happen. The target's controller won't put any cards from the top of their library into their graveyard."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "You may target a spell that can't be countered. When Psychic Strike resolves, the target spell will be unaffected, but its controller will still put the top two cards of their library into their graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
@@ -8670,6 +9906,148 @@
     "colorIdentityOverride": [
         "RED",
         "WHITE"
+    ]
+}
+
+// Undercity Plague
+{
+    "name": "Undercity Plague",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player loses 1 life, discards a card, then sacrifices a permanent of their choice.\nCipher (Then you may exile this spell card encoded on a creature you control. Whenever that creature deals combat damage to a player, its controller may cast a copy of the encoded card without paying its mana cost.)",
+    "keywords": [
+        "CIPHER"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                {
+                    "type": "ForceSacrifice",
+                    "filter": {},
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "83",
+        "rarity": "RARE",
+        "artist": "Vincent Proce",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b25d3bc-33e9-4d1a-855d-38580e67b6cc.jpg?1783940127",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "The spell with cipher is encoded on the creature as part of that spell's resolution, just after the spell's other effects. That card goes directly from the stack to exile. It never goes to the graveyard."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You choose the creature as the spell resolves. The cipher ability doesn't target that creature, although the spell with cipher may target that creature (or a different creature) because of its other abilities."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the spell with cipher doesn't resolve, none of its effects will happen, including cipher. The card will go to its owner's graveyard and won't be encoded on a creature."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the creature leaves the battlefield, the exiled card will no longer be encoded on any creature. It will stay exiled."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you want to encode the card with cipher onto a noncreature permanent such as a Keyrune that can turn into a creature, that permanent has to be a creature before the spell with cipher starts resolving. You can choose only a creature to encode the card onto."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The copy of the card with cipher is created in and cast from exile."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You cast the copy of the card with cipher during the resolution of the triggered ability. Ignore timing restrictions based on the card's type."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you choose not to cast the copy, or you can't cast it (perhaps because there are no legal targets available), the copy will cease to exist the next time state-based actions are performed. You won't get a chance to cast the copy at a later time."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The exiled card with cipher grants a triggered ability to the creature it's encoded on. If that creature loses that ability and subsequently deals combat damage to a player, the triggered ability won't trigger. However, the exiled card will continue to be encoded on that creature."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If another player gains control of the creature, that player will control the triggered ability. That player will create a copy of the encoded card and may cast it."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a creature with an encoded card deals combat damage to more than one player simultaneously (perhaps because some of the combat damage was redirected), the triggered ability will trigger once for each player it deals combat damage to. Each ability will create a copy of the exiled card and allow you to cast it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

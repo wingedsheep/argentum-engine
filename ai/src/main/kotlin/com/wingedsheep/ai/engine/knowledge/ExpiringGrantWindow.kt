@@ -374,6 +374,9 @@ internal object ExpiringGrantWindow {
             if (payoff.kind == PayoffKind.ENTRY) {
                 return@none state.isActiveTurnFor(playerId) && state.step.phase != Phase.ENDING
             }
+            if (payoff.kind == PayoffKind.GRAVEYARD_DRAIN) {
+                return@none state.step.phase != Phase.ENDING
+            }
             if (payoff.kind == PayoffKind.ACTIVATION) {
                 val members = (if (payoff.group != null) {
                     groupMembers(state, projected, playerId, payoff.group, sourceId, intents, creaturesOnly = false)
@@ -429,7 +432,7 @@ internal object ExpiringGrantWindow {
                 }
                 PayoffKind.LAND -> affected.any { canStillMatter(state, projected, playerId, it) }
                 PayoffKind.SHIELD, PayoffKind.SILENCE, PayoffKind.CONNECT, PayoffKind.STRIP, PayoffKind.ACTIVATION,
-                PayoffKind.LURE, PayoffKind.FORCED_ATTACK, PayoffKind.ENTRY -> true // answered above
+                PayoffKind.LURE, PayoffKind.FORCED_ATTACK, PayoffKind.ENTRY, PayoffKind.GRAVEYARD_DRAIN -> true // answered above
                 PayoffKind.BORROW -> affected.any { projected.isCreature(it) } &&
                     (state.step in UNTIL_ATTACKERS_DECLARED || state.step in FIGHT_STILL_AHEAD ||
                         controlsASacrificeOutlet(state, playerId, intents))
@@ -1523,6 +1526,18 @@ internal object ExpiringGrantWindow {
          * Not deferred ([holds]): our first main and our second are the same window for it.
          */
         ENTRY,
+
+        /**
+         * A trigger until end of turn that drains an opponent for each of their cards put into a
+         * graveyard — "whenever a card is put into an opponent's graveyard from anywhere this turn,
+         * that player loses 1 life" (Duskmantle Guildmage). It is spent by what still reaches their
+         * graveyard: a combat's deaths, removal, a mill or discard, the spells they cast themselves —
+         * on either turn. So it buys something until the ending phase and nothing there, where the
+         * turn's fights and main phases are over and it wears off at cleanup. Conservative: a mill
+         * activated in the end step right after it is not modelled.
+         * Not deferred ([holds]): it is not spent on one fight.
+         */
+        GRAVEYARD_DRAIN,
     }
 
     /**
@@ -1710,6 +1725,11 @@ internal object ExpiringGrantWindow {
                 // "This turn, each creature you control enters with an additional +1/+1 counter on
                 // it" (Zameck Guildmage): see [PayoffKind.ENTRY]. It lands on no permanent.
                 countersEntriesThisTurn(leaf) -> payoffs += Payoff(PayoffKind.ENTRY, null)
+                // "Whenever a card is put into an opponent's graveyard from anywhere this turn, that
+                // player loses 1 life" (Duskmantle Guildmage): see [PayoffKind.GRAVEYARD_DRAIN].
+                leaf is CreateGlobalTriggeredAbilityEffect && leaf.duration == Duration.EndOfTurn &&
+                    CardIntentAnalyzer.drainsOwnerOfOpponentsCards(leaf.ability) ->
+                    payoffs += Payoff(PayoffKind.GRAVEYARD_DRAIN, null)
                 // A source chosen on resolution has no target to land on: null.
                 isSilence(leaf) -> payoffs += Payoff(
                     PayoffKind.SILENCE,
