@@ -322,8 +322,13 @@ class CreateTokenExecutor(
                 ownerId = tokenControllerId,
                 imageUri = resolvedImageUri,
                 copyNumericKeywords = effect.numericKeywords,
+                // The abilities a token is created with are part of its copiable values (CR 111.4,
+                // CR 707.2), so they ride on the CardComponent: a copy of the token (Clone, a token
+                // copy, "becomes a copy") keeps them and losing all abilities strips them. Mana
+                // abilities stay runtime grants below — the mana solver indexes those.
                 copyStaticAbilities = effect.staticAbilities,
-                copyTriggeredAbilities = donatedTriggers,
+                copyTriggeredAbilities = effect.triggeredAbilities + donatedTriggers,
+                copyActivatedAbilities = effect.activatedAbilities.filterNot { it.isManaAbility },
             )
 
             val components = mutableListOf<Component>(
@@ -470,30 +475,15 @@ class CreateTokenExecutor(
             }
         }
 
-        // If triggered abilities are specified, grant them permanently to each created token
-        if (effect.triggeredAbilities.isNotEmpty()) {
+        // Mana abilities the token is created with (an Eldrazi Scion's "Sacrifice this creature:
+        // Add {C}") are granted permanently rather than stamped on the CardComponent with its other
+        // abilities: the mana solver, mana-ability enumerator and auto-payer read printed and granted
+        // mana abilities only. Tokens have no CardDefinition, so GameState.grantedActivatedAbilities
+        // is where those readers find them.
+        val manaAbilities = effect.activatedAbilities.filter { it.isManaAbility }
+        if (manaAbilities.isNotEmpty()) {
             for (tokenId in createdTokens) {
-                for (ability in effect.triggeredAbilities) {
-                    val grant = GrantedTriggeredAbility(
-                        entityId = tokenId,
-                        ability = ability,
-                        duration = Duration.Permanent
-                    )
-                    newState = newState.copy(
-                        grantedTriggeredAbilities = newState.grantedTriggeredAbilities + grant
-                    )
-                }
-            }
-        }
-
-        // If activated abilities are specified, grant them permanently to each created token.
-        // Mirrors the triggered-ability path: tokens have no CardDefinition, so their activated
-        // abilities live in GameState.grantedActivatedAbilities, which the legal-action
-        // enumerator and ActivateAbilityHandler already consult for any entity. Models e.g.
-        // Mourner's Surprise's Mercenary token with "{T}: Target creature you control gets +1/+0...".
-        if (effect.activatedAbilities.isNotEmpty()) {
-            for (tokenId in createdTokens) {
-                for (ability in effect.activatedAbilities) {
+                for (ability in manaAbilities) {
                     val grant = GrantedActivatedAbility(
                         entityId = tokenId,
                         ability = ability,

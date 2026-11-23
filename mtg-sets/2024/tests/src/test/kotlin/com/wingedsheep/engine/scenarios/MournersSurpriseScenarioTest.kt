@@ -25,8 +25,8 @@ import io.kotest.matchers.shouldBe
  *  turn. Activate only as a sorcery.""
  *
  * Exercises the new [com.wingedsheep.sdk.scripting.effects.CreateTokenEffect.activatedAbilities]
- * field: the created token carries an activated ability, granted to it at resolution via
- * `GameState.grantedActivatedAbilities`.
+ * field: the created token carries an activated ability as one of its copiable values
+ * ([CardComponent.copyActivatedAbilities]).
  */
 class MournersSurpriseScenarioTest : ScenarioTestBase() {
 
@@ -72,10 +72,10 @@ class MournersSurpriseScenarioTest : ScenarioTestBase() {
                 projected.getPower(token) shouldBe 1
                 projected.getToughness(token) shouldBe 1
 
-                // The token's activated ability was granted to it, sorcery-speed.
-                val grant = game.state.grantedActivatedAbilities.firstOrNull { it.entityId == token }.shouldNotBeNull()
+                // The token was created with its activated ability, sorcery-speed.
+                val ability = tokenCard.copyActivatedAbilities.firstOrNull().shouldNotBeNull()
                 withClue("Token's tap ability must be sorcery-speed (\"Activate only as a sorcery\")") {
-                    grant.ability.timing shouldBe TimingRule.SorcerySpeed
+                    ability.timing shouldBe TimingRule.SorcerySpeed
                 }
             }
 
@@ -117,7 +117,7 @@ class MournersSurpriseScenarioTest : ScenarioTestBase() {
                     token, game.state.getEntity(token)!!.without<SummoningSicknessComponent>()
                 )
 
-                val abilityId = game.state.grantedActivatedAbilities.first { it.entityId == token }.ability.id
+                val abilityId = game.state.getEntity(token)!!.get<CardComponent>()!!.copyActivatedAbilities.first().id
                 val activation = game.execute(
                     ActivateAbility(
                         playerId = game.player1Id,

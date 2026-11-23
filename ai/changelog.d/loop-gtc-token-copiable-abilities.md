@@ -1,0 +1,1 @@
+- #TBD Reads the abilities an inline token was created with (now copiable values on the token) when predicting block triggers, finisher strikes and combat responses — so a token copy keeps them in the AI's eyes too

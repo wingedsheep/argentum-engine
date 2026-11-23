@@ -2441,6 +2441,110 @@
     ]
 }
 
+// Deathpact Angel
+{
+    "name": "Deathpact Angel",
+    "manaCost": "{3}{W}{B}{B}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nWhen this creature dies, create a 1/1 white and black Cleric creature token. It has \"{3}{W}{B}{B}, {T}, Sacrifice this token: Return a card named Deathpact Angel from your graveyard to the battlefield.\"",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Deathpact Angel:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE",
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Cleric"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/a/9af74e26-69d7-4683-9a71-9b420c03d75f.jpg?1783940147",
+                    "activatedAbilities": [
+                        {
+                            "id": "Deathpact Angel:1",
+                            "cost": {
+                                "type": "CostComposite",
+                                "costs": [
+                                    {
+                                        "type": "CostAtomWrapper",
+                                        "atom": {
+                                            "type": "AtomMana",
+                                            "cost": "{3}{W}{B}{B}"
+                                        }
+                                    },
+                                    "CostTap",
+                                    "CostSacrificeSelf"
+                                ]
+                            },
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Graveyard",
+                                            "filter": "name:Deathpact Angel"
+                                        },
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered0",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected1",
+                                        "prompt": "Return a card named Deathpact Angel from your graveyard to the battlefield"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "selected1",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "rarity": "MYTHIC",
+        "artist": "Jason Chan",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/81cfc3c5-6d69-443e-a506-76b94178979b.jpg?1783940110"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Debtor's Pulpit
 {
     "name": "Debtor's Pulpit",

@@ -57,8 +57,8 @@ class FormAPosseScenarioTest : FunSpec({
             card.colors shouldBe setOf(Color.RED)
             projected.getPower(token) shouldBe 1
             projected.getToughness(token) shouldBe 1
-            // The token's {T} ability was granted to it.
-            driver.state.grantedActivatedAbilities.any { it.entityId == token } shouldBe true
+            // The token was created with its {T} ability.
+            card.copyActivatedAbilities.isNotEmpty() shouldBe true
         }
     }
 

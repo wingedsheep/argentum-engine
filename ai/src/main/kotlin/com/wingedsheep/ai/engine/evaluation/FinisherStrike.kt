@@ -81,7 +81,10 @@ class FinisherStrike(private val intents: IntentCatalog) : BoardFeature {
         val granted = state.grantedTriggeredAbilities.filter { it.entityId == id }.map { it.ability }
         if (granted.any(::isFinisher)) return true
         if (entity.has<FaceDownComponent>()) return false
-        val name = entity.get<CardComponent>()?.name ?: return false
+        val card = entity.get<CardComponent>() ?: return false
+        // A token's own triggers (and copy-exception text) are copiable values on its CardComponent.
+        if (card.copyTriggeredAbilities.any(::isFinisher)) return true
+        val name = card.name
         return intents.definition(name)?.script?.triggeredAbilities.orEmpty().any(::isFinisher)
     }
 

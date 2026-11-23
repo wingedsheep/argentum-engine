@@ -122,15 +122,16 @@ class ActivatedAbilityEnumerator(
             val emblemOwnAbilities = container.get<EmblemOwnedActivatedAbilityComponent>()?.abilities.orEmpty()
             val allAbilities = grantedAbilities + staticAbilities + emblemAbilities + emblemOwnAbilities
 
-            // If no card definition (e.g., tokens) and no granted abilities, skip
-            if (cardDef == null && allAbilities.isEmpty()) continue
+            // If no card definition (e.g., tokens) and no granted or copiable abilities, skip.
+            // A token's own activated abilities are copiable text on its CardComponent (CR 111.4).
+            if (cardDef == null && allAbilities.isEmpty() && cardComponent.copyActivatedAbilities.isEmpty()) continue
 
             // Get class level for Class enchantments (null for non-Class cards)
             val classLevelComponent = container.get<ClassLevelComponent>()
             val classLevel = classLevelComponent?.currentLevel
 
             // If entity lost all abilities — or is face down — suppress its own non-mana abilities
-            val ownNonManaAbilities = if (cardDef == null || isFaceDown || projected.hasLostAllAbilities(entityId)) emptyList()
+            val ownNonManaAbilities = if (isFaceDown || projected.hasLostAllAbilities(entityId)) emptyList()
             else com.wingedsheep.engine.state.components.identity.ownActivatedAbilities(cardComponent, cardDef, classLevel).filter { !it.isManaAbility && it.activateFromZone == Zone.BATTLEFIELD }
 
             // Generate level-up abilities for Class enchantments

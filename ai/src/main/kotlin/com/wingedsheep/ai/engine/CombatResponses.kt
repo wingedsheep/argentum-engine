@@ -350,6 +350,7 @@ internal class CombatResponses(
                 ?: definition?.cardFaces?.firstNotNullOfOrNull { face ->
                     face.script.activatedAbilities.find { it.id == activation.abilityId }
                 }
+                ?: card?.copyActivatedAbilities?.find { it.id == activation.abilityId }
                 ?: state.grantedActivatedAbilities
                     .firstOrNull { it.entityId == activation.sourceId && it.ability.id == activation.abilityId }?.ability
                 ?: return null
