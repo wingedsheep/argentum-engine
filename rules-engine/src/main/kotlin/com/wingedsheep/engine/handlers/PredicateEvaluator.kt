@@ -8,7 +8,6 @@ import com.wingedsheep.engine.state.components.battlefield.chosenCreatureOf
 import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.engine.state.components.battlefield.entitiesChoice
 import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent
-import com.wingedsheep.engine.state.components.battlefield.chosenColors
 import com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent
 import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
 import com.wingedsheep.engine.handlers.effects.LkiPolicy
@@ -1560,7 +1559,9 @@ class PredicateEvaluator(
                 val sourceId = context?.sourceId ?: return false
                 // "Of the chosen color", or with several chosen ("choose two colors") "at least
                 // one of the chosen colors" (Tablet of the Guilds).
-                state.getEntity(sourceId)?.chosenColors().orEmpty().any { it.name in colors }
+                com.wingedsheep.engine.state.components.stack.sourceChosenColors(
+                    state, sourceId, context.lastKnownSourceSnapshot
+                ).any { it.name in colors }
             }
 
             CardPredicate.SharesColorWithRecipient -> {
@@ -3055,7 +3056,9 @@ class PredicateEvaluator(
             CardPredicate.SharesChosenColorWithSource -> {
                 val sourceId = context?.sourceId
                 sourceId != null && state != null &&
-                    state.getEntity(sourceId)?.chosenColors().orEmpty().any { it in record.colors }
+                    com.wingedsheep.engine.state.components.stack.sourceChosenColors(
+                        state, sourceId, context?.lastKnownSourceSnapshot
+                    ).any { it in record.colors }
             }
 
             // Source-relative and context predicates — not applicable

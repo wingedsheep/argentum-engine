@@ -596,6 +596,7 @@ class ZoneTransitionService(
                 cardDefinitionId = cardComponent.cardDefinitionId,
                 numberChoices = com.wingedsheep.engine.state.components.stack.numberChoicesOf(state, entityId),
                 textChoices = com.wingedsheep.engine.state.components.stack.textChoicesOf(state, entityId),
+                colorChoices = com.wingedsheep.engine.state.components.stack.colorChoicesOf(state, entityId),
                 copiableCard = container.copiableCardComponent(),
                 copiableNumericKeywords = container.copiableNumericKeywords(cardRegistry),
                 copiableDoubleFaced = container.copiableDoubleFacedComponent { it },

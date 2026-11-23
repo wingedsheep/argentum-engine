@@ -20,8 +20,9 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
  * `EntersWithChoice(COLOR, colorCount = 2)` records both colors on the Tablet. The intervening "if"
  * is `sharingChosenColorWithSource()`, which with two chosen colors means "at least one of them";
  * the payoff walks the chosen colors with [Effects.ForEachChosenColor] and gains 1 for each one
- * the spell is (`withChosenColor()` reads the color being visited). The spell is read where it is
- * as the trigger resolves — still on the stack, or its last-known colors if it was countered first.
+ * the spell is (`withChosenColor()` reads the color being visited). The spell's colors are read
+ * as the trigger resolves, wherever the card is then (it still resolves if the spell was countered);
+ * if the Tablet has left, its chosen colors come from its last-known information.
  */
 val TabletOfTheGuilds = card("Tablet of the Guilds") {
     manaCost = "{2}"

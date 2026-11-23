@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.state.components.stack
 
+import com.wingedsheep.engine.state.components.battlefield.chosenColors
 import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
@@ -316,6 +317,15 @@ data class EntitySnapshot(
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val textChoices: Map<com.wingedsheep.sdk.scripting.ChoiceSlot, String> = emptyMap(),
     /**
+     * The colors chosen as the permanent entered (`ChoiceSlot.COLOR` — one, or several for "choose
+     * two colors"), frozen at departure for the same reason as [numberChoices]: Tablet of the
+     * Guilds' trigger still reads "the chosen colors" if the Tablet leaves before it resolves
+     * (CR 113.7a). Read through [sourceChosenColors].
+     */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val colorChoices: List<com.wingedsheep.sdk.core.Color> = emptyList(),
+    /**
      * True if this permanent was face down (CR 708) when it left the battlefield.
      *
      * Frozen because a card put into a graveyard is always turned face up (CR 708.4), so by the
@@ -430,6 +440,7 @@ data class EntitySnapshot(
                 name = state.getEntity(entityId)?.get<CardComponent>()?.name,
                 numberChoices = numberChoicesOf(state, entityId),
                 textChoices = textChoicesOf(state, entityId),
+                colorChoices = colorChoicesOf(state, entityId),
             )
         }
     }
@@ -448,6 +459,23 @@ internal fun textChoicesOf(state: GameState, entityId: EntityId): Map<com.winged
         ?.chosen.orEmpty().mapNotNull { (slot, value) ->
             (value as? com.wingedsheep.engine.state.components.battlefield.ChoiceValue.TextChoice)?.let { slot to it.text }
         }.toMap()
+
+/** The colors in [entityId]'s cast-choices bag (WUBRG order), empty when none was chosen. */
+fun colorChoicesOf(state: GameState, entityId: EntityId): List<com.wingedsheep.sdk.core.Color> =
+    state.getEntity(entityId)?.chosenColors().orEmpty()
+
+/**
+ * The colors [sourceId] chose as it entered — from [lastKnown] when it is that source's
+ * last-known information (the source has left; CR 113.7a / 608.2h), else live. The color
+ * counterpart of the `chosenSubtype` reads.
+ */
+fun sourceChosenColors(
+    state: GameState,
+    sourceId: EntityId,
+    lastKnown: EntitySnapshot?,
+): List<com.wingedsheep.sdk.core.Color> =
+    lastKnown?.takeIf { it.entityId == sourceId }?.colorChoices?.takeIf { it.isNotEmpty() }
+        ?: colorChoicesOf(state, sourceId)
 
 /**
  * The subtype `CardPredicate.HasChosenSubtype` matches, as the permanent last existed — the
@@ -599,6 +627,7 @@ fun captureLastKnown(state: GameState, entityId: EntityId): EntitySnapshot {
         // The cost strips the cast-choices bag too; "the last noted …" reads it from here.
         numberChoices = numberChoicesOf(state, entityId),
         textChoices = textChoicesOf(state, entityId),
+        colorChoices = colorChoicesOf(state, entityId),
     )
 }
 

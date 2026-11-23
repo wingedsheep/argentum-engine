@@ -45,13 +45,17 @@ class ChooseTwoColorsEntryTest : FunSpec({
     val white = card("Test White Bear") { manaCost = "{W}"; typeLine = "Creature — Bear"; power = 1; toughness = 1 }
     val azorius = card("Test Azorius Bear") { manaCost = "{W}{U}"; typeLine = "Creature — Bear"; power = 2; toughness = 2 }
     val red = card("Test Red Bear") { manaCost = "{R}"; typeLine = "Creature — Bear"; power = 1; toughness = 1 }
+    val shatter = card("Test Tablet Shatter") {
+        manaCost = "{R}"; typeLine = "Instant"
+        spell { effect = Effects.Destroy(target(TargetFilter.Artifact)) }
+    }
     val reanimate = card("Test Tablet Reanimate") {
         manaCost = "{B}"; typeLine = "Sorcery"
         spell { effect = Effects.PutOntoBattlefield(target(TargetFilter.CardInGraveyard)) }
     }
 
     fun driver() = GameTestDriver().also {
-        it.registerCards(TestCards.all + listOf(tablet, white, azorius, red, reanimate))
+        it.registerCards(TestCards.all + listOf(tablet, white, azorius, red, shatter, reanimate))
         it.initMirrorMatch(Deck.of("Plains" to 40), skipMulligans = true, startingPlayer = 0)
         it.passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -122,6 +126,23 @@ class ChooseTwoColorsEntryTest : FunSpec({
         d.state.stack.size shouldBe 1
         d.bothPass()
         d.getLifeTotal(d.player1) shouldBe start + 3
+    }
+
+    test("destroyed in response, its trigger still reads the chosen colors as it last existed") {
+        val d = driver()
+        val tabletId = d.castTablet()
+        d.chooseColors(Color.WHITE, Color.BLUE).error shouldBe null
+        val start = d.getLifeTotal(d.player1)
+
+        d.castBear(azorius.name, Color.WHITE, Color.BLUE)
+        d.state.stack.size shouldBe 2
+        val shatterId = d.putCardInHand(d.player1, shatter.name)
+        d.giveMana(d.player1, Color.RED, 1)
+        d.castSpellWithTargets(d.player1, shatterId, listOf(ChosenTarget.Permanent(tabletId))).error shouldBe null
+        d.bothPass() // Shatter resolves: the Tablet is gone
+        (tabletId in d.state.getBattlefield()) shouldBe false
+        d.bothPass() // the trigger resolves from last-known information (CR 113.7a)
+        d.getLifeTotal(d.player1) shouldBe start + 2
     }
 
     test("put onto the battlefield without being cast, it still chooses two colors") {

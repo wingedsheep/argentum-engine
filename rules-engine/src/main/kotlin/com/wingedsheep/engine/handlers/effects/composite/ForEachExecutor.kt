@@ -4,7 +4,8 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.ForEachContinuation
 import com.wingedsheep.engine.core.ForEachItem
-import com.wingedsheep.engine.state.components.battlefield.CountersComponent import com.wingedsheep.engine.state.components.battlefield.chosenColors
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.stack.sourceChosenColors
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.token.TokenEntryGroups
@@ -273,9 +274,10 @@ class ForEachExecutor(
             }
         }
 
+        // The recorded choice, or — once the source has left — its last-known one (CR 113.7a).
         is IterationSpace.ChosenColorsOf ->
             TargetResolutionUtils.resolveEntity(space.source, context, state)
-                ?.let { state.getEntity(it)?.chosenColors() }.orEmpty()
+                ?.let { sourceChosenColors(state, it, context.lastKnownSourceSnapshot) }.orEmpty()
                 .map { ForEachItem.OfColor(it) }
 
         is IterationSpace.CounterKindsAmong ->
