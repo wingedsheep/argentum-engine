@@ -1,0 +1,1 @@
+- #4832 The AI reads Duskmantle Guildmage's "whenever a card is put into an opponent's graveyard this turn, that player loses 1 life" as a drain and no longer activates it in the end step, where it wears off unspent

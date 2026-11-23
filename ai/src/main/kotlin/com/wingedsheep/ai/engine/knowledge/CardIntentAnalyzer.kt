@@ -3120,8 +3120,12 @@ object CardIntentAnalyzer {
         // each paid out later, as a delayed trigger is read as the effect it fires.
         // Temporary grants have the same payoff; HoldPolicy excludes them from automatic
         // end-step card-flow windows because their event still needs to happen.
+        // "Whenever a card is put into an opponent's graveyard from anywhere this turn, that player
+        // loses 1 life" (Duskmantle Guildmage): "that player" is the owner of a card the trigger only
+        // sees in an opponent's graveyard, so the loss is theirs — a drain like any other.
         is CreateGlobalTriggeredAbilityEffect ->
-            effectTags(effect.ability.effect)
+            effectTags(effect.ability.effect) +
+                (if (drainsOwnerOfOpponentsCards(effect.ability)) setOf(IntentTag.DAMAGE_TO_PLAYERS) else emptySet())
 
         // "Target instant or sorcery card in your graveyard gains flashback" (Stingcaster Mage,
         // Snapcaster Mage): the card can be cast again from the graveyard — a recursion, paid for
@@ -3379,6 +3383,20 @@ object CardIntentAnalyzer {
         val ownOnly = filter.controllerPredicate == ControllerPredicate.ControlledByYou ||
             filter.controllerPredicate == ControllerPredicate.OwnedByYou
         return !ownOnly && com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature in filter.cardPredicates
+    }
+
+    /**
+     * Whether [ability] makes the owner of each card of an opponent's put into a graveyard lose
+     * life — "whenever a card is put into an opponent's graveyard from anywhere this turn, that
+     * player loses 1 life" (Duskmantle Guildmage). The trigger's filter limits it to cards an
+     * opponent owns, so [Player.OwnerOfTriggeringEntity] is always an opponent.
+     */
+    internal fun drainsOwnerOfOpponentsCards(ability: TriggeredAbility): Boolean {
+        val event = ability.trigger as? EventPattern.ZoneChangeEvent ?: return false
+        if (event.to != Zone.GRAVEYARD || event.filter.controllerPredicate != ControllerPredicate.OwnedByOpponent) return false
+        return readingLeaves(ability.effect).any {
+            it is LoseLifeEffect && it.target == EffectTarget.PlayerRef(Player.OwnerOfTriggeringEntity)
+        }
     }
 
     /**
