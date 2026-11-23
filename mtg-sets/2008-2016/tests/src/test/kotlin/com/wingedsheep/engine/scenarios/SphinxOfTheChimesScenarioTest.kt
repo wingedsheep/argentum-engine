@@ -69,6 +69,20 @@ class SphinxOfTheChimesScenarioTest : ScenarioTestBase() {
             game.state.getHand(game.player1Id).size shouldBe 7
         }
 
+        test("two same-named pairs are offered as separate name groups") {
+            val game = base()
+                .withCardInHand(1, "Grizzly Bears")
+                .withCardInHand(1, "Grizzly Bears")
+                .withCardInHand(1, "Shock")
+                .withCardInHand(1, "Shock")
+                .build()
+            val sphinx = game.findPermanent("Sphinx of the Chimes")!!
+
+            val groups = game.sphinxActions(sphinx).single().additionalCostInfo!!.discardSelectionGroups!!
+            groups.map { it.toSet() } shouldContainExactlyInAnyOrder
+                listOf(game.handCards("Grizzly Bears").toSet(), game.handCards("Shock").toSet())
+        }
+
         test("a hand with no same-named nonland pair can't activate, and a mixed-name payment is refused") {
             val game = base()
                 .withCardInHand(1, "Grizzly Bears")

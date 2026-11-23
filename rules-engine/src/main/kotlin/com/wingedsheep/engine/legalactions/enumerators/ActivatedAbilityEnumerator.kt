@@ -1055,6 +1055,7 @@ class ActivatedAbilityEnumerator(
                     tapBatchMaxActivations,
                     removeCountersAtom
                 ).withFixedCounterRemovalTotal(removeCountersAtom)
+                    ?.let { SameNameDiscardCost.withNameGroups(state, it) }
 
                 // "Exile an instant or sorcery spell you control" (Nivmagus Elemental) is only
                 // payable while our own spell waits on the stack — exactly the window auto-pass
@@ -1471,7 +1472,7 @@ class ActivatedAbilityEnumerator(
                 val costInfo = buildAdditionalCostInfo(
                     ability, null, null, false, null, null, null, null, emptyList(),
                     discardCost = discardCost, discardTargets = discardTargets
-                )
+                )?.let { SameNameDiscardCost.withNameGroups(state, it) }
 
                 // Check activation restrictions
                 if (!context.legality.activationRestrictionsMet(state, playerId, entityId, ability)) continue

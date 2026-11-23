@@ -547,6 +547,11 @@ data class AdditionalCostData(
      */
     val discardSameName: Boolean = false,
     /**
+     * For a [discardSameName] cost, [validDiscardTargets] split into its name groups: the cards one
+     * payment may take together, so the client narrows the picks to the first pick's name.
+     */
+    val discardSelectionGroups: List<List<EntityId>>? = null,
+    /**
      * Upper bound for a variable discard ("discard X cards", Channeled Force): the caster picks
      * [discardCount]..[discardMaxCount] cards. `null` means exactly [discardCount].
      */

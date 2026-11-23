@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.cost
 
+import com.wingedsheep.engine.legalactions.AdditionalCostData
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
@@ -33,6 +34,15 @@ internal object SameNameDiscardCost {
         val names = chosen.map { name(state, it) }
         return names.none { it == null } && names.toSet().size <= 1
     }
+
+    /**
+     * [info] with its same-name discard candidates split into name groups
+     * ([AdditionalCostData.discardSelectionGroups]), so the client can keep a payment to one name.
+     * Unchanged unless the cost is a same-name discard.
+     */
+    fun withNameGroups(state: GameState, info: AdditionalCostData): AdditionalCostData =
+        if (!info.discardSameName) info
+        else info.copy(discardSelectionGroups = info.validDiscardTargets.groupBy { name(state, it) }.values.toList())
 
     private fun name(state: GameState, id: EntityId): String? = state.getEntity(id)?.get<CardComponent>()?.name
 }

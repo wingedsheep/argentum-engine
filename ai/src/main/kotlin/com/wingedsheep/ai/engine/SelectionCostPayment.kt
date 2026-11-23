@@ -178,14 +178,6 @@ internal object SelectionCostPayment {
     }
 
     /**
-     * Orders cost candidates least valuable first: permanents by [BoardPresence.permanentValue]
-     * (the same price the craft-material pick and the sacrifice decision in [DecisionResponder]
-     * use), cards in hand by [CardSelectionValue] (the discard decision's price). Stable, so equal
-     * candidates keep the enumerator's order. The hand pricer is built lazily — most actions carry
-     * no discard cost. With [discardsByManaValue] the hand goes highest mana value first instead,
-     * least valuable among equals ([SelectionCostPayment.discardsByManaValue]).
-     */
-    /**
      * The first [count] of [ranked] (best fodder first), honouring a same-name discard ("discard two
      * nonland cards with the same name", Sphinx of the Chimes): then the cards come from the one name
      * group whose best member ranks earliest, since a mixed-name payment is refused.
@@ -197,6 +189,14 @@ internal object SelectionCostPayment {
             ?.value?.take(count) ?: ranked.take(count)
     }
 
+    /**
+     * Orders cost candidates least valuable first: permanents by [BoardPresence.permanentValue]
+     * (the same price the craft-material pick and the sacrifice decision in [DecisionResponder]
+     * use), cards in hand by [CardSelectionValue] (the discard decision's price). Stable, so equal
+     * candidates keep the enumerator's order. The hand pricer is built lazily — most actions carry
+     * no discard cost. With [discardsByManaValue] the hand goes highest mana value first instead,
+     * least valuable among equals ([SelectionCostPayment.discardsByManaValue]).
+     */
     class CandidateOrder(
         val state: GameState,
         private val payerId: EntityId?,
