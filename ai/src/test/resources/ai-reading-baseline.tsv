@@ -1386,6 +1386,7 @@ Bandage
 Bandit's Haul
 Bandit's Talent
 Bane Alley Blackguard
+Bane Alley Broker
 Bane of Bala Ged
 Bane of Progress
 Bane of the Living
@@ -8973,7 +8974,7 @@ Hoard Robber
 Hoarder's Greed
 Hoarder's Overflow
 Hoarding Broodlord
-Hoarding Dragon	intent: Pipeline(FromLinkedExile→hand)
+Hoarding Dragon
 Hoarding Ogre
 Hoarding Recluse
 Hobbit Hole
@@ -10514,7 +10515,7 @@ Knockout Blow
 Knockout Maneuver
 Knollspine Dragon
 Knowledge Seeker
-Knowledge Vault	intent: Pipeline(FromLinkedExile|hand→graveyard|hand); intent: Pipeline(TopOfLibrary→exile)
+Knowledge Vault	intent: Pipeline(TopOfLibrary→exile)
 Knowledge and Power
 Knucklebone Witch
 Kobayashi Maru Scenario
@@ -15622,7 +15623,7 @@ Riveteers Overlook
 Riveteers Requisitioner
 Rix Maadi Reveler
 Road Rage
-Roads Go Ever, Ever On	intent: Pipeline(FromLinkedExile→hand)
+Roads Go Ever, Ever On
 Roadside Assistance
 Roadside Blowout
 Roadside Reliquary
@@ -20498,7 +20499,7 @@ Ugin's Binding
 Ugin's Conjurant
 Ugin's Construct
 Ugin's Insight
-Ugin's Labyrinth	intent: Pipeline(FromLinkedExile→hand); intent: Pipeline(hand→exile)
+Ugin's Labyrinth	intent: Pipeline(hand→exile)
 Ugin's Nexus
 Ugin, Eye of the Storms
 Ugin, the Ineffable
