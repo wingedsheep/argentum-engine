@@ -72,7 +72,9 @@ class SylvanPrimordialScenarioTest : FunSpec({
         val bears = driver.putCreatureOnBattlefield(opponent, "Grizzly Bears")
 
         castPrimordial(driver, me)
-        if (driver.pendingDecision is ChooseTargetsDecision) {
+        // No opponent controls a noncreature permanent: the count is zero, so no target is required.
+        (driver.pendingDecision as? ChooseTargetsDecision)?.let { decision ->
+            decision.targetRequirements.single().minTargets shouldBe 0
             driver.submitTargetSelection(me, emptyList()).error.shouldBeNull()
         }
         driver.bothPass()
