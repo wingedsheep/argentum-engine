@@ -454,8 +454,8 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
   },
   GTC: {
     tagline: "Five Ravnican guilds, each with its own mechanic and its own way to win: a fast, aggressive format where you settle into one guild's colour pair and play to its plan.",
-    setting: 'Ravnica, as the Boros, Dimir, Gruul, Orzhov and Simic guilds push back against the order the other five guilds imposed.',
-    gameplay: "Games are quick and combat-heavy. Boros battalion and Gruul bloodrush reward attacking every turn, Orzhov extort drains a point for every spell so long games still tick towards a win, Dimir cipher turns an evasive creature into a repeating spell, and Simic evolve grows the team as bigger creatures arrive. Each guild's gold cards pull hard towards its colour pair, and the five Guildgates make a light splash possible.",
+    setting: 'Ravnica, where the Boros, Dimir, Gruul, Orzhov and Simic guilds take centre stage as tensions between the guilds rise.',
+    gameplay: "Games are quick and combat-heavy. Boros battalion and Gruul bloodrush reward attacking every turn, Orzhov extort drains a point for every spell so long games still tick towards a win, Dimir cipher turns an evasive creature into a repeating spell, and Simic evolve creatures grow as bigger creatures arrive. Each guild's gold cards pull hard towards its colour pair, and the five Guildgates make a light splash possible.",
     tips: [
       'Commit to a guild early: the gold commons and uncommons are the best cards in each colour pair, and a two-colour deck plays most smoothly.',
       'Respect bloodrush: a Gruul player with cards in hand can pump an attacker at instant speed, so blocks that look safe often are not.',
@@ -469,7 +469,7 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Bloodrush', inPlay: 'Gruul creatures can be discarded from hand to pump an attacking creature, turning every creature card into a combat trick.' },
       { name: 'Cipher', inPlay: 'Dimir spells can be encoded on a creature you control, recasting them for free each time it deals combat damage to a player.' },
       { name: 'Extort', inPlay: 'Orzhov permanents let you pay one more for each spell you cast to drain the opponent for 1, which adds up over a long game.' },
-      { name: 'Evolve', inPlay: 'Simic creatures gain a +1/+1 counter whenever a bigger creature enters under your control, so curving up grows the whole team.' },
+      { name: 'Evolve', inPlay: 'Simic creatures gain a +1/+1 counter whenever a bigger creature enters under your control, so curving up keeps growing your evolve creatures.' },
     ],
   },
   DGM: {
