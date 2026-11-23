@@ -24,6 +24,22 @@ import com.wingedsheep.sdk.model.EntityId
  */
 internal object CombatStatusQueries {
 
+    /** The candidate blocks [sourceId] (CR 509): [sourceId] is in its blocked-attacker set. */
+    fun isBlockingSource(container: ComponentContainer, sourceId: EntityId): Boolean =
+        container.get<BlockingComponent>()?.blockedAttackerIds?.contains(sourceId) == true
+
+    /** [sourceId] blocks the candidate (CR 509): the candidate is in the source's blocked-attacker set. */
+    fun isBlockedBySource(state: GameState, entityId: EntityId, sourceId: EntityId): Boolean =
+        state.getEntity(sourceId)?.get<BlockingComponent>()?.blockedAttackerIds?.contains(entityId) == true
+
+    /** Either direction of the live combat pairing with [sourceId] — "blocking or blocked by". */
+    fun isCombatPairedWithSource(
+        state: GameState,
+        entityId: EntityId,
+        container: ComponentContainer,
+        sourceId: EntityId,
+    ): Boolean = isBlockingSource(container, sourceId) || isBlockedBySource(state, entityId, sourceId)
+
     fun isBlockedAttacker(state: GameState, entityId: EntityId, container: ComponentContainer): Boolean {
         if (!container.has<AttackingComponent>()) return false
         if (container.has<BlockedComponent>()) return true
