@@ -57,6 +57,7 @@ import com.wingedsheep.sdk.scripting.effects.BecomeAuraEffect
 import com.wingedsheep.sdk.scripting.effects.DoubleCountersEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
+import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.effects.CounterEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
@@ -871,7 +872,12 @@ object AiReadingAudit {
             // lock rides on the burn beside it — it keeps the damage from being gained back in the
             // same turn, so when to cast it is the damage's question, which the damage readers answer.
             val ridesOnDamage = expiring is LockLifeGainEffect && leaves.any { it is DealDamageEffect }
-            if (isRead(leaf) || ridesOnRemoval || ridesOnCopy || spentWithCast || flashSpentWithCast || colourOnly || ridesOnGrant || ridesOnCounter || ridesOnDamage) {
+            // "Players dealt damage this way can't cast noncreature spells this turn" (Aurelia's
+            // Fury): the ban binds only the players the division reached, so it is spent in the
+            // damage's own window — when to cast it is the burn's question.
+            val ridesOnDividedDamage = expiring is CantCastSpellsEffect &&
+                leaves.any { it is DividedDamageEffect && it.storeDamagedAs != null }
+            if (isRead(leaf) || ridesOnRemoval || ridesOnCopy || spentWithCast || flashSpentWithCast || colourOnly || ridesOnGrant || ridesOnCounter || ridesOnDamage || ridesOnDividedDamage) {
                 sink += Finding(
                     Check.TIMING, read = true, reason = "knows when to spend this until-end-of-turn effect",
                     effectType = label, step = step(leaves, leaf)?.index?.plus(1), stepText = stepText(leaf),

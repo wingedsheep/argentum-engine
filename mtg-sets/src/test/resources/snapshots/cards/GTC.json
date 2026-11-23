@@ -230,6 +230,156 @@
     ]
 }
 
+// Angelic Skirmisher
+{
+    "name": "Angelic Skirmisher",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nAt the beginning of each combat, choose first strike, vigilance, or lifelink. Creatures you control gain that ability until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Angelic Skirmisher:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "First strike",
+                            "effect": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "FIRST_STRIKE",
+                                    "target": "IterationEntity"
+                                }
+                            }
+                        },
+                        {
+                            "label": "Vigilance",
+                            "effect": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "VIGILANCE",
+                                    "target": "IterationEntity"
+                                }
+                            }
+                        },
+                        {
+                            "label": "Lifelink",
+                            "effect": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "LIFELINK",
+                                    "target": "IterationEntity"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "rarity": "RARE",
+        "artist": "David Rapoza",
+        "flavorText": "\"A keen mind wields an army as a deft hand wields a sword.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/e/beb04702-5cb2-4590-b675-9409ba52a395.jpg?1783940146",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "You choose which ability creatures you control will gain when Angelic Skirmisher's ability resolves. This happens before attacking creatures are declared."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "Only creatures you control when the ability resolves will gain the chosen ability. Creatures that come under your control later in the turn will not gain the ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Armored Transport
+{
+    "name": "Armored Transport",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Prevent all combat damage that would be dealt to this creature by creatures blocking it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": {
+                            "statePredicates": [
+                                "IsSource"
+                            ]
+                        }
+                    },
+                    "source": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsBlockingSource"
+                        ]
+                    },
+                    "damageType": "DamageCombat"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "226",
+        "artist": "Cliff Childs",
+        "flavorText": "\"If only our jails were as secure.\"\n—Arrester Lavinia, Tenth Precinct",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f8cf8f6c-217e-4d51-aa63-859c2d38d438.jpg?1783940093"
+    },
+    "colorIdentityOverride": []
+}
+
 // Arrows of Justice
 {
     "name": "Arrows of Justice",
@@ -346,6 +496,90 @@
             {
                 "date": "2024-01-12",
                 "text": "If Assemble the Legion isn't on the battlefield when its ability resolves, use the number of muster counters it had when it was last on the battlefield to determine how many Soldier tokens to create."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
+// Aurelia's Fury
+{
+    "name": "Aurelia's Fury",
+    "manaCost": "{X}{R}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Aurelia's Fury deals X damage divided as you choose among any number of targets. Tap each creature dealt damage this way. Players dealt damage this way can't cast noncreature spells this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DividedDamage",
+                    "totalDamage": 0,
+                    "dynamicTotal": "XValue",
+                    "among": "t0",
+                    "storeDamagedAs": "stored0"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "stored0",
+                    "filter": "creature",
+                    "storeMatching": "matching1"
+                },
+                {
+                    "type": "TapUntapCollection",
+                    "collectionName": "matching1"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": {
+                            "type": "InCollection",
+                            "collection": "stored0"
+                        }
+                    },
+                    "body": {
+                        "type": "CantCastSpells",
+                        "target": "Controller",
+                        "spellFilter": {
+                            "cardPredicates": [
+                                "IsNoncreature"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "minCount": 0,
+                "id": "t0",
+                "unlimited": true,
+                "dynamicMaxCount": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "144",
+        "rarity": "MYTHIC",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1a3465b6-ee7f-4553-bbf1-85fae9734b67.jpg?1783940113",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "You announce the value of X and how the damage will be divided as part of casting Aurelia's Fury. Each chosen target must receive at least 1 damage."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If Aurelia's Fury has multiple targets, and some but not all of them are illegal targets when Aurelia's Fury resolves, Aurelia's Fury will still deal damage to the remaining legal targets according to the original damage division."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If all of the targets are illegal when Aurelia's Fury tries to resolve, it won't resolve and none of its effects will happen. Nothing will be dealt damage."
             }
         ]
     },
@@ -1236,6 +1470,161 @@
     ]
 }
 
+// Boros Keyrune
+{
+    "name": "Boros Keyrune",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {R} or {W}.\n{R}{W}: This artifact becomes a 1/1 red and white Soldier artifact creature with double strike until end of turn. (It deals both first-strike and regular combat damage.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Boros Keyrune:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Boros Keyrune:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Boros Keyrune:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "keywords": [
+                        "DOUBLE_STRIKE"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ],
+                    "addTypes": [
+                        "ARTIFACT"
+                    ],
+                    "colors": [
+                        "RED",
+                        "WHITE"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "227",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4b65847-fee2-4e00-b598-7363059ec3ff.jpg?1783940093"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
+// Boros Reckoner
+{
+    "name": "Boros Reckoner",
+    "manaCost": "{R/W}{R/W}{R/W}",
+    "typeLine": "Creature — Minotaur Wizard",
+    "oracleText": "Whenever this creature is dealt damage, it deals that much damage to any target.\n{R/W}: This creature gains first strike until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Boros Reckoner:1",
+                "trigger": "DamageReceivedEvent",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature is dealt damage, it deals that much damage to any target."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Boros Reckoner:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R/W}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "target": "Self"
+                },
+                "descriptionOverride": "{R/W}: This creature gains first strike until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "215",
+        "rarity": "RARE",
+        "artist": "Howard Lyon",
+        "flavorText": "\"Imagine a thunderstorm that's also a tactical genius. That's him.\"\n—Dars Gostok, Firefist captain",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/2/82a18b07-38b8-4854-9735-3cfe83b11bf1.jpg?1783940095",
+        "rulings": [
+            {
+                "date": "2017-03-14",
+                "text": "Boros Reckoner's first ability will trigger even if it is dealt lethal damage. For example, if it blocks a 7/7 creature, its ability will trigger and Boros Reckoner will deal 7 damage to the target."
+            },
+            {
+                "date": "2017-03-14",
+                "text": "Damage dealt by Boros Reckoner due to its first ability isn't combat damage, even if it was combat damage that caused that ability to trigger."
+            },
+            {
+                "date": "2017-03-14",
+                "text": "If Boros Reckoner is dealt damage by multiple sources at once, such as by two creatures blocking it, its ability triggers once and one target is dealt that much damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Burning-Tree Emissary
 {
     "name": "Burning-Tree Emissary",
@@ -1954,6 +2343,66 @@
     ]
 }
 
+// Death's Approach
+{
+    "name": "Death's Approach",
+    "manaCost": "{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets -X/-X, where X is the number of creature cards in its controller's graveyard.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "Count",
+                        "player": "ControllerOfAffectedEntity",
+                        "zone": "Graveyard",
+                        "filter": "creature"
+                    },
+                    "multiplier": -1
+                },
+                "toughnessBonus": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "Count",
+                        "player": "ControllerOfAffectedEntity",
+                        "zone": "Graveyard",
+                        "filter": "creature"
+                    },
+                    "multiplier": -1
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "artist": "Terese Nielsen",
+        "flavorText": "\"It's cold in the grave, and the dead crave your warmth. Who are you to deny them?\"\n—Strava, Dimir mage",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b0f69c6f-522d-42c8-be7c-ea6d7ffb6a90.jpg?1783940131",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "The value of X will change as the number of creature cards in the enchanted creature's controller's graveyard changes. Any time state-based actions are performed, if that creature's toughness is 0 or less, or damage marked on it is equal to or greater than its toughness, the creature will be put into its owner's graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Deathcult Rogue
 {
     "name": "Deathcult Rogue",
@@ -1989,6 +2438,57 @@
     "colorIdentityOverride": [
         "BLUE",
         "BLACK"
+    ]
+}
+
+// Debtor's Pulpit
+{
+    "name": "Debtor's Pulpit",
+    "manaCost": "{4}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nEnchanted land has \"{T}: Tap target creature.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Debtor's Pulpit:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "UNCOMMON",
+        "artist": "James Paick",
+        "flavorText": "\"You may not be able to pay. But you can still kneel.\"\n—Milana, Orzhov prelate",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fafb0372-6860-4b0b-b92e-873735489006.jpg?1783940144"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -2749,6 +3249,70 @@
     ]
 }
 
+// Executioner's Swing
+{
+    "name": "Executioner's Swing",
+    "manaCost": "{W}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature that dealt damage this turn gets -5/-5 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ModifyStats",
+            "powerModifier": {
+                "type": "Fixed",
+                "amount": -5
+            },
+            "toughnessModifier": {
+                "type": "Fixed",
+                "amount": -5
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "HasDealtDamage",
+                                "thisTurnOnly": true
+                            }
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "161",
+        "artist": "Karl Kopinski",
+        "flavorText": "\"The contract specified an appendage for a missed payment. Read the fine print: the head is an appendage.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/2122586d-9b23-47c2-8b00-e673aa0310f0.jpg?1783940108",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "You can't choose a creature that hasn't yet dealt damage during the turn as the target of Executioner's Swing, so in most cases it's not possible for Executioner's Swing to reduce the amount of combat damage a creature deals. (If a creature has double strike, you could cast Executioner's Swing after it deals first-strike damage but before it deals regular combat damage.)"
+            },
+            {
+                "date": "2013-01-24",
+                "text": "It doesn't matter what the creature dealt damage to or if that damage was combat damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Experiment One
 {
     "name": "Experiment One",
@@ -3044,6 +3608,75 @@
         "imageUri": "https://cards.scryfall.io/normal/front/c/c/ccbc2f22-4500-4c74-a1a2-51d8238c1d16.jpg?1783940125"
     },
     "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Firemane Avenger
+{
+    "name": "Firemane Avenger",
+    "manaCost": "{2}{R}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nBattalion — Whenever this creature and at least two other creatures attack, this creature deals 3 damage to any target and you gain 3 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Firemane Avenger:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        {
+                            "type": "AttackerCountAtLeast",
+                            "n": 3
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "rarity": "RARE",
+        "artist": "Wayne Reynolds",
+        "flavorText": "Firemane Nevena led the victorious assault on the Barbu Rooftop rebels. Now the Gateless have marked her for death.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e244c198-efdc-492a-9c52-76aac006de9d.jpg?1783940108"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
         "RED"
     ]
 }
@@ -4153,6 +4786,100 @@
     ]
 }
 
+// Guardian of the Gateless
+{
+    "name": "Guardian of the Gateless",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nThis creature can block any number of creatures.\nWhenever this creature blocks, it gets +1/+1 until end of turn for each creature it's blocking.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Guardian of the Gateless:1",
+                "trigger": "BlockEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "Each",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                "IsBlockedBySource"
+                            ]
+                        }
+                    },
+                    "toughnessModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "Each",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                "IsBlockedBySource"
+                            ]
+                        }
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            "CanBlockAnyNumber"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "UNCOMMON",
+        "artist": "Wesley Burt",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/86940635-7001-4ecf-b4ee-25aa1e2d81fc.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Guildscorn Ward
+{
+    "name": "Guildscorn Ward",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature has protection from multicolored.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantProtectionFromToGroup",
+                "scope": "ProtectionScope.Multicolored"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "artist": "Ryan Barger",
+        "flavorText": "The Gateless have risen. The Ten shall fall.\n—Ninth District graffiti",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/89c5c496-0a3e-40e1-84ac-8ad3a9d8352b.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Gutter Skulk
 {
     "name": "Gutter Skulk",
@@ -4467,6 +5194,86 @@
     ]
 }
 
+// Hold the Gates
+{
+    "name": "Hold the Gates",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Creatures you control get +0/+1 for each Gate you control and have vigilance.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "powerBonus": {
+                    "type": "Fixed",
+                    "amount": 0
+                },
+                "toughnessBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "land Gate"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "UNCOMMON",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/8/48fd52d0-0e41-48d5-b96f-4c6409788c18.jpg?1783940143"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Holy Mantle
+{
+    "name": "Holy Mantle",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+2 and has protection from creatures.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantProtectionFromCardType",
+                "cardType": "CREATURE"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "rarity": "UNCOMMON",
+        "artist": "Maciej Kuciara",
+        "flavorText": "\"The guilds promise to provide safety. I prefer to make my own.\"\n—Briska, Ninth District freemage",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/95567596-c5b1-426f-bc2c-43306f7221b0.jpg?1783940143"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Homing Lightning
 {
     "name": "Homing Lightning",
@@ -4667,6 +5474,160 @@
     "colorIdentityOverride": [
         "GREEN",
         "BLUE"
+    ]
+}
+
+// Illusionist's Bracers
+{
+    "name": "Illusionist's Bracers",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Whenever an ability of equipped creature is activated, if it isn't a mana ability, copy that ability. You may choose new targets for the copy.\nEquip {3}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Illusionist's Bracers:1",
+                "trigger": {
+                    "type": "AbilityActivatedEvent",
+                    "player": "Each"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "CopyTargetSpellOrAbility",
+                    "target": "TriggeringEntity"
+                },
+                "descriptionOverride": "Whenever an ability of equipped creature is activated, if it isn't a mana ability, copy that ability. You may choose new targets for the copy."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Illusionist's Bracers:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "231",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"It's easy to believe you're a god when you're twice as powerful as everyone else.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc06cf32-5d66-4772-845d-ff7649396092.jpg?1783940091",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "A mana ability is an ability that (1) isn't a loyalty ability, (2) doesn't target, and (3) could add mana when it resolves."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "The copy will have the same targets as the ability it's copying unless you choose new ones. You may change any number of the targets, including all of them or none of them. If, for one of the targets, you can't choose a new legal target, then it remains unchanged (even if the current target is illegal)."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If the ability is modal (that is, it says \"Choose one —\" or the like), the copy will have the same mode. You can't choose a different one."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "An activated ability is written in the form \"Cost: Effect.\""
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If the cost of an activated ability requires Illusionist's Bracers or the equipped creature to be sacrificed, the ability won't be copied. At the time the ability is considered activated (after all costs are paid), Illusionist's Bracers is no longer equipped to that creature."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If Illusionist's Bracers somehow becomes equipped to a creature an opponent controls, and an activated ability (that isn't a mana ability) of that creature is activated, you will control the copy of that ability."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If the ability has {X} in its cost, the value of X is copied."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Immortal Servitude
+{
+    "name": "Immortal Servitude",
+    "manaCost": "{X}{W/B}{W/B}{W/B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return each creature card with mana value X from your graveyard to the battlefield.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "CompareNumericProperty",
+                                    "property": "MANA_VALUE",
+                                    "operator": "EQ",
+                                    "amount": "XValue"
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    },
+                    "underOwnersControl": true
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "220",
+        "rarity": "RARE",
+        "artist": "Seb McKinnon",
+        "flavorText": "\"The fine print of countless contracts has ensured we are never defenseless.\"\n—Teysa Karlov, Grand Envoy of Orzhov",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/88366762-4be0-422a-a0ff-ed046d30afe1.jpg?1783940095",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "If a creature card in a graveyard has X in its mana cost, that X is considered to be 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 
