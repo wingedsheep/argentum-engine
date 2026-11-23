@@ -2131,8 +2131,7 @@ class PredicateEvaluator(
             // blocker whose blocked-attacker set contains context.sourceId. Inert with no source.
             StatePredicate.IsBlockingSource -> {
                 val sourceId = context?.sourceId
-                sourceId != null &&
-                    container.get<BlockingComponent>()?.blockedAttackerIds?.contains(sourceId) == true
+                sourceId != null && CombatStatusQueries.isBlockingSource(container, sourceId)
             }
 
             // Attacker the effect's source is blocking (CR 509) — IsBlockingSource reversed: the
@@ -2140,21 +2139,14 @@ class PredicateEvaluator(
             // source leaves combat. Inert with no source.
             StatePredicate.IsBlockedBySource -> {
                 val sourceId = context?.sourceId
-                sourceId != null &&
-                    state.getEntity(sourceId)?.get<BlockingComponent>()
-                        ?.blockedAttackerIds?.contains(entityId) == true
+                sourceId != null && CombatStatusQueries.isBlockedBySource(state, entityId, sourceId)
             }
 
             // Creature blocking the effect's source OR blocked by it (CR 509), read live from
-            // combat state in both directions: either the candidate blocks the source, or the
-            // source blocks the candidate. Source-relative; inert with no source.
+            // combat state in both directions. Source-relative; inert with no source.
             StatePredicate.IsCombatPairedWithSource -> {
                 val sourceId = context?.sourceId
-                sourceId != null && (
-                    container.get<BlockingComponent>()?.blockedAttackerIds?.contains(sourceId) == true ||
-                        state.getEntity(sourceId)?.get<BlockingComponent>()
-                            ?.blockedAttackerIds?.contains(entityId) == true
-                    )
+                sourceId != null && CombatStatusQueries.isCombatPairedWithSource(state, entityId, container, sourceId)
             }
 
             // "…creatures you control blocking *that creature*" (Tidal Flats) — the same check as

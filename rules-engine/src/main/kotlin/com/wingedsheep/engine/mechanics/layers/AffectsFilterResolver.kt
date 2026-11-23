@@ -596,14 +596,15 @@ internal class AffectsFilterResolver(
         // (there's no per-recipient "source" here); it's only evaluated in damage-prevention
         // recipient filters via PredicateEvaluator. Never match in this context.
         StatePredicate.InSameBandAsSource -> false
-        // Source-relative: "blocking the source" needs the ability's source permanent, absent in
-        // group-static projection. Only meaningful in target/group-damage contexts via
-        // PredicateEvaluator. Never match here.
-        StatePredicate.IsBlockingSource -> false
-        // The reverse direction ("creatures it's blocking") — same: no source permanent here.
-        StatePredicate.IsBlockedBySource -> false
-        // Same reasoning for the both-directions live pairing — no source permanent here.
-        StatePredicate.IsCombatPairedWithSource -> false
+        // Source-relative combat pairing (CR 509), read live against the static ability's own source
+        // permanent: "Creatures blocking or blocked by this creature have lifelink" (Alms Beast).
+        // Combat components aren't projected, so reading base state is correct here.
+        StatePredicate.IsBlockingSource ->
+            sourceId != null && CombatStatusQueries.isBlockingSource(container, sourceId)
+        StatePredicate.IsBlockedBySource ->
+            sourceId != null && CombatStatusQueries.isBlockedBySource(state, entityId, sourceId)
+        StatePredicate.IsCombatPairedWithSource ->
+            sourceId != null && CombatStatusQueries.isCombatPairedWithSource(state, entityId, container, sourceId)
         // Loop-relative; only meaningful inside a ForEach at resolution, never in projection.
         StatePredicate.IsBlockingIterationEntity -> false
         // Role-relative ("blocking it"); needs an effect context, never present in projection.

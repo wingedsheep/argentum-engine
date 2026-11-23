@@ -153,6 +153,47 @@
     ]
 }
 
+// Alms Beast
+{
+    "name": "Alms Beast",
+    "manaCost": "{2}{W}{B}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Creatures blocking or blocked by this creature have lifelink.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "LIFELINK",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsCombatPairedWithSource"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "Alms-coins are only redeemable at Orzhov businesses.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce441759-cd4c-4bcc-925e-08e8b60853c0.jpg?1783940113"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Angelic Edict
 {
     "name": "Angelic Edict",

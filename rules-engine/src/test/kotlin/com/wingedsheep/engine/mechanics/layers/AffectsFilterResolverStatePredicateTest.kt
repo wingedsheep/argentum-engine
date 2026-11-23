@@ -196,6 +196,36 @@ class AffectsFilterResolverStatePredicateTest : FunSpec({
         matched shouldContainExactlyInAnyOrder setOf(blocker)
     }
 
+    test("source-relative combat pairing matches live against the static's own source") {
+        // Source attacks; blockerOfSource blocks it. otherAttacker is blocked by otherBlocker.
+        val source = EntityId.generate()
+        val blockerOfSource = EntityId.generate()
+        val otherAttacker = EntityId.generate()
+        val otherBlocker = EntityId.generate()
+        val state = battlefield(
+            listOf(
+                source to container(playerA, creature(playerA), AttackingComponent(playerB)),
+                otherAttacker to container(playerA, creature(playerA), AttackingComponent(playerB)),
+                blockerOfSource to container(playerB, creature(playerB), BlockingComponent(listOf(source))),
+                otherBlocker to container(playerB, creature(playerB), BlockingComponent(listOf(otherAttacker)))
+            )
+        )
+        resolver.resolveAffectedEntities(state, source, filterWith(StatePredicate.IsBlockingSource)) shouldContainExactlyInAnyOrder
+            setOf(blockerOfSource)
+        resolver.resolveAffectedEntities(state, source, filterWith(StatePredicate.IsCombatPairedWithSource)) shouldContainExactlyInAnyOrder
+            setOf(blockerOfSource)
+        resolver.resolveAffectedEntities(state, source, filterWith(StatePredicate.IsBlockedBySource)) shouldContainExactlyInAnyOrder
+            emptySet()
+
+        // From the other side: otherBlocker is the source, blocking otherAttacker.
+        resolver.resolveAffectedEntities(state, otherBlocker, filterWith(StatePredicate.IsBlockedBySource)) shouldContainExactlyInAnyOrder
+            setOf(otherAttacker)
+        resolver.resolveAffectedEntities(state, otherBlocker, filterWith(StatePredicate.IsCombatPairedWithSource)) shouldContainExactlyInAnyOrder
+            setOf(otherAttacker)
+        resolver.resolveAffectedEntities(state, otherBlocker, filterWith(StatePredicate.IsBlockingSource)) shouldContainExactlyInAnyOrder
+            emptySet()
+    }
+
     test("IsBlocked matches attackers that have at least one declared blocker") {
         val blockedAttacker = EntityId.generate()
         val unblockedAttacker = EntityId.generate()

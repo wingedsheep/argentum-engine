@@ -8375,8 +8375,9 @@ work for abilities-on-stack (which carry no `CardComponent`).
   creature whose blocked-attacker set contains the effect's `PredicateContext.sourceId`, i.e. the
   source's own blockers. Used with `Patterns.Group.dealDamageToAll(n, GroupFilter(Creature.blockingSource()))`
   for "Whenever this becomes blocked, it deals N damage to each creature blocking it" (Battle-Scarred
-  Goblin). Resolves in resolution-time effect contexts (where the source is carried); inert in
-  group/projection and untap contexts. As a zone-change trigger filter it gates against the moving
+  Goblin). Resolves in resolution-time effect contexts (where the source is carried) and in a
+  static ability's group filter (projection reads it against the static's own source permanent);
+  inert in untap contexts. As a zone-change trigger filter it gates against the moving
   creature's pairing with the trigger's source, and a battlefield departure answers from last-known
   information (CR 603.10): `Triggers.a(GameObjectFilter.Creature.blockingSource()).dies()` is
   "Whenever a creature blocking this creature dies" (Baneclaw Marauder), firing for a blocker killed
@@ -8387,8 +8388,9 @@ work for abilities-on-stack (which carry no `CardComponent`).
   stops matching once the source leaves combat. As the `source` of a static `PreventDamage`'s
   `EventPattern.DamageEvent(recipient = Recipient.Self, source = GameObjectFilter.Creature.blockedBySource())`
   it is "Prevent all damage that would be dealt to this creature by creatures it's blocking" (Wall
-  of Vapor, Wall of Shadows) — the damage-replacement path supplies the host as the source. Inert in
-  group/projection, untap, and trigger-gating contexts.
+  of Vapor, Wall of Shadows) — the damage-replacement path supplies the host as the source. Also
+  live in a static ability's group filter (against the static's source); inert in untap and
+  trigger-gating contexts.
 - `IsBlockingIterationEntity` (filter builder `blockingIterationEntity()`) — blocking the entity an
   enclosing `ForEachInGroup` is **currently iterating over**, rather than the effect's source:
   "creatures you control blocking **that creature**" (Tidal Flats), where "that creature" is the loop's
@@ -8430,7 +8432,10 @@ work for abilities-on-stack (which carry no `CardComponent`).
   `Patterns.Group.grantKeywordToAll(FIRST_STRIKE, GroupFilter(Creature.blockingOrBlockedBySource()))`).
   Use this while the source is still on the battlefield; `CardSource.LastKnownCombatPairedWithSource`
   answers the same question from a leaves-battlefield snapshot for a dies trigger (Abu Ja'far).
-  Source-relative, so it is inert in group/projection, untap, and trigger-gating contexts.
+  It also works as a **static** grant's group filter — projection reads the pairing live against the
+  static's own source, so the grant follows combat: "Creatures blocking or blocked by this creature
+  have lifelink" (Alms Beast) = `staticAbility { ability = GrantKeyword(LIFELINK,
+  GroupFilter(Creature.blockingOrBlockedBySource())) }`. Inert in untap contexts.
 - `CreatedBySource` (filter builder `createdBySource()`) — source-relative (CR 111 provenance): matches a
   token whose stamped `CreatedByComponent.creatorId` equals the effect's `PredicateContext.sourceId` — a
   token *created by the source permanent*. Stamped at creation by a `CreateTokenEffect` with
