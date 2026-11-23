@@ -2834,6 +2834,57 @@
     ]
 }
 
+// Master Biomancer
+{
+    "name": "Master Biomancer",
+    "manaCost": "{2}{G}{U}",
+    "typeLine": "Creature — Elf Wizard",
+    "oracleText": "Each other creature you control enters with a number of additional +1/+1 counters on it equal to this creature's power and as a Mutant in addition to its other types.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": {
+                    "type": "EntityProperty",
+                    "entity": "GrantingSource",
+                    "numericProperty": "Power"
+                },
+                "otherOnly": true
+            },
+            {
+                "type": "EntersAs",
+                "characteristics": {
+                    "addedSubtypes": [
+                        "Mutant"
+                    ]
+                },
+                "otherOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "rarity": "MYTHIC",
+        "artist": "Willian Murai",
+        "flavorText": "\"Nature is a wonderful engineer but works far too slowly for my tastes.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1a47da7c-80f3-4b98-aaac-778c34a35cb6.jpg?1783940105",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "To determine how many additional +1/+1 counters a creature enters with, use Master Biomancer's power as that creature is entering."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Merciless Eviction
 {
     "name": "Merciless Eviction",

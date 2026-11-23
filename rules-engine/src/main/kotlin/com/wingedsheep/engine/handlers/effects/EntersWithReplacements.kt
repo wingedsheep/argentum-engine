@@ -35,12 +35,15 @@ import com.wingedsheep.sdk.scripting.EntersWithCounters
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.EntersWithDynamicCounters
 import com.wingedsheep.sdk.scripting.EntersWithKeywords
+import com.wingedsheep.sdk.scripting.EntersAs
+import com.wingedsheep.engine.handlers.effects.zones.CharacteristicsEntry
 import com.wingedsheep.sdk.scripting.Vanishing
 import com.wingedsheep.sdk.scripting.conditions.SourceChosenModeIs
 
 /**
  * Applies "enters with …" replacement effects (CR 614.1c) — counters
- * ([EntersWithCounters] / [EntersWithDynamicCounters]) and keywords ([EntersWithKeywords]) —
+ * ([EntersWithCounters] / [EntersWithDynamicCounters]), keywords ([EntersWithKeywords]) and added
+ * characteristics ([EntersAs]) —
  * both the entering permanent's own effects and global ones sourced from *other* battlefield
  * permanents (e.g., Gev, Scaled Scorch granting +1/+1 counters to creatures you control that
  * enter the battlefield).
@@ -310,6 +313,15 @@ object EntersWithReplacements {
                     val (grantState, grantEvents) = grantKeywords(newState, effect, entityId, entityName, context)
                     newState = grantState
                     events.addAll(grantEvents)
+                }
+                is EntersAs -> {
+                    // "Each other creature you control enters as …" must not change its own source.
+                    if (effect.otherOnly) continue
+                    val context = EffectContext(sourceId = entityId, controllerId = controllerId)
+                    if (effect.condition != null &&
+                        !predicateEvaluator.conditions.evaluate(newState, effect.condition!!, context)
+                    ) continue
+                    newState = CharacteristicsEntry.apply(newState, entityId, controllerId, effect.characteristics)
                 }
                 else -> { /* Other replacement effects handled elsewhere */ }
             }
@@ -646,6 +658,22 @@ object EntersWithReplacements {
                         val (grantState, grantEvents) = grantKeywords(newState, effect, enteringEntityId, entityName, grantContext)
                         newState = grantState
                         events.addAll(grantEvents)
+                        true
+                    }
+                    is EntersAs -> {
+                        if (effect.selfOnly) continue
+                        if (!matchesEnterFilter(effect.appliesTo, enteringEntityId, sourceId, sourceControllerId, newState, predicateEvaluator = predicateEvaluator)) continue
+                        // The condition describes the ENTERING permanent, as on the branches above.
+                        if (effect.condition != null) {
+                            val condContext = EffectContext(
+                                sourceId = enteringEntityId,
+                                controllerId = sourceControllerId,
+                                affectedEntityId = enteringEntityId,
+                            )
+                            if (!predicateEvaluator.conditions.evaluate(newState, effect.condition!!, condContext)) continue
+                        }
+                        // The entering permanent's controller owns the change, like the rider path.
+                        newState = CharacteristicsEntry.apply(newState, enteringEntityId, enteringControllerId, effect.characteristics)
                         true
                     }
                     else -> false /* Other replacement effects handled elsewhere */

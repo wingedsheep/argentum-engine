@@ -20852,6 +20852,19 @@ The priority groups are (CR 616.1a–f):
   reanimated body — never kicked — correctly gets nothing). Like `EntersWithCounters`, a
   non-`selfOnly` instance stamped on a battlefield permanent applies to *other* permanents matching
   `appliesTo` as they enter.
+- `EntersAs(characteristics, condition?, selfOnly?, otherOnly?, appliesTo?)` — "[permanent] enters
+  as a [type] in addition to its other types" (CR 614.1c), the static, printed counterpart of the
+  `EntersWithCharacteristics` rider a resolving `MoveToZone` / `MoveCollection` carries, and it applies
+  the same changes the same way (`CharacteristicsEntry`): added card types / subtypes (or replaced
+  creature types) in layer 4, colors in layer 5, base P/T in layer 7b, each a permanent,
+  entry-timestamped floating effect on the new object, stripped when it leaves (CR 400.7) and kept
+  after the source is gone. No trigger, no stack — the object's own "enters" triggers and later entry
+  checks already see the type. Like `EntersWithCounters`, a non-`selfOnly` instance on a battlefield
+  permanent applies to *other* permanents matching `appliesTo` as they enter (every entry path: cast,
+  token, put onto the battlefield); set **`otherOnly`** on "each *other* …" so the carrier's own entry
+  skips it, **`selfOnly`** on "this creature enters as …". `condition` is judged against the entering
+  permanent. Master Biomancer: `EntersAs(EntersWithCharacteristics(addedSubtypes = setOf(Subtype("Mutant"))), otherOnly = true)`
+  beside `EntersWithDynamicCounters(DynamicAmounts.powerOf(EffectTarget.GrantingSource), otherOnly = true)`.
 - `EntersWithDevour(multiplier, sacrificeFilter, counterType, variant)` — Devour (CR 702.82) and its
   printed variants. As the permanent resolves from the stack, the controller is prompted to pick any
   number of their own permanents matching `sacrificeFilter`. Those permanents are sacrificed and the

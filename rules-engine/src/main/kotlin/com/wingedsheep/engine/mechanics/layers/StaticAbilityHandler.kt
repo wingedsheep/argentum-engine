@@ -1618,6 +1618,7 @@ class StaticAbilityHandler(
             is com.wingedsheep.sdk.scripting.EntersWithCounters,
             is com.wingedsheep.sdk.scripting.EntersWithDynamicCounters,
             is com.wingedsheep.sdk.scripting.EntersWithKeywords,
+            is com.wingedsheep.sdk.scripting.EntersAs,
             // "Lands you control enter untapped" (The Wandering Minstrel): a static effect
             // consulted from the battlefield against OTHER permanents as they enter.
             is com.wingedsheep.sdk.scripting.EntersUntapped,
