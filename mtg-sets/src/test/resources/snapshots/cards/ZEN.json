@@ -4174,6 +4174,37 @@
     ]
 }
 
+// Paralyzing Grasp
+{
+    "name": "Paralyzing Grasp",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature doesn't untap during its controller's untap step.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "artist": "Izzy",
+        "flavorText": "The Halimar Sea Caves are both the breeding ground of giant squids and the dumping ground of hardened criminals.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4af35801-9280-4ec1-9399-e34501919a8f.jpg?1783942162"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Pillarfield Ox
 {
     "name": "Pillarfield Ox",

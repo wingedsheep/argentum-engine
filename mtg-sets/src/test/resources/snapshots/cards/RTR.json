@@ -597,6 +597,72 @@
     ]
 }
 
+// Bazaar Krovod
+{
+    "name": "Bazaar Krovod",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Whenever this creature attacks, another target attacking creature gets +0/+2 until end of turn. Untap that creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bazaar Krovod:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "tap": false
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature attacking",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "UNCOMMON",
+        "artist": "Lars Grant-West",
+        "flavorText": "The Hauler's Collective wields great influence over the Ravnican merchant class. Without it, little moves in the city.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b07bb2fe-3a9b-47d0-864b-99a662d9544b.jpg?1783940377"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Bellows Lizard
 {
     "name": "Bellows Lizard",
@@ -2722,6 +2788,65 @@
     ]
 }
 
+// Launch Party
+{
+    "name": "Launch Party",
+    "manaCost": "{3}{B}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, sacrifice a creature.\nDestroy target creature. Its controller loses 2 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "TargetController"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "artist": "Lucas Graciano",
+        "flavorText": "Life's too short to not do the things you love.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/53f29821-902e-41bc-97a2-6fc7a710cbdb.jpg?1783940361"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Lobber Crew
 {
     "name": "Lobber Crew",
@@ -2921,6 +3046,65 @@
                 "text": "If that creature deals combat damage to a player at the same time it's dealt lethal damage (perhaps because it has trample and was blocked), it will die before the triggered ability resolves and puts +1/+1 counters on it."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Pack Rat
+{
+    "name": "Pack Rat",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Rat",
+    "oracleText": "Pack Rat's power and toughness are each equal to the number of Rats you control.\n{2}{B}, Discard a card: Create a token that's a copy of this creature.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "permanent Rat"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "permanent Rat"
+            }
+        }
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Pack Rat:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": "AtomDiscard"
+                        }
+                    ]
+                },
+                "effect": "CreateTokenCopyOfSource"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/170693f5-13db-4191-99b1-e527ffb5b88e.jpg?1783940361"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -3299,6 +3483,98 @@
         "artist": "Ryan Barger",
         "flavorText": "Ragemutts pull the chariots of the Butcher Clowns, a trio of wingless, zombified faeries formerly of the Izzet.",
         "imageUri": "https://cards.scryfall.io/normal/front/b/b/bb36840a-3f85-4fca-87ab-379dfce8e542.jpg?1783940334"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
+// Rakdos Ringleader
+{
+    "name": "Rakdos Ringleader",
+    "manaCost": "{4}{B}{R}",
+    "typeLine": "Creature — Skeleton Warrior",
+    "oracleText": "First strike\nWhenever this creature deals combat damage to a player, that player discards a card at random.\n{B}: Regenerate this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rakdos Ringleader:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": "TriggeringPlayer"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "Random",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "discarded"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "TriggeringPlayer"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Rakdos Ringleader:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Felix",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6b54fbe8-324a-4066-bed1-dda1dca319fc.jpg?1783940334"
     },
     "colorIdentityOverride": [
         "BLACK",
@@ -4935,6 +5211,90 @@
     "colorIdentityOverride": [
         "BLUE",
         "WHITE"
+    ]
+}
+
+// Viashino Racketeer
+{
+    "name": "Viashino Racketeer",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Lizard Rogue",
+    "oracleText": "When this creature enters, you may discard a card. If you do, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Viashino Racketeer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "artist": "Slawomir Maniak",
+        "flavorText": "\"You may call me a fool, selling this stuff on Orzhov turf. Well, you need to be a little reckless to survive.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bf4c2d22-9c36-42cc-854d-f96410bb5cf1.jpg?1783940352"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
