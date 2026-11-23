@@ -1,1 +1,1 @@
-- #PR The AI reads "exile an instant or sorcery spell you control" activation costs (Nivmagus Elemental) as a spells payoff when drafting and building decks
+- #4847 The AI reads "exile an instant or sorcery spell you control" activation costs (Nivmagus Elemental) as a spells payoff when drafting and building decks
