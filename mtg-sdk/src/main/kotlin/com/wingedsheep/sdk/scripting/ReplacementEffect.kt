@@ -3222,6 +3222,14 @@ data class EntersWithChoice(
      */
     val excludedColors: Set<Color> = emptySet(),
     /**
+     * When [choiceType] is [ChoiceType.COLOR], how many **distinct** colors are chosen — "As Tablet
+     * of the Guilds enters, choose two colors" is `2`. `1` (the default) records a single color in
+     * [ChoiceSlot.COLOR], read by every "the chosen color" reader; more records the whole set there,
+     * read back by [com.wingedsheep.sdk.scripting.effects.IterationSpace.ChosenColorsOf] ("for each of
+     * the chosen colors …"). Ignored for every other choice type.
+     */
+    val colorCount: Int = 1,
+    /**
      * When [choiceType] is [ChoiceType.CREATURE_ON_BATTLEFIELD], which permanents on the battlefield
      * may be chosen, matched from the entering permanent's controller's point of view (so
      * `youControl()` means "you control"). The entering object itself is never a candidate. `null`
@@ -3290,6 +3298,9 @@ data class EntersWithChoice(
         require(cardNameSource == CardNameSource.ANY_CARD || (choiceType == ChoiceType.CARD_NAME && !lookAtOpponentHand)) {
             "cardNameSource applies only to ChoiceType.CARD_NAME, and never with lookAtOpponentHand"
         }
+        require(colorCount == 1 || (choiceType == ChoiceType.COLOR && colorCount in 2..(5 - excludedColors.size))) {
+            "colorCount applies only to ChoiceType.COLOR, between 1 and the number of choosable colors"
+        }
     }
 
     override val description: String = choiceDescription() + (then?.let { ". ${it.description}" } ?: "")
@@ -3298,10 +3309,14 @@ data class EntersWithChoice(
         ChoiceType.COLOR -> {
             val otherThan = if (excludedColors.isEmpty()) "" else
                 " other than " + excludedColors.sortedBy { it.ordinal }.joinToString(" or ") { it.displayName.lowercase() }
+            val what = when (colorCount) {
+                1 -> "a color"
+                else -> "${com.wingedsheep.sdk.scripting.util.numberToWord(colorCount)} colors"
+            }
             if (chooser == Player.AnOpponent) {
-                "As this permanent enters, an opponent chooses a color$otherThan"
+                "As this permanent enters, an opponent chooses $what$otherThan"
             } else {
-                "As this permanent enters, choose a color$otherThan"
+                "As this permanent enters, choose $what$otherThan"
             }
         }
         ChoiceType.CREATURE_TYPE -> if (chooser == Player.AnOpponent) {

@@ -519,8 +519,39 @@ data class ChooseColorDecision(
      * larger value is "the color or colors of your choice" (Quickchange) — the player picks any
      * nonempty set of up to this many colors and answers with [ColorChosenResponse.colors].
      */
-    val maxColors: Int = 1
-) : PendingDecision
+    val maxColors: Int = 1,
+    /**
+     * The fewest distinct colors the answer must name. `1` is every ordinary choice; "choose two
+     * colors" (Tablet of the Guilds) sets it equal to [maxColors] for an exact count.
+     */
+    val minColors: Int = 1
+) : PendingDecision {
+    /**
+     * A legal answer naming [ranked]'s colors in order of preference — the first [minColors] of
+     * them, topped up from [availableColors] if [ranked] is short. Responders that pick one best
+     * color pass `listOf(best)` and still answer an exact-count decision correctly.
+     */
+    fun answerWith(ranked: List<Color>): ColorChosenResponse {
+        val picks = (ranked + availableColors.sortedBy { it.ordinal })
+            .filter { it in availableColors }.distinct().take(minColors.coerceAtLeast(1))
+        return if (picks.size <= 1) ColorChosenResponse(id, picks.first())
+        else ColorChosenResponse(id, picks.first(), picks)
+    }
+
+    /**
+     * One answer per distinct pick of exactly [minColors] offered colors (WUBRG order) — every
+     * single color for an ordinary choice, the ten pairs for "choose two colors". For search and
+     * gym enumerators; an "up to [maxColors]" choice is enumerated at its minimum.
+     */
+    fun minimalAnswers(): List<ColorChosenResponse> {
+        val offered = availableColors.sortedBy { it.ordinal }
+        fun combos(from: Int, k: Int): List<List<Color>> =
+            if (k == 0) listOf(emptyList())
+            else (from..offered.size - k).flatMap { i -> combos(i + 1, k - 1).map { listOf(offered[i]) + it } }
+        return combos(0, minColors.coerceIn(1, offered.size.coerceAtLeast(1)))
+            .filter { it.isNotEmpty() }.map { answerWith(it) }
+    }
+}
 
 /**
  * Player must choose a number (e.g., X value, divide damage).

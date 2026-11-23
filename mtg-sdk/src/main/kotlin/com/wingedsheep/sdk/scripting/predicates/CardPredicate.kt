@@ -1065,8 +1065,10 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
      * Matches objects whose color set includes the color chosen on the source
      * permanent (read from its CastChoicesComponent). Composable color analogue of
      * [HasChosenSubtype] — combine with a type predicate to express e.g. "an instant
-     * or sorcery spell of the chosen color" (Harsh Judgment). Colorless objects never
-     * match; if the source has no chosen color, nothing matches.
+     * or sorcery spell of the chosen color" (Harsh Judgment). When the source chose several
+     * colors ("choose two colors"), it matches an object that is **at least one** of them
+     * (Tablet of the Guilds). Colorless objects never match; if the source has no chosen
+     * color, nothing matches.
      */
     @SerialName("SharesChosenColorWithSource")
     @Serializable

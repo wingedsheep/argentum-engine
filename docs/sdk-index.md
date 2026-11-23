@@ -1344,6 +1344,7 @@ Families:
 
 ## IterationSpace
 
+- `IterationSpace.ChosenColorsOf(source: EffectTarget.SingleEntity)` — Iterate the colors a referenced permanent **chose as it entered** — "for each of the chosen colors …" (Tablet of the Guilds' `EntersWithChoice(COLOR, colorCount = 2)`) — in canonical WUBRG order, e…
 - `IterationSpace.Collection(collection: String)` — Iterate the entities in a named pipeline collection.
 - `IterationSpace.ColorsOf(source: EffectTarget.SingleEntity)` — Iterate the colors of a referenced entity in canonical WUBRG order, exposing the current color through the chosen-color context — the same channel `ChooseColorThen` feeds — so per-color atoms (`Gra…
 - `IterationSpace.CounterKindsAmong(filter: GroupFilter)` — Iterate each **kind of counter** among the battlefield permanents matching filter — "for each kind of counter among creatures you control, put a counter of that kind on …" (Exotic Pets).
@@ -1606,7 +1607,7 @@ Families:
 - `EntersOnlyIfPaid(cost: PayCost, appliesTo: EventPattern)` — Pay-or-graveyard self-replacement on this card's own entry (Mox Diamond).
 - `EntersTapped(unlessCondition: Condition?, payLifeCost: Int?, appliesTo: EventPattern)`
 - `EntersUntapped(appliesTo: EventPattern)` — "Permanents matching appliesTo enter the battlefield untapped" — the inverse of EntersTapped.
-- `EntersWithChoice(choiceType: ChoiceType, chooser: Player, allowedCreatureTypes: List<String>?, modeOptions: List<ModeOption>, minValue: Int, maxValue: Int, cardNamePool: CardNamePool, cardNameSource: CardNameSource, lookAtOpponentHand: Boolean, excludedColors: Set<Color>, permanentFilter: GameObjectFilter?, mayChooseNothing: Boolean, then: Effect?, atRandom: Boolean, chosenOpponentControls: Boolean, appliesTo: EventPattern)` — As this permanent enters, make a choice.
+- `EntersWithChoice(choiceType: ChoiceType, chooser: Player, allowedCreatureTypes: List<String>?, modeOptions: List<ModeOption>, minValue: Int, maxValue: Int, cardNamePool: CardNamePool, cardNameSource: CardNameSource, lookAtOpponentHand: Boolean, excludedColors: Set<Color>, colorCount: Int, permanentFilter: GameObjectFilter?, mayChooseNothing: Boolean, then: Effect?, atRandom: Boolean, chosenOpponentControls: Boolean, appliesTo: EventPattern)` — As this permanent enters, make a choice.
 - `EntersWithCounters(counterType: CounterType, count: Int, selfOnly: Boolean, condition: Condition?, otherOnly: Boolean, appliesTo: EventPattern, placedBy: Player)` — Permanent/creature enters with counters.
 - `EntersWithDevour(multiplier: Int, sacrificeFilter: GameObjectFilter, counterType: CounterType, variant: String, appliesTo: EventPattern)` — Devour (CR 702.82) and its variants.
 - `EntersWithDynamicCounters(counterType: CounterType, count: DynamicAmount, otherOnly: Boolean, appliesTo: EventPattern, activeZones: Set<Zone>)` — Permanent/creature enters with a dynamic number of counters.

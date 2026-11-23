@@ -397,6 +397,10 @@ object DecisionValidators {
         if (response.color !in decision.availableColors) {
             return "Invalid color: ${response.color} is not available"
         }
+        val named = if (response.colors.isEmpty()) 1 else response.colors.size
+        if (named < decision.minColors) {
+            return "Too few colors: at least ${decision.minColors} must be chosen"
+        }
         if (response.colors.isNotEmpty()) {
             // Multi-color answer ("the color or colors of your choice"): a nonempty set of
             // distinct, offered colors, no larger than the decision allows, naming `color` too.

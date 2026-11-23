@@ -728,6 +728,8 @@ export interface ChooseColorDecision extends PendingDecisionBase {
   readonly availableColors: readonly string[]
   /** How many distinct colors may be chosen; >1 means "one or more" (toggle + confirm). */
   readonly maxColors?: number
+  /** The fewest colors the answer must name; equal to maxColors for "choose two colors". */
+  readonly minColors?: number
 }
 
 /**

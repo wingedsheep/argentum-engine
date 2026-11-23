@@ -4628,6 +4628,25 @@ object Effects {
     ): Effect = ForEachColorOfEffect(source, effect)
 
     /**
+     * Run [effect] once per color [source] **chose as it entered**, with that color exposed
+     * through the chosen-color context (so `withChosenColor()` filters and the per-color atoms
+     * read it). "You gain 1 life for each of the chosen colors it is" (Tablet of the Guilds) is
+     *
+     *     Effects.ForEachChosenColor(
+     *         effect = Effects.If(Conditions.TriggeringSpellMatches(GameObjectFilter.Any.withChosenColor()), Effects.GainLife(1)),
+     *     )
+     *
+     * Reads the recorded choice, not [source]'s own colors (compare [ForEachColorOf]); no choice
+     * runs zero times. Iterates in WUBRG order.
+     */
+    fun ForEachChosenColor(
+        source: EffectTarget.SingleEntity = EffectTarget.Self,
+        effect: Effect
+    ): Effect = com.wingedsheep.sdk.scripting.effects.ForEachEffect(
+        com.wingedsheep.sdk.scripting.effects.IterationSpace.ChosenColorsOf(source), effect
+    )
+
+    /**
      * Run [effect] once per **kind of counter** among the permanents matching [filter], with
      * that kind exposed to [AddCountersOfChosenKind] via `kindFrom = CounterKindSource.ITERATION`.
      * "Then for each kind of counter among creatures you control, put a counter of that kind on

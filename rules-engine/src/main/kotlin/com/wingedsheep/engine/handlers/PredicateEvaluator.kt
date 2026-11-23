@@ -8,7 +8,7 @@ import com.wingedsheep.engine.state.components.battlefield.chosenCreatureOf
 import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.engine.state.components.battlefield.entitiesChoice
 import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent
-import com.wingedsheep.engine.state.components.battlefield.chosenColor
+import com.wingedsheep.engine.state.components.battlefield.chosenColors
 import com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent
 import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
 import com.wingedsheep.engine.handlers.effects.LkiPolicy
@@ -1558,10 +1558,9 @@ class PredicateEvaluator(
 
             CardPredicate.SharesChosenColorWithSource -> {
                 val sourceId = context?.sourceId ?: return false
-                val chosenColor = state.getEntity(sourceId)
-                    ?.chosenColor()
-                    ?: return false
-                chosenColor.name in colors
+                // "Of the chosen color", or with several chosen ("choose two colors") "at least
+                // one of the chosen colors" (Tablet of the Guilds).
+                state.getEntity(sourceId)?.chosenColors().orEmpty().any { it.name in colors }
             }
 
             CardPredicate.SharesColorWithRecipient -> {
@@ -2914,27 +2913,32 @@ class PredicateEvaluator(
      *
      * Face-down spells have no characteristics per CR 708.2, so only filters with
      * no card predicates (i.e. GameObjectFilter.Any) match them.
+     *
+     * [state] is only needed by the source-relative chosen-color predicate ("a spell of the chosen
+     * color", read off [PredicateContext.sourceId]'s recorded choice); without it that reads false.
      */
     fun matchesFilter(
         record: CastSpellRecord,
         filter: GameObjectFilter,
-        context: PredicateContext? = null
+        context: PredicateContext? = null,
+        state: GameState? = null
     ): Boolean {
         if (filter.cardPredicates.isEmpty() && filter.anyOf.isEmpty()) return true
         if (record.isFaceDown) return false
 
         // Conjunction over card predicates; OR lives inside a CardPredicate.Or.
-        if (!filter.cardPredicates.all { matchesRecordPredicate(record, it, context) }) return false
+        if (!filter.cardPredicates.all { matchesRecordPredicate(record, it, context, state) }) return false
         // Recursive union (`or` infix): only the card predicates of each branch are
         // meaningful for a cast record; state/controller branches are skipped as above.
-        if (filter.anyOf.isNotEmpty()) return filter.anyOf.any { matchesFilter(record, it, context) }
+        if (filter.anyOf.isNotEmpty()) return filter.anyOf.any { matchesFilter(record, it, context, state) }
         return true
     }
 
     private fun matchesRecordPredicate(
         record: CastSpellRecord,
         predicate: CardPredicate,
-        context: PredicateContext? = null
+        context: PredicateContext? = null,
+        state: GameState? = null
     ): Boolean {
         val typeLine = record.typeLine
         return when (predicate) {
@@ -3044,11 +3048,20 @@ class PredicateEvaluator(
             // Keyword predicates — not stored in record
             is CardPredicate.HasKeyword, is CardPredicate.NotKeyword -> false
 
+            // The color chosen in this resolution ("for each of the chosen colors it is").
+            CardPredicate.HasChosenColor -> context?.chosenColor?.let { it in record.colors } ?: false
+            // "A spell of the chosen color" / "at least one of the chosen colors" — the source's
+            // recorded choice (Tablet of the Guilds' intervening "if").
+            CardPredicate.SharesChosenColorWithSource -> {
+                val sourceId = context?.sourceId
+                sourceId != null && state != null &&
+                    state.getEntity(sourceId)?.chosenColors().orEmpty().any { it in record.colors }
+            }
+
             // Source-relative and context predicates — not applicable
             CardPredicate.NotOfSourceChosenType, CardPredicate.SharesCreatureTypeWithSource,
             CardPredicate.SharesCreatureTypeWithTriggeringEntity,
             CardPredicate.ConvokedSource, CardPredicate.ChosenBySource, CardPredicate.HasChosenSubtype,
-            CardPredicate.HasChosenColor, CardPredicate.SharesChosenColorWithSource,
             CardPredicate.SharesColorWithRecipient,
             CardPredicate.SharesColorWithTriggeringMana,
             is CardPredicate.SharesCreatureTypeWith,

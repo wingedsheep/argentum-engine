@@ -10,6 +10,7 @@ import com.wingedsheep.engine.core.DecisionResponse
 import com.wingedsheep.engine.core.NumberChosenResponse
 import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
+import com.wingedsheep.engine.state.components.battlefield.colorChoiceValue
 import com.wingedsheep.engine.state.components.battlefield.chosenOpponent
 import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.engine.core.ChooseNumberDecision
@@ -508,7 +509,7 @@ object PermanentEntryReplacements {
         fun <T> option(options: List<T>): T? = (response as? OptionChosenResponse)?.let { options.getOrNull(it.optionIndex) }
         return when (question.choiceType) {
             ChoiceType.COLOR -> (response as? ColorChosenResponse)
-                ?.let { ChoiceSlot.COLOR to ChoiceValue.ColorChoice(it.color) }
+                ?.let { ChoiceSlot.COLOR to colorChoiceValue(it.color, it.colors) }
             ChoiceType.CREATURE_TYPE -> option(question.creatureTypes)
                 ?.let { ChoiceSlot.CREATURE_TYPE to ChoiceValue.TextChoice(it) }
             ChoiceType.PLANESWALKER_TYPE -> option(question.planeswalkerTypes)
@@ -708,7 +709,9 @@ object PermanentEntryReplacements {
                 pause(
                     { id -> ChooseColorDecision(
                         id, chooserId, colorChoicePrompt(choice), context(),
-                        availableColors = Color.entries.toSet() - choice.excludedColors
+                        availableColors = Color.entries.toSet() - choice.excludedColors,
+                        maxColors = choice.colorCount,
+                        minColors = choice.colorCount
                     ) },
                     EntersWithChoiceOnBattlefieldContinuation(
                         entityId = entityId,

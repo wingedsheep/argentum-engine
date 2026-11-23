@@ -72,8 +72,10 @@ export function ChooseColorDecisionUI({
   const submitColorDecision = useGameStore((s) => s.submitColorDecision)
   const [hoveredColor, setHoveredColor] = useState<string | null>(null)
   const [collapsed, setCollapsed] = useState(false)
-  // "The color or colors of your choice": toggle any nonempty set, then confirm.
+  // "The color or colors of your choice": toggle any nonempty set, then confirm. "Choose two
+  // colors" sets minColors = maxColors, so confirm waits for exactly that many.
   const maxColors = decision.maxColors ?? 1
+  const minColors = Math.max(1, decision.minColors ?? 1)
   const multiSelect = maxColors > 1
   const [selected, setSelected] = useState<readonly string[]>([])
 
@@ -89,9 +91,10 @@ export function ChooseColorDecisionUI({
     })
   }
 
+  const canConfirm = selected.length >= minColors
   const handleConfirm = () => {
     const [first] = selected
-    if (first === undefined) return
+    if (first === undefined || !canConfirm) return
     submitColorDecision(decision.id, first, selected)
   }
 
@@ -253,21 +256,23 @@ export function ChooseColorDecisionUI({
       {multiSelect && (
         <button
           onClick={handleConfirm}
-          disabled={selected.length === 0}
+          disabled={!canConfirm}
           style={{
             padding: '8px 28px',
             fontSize: 'var(--font-md)',
             fontWeight: 600,
             borderRadius: 8,
             border: '1px solid rgba(255, 255, 255, 0.25)',
-            background: selected.length === 0 ? 'rgba(60, 60, 70, 0.6)' : 'var(--accent-primary, #3a7bd5)',
+            background: !canConfirm ? 'rgba(60, 60, 70, 0.6)' : 'var(--accent-primary, #3a7bd5)',
             color: 'var(--text-primary)',
-            cursor: selected.length === 0 ? 'not-allowed' : 'pointer',
-            opacity: selected.length === 0 ? 0.6 : 1,
+            cursor: !canConfirm ? 'not-allowed' : 'pointer',
+            opacity: !canConfirm ? 0.6 : 1,
           }}
         >
-          {selected.length === 0
-            ? 'Select at least one color'
+          {!canConfirm
+            ? minColors > 1
+              ? `Select ${minColors - selected.length} more color${minColors - selected.length === 1 ? '' : 's'}`
+              : 'Select at least one color'
             : `Confirm ${selected
                 .map((c) => ColorDisplayNames[c as keyof typeof ColorDisplayNames] ?? c)
                 .join(', ')}`}

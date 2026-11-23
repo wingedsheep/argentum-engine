@@ -871,7 +871,7 @@ internal class CardProjector(
             // are surfaced via the "type-change" active-effect badge in CardActiveEffectsProjector, not as a chosen-type label.
             creatureType = container.chosenSubtype() ?: frame.spellOnStack?.chosenCreatureType,
             // Get chosen color for "as enters, choose a color" permanents (e.g., Riptide Replicator)
-            color = container.chosenColor()?.displayName,
+            color = container.chosenColors().takeIf { it.isNotEmpty() }?.joinToString(" and ") { it.displayName },
             mode = chosenModeLabel(frame),
             // Get chosen card name for "as enters, choose a card name" permanents (e.g., Petrified Hamlet)
             cardName = container.chosenCardName(),

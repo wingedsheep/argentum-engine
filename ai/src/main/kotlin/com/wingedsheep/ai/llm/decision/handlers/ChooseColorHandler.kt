@@ -1,7 +1,6 @@
 package com.wingedsheep.ai.llm.decision.handlers
 
 import com.wingedsheep.engine.core.ChooseColorDecision
-import com.wingedsheep.engine.core.ColorChosenResponse
 import com.wingedsheep.engine.core.DecisionResponse
 import com.wingedsheep.ai.llm.AiResponseParser
 import com.wingedsheep.ai.llm.GameStateFormatter
@@ -38,7 +37,7 @@ class ChooseColorHandler : AiDecisionHandler<ChooseColorDecision> {
     ): DecisionResponse? {
         val colors = decision.availableColors.toList()
         val index = parser.parseActionChoice(response, colors.size - 1) ?: return null
-        return ColorChosenResponse(decisionId = decision.id, color = colors[index])
+        return decision.answerWith(listOf(colors[index]))
     }
 
 }

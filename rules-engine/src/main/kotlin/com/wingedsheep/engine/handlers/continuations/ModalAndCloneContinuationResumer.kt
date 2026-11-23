@@ -16,6 +16,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
+import com.wingedsheep.engine.state.components.battlefield.colorChoiceValue
 import com.wingedsheep.engine.state.components.battlefield.withCastChoice
 import com.wingedsheep.engine.legalactions.utils.TargetEnumerationUtils
 import com.wingedsheep.sdk.core.Zone
@@ -884,7 +885,7 @@ class ModalAndCloneContinuationResumer(
                     return ExecutionResult.error(state, "Expected color choice response")
                 }
                 state.updateEntity(spellId) { c ->
-                    c.withCastChoice(ChoiceSlot.COLOR, ChoiceValue.ColorChoice(response.color))
+                    c.withCastChoice(ChoiceSlot.COLOR, colorChoiceValue(response.color, response.colors))
                 }
             }
             com.wingedsheep.sdk.scripting.ChoiceType.CREATURE_TYPE -> {
