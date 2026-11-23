@@ -269,6 +269,13 @@ class CostEnumerationUtils(
         excludeSelfId: EntityId? = null,
     ): List<EntityId> {
         val predicateContext = PredicateContext(controllerId = playerId)
+        // "Exile a spell you control" (Nivmagus Elemental): the payer's spells on the one stack.
+        if (zone == Zone.STACK) {
+            return state.spellsControlledBy(playerId).filter { entityId ->
+                entityId != excludeSelfId &&
+                    predicateEvaluator.matches(state, state.projectedState, entityId, filter, predicateContext)
+            }
+        }
         val owners = if (anyPlayersZone) state.turnOrder else listOf(playerId)
         val matchesByOwner = owners.map { owner ->
             state.getZone(ZoneKey(owner, zone)).filter { entityId ->

@@ -39,7 +39,7 @@ class CostHandlerDiscardSelfTest : FunSpec({
         driver.state.getZone(com.wingedsheep.engine.state.ZoneKey(player, Zone.HAND))
             .shouldContain(cardId)
 
-        val costHandler = CostHandler(driver.zones)
+        val costHandler = CostHandler(driver.zones, com.wingedsheep.engine.mechanics.stack.SpellCounterer(driver.zones))
         costHandler.canPayAbilityCost(
             state = driver.state,
             cost = AbilityCost.DiscardSelf,
@@ -79,7 +79,7 @@ class CostHandlerDiscardSelfTest : FunSpec({
         // Card exists but is in the graveyard, not the hand.
         val cardId = driver.putCardInGraveyard(player, "Grizzly Bears")
 
-        val costHandler = CostHandler(driver.zones)
+        val costHandler = CostHandler(driver.zones, com.wingedsheep.engine.mechanics.stack.SpellCounterer(driver.zones))
         costHandler.canPayAbilityCost(
             state = driver.state,
             cost = AbilityCost.DiscardSelf,

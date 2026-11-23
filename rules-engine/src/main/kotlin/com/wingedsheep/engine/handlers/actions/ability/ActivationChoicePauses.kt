@@ -417,7 +417,9 @@ internal class ActivationChoicePauses(
             }
         if (exileCandidates.size <= exileCost.count) return null
         val plural = if (exileCost.count > 1) "s" else ""
-        val prompt = if (exileCost.exiles) {
+        val prompt = if (exileCost.zone == Zone.STACK) {
+            "Select ${exileCost.count} spell$plural you control to exile for ${sourceName}"
+        } else if (exileCost.exiles) {
             val zoneLabel = if (exileCost.zone == Zone.HAND) "your hand" else "graveyard"
             "Select ${exileCost.count} card$plural to exile from $zoneLabel for ${sourceName}"
         } else {

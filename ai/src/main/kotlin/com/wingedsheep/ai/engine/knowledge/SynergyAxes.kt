@@ -240,6 +240,11 @@ object SynergyAxes {
                 }
             ) add(SynergyAxis.SPELLS)
             if (Keyword.PROWESS in card.keywords) add(SynergyAxis.SPELLS)
+            // "Exile an instant or sorcery spell you control: …" (Nivmagus Elemental) spends the
+            // deck's spells as its cost: with none cast, the ability can't be activated.
+            if (scripts.any { script -> script.activatedAbilities.any { exilesOwnSpell(it.cost) } }) {
+                add(SynergyAxis.SPELLS)
+            }
             // A damage amplifier whose sources are our instants and sorceries ("if a red instant or
             // sorcery spell you control would deal damage, it deals that much damage plus 2",
             // Pyromancer's Gauntlet) does nothing until the deck's burn spells deal that damage.
@@ -916,6 +921,13 @@ object SynergyAxes {
     private fun processes(cost: AbilityCost): Boolean = when (cost) {
         is AbilityCost.Atom -> processes(cost.atom)
         is AbilityCost.Composite -> cost.costs.any(::processes)
+        else -> false
+    }
+
+    /** "Exile a spell you control" as a cost — the stack is the pool ([CostAtom.ExileFrom.zone]). */
+    private fun exilesOwnSpell(cost: AbilityCost): Boolean = when (cost) {
+        is AbilityCost.Atom -> (cost.atom as? CostAtom.ExileFrom)?.zone == Zone.STACK
+        is AbilityCost.Composite -> cost.costs.any(::exilesOwnSpell)
         else -> false
     }
 

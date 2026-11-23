@@ -108,6 +108,7 @@ const SELECTION_COST_TYPES: readonly string[] = [
   'DiscardCard',
   'ExileFromGraveyard',
   'ExileFromHand',
+  'ExileFromStack',
   'CollectEvidence',
   'ExileForTotal',
   'ExileFromZone',
@@ -591,6 +592,7 @@ export function mergeResult(
               : costType === 'BouncePermanent'
                 ? { bouncedPermanents: selectedTargets }
                 : costType === 'ExileFromGraveyard' || costType === 'ExileFromHand' ||
+                    costType === 'ExileFromStack' ||
                     costType === 'CollectEvidence' ||
                     costType === 'ExileForTotal'
                   ? { exiledCards: selectedTargets }
@@ -633,6 +635,7 @@ export function mergeResult(
               : costType === 'BouncePermanent'
                 ? { bouncedPermanents: selectedTargets }
                 : costType === 'ExileFromGraveyard' || costType === 'ExileFromHand' ||
+                    costType === 'ExileFromStack' ||
                     costType === 'Craft' ||
                     costType === 'CollectEvidence' || costType === 'ExileForTotal'
                   ? { exiledCards: selectedTargets }
@@ -1123,6 +1126,15 @@ export function enterPhase(
           flags.sourceCardName = actionInfo.description
             .replace(/^Cast /, '')
             .replace(/^Activate /, '')
+          break
+        // "Exile an instant or sorcery spell you control" (Nivmagus Elemental): the spells are
+        // clicked where they sit, on the stack, so no zone picker is named.
+        case 'ExileFromStack':
+          validTargets = [...(costInfo.validExileTargets ?? [])]
+          minTargets = costInfo.exileMinCount ?? 1
+          maxTargets = costInfo.exileMaxCount ?? costInfo.validExileTargets?.length ?? 1
+          flags.isSacrificeSelection = true
+          flags.targetDescription = costInfo.description
           break
         case 'ExileFromHand':
           validTargets = [...(costInfo.validExileTargets ?? [])]

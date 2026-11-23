@@ -1609,6 +1609,13 @@ data class GameState(
         departedAbilities[ref.entityId]?.takeIf { it.objectRef == ref }?.ability
 
     /**
+     * The spells (never abilities) on the stack that [playerId] controls, top first — the pool of an
+     * "exile a spell you control" cost (`CostAtom.ExileFrom(Zone.STACK)`, Nivmagus Elemental).
+     */
+    fun spellsControlledBy(playerId: EntityId): List<EntityId> =
+        stack.asReversed().filter { getEntity(it)?.get<SpellOnStackComponent>()?.casterId == playerId }
+
+    /**
      * Take an object off the stack without it resolving — countered, bounced, exiled, or moved by
      * any other zone change. The object it becomes is new (CR 400.7), so abilities granted to the
      * stack object (CR 400.7a — Thief of Existence's cast trigger) end here. A *resolving* permanent

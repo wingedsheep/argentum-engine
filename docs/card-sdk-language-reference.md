@@ -710,6 +710,7 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   `Bottom` only (anything else fails at construction).
 - `Costs.ExileFromGraveyard(count, filter)` — exile N matching cards from your graveyard.
 - `Costs.ExileFromHand(count = 1, filter = Any)` — "Exile a card from your hand": exile N matching cards from your hand (Q, Stacking the Deck's granted exile ability).
+- `Costs.ExileSpellYouControl(count = 1, filter = Any)` — "Exile an instant or sorcery spell you control": `CostAtom.ExileFrom(zone = Zone.STACK)`. The pool is the spells (never abilities) on the stack the activating player controls that match `filter`; each chosen spell is exiled the way "exile target spell" exiles one (off the stack, not countered, so it never resolves; a copy pays too). Activated-ability costs only — the "unless you pay" rail reports it unpayable. Nivmagus Elemental = `Costs.ExileSpellYouControl(filter = GameObjectFilter.InstantOrSorcery)` → `AddCounters(+1/+1, 2, Self)`.
 - `Costs.ExileAnotherFromGraveyard(count = 1, filter)` — "exile **another** [filter] card from your
   graveyard": `CostAtom.ExileFrom(..., excludeSelf = true)`, the `Sacrifice.excludeSelf` twin. For an
   ability activated *from* the graveyard, so the activating card can't pay its own cost (Gallia,

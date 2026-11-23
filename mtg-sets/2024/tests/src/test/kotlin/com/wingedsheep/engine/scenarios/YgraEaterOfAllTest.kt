@@ -99,7 +99,7 @@ class YgraEaterOfAllTest : FunSpec({
         val projected = driver.state.projectedState
         projected.hasSubtype(opponentBear, Subtype.FOOD.value) shouldBe true
 
-        val costHandler = CostHandler(driver.zones)
+        val costHandler = CostHandler(driver.zones, com.wingedsheep.engine.mechanics.stack.SpellCounterer(driver.zones))
         val emptyPool = ManaPool()
 
         // canPay should now see the opponent's Bear as a sacrifice-able Food, even though

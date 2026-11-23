@@ -3052,6 +3052,50 @@
     ]
 }
 
+// Nivmagus Elemental
+{
+    "name": "Nivmagus Elemental",
+    "manaCost": "{U/R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Exile an instant or sorcery spell you control: Put two +1/+1 counters on this creature. (That spell won't resolve.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nivmagus Elemental:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomExileFrom",
+                        "zone": "Stack",
+                        "filter": "instant|sorcery"
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "219",
+        "rarity": "RARE",
+        "artist": "Mike Bierek",
+        "flavorText": "When it escaped, the experimenters hesitated. It would cause untold havoc, yet they wished to see it in action.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b1892003-2e4c-43bd-8a37-3a97a76f113a.jpg?1783940327"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Pack Rat
 {
     "name": "Pack Rat",

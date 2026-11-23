@@ -355,6 +355,40 @@ describe('enterPhase — sum-gated graveyard exile costs', () => {
     })
   })
 
+  it('an ExileFromStack cost is clicked on the stack, with no zone picker', () => {
+    const captured = captureTargeting(
+      exileCostAction('ExileFromStack', {
+        description: 'Exile an instant or sorcery spell you control',
+        validExileTargets: ['spell'],
+        exileMinCount: 1,
+        exileMaxCount: 1,
+      }),
+    )
+    expect(captured).toMatchObject({
+      validTargets: ['spell'],
+      minTargets: 1,
+      maxTargets: 1,
+      isSacrificeSelection: true,
+      targetDescription: 'Exile an instant or sorcery spell you control',
+    })
+    expect(captured).not.toHaveProperty('targetZone')
+  })
+
+  it('an ExileFromStack cost asks for its pick and submits it as exiled cards', () => {
+    const info = {
+      ...exileCostAction('ExileFromStack', { validExileTargets: ['a', 'b'], exileMinCount: 1, exileMaxCount: 1 }),
+      action: { type: 'ActivateAbility', playerId: 'p1', sourceId: 'nivmagus', abilityId: 'ab' },
+    } as unknown as LegalActionInfo
+    expect(computePhases(info).map((p) => p.type)).toContain('costPayment')
+    const merged = mergeResult(
+      info.action,
+      info,
+      { type: 'costPayment', costType: 'ExileFromStack', selectedTargets: ['b' as never] },
+      {} as never,
+    )
+    expect(merged).toMatchObject({ costPayment: { exiledCards: ['b'] } })
+  })
+
   it('an ExileForTotal cost takes the identical path with its own unit', () => {
     const captured = captureTargeting(
       exileCostAction('ExileForTotal', {

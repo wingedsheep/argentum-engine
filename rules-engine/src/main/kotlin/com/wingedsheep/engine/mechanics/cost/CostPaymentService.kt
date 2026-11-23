@@ -865,7 +865,8 @@ class CostPaymentService(private val services: EngineServices) {
                     is CostAtom.DiscardHand -> true
                     // A processor-style move (destination = GRAVEYARD) is wired for activation and
                     // spell additional costs only; this "unless you pay" rail reports it unpayable.
-                    is CostAtom.ExileFrom -> atom.exiles && run {
+                    // So is "exile a spell you control" (zone = STACK), an activation cost only.
+                    is CostAtom.ExileFrom -> atom.exiles && atom.zone != Zone.STACK && run {
                         val candidates = domain(state, payerId, c, sourceId, predicateEvaluator = predicateEvaluator)
                         if (atom.distinctNames) distinctNameCount(state, candidates) >= atom.count
                         else candidates.size >= atom.count

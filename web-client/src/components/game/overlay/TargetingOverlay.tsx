@@ -2,6 +2,7 @@ import React from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
 import { selectIsMultiplayerGame } from '@/store/selectors.ts'
 import type { ClientCard, EntityId } from '@/types'
+import { ZoneType } from '@/types'
 import type { ResponsiveSizes } from '@/hooks/useResponsive.ts'
 import { calculateFittingCardWidth } from '@/hooks/useResponsive.ts'
 import { useDraggable } from '@/hooks/useDraggable.ts'
@@ -583,6 +584,11 @@ export function TargetingOverlay() {
   const isBehold = targetingState.isBeholdSelection
   // A cost paid from hand ("exile a green card from your hand") is a card pick, not a permanent.
   const isHandPick = targetingState.targetZone === 'Hand'
+  // A cost paid with spells on the stack ("exile an instant or sorcery spell you control") is
+  // clicked on the stack, not on a permanent. Only a cost selection — a counterspell's targets
+  // keep their own wording. Zones come from server-sent card state.
+  const isStackPick = isSacrifice && targetingState.validTargets.length > 0 &&
+    targetingState.validTargets.every((id) => gameState?.cards[id]?.zone?.zoneType === ZoneType.STACK)
 
   // Split the server's valid targets by how the player can physically reach them: a graveyard or
   // exile pile isn't individually clickable on the board, so those cards need the cross-zone
@@ -700,7 +706,7 @@ export function TargetingOverlay() {
     ? isBehold ? 'Card selected' : isDiscard ? 'Card selected' : isReveal ? 'Card selected' : isTapPermanent ? 'Permanents selected' : isBounce ? 'Creature selected' : isSacrifice ? 'Selected' : 'Maximum targets selected'
     : hasEnoughTargets
       ? 'Click Confirm or select more'
-      : isBehold ? `Click a highlighted card on the battlefield or in your hand` : isDiscard ? 'Click a card in your hand' : isReveal ? 'Click a card in your hand' : isTapPermanent ? 'Click a highlighted permanent' : isBounce ? 'Click a highlighted permanent to return' : isHandPick ? 'Click a highlighted card in your hand' : isSacrifice ? 'Click a highlighted permanent you control' : 'Click a highlighted target'
+      : isBehold ? `Click a highlighted card on the battlefield or in your hand` : isDiscard ? 'Click a card in your hand' : isReveal ? 'Click a card in your hand' : isTapPermanent ? 'Click a highlighted permanent' : isBounce ? 'Click a highlighted permanent to return' : isHandPick ? 'Click a highlighted card in your hand' : isStackPick ? 'Click a highlighted spell on the stack' : isSacrifice ? 'Click a highlighted permanent you control' : 'Click a highlighted target'
   // On a mixed union the board is only half the answer — say so, since the other half lives
   // behind the button below and there is nothing on the board to hint at it.
   const hintText = isMixedZoneTargeting && !hasMaxTargets
