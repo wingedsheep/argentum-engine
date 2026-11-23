@@ -368,6 +368,7 @@ internal class AffectsFilterResolver(
 
         return state.getBattlefield().filter { entityId ->
             if (groupFilter.excludeSelf && entityId == sourceId) return@filter false
+            if (entityId in groupFilter.excludedEntities) return@filter false
 
             val container = state.getEntity(entityId) ?: return@filter false
             val card = container.get<CardComponent>() ?: return@filter false

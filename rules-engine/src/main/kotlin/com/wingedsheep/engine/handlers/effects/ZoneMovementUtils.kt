@@ -377,6 +377,16 @@ object ZoneMovementUtils {
                 modification.attackerId == entityId) {
                 return@mapNotNull null
             }
+            // A group's pinned "other than that creature" names that object only: returned, it is a
+            // new object the group covers again (Mark for Death's target blinked back can't block).
+            val group = floatingEffect.effect.dynamicGroupFilter
+            if (group != null && entityId in group.excludedEntities) {
+                return@mapNotNull floatingEffect.copy(
+                    effect = floatingEffect.effect.copy(
+                        dynamicGroupFilter = group.copy(excludedEntities = group.excludedEntities - entityId)
+                    )
+                )
+            }
             if (entityId !in floatingEffect.effect.affectedEntities) {
                 floatingEffect
             } else {

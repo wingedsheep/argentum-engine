@@ -3828,7 +3828,13 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   player when the effect resolves (`ResolutionFilterBaker`, shared with `GrantStaticAbility`'s
   `CantBeBlockedBy`), while the set of their creatures stays live. The Motherlode, Excavator:
   `CantBlockGroup(GroupFilter(Creature.withoutKeyword(FLYING).targetPlayerControls(PlayerRef(Player.DefendingPlayer))))`
-  keeps binding the defending player after The Motherlode leaves combat.
+  keeps binding the defending player after The Motherlode leaves combat. "That player" for the
+  controller of the first target is `targetPlayerControls(EffectTarget.TargetController)`, pinned
+  the same way. A group's `otherThanTarget()` / `otherThanTriggeringEntity()` exclusion is pinned
+  too — to the excluded object's id in `GroupFilter.excludedEntities` (a resolved form, never
+  authored on a card). Mark for Death: `CantBlockGroup(GroupFilter(Creature.targetPlayerControls(
+  EffectTarget.TargetController)).otherThanTarget())` — "other creatures that player controls
+  can't block this turn", a creature they get later included.
   The same baker freezes a dynamic number in the filter for all six floating group effects
   (`CantBlockGroup`, `CantAttackGroup`, `CantBeBlockedGroup`, `MustBlockGroup`, `MustAttackGroup`,
   `AttacksWithoutTappingGroup`): `PowerAtMostDynamic`, `PowerEqualsDynamic`, `ToughnessEqualsDynamic`,

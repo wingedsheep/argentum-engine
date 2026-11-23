@@ -201,7 +201,7 @@ internal class CardActiveEffectsProjector(
     ): Boolean {
         val group = floating.effect.dynamicGroupFilter
         if (group == null || projectedState == null) return false
-        fun inGroup() = predicateEvaluator.matches(
+        fun inGroup() = entityId !in group.excludedEntities && predicateEvaluator.matches(
             state, projectedState, entityId, group.baseFilter, PredicateContext(controllerId = floating.controllerId)
         )
         return when (val mod = floating.effect.modification) {

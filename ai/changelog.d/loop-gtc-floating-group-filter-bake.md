@@ -1,0 +1,1 @@
+- #4841 The AI reads untapping a creature it forces to block (Mark for Death) as part of the lure rather than a gift, so it picks the opposing creature it wants to drag into a block

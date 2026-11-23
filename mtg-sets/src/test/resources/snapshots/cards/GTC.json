@@ -8009,6 +8009,84 @@
     ]
 }
 
+// Mark for Death
+{
+    "name": "Mark for Death",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature an opponent controls blocks this turn if able. Untap that creature. Other creatures that player controls can't block this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MarkMustBlock",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "CantBlockGroup",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "controllerPredicate": {
+                                "type": "ControlledByReferencedPlayer",
+                                "target": "TargetController"
+                            }
+                        },
+                        "excludeTarget": true
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "flavorText": "Everyone roots for the little guy, but nobody bets on him.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/45498dbd-a512-4299-800b-06c15a4fd94e.jpg?1783940123",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "That creature's controller still decides which attacking creature it blocks."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If the creature can't block (perhaps because it has become tapped or it doesn't have flying and all attacking creatures do), then the requirement to block does nothing."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If there are any costs required for that creature to block (such as the one imposed by War Cadence), the creature's controller isn't required to pay those costs. In that case, the requirement to block would do nothing."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Martial Glory
 {
     "name": "Martial Glory",

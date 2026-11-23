@@ -569,11 +569,13 @@ object TargetPolarityAnalyzer {
         val refunds = CardIntentAnalyzer.handRefundDraws(effect)
         // "Target creature blocks this turn if able. You may have it gain reach until end of turn"
         // (Academic Dispute): the reach lets the forced blocker meet our flier — part of dragging it
-        // into the block, not a gift to it.
+        // into the block, not a gift to it. So is untapping it (Mark for Death: "blocks this turn if
+        // able. Untap that creature") — a tapped creature can't be made to block.
         val forcedBlockers = targetLeaves(effect).filterIsInstance<MarkMustBlockEffect>().mapTo(HashSet()) { it.target }
         for (leaf in targetLeaves(effect)) {
             if (blinks.any { it === leaf }) continue
             if (leaf is GrantKeywordEffect && leaf.keyword == Keyword.REACH.name && leaf.target in forcedBlockers) continue
+            if (leaf is TapUntapEffect && !leaf.tap && leaf.target in forcedBlockers) continue
             if (leaf is DrawCardsEffect && leaf in refunds) continue
             if (theftGifts.any { it === leaf }) {
                 // Stolen Uniform attaches the Equipment it took to a creature of ours: the Equipment

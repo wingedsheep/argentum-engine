@@ -4,6 +4,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.view.ClientStateTransformer
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.handlers.effects.ResolutionFilterBaker
+import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -56,6 +57,62 @@ class GroupRestrictionFilterBakingTest : FunSpec({
 
         val later = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
         d.state.projectedState.cantBlock(later) shouldBe true
+    }
+
+    test("an other-than-target group pins the target and its controller, and stays live") {
+        val d = driver()
+        val mine = d.putCreatureOnBattlefield(d.player1, "Grizzly Bears")
+        val marked = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
+        val other = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
+        val context = EffectContext(
+            sourceId = null,
+            controllerId = d.player1,
+            targets = listOf(ChosenTarget.Permanent(marked))
+        )
+
+        // "Other creatures that player controls can't block this turn" (Mark for Death).
+        val result = CantBlockGroupExecutor(d.services.predicateEvaluator.amounts).execute(
+            d.state,
+            CantBlockGroupEffect(
+                GroupFilter(GameObjectFilter.Creature.targetPlayerControls(EffectTarget.TargetController))
+                    .otherThanTarget()
+            ),
+            context
+        )
+        d.replaceState(result.state)
+
+        d.state.projectedState.cantBlock(marked) shouldBe false
+        d.state.projectedState.cantBlock(other) shouldBe true
+        d.state.projectedState.cantBlock(mine) shouldBe false
+        // A creature that player gets later is caught too: only the exclusion and player are fixed.
+        val later = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
+        d.state.projectedState.cantBlock(later) shouldBe true
+
+        // The excluded target leaving the battlefield and coming back is a new object (CR 400.7):
+        // the group covers it again.
+        d.replaceState(ZoneMovementUtils.removeFloatingEffectsTargeting(d.state, marked))
+        d.state.projectedState.cantBlock(marked) shouldBe true
+        d.state.projectedState.cantBlock(other) shouldBe true
+    }
+
+    test("group exclusions are pinned to ids, and stay symbolic when the context has no such object") {
+        val d = driver()
+        val marked = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
+        val trigger = d.putCreatureOnBattlefield(d.player1, "Grizzly Bears")
+        val context = EffectContext(
+            sourceId = null,
+            controllerId = d.player1,
+            targets = listOf(ChosenTarget.Permanent(marked)),
+            triggeringEntityId = trigger
+        )
+        val group = GroupFilter(GameObjectFilter.Creature).otherThanTarget().otherThanTriggeringEntity()
+
+        ResolutionFilterBaker.bake(group, context, d.state) shouldBe
+            GroupFilter(GameObjectFilter.Creature, excludedEntities = setOf(marked, trigger))
+        ResolutionFilterBaker.bake(group, EffectContext(sourceId = null, controllerId = d.player1), d.state) shouldBe
+            group
+        ResolutionFilterBaker.bake(GameObjectFilter.Creature.targetPlayerControls(EffectTarget.TargetController), context, d.state)
+            .controllerPredicate shouldBe ControllerPredicate.ControlledByReferencedPlayer(EffectTarget.SpecificEntity(d.player2))
     }
 
     test("context-bound references are pinned, state-relative ones are left symbolic") {
