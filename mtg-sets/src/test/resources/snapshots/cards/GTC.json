@@ -4789,6 +4789,84 @@
     ]
 }
 
+// Five-Alarm Fire
+{
+    "name": "Five-Alarm Fire",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a creature you control deals combat damage, put a blaze counter on this enchantment.\nRemove five blaze counters from this enchantment: It deals 5 damage to any target.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Five-Alarm Fire:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "sourceFilter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "BLAZE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever a creature you control deals combat damage, put a blaze counter on this enchantment."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Five-Alarm Fire:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomRemoveCounters",
+                        "counterType": "BLAZE",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 5
+                        },
+                        "self": true
+                    }
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Remove five blaze counters from this enchantment: It deals 5 damage to any target."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "rarity": "RARE",
+        "artist": "Karl Kopinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fb550d0c-2261-4f41-a2b1-d185f0bce86a.jpg?1783940125",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "Five-Alarm Fire's first ability triggers once for each time a creature you control deals combat damage, even if it deals combat damage to more than one creature, planeswalker, or player. For example, an attacking creature with trample that deals combat damage to a blocking creature and the defending player will cause Five-Alarm Fire's ability to trigger once. A creature with double strike, however, may cause Five-Alarm Fire's ability to trigger twice during a single combat."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Forced Adaptation
 {
     "name": "Forced Adaptation",

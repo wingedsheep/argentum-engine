@@ -57,6 +57,7 @@ class CounterTypeTest : DescribeSpec({
             CounterType.ISOLATION.printed shouldBe "isolation"
             CounterType.CRYSTAL.printed shouldBe "crystal"
             CounterType.MANIFESTATION.printed shouldBe "manifestation"
+            CounterType.BLAZE.printed shouldBe "blaze"
         }
     }
 
@@ -134,7 +135,7 @@ class CounterTypeTest : DescribeSpec({
             CounterType.PUPA, CounterType.PHYLACTERY, CounterType.PEACE,
             CounterType.PROMOTION, CounterType.PREY, CounterType.UNITY,
             CounterType.VELOCITY, CounterType.FEEDING, CounterType.ISOLATION,
-            CounterType.CRYSTAL, CounterType.MANIFESTATION)
+            CounterType.CRYSTAL, CounterType.MANIFESTATION, CounterType.BLAZE)
 
         /** The values of the retired `object Counters` string constants, verbatim. */
         val LEGACY_SPELLINGS: Map<CounterType, String> = mapOf(

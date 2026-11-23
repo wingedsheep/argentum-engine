@@ -1003,6 +1003,13 @@ value class CounterType(val name: String) {
          */
         val MANIFESTATION = CounterType("MANIFESTATION")
 
+        /**
+         * Blaze counter (GTC — Five-Alarm Fire). Passive storage counter with no inherent rule: the
+         * enchantment's own "whenever a creature you control deals combat damage" trigger accumulates
+         * one per creature, and removing five is the cost of its 5-damage ability.
+         */
+        val BLAZE = CounterType("BLAZE")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -1177,6 +1184,7 @@ value class CounterType(val name: String) {
             ISOLATION,
             CRYSTAL,
             MANIFESTATION,
+            BLAZE,
         )
 
         /**
