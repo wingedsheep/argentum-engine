@@ -1491,6 +1491,41 @@
     ]
 }
 
+// Crowned Ceratok
+{
+    "name": "Crowned Ceratok",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Rhino",
+    "oracleText": "Trample\nEach creature you control with a +1/+1 counter on it has trample.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeywordByCounter",
+                "keyword": "TRAMPLE",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "controllerOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Prescott",
+        "flavorText": "The best way to calm a rampaging ceratok is to wait until it dies of natural causes.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a7eacc64-f418-4df0-bd8a-6b0036d0d2a1.jpg?1783940119"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Crypt Ghast
 {
     "name": "Crypt Ghast",
@@ -2275,6 +2310,91 @@
     ]
 }
 
+// Ghor-Clan Rampager
+{
+    "name": "Ghor-Clan Rampager",
+    "manaCost": "{2}{R}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Trample\nBloodrush — {R}{G}, Discard this card: Target attacking creature gets +4/+4 and gains trample until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ghor-Clan Rampager:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{R}{G}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 4
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 4
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "TRAMPLE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature attacking"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Bloodrush — {R}{G}, Discard this card: Target attacking creature gets +4/+4 and gains trample until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "rarity": "UNCOMMON",
+        "artist": "Charles Urbach",
+        "flavorText": "\"The Simic come from the cold slow depths. How could they understand the fire in a wild heart?\"\n—Kroshkar, Gruul shaman",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/382048ec-0bf5-49a5-90d5-f80fbda08962.jpg?1783940107"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Giant Adephage
 {
     "name": "Giant Adephage",
@@ -2499,6 +2619,52 @@
     ]
 }
 
+// Greenside Watcher
+{
+    "name": "Greenside Watcher",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Elf Druid",
+    "oracleText": "{T}: Untap target Gate.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Greenside Watcher:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent Gate"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "artist": "Ryan Barger",
+        "flavorText": "\"The Izzet may incite war, but my duty is here. I will not abandon the wild.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e825cb2d-98d7-423d-9ba1-b4d04027027e.jpg?1783940118"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Ground Assault
 {
     "name": "Ground Assault",
@@ -2534,6 +2700,99 @@
         "artist": "Karl Kopinski",
         "flavorText": "\"Taking down a dragon is easy. All you need is enough space to get in a good swing.\"\n—Narbulg Nine Fingers",
         "imageUri": "https://cards.scryfall.io/normal/front/a/4/a4220348-f030-4639-b1a9-6f61ac6bb6a8.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
+// Gruul Charm
+{
+    "name": "Gruul Charm",
+    "manaCost": "{R}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Creatures without flying can't block this turn.\n• Gain control of all permanents you own.\n• Gruul Charm deals 3 damage to each creature with flying.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "CantBlockGroup",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NotKeyword",
+                                        "keyword": "FLYING"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Creatures without flying can't block this turn"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "permanent own:you"
+                            }
+                        },
+                        "body": {
+                            "type": "GainControl",
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "description": "Gain control of all permanents you own"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature kw:flying"
+                            }
+                        },
+                        "body": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "description": "Gruul Charm deals 3 damage to each creature with flying"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "169",
+        "rarity": "UNCOMMON",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"Not Gruul? Then die!\"\n—Borborygmos",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/9235afe5-0a6b-43c2-921c-18524cf032f1.jpg?1783940106",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "If you choose the first mode, no creature without flying will be able to block that turn, including creatures that lose flying and creatures without flying that enter after Gruul Charm resolves."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If you choose the second mode, Gruul Charm's effect will override any other control-changing effects on those permanents."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "A token is owned by the player under whose control it entered."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED",
@@ -2579,6 +2838,149 @@
         "artist": "Randy Gallegos",
         "flavorText": "Enter and leave the shackles of society behind.",
         "imageUri": "https://cards.scryfall.io/normal/front/9/9/99c54269-8798-4023-836f-640103e08ce0.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
+// Gruul Keyrune
+{
+    "name": "Gruul Keyrune",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {R} or {G}.\n{R}{G}: This artifact becomes a 3/2 red and green Beast artifact creature with trample until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Gruul Keyrune:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Gruul Keyrune:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Gruul Keyrune:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "keywords": [
+                        "TRAMPLE"
+                    ],
+                    "creatureTypes": [
+                        "Beast"
+                    ],
+                    "addTypes": [
+                        "ARTIFACT"
+                    ],
+                    "colors": [
+                        "RED",
+                        "GREEN"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "As perilous and unpredictable as the wilds themselves.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7cf96f1c-066e-4fde-acb8-4674842fb6c2.jpg?1783940092"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
+// Gruul Ragebeast
+{
+    "name": "Gruul Ragebeast",
+    "manaCost": "{5}{R}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Whenever this creature or another creature you control enters, that creature fights target creature an opponent controls.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gruul Ragebeast:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Fight",
+                    "target1": "TriggeringEntity",
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature or another creature you control enters, that creature fights target creature an opponent controls."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "rarity": "RARE",
+        "artist": "Dave Kendall",
+        "flavorText": "\"If the other guilds want a war, they should know we've been ready the whole time.\"\n—Ruric Thar, Ghor-Clan chieftain",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/080ef367-7904-4e5c-a8b4-1fb62f951f3e.jpg?1783940106",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "If the target creature is an illegal target when the ability tries to resolve, it won't resolve and none of its effects will happen. Neither creature will deal or be dealt damage."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "Gruul Ragebeast's triggered ability isn't optional. However, if no opponent controls a creature when a creature enters under your control, the ability will be removed from the stack."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If one or both of the creatures that are supposed to fight are no longer on the battlefield when the ability resolves, the fight won't happen. Neither creature will deal or be dealt damage."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED",
@@ -4839,6 +5241,66 @@
     ]
 }
 
+// Pit Fight
+{
+    "name": "Pit Fight",
+    "manaCost": "{1}{R/G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control fights another target creature. (Each deals damage equal to its power to the other.)",
+    "script": {
+        "spellEffect": {
+            "type": "Fight",
+            "target1": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "target2": {
+                "type": "BoundVariable",
+                "name": "t1"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetOther",
+                "baseRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    }
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "artist": "Matt Stewart",
+        "flavorText": "\"All the coins in Ravnica can't save his soul now.\"\n—Narbulg Nine Fingers",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/3624332e-60fc-4819-a0f1-d7ec41c6518b.jpg?1783940094",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "The second target of Pit Fight can be another creature you control, but it can't be the same creature as the first target."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If either target of Pit Fight is an illegal target when the ability tries to resolve, neither creature will deal or be dealt damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Primal Visitation
 {
     "name": "Primal Visitation",
@@ -5228,6 +5690,131 @@
     ]
 }
 
+// Rubblebelt Raiders
+{
+    "name": "Rubblebelt Raiders",
+    "manaCost": "{1}{R/G}{R/G}{R/G}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Whenever this creature attacks, put a +1/+1 counter on it for each attacking creature you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rubblebelt Raiders:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature attacking"
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "224",
+        "rarity": "RARE",
+        "artist": "Chippy",
+        "flavorText": "\"This city will perish, and the Gruul will cheer as the boar-god crushes the last bricks into dust.\"\n—Nikya of the Old Ways",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2dec7d6a-2362-4c62-bd81-35bba6086f7d.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
+// Rubblehulk
+{
+    "name": "Rubblehulk",
+    "manaCost": "{4}{R}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Rubblehulk's power and toughness are each equal to the number of lands you control.\nBloodrush — {1}{R}{G}, Discard this card: Target attacking creature gets +X/+X until end of turn, where X is the number of lands you control.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land"
+            }
+        }
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Rubblehulk:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{R}{G}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land"
+                    },
+                    "toughnessModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature attacking"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Bloodrush — {1}{R}{G}, Discard this card: Target attacking creature gets +X/+X until end of turn, where X is the number of lands you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "rarity": "RARE",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8c502590-f780-4512-8067-7c66f16f8c9d.jpg?1783940102"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Ruination Wurm
 {
     "name": "Ruination Wurm",
@@ -5317,6 +5904,73 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Scab-Clan Charger
+{
+    "name": "Scab-Clan Charger",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Centaur Warrior",
+    "oracleText": "Bloodrush — {1}{G}, Discard this card: Target attacking creature gets +2/+4 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Scab-Clan Charger:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{G}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature attacking"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Bloodrush — {1}{G}, Discard this card: Target attacking creature gets +2/+4 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "artist": "Nils Hamm",
+        "flavorText": "\"The only roads I wish to see are those beaten flat by wild hooves.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/964c88d3-3141-44ab-8856-44a3f08331ea.jpg?1783940115"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -5827,6 +6481,177 @@
     ]
 }
 
+// Skarrg Goliath
+{
+    "name": "Skarrg Goliath",
+    "manaCost": "{6}{G}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Trample\nBloodrush — {5}{G}{G}, Discard this card: Target attacking creature gets +9/+9 and gains trample until end of turn.",
+    "creatureStats": {
+        "power": 9,
+        "toughness": 9
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Skarrg Goliath:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}{G}{G}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 9
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 9
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "TRAMPLE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature attacking"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Bloodrush — {5}{G}{G}, Discard this card: Target attacking creature gets +9/+9 and gains trample until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "RARE",
+        "artist": "Scott Chou",
+        "flavorText": "\"They bind us with their laws. We free ourselves with nature's fist.\"\n—Nikya of the Old Ways",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2b2dcafd-eb72-4f3a-9c1c-ba17fe30bf0f.jpg?1783940116"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Skarrg Guildmage
+{
+    "name": "Skarrg Guildmage",
+    "manaCost": "{R}{G}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "{R}{G}: Creatures you control gain trample until end of turn.\n{1}{R}{G}: Target land you control becomes a 4/4 Elemental creature until end of turn. It's still a land.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Skarrg Guildmage:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "TRAMPLE",
+                        "target": "IterationEntity"
+                    }
+                }
+            },
+            {
+                "id": "Skarrg Guildmage:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{R}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "creatureTypes": [
+                        "Elemental"
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "land ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "rarity": "UNCOMMON",
+        "artist": "Aleksi Briclot",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/00f206c0-a8a7-4ca0-b88f-4736c3dac588.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Skinbrand Goblin
 {
     "name": "Skinbrand Goblin",
@@ -5960,6 +6785,73 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Slaughterhorn
+{
+    "name": "Slaughterhorn",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Bloodrush — {G}, Discard this card: Target attacking creature gets +3/+2 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Slaughterhorn:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{G}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature attacking"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Bloodrush — {G}, Discard this card: Target attacking creature gets +3/+2 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "artist": "Steve Prescott",
+        "flavorText": "The Orzhov clergy would never cross its path, but sending thrull couriers to do so is cheap and entertaining.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fb3fcc7a-ff5b-4695-aa86-9166f6cba565.jpg?1783940115"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -7218,6 +8110,90 @@
     ]
 }
 
+// Wrecking Ogre
+{
+    "name": "Wrecking Ogre",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Ogre Warrior",
+    "oracleText": "Double strike\nBloodrush — {3}{R}{R}, Discard this card: Target attacking creature gets +3/+3 and gains double strike until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DOUBLE_STRIKE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Wrecking Ogre:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{R}{R}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOUBLE_STRIKE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature attacking"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Bloodrush — {3}{R}{R}, Discard this card: Target attacking creature gets +3/+3 and gains double strike until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "RARE",
+        "artist": "Nils Hamm",
+        "flavorText": "If no opponent can be found, ogres of the Bolrac Clan will often pick fights with buildings.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/87f1a27c-c576-4c34-873f-6faf020c2773.jpg?1783940120"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Zarichi Tiger
 {
     "name": "Zarichi Tiger",
@@ -7263,5 +8239,73 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Zhur-Taa Swine
+{
+    "name": "Zhur-Taa Swine",
+    "manaCost": "{3}{R}{G}",
+    "typeLine": "Creature — Boar",
+    "oracleText": "Bloodrush — {1}{R}{G}, Discard this card: Target attacking creature gets +5/+4 until end of turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Zhur-Taa Swine:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{R}{G}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature attacking"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Bloodrush — {1}{R}{G}, Discard this card: Target attacking creature gets +5/+4 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "210",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "Gurley was the first to domesticate one, though his widow didn't take much solace in that accomplishment.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/cef93050-2f24-4c85-a00b-796e53868ac1.jpg?1783940097"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
     ]
 }

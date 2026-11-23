@@ -1,0 +1,1 @@
+- #4830 The AI now reads "each creature you control with a +1/+1 counter on it has <keyword>" (Crowned Ceratok, Mer-Ek Nightblade) as that keyword grant and as a +1/+1-counters payoff, instead of an unrecognised static
