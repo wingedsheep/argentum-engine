@@ -4,6 +4,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.view.ClientStateTransformer
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.handlers.effects.ResolutionFilterBaker
+import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -86,6 +87,12 @@ class GroupRestrictionFilterBakingTest : FunSpec({
         // A creature that player gets later is caught too: only the exclusion and player are fixed.
         val later = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
         d.state.projectedState.cantBlock(later) shouldBe true
+
+        // The excluded target leaving the battlefield and coming back is a new object (CR 400.7):
+        // the group covers it again.
+        d.replaceState(ZoneMovementUtils.removeFloatingEffectsTargeting(d.state, marked))
+        d.state.projectedState.cantBlock(marked) shouldBe true
+        d.state.projectedState.cantBlock(other) shouldBe true
     }
 
     test("group exclusions are pinned to ids, and stay symbolic when the context has no such object") {
