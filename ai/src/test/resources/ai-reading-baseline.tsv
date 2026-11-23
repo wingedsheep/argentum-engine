@@ -992,7 +992,7 @@ Artful Takedown
 Arthur, Marigold Knight
 Artifact Blast
 Artifact Mutation
-Artifact Possession	polarity: Aura>DealDamageEffect
+Artifact Possession
 Artifact Ward	polarity: Aura>CantBeBlockedBy; polarity: Aura>CantBeTargetedBySourceTypeAbilities
 Artificer's Assistant
 Artificer's Dragon
@@ -3706,6 +3706,7 @@ Contaminant Grafter
 Contaminated Aquifer
 Contaminated Bond
 Contaminated Drink
+Contaminated Ground
 Contaminated Landscape
 Contentious Plan
 Contested Cliffs
@@ -3853,6 +3854,7 @@ Crackling Cyclops
 Crackling Doom
 Crackling Drake
 Crackling Emergence	polarity: Aura>AnimateLandGroup; polarity: Aura>GrantKeyword
+Crackling Perimeter
 Crackling Triton
 Cradle Clearcutter
 Cradle of Safety
@@ -4749,6 +4751,7 @@ Devoted Hero
 Devoted Paladin
 Devoted Retainer
 Devotee of Strength
+Devour Flesh
 Devour Intellect
 Devour in Flames
 Devourer of Destiny
@@ -5458,6 +5461,7 @@ Dwindle
 Dwynen's Elite
 Dwynen, Gilt-Leaf Daen
 Dyadrine, Synthesis Amalgam
+Dying Wish
 Dying to Serve
 Dynamite Diver
 Dynavolt Tower
@@ -7411,6 +7415,7 @@ Gatekeeper of Malakir
 Gates Ablaze
 Gates of Istfell
 Gateway Plaza
+Gateway Shade
 Gateway Sneak
 Gather Courage
 Gather the Pack
@@ -8324,6 +8329,7 @@ Grishnákh, Brash Instigator
 Grisly Ritual
 Grisly Salvage
 Grisly Sigil
+Grisly Spectacle
 Grisly Survivor
 Grisly Transformation
 Grist, Voracious Larva
@@ -9385,6 +9391,7 @@ Ill-Timed Explosion
 Illegitimate Business
 Illicit Masquerade	intent: ForEach>AddCountersEffect
 Illicit Shipment
+Illness in the Ranks
 Illuminate History
 Illuminator Virtuoso
 Illuna, Apex of Wishes
@@ -12345,6 +12352,7 @@ Molten Man, Inferno Incarnate
 Molten Monstrosity
 Molten Note
 Molten Nursery
+Molten Primordial
 Molten Psyche
 Molten Rain
 Molten Ravager
@@ -14498,7 +14506,7 @@ Psychic Strike
 Psychic Symbiont
 Psychic Trance	intent: GrantActivatedAbilityToGroupEffect
 Psychic Transfer
-Psychic Venom	polarity: Aura>DealDamageEffect
+Psychic Venom
 Psychic Whorl
 Psychogenic Probe
 Psychosis Crawler
@@ -16690,6 +16698,7 @@ Sephiroth's Intervention
 Sephiroth, Fabled SOLDIER
 Sephiroth, Planet's Heir
 Sepulcher Ghoul
+Sepulchral Primordial
 Sequestered Stash
 Serah Farron
 Seraph Sanctuary
@@ -17469,6 +17478,7 @@ Slash of Talons
 Slash the Ranks
 Slash, Reptile Rampager
 Slashing Tiger
+Slate Street Ruffian
 Slate of Ancestry
 Slaughter Cry
 Slaughter Drone
@@ -18925,6 +18935,7 @@ Synchronized Strike
 Synchronous Sliver
 Syncopate
 Syndic of Tithes
+Syndicate Enforcer
 Syndicate Guildmage
 Syndicate Infiltrator
 Syndicate Liquidators
@@ -19968,6 +19979,7 @@ Timetwister
 Timid Shieldbearer
 Tin Street Dodger	combat: GrantCantBeBlockedExceptByEffect; intent: GrantCantBeBlockedExceptByEffect; timing: GrantCantBeBlockedExceptByEffect
 Tin Street Gossip
+Tin Street Market
 Tinder Farm
 Tinker's Tote
 Tinybones Joins Up
@@ -20615,6 +20627,7 @@ Under the Skin
 Undercellar Myconid
 Undercity Dire Rat
 Undercity Eliminator
+Undercity Informer
 Undercity Necrolisk
 Undercity Plague
 Undercity Scavenger
@@ -21591,6 +21604,7 @@ Warlord's Elite
 Warlord's Fury
 Warm Welcome
 Warmaker Gunship
+Warmind Infantry
 Warmth
 Warning
 Warp Artifact
@@ -21884,6 +21898,7 @@ Widespread Thieving	intent: Pipeline(TopOfLibrary→exile|library)
 Widow's Bite
 Wielding the Green Dragon
 Wight
+Wight of Precinct Six
 Wight of the Reliquary
 Wild Cantor
 Wild Celebrants
