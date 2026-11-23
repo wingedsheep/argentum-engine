@@ -3323,7 +3323,9 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   a copy of the token (Clone, Cackling Counterpart, "becomes a copy") has them too, and "loses all
   abilities" strips them. The one exception is **mana abilities** (an Eldrazi Scion's "Sacrifice this
   creature: Add {C}"), which are granted permanently via `GameState.grantedActivatedAbilities` because the
-  mana solver reads printed and granted mana abilities only. Deathpact Angel's Cleric (GTC) is the
+  mana solver reads printed and granted mana abilities only — so for now a copy of an Eldrazi Scion/Spawn
+  token lacks its mana ability, and "loses all abilities" leaves it in place (tracked as its own gap).
+  Deathpact Angel's Cleric (GTC) is the
   copy-proof example. Example:
   Mourner's Surprise's "1/1 red Mercenary creature token with \"{T}: Target creature you control
   gets +1/+0 until end of turn. Activate only as a sorcery.\"" passes a single

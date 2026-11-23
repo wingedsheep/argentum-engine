@@ -1,11 +1,13 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldHaveSize
@@ -92,10 +94,7 @@ class DeathpactAngelScenarioTest : ScenarioTestBase() {
                 val cleric = game.findPermanent("Cleric Token")!!
                 // Move the Angel out of the graveyard so there's nothing to return.
                 val angelCard = game.findCardsInGraveyard(1, "Deathpact Angel").single()
-                game.state = game.state.removeFromZone(
-                    com.wingedsheep.engine.state.ZoneKey(game.player1Id, com.wingedsheep.sdk.core.Zone.GRAVEYARD),
-                    angelCard
-                )
+                game.state = game.state.removeFromZone(ZoneKey(game.player1Id, Zone.GRAVEYARD), angelCard)
 
                 game.unsick(cleric)
                 game.activateCleric(cleric).error shouldBe null

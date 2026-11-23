@@ -48,8 +48,42 @@ class TokenCopiableAbilitiesScenarioTest : ScenarioTestBase() {
 
                 game.castSpell(1, "Murder", copy).error shouldBe null
                 game.resolveStack()
-                withClue("The copy's dies trigger fired (it asks for its target or waits on the stack)") {
-                    (game.hasPendingDecision() || game.state.stack.isNotEmpty()) shouldBe true
+                withClue("The copy's dies trigger fired and asks for its target") {
+                    game.hasPendingDecision() shouldBe true
+                }
+                game.selectTargets(listOf(game.player2Id)).error shouldBe null
+                game.resolveStack()
+                withClue("The copy's dies trigger dealt 1 damage to the opponent") {
+                    game.getLifeTotal(2) shouldBe 19
+                }
+            }
+
+            test("a token that loses all abilities no longer has the trigger it was created with") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardInHand(1, "Dance with Devils")
+                    .withCardInHand(1, "Turn to Frog")
+                    .withCardInHand(1, "Murder")
+                    .withLandsOnBattlefield(1, "Mountain", 4)
+                    .withLandsOnBattlefield(1, "Island", 6)
+                    .withLandsOnBattlefield(1, "Swamp", 6)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(1, "Dance with Devils").error shouldBe null
+                game.resolveStack()
+                val devil = game.findPermanents("Devil Token").first()
+
+                game.castSpell(1, "Turn to Frog", devil).error shouldBe null
+                game.resolveStack()
+                game.castSpell(1, "Murder", devil).error shouldBe null
+                game.resolveStack()
+
+                withClue("The Frog died with no abilities, so nothing triggered") {
+                    game.hasPendingDecision() shouldBe false
+                    game.state.stack.isEmpty() shouldBe true
+                    game.getLifeTotal(2) shouldBe 20
                 }
             }
 

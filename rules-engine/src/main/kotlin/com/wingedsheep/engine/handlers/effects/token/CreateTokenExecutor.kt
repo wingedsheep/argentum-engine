@@ -322,7 +322,7 @@ class CreateTokenExecutor(
                 ownerId = tokenControllerId,
                 imageUri = resolvedImageUri,
                 copyNumericKeywords = effect.numericKeywords,
-                // The abilities a token is created with are part of its copiable values (CR 111.4,
+                // The abilities a token is created with are part of its copiable values (CR 111.3,
                 // CR 707.2), so they ride on the CardComponent: a copy of the token (Clone, a token
                 // copy, "becomes a copy") keeps them and losing all abilities strips them. Mana
                 // abilities stay runtime grants below — the mana solver indexes those.

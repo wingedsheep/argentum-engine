@@ -141,11 +141,11 @@ data class CreateTokenEffect(
     /**
      * Activated abilities the token has, e.g. a Mercenary token with
      * `"{T}: Target creature you control gets +1/+0 until end of turn. Activate only as a sorcery."`
-     * (Mourner's Surprise). Each is granted to every created token at resolution via
-     * `GameState.grantedActivatedAbilities` (permanent duration) — the same path the engine
-     * already uses for granted activated abilities, so the legal-action enumerator and
-     * `ActivateAbilityHandler` pick them up for free. The sibling of [staticAbilities] /
-     * [triggeredAbilities] for the activated-ability shape.
+     * (Mourner's Surprise). Like [staticAbilities] and [triggeredAbilities] they are part of the
+     * token's copiable values (CR 111.3, CR 707.2): the engine stamps them on the token's
+     * `CardComponent`, so a copy of the token has them and "loses all abilities" removes them.
+     * Mana abilities are the exception: they're granted permanently via
+     * `GameState.grantedActivatedAbilities`, the store the mana solver reads.
      */
     val activatedAbilities: List<ActivatedAbility> = emptyList(),
     val exileAtStep: Step? = null,

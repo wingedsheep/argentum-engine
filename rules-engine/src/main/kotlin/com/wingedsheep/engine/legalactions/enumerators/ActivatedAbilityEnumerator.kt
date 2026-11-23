@@ -123,7 +123,7 @@ class ActivatedAbilityEnumerator(
             val allAbilities = grantedAbilities + staticAbilities + emblemAbilities + emblemOwnAbilities
 
             // If no card definition (e.g., tokens) and no granted or copiable abilities, skip.
-            // A token's own activated abilities are copiable text on its CardComponent (CR 111.4).
+            // A token's own activated abilities are copiable text on its CardComponent (CR 111.3).
             if (cardDef == null && allAbilities.isEmpty() && cardComponent.copyActivatedAbilities.isEmpty()) continue
 
             // Get class level for Class enchantments (null for non-Class cards)
@@ -1392,7 +1392,8 @@ class ActivatedAbilityEnumerator(
 
             // By definition id, not name — see enumerateOwnPermanents. An opponent's renamed copy
             // of a "any player may activate" permanent must still offer its ability.
-            val cardDef = context.cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
+            // Null for an inline token, whose own abilities are its CardComponent's copiable text.
+            val cardDef = context.cardRegistry.getCard(cardComponent.cardDefinitionId)
             val anyPlayerAbilities = com.wingedsheep.engine.state.components.identity.ownActivatedAbilities(cardComponent, cardDef, classLevel = null).filter { ability ->
                 !ability.isManaAbility && ability.activateFromZone == Zone.BATTLEFIELD &&
                     LegalityKernel.anyPlayerMay(ability)

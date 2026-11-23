@@ -25,7 +25,7 @@ import com.wingedsheep.sdk.scripting.references.Player
  * "{3}{W}{B}{B}, {T}, Sacrifice this token: Return a card named Deathpact Angel from your
  * graveyard to the battlefield."
  *
- * The Cleric's ability is part of the token's copiable values (CR 111.4, CR 707.2): a copy of the
+ * The Cleric's ability is part of the token's copiable values (CR 111.3, CR 707.2): a copy of the
  * token has it too. "A card named Deathpact Angel" isn't targeted — the card is chosen as the
  * ability resolves, from whatever Deathpact Angels are in the graveyard then.
  */
