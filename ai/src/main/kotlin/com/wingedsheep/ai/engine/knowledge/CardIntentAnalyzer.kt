@@ -3037,6 +3037,11 @@ object CardIntentAnalyzer {
             // (Hallowed Moonlight, Mistcaller): a reanimation, flicker or token answered as it happens.
             is RedirectZoneChange ->
                 if (exilesEnteringCreatures(replacement)) setOf(IntentTag.GRAVEYARD_HATE) else emptySet()
+            // "This turn, each creature you control enters with an additional +1/+1 counter on it"
+            // (Zameck Guildmage, Combine Guildmage): the creatures we put down this turn arrive
+            // bigger — the lasting growth the next-spell rider of the same counter reads as.
+            is com.wingedsheep.sdk.scripting.EntersWithCounters ->
+                if (countersOwnEnteringCreatures(replacement)) setOf(IntentTag.PUMP) else emptySet()
             else -> emptySet()
         }
 
@@ -3374,6 +3379,21 @@ object CardIntentAnalyzer {
         val ownOnly = filter.controllerPredicate == ControllerPredicate.ControlledByYou ||
             filter.controllerPredicate == ControllerPredicate.OwnedByYou
         return !ownOnly && com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature in filter.cardPredicates
+    }
+
+    /**
+     * Whether [replacement] puts +1/+1 counters on every creature of ours that enters — "each
+     * creature you control enters with an additional +1/+1 counter on it" (Zameck Guildmage's
+     * grant for the turn). A self-only one is a card's own entry, not a grant over what follows.
+     */
+    internal fun countersOwnEnteringCreatures(replacement: ReplacementEffect): Boolean {
+        if (replacement !is com.wingedsheep.sdk.scripting.EntersWithCounters || replacement.selfOnly) return false
+        if (replacement.counterType != CounterType.PLUS_ONE_PLUS_ONE || replacement.count <= 0) return false
+        if (replacement.placedBy != com.wingedsheep.sdk.scripting.references.Player.You) return false
+        val event = replacement.appliesTo as? EventPattern.ZoneChangeEvent ?: return false
+        if (event.to != Zone.BATTLEFIELD) return false
+        return event.filter.controllerPredicate == ControllerPredicate.ControlledByYou &&
+            com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature in event.filter.cardPredicates
     }
 
     /**

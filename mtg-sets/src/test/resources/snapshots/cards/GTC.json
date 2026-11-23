@@ -1831,6 +1831,343 @@
     ]
 }
 
+// Elusive Krasis
+{
+    "name": "Elusive Krasis",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Creature — Fish Mutant",
+    "oracleText": "This creature can't be blocked.\nEvolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "keywords": [
+        "EVOLVE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Elusive Krasis:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "EmitKeywordCounterEvent",
+                            "keyword": "EVOLVE"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Power"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Power"
+                            }
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Toughness"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Toughness"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Evolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)"
+            }
+        ],
+        "staticAbilities": [
+            "CantBeBlocked"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "rarity": "UNCOMMON",
+        "artist": "Wesley Burt",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd62e422-e5e2-4736-9ed3-d2dc693f6f8f.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
+// Experiment One
+{
+    "name": "Experiment One",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Human Ooze",
+    "oracleText": "Evolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)\nRemove two +1/+1 counters from this creature: Regenerate it. (The next time this creature would be destroyed this turn, instead tap it, remove it from combat, and heal all damage on it.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "EVOLVE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Experiment One:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "EmitKeywordCounterEvent",
+                            "keyword": "EVOLVE"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Power"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Power"
+                            }
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Toughness"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Toughness"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Evolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Experiment One:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomRemoveCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "self": true
+                    }
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "Self"
+                },
+                "descriptionOverride": "Remove two +1/+1 counters from this creature: Regenerate it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "rarity": "UNCOMMON",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2cc1d8d0-bb43-4962-ad29-bb6478aa986b.jpg?1783940118",
+        "rulings": [
+            {
+                "date": "2024-01-12",
+                "text": "Because damage remains marked on a creature until it's removed as the turn ends, nonlethal damage dealt to Experiment One may become lethal if you remove +1/+1 counters from it during that turn. In this case, it dies before the activated ability that would regenerate it resolves."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If evolve triggers, the stat comparison will happen again when the ability tries to resolve. If neither stat of the new creature is greater, the ability will do nothing. If the creature that entered the battlefield leaves the battlefield before evolve tries to resolve, use its last known power and toughness to compare the stats."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a creature enters the battlefield with +1/+1 counters on it, consider those counters when determining if evolve will trigger. For example, a 1/1 creature that enters the battlefield with two +1/+1 counters on it will cause the evolve ability of a 2/2 creature to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Fathom Mage
+{
+    "name": "Fathom Mage",
+    "manaCost": "{2}{G}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Evolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)\nWhenever a +1/+1 counter is put on this creature, you may draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "EVOLVE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fathom Mage:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "EmitKeywordCounterEvent",
+                            "keyword": "EVOLVE"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Power"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Power"
+                            }
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Toughness"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Toughness"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Evolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)"
+            },
+            {
+                "id": "Fathom Mage:2",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "perCounter": true
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "descriptionOverride": "Whenever a +1/+1 counter is put on this creature, you may draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "RARE",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4fa311f1-f11e-492d-9f18-e7489f950be7.jpg?1783940109",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "Fathom Mage's last ability will trigger whenever any +1/+1 counter is placed on it, not just ones due to the evolve ability."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If Fathom Mage enters with a +1/+1 counter on it (perhaps due to Master Biomancer), its last ability will trigger once for each +1/+1 counter it entered with."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If multiple +1/+1 counters are placed on Fathom Mage simultaneously, its last ability will trigger once for each of those counters."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If evolve triggers, the stat comparison will happen again when the ability tries to resolve. If neither stat of the new creature is greater, the ability will do nothing. If the creature that entered the battlefield leaves the battlefield before evolve tries to resolve, use its last known power and toughness to compare the stats."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Firefist Striker
 {
     "name": "Firefist Striker",
@@ -3441,6 +3778,70 @@
     ]
 }
 
+// Hydroform
+{
+    "name": "Hydroform",
+    "manaCost": "{G}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Target land becomes a 3/3 Elemental creature with flying until end of turn. It's still a land.",
+    "script": {
+        "spellEffect": {
+            "type": "BecomeCreature",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "power": {
+                "type": "Fixed",
+                "amount": 3
+            },
+            "toughness": {
+                "type": "Fixed",
+                "amount": 3
+            },
+            "keywords": [
+                "FLYING"
+            ],
+            "creatureTypes": [
+                "Elemental"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "land"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "artist": "Howard Lyon",
+        "flavorText": "\"While the sea may be our home, the sky is our destiny.\"\n—Prime Speaker Zegana",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2c4e1f41-4aed-451b-bbaa-6cc6780cd6c9.jpg?1783940106",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "If the target land hasn't been under its controller's control continuously since the beginning of their most recent turn, that land won't be able to attack and its {T} abilities won't be able to be activated. In most cases, that means it will no longer be able to be tapped for mana that turn."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "Hydroform doesn't affect the land's name or any other types, subtypes, or supertypes (such as basic or legendary) the land may have. The land will also keep any abilities it had."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "Effects that modify power and/or toughness but don't set them to a specific value (like the one created by Giant Growth), power/toughness changes from counters, and effects that switch a creature's power and toughness will continue to apply. This may happen if the land was already a creature when Hydroform resolved."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Ivy Lane Denizen
 {
     "name": "Ivy Lane Denizen",
@@ -3867,6 +4268,44 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Leyline Phantom
+{
+    "name": "Leyline Phantom",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Illusion",
+    "oracleText": "When this creature deals combat damage, return it to its owner's hand. (Return it only if it survived combat.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Leyline Phantom:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand",
+                    "fromZone": "Battlefield"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "artist": "Ryan Yee",
+        "flavorText": "\"Is the maze itself a phantom? Or is one as real as the other? Perhaps I am as mad as the dragon.\"\n—Jace Beleren, journal",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0867865-d9eb-45d2-a359-064f0f61197b.jpg?1783940136"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4642,6 +5081,85 @@
     ]
 }
 
+// Mystic Genesis
+{
+    "name": "Mystic Genesis",
+    "manaCost": "{2}{G}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell. Create an X/X green Ooze creature token, where X is that spell's mana value.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "StoreNumber",
+                    "name": "mysticGenesisManaValue",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "ManaValue"
+                    }
+                },
+                "Counter",
+                {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Ooze"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/d/1/d1821a53-1799-4162-b0b6-f8ab84a55c30.jpg?1783909274",
+                    "dynamicPower": {
+                        "type": "VariableReference",
+                        "variableName": "mysticGenesisManaValue"
+                    },
+                    "dynamicToughness": {
+                        "type": "VariableReference",
+                        "variableName": "mysticGenesisManaValue"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "rarity": "RARE",
+        "artist": "Mike Bierek",
+        "flavorText": "\"The Simic can grow anything out of a puddle of sludge. I just hope they never join forces with the Golgari.\"\n—Teysa Karlov, Grand Envoy of Orzhov",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/e/ae1dd1ac-1a1e-485d-a11f-d1323a69f95e.jpg?1783940104",
+        "rulings": [
+            {
+                "date": "2017-03-14",
+                "text": "If the target spell is an illegal target when Mystic Genesis tries to resolve, Mystic Genesis won't resolve and none of its effects will happen. You won't get an Ooze token."
+            },
+            {
+                "date": "2017-03-14",
+                "text": "You may target a spell that can't be countered. When Mystic Genesis resolves, the target spell will be unaffected, but you'll still get an Ooze token."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Nimbus Swimmer
 {
     "name": "Nimbus Swimmer",
@@ -4957,6 +5475,66 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLACK"
+    ]
+}
+
+// Ooze Flux
+{
+    "name": "Ooze Flux",
+    "manaCost": "{3}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "{1}{G}, Remove one or more +1/+1 counters from among creatures you control: Create an X/X green Ooze creature token, where X is the number of +1/+1 counters removed this way.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ooze Flux:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{G}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": "XValue",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Ooze"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/d/1/d1821a53-1799-4162-b0b6-f8ab84a55c30.jpg?1783909274",
+                    "dynamicPower": "XValue",
+                    "dynamicToughness": "XValue"
+                },
+                "minimumXValue": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/9/e9554369-7961-4cea-9da0-a1235805a26a.jpg?1783940116"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -5907,6 +6485,41 @@
     ]
 }
 
+// Sapphire Drake
+{
+    "name": "Sapphire Drake",
+    "manaCost": "{5}{U}",
+    "typeLine": "Creature — Drake",
+    "oracleText": "Flying\nEach creature you control with a +1/+1 counter on it has flying.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeywordByCounter",
+                "keyword": "FLYING",
+                "counterType": "PLUS_ONE_PLUS_ONE",
+                "controllerOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Prescott",
+        "flavorText": "Sapphire drakes can communicate over great distances, their calls resonating in the gems fixed in their skulls.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d0fe14cf-5d34-47d1-9071-4a532819719b.jpg?1783940135"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Scab-Clan Charger
 {
     "name": "Scab-Clan Charger",
@@ -6173,6 +6786,93 @@
     ]
 }
 
+// Shambleshark
+{
+    "name": "Shambleshark",
+    "manaCost": "{G}{U}",
+    "typeLine": "Creature — Shark Crab",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nEvolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH",
+        "EVOLVE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shambleshark:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "EmitKeywordCounterEvent",
+                            "keyword": "EVOLVE"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Power"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Power"
+                            }
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Toughness"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Toughness"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Evolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "193",
+        "artist": "Wesley Burt",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/07855a17-4e68-4257-af7f-275c9fb0a9b8.jpg?1783940101"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Shattering Blow
 {
     "name": "Shattering Blow",
@@ -6436,6 +7136,143 @@
     ]
 }
 
+// Simic Fluxmage
+{
+    "name": "Simic Fluxmage",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Merfolk Wizard",
+    "oracleText": "Evolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)\n{1}{U}, {T}: Move a +1/+1 counter from this creature onto target creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "EVOLVE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Simic Fluxmage:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "EmitKeywordCounterEvent",
+                            "keyword": "EVOLVE"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Power"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Power"
+                            }
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Toughness"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Toughness"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Evolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Simic Fluxmage:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "source": "Self",
+                    "destination": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{1}{U}, {T}: Move a +1/+1 counter from this creature onto target creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "UNCOMMON",
+        "artist": "Karl Kopinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/50633b59-6051-4f47-9e27-538fda03b5dd.jpg?1783940135",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "If the creature is an illegal target when Simic Fluxmage's ability tries to resolve, it won't resolve and none of its effects will happen. No counters will be removed from Simic Fluxmage."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "To move a counter from one creature to another, the counter is removed from the first creature and placed on the second. Any abilities that care about a counter being placed on the second creature will apply."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Simic Guildgate
 {
     "name": "Simic Guildgate",
@@ -6478,6 +7315,219 @@
     "colorIdentityOverride": [
         "BLUE",
         "GREEN"
+    ]
+}
+
+// Simic Keyrune
+{
+    "name": "Simic Keyrune",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {G} or {U}.\n{G}{U}: This artifact becomes a 2/3 green and blue Crab artifact creature with hexproof until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Simic Keyrune:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Simic Keyrune:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Simic Keyrune:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{G}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "keywords": [
+                        "HEXPROOF"
+                    ],
+                    "creatureTypes": [
+                        "Crab"
+                    ],
+                    "addTypes": [
+                        "ARTIFACT"
+                    ],
+                    "colors": [
+                        "GREEN",
+                        "BLUE"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "237",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d039aae6-38f5-42b5-a530-e0dd03abc7d5.jpg?1783940091"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
+// Simic Manipulator
+{
+    "name": "Simic Manipulator",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Creature — Mutant Wizard",
+    "oracleText": "Evolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)\n{T}, Remove one or more +1/+1 counters from this creature: Gain control of target creature with power less than or equal to the number of +1/+1 counters removed this way.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "keywords": [
+        "EVOLVE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Simic Manipulator:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "EmitKeywordCounterEvent",
+                            "keyword": "EVOLVE"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Power"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Power"
+                            }
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Toughness"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Toughness"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Evolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Simic Manipulator:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": "XValue",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "PowerAtMostDynamic",
+                                        "amount": "XValue"
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "minimumXValue": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "rarity": "RARE",
+        "artist": "Maciej Kuciara",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e3dff9e6-5e0c-4e5b-8184-f0ae9cf347b3.jpg?1783940134",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "The power of the target creature is checked both as you target it and as the ability resolves. If the power of the target creature when the ability resolves is greater than the number of +1/+1 counters removed from Simic Manipulator, the ability won't resolve and none of its effects will happen. You won't gain control of any creature, but the counters removed as a cost remain removed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -6931,6 +7981,54 @@
     "colorIdentityOverride": [
         "WHITE",
         "RED"
+    ]
+}
+
+// Spell Rupture
+{
+    "name": "Spell Rupture",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell unless its controller pays {X}, where X is the greatest power among creatures you control.",
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "condition": {
+                "type": "CounterCondition.UnlessPaysDynamic",
+                "amount": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "creature",
+                    "aggregation": "MAX",
+                    "property": "POWER"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "artist": "Kev Walker",
+        "flavorText": "\"Like water, mana will drain from an inferior vessel.\"\n—Jalan Tosk, Simic forcemage",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/7267fcec-0879-4743-a45f-35057ccb2596.jpg?1783940134",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "The value of X is the greatest power among creatures you control when Spell Rupture resolves. If you control no creatures at that time, X will be 0. The target spell's controller can choose to pay {0} (simply by indicating they wish to do so). That player can also choose to not pay {0} and the spell will be countered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -7575,6 +8673,46 @@
     ]
 }
 
+// Urban Evolution
+{
+    "name": "Urban Evolution",
+    "manaCost": "{3}{G}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw three cards. You may play an additional land this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                {
+                    "type": "PlayAdditionalLands",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "rarity": "UNCOMMON",
+        "artist": "Eytan Zana",
+        "flavorText": "As the Simic released more of their krasis experiments, they required new habitats, always at the expense of the locals.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9fcd6fac-2cde-4a89-b484-b910be2dcecf.jpg?1783940098"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "GREEN"
+    ]
+}
+
 // Urbis Protector
 {
     "name": "Urbis Protector",
@@ -8191,6 +9329,81 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Zameck Guildmage
+{
+    "name": "Zameck Guildmage",
+    "manaCost": "{G}{U}",
+    "typeLine": "Creature — Elf Wizard",
+    "oracleText": "{G}{U}: This turn, each creature you control enters with an additional +1/+1 counter on it.\n{G}{U}, Remove a +1/+1 counter from a creature you control: Draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Zameck Guildmage:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{G}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantReplacementEffect",
+                    "replacement": {
+                        "type": "EntersWithCounters",
+                        "count": 1
+                    }
+                },
+                "descriptionOverride": "This turn, each creature you control enters with an additional +1/+1 counter on it."
+            },
+            {
+                "id": "Zameck Guildmage:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{G}{U}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "filter": "creature ctrl:you"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "rarity": "UNCOMMON",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/feeaf99b-7720-42e3-8cb1-23218b646458.jpg?1783940097"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
     ]
 }
 

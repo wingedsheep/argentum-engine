@@ -662,6 +662,11 @@ object SynergyAxes {
         is com.wingedsheep.sdk.scripting.effects.GrantNextSpellRiderEffect ->
             (leaf.rider as? com.wingedsheep.sdk.scripting.effects.ManaSpellRider.EntersWithCountersWhenSpent)
                 ?.let { plusCounters(it.counterType) } ?: emptySet()
+        // "This turn, each creature you control enters with an additional +1/+1 counter on it"
+        // (Zameck Guildmage, Combine Guildmage): the entry replacement granted for the turn puts a
+        // counter on every creature of ours that follows, as the printed one does.
+        is com.wingedsheep.sdk.scripting.effects.GrantReplacementEffectEffect ->
+            if (CardIntentAnalyzer.countersOwnEnteringCreatures(leaf.replacement)) setOf(SynergyAxis.PLUS_COUNTERS) else emptySet()
         // "Tap any number of untapped Vampires you control; put a +1/+1 counter on each" (Urge to
         // Feed): counters on each permanent of a gathered collection stock the same axis.
         is com.wingedsheep.sdk.scripting.effects.AddCountersToCollectionEffect -> plusCounters(leaf.counterType)
