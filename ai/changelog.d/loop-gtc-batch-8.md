@@ -1,1 +1,1 @@
-- #TBD The AI reads an edict repaid in life to the same player (Devour Flesh) as open, letting the board pick whose creature goes, and reads Auras that drain or burn a land's controller whenever it becomes tapped (Contaminated Ground, Psychic Venom) as curses for an opponent's land.
+- #4838 The AI reads an edict repaid in life to the same player (Devour Flesh) as open, letting the board pick whose creature goes, and reads Auras that drain or burn a land's controller whenever it becomes tapped (Contaminated Ground, Psychic Venom) as curses for an opponent's land.
