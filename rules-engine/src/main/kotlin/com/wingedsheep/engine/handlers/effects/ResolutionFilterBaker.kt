@@ -45,11 +45,11 @@ import com.wingedsheep.sdk.serialization.ScriptTreeWalker
  * that number can't block this turn" counts the +1/+1 counters as the ability resolves, while
  * which creatures have power that low stays live. Only the number is baked, never the matching
  * objects. The layer projector can't evaluate a dynamic amount (it has no resolving context), so
- * an unbaked dynamic predicate in a floating group filter matches nothing.
+ * an unbaked dynamic predicate in a floating group filter matches nothing. Amounts phrased
+ * relative to the object under test (`Player.Candidate`) have no single value and stay symbolic.
  *
  * A group's "other than the target / triggering object" exclusion is pinned the same way, to
- * [GroupFilter.excludedEntities]. Amounts phrased
- * relative to the object under test (`Player.Candidate`) have no single value and stay symbolic.
+ * [GroupFilter.excludedEntities].
  */
 object ResolutionFilterBaker {
 
