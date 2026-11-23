@@ -20,6 +20,7 @@ import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComp
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
@@ -370,6 +371,9 @@ internal object ExpiringGrantWindow {
                 return@none connectorCanStillHit(state, projected, playerId, payoff, sourceId, sourceTaps, intents)
                     ?: return false
             }
+            if (payoff.kind == PayoffKind.ENTRY) {
+                return@none state.isActiveTurnFor(playerId) && state.step.phase != Phase.ENDING
+            }
             if (payoff.kind == PayoffKind.ACTIVATION) {
                 val members = (if (payoff.group != null) {
                     groupMembers(state, projected, playerId, payoff.group, sourceId, intents, creaturesOnly = false)
@@ -425,7 +429,7 @@ internal object ExpiringGrantWindow {
                 }
                 PayoffKind.LAND -> affected.any { canStillMatter(state, projected, playerId, it) }
                 PayoffKind.SHIELD, PayoffKind.SILENCE, PayoffKind.CONNECT, PayoffKind.STRIP, PayoffKind.ACTIVATION,
-                PayoffKind.LURE, PayoffKind.FORCED_ATTACK -> true // answered above
+                PayoffKind.LURE, PayoffKind.FORCED_ATTACK, PayoffKind.ENTRY -> true // answered above
                 PayoffKind.BORROW -> affected.any { projected.isCreature(it) } &&
                     (state.step in UNTIL_ATTACKERS_DECLARED || state.step in FIGHT_STILL_AHEAD ||
                         controlsASacrificeOutlet(state, playerId, intents))
@@ -1507,6 +1511,17 @@ internal object ExpiringGrantWindow {
          * untapped holder is one it can be spent in.
          */
         ACTIVATION,
+
+        /**
+         * An entry replacement over our own creatures until end of turn — "this turn, each creature
+         * you control enters with an additional +1/+1 counter on it" (Zameck Guildmage, Combine
+         * Guildmage). It is spent only by creatures of ours entering after it, and the ones we can
+         * choose to put down are cast in a main phase of our own turn. So it buys something on our
+         * turn until the ending phase — a main phase still ahead, or the one we are in — and
+         * nothing on theirs or in our end step, where it wears off with nothing having entered.
+         * Not deferred ([holds]): our first main and our second are the same window for it.
+         */
+        ENTRY,
     }
 
     /**
@@ -1691,6 +1706,9 @@ internal object ExpiringGrantWindow {
                 grantsTapActivationToTarget(leaf) ->
                     payoffs += Payoff(PayoffKind.ACTIVATION, (leaf as GrantActivatedAbilityEffect).target)
                 isShield(leaf) -> payoffs += Payoff(PayoffKind.SHIELD, (leaf as PreventDamageEffect).target)
+                // "This turn, each creature you control enters with an additional +1/+1 counter on
+                // it" (Zameck Guildmage): see [PayoffKind.ENTRY]. It lands on no permanent.
+                countersEntriesThisTurn(leaf) -> payoffs += Payoff(PayoffKind.ENTRY, null)
                 // A source chosen on resolution has no target to land on: null.
                 isSilence(leaf) -> payoffs += Payoff(
                     PayoffKind.SILENCE,
@@ -1953,6 +1971,15 @@ internal object ExpiringGrantWindow {
     fun exilesEntriesThisTurn(effect: Effect): Boolean =
         effect is GrantReplacementEffectEffect && effect.duration == Duration.EndOfTurn &&
             CardIntentAnalyzer.exilesEnteringCreatures(effect.replacement)
+
+    /**
+     * Whether [effect] grants, until end of turn, +1/+1 counters on each creature of ours that
+     * enters (Zameck Guildmage, Combine Guildmage) — a [PayoffKind.ENTRY]. Public for the AI
+     * card-reading audit.
+     */
+    fun countersEntriesThisTurn(effect: Effect): Boolean =
+        effect is GrantReplacementEffectEffect && effect.duration == Duration.EndOfTurn &&
+            CardIntentAnalyzer.countersOwnEnteringCreatures(effect.replacement)
 
     private fun isShield(effect: Effect): Boolean =
         effect is PreventDamageEffect && effect.duration == Duration.EndOfTurn && effect.preventDamage &&

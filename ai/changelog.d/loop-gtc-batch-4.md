@@ -1,0 +1,1 @@
+- #TBD The AI now reads "this turn, creatures you control enter with an additional +1/+1 counter" grants (Zameck Guildmage, Combine Guildmage): it sees them as growth for the creatures that follow and a +1/+1-counter enabler, and spends them only on its own turn before the end step, not on the opponent's turn where nothing of its own will enter.
