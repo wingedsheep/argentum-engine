@@ -51,6 +51,8 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  * Validates and pays costs for spells and abilities.
  */
 class CostHandler(private val zones: ZoneTransitionService) {
+    /** Exiles a spell paid as an "exile a spell you control" cost, as "exile target spell" would. */
+    private val spellCounterer by lazy { com.wingedsheep.engine.mechanics.stack.SpellCounterer(zones) }
     /** The engine's evaluator, for the cost kinds that filter what can pay them. */
     val predicateEvaluator: PredicateEvaluator get() = zones.predicateEvaluator
 
@@ -1777,6 +1779,15 @@ class CostHandler(private val zones: ZoneTransitionService) {
 
         for (cardId in toExile) {
             val owner = ownerOf.getValue(cardId)
+            if (fromZone == Zone.STACK) {
+                // Exiled the way "exile target spell" exiles one: off the stack, not countered,
+                // so it never resolves; a spell's cast-time rider (bestow, prototype) ends with it.
+                val exiled = spellCounterer.exileSpell(newState, cardId, makePlotted = false)
+                exiled.error?.let { return CostPaymentResult.failure(it) }
+                newState = exiled.state
+                events.addAll(exiled.events)
+                continue
+            }
             if (fromZone == Zone.BATTLEFIELD || !atom.exiles) {
                 // A permanent leaving the battlefield is a full zone transition (CR 400.7): its
                 // counters and Auras fall off, a copy reverts, and the departure carries the
@@ -2089,6 +2100,13 @@ class CostHandler(private val zones: ZoneTransitionService) {
     ): Map<EntityId, List<EntityId>> {
         val owners = if (atom.anyPlayersZone) state.turnOrder else listOf(controllerId)
         val excluded = sourceId.takeIf { atom.excludeSelf }
+        // "Exile a spell you control": the one stack, narrowed to the payer's spells.
+        if (atom.zone == Zone.STACK) {
+            return mapOf(
+                controllerId to findMatchingCardsUnified(state, state.spellsControlledBy(controllerId), atom.filter, controllerId, sourceId)
+                    .filter { it != excluded }
+            )
+        }
         return owners.associateWith { owner ->
             findMatchingCardsUnified(state, state.getZone(ZoneKey(owner, atom.zone)), atom.filter, controllerId, sourceId)
                 .filter { it != excluded }

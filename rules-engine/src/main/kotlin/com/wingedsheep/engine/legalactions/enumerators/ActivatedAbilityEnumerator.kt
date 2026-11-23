@@ -1051,6 +1051,12 @@ class ActivatedAbilityEnumerator(
                     removeCountersAtom
                 ).withFixedCounterRemovalTotal(removeCountersAtom)
 
+                // "Exile an instant or sorcery spell you control" (Nivmagus Elemental) is only
+                // payable while our own spell waits on the stack — exactly the window auto-pass
+                // skips. Hold priority when the spell on top can pay it, as a copy-spell ability does.
+                val holdForOwnSpellCost = exileCost?.zone == Zone.STACK &&
+                    state.stack.lastOrNull()?.let { it in exileTargets.orEmpty() } == true
+
                 // Forage offers a choice of sub-costs (exile three cards / sacrifice a Food).
                 // [costInfo] holds the primary mode; when both modes are available the emitted
                 // legal action(s) are duplicated below — one per mode — so the player picks which.
@@ -1313,7 +1319,7 @@ class ActivatedAbilityEnumerator(
                             hasTapForGeneric = ability.hasWaterbend,
                             tapForGenericPermanents = abilityWaterbendPermanents,
                             tapForGenericLabel = TapForGeneric.WATERBEND.label.takeIf { ability.hasWaterbend },
-                            holdPriority = holdPriorityForTopOfStack,
+                            holdPriority = holdPriorityForTopOfStack || holdForOwnSpellCost,
                             requiresDamageDistribution = division != null,
                             totalDamageToDistribute = division?.let {
                                 context.castPermissionUtils.divisionTotalAtActivation(state, it, ability, entityId, playerId)
@@ -1330,6 +1336,7 @@ class ActivatedAbilityEnumerator(
                         description = displayDescription,
                         action = ActivateAbility(playerId, entityId, ability.id),
                         additionalCostInfo = costInfo,
+                        holdPriority = holdForOwnSpellCost,
                         hasXCost = abilityHasXCost,
                         maxAffordableX = abilityMaxAffordableX,
                         minX = abilityMinX,
@@ -1676,7 +1683,8 @@ class ActivatedAbilityEnumerator(
             // SelectCardsDecision when candidate count > required count.
             return AdditionalCostData(
                 description = exileCost.description.replaceFirstChar { it.uppercase() },
-                costType = "ExileFromGraveyard",
+                // A spell exiled off the stack is clicked there, not picked from a graveyard pile.
+                costType = if (exileCost.zone == Zone.STACK) "ExileFromStack" else "ExileFromGraveyard",
                 validExileTargets = exileTargets,
                 exileMinCount = exileCost.count,
                 exileMaxCount = exileCost.count,

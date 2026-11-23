@@ -381,6 +381,12 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
      * re-wire the selection, affordability and pause plumbing a second time. The neighbours that
      * don't take it: [PutFromHandOnTopOfLibrary] is a fixed hand→library move with no pool
      * widening, and [Sacrifice] moves permanents, not cards.
+     *
+     * [zone] = [Zone.STACK] reads "exile an instant or sorcery spell **you control**" (Nivmagus
+     * Elemental): the pool is the spells on the stack the payer controls that match [filter], and
+     * each chosen spell is exiled the way "exile target spell" exiles one — removed from the stack
+     * without being countered, so it never resolves. Abilities on the stack are never in the pool.
+     * Wired for activated-ability costs only.
      */
     @SerialName("AtomExileFrom")
     @Serializable
@@ -434,6 +440,8 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
             require(destination == Zone.EXILE || zone == Zone.EXILE) {
                 "ExileFrom into $destination is wired only from EXILE, was from $zone"
             }
+            // A spell is controlled, not "in a player's stack": there is one stack to widen to.
+            require(zone != Zone.STACK || !anyPlayersZone) { "ExileFrom(STACK) is always the payer's spells" }
         }
 
         /** True when the cards really are exiled (the default), false for a processor-style move. */
@@ -442,6 +450,7 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
         override val selectionCount: Int get() = count
         override val description: String get() {
             if (!exiles) return movedDescription()
+            if (zone == Zone.STACK) return "exile ${quantify(count, "${filter.description} spell".trim())} you control"
             // A colour-only filter describes itself as "green"; off the battlefield it's a card.
             val noun = filter.description.let {
                 if (zone != Zone.BATTLEFIELD && !CARD_NOUN.containsMatchIn(it)) "$it card" else it

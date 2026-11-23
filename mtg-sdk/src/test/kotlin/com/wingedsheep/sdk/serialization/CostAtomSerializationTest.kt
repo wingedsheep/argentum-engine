@@ -43,6 +43,8 @@ class CostAtomSerializationTest : FunSpec({
             Zone.EXILE, GameObjectFilter.Any.ownedByOpponent(), count = 1,
             anyPlayersZone = true, destination = Zone.GRAVEYARD,
         ),
+        // "Exile an instant or sorcery spell you control" (Nivmagus Elemental).
+        CostAtom.ExileFrom(Zone.STACK, GameObjectFilter.InstantOrSorcery),
         CostAtom.Mill(count = 1),
         CostAtom.ExileTopOfLibrary(count = 10),
         CostAtom.VariablePermanents(GameObjectFilter.Artifact, minCount = 1, excludeSelf = true),
@@ -122,6 +124,11 @@ class CostAtomSerializationTest : FunSpec({
         // Top-of-library costs take no selection: the cards are the top, not a player's pick.
         CostAtom.Mill(count = 1).selectionCount shouldBe 0
         CostAtom.ExileTopOfLibrary(count = 10).selectionCount shouldBe 0
+    }
+
+    test("the spell-exile cost reads as printed") {
+        CostAtom.ExileFrom(Zone.STACK, GameObjectFilter.InstantOrSorcery).description shouldBe
+            "exile an instant or sorcery spell you control"
     }
 
     test("the processor cost reads as printed and defaults leave the exile cost unchanged") {

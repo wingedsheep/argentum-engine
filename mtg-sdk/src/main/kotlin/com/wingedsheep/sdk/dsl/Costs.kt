@@ -347,6 +347,14 @@ object Costs {
         AbilityCost.Atom(CostAtom.ExileFrom(Zone.HAND, filter, count))
 
     /**
+     * "Exile an instant or sorcery spell you control" — exile [count] spells matching [filter] that
+     * the activating player controls from the stack (Nivmagus Elemental). An exiled spell leaves
+     * the stack without being countered, so it never resolves.
+     */
+    fun ExileSpellYouControl(count: Int = 1, filter: GameObjectFilter = GameObjectFilter.Any): AbilityCost =
+        AbilityCost.Atom(CostAtom.ExileFrom(Zone.STACK, filter, count))
+
+    /**
      * "Exile another [filter] card from your graveyard" — the graveyard exile cost of an ability
      * activated *from* that graveyard, where the activating card itself can't pay (Gallia, Tragic
      * Host).
