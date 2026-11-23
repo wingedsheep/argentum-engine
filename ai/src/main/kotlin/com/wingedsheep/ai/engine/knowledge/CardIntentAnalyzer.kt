@@ -3312,11 +3312,6 @@ object CardIntentAnalyzer {
         else -> emptySet()
     }
 
-    /**
-     * Whether [body], run over each permanent of [group], untaps lands of ours and nothing else's —
-     * "untap all lands you control". Untapping a group that can hold creatures or an opponent's
-     * lands is a combat or tempo play, not mana, and stays unread.
-     */
     /** Whether [group] is lands we control and nothing else's — "lands you control". */
     private fun grantsOurLands(group: GroupFilter): Boolean {
         val filter = group.baseFilter
@@ -3324,6 +3319,11 @@ object CardIntentAnalyzer {
             filter.controllerPredicate == ControllerPredicate.ControlledByYou
     }
 
+    /**
+     * Whether [body], run over each permanent of [group], untaps lands of ours and nothing else's —
+     * "untap all lands you control". Untapping a group that can hold creatures or an opponent's
+     * lands is a combat or tempo play, not mana, and stays unread.
+     */
     private fun untapsOurLands(group: GroupFilter, body: Effect): Boolean {
         val filter = group.baseFilter
         if (filter.anyOf.isNotEmpty() || CardPredicate.IsLand !in filter.cardPredicates) return false
