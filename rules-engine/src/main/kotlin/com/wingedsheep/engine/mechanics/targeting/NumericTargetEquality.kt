@@ -52,7 +52,7 @@ object NumericTargetEquality {
         val owners = OwnerTargetDistribution.bounds(state, requirement, ids)
         val needed = maxOf(minimum, owners?.min ?: 0)
         return groups(state, ids, property).filter { group ->
-            group.size >= needed && (owners == null || OwnerTargetDistribution.groups(state, group).size >= owners.min)
+            group.size >= needed && (owners == null || OwnerTargetDistribution.groups(state, requirement, group).size >= owners.min)
         }
     }
 

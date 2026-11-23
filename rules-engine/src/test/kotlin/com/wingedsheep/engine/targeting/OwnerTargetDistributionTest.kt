@@ -248,4 +248,36 @@ class OwnerTargetDistributionTest : FunSpec({
         }
     }
 
+    test("distributeByController groups permanents by their projected controller, not their owner") {
+        val d = setup()
+        val (p1, p2, p3) = Triple(d.player1, d.player2, d.state.turnOrder[2])
+        val mine = d.putPermanentOnBattlefield(p1, "Grizzly Bears")
+        val theirs = d.putPermanentOnBattlefield(p2, "Grizzly Bears")
+        // Owned by player 3 but now controlled by player 2 — it counts for player 2.
+        val stolen = d.putPermanentOnBattlefield(p3, "Grizzly Bears")
+        d.replaceState(d.state.updateEntity(stolen) {
+            it.with(com.wingedsheep.engine.state.components.identity.ControllerComponent(p2))
+        })
+        val byController = TargetObject(filter = TargetFilter.CreatureOpponentControls,
+            ownerDistribution = OwnerDistribution.EXACTLY_ONE, distributeByController = true)
+        val info = TargetEnumerationUtils(PredicateEvaluator(null))
+            .buildTargetInfos(d.state, p1, listOf(byController)).single()
+        info.minTargets shouldBe 1
+        info.maxTargets shouldBe 1
+        info.exclusiveGroups shouldBe listOf(listOf(theirs, stolen))
+        val v = TargetValidator(PredicateEvaluator(null))
+        fun check(ids: List<com.wingedsheep.sdk.model.EntityId>) = v.validateTargets(d.state,
+            ids.map { ChosenTarget.Permanent(it) }, listOf(byController), p1,
+            targetingSourceType = com.wingedsheep.engine.handlers.TargetingSourceType.SPELL)
+        check(listOf(theirs)).shouldBeNull()
+        check(listOf(stolen)).shouldBeNull()
+        check(listOf(theirs, stolen)).shouldNotBeNull()
+        check(emptyList()).shouldNotBeNull()
+        check(listOf(mine)).shouldNotBeNull()
+        // Grouped by owner, the stolen creature would be its own (player 3's) group.
+        val byOwner = byController.copy(distributeByController = false)
+        TargetEnumerationUtils(PredicateEvaluator(null)).buildTargetInfos(d.state, p1, listOf(byOwner))
+            .single().minTargets shouldBe 2
+    }
+
 })

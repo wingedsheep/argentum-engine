@@ -11594,6 +11594,110 @@
     ]
 }
 
+// Sylvan Primordial
+{
+    "name": "Sylvan Primordial",
+    "manaCost": "{5}{G}{G}",
+    "typeLine": "Creature — Avatar",
+    "oracleText": "Reach\nWhen this creature enters, for each opponent, destroy target noncreature permanent that player controls. Search your library for up to X Forest cards, where X is the number of permanents destroyed this way, put those cards onto the battlefield tapped, then shuffle.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 8
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sylvan Primordial:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy",
+                            "storeMovedAs": "moved1"
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Library",
+                                        "filter": "Forest"
+                                    },
+                                    "storeAs": "searchable",
+                                    "search": true
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "searchable",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "VariableReference",
+                                            "variableName": "moved1_count"
+                                        }
+                                    },
+                                    "storeSelected": "found",
+                                    "prompt": "Search your library for Forest cards (up to the number of those cards) to put onto the battlefield tapped",
+                                    "selectedLabel": "Put onto the battlefield tapped"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "found",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Battlefield",
+                                        "placement": "Tapped"
+                                    }
+                                },
+                                "ShuffleLibrary",
+                                "EmitLibrarySearchedEvent"
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "noncreature permanent ctrl:opponent"
+                    },
+                    "id": "t0",
+                    "ownerDistribution": "EXACTLY_ONE",
+                    "distributeByController": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "rarity": "RARE",
+        "artist": "Stephan Martiniere",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/0483c869-38dc-4b0b-82f3-dd08a1ab985f.jpg?1789988913"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Syndic of Tithes
 {
     "name": "Syndic of Tithes",

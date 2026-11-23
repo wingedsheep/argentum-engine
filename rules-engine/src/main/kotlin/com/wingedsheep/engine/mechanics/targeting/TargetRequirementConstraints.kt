@@ -15,7 +15,7 @@ fun com.wingedsheep.engine.core.TargetRequirementInfo.withTargetConstraints(
     val groups = NumericTargetEquality.compatibleGroups(state, candidates, requirement, distributed.minTargets).orEmpty()
     return distributed.copy(sameNumericProperty = property, selectionGroups = groups,
         maxTargets = minOf(distributed.maxTargets, groups.maxOfOrNull { group ->
-            if (distributed.exclusiveGroups != null) OwnerTargetDistribution.groups(state, group).size else group.size
+            if (distributed.exclusiveGroups != null) OwnerTargetDistribution.groups(state, requirement, group).size else group.size
         } ?: 0))
 }
 
