@@ -7973,6 +7973,79 @@
     ]
 }
 
+// Luminate Primordial
+{
+    "name": "Luminate Primordial",
+    "manaCost": "{5}{W}{W}",
+    "typeLine": "Creature — Avatar",
+    "oracleText": "Vigilance\nWhen this creature enters, for each opponent, exile up to one target creature that player controls and that player gains life equal to its power.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 7
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Luminate Primordial:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "EntityProperty",
+                                    "entity": {
+                                        "type": "ContextTarget",
+                                        "index": 0
+                                    },
+                                    "numericProperty": "Power"
+                                },
+                                "target": "TargetController"
+                            },
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "destination": "Exile"
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0",
+                    "ownerDistribution": "UP_TO_ONE",
+                    "distributeByController": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "rarity": "RARE",
+        "artist": "Stephan Martiniere",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b0747b12-c75a-4fdf-a881-f2383a23ccdd.jpg?1783940142"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Madcap Skills
 {
     "name": "Madcap Skills",
@@ -8647,6 +8720,59 @@
     "colorIdentityOverride": []
 }
 
+// Miming Slime
+{
+    "name": "Miming Slime",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create an X/X green Ooze creature token, where X is the greatest power among creatures you control.",
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "power": 0,
+            "toughness": 0,
+            "colors": [
+                "GREEN"
+            ],
+            "creatureTypes": [
+                "Ooze"
+            ],
+            "imageUri": "https://cards.scryfall.io/normal/front/d/1/d1821a53-1799-4162-b0b6-f8ab84a55c30.jpg?1783909274",
+            "dynamicPower": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature",
+                "aggregation": "MAX",
+                "property": "POWER"
+            },
+            "dynamicToughness": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature",
+                "aggregation": "MAX",
+                "property": "POWER"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"We paid the Simic very well for this capability, but we should quickly recoup our expenses in saved wages.\"\n—Milana, Orzhov prelate",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/128d0584-89d2-499b-b6c2-2425c4ffcd13.jpg?1783940117",
+        "rulings": [
+            {
+                "date": "2018-12-07",
+                "text": "The value of X is the greatest power among creatures you control when Miming Slime resolves. If you control no creatures at that time, X will be 0, creating a 0/0 Ooze token that will be put into your graveyard as a state-based action (unless something else is raising its toughness)."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "The power and toughness of the Ooze token is determined when Miming Slime resolves. It won't change as the greatest power among creatures you control changes."
+            }
+        ]
+    }
+}
+
 // Mind Grind
 {
     "name": "Mind Grind",
@@ -9085,6 +9211,65 @@
     "colorIdentityOverride": [
         "GREEN",
         "BLUE"
+    ]
+}
+
+// Nav Squad Commandos
+{
+    "name": "Nav Squad Commandos",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Battalion — Whenever this creature and at least two other creatures attack, this creature gets +1/+1 until end of turn. Untap it.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nav Squad Commandos:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        {
+                            "type": "AttackerCountAtLeast",
+                            "n": 3
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": "Self",
+                            "tap": false
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "artist": "Steve Prescott",
+        "flavorText": "Funded by the Azorius to keep current maps of the undercity, the Boros nav squads survey even the most unsavory areas.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9d81d7f8-375f-40f5-98cd-08be08580bef.jpg?1783940140"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -10757,6 +10942,67 @@
     },
     "colorIdentityOverride": [
         "RED",
+        "GREEN"
+    ]
+}
+
+// Rust Scarab
+{
+    "name": "Rust Scarab",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "Whenever this creature becomes blocked, you may destroy target artifact or enchantment defending player controls.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rust Scarab:1",
+                "trigger": "BecomesBlockedEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        "IsArtifact",
+                                        "IsEnchantment"
+                                    ]
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByDefendingPlayer"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "rarity": "UNCOMMON",
+        "artist": "Adam Paquette",
+        "flavorText": "\"Behold nature's answer to the problem of society.\"\n—Nikya of the Old Ways",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c57335b5-30e2-431f-ab50-d5f1981783c3.jpg?1783940116"
+    },
+    "colorIdentityOverride": [
         "GREEN"
     ]
 }
@@ -12956,6 +13202,84 @@
     ]
 }
 
+// Structural Collapse
+{
+    "name": "Structural Collapse",
+    "manaCost": "{5}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player sacrifices an artifact and a land of their choice. Structural Collapse deals 2 damage to that player.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "ControlledPermanents",
+                        "player": "TargetPlayer",
+                        "filter": "permanent"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "ChooseOnePerCategory",
+                    "from": "gathered0",
+                    "categories": [
+                        {
+                            "cardPredicates": [
+                                "IsArtifact"
+                            ]
+                        },
+                        {
+                            "cardPredicates": [
+                                "IsLand"
+                            ]
+                        }
+                    ],
+                    "storeAs": "picked1",
+                    "purpose": "SACRIFICE",
+                    "distinctPicks": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "picked1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Sacrifice"
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "artist": "Sam Burley",
+        "flavorText": "The Gruul holiday of Rauck-Chauv always ends the same way.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d10da484-db67-4afc-90ef-6caf7d2e3a75.jpg?1783940122"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Sunhome Guildmage
 {
     "name": "Sunhome Guildmage",
@@ -14535,6 +14859,106 @@
             {
                 "date": "2013-01-24",
                 "text": "You may pay 0 life when Vizkopa Confessor's \"enters\" ability resolves. If you do, no cards are revealed or exiled."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
+// Vizkopa Guildmage
+{
+    "name": "Vizkopa Guildmage",
+    "manaCost": "{W}{B}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{1}{W}{B}: Target creature gains lifelink until end of turn.\n{1}{W}{B}: Whenever you gain life this turn, each opponent loses that much life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Vizkopa Guildmage:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{W}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Target creature gains lifelink until end of turn."
+            },
+            {
+                "id": "Vizkopa Guildmage:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{W}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "Vizkopa Guildmage:2",
+                        "trigger": "LifeGainEvent",
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "ContextProperty",
+                                "key": "TRIGGER_LIFE_GAINED"
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        "descriptionOverride": "Whenever you gain life this turn, each opponent loses that much life."
+                    },
+                    "duration": "EndOfTurn"
+                },
+                "descriptionOverride": "Whenever you gain life this turn, each opponent loses that much life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "rarity": "UNCOMMON",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/41f505a3-2c54-43a9-b4a9-43a1451b36f6.jpg?1783940099",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "Multiple instances of lifelink on the same creature are redundant."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "Each time Vizkopa Guildmage's second ability resolves, a delayed triggered ability is created. Whenever you gain life that turn, each of those abilities will trigger. For example, if you activate the second ability twice, let those abilities resolve, then gain 2 life, each opponent will lose a total of 4 life."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "In a Two-Headed Giant game, Vizkopa Guildmage's delayed triggered ability causes the opposing team to lose twice the life you gained."
             }
         ]
     },

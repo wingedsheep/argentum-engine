@@ -1,0 +1,1 @@
+- #4842 Vizkopa Guildmage's "whenever you gain life this turn, each opponent loses that much life" is activated while the turn's fights and main phases are ahead, never in the end step.
