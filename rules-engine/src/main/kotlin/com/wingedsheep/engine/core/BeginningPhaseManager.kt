@@ -288,6 +288,11 @@ class BeginningPhaseManager(
             val selfUntapIds = mutableListOf<EntityId>()
 
             for (permanentId in projectedForSeedborn.getBattlefieldControlledBy(playerId)) {
+                // Read off projected statics (not the printed script), so one granted by an Aura
+                // (Urban Burgeoning's enchanted land) counts and one lost with all abilities doesn't.
+                if (projectedForSeedborn.getStaticAbilities(permanentId).any { it is UntapSelfDuringOtherUntapSteps }) {
+                    selfUntapIds.add(permanentId)
+                }
                 val cardDef = newState.getEntity(permanentId)?.faceUpCardDefinition(cardRegistry) ?: continue
                 for (ability in cardDef.script.staticAbilities) {
                     when (ability) {
@@ -296,11 +301,6 @@ class BeginningPhaseManager(
                         is UntapFilteredDuringOtherUntapSteps -> filteredUntapFilters.add(ability.filter)
                         else -> {}
                     }
-                }
-                // Read off projected statics (not the printed script), so one granted by an Aura
-                // (Urban Burgeoning's enchanted land) counts and one lost with all abilities doesn't.
-                if (projectedForSeedborn.getStaticAbilities(permanentId).any { it is UntapSelfDuringOtherUntapSteps }) {
-                    selfUntapIds.add(permanentId)
                 }
             }
             // An emblem's own "Untap all permanents you control during each opponent's untap step"

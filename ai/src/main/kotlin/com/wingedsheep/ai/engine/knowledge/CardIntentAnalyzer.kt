@@ -74,6 +74,7 @@ import com.wingedsheep.sdk.scripting.UntapLimitPerStep
 import com.wingedsheep.sdk.scripting.GrantFlashToSpellType
 import com.wingedsheep.sdk.scripting.UntapDuringOtherUntapSteps
 import com.wingedsheep.sdk.scripting.UntapFilteredDuringOtherUntapSteps
+import com.wingedsheep.sdk.scripting.GrantStaticAbility
 import com.wingedsheep.sdk.scripting.UntapSelfDuringOtherUntapSteps
 import com.wingedsheep.sdk.scripting.GrantChosenSubtype
 import com.wingedsheep.sdk.scripting.SuppressZoneChangeTriggers
@@ -4129,7 +4130,7 @@ object CardIntentAnalyzer {
         // Endbringer) and the same granted to an enchanted land (Urban Burgeoning): the one
         // permanent's tap — mana or an ability — is ready again on every opponent's turn.
         is UntapSelfDuringOtherUntapSteps -> setOf(IntentTag.OFF_TURN_PLAY)
-        is com.wingedsheep.sdk.scripting.GrantStaticAbility ->
+        is GrantStaticAbility ->
             if (static.ability is UntapSelfDuringOtherUntapSteps) setOf(IntentTag.OFF_TURN_PLAY) else emptySet()
         // "You may cast creature spells as though they had flash" (Prophet of Kruphix, Vedalken
         // Orrery): a card held up and cast on the opponent's turn. A grant to every player (Quick
