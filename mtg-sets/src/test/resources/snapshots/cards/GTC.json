@@ -2651,6 +2651,50 @@
     ]
 }
 
+// Crackling Perimeter
+{
+    "name": "Crackling Perimeter",
+    "manaCost": "{1}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Tap an untapped Gate you control: This enchantment deals 1 damage to each opponent.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Crackling Perimeter:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "filter": "land Gate"
+                    }
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "descriptionOverride": "Tap an untapped Gate you control: This enchantment deals 1 damage to each opponent."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "As the path he sought came into focus, Niv-Mizzet took steps to prevent others from approaching it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/3323c86c-73bd-4e23-9f80-54bf5c1dd0bc.jpg?1783940127"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Crocanura
 {
     "name": "Crocanura",
@@ -3137,6 +3181,56 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Devour Flesh
+{
+    "name": "Devour Flesh",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target player sacrifices a creature of their choice, then gains life equal to that creature's toughness.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForceSacrifice",
+                    "filter": "creature",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "SacrificedAsCost",
+                        "numericProperty": "Toughness"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "artist": "Kev Walker",
+        "flavorText": "His twisted mind concluded that if he was what he ate, and he wanted to stay human, . . .",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/88c42ebd-114a-430d-b3a4-ff2fb3093bf5.jpg?1783940131"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -3960,6 +4054,82 @@
     },
     "colorIdentityOverride": [
         "WHITE",
+        "BLACK"
+    ]
+}
+
+// Dying Wish
+{
+    "name": "Dying Wish",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature you control\nWhen enchanted creature dies, target player loses X life and you gain X life, where X is its power.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dying Wish:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Power"
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Power"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature ctrl:you"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "UNCOMMON",
+        "artist": "Scott Chou",
+        "flavorText": "\"I wish I could rewrite my every deed and kill you with my first breath instead of my last.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b46e83d3-c66d-42fb-8435-b6c448db01ae.jpg?1783940131",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "Use the creature's power the last time it was on the battlefield to determine how much life the target player loses and how much life you gain."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If another player gains control of either Dying Wish or the enchanted creature (but not both), Dying Wish will be enchanting an illegal permanent. The Aura will be put into its owner's graveyard as a state-based action."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
         "BLACK"
     ]
 }
@@ -4913,6 +5083,77 @@
     ]
 }
 
+// Gateway Shade
+{
+    "name": "Gateway Shade",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Shade",
+    "oracleText": "{B}: This creature gets +1/+1 until end of turn.\nTap an untapped Gate you control: This creature gets +2/+2 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Gateway Shade:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Gateway Shade:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "filter": "land Gate"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Tap an untapped Gate you control: This creature gets +2/+2 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Yee",
+        "flavorText": "Tireless and merciless, shades are harnessed as spies by the Dimir.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aa33fc15-3a4f-48bc-be7c-fdec1cb49c10.jpg?1783940131"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Ghor-Clan Rampager
 {
     "name": "Ghor-Clan Rampager",
@@ -5265,6 +5506,90 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Grisly Spectacle
+{
+    "name": "Grisly Spectacle",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target nonartifact creature. Its controller mills cards equal to that creature's power.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "EntityProperty",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "numericProperty": "Power"
+                        },
+                        "player": {
+                            "type": "ControllerOf",
+                            "targetDescription": "target creature"
+                        },
+                        "isMill": true
+                    },
+                    "storeAs": "milled"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "milled",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "ControllerOf",
+                            "targetDescription": "target creature"
+                        }
+                    }
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature nonartifact"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"Watch people flock to a murder scene. Then tell me we're not all a little sick in the head.\"\n—Juri, proprietor of the Juri Revue",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c26d0f6e-e7bd-4206-a0da-1c9c203a73f2.jpg?1783940131",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "Use the creature's power the last time it was on the battlefield to determine how many cards its controller puts into their graveyard."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "If the creature is an illegal target when Grisly Spectacle tries to resolve, it won't resolve and none of its effects will happen. The creature's controller won't put any cards into their graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -6327,6 +6652,42 @@
     "colorIdentityOverride": [
         "GREEN",
         "BLUE"
+    ]
+}
+
+// Illness in the Ranks
+{
+    "name": "Illness in the Ranks",
+    "manaCost": "{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Creature tokens get -1/-1.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": -1,
+                "toughnessBonus": -1,
+                "filter": {
+                    "baseFilter": "creature token"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "UNCOMMON",
+        "artist": "Nils Hamm",
+        "flavorText": "\"Selesnya denied us tribute. Let's show them the error of their ways.\"\n—Milana, Orzhov prelate",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/989a68c1-3b76-4c2d-9db3-23c45be3f9ff.jpg?1783940130",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "If an effect creates a creature token that normally has toughness 1, it will enter with toughness 0, be put into its owner's graveyard as a state-based action, and then cease to exist. Any abilities that trigger when a creature enters or dies will trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -7848,6 +8209,83 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Molten Primordial
+{
+    "name": "Molten Primordial",
+    "manaCost": "{5}{R}{R}",
+    "typeLine": "Creature — Avatar",
+    "oracleText": "Haste\nWhen this creature enters, for each opponent, gain control of up to one target creature that player controls until end of turn. Untap those creatures. They gain haste until end of turn.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 4
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Molten Primordial:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GainControl",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "duration": "EndOfTurn"
+                            },
+                            {
+                                "type": "TapUntap",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "tap": false
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0",
+                    "ownerDistribution": "UP_TO_ONE",
+                    "distributeByController": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "RARE",
+        "artist": "Stephan Martiniere",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a8f5c7e2-f4da-4cee-a7d0-80b29bb73acd.jpg?1783940123"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -9945,6 +10383,76 @@
     ]
 }
 
+// Sepulchral Primordial
+{
+    "name": "Sepulchral Primordial",
+    "manaCost": "{5}{B}{B}",
+    "typeLine": "Creature — Avatar",
+    "oracleText": "Intimidate (This creature can't be blocked except by artifact creatures and/or creatures that share a color with it.)\nWhen this creature enters, for each opponent, you may put up to one target creature card from that player's graveyard onto the battlefield under your control.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "INTIMIDATE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sepulchral Primordial:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected1",
+                            "prompt": "Put any number of the targeted creature cards onto the battlefield under your control",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature own:opponent",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0",
+                    "ownerDistribution": "UP_TO_ONE"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "rarity": "RARE",
+        "artist": "Stephan Martiniere",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb0865cd-d9b4-43ea-87d2-ad5c65fc0459.jpg?1783940128"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Serene Remembrance
 {
     "name": "Serene Remembrance",
@@ -11271,6 +11779,73 @@
     "colorIdentityOverride": []
 }
 
+// Slate Street Ruffian
+{
+    "name": "Slate Street Ruffian",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Whenever this creature becomes blocked, defending player discards a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Slate Street Ruffian:1",
+                "trigger": "BecomesBlockedEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": "DefendingPlayer"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "DefendingPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "DefendingPlayer"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "artist": "Jim Murray",
+        "flavorText": "\"Merciless to the point of psychosis. Let's give him a job.\"\n—Zelinas, Orzhov recruiter",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/1/51528a3e-beba-47f8-a524-ad99b1fec308.jpg?1783940127"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Slaughterhorn
 {
     "name": "Slaughterhorn",
@@ -11764,6 +12339,72 @@
     ]
 }
 
+// Syndicate Enforcer
+{
+    "name": "Syndicate Enforcer",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Extort (Whenever you cast a spell, you may pay {W/B}. If you do, each opponent loses 1 life and you gain that much life.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Syndicate Enforcer:1",
+                "trigger": "SpellCastEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{W/B}"
+                        }
+                    },
+                    "then": {
+                        "type": "DrainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "descriptionOverride": "Extort (Whenever you cast a spell, you may pay {W/B}. If you do, each opponent loses 1 life and you gain that much life.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "artist": "Steven Belledin",
+        "flavorText": "Even the darkest corners of Ravnica still lie in the shadow of the Church.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cde6ee2e-a114-4935-8345-d3e264f9fc26.jpg",
+        "rulings": [
+            {
+                "date": "2024-01-12",
+                "text": "You may pay {W/B} a maximum of one time for each extort triggered ability. You decide whether to pay when the ability resolves."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "The amount of life you gain from extort is based on the total amount of life lost, not necessarily the number of opponents you have. For example, if your opponent's life total can't change (perhaps because that player controls Platinum Emperion), you won't gain any life."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "The extort ability doesn't target any player."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "The extort ability resolves before the spell that caused it to trigger. The ability resolves even if that spell is countered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Thespian's Stage
 {
     "name": "Thespian's Stage",
@@ -11967,6 +12608,56 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Tin Street Market
+{
+    "name": "Tin Street Market",
+    "manaCost": "{4}{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nEnchanted land has \"{T}, Discard a card: Draw a card.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Tin Street Market:1",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            "CostTap",
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": "AtomDiscard"
+                            }
+                        ]
+                    },
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "artist": "Noah Bradley",
+        "flavorText": "\"Sometimes I stroll along Tin Street and watch citizens busy with their daily lives. It reminds me why I do my job.\"\n—Arrester Lavinia, Tenth Precinct",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1c1f543b-2222-4ef5-b4f7-2c3d2ea27fdc.jpg?1783940121"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -12253,6 +12944,95 @@
     "colorIdentityOverride": [
         "RED",
         "WHITE"
+    ]
+}
+
+// Undercity Informer
+{
+    "name": "Undercity Informer",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "{1}, Sacrifice a creature: Target player reveals cards from the top of their library until they reveal a land card, then puts those cards into their graveyard.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Undercity Informer:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherUntilMatch",
+                            "player": "TargetPlayer",
+                            "filter": "land",
+                            "storeMatch": "matched0",
+                            "storeRevealed": "revealed0"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "revealed0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "revealed0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "TargetPlayer"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "rarity": "UNCOMMON",
+        "artist": "Raymond Swanland",
+        "flavorText": "\"Scandal and slander are never welcome news. That's why I'm never the messenger.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/2/822d0f73-cfb0-41d9-b4eb-09c605112a13.jpg?1783940127",
+        "rulings": [
+            {
+                "date": "2024-01-12",
+                "text": "The land card they reveal, if any, is included in the cards put into their graveyard."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "If the target player has no land cards in their library, all cards from that library will be revealed and put into their graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -12764,6 +13544,55 @@
     ]
 }
 
+// Warmind Infantry
+{
+    "name": "Warmind Infantry",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Elemental Soldier",
+    "oracleText": "Battalion — Whenever this creature and at least two other creatures attack, this creature gets +2/+0 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Warmind Infantry:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        {
+                            "type": "AttackerCountAtLeast",
+                            "n": 3
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "artist": "Greg Staples",
+        "flavorText": "Before Aurelia denounced Niv-Mizzet, the two guilds had collaborated on the Warmind Initiative in pursuit of the ultimate soldier.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d8a5f801-9e55-4e14-85b0-5719521cd9d6.jpg?1783940120"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Wasteland Viper
 {
     "name": "Wasteland Viper",
@@ -12973,6 +13802,61 @@
     },
     "colorIdentityOverride": [
         "BLUE",
+        "BLACK"
+    ]
+}
+
+// Wight of Precinct Six
+{
+    "name": "Wight of Precinct Six",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "This creature gets +1/+1 for each creature card in your opponents' graveyards.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "Count",
+                    "player": "EachOpponent",
+                    "zone": "Graveyard",
+                    "filter": "creature"
+                },
+                "toughnessBonus": {
+                    "type": "Count",
+                    "player": "EachOpponent",
+                    "zone": "Graveyard",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Barger",
+        "flavorText": "Even the lost and undead need a protector.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b04644ba-5962-4e64-bc53-92941c5b6715.jpg?1783940126",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "Wight of Precinct Six's ability applies only while it's on the battlefield. In all other zones, it's a 1/1 creature."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "If Wight of Precinct Six is dealt lethal damage at the same time as a creature an opponent controls, they're destroyed at the same time. It won't get an additional +1/+1 from its ability in time to save it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
         "BLACK"
     ]
 }
