@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.khm.cards
 
+import com.wingedsheep.sdk.scripting.effects.CopySourceRead
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
@@ -80,7 +81,7 @@ private val ValkiGodOfLiesFront = card("Valki, God of Lies") {
                     target = chosen.asTarget,
                     duration = Duration.Permanent,
                     affected = EffectTarget.Self,
-                    sourceFromAnyZone = true,
+                    sourceRead = CopySourceRead.ANY_ZONE,
                 )
             )
         }

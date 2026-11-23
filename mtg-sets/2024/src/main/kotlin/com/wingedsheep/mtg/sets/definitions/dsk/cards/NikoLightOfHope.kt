@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.dsk.cards
 
+import com.wingedsheep.sdk.scripting.effects.CopySourceRead
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Patterns
@@ -27,7 +28,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * The activated ability composes three established pieces:
  *  1. [Patterns.Exile.exileUntilEndStep] — exile the target and schedule a delayed
  *     "return it at the beginning of the next end step" trigger (the same blink Liberate uses).
- *  2. [Effects.EachPermanentBecomesCopyOfTarget] with `sourceFromAnyZone = true` — the Shards
+ *  2. [Effects.EachPermanentBecomesCopyOfTarget] with `sourceRead = CopySourceRead.ANY_ZONE` — the Shards
  *     (filtered by name) become copies of the just-exiled creature, reading its copiable values
  *     from exile (the same off-battlefield copy source Lazav, Familiar Stranger uses).
  *  3. [Duration.UntilNextEndStep] times the copies to wear off on entry to that same end step, so
@@ -67,7 +68,7 @@ val NikoLightOfHope = card("Niko, Light of Hope") {
                 target = nonlegendaryCreatureYouControl,
                 filter = GroupFilter(GameObjectFilter.Any.named("Shard").youControl()),
                 duration = Duration.UntilNextEndStep,
-                sourceFromAnyZone = true,
+                sourceRead = CopySourceRead.ANY_ZONE,
             )
         description = "{2}, {T}: Exile target nonlegendary creature you control. Shards you " +
             "control become copies of it until the next end step. Return it to the battlefield " +

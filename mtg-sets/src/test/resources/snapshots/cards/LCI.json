@@ -18915,7 +18915,7 @@
                             "type": "BoundVariable",
                             "name": "t0"
                         },
-                        "sourceFromAnyZone": true
+                        "sourceRead": "ANY_ZONE"
                     },
                     "targetRequirement": {
                         "type": "TargetOther",

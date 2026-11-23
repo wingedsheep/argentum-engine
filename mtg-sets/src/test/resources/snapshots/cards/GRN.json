@@ -8367,7 +8367,7 @@
                         "name": "t0"
                     },
                     "affected": "Self",
-                    "sourceFromAnyZone": true,
+                    "sourceRead": "ANY_ZONE",
                     "exceptions": {
                         "nameOverride": "Lazav, the Multifarious",
                         "addedSupertypes": [

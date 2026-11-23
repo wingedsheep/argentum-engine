@@ -850,7 +850,7 @@ Families:
 - `DrainLifeEffect(amount: DynamicAmount, from: EffectTarget, to: EffectTarget, amountPerLoser: Boolean)` — Life drain composite: each player in from loses amount life, then to gains life equal to the total life actually lost this way ("Each opponent loses X life.
 - `DrawCardsEffect(count: DynamicAmount, target: EffectTarget)` — Draw cards effect.
 - `DrawUpToEffect(maxCards: Int, target: EffectTarget, storeNotDrawnAs: String?)` — Draw up to N cards effect.
-- `EachPermanentBecomesCopyOfTargetEffect(target: EffectTarget, filter: GroupFilter, duration: Duration, excludeTarget: Boolean, affected: EffectTarget?, sourceFromAnyZone: Boolean, exceptions: CopyExceptions, retainActivatingAbility: Boolean)` — Each permanent matching filter becomes a copy of the targeted permanent.
+- `EachPermanentBecomesCopyOfTargetEffect(target: EffectTarget, filter: GroupFilter, duration: Duration, excludeTarget: Boolean, affected: EffectTarget?, sourceRead: CopySourceRead, exceptions: CopyExceptions, retainActivatingAbility: Boolean)` — Each permanent matching filter becomes a copy of the targeted permanent.
 - `EachPlayerChoosesCreatureTypeEffect(storeAs: String)` — Each player (in APNAP order) chooses a creature type.
 - `EachPlayerDiscardsOrLoseLifeEffect(lifeLoss: Int)` — Each player discards a card, then each player who didn't discard a creature card loses life.
 - `EachPlayerDrawsForDamageDealtToSourceEffect` — Each player draws cards equal to the damage they dealt this turn (via sources they controlled) to the trigger's source.

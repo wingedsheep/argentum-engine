@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.ogw.cards
 
+import com.wingedsheep.sdk.scripting.effects.CopySourceRead
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
@@ -22,7 +23,7 @@ import com.wingedsheep.sdk.scripting.references.Player
  * of that card until end of turn. You may put that card on the bottom of your library.
  *
  * The Vesuvan Drifter shape widened to a group: the revealed card stays in the library as the copy
- * source ([Effects.EachPermanentBecomesCopyOfTarget] with `sourceFromAnyZone = true`), and the
+ * source ([Effects.EachPermanentBecomesCopyOfTarget] with `sourceRead = CopySourceRead.ANY_ZONE`), and the
  * affected set is [GroupFilter.OtherCreaturesYouControl] rather than `Self`. The copy is a resolution
  * "may" gated on the revealed card being a creature card; the bottom-of-library choice is a separate
  * "may" offered whatever was revealed and whatever was chosen (ruling 2016-01-22).
@@ -54,7 +55,7 @@ val DeceiverOfForm = card("Deceiver of Form") {
                             target = creature.asTarget,
                             filter = GroupFilter.OtherCreaturesYouControl,
                             duration = Duration.EndOfTurn,
-                            sourceFromAnyZone = true,
+                            sourceRead = CopySourceRead.ANY_ZONE,
                         ),
                         prompt = "Have creatures you control other than Deceiver of Form become " +
                             "copies of the revealed card until end of turn?",

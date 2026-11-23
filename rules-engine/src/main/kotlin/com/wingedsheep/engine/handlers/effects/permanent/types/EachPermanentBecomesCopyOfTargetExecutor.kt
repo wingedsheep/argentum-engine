@@ -25,6 +25,7 @@ import com.wingedsheep.engine.state.components.identity.RevertCopyAtEndOfTurnCom
 import com.wingedsheep.engine.state.components.identity.RevertCopyAtNextEndStepComponent
 import com.wingedsheep.engine.state.components.identity.RevertCopyAtYourNextTurnComponent
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.effects.CopySourceRead
 import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlin.reflect.KClass
@@ -76,30 +77,11 @@ class EachPermanentBecomesCopyOfTargetExecutor(
         val targetId = (sourceReference?.let { TargetResolutionUtils.resolveEntity(it, context, state) }
             ?: context.resolveTarget(effect.target, state))
             ?: return EffectResult.success(state)
-        val sourceLost = TargetResolutionUtils.isLostObject(effect.target, context, state)
-
-        // "Becomes a copy of the exiled creature" (Curie, Emergent Intelligence) names a permanent
-        // a cost already moved off the battlefield, and "become copies of that creature" (Absorb
-        // Identity) a target an earlier instruction of this resolution bounced: either is copied as
-        // it last existed there (CR 608.2h, CR 707.2) — what it was copying, not the card now in
-        // exile or hand — from the snapshot the departure captured, which also outlives a token
-        // that ceased to exist.
-        val departedCopiable = (effect.target as? EffectTarget.SingleEntity)
-            ?.takeIf { (sourceLost || targetId !in state.getBattlefield()) && lkiPolicyFor(it) != LkiPolicy.LIVE_ONLY }
-            ?.let { context.lkiSnapshotFor(it, targetId)?.copiableCard }
-
-        // A source that became a new object with no last-known record to read has nothing to copy.
-        if (departedCopiable == null && sourceLost) return EffectResult.success(state)
-        val targetCard = departedCopiable
-            ?: state.getEntity(targetId)?.copiableCardComponent()
-            ?: return EffectResult.success(state)
-
-        // Target must still be on the battlefield to serve as a copy source — unless the effect
-        // allows a non-battlefield source (Lazav, Familiar Stranger copies a creature card it just
-        // exiled), in which case its copiable characteristics are read wherever it currently is.
-        if (departedCopiable == null && !effect.sourceFromAnyZone && targetId !in state.getBattlefield()) {
-            return EffectResult.success(state)
-        }
+        val targetCard = when (effect.sourceRead) {
+            CopySourceRead.CARD -> cardCopiableValues(state, targetId)
+            CopySourceRead.PERMANENT, CopySourceRead.ANY_ZONE ->
+                objectCopiableValues(state, effect, context, targetId)
+        } ?: return EffectResult.success(state)
 
         val affectedTarget = effect.affected
         var affected = if (affectedTarget != null) {
@@ -179,6 +161,56 @@ class EachPermanentBecomesCopyOfTargetExecutor(
         }
 
         return EffectResult.success(newState, events)
+    }
+
+    /**
+     * [CopySourceRead.PERMANENT] / [CopySourceRead.ANY_ZONE]: the object the reference names, read
+     * as it last existed on the battlefield once it has left it.
+     */
+    private fun objectCopiableValues(
+        state: GameState,
+        effect: EachPermanentBecomesCopyOfTargetEffect,
+        context: EffectContext,
+        targetId: com.wingedsheep.sdk.model.EntityId,
+    ): CardComponent? {
+        val sourceLost = TargetResolutionUtils.isLostObject(effect.target, context, state)
+
+        // "Becomes a copy of the exiled creature" (Curie, Emergent Intelligence) names a permanent
+        // a cost already moved off the battlefield, and "become copies of that creature" (Absorb
+        // Identity) a target an earlier instruction of this resolution bounced: either is copied as
+        // it last existed there (CR 608.2h, CR 707.2) — what it was copying, not the card now in
+        // exile or hand — from the snapshot the departure captured, which also outlives a token
+        // that ceased to exist.
+        val departedCopiable = (effect.target as? EffectTarget.SingleEntity)
+            ?.takeIf { (sourceLost || targetId !in state.getBattlefield()) && lkiPolicyFor(it) != LkiPolicy.LIVE_ONLY }
+            ?.let { context.lkiSnapshotFor(it, targetId)?.copiableCard }
+        if (departedCopiable != null) return departedCopiable
+
+        // A source that became a new object with no last-known record to read has nothing to copy,
+        // and only ANY_ZONE lets a source that never was a permanent be copied where it is.
+        if (sourceLost) return null
+        if (effect.sourceRead != CopySourceRead.ANY_ZONE && targetId !in state.getBattlefield()) return null
+        return state.getEntity(targetId)?.copiableCardComponent()
+    }
+
+    /**
+     * [CopySourceRead.CARD]: "a copy of that card" — the card in the zone it moved to, never the
+     * permanent it was there before, so a copy effect that applied on the battlefield isn't copied
+     * (a dead Clone is a 0/0 Clone). A card that has since left that zone is copied as it last
+     * existed there: outside the battlefield a card's copiable values are its own, so they are read
+     * off the card wherever it now is — and, should it be back on the battlefield copying
+     * something, off the identity it had before that copy. Card entities never cease to exist, so
+     * only a token (never "a card") reads as nothing.
+     */
+    private fun cardCopiableValues(
+        state: GameState,
+        targetId: com.wingedsheep.sdk.model.EntityId,
+    ): CardComponent? {
+        val container = state.getEntity(targetId) ?: return null
+        if (targetId in state.getBattlefield()) {
+            container.get<CopyOfComponent>()?.originalCardComponent?.let { return it }
+        }
+        return container.copiableCardComponent()
     }
 }
 

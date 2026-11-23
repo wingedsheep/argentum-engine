@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.mkm.cards
 
+import com.wingedsheep.sdk.scripting.effects.CopySourceRead
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
@@ -43,7 +44,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *   swept out of exile by CR 111.7 — and to cards still `InZone(EXILE)`, which is Kaya's own ruling
  *   that a card pulled back out of exile before this resolves can no longer be chosen.
  * - **The copy** is [Effects.EachPermanentBecomesCopyOfTarget] with the chosen card as the source
- *   (`sourceFromAnyZone = true` — it is sitting in exile) and the targeted token as `affected`,
+ *   (`sourceRead = CopySourceRead.ANY_ZONE` — it is sitting in exile) and the targeted token as `affected`,
  *   for [Duration.EndOfTurn], plus `exceptions = CopyExceptions(addedKeywords = FLYING)` for the
  *   "except it has flying" clause. Copiable values only (Rule 707.2), which is why the ruling says
  *   the token copies the card's *printed* values even if the permanent it came from was itself a
@@ -104,7 +105,7 @@ val KayaSpiritsJustice = card("Kaya, Spirits' Justice") {
                     target = chosen.asTarget,
                     duration = Duration.EndOfTurn,
                     affected = tokenYouControl,
-                    sourceFromAnyZone = true,
+                    sourceRead = CopySourceRead.ANY_ZONE,
                     exceptions = CopyExceptions(addedKeywords = setOf(Keyword.FLYING)),
                 )
             )

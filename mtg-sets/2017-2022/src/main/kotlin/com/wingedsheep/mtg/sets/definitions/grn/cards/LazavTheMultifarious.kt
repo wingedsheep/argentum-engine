@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.grn.cards
 
+import com.wingedsheep.sdk.scripting.effects.CopySourceRead
 import com.wingedsheep.sdk.core.Supertype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
@@ -24,7 +25,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * ability.
  *
  * The Likeness Looter shape: an `{X}` activation threading X into the target filter via
- * `manaValueEqualsX()`, `sourceFromAnyZone` so the copy source stays in the graveyard, and
+ * `manaValueEqualsX()`, `sourceRead = ANY_ZONE` so the copy source stays in the graveyard, and
  * `affected = Self`. The name and legendary exceptions ride [CopyExceptions] (CR 707.9), and
  * `retainActivatingAbility` re-grants this ability so Lazav can be re-aimed. No sorcery-speed
  * restriction — unlike Likeness Looter, Lazav can shift at instant speed.
@@ -54,7 +55,7 @@ val LazavTheMultifarious = card("Lazav, the Multifarious") {
         effect = Effects.EachPermanentBecomesCopyOfTarget(
             target = creatureCard,
             affected = EffectTarget.Self,
-            sourceFromAnyZone = true,
+            sourceRead = CopySourceRead.ANY_ZONE,
             duration = Duration.Permanent,
             exceptions = CopyExceptions(
                 nameOverride = "Lazav, the Multifarious",

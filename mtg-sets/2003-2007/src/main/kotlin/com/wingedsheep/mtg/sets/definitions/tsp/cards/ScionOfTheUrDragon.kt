@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.tsp.cards
 
+import com.wingedsheep.sdk.scripting.effects.CopySourceRead
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
@@ -27,7 +28,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * The search is an inline gather → chooseUpTo(1) pipeline (a search may find nothing). The card is
  * moved with `moveTracked`, so "if you do" is a test on the cards that actually reached the
  * graveyard rather than on the selection. The copy is Vesuvan Drifter's single-permanent shape —
- * `EachPermanentBecomesCopyOfTarget(affected = Self, duration = EndOfTurn, sourceFromAnyZone = true)`
+ * `EachPermanentBecomesCopyOfTarget(affected = Self, duration = EndOfTurn, sourceRead = CopySourceRead.ANY_ZONE)`
  * — reading the copiable values off the card in the graveyard; it is baked into Scion's card
  * component, so it loses this ability while it's a copy (2006-09-25 ruling), and exiling the
  * graveyard card afterward changes nothing (the other 2006-09-25 ruling).
@@ -69,7 +70,7 @@ val ScionOfTheUrDragon = card("Scion of the Ur-Dragon") {
                         target = milled.asTarget,
                         affected = EffectTarget.Self,
                         duration = Duration.EndOfTurn,
-                        sourceFromAnyZone = true,
+                        sourceRead = CopySourceRead.ANY_ZONE,
                     ),
                 )
             )

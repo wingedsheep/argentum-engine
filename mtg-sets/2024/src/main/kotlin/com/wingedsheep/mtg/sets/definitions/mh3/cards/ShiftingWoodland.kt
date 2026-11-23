@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.mh3.cards
 
+import com.wingedsheep.sdk.scripting.effects.CopySourceRead
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Conditions
@@ -28,7 +29,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * end of turn. Activate only if there are four or more card types among cards in your graveyard.
  *
  * The copy ability is Likeness Looter's shape with an end-of-turn duration: `affected = Self`
- * narrows the copy to this land and `sourceFromAnyZone` lets the copy source stay in the graveyard
+ * narrows the copy to this land and `sourceRead = ANY_ZONE` lets the copy source stay in the graveyard
  * (only its printed copiable values are taken, per the rulings). No `retainActivatingAbility` —
  * unlike Likeness Looter, the copy does not keep this ability. The delirium gate is an
  * `ActivationRestriction.OnlyIfCondition`, so the ability isn't offered without delirium.
@@ -58,7 +59,7 @@ val ShiftingWoodland = card("Shifting Woodland") {
         effect = Effects.EachPermanentBecomesCopyOfTarget(
             target = permanentCard,
             affected = EffectTarget.Self,
-            sourceFromAnyZone = true,
+            sourceRead = CopySourceRead.ANY_ZONE,
             duration = Duration.EndOfTurn,
         )
         restrictions = listOf(ActivationRestriction.OnlyIfCondition(Conditions.Delirium()))

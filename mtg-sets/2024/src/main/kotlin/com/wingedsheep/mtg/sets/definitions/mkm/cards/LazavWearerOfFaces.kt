@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.mkm.cards
 
+import com.wingedsheep.sdk.scripting.effects.CopySourceRead
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
@@ -34,7 +35,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  *
  * The copy half is Lazav, Familiar Stranger's shape with a different pool: gather → keep the
  * creature cards → choose up to one → become a copy of it until end of turn, reading the copy
- * source from exile via `sourceFromAnyZone`. `chooseUpTo(1)` *is* the printed "you may" —
+ * source from exile via `sourceRead = ANY_ZONE`. `chooseUpTo(1)` *is* the printed "you may" —
  * declining selects nothing and the [Effects.If] gate leaves Lazav alone. Copying takes
  * copiable values only (CR 707.2), so Lazav keeps his counters, his tapped-and-attacking state and
  * any Auras, and reverts at end of turn.
@@ -82,7 +83,7 @@ val LazavWearerOfFaces = card("Lazav, Wearer of Faces") {
                         target = chosen.asTarget,
                         duration = Duration.EndOfTurn,
                         affected = EffectTarget.Self,
-                        sourceFromAnyZone = true,
+                        sourceRead = CopySourceRead.ANY_ZONE,
                     ),
                 )
             )

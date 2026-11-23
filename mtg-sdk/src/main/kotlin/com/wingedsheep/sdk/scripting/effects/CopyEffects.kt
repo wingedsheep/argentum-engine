@@ -8,6 +8,41 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
+ * Which object a "becomes a copy of …" effect's source reference names, and where its copiable
+ * values (CR 707.2) are read.
+ *
+ * The same reference can name two objects: the triggering object of "whenever a creature card is put
+ * into a graveyard" is both the permanent that died and the card that arrived (CR 400.7). "A copy of
+ * that creature" (Cemetery Puca) means the first, "a copy of that card" (Lazav, Dimir Mastermind)
+ * the second — and they differ whenever a copy effect applied on the battlefield: a dead Clone that
+ * was copying a dragon is a dragon to the first and a 0/0 Clone to the second.
+ */
+@Serializable
+enum class CopySourceRead {
+    /**
+     * A permanent: copied as it is on the battlefield or, if it has left, as it last existed there.
+     * A source that is neither is no copy source and the effect does nothing.
+     */
+    PERMANENT,
+
+    /**
+     * The object wherever it currently is — a card in exile, a graveyard, a library or on the
+     * stack — still read as it last existed on the battlefield when it has just left it (Niko,
+     * Light of Hope exiles the creature it then copies; Lazav, Familiar Stranger copies a card it
+     * exiled from a graveyard).
+     */
+    ANY_ZONE,
+
+    /**
+     * "That card": the card in the zone it moved to, never the permanent it was before — so copy
+     * effects that applied on the battlefield are not copied. A card that has since left that zone
+     * is copied as it last existed there, which for a card outside the battlefield is its own
+     * printed copiable values (Lazav, Dimir Mastermind's 2013-01-24 ruling).
+     */
+    CARD,
+}
+
+/**
  * Each permanent matching [filter] becomes a copy of the targeted permanent.
  *
  * Used by Mirrorform and similar group-copy effects. At resolution the executor
@@ -42,12 +77,11 @@ import kotlinx.serialization.Serializable
  *   permanent B" (Fleeting Reflection: "target creature you control … becomes a copy of up to one
  *   other target creature"). When set, [filter] / [excludeTarget] are ignored. If the [affected]
  *   target resolves to nothing the effect is a no-op.
- * @property sourceFromAnyZone When true, the copy *source* ([target]) does not have to be on the
- *   battlefield — its copiable characteristics are read from wherever it currently is (e.g. a card
- *   in exile). The affected permanents still have to be on the battlefield. Models "become a copy
- *   of that card" off a card just put into exile — Lazav, Familiar Stranger: "you may exile a card
- *   from a graveyard. If a creature card was exiled this way, you may have Lazav become a copy of
- *   that card until end of turn."
+ * @property sourceRead Which object the copy source ([target]) names, and where its copiable values
+ *   are read — see [CopySourceRead]. [CopySourceRead.PERMANENT] (default) needs a permanent;
+ *   [CopySourceRead.ANY_ZONE] reads it wherever it is (Lazav, Familiar Stranger copies a card it
+ *   just exiled); [CopySourceRead.CARD] reads "that card" in its new zone, never the permanent it
+ *   was (Lazav, Dimir Mastermind). The affected permanents still have to be on the battlefield.
  * @property exceptions The "except …" modifications this copy effect specifies (CR 707.9) — name,
  *   added/removed types, added keywords, base P/T, colors. The shared [CopyExceptions] vocabulary,
  *   applied by the same engine helper the token-copy path uses, so "except it isn't legendary"
@@ -74,7 +108,7 @@ data class EachPermanentBecomesCopyOfTargetEffect(
     val duration: Duration = Duration.Permanent,
     val excludeTarget: Boolean = false,
     val affected: EffectTarget? = null,
-    val sourceFromAnyZone: Boolean = false,
+    val sourceRead: CopySourceRead = CopySourceRead.PERMANENT,
     val exceptions: CopyExceptions = CopyExceptions.None,
     val retainActivatingAbility: Boolean = false,
 ) : Effect {

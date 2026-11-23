@@ -23,7 +23,7 @@ import io.kotest.matchers.shouldBe
  * to his other types" and Taskmaster deliberately does not — CR 205.1a replaces by default and
  * CR 205.1b retains only on exactly that phrase — so his creature types are overridden, not unioned.
  * Also covers the cross-zone target
- * (battlefield **or** graveyard) and `sourceFromAnyZone`.
+ * (battlefield **or** graveyard) and `sourceRead = ANY_ZONE`.
  */
 class TaskmasterMercenaryMimicScenarioTest : ScenarioTestBase() {
 

@@ -10716,7 +10716,7 @@
                         "name": "t0"
                     },
                     "affected": "Self",
-                    "sourceFromAnyZone": true,
+                    "sourceRead": "ANY_ZONE",
                     "exceptions": {
                         "powerOverride": 0,
                         "toughnessOverride": 0

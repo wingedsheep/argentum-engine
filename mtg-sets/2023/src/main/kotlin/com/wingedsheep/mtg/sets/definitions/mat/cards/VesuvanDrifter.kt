@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.mat.cards
 
+import com.wingedsheep.sdk.scripting.effects.CopySourceRead
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.Effects
@@ -27,7 +28,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * has flying.
  *
  * The copy is [Effects.EachPermanentBecomesCopyOfTarget] with `affected = Self` and
- * `sourceFromAnyZone = true` (the copy source stays in the library), lasting until end of turn,
+ * `sourceRead = CopySourceRead.ANY_ZONE` (the copy source stays in the library), lasting until end of turn,
  * with flying added as a copiable exception (CR 707.9b).
  */
 val VesuvanDrifter = card("Vesuvan Drifter") {
@@ -61,7 +62,7 @@ val VesuvanDrifter = card("Vesuvan Drifter") {
                             target = creature.asTarget,
                             affected = EffectTarget.Self,
                             duration = Duration.EndOfTurn,
-                            sourceFromAnyZone = true,
+                            sourceRead = CopySourceRead.ANY_ZONE,
                             exceptions = CopyExceptions(addedKeywords = setOf(Keyword.FLYING)),
                         ),
                     )

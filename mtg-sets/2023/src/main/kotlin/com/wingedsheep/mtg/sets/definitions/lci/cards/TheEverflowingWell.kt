@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.lci.cards
 
+import com.wingedsheep.sdk.scripting.effects.CopySourceRead
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Costs
@@ -41,7 +42,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  *    descend-8 idiom).
  *  - The Myriad Pools' cast trigger uses [SpellCastPredicate.PaidWithManaFromSource] (the mana-source
  *    provenance for the mana it produced). The copy uses [EachPermanentBecomesCopyOfTargetEffect]
- *    with `sourceFromAnyZone = true` so the copy source can be the just-cast spell (still on the
+ *    with `sourceRead = CopySourceRead.ANY_ZONE` so the copy source can be the just-cast spell (still on the
  *    stack when the trigger resolves), `affected` the chosen permanent, for [Duration.EndOfTurn].
  *    The target is "up to one other target permanent you control" ([TargetOther] + optional count-1).
  */
@@ -101,7 +102,7 @@ private val TheMyriadPools = card("The Myriad Pools") {
             target = EffectTarget.TriggeringEntity,
             affected = t,
             duration = Duration.EndOfTurn,
-            sourceFromAnyZone = true,
+            sourceRead = CopySourceRead.ANY_ZONE,
         )
         description = "Whenever you cast a permanent spell using mana produced by The Myriad Pools, " +
             "up to one other target permanent you control becomes a copy of that spell until end of turn."
