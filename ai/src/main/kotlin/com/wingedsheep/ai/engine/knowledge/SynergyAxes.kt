@@ -303,6 +303,16 @@ object SynergyAxes {
                     } || script.targetRequirements.any(::targetsOwnPlusCounterCarrier)
                 }
             ) add(SynergyAxis.PLUS_COUNTERS)
+            // "Each creature you control with a +1/+1 counter on it has trample" (Crowned Ceratok,
+            // Mer-Ek Nightblade's deathtouch): the grant reaches only the creatures the deck has
+            // already put a +1/+1 counter on — with none placed, it gives nothing.
+            if (scripts.any { script ->
+                    script.staticAbilities.any {
+                        it is com.wingedsheep.sdk.scripting.GrantKeywordByCounter &&
+                            it.counterType == CounterType.PLUS_ONE_PLUS_ONE
+                    }
+                }
+            ) add(SynergyAxis.PLUS_COUNTERS)
         }
         val feeds = buildSet {
             scripts.forEach { addAll(feedsOf(it, card.typeLine.isCreature)) }

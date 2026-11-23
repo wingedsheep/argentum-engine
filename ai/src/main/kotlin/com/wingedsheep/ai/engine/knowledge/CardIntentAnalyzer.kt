@@ -4086,6 +4086,11 @@ object CardIntentAnalyzer {
         }
 
         is GrantKeyword -> keywordTags(static.keyword)
+        // "Each creature you control with a +1/+1 counter on it has trample / deathtouch" (Crowned
+        // Ceratok, Mer-Ek Nightblade): the keyword grant, scoped to our countered creatures. The
+        // un-scoped form also reaches the opponent's countered creatures, so it reads as nothing.
+        is com.wingedsheep.sdk.scripting.GrantKeywordByCounter ->
+            if (static.controllerOnly) keywordTags(static.keyword.name) else emptySet()
         // "Creatures your opponents control lose first strike and can't have or gain first strike"
         // (the Born of the Gods Archetypes), "… lose flying": strips a keyword from the opposing
         // board, which tilts every combat our way.
