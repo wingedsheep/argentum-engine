@@ -3234,6 +3234,66 @@
     ]
 }
 
+// Diluvian Primordial
+{
+    "name": "Diluvian Primordial",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Creature — Avatar",
+    "oracleText": "Flying\nWhen this creature enters, for each opponent, you may cast up to one target instant or sorcery card from that player's graveyard without paying its mana cost. If a spell cast this way would be put into a graveyard, exile it instead.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Diluvian Primordial:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "CastAnyNumberFromCollectionWithoutPayingCost",
+                            "from": "gathered0",
+                            "maxCasts": 2147483647,
+                            "insteadOfGraveyard": "EXILE"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "instant|sorcery own:opponent",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0",
+                    "ownerDistribution": "UP_TO_ONE"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "RARE",
+        "artist": "Stephan Martiniere",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0b7c34af-91de-44c6-a3e2-f48dbb0ce9fd.jpg?1783940139"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Dimir Charm
 {
     "name": "Dimir Charm",
@@ -4220,6 +4280,79 @@
     },
     "colorIdentityOverride": [
         "GREEN",
+        "BLUE"
+    ]
+}
+
+// Enter the Infinite
+{
+    "name": "Enter the Infinite",
+    "manaCost": "{8}{U}{U}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw cards equal to the number of cards in your library, then put a card from your hand on top of your library. You have no maximum hand size until your next turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "AggregateZone",
+                        "player": "You",
+                        "zone": "Library"
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Choose a card to put on top of your library"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            },
+                            "order": "ControllerChooses"
+                        }
+                    ]
+                },
+                {
+                    "type": "RemoveMaximumHandSize",
+                    "duration": "UntilYourNextTurn"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "MYTHIC",
+        "artist": "Terese Nielsen",
+        "flavorText": "\"Don't just have an idea—have all of them.\"\n—Niv-Mizzet",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/612beb8f-2ab1-4a8b-84c5-c47d19d400ab.jpg?1783940138"
+    },
+    "colorIdentityOverride": [
         "BLUE"
     ]
 }
@@ -5463,6 +5596,80 @@
     ]
 }
 
+// Glaring Spotlight
+{
+    "name": "Glaring Spotlight",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "Creatures your opponents control with hexproof can be the targets of spells and abilities you control as though they didn't have hexproof.\n{3}, Sacrifice this artifact: Creatures you control gain hexproof until end of turn and can't be blocked this turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Glaring Spotlight:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:you"
+                                }
+                            },
+                            "body": {
+                                "type": "GrantKeyword",
+                                "keyword": "HEXPROOF",
+                                "target": "IterationEntity"
+                            }
+                        },
+                        {
+                            "type": "CantBeBlockedGroup",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{3}, Sacrifice this artifact: Creatures you control gain hexproof until end of turn and can't be blocked this turn."
+            }
+        ],
+        "staticAbilities": [
+            "SuppressHexproofForGroup"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "229",
+        "rarity": "RARE",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6070239-54a7-49d4-bd3c-d5c4cda971db.jpg?1783940092",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "Creatures your opponents control don't actually lose hexproof, although you will ignore hexproof for purposes of choosing targets of spells and abilities you control."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "Creatures that come under your control after Glaring Spotlight's last ability resolves won't have hexproof but they can't be blocked that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Greenside Watcher
 {
     "name": "Greenside Watcher",
@@ -5506,6 +5713,48 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Gridlock
+{
+    "name": "Gridlock",
+    "manaCost": "{X}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Tap X target nonland permanents.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "TapUntap",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent"
+                },
+                "id": "t0",
+                "dynamicMaxCount": "XValue",
+                "dynamicMinCount": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "\"One tiny peg pulled from a single wagon wheel, and an entire district grinds to a halt.\"\n—Lazav",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b4f5c126-3df9-4771-9e74-4ca33161ac08.jpg?1783940138"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -6144,6 +6393,111 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Hands of Binding
+{
+    "name": "Hands of Binding",
+    "manaCost": "{1}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Tap target creature an opponent controls. That creature doesn't untap during its controller's next untap step.\nCipher (Then you may exile this spell card encoded on a creature you control. Whenever that creature deals combat damage to a player, its controller may cast a copy of the encoded card without paying its mana cost.)",
+    "keywords": [
+        "CIPHER"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "DOESNT_UNTAP",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "UntilAfterAffectedControllersNextUntap"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/afeef50a-f5c9-47ab-ad04-645f49bbae6b.jpg?1783940138",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "If a different player gains control of the creature that was tapped by Hands of Binding, Hands of Binding will stop that creature from untapping during its new controller's next untap step."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If the creature that was tapped by Hands of Binding is untapped during its controller's next untap step (perhaps because a spell untapped it), Hands of Binding has no effect at that time. It won't apply at some later time when the creature is tapped."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The spell with cipher is encoded on the creature as part of that spell's resolution, just after the spell's other effects. That card goes directly from the stack to exile. It never goes to the graveyard."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You choose the creature as the spell resolves. The cipher ability doesn't target that creature, although the spell with cipher may target that creature (or a different creature) because of its other abilities."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the spell with cipher doesn't resolve, none of its effects will happen, including cipher. The card will go to its owner's graveyard and won't be encoded on a creature."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the creature leaves the battlefield, the exiled card will no longer be encoded on any creature. It will stay exiled."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you want to encode the card with cipher onto a noncreature permanent such as a Keyrune that can turn into a creature, that permanent has to be a creature before the spell with cipher starts resolving. You can choose only a creature to encode the card onto."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The copy of the card with cipher is created in and cast from exile."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You cast the copy of the card with cipher during the resolution of the triggered ability. Ignore timing restrictions based on the card's type."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you choose not to cast the copy, or you can't cast it (perhaps because there are no legal targets available), the copy will cease to exist the next time state-based actions are performed. You won't get a chance to cast the copy at a later time."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The exiled card with cipher grants a triggered ability to the creature it's encoded on. If that creature loses that ability and subsequently deals combat damage to a player, the triggered ability won't trigger. However, the exiled card will continue to be encoded on that creature."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If another player gains control of the creature, that player will control the triggered ability. That player will create a copy of the encoded card and may cast it."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a creature with an encoded card deals combat damage to more than one player simultaneously (perhaps because some of the combat damage was redirected), the triggered ability will trigger once for each player it deals combat damage to. Each ability will create a copy of the exiled card and allow you to cast it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -6842,6 +7196,64 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLACK"
+    ]
+}
+
+// Incursion Specialist
+{
+    "name": "Incursion Specialist",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Whenever you cast your second spell each turn, this creature gets +2/+0 until end of turn and can't be blocked this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Incursion Specialist:1",
+                "trigger": {
+                    "type": "NthSpellCastEvent",
+                    "nthSpell": 2,
+                    "player": "You"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "CANT_BE_BLOCKED",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you cast your second spell each turn, this creature gets +2/+0 until end of turn and can't be blocked this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"Work for the Dimir again? That depends. Tell me more about this maze.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/290e56e0-e699-413a-9d6a-e740bf460b35.jpg?1783940137"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -9917,6 +10329,53 @@
     "colorIdentityOverride": []
 }
 
+// Realmwright
+{
+    "name": "Realmwright",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Vedalken Wizard",
+    "oracleText": "As this creature enters, choose a basic land type.\nLands you control are the chosen type in addition to their other types.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantChosenSubtype",
+                "filter": {
+                    "baseFilter": "land ctrl:you"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "BASIC_LAND_TYPE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/989c76b2-d130-443d-8534-6525fef404c2.jpg?1783940135",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "The basic land types are Plains, Island, Swamp, Mountain, and Forest. Other land types, like Gate, aren't basic lands types."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "Lands you control will have the ability to tap for the color of mana corresponding to the chosen type. They'll also retain any other abilities they have."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Riot Gear
 {
     "name": "Riot Gear",
@@ -10313,6 +10772,48 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Scatter Arc
+{
+    "name": "Scatter Arc",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target noncreature spell.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                "Counter",
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "noncreature",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "artist": "Peter Mohrbacher",
+        "flavorText": "\"Should your chosen emissary be able to fluctuate triharmonic pentodes, however unlikely, I shall shunt excess negavolt radicals.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/32ed969f-2c8e-4421-9448-dc5a2afdc81d.jpg?1783940135"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -11779,6 +12280,57 @@
     "colorIdentityOverride": []
 }
 
+// Skygames
+{
+    "name": "Skygames",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nEnchanted land has \"{T}: Target creature gains flying until end of turn. Activate only as a sorcery.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Skygames:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "GrantKeyword",
+                        "keyword": "FLYING",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "timing": "SorcerySpeed"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "artist": "Sam Burley",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7ab5bf75-762f-46ef-8304-aacdb248bc5b.jpg?1783940135"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Slate Street Ruffian
 {
     "name": "Slate Street Ruffian",
@@ -11950,6 +12502,85 @@
     ]
 }
 
+// Soul Ransom
+{
+    "name": "Soul Ransom",
+    "manaCost": "{2}{U}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nYou control enchanted creature.\nDiscard two cards: This Aura's controller sacrifices it, then draws two cards. Only your opponents may activate this ability.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Soul Ransom:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomDiscard",
+                        "count": 2
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "SacrificeTarget",
+                            "target": "Self",
+                            "sacrificedByItsController": true
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "ControllerOfSource"
+                            }
+                        }
+                    ]
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationAll",
+                        "restrictions": [
+                            "AnyPlayerMay",
+                            {
+                                "type": "ActivationOnlyIfCondition",
+                                "condition": {
+                                    "type": "EntityMatches",
+                                    "entity": "Self",
+                                    "filter": "ctrl:opponent"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "descriptionOverride": "Discard two cards: This Aura's controller sacrifices it, then draws two cards. Only your opponents may activate this ability."
+            }
+        ],
+        "staticAbilities": [
+            "ControlEnchantedPermanent"
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "rarity": "RARE",
+        "artist": "Steve Argyle",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd705732-cce9-4d11-85ca-be49381dbaa8.jpg?1783940099"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Spark Trooper
 {
     "name": "Spark Trooper",
@@ -12083,6 +12714,86 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Stolen Identity
+{
+    "name": "Stolen Identity",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create a token that's a copy of target artifact or creature.\nCipher (Then you may exile this spell card encoded on a creature you control. Whenever that creature deals combat damage to a player, its controller may cast a copy of the encoded card without paying its mana cost.)",
+    "keywords": [
+        "CIPHER"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CreateTokenCopyOfTarget",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|artifact"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "rarity": "RARE",
+        "artist": "Clint Cearley",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4e058447-7cee-4670-b86b-c95bd6b68144.jpg?1783940133",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "The token copies exactly what was printed on the original artifact or creature and nothing else (unless that permanent is copying something else or is a token). It doesn't copy whether it is tapped or untapped, whether it has any counters on it or Auras and Equipment attached to it, or any non-copy effects that have changed its power, toughness, types, color, or so on."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If the copied permanent has {X} in its mana cost, X is considered to be zero."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If the copied permanent is copying something else (for example, if the copied creature is a Clone), then the token enters as whatever that creature copied."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If the copied permanent is a token, the token that's created copies the original characteristics of that token as stated by the effect that put the token onto the battlefield."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "Any \"enters\" abilities of the copied permanent will trigger when the token enters the battlefield. Any \"as [this permanent] enters\" or \"[this permanent] enters with\" abilities of the chosen permanent will also work."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If the token you create is a copy of a creature, you can exile Stolen Identity encoded on that token."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The spell with cipher is encoded on the creature as part of that spell's resolution, just after the spell's other effects. That card goes directly from the stack to exile. It never goes to the graveyard."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the spell with cipher doesn't resolve, none of its effects will happen, including cipher. The card will go to its owner's graveyard and won't be encoded on a creature."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the creature leaves the battlefield, the exiled card will no longer be encoded on any creature. It will stay exiled."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you choose not to cast the copy, or you can't cast it (perhaps because there are no legal targets available), the copy will cease to exist the next time state-based actions are performed. You won't get a chance to cast the copy at a later time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -13178,6 +13889,136 @@
     ]
 }
 
+// Unexpected Results
+{
+    "name": "Unexpected Results",
+    "manaCost": "{2}{G}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Shuffle your library, then reveal the top card. If it's a nonland card, you may cast it without paying its mana cost. If it's a land card, you may put it onto the battlefield and return Unexpected Results to its owner's hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                "ShuffleLibrary",
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "revealed": true
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "land",
+                            "storeMatching": "matching1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matching1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "prompt": "You may put the revealed land onto the battlefield and return Unexpected Results to your hand",
+                            "selectedLabel": "Put onto the battlefield"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "selected2",
+                            "ifNotEmpty": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "selected2",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield"
+                                        }
+                                    },
+                                    {
+                                        "type": "MoveToZone",
+                                        "target": "Self",
+                                        "destination": "Hand"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "nonland",
+                            "storeMatching": "matching6"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matching6",
+                            "selection": "ChooseSpell",
+                            "storeSelected": "selected7",
+                            "prompt": "You may cast the revealed card without paying its mana cost",
+                            "selectedLabel": "Cast without paying"
+                        },
+                        {
+                            "type": "CastFromCollectionWithoutPayingCost",
+                            "from": "selected7"
+                        }
+                    ],
+                    "descriptionOverride": "Reveal the top card of your library. If it's a nonland card, you may cast it without paying its mana cost. If it's a land card, you may put it onto the battlefield and return Unexpected Results to its owner's hand."
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "rarity": "RARE",
+        "artist": "Mike Bierek",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/65e10a22-6070-48d7-99ab-45f770f16fd1.jpg?1783940098",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "If you reveal a nonland card, you may cast it during the resolution of Unexpected Results. Ignore timing restrictions based on the card's type. Other timing restrictions, such as \"Cast [this card] only during combat,\" must be followed."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If you can't cast the card (perhaps because there are no legal targets), or if you choose not to, the card will remain on top of the library."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If you cast a spell \"without paying its mana cost,\" you can't pay alternative costs such as overload costs. You can pay additional costs such as kicker costs. If the card has mandatory additional costs, you must pay those."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If the card has {X} in its mana cost, you must choose 0 as its value."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If you reveal a land card, Unexpected Results will be returned to your hand only if you put that land card onto the battlefield. If you don't, Unexpected Results will be put into its owner's graveyard."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If you reveal a land card and put that card onto the battlefield, Unexpected Results will be put into its owner's hand directly from the stack. It won't be put into any graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Urban Evolution
 {
     "name": "Urban Evolution",
@@ -13544,6 +14385,108 @@
     ]
 }
 
+// Voidwalk
+{
+    "name": "Voidwalk",
+    "manaCost": "{3}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile target creature. Return it to the battlefield under its owner's control at the beginning of the next end step.\nCipher (Then you may exile this spell card encoded on a creature you control. Whenever that creature deals combat damage to a player, its controller may cast a copy of the encoded card without paying its mana cost.)",
+    "keywords": [
+        "CIPHER"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "CreateDelayedTrigger",
+                    "step": "END",
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Battlefield"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "rarity": "UNCOMMON",
+        "artist": "James Ryman",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/611d0e10-e767-4e66-b1f1-02f1624fab2b.jpg?1783940133",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "The spell with cipher is encoded on the creature as part of that spell's resolution, just after the spell's other effects. That card goes directly from the stack to exile. It never goes to the graveyard."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You choose the creature as the spell resolves. The cipher ability doesn't target that creature, although the spell with cipher may target that creature (or a different creature) because of its other abilities."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the spell with cipher doesn't resolve, none of its effects will happen, including cipher. The card will go to its owner's graveyard and won't be encoded on a creature."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the creature leaves the battlefield, the exiled card will no longer be encoded on any creature. It will stay exiled."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you want to encode the card with cipher onto a noncreature permanent such as a Keyrune that can turn into a creature, that permanent has to be a creature before the spell with cipher starts resolving. You can choose only a creature to encode the card onto."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The copy of the card with cipher is created in and cast from exile."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "You cast the copy of the card with cipher during the resolution of the triggered ability. Ignore timing restrictions based on the card's type."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If you choose not to cast the copy, or you can't cast it (perhaps because there are no legal targets available), the copy will cease to exist the next time state-based actions are performed. You won't get a chance to cast the copy at a later time."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The exiled card with cipher grants a triggered ability to the creature it's encoded on. If that creature loses that ability and subsequently deals combat damage to a player, the triggered ability won't trigger. However, the exiled card will continue to be encoded on that creature."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If another player gains control of the creature, that player will control the triggered ability. That player will create a copy of the encoded card and may cast it."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a creature with an encoded card deals combat damage to more than one player simultaneously (perhaps because some of the combat damage was redirected), the triggered ability will trigger once for each player it deals combat damage to. Each ability will create a copy of the exiled card and allow you to cast it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Warmind Infantry
 {
     "name": "Warmind Infantry",
@@ -13674,6 +14617,54 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Way of the Thief
+{
+    "name": "Way of the Thief",
+    "manaCost": "{3}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+2.\nEnchanted creature can't be blocked as long as you control a Gate.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "CantBeBlocked",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "AttachedTo"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "land Gate"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "artist": "Igor Kieryluk",
+        "flavorText": "A true shortcut isn't a way other people don't know; it's a way other people can't go.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b249ca81-bd8d-4d3d-81d6-15e8d669c416.jpg?1783940133"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

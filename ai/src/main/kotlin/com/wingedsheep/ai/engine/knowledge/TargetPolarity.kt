@@ -172,6 +172,7 @@ import com.wingedsheep.sdk.scripting.effects.TapUntapCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.CastAnyNumberFromCollectionWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.CastFromCollectionWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.SurveilEffect
@@ -460,7 +461,8 @@ object TargetPolarityAnalyzer {
      * target Zombie creature card from your graveyard this turn" (Zul Ashur), "you may cast target
      * instant card from your graveyard without paying its mana cost" (Torrential Gearhulk), "… from
      * that player's graveyard" (Tinybones): a pipeline that gathers its chosen targets and casts them
-     * on resolution ([CastFromCollectionWithoutPayingCostEffect], paid or free) or grants the cast
+     * on resolution ([CastFromCollectionWithoutPayingCostEffect], paid or free, or several of them
+     * at once — Diluvian Primordial's [CastAnyNumberFromCollectionWithoutPayingCostEffect]) or grants the cast
      * ([GrantMayPlayFromExileEffect]). The card named is the one we get to cast — recursion through
      * the stack — so the best card is the one to name, whoever's graveyard holds it. A grant to the
      * card's owner (airbend's [GrantMayPlayFromExileEffect.ownerControls]) is not ours, and a gather
@@ -481,6 +483,7 @@ object TargetPolarityAnalyzer {
         } while (chosen.size != before)
         val casts = leaves.any { leaf ->
             (leaf is CastFromCollectionWithoutPayingCostEffect && leaf.from in chosen) ||
+                (leaf is CastAnyNumberFromCollectionWithoutPayingCostEffect && leaf.from in chosen) ||
                 (leaf is GrantMayPlayFromExileEffect && !leaf.ownerControls && leaf.from in chosen)
         }
         return if (casts) slots else emptyList()

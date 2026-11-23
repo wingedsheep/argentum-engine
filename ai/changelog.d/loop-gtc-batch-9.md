@@ -1,0 +1,3 @@
+- #TBD Reads a target card in an opponent's graveyard that it may cast for free with others (Diluvian Primordial) as its own pick — the best spell there — and the trigger as a free spell
+- #TBD Spends a team-wide "creatures you control can't be blocked this turn" (Glaring Spotlight) only on its own turn before attacks, and sees an opponent's copy as blockers denied when it plans combat
+- #TBD Reads granting a chosen basic land type to its lands (Realmwright) as mana fixing, a ramp card

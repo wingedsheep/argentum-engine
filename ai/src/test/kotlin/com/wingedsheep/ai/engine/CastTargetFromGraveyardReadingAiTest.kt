@@ -1,6 +1,8 @@
 package com.wingedsheep.ai.engine
 
+import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.IntentCatalog
+import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.ai.engine.knowledge.TargetPolarity
 import com.wingedsheep.ai.engine.knowledge.TargetPolarityAnalyzer
 import com.wingedsheep.ai.puzzles.advanceToPriority
@@ -11,6 +13,7 @@ import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 
 /**
@@ -43,6 +46,17 @@ class CastTargetFromGraveyardReadingAiTest : ScenarioTestBase() {
             TargetPolarityAnalyzer.takenSlots(tinybones.effect, tinybones.allTargetRequirements) shouldBe setOf(0)
             val heiko = cardRegistry.getCard("Heiko Yamazaki, the General")!!.script.triggeredAbilities.single()
             TargetPolarityAnalyzer.takenSlots(heiko.effect, heiko.allTargetRequirements) shouldBe emptySet()
+        }
+
+        test("casting any number of the chosen opponents' graveyard cards for free reads as a gift we take") {
+            // Diluvian Primordial: "for each opponent, you may cast up to one target instant or sorcery
+            // card from that player's graveyard without paying its mana cost".
+            val diluvian = cardRegistry.getCard("Diluvian Primordial")!!
+            val trigger = diluvian.script.triggeredAbilities.single()
+            intents.effectTargetPolarities(trigger.effect, trigger.allTargetRequirements) shouldBe
+                listOf(TargetPolarity.BENEFICIAL)
+            TargetPolarityAnalyzer.takenSlots(trigger.effect, trigger.allTargetRequirements) shouldBe setOf(0)
+            CardIntentAnalyzer.analyze(diluvian).tags shouldContain IntentTag.FREE_SPELL
         }
 
         test("the heuristic fill names the best Zombie card for Zul Ashur to recast, not the cheapest") {
