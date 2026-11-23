@@ -1046,7 +1046,7 @@ Ashiok's Forerunner
 Ashiok's Reaper
 Ashiok's Skulker
 Ashiok, Dream Render
-Ashiok, Nightmare Muse	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: Pipeline(exile→?)
+Ashiok, Nightmare Muse
 Ashiok, Nightmare Weaver
 Ashiok, Sculptor of Fears
 Ashiok, Wicked Manipulator
@@ -4804,6 +4804,7 @@ Digsite Conservator
 Dihada, Binder of Wills
 Diligent Excavator
 Diligent Zookeeper
+Diluvian Primordial
 Dimension X
 Dimensional Breach
 Dimensional Exile
@@ -5947,6 +5948,7 @@ Entangling Trap
 Enter the Avatar State	timing: AddCreatureTypeEffect; timing: GrantKeywordEffect
 Enter the Enigma
 Enter the God-Eternals
+Enter the Infinite
 Enter the Unknown
 Enterprise NX-01
 Enterprising Scallywag
@@ -6692,7 +6694,7 @@ Final Vengeance
 Finale of Devastation
 Finale of Eternity
 Finale of Glory
-Finale of Promise	polarity: CastAnyNumberFromCollectionWithoutPayingCostEffect; polarity: ForEachEffect; polarity: Pipeline(ChosenTargets|graveyard→?)
+Finale of Promise
 Finale of Revelation
 Finch Formation
 Find // Finality
@@ -7737,6 +7739,7 @@ Glarecaster	polarity: RedirectNextDamageEffect; timing: RedirectNextDamageEffect
 Glarewielder
 Glaring Aegis
 Glaring Fleshraker
+Glaring Spotlight
 Glass Casket
 Glass Golem
 Glass of the Guildpact
@@ -8284,6 +8287,7 @@ Greta, Sweettooth Scourge
 Gretchen Titchwillow
 Grey Havens Navigator
 Grid Monitor
+Gridlock
 Grievous Wound	polarity: Aura>LoseLifeEffect
 Griffin Aerie
 Griffin Dreamfinder
@@ -8569,6 +8573,7 @@ Hand of Death
 Hand of Justice
 Hand of Silumgar
 Hand of Vecna
+Hands of Binding
 Hangar Scrounger	polarity: GrantTriggeredAbilityEffect
 Hangarback Walker
 Hanged Executioner
@@ -9510,6 +9515,7 @@ Incubation Druid
 Incubation Sac
 Incubator Drone
 Incurable Ogre
+Incursion Specialist
 Indatha Crystal
 Indatha Triome
 Indebted Spirit
@@ -9774,7 +9780,7 @@ Invisibility	polarity: Aura>CantBeBlockedExceptBy
 Invisible Stalker
 Invisible Woman, Sue Storm
 Invocation of Saint Traft
-Invoke Calamity	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: Pipeline(FromMultipleZones→?)
+Invoke Calamity
 Invoke Despair
 Invoke Justice	polarity: DistributeCountersAmongFilteredEffect
 Invoke Prejudice	intent: GatedEffect
@@ -9915,7 +9921,7 @@ Jace's Sanctum
 Jace's Scrutiny
 Jace's Sentinel
 Jace's Triumph
-Jace, Arcane Strategist	combat: CantBeBlockedGroupEffect
+Jace, Arcane Strategist
 Jace, Cunning Castaway
 Jace, Ingenious Mind-Mage
 Jace, Memory Adept
@@ -10323,7 +10329,7 @@ Keeper of the Quiet Hour
 Keepers of the Faith
 Keepsake Gorgon
 Kefka, Court Mage
-Kefka, Dancing Mad	intent: CastAnyNumberFromCollectionWithoutPayingCostEffect; intent: ForEach>Pipeline(graveyard→?); intent: Pipeline(?→exile)
+Kefka, Dancing Mad
 Kefnet the Mindful
 Kefnet's Last Word
 Kefnet's Monument
@@ -15050,6 +15056,7 @@ Realm-Scorcher Hellkite
 Realmbreaker's Grasp
 Realmbreaker, the Invasion Tree
 Realmwalker
+Realmwright
 Reanimate
 Reap Intellect
 Reap What Is Sown
@@ -16311,6 +16318,7 @@ Scarwood Hag	polarity: RemoveKeywordEffect
 Scarwood Treefolk
 Scathe Zombies
 Scathing Shadelock
+Scatter Arc
 Scatter Ray
 Scatter the Seeds
 Scatter to the Winds
@@ -17418,6 +17426,7 @@ Skycoach Conductor
 Skycoach Waypoint
 Skycrash
 Skyfisher Spider
+Skygames
 Skyhunter Cub
 Skyhunter Patrol
 Skyhunter Prowler
@@ -17746,6 +17755,7 @@ Soul Manipulation
 Soul Net
 Soul Nova
 Soul Partition	intent: ExileAndGrantOwnerPlayPermissionEffect; polarity: ExileAndGrantOwnerPlayPermissionEffect
+Soul Ransom
 Soul Read
 Soul Salvage
 Soul Sear
@@ -18374,6 +18384,7 @@ Stoic Rebuttal
 Stoic Sphinx
 Stoke the Flames
 Stolen Grain
+Stolen Identity
 Stolen Stark Tech
 Stolen Strategy
 Stolen Uniform
@@ -19380,7 +19391,7 @@ Tezzeret the Seeker
 Tezzeret's Ambition
 Tezzeret's Betrayal
 Tezzeret's Gambit
-Tezzeret's Gatebreaker	combat: CantBeBlockedGroupEffect; timing: CantBeBlockedGroupEffect
+Tezzeret's Gatebreaker
 Tezzeret's Simulacrum
 Tezzeret's Strider
 Tezzeret's Touch
@@ -20679,6 +20690,7 @@ Unesh, Criosphinx Sovereign
 Unexpected Assistance
 Unexpected Fangs
 Unexpected Request	polarity: CreateDelayedTriggerEffect
+Unexpected Results
 Unexpected Windfall
 Unexplained Disappearance
 Unexplained Vision
@@ -21319,6 +21331,7 @@ Voidforged Titan
 Voidmage Apprentice
 Voidmage Prodigy
 Voidpouncer
+Voidwalk
 Voidwielder
 Voidwing Hybrid
 Voja, Jaws of the Conclave
@@ -21711,6 +21724,7 @@ Way of the Mind Sculptor
 Way of the Necromancer
 Way of the Paradox
 Way of the Pyromancer
+Way of the Thief
 Way of the Warlord
 Way of the Wildspeaker
 Wayfarer's Bauble
