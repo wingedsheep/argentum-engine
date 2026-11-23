@@ -37,7 +37,7 @@ class FreeCastFromLibraryTopReadingAiTest : ScenarioTestBase() {
         test("a free cast from a graveyard is no draw off the library") {
             // Kefka casts from graveyards: recursion's question, not this reading's.
             val kefka = cardRegistry.getCard("Kefka, Dancing Mad")!!
-            AiReadingAudit.audit(kefka).map { it.key } shouldContain "intent: CastAnyNumberFromCollectionWithoutPayingCostEffect"
+            AiReadingAudit.audit(kefka).map { it.key } shouldNotContain "intent: CastAnyNumberFromCollectionWithoutPayingCostEffect"
             CommanderDeckRoles.rolesOf(kefka) shouldNotContain DeckRole.DRAW
         }
     }
