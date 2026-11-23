@@ -568,6 +568,58 @@
     ]
 }
 
+// Bomber Corps
+{
+    "name": "Bomber Corps",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Battalion — Whenever this creature and at least two other creatures attack, this creature deals 1 damage to any target.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bomber Corps:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        {
+                            "type": "AttackerCountAtLeast",
+                            "n": 3
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "artist": "Chase Stone",
+        "flavorText": "\"Subtlety is for lawmages and spies.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/b/9b1675f2-e950-4f3c-9dd3-29ead615ff23.jpg?1783940126"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Borborygmos Enraged
 {
     "name": "Borborygmos Enraged",
@@ -760,6 +812,56 @@
     "colorIdentityOverride": [
         "WHITE",
         "RED"
+    ]
+}
+
+// Boros Elite
+{
+    "name": "Boros Elite",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Battalion — Whenever this creature and at least two other creatures attack, this creature gets +2/+2 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Boros Elite:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        {
+                            "type": "AttackerCountAtLeast",
+                            "n": 3
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "UNCOMMON",
+        "artist": "Willian Murai",
+        "flavorText": "\"First, you must fight among the rank and file. It is there I will discern your skills as a leader.\"\n—Aurelia, to Gideon Jura",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a03974e6-aced-4664-8c5c-3190bb1eb233.jpg?1783940144"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -1283,6 +1385,48 @@
     ]
 }
 
+// Daring Skyjek
+{
+    "name": "Daring Skyjek",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Battalion — Whenever this creature and at least two other creatures attack, this creature gains flying until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Daring Skyjek:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        {
+                            "type": "AttackerCountAtLeast",
+                            "n": 3
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "artist": "Jason Chan",
+        "flavorText": "\"The hard part isn't landing in the saddle. The hard part is leaping before you see it.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6c28412d-9add-4911-8487-c84559006fb0.jpg?1783940145"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Deathcult Rogue
 {
     "name": "Deathcult Rogue",
@@ -1470,6 +1614,58 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLACK"
+    ]
+}
+
+// Firefist Striker
+{
+    "name": "Firefist Striker",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Battalion — Whenever this creature and at least two other creatures attack, target creature can't block this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Firefist Striker:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        {
+                            "type": "AttackerCountAtLeast",
+                            "n": 3
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CantBlockTargetCreatures",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "rarity": "UNCOMMON",
+        "artist": "Tyler Jacobson",
+        "flavorText": "The flaming fist of Boros holds the promise of both protection and destruction in its grasp.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/ccbc2f22-4500-4c74-a1a2-51d8238c1d16.jpg?1783940125"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -1763,6 +1959,84 @@
     "colorIdentityOverride": [
         "BLUE",
         "GREEN"
+    ]
+}
+
+// Frontline Medic
+{
+    "name": "Frontline Medic",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "Battalion — Whenever this creature and at least two other creatures attack, creatures you control gain indestructible until end of turn.\nSacrifice this creature: Counter target spell with {X} in its mana cost unless its controller pays {3}.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Frontline Medic:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        {
+                            "type": "AttackerCountAtLeast",
+                            "n": 3
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "INDESTRUCTIBLE",
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Frontline Medic:2",
+                "cost": "CostSacrificeSelf",
+                "effect": {
+                    "type": "Counter",
+                    "condition": {
+                        "type": "CounterCondition.UnlessPaysMana",
+                        "cost": "{3}"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "HasXInManaCost"
+                                ]
+                            },
+                            "zone": "Stack"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "RARE",
+        "artist": "Willian Murai",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/711a5eca-531d-4b07-b7df-9b06bad491be.jpg?1783940143"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -2356,6 +2630,45 @@
     ]
 }
 
+// Hellraiser Goblin
+{
+    "name": "Hellraiser Goblin",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Goblin Berserker",
+    "oracleText": "Creatures you control have haste and attack each combat if able.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            {
+                "type": "MustAttack",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "rarity": "UNCOMMON",
+        "artist": "Karl Kopinski",
+        "flavorText": "Don't let him lead the soldiers, but by all means let him lead the way.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/156941e7-9169-47aa-b04d-37ca78c54f7c.jpg?1783940124"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // High Priest of Penance
 {
     "name": "High Priest of Penance",
@@ -2405,6 +2718,104 @@
     "colorIdentityOverride": [
         "BLACK",
         "WHITE"
+    ]
+}
+
+// Homing Lightning
+{
+    "name": "Homing Lightning",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Homing Lightning deals 4 damage to target creature and each other creature with the same name as that creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "IsFaceUp"
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "SharesNameWith",
+                                            "entity": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            }
+                                        }
+                                    ],
+                                    "statePredicates": [
+                                        "IsFaceUp"
+                                    ]
+                                },
+                                "excludeTarget": true
+                            }
+                        },
+                        "body": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 4
+                            },
+                            "target": "IterationEntity"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "flavorText": "\"I see countless worlds. What makes them think I can't find them in just one?\"\n—Ral Zarek",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d6535816-8fa4-4c8b-8677-ac80f769f528.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -2661,6 +3072,83 @@
     ]
 }
 
+// Legion Loyalist
+{
+    "name": "Legion Loyalist",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Goblin Soldier",
+    "oracleText": "Haste\nBattalion — Whenever this creature and at least two other creatures attack, creatures you control gain first strike and trample until end of turn and can't be blocked by creature tokens this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Legion Loyalist:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        {
+                            "type": "AttackerCountAtLeast",
+                            "n": 3
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "FIRST_STRIKE",
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantStaticAbility",
+                                "ability": {
+                                    "type": "CantBeBlockedBy",
+                                    "blockerFilter": {
+                                        "cardPredicates": [
+                                            "IsCreature",
+                                            "IsToken"
+                                        ]
+                                    }
+                                },
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "rarity": "RARE",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b47f639e-4635-4c26-bb2a-4925f0582c21.jpg?1783940123"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Lord of the Void
 {
     "name": "Lord of the Void",
@@ -2788,6 +3276,77 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Martial Glory
+{
+    "name": "Martial Glory",
+    "manaCost": "{R}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +3/+0 until end of turn.\nTarget creature gets +0/+3 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "artist": "Raymond Swanland",
+        "flavorText": "\"Yes, Boros tactics are unparalleled. But when your comrades are dying around you, inner strength must carry the day.\"\n—Gideon Jura, to Aurelia",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/3690c96c-70a3-45e5-84d7-5c82809a8f45.jpg?1783940105"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
     ]
 }
 
@@ -3979,6 +4538,73 @@
     ]
 }
 
+// Scorchwalker
+{
+    "name": "Scorchwalker",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Bloodrush — {1}{R}{R}, Discard this card: Target attacking creature gets +5/+1 until end of turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Scorchwalker:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{R}{R}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature attacking"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Bloodrush — {1}{R}{R}, Discard this card: Target attacking creature gets +5/+1 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "artist": "Anthony Palumbo",
+        "flavorText": "\"Borborygmos's elemental launched an assault, but the Izzet wards held and experiments continue.\"\n—Skyknight report on the Rubblebelt",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/14ac6bde-1fef-45f4-b505-80a66b03140a.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Shadow Alley Denizen
 {
     "name": "Shadow Alley Denizen",
@@ -4332,6 +4958,142 @@
     "colorIdentityOverride": [
         "BLUE",
         "GREEN"
+    ]
+}
+
+// Skinbrand Goblin
+{
+    "name": "Skinbrand Goblin",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Goblin Warrior",
+    "oracleText": "Bloodrush — {R}, Discard this card: Target attacking creature gets +2/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Skinbrand Goblin:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{R}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature attacking"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Bloodrush — {R}, Discard this card: Target attacking creature gets +2/+1 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "artist": "Marco Nelor",
+        "flavorText": "\"These Gruul skin-runes—discern whether their patterns evoke streets, leylines, or both. You have four days.\"\n—Niv-Mizzet, to his assistant",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fe4f9b6c-3ba9-4f4f-8135-f5236195e507.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Skullcrack
+{
+    "name": "Skullcrack",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Players can't gain life this turn. Damage can't be prevented this turn. Skullcrack deals 3 damage to target player or planeswalker.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "LockLifeGain",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "Each"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                "DamageCantBePreventedThisTurn",
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayerOrPlaneswalker",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "UNCOMMON",
+        "artist": "Dave Kendall",
+        "flavorText": "The lawmage's argument was clever and well reasoned, but Blunk's response proved irrefutable.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/8068a146-f6fe-46f3-a42e-822fbc3502e6.jpg?1783940122",
+        "rulings": [
+            {
+                "date": "2024-01-12",
+                "text": "Skullcrack targets only the player or planeswalker. If that player or planeswalker is an illegal target when Skullcrack tries to resolve, it won't resolve and none of its effects will happen."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "Spells and abilities that would cause a player to gain life or that would prevent damage still resolve, but the life-gain and damage-prevention parts have no effect."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "Effects that would replace gaining life with another effect won't apply because it's impossible for players to gain life."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "If an effect says to set a player's life total to a certain number and that number is higher than the player's current life total, that part of the effect won't do anything. (If the number is lower than the player's current life total, the effect will work as normal.)"
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -4876,6 +5638,90 @@
     ]
 }
 
+// Viashino Shanktail
+{
+    "name": "Viashino Shanktail",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Lizard Warrior",
+    "oracleText": "First strike\nBloodrush — {2}{R}, Discard this card: Target attacking creature gets +3/+1 and gains first strike until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Viashino Shanktail:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{R}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FIRST_STRIKE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature attacking"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Bloodrush — {2}{R}, Discard this card: Target attacking creature gets +3/+1 and gains first strike until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "rarity": "UNCOMMON",
+        "artist": "Kev Walker",
+        "flavorText": "The Slizt Clan's battle cry is an impressive display of fury, defiance, and spit.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f5dd72d5-548a-4b0e-95bb-e6b8d2de0fbe.jpg?1783940120"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Whispering Madness
 {
     "name": "Whispering Madness",
@@ -5039,6 +5885,49 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Wojek Halberdiers
+{
+    "name": "Wojek Halberdiers",
+    "manaCost": "{R}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Battalion — Whenever this creature and at least two other creatures attack, this creature gains first strike until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wojek Halberdiers:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        {
+                            "type": "AttackerCountAtLeast",
+                            "n": 3
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "208",
+        "artist": "Nic Klein",
+        "flavorText": "Tired of Boros interference, the Rakdos unleashed hellraiser goblins, hoping their corpses would weigh down the halberds.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/423f0870-dc1c-4cd8-b92c-6d5f92abbaec.jpg?1783940097"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
     ]
 }
 

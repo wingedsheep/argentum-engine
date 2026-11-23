@@ -1,0 +1,1 @@
+- #TBD The AI now reads Skullcrack's "players can't gain life this turn" lock as riding on the burn beside it, timing the card as burn

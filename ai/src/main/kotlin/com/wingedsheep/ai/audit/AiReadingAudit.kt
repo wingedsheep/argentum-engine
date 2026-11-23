@@ -39,6 +39,7 @@ import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.effects.MarkMustBlockEffect
 import com.wingedsheep.sdk.scripting.effects.ChangeColorToChosenEffect
 import com.wingedsheep.sdk.scripting.effects.DamageCantBePreventedThisTurnEffect
+import com.wingedsheep.sdk.scripting.effects.LockLifeGainEffect
 import com.wingedsheep.sdk.scripting.effects.MarkSpellExileWithCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AdaptEffect
 import com.wingedsheep.sdk.scripting.effects.ChangeColorEffect
@@ -866,7 +867,11 @@ object AiReadingAudit {
             // counterspell readers answer.
             val ridesOnCounter = expiring is CantCastSpellsEffect && expiring.target == EffectTarget.TargetController &&
                 leaves.any { it is CounterEffect }
-            if (isRead(leaf) || ridesOnRemoval || ridesOnCopy || spentWithCast || flashSpentWithCast || colourOnly || ridesOnGrant || ridesOnCounter) {
+            // "Players can't gain life this turn. … deals 3 damage to target player" (Skullcrack): the
+            // lock rides on the burn beside it — it keeps the damage from being gained back in the
+            // same turn, so when to cast it is the damage's question, which the damage readers answer.
+            val ridesOnDamage = expiring is LockLifeGainEffect && leaves.any { it is DealDamageEffect }
+            if (isRead(leaf) || ridesOnRemoval || ridesOnCopy || spentWithCast || flashSpentWithCast || colourOnly || ridesOnGrant || ridesOnCounter || ridesOnDamage) {
                 sink += Finding(
                     Check.TIMING, read = true, reason = "knows when to spend this until-end-of-turn effect",
                     effectType = label, step = step(leaves, leaf)?.index?.plus(1), stepText = stepText(leaf),

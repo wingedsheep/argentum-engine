@@ -2823,6 +2823,47 @@
     ]
 }
 
+// Ember Beast
+{
+    "name": "Ember Beast",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "This creature can't attack or block alone.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnlessCoAttacker",
+                "coAttackerFilter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ]
+                }
+            },
+            {
+                "type": "CantBlockUnlessCoBlocker",
+                "coBlockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "artist": "Wayne England",
+        "flavorText": "Spot one ember beast, attack.\nSpot a second, best fall back.\n—Dwarven saying",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/25080720-612f-40c0-8894-cda8e3e8afb8.jpg?1783945231"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Entomb
 {
     "name": "Entomb",

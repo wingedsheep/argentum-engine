@@ -1,0 +1,161 @@
+{
+  "Angelic Edict": [
+    "removal",
+    "creature-removal",
+    "enchantment-removal"
+  ],
+  "Arrows of Justice": [
+    "removal",
+    "creature-removal"
+  ],
+  "Aurelia's Fury": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Cinder Elemental": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Clan Defiance": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Death's Approach": [
+    "removal",
+    "creature-removal"
+  ],
+  "Devour Flesh": [
+    "removal",
+    "creature-removal"
+  ],
+  "Dimir Charm": [
+    "removal",
+    "creature-removal"
+  ],
+  "Domri Rade": [
+    "removal",
+    "creature-removal"
+  ],
+  "Executioner's Swing": [
+    "removal",
+    "creature-removal"
+  ],
+  "Firemane Avenger": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Five-Alarm Fire": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Foundry Champion": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Grisly Spectacle": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ground Assault": [
+    "removal",
+    "creature-removal"
+  ],
+  "Gruul Charm": [
+    "removal",
+    "creature-removal"
+  ],
+  "Gruul Ragebeast": [
+    "removal",
+    "creature-removal"
+  ],
+  "High Priest of Penance": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Homing Lightning": [
+    "removal",
+    "creature-removal"
+  ],
+  "Killing Glare": [
+    "removal",
+    "creature-removal"
+  ],
+  "Luminate Primordial": [
+    "removal",
+    "creature-removal"
+  ],
+  "Massive Raid": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Merciless Eviction": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Mugging": [
+    "removal",
+    "creature-removal"
+  ],
+  "Naturalize": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "One Thousand Lashes": [
+    "removal",
+    "creature-removal"
+  ],
+  "Orzhov Charm": [
+    "removal",
+    "creature-removal"
+  ],
+  "Pit Fight": [
+    "removal",
+    "creature-removal"
+  ],
+  "Rapid Hybridization": [
+    "removal",
+    "creature-removal"
+  ],
+  "Rust Scarab": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Shattering Blow": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Simic Manipulator": [
+    "removal",
+    "creature-removal"
+  ],
+  "Smite": [
+    "removal",
+    "creature-removal"
+  ],
+  "Soul Ransom": [
+    "removal",
+    "creature-removal"
+  ],
+  "Totally Lost": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ]
+}
