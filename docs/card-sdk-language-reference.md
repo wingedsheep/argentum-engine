@@ -14059,6 +14059,14 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
 - `MayForetellOnAnyTurn` — "Foretelling cards from your hand … can be done on any player's turn"
   (Cosmos Charger): while you control it, you may foretell any time you have priority, not only during
   your turn (CR 116.2h). The "costs {1} less" half is `ModifySpecialActionCost(FORETELL, …)`.
+- `MayLookAtLinkedExile` — "You may look at cards exiled with this creature" (**Bane Alley Broker**):
+  the permanent's **current controller** may look at the face-down cards in its linked-exile pile
+  (exile them with `move(…, faceDown = HIDDEN, linkToSource = true)`). A static of the permanent, so a
+  player who gains control starts looking; and once a player may look they keep the look for as long
+  as the card stays exiled (Broker ruling) — `LinkedExileLookLatchCheck` stamps a
+  `MayLookAtInExileComponent` for each controller, read by `Visibility`. Contrast
+  `move(lookableInExile = true)`, the one-shot "you may look at that card for as long as it remains
+  exiled" rider that grants only the exiling player.
 - `GrantMayCastFromLinkedExile(filter = Nonland, duringYourTurnOnly = false, additionalCost = null, ownedByYou = false, withoutPayingManaCost = false, oncePerTurn = false, maxManaValue = null, exiledThisTurnOnly = false, entersWithCounter = null, withAnyManaType = false)`
   — "you may cast cards exiled with this permanent" — reads the source's `LinkedExileComponent` (Rona,
   Disciple of Gix; Maralen, Fae Ascendant; Dawnhand Dissident). Casting spells from linked exile is

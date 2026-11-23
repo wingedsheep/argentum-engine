@@ -489,6 +489,153 @@
     ]
 }
 
+// Bane Alley Broker
+{
+    "name": "Bane Alley Broker",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "{T}: Draw a card, then exile a card from your hand face down.\nYou may look at cards exiled with this creature.\n{U}{B}, {T}: Return a card exiled with this creature to its owner's hand.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Bane Alley Broker:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "prompt": "Choose a card to exile face down"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true,
+                            "faceDown": "HIDDEN"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Draw a card, then exile a card from your hand face down."
+            },
+            {
+                "id": "Bane Alley Broker:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{U}{B}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Choose a card to return to its owner's hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Return a card exiled with this creature to its owner's hand."
+            }
+        ],
+        "staticAbilities": [
+            "MayLookAtLinkedExile"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "UNCOMMON",
+        "artist": "Clint Cearley",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/9/7996df7f-70f5-412c-9573-9512e4e131ac.jpg?1783940112",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "If Bane Alley Broker's first ability resolves when you have no cards in your hand, you'll draw a card and then exile it. You won't have the opportunity to cast that card (or do anything else with it) before exiling it."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "Once you are allowed to look at a face-down card in exile, you are allowed to look at that card as long as it's exiled. If you no longer control Bane Alley Broker when its last ability resolves, you can continue to look at the relevant cards in exile to choose one to return."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "Bane Alley Broker's second and third abilities apply to cards exiled with that specific Bane Alley Broker, not any other creature named Bane Alley Broker. You should keep cards exiled by different Bane Alley Brokers separate."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If Bane Alley Broker leaves the battlefield, the cards exiled with it will be exiled indefinitely. If it later returns to the battlefield, it will be a new object with no connection to the cards exiled with it in its previous existence. You won't be able to use the \"new\" Bane Alley Broker to return cards exiled with the \"old\" one."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "Even if not all players can look at the exiled cards, each card's owner is still known. It is advisable to keep cards owned by different players in distinct piles in case another player gains control of Bane Alley Broker and exiles one or more cards with it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Basilica Guards
 {
     "name": "Basilica Guards",

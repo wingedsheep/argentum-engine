@@ -28,6 +28,7 @@ class PermanentSbaModule(
         UnattachedAurasCheck(zones, cardRegistry),
         SoulbondPairingCheck(),
         SagaSacrificeCheck(zones, cardRegistry),
+        LinkedExileLookLatchCheck(cardRegistry),
         CommanderZoneChoiceCheck(decisionHandler),
     )
 }

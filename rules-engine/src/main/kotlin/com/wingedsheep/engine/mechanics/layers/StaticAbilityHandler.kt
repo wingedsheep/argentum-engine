@@ -1457,6 +1457,7 @@ class StaticAbilityHandler(
 
             // Visibility / information (ClientStateTransformer / DrawCardPrimitive):
             is LookAtFaceDownCreatures,
+            is com.wingedsheep.sdk.scripting.MayLookAtLinkedExile,
             is LookAtTopOfLibrary,
             is OpponentsPlayWithHandsRevealed,
             is com.wingedsheep.sdk.scripting.PlayersPlayWithHandsRevealed,

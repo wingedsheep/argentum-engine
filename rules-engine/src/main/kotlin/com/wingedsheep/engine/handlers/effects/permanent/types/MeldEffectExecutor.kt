@@ -84,7 +84,7 @@ class MeldEffectExecutor(
         )
         val combined = afterExile
             .removeFromZone(ZoneKey(partnerOwner, Zone.EXILE), partnerId)
-            .updateEntity(partnerId) { it.without<ExiledFromZoneComponent>() }
+            .updateEntity(partnerId) { it.without<ExiledFromZoneComponent>().without<com.wingedsheep.engine.state.components.identity.MayLookAtInExileComponent>() }
             .updateEntity(sourceId) { c ->
                 withFaceIntrinsicComponents(
                     c.with(meldedCard).with(MeldedComponent(partnerId = partnerId, hostFrontCard = hostFront)),

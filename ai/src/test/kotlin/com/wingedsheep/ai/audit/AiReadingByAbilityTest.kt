@@ -170,13 +170,15 @@ class AiReadingByAbilityTest : FunSpec({
         AiReadingAudit.audit(card("Portent Tracker")).map { it.key } shouldContain "intent: RemoveCountersEffect"
     }
 
-    test("a leaves-trigger returning what its permanent exiled needs no intent, but a return into a hand stays flagged") {
+    test("a leaves-trigger returning what its permanent exiled needs no intent, and a return of our own stashed card into hand is recursion") {
         val ring = AiReadingAudit.read(card("Oblivion Ring"))
         ring.readFully shouldBe true
         ring.abilities.filter { it.ability.kind == AbilityKind.TRIGGERED }
             .flatMap { it.findings }.filter { it.check == Check.INTENT }
             .any { it.reason.contains("needs no intent") } shouldBe true
-        AiReadingAudit.audit(card("Hoarding Dragon")).map { it.key } shouldBe listOf("intent: Pipeline(FromLinkedExile→hand)")
+        // Hoarding Dragon's pile is the artifact it searched out of our own library, so its return
+        // to "its owner's hand" is a recursion of our own card, read like Bane Alley Broker's.
+        AiReadingAudit.read(card("Hoarding Dragon")).readFully shouldBe true
     }
 
     test("a return to hand chosen among its controller's own permanents needs no intent, and a bounce that reaches others reads as removal") {

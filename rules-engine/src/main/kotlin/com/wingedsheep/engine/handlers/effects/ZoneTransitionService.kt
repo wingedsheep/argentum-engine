@@ -729,6 +729,14 @@ class ZoneTransitionService(
                     c.without<com.wingedsheep.engine.state.components.identity.ExiledFromZoneComponent>()
                 }
             }
+            // A look grant ("you may look at that card for as long as it remains exiled", or a
+            // latched "you may look at cards exiled with this") lasts only while the card stays
+            // exiled; the entity id is reused, so a later face-down exile must not inherit it
+            // (CR 400.7). The non-ZoneTransition exits above (cast from exile, linked-exile
+            // return, meld) strip it themselves; an exile → exile move is a new object too.
+            if (entityContainer != null && entityContainer.has<com.wingedsheep.engine.state.components.identity.MayLookAtInExileComponent>()) {
+                newState = newState.updateEntity(entityId) { c -> c.without<com.wingedsheep.engine.state.components.identity.MayLookAtInExileComponent>() }
+            }
             // A suspended card that leaves exile by any non-cast path (returned to hand,
             // shuffled in, exiled elsewhere) is no longer suspended (CR 702.62b). The cast
             // path is guarded separately: the countdown's intervening-if needs a time counter
