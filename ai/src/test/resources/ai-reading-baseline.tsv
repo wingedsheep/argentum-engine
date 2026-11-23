@@ -2678,6 +2678,7 @@ Call of the Conclave
 Call of the Death-Dweller
 Call of the Full Moon
 Call of the Herd
+Call of the Nightwing
 Call of the Ring
 Call the Bloodline
 Call the Cavalry
@@ -3464,6 +3465,7 @@ Codex Shredder
 Codie, Ravenous Codex
 Codie, Vociferous Codex
 Codsworth, Handy Helper
+Coerced Confession
 Coerced to Kill	polarity: Aura>ControlEnchantedPermanent; polarity: Aura>GrantKeyword; polarity: Aura>GrantSubtype; polarity: Aura>SetBasePowerToughnessStatic
 Coercion
 Coeurl
@@ -4789,6 +4791,7 @@ Dimensional Exile
 Dimensional Infiltrator
 Diminisher Witch
 Dimir Aqueduct
+Dimir Charm
 Dimir Cluestone
 Dimir Cutpurse
 Dimir Doppelganger
@@ -4797,6 +4800,7 @@ Dimir Guildmage
 Dimir House Guard
 Dimir Infiltrator
 Dimir Informant
+Dimir Keyrune
 Dimir Locket
 Dimir Machinations
 Dimir Signet
@@ -4807,6 +4811,7 @@ Dingus Egg
 Dinosaur Hunter
 Dinosaur Stampede
 Dinotomaton
+Dinrova Horror
 Dion, Bahamut's Dominant
 Dionus, Elvish Archdruid
 Diplomacy of the Wastes
@@ -5380,7 +5385,9 @@ Dusk Rose Reliquary
 Duskborne Skymarcher
 Duskdale Wurm
 Duskfang Mentor
+Duskmantle Guildmage
 Duskmantle Operative
+Duskmantle Seer
 Duskmantle, House of Shadow
 Duskmourn's Domination
 Duskrider Peregrine
@@ -10773,6 +10780,7 @@ Last Gasp
 Last Kiss
 Last Light of Durin's Day
 Last March of the Ents
+Last Thoughts
 Lasting Tarfire
 Lasyd Prowler
 Lat-Nam Adept
@@ -11872,6 +11880,7 @@ Mental Journey
 Mental Misstep
 Mental Modulation
 Mental Note
+Mental Vapors
 Mentor of the Meek
 Mentor's Guidance
 Mephitic Draught
@@ -11994,6 +12003,7 @@ Midnight Mangler
 Midnight Mayhem
 Midnight Oil
 Midnight Reaper
+Midnight Recovery
 Midnight Scavengers
 Midnight Snack
 Midnight Tilling
@@ -12919,6 +12929,7 @@ Nightsnare
 Nightsquad Commando
 Nightstalker Engine
 Nightveil Predator
+Nightveil Specter
 Nightveil Sprite
 Nightwhorl Hermit
 Nightwind Glider
@@ -13658,6 +13669,7 @@ Parallel Lives
 Parallel Thoughts
 Paralyze	intent: GatedEffect
 Paramecia Coloniex
+Paranoid Delusions
 Paranoid Parish-Blade
 Paranormal Analyst	intent: Pipeline(?→hand)
 Parapet Thrasher
@@ -14454,6 +14466,7 @@ Psychic Pickpocket
 Psychic Puppetry
 Psychic Purge
 Psychic Rebuttal
+Psychic Strike
 Psychic Symbiont
 Psychic Trance	intent: GrantActivatedAbilityToGroupEffect
 Psychic Transfer
@@ -20571,6 +20584,7 @@ Undercellar Myconid
 Undercity Dire Rat
 Undercity Eliminator
 Undercity Necrolisk
+Undercity Plague
 Undercity Scavenger
 Undercity Scrounger
 Undercity Sewers
