@@ -602,9 +602,7 @@ class ObservationBuilder(
                 }
             }
             is ChooseColorDecision -> {
-                val responses = decision.availableColors.map {
-                    ColorChosenResponse(decision.id, it)
-                }
+                val responses = decision.minimalAnswers()
                 val shape = DecisionShape(availableColors = decision.availableColors)
                 val view = baseView(decision, PendingDecisionKind.CHOOSE_COLOR, shape, structured = false)
                 view to ActionRegistry.ofDecisionResponses(responses)
@@ -772,7 +770,7 @@ class ObservationBuilder(
         is ModesChosenResponse -> response.selectedModes.joinToString(",") { idx ->
             (decision as? ChooseModeDecision)?.modes?.getOrNull(idx)?.text ?: idx.toString()
         }
-        is ColorChosenResponse -> response.color.name
+        is ColorChosenResponse -> response.colors.ifEmpty { listOf(response.color) }.joinToString(",") { it.name }
         is OptionChosenResponse ->
             (decision as? ChooseOptionDecision)?.options?.getOrNull(response.optionIndex)
                 ?: response.optionIndex.toString()

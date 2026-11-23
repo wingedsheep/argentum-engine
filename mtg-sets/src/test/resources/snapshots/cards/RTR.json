@@ -4756,6 +4756,73 @@
     ]
 }
 
+// Tablet of the Guilds
+{
+    "name": "Tablet of the Guilds",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "As this artifact enters, choose two colors.\nWhenever you cast a spell, if it's at least one of the chosen colors, you gain 1 life for each of the chosen colors it is.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tablet of the Guilds:1",
+                "trigger": "SpellCastEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.ChosenColorsOf",
+                    "body": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "TriggeringEntity",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "HasChosenColor"
+                                    ]
+                                }
+                            }
+                        },
+                        "then": {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    }
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "TriggeringEntity",
+                    "filter": {
+                        "cardPredicates": [
+                            "SharesChosenColorWithSource"
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever you cast a spell, if it's at least one of the chosen colors, you gain 1 life for each of the chosen colors it is."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "COLOR",
+                "colorCount": 2
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "235",
+        "rarity": "UNCOMMON",
+        "artist": "Nic Klein",
+        "flavorText": "It is rumored the Azorius paid an exorbitant sum to ensure its symbol would appear at the top.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6b006384-6fb6-4129-b1d2-7674d1141f8f.jpg?1783940323"
+    }
+}
+
 // Tavern Swindler
 {
     "name": "Tavern Swindler",

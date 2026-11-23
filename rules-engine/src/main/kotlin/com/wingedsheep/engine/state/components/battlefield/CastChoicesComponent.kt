@@ -22,6 +22,17 @@ sealed interface ChoiceValue {
     @Serializable
     data class ColorChoice(val color: Color) : ChoiceValue
 
+    /**
+     * Several distinct chosen colors, in WUBRG order — "choose two colors" (Tablet of the Guilds,
+     * `EntersWithChoice(COLOR, colorCount = 2)`). Never a single color: one is a [ColorChoice], so
+     * the "the chosen color" readers keep their one-color meaning. Read through [chosenColors].
+     */
+    @SerialName("ChoiceValue.Colors")
+    @Serializable
+    data class ColorsChoice(val colors: List<Color>) : ChoiceValue {
+        init { require(colors.size > 1) { "ColorsChoice holds two or more colors; one is a ColorChoice" } }
+    }
+
     /** A chosen string — creature type, basic land type, or named mode id. */
     @SerialName("ChoiceValue.Text")
     @Serializable
@@ -118,6 +129,25 @@ data class CastChoicesComponent(
 /** The color chosen as this object entered, or null. */
 fun ComponentContainer.chosenColor(): Color? =
     (get<CastChoicesComponent>()?.chosen?.get(ChoiceSlot.COLOR) as? ChoiceValue.ColorChoice)?.color
+
+/**
+ * Every color chosen as this object entered, in WUBRG order — one for a "choose a color" choice,
+ * several for "choose two colors" — or empty when none was recorded.
+ */
+fun ComponentContainer.chosenColors(): List<Color> =
+    when (val v = get<CastChoicesComponent>()?.chosen?.get(ChoiceSlot.COLOR)) {
+        is ChoiceValue.ColorChoice -> listOf(v.color)
+        is ChoiceValue.ColorsChoice -> v.colors
+        else -> emptyList()
+    }
+
+/**
+ * The [ChoiceValue] a color answer records: a single [ChoiceValue.ColorChoice], or a
+ * [ChoiceValue.ColorsChoice] (WUBRG order) when the answer named several colors.
+ */
+fun colorChoiceValue(color: Color, colors: List<Color>): ChoiceValue =
+    if (colors.size > 1) ChoiceValue.ColorsChoice(Color.entries.filter { it in colors })
+    else ChoiceValue.ColorChoice(color)
 
 /** The creature type chosen as this object entered, or null. */
 fun ComponentContainer.chosenCreatureType(): String? =

@@ -1219,6 +1219,14 @@ class DecisionResponder(
         decision: ChooseColorDecision,
         playerId: EntityId
     ): DecisionResponse {
+        if (decision.minColors > 1) {
+            // "Choose two colors" (Tablet of the Guilds): a one-color simulation can't answer it,
+            // and what the pick pays off is the colours this player casts — rank by own demand.
+            val weights = priors?.let {
+                it.colorWeights(state, playerId, it.polarityOf(state, decision.context.sourceId, ChoicePriors.Polarity.OWN))
+            }.orEmpty()
+            return decision.answerWith(decision.availableColors.sortedByDescending { weights[it] ?: 0.0 })
+        }
         priors?.let { priors ->
             // Most colour choices are invisible to a one-step simulation — the colour a land will
             // tap for, the colour a creature gains protection from — so every option ties and the

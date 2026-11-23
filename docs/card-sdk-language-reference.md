@@ -5196,6 +5196,9 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   - `ForEachColorOfEffect(source, effect)` / facade `Effects.ForEachColorOf(...)` →
     `IterationSpace.ColorsOf(source)` — per color of an entity, WUBRG order, bound via the
     chosen-color channel (see the choice section).
+  - facade `Effects.ForEachChosenColor(source = Self, effect)` → `IterationSpace.ChosenColorsOf(source)` —
+    per color `source` **chose as it entered** (`EntersWithChoice(COLOR, colorCount = 2)`), WUBRG order,
+    same chosen-color binding; reads the recorded choice, not the entity's own colors.
   - `ForEachCounterKindAmongEffect(filter, effect)` / facade `Effects.ForEachCounterKindAmong(...)` /
     pipeline step `forEachCounterKindAmong(filter) { … }` → `IterationSpace.CounterKindsAmong(filter)` —
     per **kind of counter** among the battlefield permanents matching a group filter (a kind counts
@@ -20145,7 +20148,12 @@ EntersWithChoice(
 
 **Other `ChoiceType`s** — `ChoiceType.COLOR` writes `ChosenColorComponent` (read by
 `GrantChosenColor`), and takes `excludedColors` for "choose a color other than red" (the Thriving lands — the
-`ChooseColorDecision` offers only the remaining colors and the validator rejects an excluded one),
+`ChooseColorDecision` offers only the remaining colors and the validator rejects an excluded one), and
+`colorCount` for "choose two colors" (Tablet of the Guilds: `EntersWithChoice(ChoiceType.COLOR, colorCount = 2)`
+— the `ChooseColorDecision` carries `minColors = maxColors = colorCount`, the answer names exactly that many
+distinct colors, and they are recorded together as a `ChoiceValue.ColorsChoice`; one-color readers such as
+`GrantChosenColor` see no single chosen color, while `Effects.ForEachChosenColor` walks them and
+`sharingChosenColorWithSource()` matches an object that is at least one of them),
 `ChoiceType.CREATURE_TYPE` writes `ChosenCreatureTypeComponent`,
 `ChoiceType.PLANESWALKER_TYPE` (CR 205.3j, options `Subtype.ALL_PLANESWALKER_TYPES`) writes
 `ChoiceSlot.PLANESWALKER_TYPE`, matched by `CardPredicate.HasChosenSubtype` / `withChosenSubtype()` and by a
@@ -20248,6 +20256,12 @@ staticAbility { ability = GrantLandwalkOfChosenType() }
   `Effects.ForEachColorOf(source, ForEachInGroupEffect(group, GrantProtectionFromChosenColor(Self)))`
   — and, when `source` is the about-to-leave permanent, place it before the exile/destroy step
   (`Composite(ForEachColorOf(…), Exile(…))`) so its colors are still readable (Éowyn, Fearless Knight).
+- `Effects.ForEachChosenColor(source = Self, effect)` — runs `effect` once per color `source` chose as
+  it entered (`IterationSpace.ChosenColorsOf`), each bound as the context's chosen color. With
+  `EntersWithChoice(COLOR, colorCount = 2)` it is "for each of the chosen colors": Tablet of the Guilds'
+  "you gain 1 life for each of the chosen colors it is" is
+  `ForEachChosenColor(effect = If(TriggeringSpellMatches(Any.withChosenColor()), GainLife(1)))`.
+  A single chosen color iterates once; no recorded choice iterates zero times.
 - `ChooseCreatureTypeEffect(...)` — pause for creature-type selection.
 - `Effects.NoteCreatureType(storeAs = "notedType", prompt?)` — "note a creature type that hasn't been noted for this <source>" (LTR — Long List of the Ents). Same decision shape as `ChooseOption(OptionType.CREATURE_TYPE)`, but the source's *current* `NotedCreatureTypesComponent.types` are excluded from the option list (so the player can't pick a duplicate), and on resolution the chosen type is appended to that component on the source AND stored in `chosenValues[storeAs]` for any downstream pipeline step. The component lives on the source permanent's container, so it disappears when the source leaves play (CR 400.7 — a permanent that changes zones becomes a new object with no memory of its previous existence). Use this whenever a card's text says "note … for this permanent"; use plain `ChooseOption(OptionType.CREATURE_TYPE)` when the choice is one-shot and doesn't need to accumulate.
 - `Effects.SecretlyChooseCreatureType(options = emptyList(), storeAs = "notedType", prompt?)` — "Then secretly choose Human, Merfolk, or Goblin." (MKM — A Killer Among Us). The hidden-information sibling of `NoteCreatureType`, and the same `NoteCreatureTypeEffect` under the hood with `secret = true`: the type is noted on the source permanent exactly as above, but `NotedCreatureTypesComponent.secretTo` records *who* chose it, and two things key off that — the client view shows the note only to that player (badged "Chosen (secret)"; spectators never see it), and only that player can pay `Costs.RevealNotedCreatureType` (§ costs). This is CR 702.106a-b's hidden agenda — the piece of paper kept with the object — applied to a permanent, so a change of control neither hands the new controller the answer nor lets them reveal it. Pass `options` to narrow the choice to a named handful; the source's already-noted types are excluded from whichever set that is. Leave `options` empty for "secretly choose a creature type".
@@ -20540,7 +20554,8 @@ The priority groups are (CR 616.1a–f):
   filter's source and its controller as "you". It can carry relational
   predicates: `GameObjectFilter.sharingColorWithRecipient()` (`CardPredicate.SharesColorWithRecipient`,
   Well-Laid Plans — "another creature that shares a color") and `sharingChosenColorWithSource()`
-  (`CardPredicate.SharesChosenColorWithSource`, reads the replacement source's `ChosenColorComponent`).
+  (`CardPredicate.SharesChosenColorWithSource`, reads the replacement source's chosen color — with
+  several chosen, "at least one of the chosen colors").
   `source = GameObjectFilter.Any.youControl()` matches any source (permanent, spell, ability) controlled by the
   replacement's controller — "a source you control" (Fated Firepower); the controller predicate falls
   back to a spell's caster and to a departed permanent's last-known controller, so a creature

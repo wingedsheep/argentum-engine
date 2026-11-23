@@ -126,7 +126,9 @@ internal class EntersWithChoicePrompt(
                         sourceName = cardComponent.name,
                         phase = DecisionPhase.RESOLUTION
                     ),
-                    availableColors = Color.entries.toSet() - choice.excludedColors
+                    availableColors = Color.entries.toSet() - choice.excludedColors,
+                    maxColors = choice.colorCount,
+                    minColors = choice.colorCount
                 )
             },
             answer = continuation
@@ -456,10 +458,13 @@ internal class EntersWithChoicePrompt(
  * other than red" when the choice excludes colors (the Thriving lands). The exclusion itself is
  * enforced by the decision's `availableColors`; this only keeps the prompt honest about it.
  */
-internal fun colorChoicePrompt(choice: EntersWithChoice): String =
-    if (choice.excludedColors.isEmpty()) {
-        "Choose a color"
+internal fun colorChoicePrompt(choice: EntersWithChoice): String {
+    val what = if (choice.colorCount == 1) "a color"
+        else "${com.wingedsheep.sdk.scripting.util.numberToWord(choice.colorCount)} colors"
+    return if (choice.excludedColors.isEmpty()) {
+        "Choose $what"
     } else {
-        "Choose a color other than " +
+        "Choose $what other than " +
             choice.excludedColors.sortedBy { it.ordinal }.joinToString(" or ") { it.displayName.lowercase() }
     }
+}

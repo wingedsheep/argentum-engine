@@ -2057,6 +2057,7 @@ class ConditionEvaluator(
         val cv = entity?.get<CastChoicesComponent>()?.chosen?.get(slot) ?: return false
         val actual = when (cv) {
             is ChoiceValue.ColorChoice -> cv.color.name
+            is ChoiceValue.ColorsChoice -> cv.colors.joinToString(",") { it.name }
             is ChoiceValue.TextChoice -> cv.text
             is ChoiceValue.NumberChoice -> cv.amount.toString()
             is ChoiceValue.EntityChoice -> cv.entityId.toString()
@@ -2495,7 +2496,7 @@ class ConditionEvaluator(
             isFaceDown = entity.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>(),
             name = card.name
         )
-        return predicates.matchesFilter(triggeringRecord, filter)
+        return predicates.matchesFilter(triggeringRecord, filter, PredicateContext.fromEffectContext(context), state)
     }
 
     private fun evaluateFirstSpellPaidWithTreasureMana(

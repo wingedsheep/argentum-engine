@@ -10,7 +10,6 @@ import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.ChooseReplacementDecision
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.legalTargetsFor
-import com.wingedsheep.engine.core.ColorChosenResponse
 import com.wingedsheep.engine.core.CombatResolutionDecision
 import com.wingedsheep.engine.core.DecisionResponse
 import com.wingedsheep.engine.core.DistributeDecision
@@ -346,7 +345,7 @@ class AlphaZeroSearch<T>(
             BatchYesNoResponse(d.id, choice = false, applyToAll = true),
         )
         is ChooseNumberDecision -> (d.minValue..d.maxValue).map { NumberChosenResponse(d.id, it) }
-        is ChooseColorDecision -> d.availableColors.map { ColorChosenResponse(d.id, it) }
+        is ChooseColorDecision -> d.minimalAnswers()
         is ChooseOptionDecision -> d.options.indices.map { OptionChosenResponse(d.id, it) }
         is ChooseModeDecision ->
             if (d.minModes == 1 && d.maxModes == 1)

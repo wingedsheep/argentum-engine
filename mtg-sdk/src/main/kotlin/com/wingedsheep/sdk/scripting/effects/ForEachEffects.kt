@@ -120,6 +120,18 @@ sealed interface IterationSpace {
     data class ColorsOf(val source: EffectTarget.SingleEntity) : IterationSpace
 
     /**
+     * Iterate the colors a referenced permanent **chose as it entered** — "for each of the chosen
+     * colors …" (Tablet of the Guilds' `EntersWithChoice(COLOR, colorCount = 2)`) — in canonical
+     * WUBRG order, exposing the current color through the same chosen-color context as [ColorsOf],
+     * so `CardPredicate.HasChosenColor` and the per-color atoms read it inside the body. Unlike
+     * [ColorsOf] it reads the recorded choice, not the entity's own colors (a colorless artifact
+     * still chose two); a single chosen color iterates once, and no choice iterates zero times.
+     */
+    @SerialName("IterationSpace.ChosenColorsOf")
+    @Serializable
+    data class ChosenColorsOf(val source: EffectTarget.SingleEntity = EffectTarget.Self) : IterationSpace
+
+    /**
      * Iterate each **kind of counter** among the battlefield permanents matching [filter] —
      * "for each kind of counter among creatures you control, put a counter of that kind on …"
      * (Exotic Pets). A kind counts once however many matching permanents carry it, and only
@@ -244,6 +256,7 @@ data class ForEachEffect(
             is IterationSpace.Collection -> "For each permanent in ${space.collection}, ${bodyClauses()}"
             is IterationSpace.Group -> renderGroupDescription(text(body), space.filter, space.noRegenerate)
             is IterationSpace.ColorsOf -> "for each color of ${space.source.description}, ${text(body)}"
+            is IterationSpace.ChosenColorsOf -> "for each of the chosen colors, ${text(body)}"
             is IterationSpace.CounterKindsAmong ->
                 "For each kind of counter among ${space.filter.description.removePrefix("all ").trimStart()}, ${bodyClauses()}"
             is IterationSpace.CounterKindsOn ->

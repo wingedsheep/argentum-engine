@@ -134,7 +134,8 @@ class SubmitDecisionHandler(
             }
 
             pending is ChooseColorDecision && response is ColorChosenResponse -> {
-                "${sourcePrefix}Chose ${response.color.name.lowercase()}"
+                val named = response.colors.ifEmpty { listOf(response.color) }
+                "${sourcePrefix}Chose ${named.joinToString(" and ") { it.name.lowercase() }}"
             }
 
             pending is ChooseModeDecision && response is ModesChosenResponse -> {

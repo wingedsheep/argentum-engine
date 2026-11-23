@@ -19,7 +19,6 @@ import com.wingedsheep.engine.core.ChooseReplacementDecision
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.constrainedTargetSelection
 import com.wingedsheep.engine.core.legalTargetsFor
-import com.wingedsheep.engine.core.ColorChosenResponse
 import com.wingedsheep.engine.core.CombatResolutionDecision
 import com.wingedsheep.engine.core.DamageAssignmentResponse
 import com.wingedsheep.engine.core.DecisionResponse
@@ -147,7 +146,7 @@ class FastDecisionResponder(private val intents: IntentCatalog = IntentCatalog.N
             }
 
             is ChooseColorDecision ->
-                ColorChosenResponse(decision.id, decision.availableColors.first())
+                decision.answerWith(emptyList())
 
             // The minimum. A number decision is as often "how much do you pay" as "how much do you
             // get", and the low end is the one that cannot make a line illegal.

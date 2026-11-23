@@ -15,7 +15,7 @@ internal class JevDecisions(private val q: JevChoices, private val label: (Entit
             q.pick(d.prompt, listOf(true, false)) { if (it) d.yesText else d.noText }, applyToAll = false)
         is ChooseOptionDecision -> OptionChosenResponse(d.id, q.pick(d.prompt, d.options.indices.toList()) { d.options[it] })
         is ChooseNumberDecision -> NumberChosenResponse(d.id, q.number(d.prompt, d.minValue, d.maxValue))
-        is ChooseColorDecision -> ColorChosenResponse(d.id, q.pick(d.prompt, d.availableColors.toList()))
+        is ChooseColorDecision -> d.answerWith(listOf(q.pick(d.prompt, d.availableColors.toList())))
         is ChooseModeDecision -> ModesChosenResponse(d.id,
             q.select(d.prompt, d.modes.filter { it.available }, d.minModes, d.maxModes) { it.text }.map { it.index })
         is SelectCardsDecision -> if (d.selectionLimits != null) {
