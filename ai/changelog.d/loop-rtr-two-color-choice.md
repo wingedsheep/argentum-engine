@@ -1,1 +1,1 @@
-- #TBD Answers "choose two colors" (Tablet of the Guilds) with exactly two colors, ranked by the colours its own deck still needs to cast.
+- #4849 Answers "choose two colors" (Tablet of the Guilds) with exactly two colors, ranked by the colours its own deck still needs to cast.
