@@ -74,6 +74,7 @@ import com.wingedsheep.sdk.scripting.UntapLimitPerStep
 import com.wingedsheep.sdk.scripting.GrantFlashToSpellType
 import com.wingedsheep.sdk.scripting.UntapDuringOtherUntapSteps
 import com.wingedsheep.sdk.scripting.UntapFilteredDuringOtherUntapSteps
+import com.wingedsheep.sdk.scripting.UntapSelfDuringOtherUntapSteps
 import com.wingedsheep.sdk.scripting.GrantChosenSubtype
 import com.wingedsheep.sdk.scripting.SuppressZoneChangeTriggers
 import com.wingedsheep.sdk.scripting.LookAtFaceDownCreatures
@@ -4124,6 +4125,12 @@ object CardIntentAnalyzer {
             if (filterMentions(static.filter, CardPredicate.IsCreature)) add(IntentTag.COMBAT_ENHANCEMENT)
             if (!untapsCreaturesOnly(static.filter)) add(IntentTag.OFF_TURN_PLAY)
         }
+        // "Untap this permanent during each other player's untap step" (Bender's Waterskin,
+        // Endbringer) and the same granted to an enchanted land (Urban Burgeoning): the one
+        // permanent's tap — mana or an ability — is ready again on every opponent's turn.
+        is UntapSelfDuringOtherUntapSteps -> setOf(IntentTag.OFF_TURN_PLAY)
+        is com.wingedsheep.sdk.scripting.GrantStaticAbility ->
+            if (static.ability is UntapSelfDuringOtherUntapSteps) setOf(IntentTag.OFF_TURN_PLAY) else emptySet()
         // "You may cast creature spells as though they had flash" (Prophet of Kruphix, Vedalken
         // Orrery): a card held up and cast on the opponent's turn. A grant to every player (Quick
         // Sliver's "any player may cast Sliver spells …") is as much theirs, so reads as no plan.

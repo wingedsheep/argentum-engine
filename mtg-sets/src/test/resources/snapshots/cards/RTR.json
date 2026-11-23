@@ -5052,6 +5052,33 @@
     ]
 }
 
+// Urban Burgeoning
+{
+    "name": "Urban Burgeoning",
+    "manaCost": "{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nEnchanted land has \"Untap this land during each other player's untap step.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantStaticAbility",
+                "ability": "UntapSelfDuringOtherUntapSteps"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "artist": "Nic Klein",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/393c230f-5bc3-4b71-b5ac-81d5ce227df5.jpg?1783940346"
+    }
+}
+
 // Utvara Hellkite
 {
     "name": "Utvara Hellkite",

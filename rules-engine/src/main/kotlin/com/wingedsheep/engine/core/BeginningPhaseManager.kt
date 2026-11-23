@@ -294,9 +294,13 @@ class BeginningPhaseManager(
                         is UntapDuringOtherUntapSteps ->
                             if (actsInStepOf(newState, ability.duringStepsOf, playerId, activePlayer)) untapAll = true
                         is UntapFilteredDuringOtherUntapSteps -> filteredUntapFilters.add(ability.filter)
-                        is UntapSelfDuringOtherUntapSteps -> selfUntapIds.add(permanentId)
                         else -> {}
                     }
+                }
+                // Read off projected statics (not the printed script), so one granted by an Aura
+                // (Urban Burgeoning's enchanted land) counts and one lost with all abilities doesn't.
+                if (projectedForSeedborn.getStaticAbilities(permanentId).any { it is UntapSelfDuringOtherUntapSteps }) {
+                    selfUntapIds.add(permanentId)
                 }
             }
             // An emblem's own "Untap all permanents you control during each opponent's untap step"
