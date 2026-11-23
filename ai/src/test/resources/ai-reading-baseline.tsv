@@ -2151,6 +2151,7 @@ Bomat Bazaar Barge
 Bomat Courier
 Bombadil's Song
 Bombard
+Bomber Corps
 Bombur, Gentle Dreamer
 Bond of Discipline
 Bond of Flourishing
@@ -2234,6 +2235,7 @@ Boros Battleshaper
 Boros Challenger
 Boros Charm
 Boros Cluestone
+Boros Elite
 Boros Fury-Shield
 Boros Garrison
 Boros Guildgate
@@ -2666,7 +2668,7 @@ Caligo Skin-Witch
 Calix, Destiny's Hand	polarity: MoveUntilSourceLeavesEffect
 Calix, Guided by Fate
 Call Damage Control
-Call In a Professional	timing: LockLifeGainEffect
+Call In a Professional
 Call a Surprise Witness
 Call for Unity
 Call of the Conclave
@@ -4217,6 +4219,7 @@ Daring Leap
 Daring Mechanic
 Daring Piracy
 Daring Saboteur
+Daring Skyjek
 Daring Sleuth
 Daring Thief
 Daring Thunder-Thief
@@ -5740,6 +5743,7 @@ Emancipation Angel
 Embalmed Ascendant
 Embalmed Brawler
 Embalmer's Tools
+Ember Beast
 Ember Hauler
 Ember Island Production
 Ember Shot
@@ -6706,6 +6710,7 @@ Firecannon Blast
 Firedrinker Satyr
 Firefiend Elemental
 Firefist Adept
+Firefist Striker
 Firefly
 Fireforger's Puzzleknot
 Fireglass Mentor
@@ -7154,6 +7159,7 @@ Frontier Seeker
 Frontier Siege
 Frontline Devastator
 Frontline Heroism
+Frontline Medic
 Frontline Rebel
 Frontline Rush
 Frontline Strategist
@@ -8760,6 +8766,7 @@ Hellkite Overlord
 Hellkite Punisher
 Hellkite Tyrant
 Hellkite Whelp
+Hellraiser Goblin
 Hellspur Brute
 Hellspur Posse Boss
 Helm of Chatzuk	intent: GrantKeywordEffect; polarity: GrantKeywordEffect
@@ -8990,6 +8997,7 @@ Homarid Warrior
 Homesickness
 Homestead Courage
 Homicide Investigator
+Homing Lightning
 Homunculus Horde
 Honden of Cleansing Fire
 Honden of Infinite Rage
@@ -10843,6 +10851,7 @@ Legion Extruder
 Legion Guildmage
 Legion Leadership
 Legion Lieutenant
+Legion Loyalist
 Legion Warboss
 Legion's End
 Legion's Initiative
@@ -11655,6 +11664,7 @@ Marshaling the Troops
 Marshals' Pathcruiser
 Marshmist Titan
 Martial Coup
+Martial Glory
 Martial Impetus
 Martyr for the Cause
 Martyr of Dusk
@@ -16280,6 +16290,7 @@ Scorching Shot
 Scorching Spear
 Scorching Winds
 Scorchmark
+Scorchwalker
 Scoria Elemental
 Scoria Wurm	intent: FlipCoinEffect
 Scorn Effigy
@@ -17233,6 +17244,7 @@ Skewer the Critics
 Skilled Animator
 Skilled Battlecarver
 Skin Invasion
+Skinbrand Goblin
 Skinrender
 Skinthinner
 Skirge Familiar
@@ -17278,6 +17290,7 @@ Skull of Orm
 Skull of Ramos
 Skullcap Snail
 Skullclamp
+Skullcrack
 Skullknocker Ogre
 Skullport Merchant
 Skullslither Worm
@@ -21004,6 +21017,7 @@ Viashino Lashclaw
 Viashino Pyromancer
 Viashino Runner
 Viashino Sandscout
+Viashino Shanktail
 Viashino Skeleton
 Viashino Slasher
 Viashino Slaughtermaster
@@ -22014,6 +22028,7 @@ Woebringer Demon
 Wojek Apothecary
 Wojek Bodyguard
 Wojek Embermage
+Wojek Halberdiers
 Wojek Investigator
 Wojek Siren
 Wolf Pack
