@@ -136,6 +136,7 @@ Adanto Vanguard
 Adaptive Automaton
 Adaptive Gemguard
 Adaptive Shimmerer
+Adaptive Snapjaw
 Adaptive Sporesinger
 Adarkar Sentinel
 Adarkar Wastes
@@ -480,6 +481,7 @@ Alms Beast
 Alms of the Vein
 Aloe Alchemist
 Along the Crooked Way
+Alpha Authority
 Alpha Deathclaw
 Alpha Kavu	timing: ModifyStatsEffect
 Alpha Myr
@@ -1749,8 +1751,10 @@ Biomathematician
 Biomechan Engineer
 Biorganic Carapace
 Biorhythm
+Bioshift
 Biosynthic Burst
 Biotech Specialist
+Biovisionary
 Birchlore Rangers
 Bird Admirer
 Bird Maiden
@@ -2618,7 +2622,7 @@ Buy Your Silence
 Buzz Bots
 Buzzard-Wasp Colony
 By Force
-By Invitation Only	intent: ChooseNumberThenEffect
+By Invitation Only
 Bygone Bishop
 Bygone Colossus
 Byrke, Long Ear of the Law
@@ -3373,6 +3377,7 @@ Cliffside Lookout
 Clifftop Lookout
 Clifftop Retreat
 Cling to Dust
+Clinging Anemones
 Clinging Darkness
 Clinquant Skymage
 Clip Wings
@@ -3386,8 +3391,8 @@ Cloak of the Bat
 Cloaked Cadet
 Cloaked Siren
 Clockspinning
-Clockwork Avian	intent: ChooseNumberThenEffect
-Clockwork Beast	intent: ChooseNumberThenEffect
+Clockwork Avian
+Clockwork Beast
 Clockwork Beetle
 Clockwork Condor
 Clockwork Dragon
@@ -3420,6 +3425,7 @@ Cloudbound Moogle
 Cloudchaser Eagle
 Cloudcrest Lake
 Cloudcrown Oak
+Cloudfin Raptor
 Cloudform
 Cloudgoat Ranger
 Cloudheath Drake
@@ -3921,6 +3927,7 @@ Crippling Chill
 Crippling Fear
 Critical Hit
 Croaking Counterpart
+Crocanura
 Crocodile of the Crossing
 Crook of Condemnation
 Crookclaw Elder
@@ -5007,6 +5014,7 @@ Dominion Assault Force
 Dominion Infiltration
 Dominion Saboteur
 Dominion Supervisor
+Domri Rade
 Domri's Ambush
 Domri's Nodorog
 Domri, Anarch of Bolas
@@ -6182,7 +6190,7 @@ Expedition Raptor
 Expedition Skulker
 Expel
 Expel from Orazca
-Expel the Interlopers	intent: ChooseNumberThenEffect
+Expel the Interlopers
 Expel the Unworthy
 Expendable Lackey
 Expendable Troops
@@ -8952,6 +8960,7 @@ Hillcomber Giant
 Hinata, Dawn-Crowned
 Hinder
 Hindering Touch
+Hindervines
 Hinterland Drake
 Hinterland Harbor
 Hinterland Logger
@@ -12093,7 +12102,7 @@ Mind into Matter
 Mind's Desire
 Mind's Dilation
 Mind's Eye
-Mindblaze	intent: ChooseNumberThenEffect; polarity: ChooseNumberThenEffect
+Mindblaze
 Mindbreak Trap	intent: ForEach>ExileTargetSpellEffect
 Mindcrank
 Mindeye Drake
@@ -13457,6 +13466,7 @@ Order of the White Shield
 Ordered Migration
 Ordinary Bear
 Ordruun Commando
+Ordruun Veteran
 Ore Gorger
 Ore-Scale Guardian
 Oread of Mountain's Blaze
@@ -14261,6 +14271,7 @@ Predation Steward
 Predator Dragon
 Predator Ooze
 Predator's Howl
+Predator's Rapport
 Predator's Strike
 Predator, Flagship
 Predatory Nightstalker
@@ -16423,7 +16434,7 @@ Scroll of the Masters
 Scrollshift
 Scrounge for Eternity
 Scrounger of Souls
-Scrounging Bandar	intent: ChooseNumberThenEffect; polarity: ChooseNumberThenEffect
+Scrounging Bandar
 Scrounging Skyray
 Scrubland
 Scryb Ranger
@@ -16692,6 +16703,7 @@ Seraphic Steed
 Serendib Djinn
 Serendib Efreet
 Serene Heart
+Serene Remembrance
 Serene Steward
 Serene Sunset	timing: ForEach>PreventDamageEffect
 Sergeant-at-Arms
@@ -16835,7 +16847,7 @@ Shambling Suit
 Shambling Vent
 Shang-Chi, Master of Kung Fu
 Shanid, Sleepers' Scourge
-Shanna, Purifying Blade	intent: ChooseNumberThenEffect
+Shanna, Purifying Blade
 Shanna, Sisay's Legacy
 Shanodin Dryads
 Shantotto, Tactician Magician
@@ -17376,6 +17388,7 @@ Sky-Eel School
 Skybeast Tracker
 Skybind
 Skyblade of the Legion
+Skyblinder Staff
 Skybox Ferry
 Skybridge Towers
 Skycat Sovereign
@@ -17977,6 +17990,7 @@ Spire Mangler
 Spire Mechcycle
 Spire Owl
 Spire Patrol
+Spire Tracer
 Spire Winder
 Spire of Industry
 Spirebluff Canal
@@ -19328,7 +19342,7 @@ Test of Loyalty
 Test of Priorities
 Test of Talents
 Testament Bearer
-Tester of the Tangential	intent: SelectTargetEffect
+Tester of the Tangential
 Tether Technician
 Tethermage's Advantage
 Tethmos High Priest
@@ -21277,7 +21291,7 @@ Voice of the Provinces
 Voice of the Vermin
 Voice of the Woods
 Voiceless Spirit
-Void	intent: ChooseNumberThenEffect; polarity: ChooseNumberThenEffect
+Void
 Void Attendant
 Void Beckoner
 Void Extrapolator
@@ -21622,6 +21636,7 @@ Wasteland
 Wasteland Raider
 Wasteland Scorpion
 Wasteland Strangler
+Wasteland Viper
 Wastescape Battlemage
 Wastewood Verge
 Watcher Sliver
@@ -21767,7 +21782,7 @@ Welding Sparks
 Welkin Guide
 Welkin Tern
 Well Rested
-Well of Lost Dreams	intent: ChooseNumberThenEffect
+Well of Lost Dreams
 Well-Laid Plans
 Well-Worn Spatula
 Wellgabber Apothecary
