@@ -4089,6 +4089,42 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  GTC: {
+    setCode: 'GTC',
+    setName: 'Gatecrash',
+    archetypes: [
+      {
+        name: 'Boros Battalion',
+        colors: ['R', 'W'],
+        keyCard: 'Ordruun Veteran',
+        description: "Curve out with cheap soldiers and attack with three or more creatures every turn so battalion triggers fire, backed by burn and combat tricks. An aggressive deck that wins before the opponent stabilises.",
+      },
+      {
+        name: 'Dimir Cipher',
+        colors: ['U', 'B'],
+        keyCard: 'Call of the Nightwing',
+        description: "Encode cipher spells on evasive creatures so every unblocked hit recasts them, while removal and milling grind the opponent down. A tempo-control deck that turns one flyer into a repeating engine.",
+      },
+      {
+        name: 'Gruul Bloodrush',
+        colors: ['R', 'G'],
+        keyCard: 'Ghor-Clan Rampager',
+        description: "Play big tramplers and discard bloodrush creatures straight from hand to pump attackers at instant speed. A stompy beatdown deck that never wastes a card on a bad block.",
+      },
+      {
+        name: 'Orzhov Extort',
+        colors: ['W', 'B'],
+        keyCard: 'Vizkopa Confessor',
+        description: "Extort on every spell drains the opponent a point at a time, while flyers, lifelink and removal hold the board. A grindy midrange deck that wins the long game on life totals.",
+      },
+      {
+        name: 'Simic Evolve',
+        colors: ['G', 'U'],
+        keyCard: 'Elusive Krasis',
+        description: "Cast creatures in rising size order so evolve keeps growing the team with +1/+1 counters, then cash those counters in for value. A midrange counters deck whose board outgrows the opponent's.",
+      },
+    ],
+  },
   DGM: {
     setCode: 'DGM',
     setName: "Dragon's Maze",

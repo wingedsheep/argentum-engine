@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-gtc',
+    date: '2026-11-23',
+    kind: 'set',
+    setCode: 'GTC',
+    title: 'Gatecrash is complete',
+    body:
+      "Five more Ravnican guilds storm the city: Boros battalion swarms, Dimir cipher spells that recast on every hit, Gruul bloodrush pump straight from hand, Orzhov extort draining a point per spell and Simic evolve creatures growing with each bigger arrival. Drafts settle into five sharply different two-colour decks, with Guildgates to stretch into a third colour.",
+    tryIf: 'guild identity, aggressive two-colour decks and creatures that grow',
+  },
+  {
     id: 'set-m14',
     date: '2026-11-22',
     kind: 'set',
