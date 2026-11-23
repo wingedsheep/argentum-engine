@@ -285,7 +285,8 @@ class Visibility(
      *
      * - **A linked-exile look static** — [com.wingedsheep.sdk.scripting.MayLookAtLinkedExile]
      *   (Bane Alley Broker: "You may look at cards exiled with this creature"). Read off the
-     *   permanent rather than stamped on the card, so the current controller of that permanent may look; [LinkedExileLook]'s latch keeps
+     *   permanent rather than stamped on the card, so the current controller of that permanent may look;
+     *   [com.wingedsheep.engine.mechanics.sba.permanent.LinkedExileLookLatchCheck] keeps
      *   the look for a player who loses control (Broker ruling: once allowed to look at a face-down
      *   exiled card, you may keep looking for as long as it stays exiled).
      *

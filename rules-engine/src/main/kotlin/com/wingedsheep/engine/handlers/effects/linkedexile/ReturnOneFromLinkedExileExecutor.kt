@@ -153,6 +153,7 @@ class ReturnOneFromLinkedExileExecutor(
                 val moved = state.removeFromZone(currentZone, cardId)
                     .updateEntity(cardId) {
                         it.without<com.wingedsheep.engine.state.components.identity.ExiledFromZoneComponent>()
+                            .without<com.wingedsheep.engine.state.components.identity.MayLookAtInExileComponent>()
                     }
                     .addToZone(com.wingedsheep.engine.state.ZoneKey(ownerId, redirect), cardId)
                 return EffectResult.success(moved, listOf(
@@ -173,6 +174,7 @@ class ReturnOneFromLinkedExileExecutor(
             // path reuses the entity id — drop it so the resulting permanent doesn't carry one.
             newState = newState.updateEntity(cardId) {
                 it.without<com.wingedsheep.engine.state.components.identity.ExiledFromZoneComponent>()
+                    .without<com.wingedsheep.engine.state.components.identity.MayLookAtInExileComponent>()
             }
             newState = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy
                 .applyBeforeEntry(newState, cardId, registry, evaluator)

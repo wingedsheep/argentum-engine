@@ -3,8 +3,11 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.MayLookAtInExileComponent
+import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -69,6 +72,9 @@ class BaneAlleyBrokerScenarioTest : ScenarioTestBase() {
 
             game.isInHand(1, "Lightning Bolt") shouldBe true
             game.state.getExile(game.player1Id).isEmpty() shouldBe true
+            withClue("the look ended with the exile: a later face-down exile of this card must not inherit it") {
+                game.state.getEntity(exiledBolt)!!.has<MayLookAtInExileComponent>() shouldBe false
+            }
         }
 
         test("a player who gains control may look, and keeps looking after control reverts") {
@@ -106,11 +112,13 @@ class BaneAlleyBrokerScenarioTest : ScenarioTestBase() {
             }
         }
 
-        test("the return ability sends a card to its owner's hand, not the activating player's") {
+        test("the return ability offers only this Broker's pile and sends the card to its owner's hand") {
             val game = scenario()
                 .withPlayers("Alice", "Bob")
                 .withCardOnBattlefield(1, "Bane Alley Broker")
                 .withCardInExile(2, "Hill Giant")
+                .withCardInExile(2, "Grizzly Bears")
+                .withCardInExile(2, "Lightning Bolt")
                 .withLandsOnBattlefield(1, "Island", 1)
                 .withLandsOnBattlefield(1, "Swamp", 1)
                 .withActivePlayer(1)
@@ -118,17 +126,66 @@ class BaneAlleyBrokerScenarioTest : ScenarioTestBase() {
                 .build()
             val broker = game.findPermanent("Bane Alley Broker")!!
             val giant = game.exiled(2, "Hill Giant")
-            // Bob's Giant was exiled with the Broker while Bob controlled it.
+            val bears = game.exiled(2, "Grizzly Bears")
+            // Bob's Giant and Bears were exiled with the Broker while Bob controlled it; his Bolt
+            // was exiled by something else.
             game.state = game.state
                 .updateEntity(giant) { it.with(FaceDownComponent) }
-                .updateEntity(broker) { it.with(LinkedExileComponent(listOf(giant))) }
+                .updateEntity(bears) { it.with(FaceDownComponent) }
+                .updateEntity(broker) { it.with(LinkedExileComponent(listOf(giant, bears))) }
 
             game.execute(ActivateAbility(game.player1Id, broker, returnCard)).error shouldBe null
             game.resolveStack()
-            if (game.hasPendingDecision()) game.selectCards(listOf(giant))
+            val decision = game.state.pendingDecision as SelectCardsDecision
+            withClue("only the cards exiled with this Broker are offered") {
+                decision.options.toSet() shouldBe setOf(giant, bears)
+            }
+            game.selectCards(listOf(giant))
 
             game.isInHand(2, "Hill Giant") shouldBe true
             game.isInHand(1, "Hill Giant") shouldBe false
+            game.isInExile(2, "Lightning Bolt") shouldBe true
+        }
+
+        test("a Broker that leaves and returns is a new object: its pile stays exiled and out of reach") {
+            val game = scenario()
+                .withPlayers("Alice", "Bob")
+                .withCardOnBattlefield(1, "Bane Alley Broker")
+                .withCardInExile(1, "Lightning Bolt")
+                .withCardInHand(1, "Cloudshift")
+                .withLandsOnBattlefield(1, "Plains", 1)
+                .withLandsOnBattlefield(1, "Island", 1)
+                .withLandsOnBattlefield(1, "Swamp", 1)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val broker = game.findPermanent("Bane Alley Broker")!!
+            val bolt = game.exiled(1, "Lightning Bolt")
+            game.state = game.state
+                .updateEntity(bolt) { it.with(FaceDownComponent) }
+                .updateEntity(broker) { it.with(LinkedExileComponent(listOf(bolt))) }
+            game.exileNames(1) shouldBe listOf("Lightning Bolt")
+
+            game.castSpell(1, "Cloudshift", broker).error shouldBe null
+            game.resolveStack()
+
+            val returned = game.findPermanent("Bane Alley Broker")!!
+            withClue("the returned Broker has no pile (CR 400.7)") {
+                game.state.getEntity(returned)?.get<LinkedExileComponent>()?.exiledIds.orEmpty().isEmpty() shouldBe true
+            }
+            withClue("Alice keeps the look she was given; Bob never had one") {
+                game.exileNames(1) shouldBe listOf("Lightning Bolt")
+                game.exileNames(2).contains("Lightning Bolt") shouldBe false
+            }
+
+            // Skip to a later turn: the returned Broker is summoning sick.
+            game.state = game.state.updateEntity(returned) { it.without<TappedComponent>().without<SummoningSicknessComponent>() }
+            game.execute(ActivateAbility(game.player1Id, returned, returnCard)).error shouldBe null
+            game.resolveStack()
+            withClue("the new Broker's return finds nothing to return") {
+                game.hasPendingDecision() shouldBe false
+                game.isInExile(1, "Lightning Bolt") shouldBe true
+            }
         }
     }
 }

@@ -906,14 +906,14 @@ data object LookAtFaceDownCreatures : StaticAbility {
 }
 
 /**
- * "You may look at cards exiled with this creature." — the source's **current controller** may
- * look at the face-down cards in its linked-exile pile (`LinkedExileComponent`) for as long as the
- * source is on the battlefield.
+ * "You may look at cards exiled with this creature." — whoever controls the source may look at the
+ * face-down cards in its linked-exile pile (`LinkedExileComponent`), and once a player has been
+ * allowed to look at such a card they keep the look for as long as it stays exiled, even after they
+ * lose control of the source or it leaves the battlefield (Bane Alley Broker ruling, 2013-01-24).
  *
- * Distinct from `MoveCollectionEffect.lookableInExile`, which stamps a look grant on each card for
- * the player who exiled it and lasts as long as the card stays exiled: this is a static ability of
- * the permanent, so it follows a control change (the new controller looks, the old one no longer
- * does) and ends when the permanent leaves the battlefield. Used for Bane Alley Broker.
+ * Distinct from `MoveCollectionEffect.lookableInExile`, a one-shot stamp for the player who exiled
+ * the card at move time: this is a static of the permanent, so a player who gains control of it
+ * starts looking at its whole pile. Used for Bane Alley Broker.
  */
 @SerialName("MayLookAtLinkedExile")
 @Serializable

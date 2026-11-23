@@ -77,6 +77,7 @@ import com.wingedsheep.sdk.scripting.UntapFilteredDuringOtherUntapSteps
 import com.wingedsheep.sdk.scripting.GrantChosenSubtype
 import com.wingedsheep.sdk.scripting.SuppressZoneChangeTriggers
 import com.wingedsheep.sdk.scripting.LookAtFaceDownCreatures
+import com.wingedsheep.sdk.scripting.MayLookAtLinkedExile
 import com.wingedsheep.sdk.scripting.LookAtTopOfLibrary
 import com.wingedsheep.sdk.scripting.PlayersCantCastSpells
 import com.wingedsheep.sdk.scripting.PlayersCantGetCounters
@@ -4361,7 +4362,7 @@ object CardIntentAnalyzer {
         // "You may look at face-down creatures you don't control any time" (Keeper of the Lens),
         // "…at the top card of your library any time" (Lens of Clarity): information, nothing more.
         is LookAtFaceDownCreatures, is LookAtTopOfLibrary,
-        is com.wingedsheep.sdk.scripting.MayLookAtLinkedExile -> setOf(IntentTag.HIDDEN_INFO)
+        is MayLookAtLinkedExile -> setOf(IntentTag.HIDDEN_INFO)
         // "You may cast creature spells from the top of your library" (Garruk's Horde, Elven Chorus),
         // "…play lands and cast spells from the top of your library" (Future Sight, Courser of
         // Kruphix's lands): every card played off the top is one we never had to draw — a standing

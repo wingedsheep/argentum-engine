@@ -790,6 +790,7 @@ internal class SpellCaster(
                     .updateEntity(cardId) {
                         it.without<com.wingedsheep.engine.state.components.battlefield.SuspendedComponent>()
                             .without<com.wingedsheep.engine.state.components.identity.ExiledFromZoneComponent>()
+                            .without<com.wingedsheep.engine.state.components.identity.MayLookAtInExileComponent>()
                             .without<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
                             // Foretold-ness was read at cast (ChoiceSlot.FORETOLD); the card is a
                             // new object once it leaves exile (CR 400.7).
