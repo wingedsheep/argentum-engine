@@ -869,6 +869,11 @@ object TargetPolarityAnalyzer {
         for (slot in refillSlots(leaves, requirements)) {
             if (perSlot[slot].isEmpty()) perSlot[slot] += TargetPolarity.BENEFICIAL
         }
+        for (slot in measuredGainSlots(leaves, requirements)) {
+            if (perSlot[slot].isEmpty()) {
+                perSlot[slot] += if (isOwnSide(requirements[slot])) TargetPolarity.BENEFICIAL else TargetPolarity.FLEXIBLE
+            }
+        }
         for (slot in largeBaseSlots(leaves, requirements)) {
             val alone = perSlot[slot].isEmpty() &&
                 leaves.none { it !is SetBaseStatsEffect && touchesOtherwise(it, requirements[slot], slot, definitions, source) }
@@ -1293,6 +1298,40 @@ object TargetPolarityAnalyzer {
         // Grim Contest lends its creature's toughness the same way a fighter lends its power.
         is MutualDamageEffect -> ownSideSlot(leaf.target1, requirements)
         else -> null
+    }
+
+    /**
+     * The slots only *measured* by a gain for the ability's controller — "choose target creature you
+     * control. You gain life equal to that creature's power plus its toughness" (Predator's Rapport),
+     * "draw cards equal to target creature's power": the gain is the controller's, so the slot is
+     * neither helped nor hurt, just read for its size. Named from our own side it is our biggest
+     * object to pick, as a recursion slot is our best card; named from anyone's the simulation
+     * weighs which board holds the biggest. Only when nothing else reads the slot.
+     */
+    private fun measuredGainSlots(leaves: List<Effect>, requirements: List<TargetRequirement>): Set<Int> {
+        fun isController(target: EffectTarget) =
+            target == EffectTarget.Controller || target == EffectTarget.PlayerRef(Player.You)
+        val amounts = leaves.mapNotNull { leaf ->
+            when (leaf) {
+                is GainLifeEffect -> leaf.amount.takeIf { isController(leaf.target) }
+                is DrawCardsEffect -> leaf.count.takeIf { isController(leaf.target) }
+                else -> null
+            }
+        }
+        return amounts.flatMap(::measuredEntities).mapNotNullTo(HashSet()) { slotOf(it, requirements) }
+    }
+
+    /** The entities [amount] reads a numeric property of, through its arithmetic. */
+    private fun measuredEntities(amount: DynamicAmount): List<EffectTarget> = when (amount) {
+        is DynamicAmount.EntityProperty -> listOf(amount.entity)
+        is DynamicAmount.Add -> measuredEntities(amount.left) + measuredEntities(amount.right)
+        is DynamicAmount.Subtract -> measuredEntities(amount.left)
+        is DynamicAmount.Multiply -> if (amount.multiplier > 0) measuredEntities(amount.amount) else emptyList()
+        is DynamicAmount.Max -> measuredEntities(amount.left) + measuredEntities(amount.right)
+        is DynamicAmount.Min -> measuredEntities(amount.left) + measuredEntities(amount.right)
+        is DynamicAmount.IfPositive -> measuredEntities(amount.amount)
+        is DynamicAmount.Divide -> measuredEntities(amount.numerator)
+        else -> emptyList()
     }
 
     /**

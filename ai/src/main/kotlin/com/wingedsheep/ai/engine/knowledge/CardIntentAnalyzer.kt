@@ -742,6 +742,8 @@ object CardIntentAnalyzer {
                     else listOf(leaf)
                 is AddDynamicCountersEffect -> if (harmsOwnTarget(leaf.counterType, leaf.target, requirements)) emptyList()
                     else listOf(leaf)
+                is AddCountersWithLimitEffect -> if (harmsOwnTarget(leaf.counterType, leaf.target, requirements)) emptyList()
+                    else listOf(leaf)
                 // Taking a +1/+1 counter off our own creature is the same price; off an opponent's
                 // (Bloodcrazed Hoplite) it is the shrink [tagsOf] reads as removal.
                 is RemoveCountersEffect -> if (losesOwnBenefit(leaf.counterType, leaf.target, requirements)) emptyList()
@@ -2404,6 +2406,7 @@ object CardIntentAnalyzer {
         is SetBaseStatsEffect -> effect.target
         is AddCountersEffect -> effect.target
         is AddDynamicCountersEffect -> effect.target
+        is AddCountersWithLimitEffect -> effect.target
         else -> null
     }
 
@@ -2807,6 +2810,12 @@ object CardIntentAnalyzer {
 
         is AddCountersEffect -> counterTags(effect.counterType, effect.target)
         is AddDynamicCountersEffect -> counterTags(effect.counterType, effect.target)
+        // "Put up to X +1/+0 counters on it, total can't exceed seven" (Clockwork Beast): the cap only bounds the count.
+        is AddCountersWithLimitEffect -> counterTags(effect.counterType, effect.target)
+        // "Move any number of +1/+1 counters from target creature onto another target creature"
+        // (Bioshift, Scrounging Bandar): the counters land where they are moved to, so the card is
+        // what putting them there is — the counters leaving their source are the price of it.
+        is MoveCountersEffect -> counterTags(effect.counterType, effect.destination)
         // "Create a Sorcerer Role token attached to target creature you control" (Spellbook Vendor),
         // "… a Cursed Role token attached to target creature an opponent controls" (Diminisher
         // Witch): the token does to its creature what the Aura does — see [auraTokenTags].
@@ -3736,6 +3745,7 @@ object CardIntentAnalyzer {
         val (type, target) = when (leaf) {
             is AddCountersEffect -> leaf.counterType to leaf.target
             is AddDynamicCountersEffect -> leaf.counterType to leaf.target
+            is AddCountersWithLimitEffect -> leaf.counterType to leaf.target
             else -> return@any false
         }
         val delta = type.ptDelta ?: return@any false

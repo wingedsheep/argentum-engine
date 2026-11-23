@@ -1,0 +1,3 @@
+- #TBD Reads "choose a number, then …" effects through to their body, so a counter move like Bioshift's is understood as moving counters and read as a pump
+- #TBD Reads a target that only sizes your own life gain or card draw (Predator's Rapport) as your own pick — your biggest creature — instead of an unread slot
+- #TBD Reads capped counter additions on its own source (Clockwork Beast's "total can't exceed seven") as the self-growth a plain counter on itself is

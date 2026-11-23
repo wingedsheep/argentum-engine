@@ -46,6 +46,7 @@ import com.wingedsheep.sdk.scripting.effects.ChangeColorEffect
 import com.wingedsheep.sdk.scripting.effects.ChangeWordInTextEffect
 import com.wingedsheep.sdk.scripting.effects.AddCardTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
+import com.wingedsheep.sdk.scripting.effects.AddCountersWithLimitEffect
 import com.wingedsheep.sdk.scripting.effects.GrantHexproofFromChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseOpponentForSourceEffect
 import com.wingedsheep.sdk.scripting.effects.GiveControlToTargetPlayerEffect
@@ -1286,6 +1287,9 @@ object AiReadingAudit {
         val target = when (leaf) {
             is AddCountersEffect -> leaf.target
             is AddDynamicCountersEffect -> leaf.target
+            // "Put up to X +1/+0 counters on this creature … no more than seven" (Clockwork Beast):
+            // the cap only bounds the count; it is the same self-growth as a plain counter on Self.
+            is AddCountersWithLimitEffect -> leaf.target
             // "Double the +1/+1 counters on this creature" (Dragonsguard Elite) grows its own source.
             is DoubleCountersEffect -> leaf.target
             // Adapt (Sharktocrab, Pteramander, Incubation Druid) is a +1/+1 counter on its own source

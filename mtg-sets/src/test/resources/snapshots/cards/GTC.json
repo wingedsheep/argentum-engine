@@ -1,3 +1,89 @@
+// Adaptive Snapjaw
+{
+    "name": "Adaptive Snapjaw",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Lizard Beast",
+    "oracleText": "Evolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 2
+    },
+    "keywords": [
+        "EVOLVE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Adaptive Snapjaw:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "EmitKeywordCounterEvent",
+                            "keyword": "EVOLVE"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Power"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Power"
+                            }
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Toughness"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Toughness"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Evolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "\"Eh, needs more toad.\"\n—Gulistan, Simic biomancer",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0d3c0c43-2d6d-49b8-a112-07611a23ae69.jpg?1783940120"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Aerial Maneuver
 {
     "name": "Aerial Maneuver",
@@ -191,6 +277,46 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLACK"
+    ]
+}
+
+// Alpha Authority
+{
+    "name": "Alpha Authority",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature has hexproof and can't be blocked by more than one creature.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "HEXPROOF"
+            },
+            {
+                "type": "CantBeBlockedByMoreThan",
+                "maxBlockers": 1,
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "UNCOMMON",
+        "artist": "Dave Kendall",
+        "flavorText": "Even the bitterest enemies of the Burning-Tree Clan respect the strength of Borborygmos's rule.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fbc42ca6-db90-41d0-8a4b-3217fb2c114c.jpg?1783940119"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -1052,6 +1178,166 @@
     "colorIdentityOverride": [
         "BLUE",
         "GREEN"
+    ]
+}
+
+// Bioshift
+{
+    "name": "Bioshift",
+    "manaCost": "{G/U}",
+    "typeLine": "Instant",
+    "oracleText": "Move any number of +1/+1 counters from target creature onto another target creature with the same controller.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": {
+                        "type": "BoundVariable",
+                        "name": "t0[1]"
+                    },
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControlledByReferencedPlayer",
+                            "target": "TargetController"
+                        }
+                    }
+                }
+            },
+            "then": {
+                "type": "ChooseNumberThen",
+                "then": {
+                    "type": "MoveCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": "XValue",
+                    "source": {
+                        "type": "BoundVariable",
+                        "name": "t0[0]"
+                    },
+                    "destination": {
+                        "type": "BoundVariable",
+                        "name": "t0[1]"
+                    }
+                },
+                "maxValue": {
+                    "type": "EntityProperty",
+                    "entity": {
+                        "type": "BoundVariable",
+                        "name": "t0[0]"
+                    },
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": "PLUS_ONE_PLUS_ONE"
+                    }
+                },
+                "prompt": "Move how many +1/+1 counters?"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0",
+                "sameController": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "214",
+        "artist": "Scott Chou",
+        "flavorText": "\"It's all right if you change your mind. There's always a chance we can rearrange parts later.\"\n—Zija, Simic mutationist",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6e18f7a9-2af6-467a-8f62-5f7da83a3c92.jpg?1783940096",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "To move a counter from one creature to another, the counter is removed from the first creature and placed on the second. Any abilities that care about a counter being removed or placed on a creature will apply."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "You decide how many counters to move when Bioshift resolves."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If one of the two creatures is an illegal target when Bioshift tries to resolve, or if the creatures are controlled by different players at that time, no counters will move."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
+// Biovisionary
+{
+    "name": "Biovisionary",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "At the beginning of the end step, if you control four or more creatures named Biovisionary, you win the game.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Biovisionary:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": "WinGame",
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature name:Biovisionary"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                },
+                "descriptionOverride": "At the beginning of the end step, if you control four or more creatures named Biovisionary, you win the game."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "146",
+        "rarity": "RARE",
+        "artist": "Ryan Barger",
+        "flavorText": "He tired of his fellow researchers and their useless prattling, so he decided to make a network of scholars with whom he could carry a conversation.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/2000b4e8-7887-454e-9d52-211516613dd0.jpg?1783940112",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "Token creatures that are a copy of Biovisionary will count."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If you don't control four or more creatures named Biovisionary at the beginning of the end step, the ability won't trigger."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If the ability does trigger, but you don't control four or more creatures named Biovisionary when the ability tries to resolve, the ability will do nothing."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
     ]
 }
 
@@ -1948,6 +2234,178 @@
     ]
 }
 
+// Clinging Anemones
+{
+    "name": "Clinging Anemones",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Jellyfish",
+    "oracleText": "Defender\nEvolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEFENDER",
+        "EVOLVE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Clinging Anemones:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "EmitKeywordCounterEvent",
+                            "keyword": "EVOLVE"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Power"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Power"
+                            }
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Toughness"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Toughness"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Evolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "artist": "Mike Bierek",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4e183069-096d-4977-8154-e7b60f17a787.jpg?1783940139"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Cloudfin Raptor
+{
+    "name": "Cloudfin Raptor",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Bird Mutant",
+    "oracleText": "Flying\nEvolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING",
+        "EVOLVE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cloudfin Raptor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "EmitKeywordCounterEvent",
+                            "keyword": "EVOLVE"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Power"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Power"
+                            }
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Toughness"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Toughness"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Evolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "artist": "Peter Mohrbacher",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e2931f27-43f9-4e52-aab3-967c26739e43.jpg?1783940138"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Coerced Confession
 {
     "name": "Coerced Confession",
@@ -2190,6 +2648,92 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Crocanura
+{
+    "name": "Crocanura",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Crocodile Frog",
+    "oracleText": "Reach (This creature can block creatures with flying.)\nEvolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "REACH",
+        "EVOLVE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Crocanura:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "EmitKeywordCounterEvent",
+                            "keyword": "EVOLVE"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Power"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Power"
+                            }
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Toughness"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Toughness"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Evolve (Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "artist": "Jack Wang",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b459a988-97b0-4370-b89a-2565f8721b60.jpg?1783940119"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -2987,6 +3531,163 @@
         "flavorText": "\"Selesnya thinks nature is a pretty plaything. True nature would rip their faces off and wear their skins as trophies.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c62b3ee-db2b-45c3-87d5-5d917ea4baeb.jpg"
     },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
+// Domri Rade
+{
+    "name": "Domri Rade",
+    "manaCost": "{1}{R}{G}",
+    "typeLine": "Legendary Planeswalker — Domri",
+    "oracleText": "+1: Look at the top card of your library. If it's a creature card, you may reveal it and put it into your hand.\n−2: Target creature you control fights another target creature.\n−7: You get an emblem with \"Creatures you control have double strike, trample, hexproof, and haste.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Domri Rade:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "creature",
+                            "storeMatching": "matching1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matching1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "selectedLabel": "Reveal and put into your hand",
+                            "remainderLabel": "Leave on top of your library"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true,
+                            "revealToSelf": false
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Domri Rade:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "Fight",
+                    "target1": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    },
+                    {
+                        "type": "TargetOther",
+                        "baseRequirement": {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Domri Rade:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "CreatePermanentEmblem",
+                    "groupFilter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "grantedKeywords": [
+                        "DOUBLE_STRIKE",
+                        "TRAMPLE",
+                        "HEXPROOF",
+                        "HASTE"
+                    ],
+                    "emblemDescription": "Creatures you control have double strike, trample, hexproof, and haste."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "rarity": "MYTHIC",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/21b48170-99dd-440f-9954-fc229d6094d3.jpg?1783940109",
+        "rulings": [
+            {
+                "date": "2017-03-14",
+                "text": "When resolving Domri's first ability, if the card you look at isn't a creature card, or if it's a creature card you don't want to put into your hand, you simply put it back on top of your library. You don't reveal it or say why you're putting it back."
+            },
+            {
+                "date": "2017-03-14",
+                "text": "The second target of Domri's second ability can be another creature you control, but it can't be the same creature as the first target."
+            },
+            {
+                "date": "2017-03-14",
+                "text": "If either target of Domri's second ability is an illegal target when the ability tries to resolve, neither creature will deal or be dealt damage."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "If a creature has both double strike and trample, the combat damage it assigned during the first combat damage step will be considered when determining how much damage can trample through in the second combat damage step. If each creature blocking it is destroyed during the first combat damage step, then all of the damage must be assigned to the player, planeswalker, or battle it's attacking during the second combat damage step."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
     "colorIdentityOverride": [
         "RED",
         "GREEN"
@@ -5295,6 +5996,54 @@
     "colorIdentityOverride": [
         "BLACK",
         "WHITE"
+    ]
+}
+
+// Hindervines
+{
+    "name": "Hindervines",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Prevent all combat damage that would be dealt this turn by creatures with no +1/+1 counters on them.",
+    "script": {
+        "spellEffect": {
+            "type": "PreventDamageShield",
+            "scope": "CombatOnly",
+            "direction": "FromTarget",
+            "sourceFilter": {
+                "type": "PreventFromMatching",
+                "filter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ],
+                    "statePredicates": [
+                        {
+                            "type": "StateNot",
+                            "predicate": {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"Woodlands and laws. Both grow faster than the Azorius's ability to manage them.\"\n—Suniel the Woodwise",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f6b85a09-6d43-4798-8164-131d35b65836.jpg?1783940117",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "Hindervines checks whether a creature has a +1/+1 counter on it at the moment it deals damage. It doesn't matter whether a creature had a +1/+1 counter, or was even on the battlefield, when Hindervines resolved."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -7800,6 +8549,50 @@
     ]
 }
 
+// Ordruun Veteran
+{
+    "name": "Ordruun Veteran",
+    "manaCost": "{2}{R}{W}",
+    "typeLine": "Creature — Minotaur Soldier",
+    "oracleText": "Battalion — Whenever this creature and at least two other creatures attack, this creature gains double strike until end of turn. (It deals both first-strike and regular combat damage.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ordruun Veteran:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        {
+                            "type": "AttackerCountAtLeast",
+                            "n": 3
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "DOUBLE_STRIKE",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "184",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Staples",
+        "flavorText": "\"My father was Gruul, but I chose the precision of the legion over the fury of the pack.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/20fea3f6-e64a-4964-86bc-c0b8fef0ab25.jpg?1783940103"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Orzhov Charm
 {
     "name": "Orzhov Charm",
@@ -8244,6 +9037,56 @@
     },
     "colorIdentityOverride": [
         "RED",
+        "GREEN"
+    ]
+}
+
+// Predator's Rapport
+{
+    "name": "Predator's Rapport",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Choose target creature you control. You gain life equal to that creature's power plus its toughness.",
+    "script": {
+        "spellEffect": {
+            "type": "GainLife",
+            "amount": {
+                "type": "Add",
+                "left": {
+                    "type": "EntityProperty",
+                    "entity": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "numericProperty": "Power"
+                },
+                "right": {
+                    "type": "EntityProperty",
+                    "entity": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "numericProperty": "Toughness"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "artist": "Matt Stewart",
+        "flavorText": "\"Other guilds say the Gruul are savages, no better than the beasts we live with. I say we've found friends who won't stab us in the back.\"\n—Domri Rade",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/47324ab7-df78-4859-be0b-2eef5d4f8082.jpg?1783940116"
+    },
+    "colorIdentityOverride": [
         "GREEN"
     ]
 }
@@ -9099,6 +9942,67 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Serene Remembrance
+{
+    "name": "Serene Remembrance",
+    "manaCost": "{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Shuffle Serene Remembrance and up to three target cards from a single graveyard into their owners' libraries.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                },
+                "destination": "Library",
+                "placement": "Shuffled"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 3,
+                "optional": true,
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Graveyard"
+                },
+                "id": "t0",
+                "sameOwner": true
+            }
+        ],
+        "selfLibraryPlacementOnResolve": "Shuffled"
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "UNCOMMON",
+        "artist": "David Palumbo",
+        "flavorText": "While Lazav schemed and Niv-Mizzet researched, Trostani sought the future in the whispers of the past.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f3da4b8-9dd6-455d-b24a-3d0207ae5ee8.jpg?1783940115",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "You may choose zero targets when you cast Serene Remembrance. If you do, you'll shuffle Serene Remembrance into its owner's library when it resolves."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If you choose at least one target for Serene Remembrance, and all of its targets are illegal when Serene Remembrance tries to resolve, it won't resolve and none of its effects will happen. You won't shuffle any library and Serene Remembrance will be put into its owner's graveyard."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If you give Serene Remembrance the flashback ability and cast it from your graveyard, it will be exiled instead of being shuffled into your library. Any other targets will still be shuffled into their owners' library, however."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -10286,6 +11190,87 @@
     ]
 }
 
+// Skyblinder Staff
+{
+    "name": "Skyblinder Staff",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+0 and can't be blocked by creatures with flying.\nEquip {3} ({3}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Skyblinder Staff:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0
+            },
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "HasKeyword",
+                            "keyword": "FLYING"
+                        }
+                    ]
+                },
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "238",
+        "artist": "Mark Winters",
+        "flavorText": "\"If bats are the only thing between me and a mountain of Orzhov coins, then I'm about to be a very rich thief.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d1602ee8-019d-4dde-8d31-042207017615.jpg?1783940090",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "The equipped creature can still be blocked by a creature with reach."
+            },
+            {
+                "date": "2013-01-24",
+                "text": "If the equipped creature is blocked by a creature and then that creature gains flying, the equipped creature will remain blocked."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Slaughterhorn
 {
     "name": "Slaughterhorn",
@@ -10477,6 +11462,52 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Spire Tracer
+{
+    "name": "Spire Tracer",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Elf Scout",
+    "oracleText": "This creature can't be blocked except by creatures with flying or reach.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedExceptBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                {
+                                    "type": "HasKeyword",
+                                    "keyword": "FLYING"
+                                },
+                                {
+                                    "type": "HasKeyword",
+                                    "keyword": "REACH"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "artist": "Christopher Moeller",
+        "flavorText": "Cartographers on Ravnica chart not just the horizontal, but also the vertical.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/428b0d43-94c9-4f7f-b042-ea63f88ac697.jpg?1783940115"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -11626,6 +12657,90 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLACK"
+    ]
+}
+
+// Wasteland Viper
+{
+    "name": "Wasteland Viper",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Snake",
+    "oracleText": "Deathtouch\nBloodrush — {G}, Discard this card: Target attacking creature gets +1/+2 and gains deathtouch until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Wasteland Viper:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{G}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DEATHTOUCH",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature attacking"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Bloodrush — {G}, Discard this card: Target attacking creature gets +1/+2 and gains deathtouch until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "rarity": "UNCOMMON",
+        "artist": "Lucas Graciano",
+        "flavorText": "\"The Gruul embrace all things poisonous and living in the cracks of society.\"\n—Teysa Karlov, Grand Envoy of Orzhov",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/4/e4a5b2b8-3890-485f-8731-8f178a2da3d7.jpg?1783940113"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 

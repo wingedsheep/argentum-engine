@@ -24,6 +24,7 @@ import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseColorThenEffect
+import com.wingedsheep.sdk.scripting.effects.ChooseNumberThenEffect
 import com.wingedsheep.sdk.scripting.effects.ConniveEffect
 import com.wingedsheep.sdk.scripting.effects.LearnEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -60,6 +61,8 @@ import com.wingedsheep.sdk.scripting.targets.TargetRequirement
  *  - **A choice made at resolution that only parameterises its body.** [ChooseColorThenEffect]
  *    ("choose a color, then …") picks the color and runs `then` with it; what the card does is the
  *    body (Center Soul's protection grant), so the walk reads `then`.
+ *    [ChooseNumberThenEffect] ("move any number of +1/+1 counters", Bioshift, Scrounging Bandar)
+ *    is the same shape for a number: the body is the card, the number only sizes it.
  *  - **Everything else is a leaf**, including [ConditionalOnCollectionEffect] (which
  *    [payoffLeaves] and the rater's fold open onto both branches), [com.wingedsheep.sdk.scripting.effects.ModalEffect]
  *    modes, `ForEach` bodies and pipeline stages. Each consumer opens those in its own leaf instead:
@@ -138,6 +141,7 @@ object EffectWalker {
         if (effect is ConniveEffect) return fold(effect.body, f)
         if (effect is LearnEffect) return fold(effect.body, f)
         if (effect is ChooseColorThenEffect) return fold(effect.then, f)
+        if (effect is ChooseNumberThenEffect) return fold(effect.then, f)
         return f.leaf(effect)
     }
 
