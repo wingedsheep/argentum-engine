@@ -35,12 +35,14 @@ import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
 import com.wingedsheep.sdk.scripting.effects.MarkMustAttackEffect
 import com.wingedsheep.sdk.scripting.effects.MarkMustBlockEffect
 import com.wingedsheep.sdk.scripting.effects.MustAttackWindow
+import com.wingedsheep.sdk.scripting.effects.CantBeBlockedGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.LearnEffect
 import com.wingedsheep.sdk.scripting.effects.ChangeColorEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.effects.ChooseOptionEffect
 import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
@@ -900,6 +902,11 @@ internal object ExpiringGrantWindow {
         else RestrictionShape(restrictions, groupCantBlocks, sideBenefit)
     }
 
+    /** A [isPlainBattlefieldGroup] of permanents we control and nothing else's — "creatures you control". */
+    private fun isOurPlainGroup(group: GroupFilter): Boolean =
+        isPlainBattlefieldGroup(group) && group.baseFilter.anyOf.isEmpty() &&
+            group.baseFilter.controllerPredicate == ControllerPredicate.ControlledByYou
+
     /** A group [groupMembers] can enumerate: battlefield-wide, with no resolution-time binding. */
     private fun isPlainBattlefieldGroup(group: GroupFilter): Boolean =
         group.scope is Scope.Battlefield && group.chosenSubtypeKey == null &&
@@ -1749,6 +1756,11 @@ internal object ExpiringGrantWindow {
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target, blocks = true)
                 leaf is GrantEvasionKeywordEffect && leaf.duration == Duration.EndOfTurn ->
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target)
+                // "Creatures you control can't be blocked this turn" (Glaring Spotlight):
+                // evasion for our whole team, spent only by an attack that connects this turn — so
+                // our turn, before blocks; on their turn it buys nothing.
+                leaf is CantBeBlockedGroupEffect && leaf.duration == Duration.EndOfTurn && isOurPlainGroup(leaf.filter) ->
+                    payoffs += Payoff(PayoffKind.CREATURE, EffectTarget.IterationEntity, connects = true)
                 // "Target creature can't be blocked by creatures of the color of your choice this turn"
                 // (Sungold Sentinel, Skrelv): the same evasion, its color picked on resolution.
                 leaf is GrantCantBeBlockedByChosenColorEffect && leaf.duration == Duration.EndOfTurn ->

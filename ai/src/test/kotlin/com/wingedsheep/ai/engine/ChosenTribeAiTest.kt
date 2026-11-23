@@ -40,6 +40,14 @@ class ChosenTribeAiTest : ScenarioTestBase() {
             }
         }
 
+        test("a chosen basic land type granted to our lands is mana fixing, not a tribe") {
+            // Realmwright: "Lands you control are the chosen type in addition to their other types."
+            val intent = CardIntentAnalyzer.analyze(card("Realmwright"))
+            intent.tags shouldContain IntentTag.RAMP
+            intent.tags shouldNotContain IntentTag.TRIBAL_ENABLER
+            read("Realmwright").grantsChosenTribe shouldBe false
+        }
+
         test("a converter needs off-tribe bodies and a payoff and does not feed itself") {
             val enabler = read("Arcane Adaptation")
             fun support(vararg names: String): Double = DeckSynergy.fedShare(

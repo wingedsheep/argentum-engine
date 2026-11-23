@@ -3025,6 +3025,10 @@ object CardIntentAnalyzer {
         // of a library or out of exile: a spell for free, see [IntentTag.FREE_SPELL]. A cast that
         // still pays the spell's mana cost is only a zone it may be cast from, and earns no tag.
         is CastFromCollectionWithoutPayingCostEffect -> if (effect.payManaCost) emptySet() else setOf(IntentTag.FREE_SPELL)
+        // "You may cast any number of / up to one of those cards without paying their mana costs"
+        // (Diluvian Primordial's opponents' graveyard spells): the same free spells, several at once.
+        is CastAnyNumberFromCollectionWithoutPayingCostEffect ->
+            if (effect.payManaCost) emptySet() else setOf(IntentTag.FREE_SPELL)
         // "Until end of turn, you may cast cards exiled this way without paying their mana costs"
         // (Dream Harvest, Mind's Desire, a hideaway land's "play the exiled card without paying its
         // mana cost"): the same free spell, granted for later in the turn instead of cast now.
@@ -3306,6 +3310,13 @@ object CardIntentAnalyzer {
         }
 
         else -> emptySet()
+    }
+
+    /** Whether [group] is lands we control and nothing else's — "lands you control". */
+    private fun grantsOurLands(group: GroupFilter): Boolean {
+        val filter = group.baseFilter
+        return filter.anyOf.isEmpty() && CardPredicate.IsLand in filter.cardPredicates &&
+            filter.controllerPredicate == ControllerPredicate.ControlledByYou
     }
 
     /**
@@ -4366,10 +4377,17 @@ object CardIntentAnalyzer {
         is PreventActivatedAbilities ->
             if (StatePredicate.IsAttachedToBySource in static.filter.statePredicates) setOf(IntentTag.NEUTRALIZE)
             else setOf(IntentTag.ACTIVATION_LOCK)
+        // "Creatures you control are the chosen type" (Xenograft): every creature joins the tribe.
+        // "Lands you control are the chosen basic land type in addition to their other types"
+        // (Realmwright): each land gains that type's intrinsic mana ability, so every land taps for
+        // the chosen colour — colour fixing, a mana source, [IntentTag.RAMP].
+        is GrantChosenSubtype -> when {
+            static.filter == GroupFilter.AllCreaturesYouControl -> setOf(IntentTag.TRIBAL_ENABLER)
+            grantsOurLands(static.filter) -> setOf(IntentTag.RAMP)
+            else -> emptySet()
+        }
         // "Creatures entering the battlefield don't cause abilities to trigger" (Torpor Orb, Tocatli
         // Honor Guard, Hushbringer) and its opponents-only form (Elesh Norn, Mother of Machines).
-        is GrantChosenSubtype -> if (static.filter == GroupFilter.AllCreaturesYouControl)
-            setOf(IntentTag.TRIBAL_ENABLER) else emptySet()
         is SuppressZoneChangeTriggers -> setOf(IntentTag.TRIGGER_LOCK)
         // "You may look at face-down creatures you don't control any time" (Keeper of the Lens),
         // "…at the top card of your library any time" (Lens of Clarity): information, nothing more.

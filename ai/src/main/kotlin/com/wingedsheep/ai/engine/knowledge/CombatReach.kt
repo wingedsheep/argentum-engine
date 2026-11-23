@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.scripting.effects.AmassEffect
 import com.wingedsheep.sdk.scripting.effects.AnimateLandEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
+import com.wingedsheep.sdk.scripting.effects.CantBeBlockedGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockGroupEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
@@ -123,6 +124,10 @@ internal enum class CombatReach {
                 // "Each creature with toughness greater than its power can't block this turn"
                 // (Immobilizer Eldrazi): every creature the group holds is kept out of every block.
                 is CantBlockGroupEffect -> reach += BLOCK_DENIAL
+                // "Creatures you control can't be blocked this turn" (Glaring Spotlight): every
+                // attacker of the group kept out of every block — the same blocks denied, from the
+                // attacking side, and as worthless once blockers are declared.
+                is CantBeBlockedGroupEffect -> reach += BLOCK_DENIAL
                 else -> Unit
             }
         }
