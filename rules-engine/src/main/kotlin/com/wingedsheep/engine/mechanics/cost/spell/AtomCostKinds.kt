@@ -211,11 +211,15 @@ internal object SacrificeAllCostKind : SpellCostKind<CostAtom.SacrificeAll> {
 
 /** "Discard a card" (Force of Will). */
 internal object DiscardCostKind : SpellCostKind<CostAtom.Discard> {
+    // A same-name discard (Sphinx of the Chimes) is wired for activated-ability costs only; no
+    // printed spell asks for it, so it is unpayable here rather than paid without the constraint.
     override fun canPay(state: GameState, payerId: EntityId, cost: CostAtom.Discard, costHandler: CostHandler) =
-        costHandler.findMatchingCardsUnified(state, state.getZone(ZoneKey(payerId, Zone.HAND)), cost.filter, payerId)
-            .size >= cost.count
+        !cost.sameName &&
+            costHandler.findMatchingCardsUnified(state, state.getZone(ZoneKey(payerId, Zone.HAND)), cost.filter, payerId)
+                .size >= cost.count
 
     override fun enumerate(env: SpellCostEnumeration, cost: CostAtom.Discard, offer: SpellCostOffer): Boolean {
+        if (cost.sameName) return false
         val validDiscards = candidates(env, cost)
         offer.discardTargets = validDiscards
         offer.discardCount = cost.count

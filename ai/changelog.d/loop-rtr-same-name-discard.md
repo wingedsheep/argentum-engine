@@ -1,0 +1,1 @@
+- #TBD The AI pays a "discard two cards with the same name" cost (Sphinx of the Chimes) with one name's pair instead of two different cards.

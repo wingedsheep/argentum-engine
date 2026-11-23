@@ -10,6 +10,7 @@ import com.wingedsheep.engine.state.LifePaymentPurpose
 import com.wingedsheep.engine.handlers.effects.AnnouncedDivision
 import com.wingedsheep.engine.handlers.effects.combat.eligibleLeavingAmountSources
 import com.wingedsheep.engine.mechanics.cost.SharedCreatureTypeTapCost
+import com.wingedsheep.engine.mechanics.cost.SameNameDiscardCost
 import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
 import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
@@ -391,7 +392,9 @@ class ActivatedAbilityEnumerator(
                             if (context.costUtils.findDiscardTargets(state, playerId, atom.filter).size < atom.count) continue
                         }
                         is CostAtom.Discard -> {
-                            val targets = context.costUtils.findDiscardTargets(state, playerId, atom.filter)
+                            val targets = SameNameDiscardCost.eligible(
+                                state, atom, context.costUtils.findDiscardTargets(state, playerId, atom.filter)
+                            )
                             if (targets.size < atom.count) continue
                             // Random discard is paid automatically at cost time — no player selection.
                             if (!atom.random) {
@@ -705,7 +708,9 @@ class ActivatedAbilityEnumerator(
                                         }
                                     }
                                     is CostAtom.Discard -> {
-                                        val targets = context.costUtils.findDiscardTargets(state, playerId, atom.filter)
+                                        val targets = SameNameDiscardCost.eligible(
+                                            state, atom, context.costUtils.findDiscardTargets(state, playerId, atom.filter)
+                                        )
                                         if (targets.size < atom.count) {
                                             costCanBePaid = false
                                             break
@@ -1441,7 +1446,9 @@ class ActivatedAbilityEnumerator(
                     is AbilityCost.Atom -> {
                         when (val atom = effectiveCost.atom) {
                             is CostAtom.Discard -> {
-                                val targets = context.costUtils.findDiscardTargets(state, playerId, atom.filter)
+                                val targets = SameNameDiscardCost.eligible(
+                                    state, atom, context.costUtils.findDiscardTargets(state, playerId, atom.filter)
+                                )
                                 if (targets.size < atom.count) continue
                                 if (!atom.random) {
                                     discardCost = atom
@@ -1646,6 +1653,7 @@ class ActivatedAbilityEnumerator(
                 costType = "DiscardCard",
                 validDiscardTargets = discardTargets,
                 discardCount = discardCost.count,
+                discardSameName = discardCost.sameName,
                 counterRemovalCreatures = counterRemovalCreatures
             )
         }

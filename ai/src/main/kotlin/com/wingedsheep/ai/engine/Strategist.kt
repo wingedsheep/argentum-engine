@@ -2971,7 +2971,7 @@ class Strategist(
             if (state.getEntity(id)?.get<CardComponent>()?.isLand == true) 1 else 0
         }
         return com.wingedsheep.sdk.scripting.AdditionalCostPayment(
-            discardedCards = ranked.take(info.discardCount)
+            discardedCards = SelectionCostPayment.discards(state, info, ranked, info.discardCount)
         )
     }
 

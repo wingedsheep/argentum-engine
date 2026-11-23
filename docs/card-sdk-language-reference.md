@@ -648,7 +648,11 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
 - `Costs.SacrificeSelf` — sacrifice this permanent (the ability's source).
 - `Costs.SacrificeGrantingPermanent` — sacrifice the permanent that *granted* this activated ability, resolved from the static-grant lookup at activation time (no filter, no prompt). The self-sacrifice sibling of `Costs.ExileGrantingPermanent`: use for an Equipment/Aura whose granted activated ability says "Sacrifice [this permanent]" — e.g. Deconstruction Hammer's "{3}, {T}, Sacrifice Deconstruction Hammer: ...". Per CR 201.5a the name refers only to the specific granting permanent, so this sacrifices exactly that one even with another same-named permanent on the battlefield.
 - `Costs.DiscardCard` — discard a card you choose (any card).
-- `Costs.Discard(filter, count = 1, atRandom = false)` — discard `count` cards matching the filter.
+- `Costs.Discard(filter, count = 1, atRandom = false, sameName = false)` — discard `count` cards matching the filter. `sameName = true`
+  requires the discarded cards to share one name — "Discard two nonland cards with the same name" (Sphinx of
+  the Chimes): payable only when some name is held by `count` matching cards in hand, and a mixed-name payment
+  is rejected. Activated-ability costs only (the spell additional-cost and "unless you pay" rails report it
+  unpayable); not combinable with `atRandom`.
   When `atRandom` is true the engine picks the cards (no player selection); otherwise the player
   chooses which cards to discard.
 - `Costs.DiscardAtRandom(count, filter)` — discard `count` cards chosen at random (Meteor Storm:

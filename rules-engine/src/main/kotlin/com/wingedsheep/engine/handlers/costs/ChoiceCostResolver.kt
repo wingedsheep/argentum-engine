@@ -59,6 +59,7 @@ object ChoiceCostResolver {
             }
             is CostAtom.Discard -> {
                 if (atom.random) return null // a random discard needs no selection UI
+                if (atom.sameName) return null // wired for activated-ability costs only
                 val targets = costUtils.findDiscardTargets(state, playerId, atom.filter).filter { it != cardId }
                 if (targets.size < atom.count) return null
                 AdditionalCostData(

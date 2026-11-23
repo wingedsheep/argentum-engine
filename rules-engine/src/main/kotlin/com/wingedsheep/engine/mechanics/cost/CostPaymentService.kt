@@ -860,7 +860,9 @@ class CostPaymentService(private val services: EngineServices) {
                     is CostAtom.PayLife -> CostAtomAmounts.canPayLife( // CR 119.8 too
                         state, payerId, CostAtomAmounts.life(state, atom, payerId, predicateEvaluator, sourceId), purpose
                     )
-                    is CostAtom.Discard -> domain(state, payerId, c, sourceId, predicateEvaluator = predicateEvaluator).size >= atom.count
+                    // A same-name discard is wired for activated-ability costs only (see CostAtom.Discard.sameName).
+                    is CostAtom.Discard -> !atom.sameName &&
+                        domain(state, payerId, c, sourceId, predicateEvaluator = predicateEvaluator).size >= atom.count
                     // CR 118.3 — an empty hand discards nothing, and a cost of nothing is payable.
                     is CostAtom.DiscardHand -> true
                     // A processor-style move (destination = GRAVEYARD) is wired for activation and
