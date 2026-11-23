@@ -1,1 +1,1 @@
-- #TBD The AI now reads Aurelia's Fury's "players dealt damage this way can't cast noncreature spells" ban as riding on the divided burn, timing the card as burn
+- #4834 The AI now reads Aurelia's Fury's "players dealt damage this way can't cast noncreature spells" ban as riding on the divided burn, timing the card as burn
