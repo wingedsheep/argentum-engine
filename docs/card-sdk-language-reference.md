@@ -12115,6 +12115,10 @@ staticAbility {
   - `UntapSelfDuringOtherUntapSteps` — untap **only the source permanent itself** ("Untap this artifact
     during each other player's untap step" — Bender's Waterskin). Guarded on the source still being tapped,
     so it never double-untaps / double-consumes a stun counter alongside the broad/filtered variants.
+    A `ProjectedStaticAbility`, read off each permanent's projected statics: an Aura or lord can grant it
+    with `GrantStaticAbility(UntapSelfDuringOtherUntapSteps, Filters.EnchantedCreature)` (Urban Burgeoning's
+    "Enchanted land has 'Untap this land during each other player's untap step'"), and a holder that loses
+    all its abilities stops untapping.
 - `DrawDuringOtherDrawSteps(duringStepsOf = Player.Each)` — "You draw a card during each other player's
   draw step"; `Player.EachOpponent` for "each opponent's" (Teferi, Who Slows the Sunset's emblem). A standing
   static, not a trigger: `DrawPhaseManager` draws for its controller right after the active player's

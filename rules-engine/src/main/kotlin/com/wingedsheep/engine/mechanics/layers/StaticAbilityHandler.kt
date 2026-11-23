@@ -807,6 +807,12 @@ class StaticAbilityHandler(
             // Land-play permissions, read from the holder's projected statics (LandDropUtils.getAdditionalLandDrops /
             // hasGraveyardLandPlayPermission), so printed, resolved-effect and GrantStaticAbility routes all count
             // and a ConditionalStaticAbility gate is honored by projection itself.
+            // Read by the untap step (BeginningPhaseManager) from each permanent's projected statics,
+            // so a printed one and one granted by GrantStaticAbility (Urban Burgeoning) both count.
+            is UntapSelfDuringOtherUntapSteps -> ContinuousEffectData(
+                modification = Modification.GrantStaticAbility(ability),
+                affectsFilter = AffectsFilter.Self,
+            )
             is GrantAdditionalLandDrop, is MayPlayLandsFromGraveyard -> ContinuousEffectData(
                 modification = Modification.GrantStaticAbility(ability),
                 affectsFilter = AffectsFilter.Self,
@@ -1452,7 +1458,6 @@ class StaticAbilityHandler(
             is UntapDuringOtherUntapSteps,
             is com.wingedsheep.sdk.scripting.DrawDuringOtherDrawSteps,
             is UntapFilteredDuringOtherUntapSteps,
-            is UntapSelfDuringOtherUntapSteps,
             is UntapLimitPerStep,
 
             // Visibility / information (ClientStateTransformer / DrawCardPrimitive):

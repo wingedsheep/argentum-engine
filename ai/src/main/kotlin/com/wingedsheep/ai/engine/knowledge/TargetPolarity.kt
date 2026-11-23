@@ -46,6 +46,8 @@ import com.wingedsheep.sdk.scripting.PlayersCantCastSpells
 import com.wingedsheep.sdk.scripting.GrantLandwalkOfChosenType
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
+import com.wingedsheep.sdk.scripting.GrantStaticAbility
+import com.wingedsheep.sdk.scripting.UntapSelfDuringOtherUntapSteps
 import com.wingedsheep.sdk.scripting.RedirectZoneChange
 import com.wingedsheep.sdk.scripting.RedirectZoneChangeWith
 import com.wingedsheep.sdk.scripting.ReplacementEffect
@@ -3295,6 +3297,12 @@ object TargetPolarityAnalyzer {
                 ?: lastingTradePolarity(static.powerBonus, static.toughnessBonus)
         is GrantKeyword -> if (!reachesHost(static.filter)) null else keywordPolarity(static.keyword)
         is GrantLandwalkOfChosenType -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.BENEFICIAL
+        // "Enchanted land has 'Untap this land during each other player's untap step'" (Urban
+        // Burgeoning): the host untaps for its controller on every other turn — a gift to it.
+        is GrantStaticAbility -> if (!reachesHost(static.filter)) null else when (static.ability) {
+            is UntapSelfDuringOtherUntapSteps -> TargetPolarity.BENEFICIAL
+            else -> null
+        }
         is CantAttack -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.HARMFUL
         is CantBlock -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.HARMFUL
         // "Enchanted creature can't attack unless its controller pays {3}" (Brainwash): a price on

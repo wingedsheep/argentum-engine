@@ -1,0 +1,1 @@
+- #4846 The AI reads an Aura granting "untap this during each other player's untap step" (Urban Burgeoning) as a gift for its own land, and tags self-untap permanents as playing on opponents' turns.

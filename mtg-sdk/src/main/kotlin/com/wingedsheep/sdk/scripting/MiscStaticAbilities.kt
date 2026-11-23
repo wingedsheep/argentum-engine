@@ -2074,10 +2074,16 @@ data class UntapFilteredDuringOtherUntapSteps(
  * The engine checks for this static ability during the untap step. When the active player is not
  * the controller of a permanent with this ability, only that single permanent untaps — unlike
  * [UntapDuringOtherUntapSteps], which untaps every permanent its controller controls.
+ *
+ * A [ProjectedStaticAbility]: the untap step reads it off each permanent's projected statics, so a
+ * permanent that is *granted* it untaps just like one printed with it — Urban Burgeoning's
+ * "Enchanted land has 'Untap this land during each other player's untap step'" is
+ * `GrantStaticAbility(UntapSelfDuringOtherUntapSteps, Filters.EnchantedCreature)` — and a
+ * permanent that loses all its abilities stops untapping.
  */
 @SerialName("UntapSelfDuringOtherUntapSteps")
 @Serializable
-data object UntapSelfDuringOtherUntapSteps : StaticAbility {
+data object UntapSelfDuringOtherUntapSteps : ProjectedStaticAbility {
     override val description: String = "Untap this permanent during each other player's untap step"
 }
 
