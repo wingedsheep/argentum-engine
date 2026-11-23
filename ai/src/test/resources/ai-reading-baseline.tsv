@@ -3532,7 +3532,7 @@ Combat Professor
 Combat Research
 Combat Thresher
 Combat Tutorial
-Combine Guildmage	intent: GrantReplacementEffectEffect; timing: GrantReplacementEffectEffect
+Combine Guildmage
 Combustible Gearhulk
 Combustion Man	polarity: ChooseActionEffect
 Combustion Technique
@@ -5688,6 +5688,7 @@ Elspeth, Sun's Nemesis
 Elspeth, Undaunted Hero
 Elturgard Ranger
 Eluge, the Shoreless Sea	intent: AddCountersEffect; polarity: AddCountersEffect
+Elusive Krasis
 Elusive Otter
 Elusive Spellfist
 Elusive Tormentor
@@ -6168,6 +6169,7 @@ Expel the Interlopers	intent: ChooseNumberThenEffect
 Expel the Unworthy
 Expendable Lackey
 Expendable Troops
+Experiment One
 Experimental Augury
 Experimental Aviator
 Experimental Confectioner
@@ -6428,6 +6430,7 @@ Fathom Fleet Boarder
 Fathom Fleet Captain
 Fathom Fleet Cutthroat
 Fathom Fleet Firebrand
+Fathom Mage
 Fathom Trawl
 Faultgrinder
 Fauna Shaman
@@ -9251,6 +9254,7 @@ Hydraulic Helper
 Hydro-Channeler
 Hydro-Man, Fluid Felon	intent: BecomeArtifactEffect
 Hydroelectric Specimen
+Hydroform
 Hydroid Krasis
 Hydrolash
 Hydrosurge
@@ -10918,6 +10922,7 @@ Leyline Axe
 Leyline Binding
 Leyline Immersion
 Leyline Invocation
+Leyline Phantom
 Leyline Prowler
 Leyline Tyrant
 Leyline of Abundance
@@ -12599,6 +12604,7 @@ Mysterious Tome
 Mystic Archaeologist
 Mystic Denial
 Mystic Forge	intent: Pipeline(TopOfLibrary→exile)
+Mystic Genesis
 Mystic Meditation
 Mystic Monastery
 Mystic Reflection	intent: GrantReplacementEffectEffect; polarity: GrantReplacementEffectEffect
@@ -13343,6 +13349,7 @@ Onyx Talisman
 Oona's Gatewarden
 Oona's Prowler
 Oona, Queen of the Fae
+Ooze Flux
 Ooze Patrol
 Ooze Spill
 Opal Lake Gatekeepers
@@ -16111,6 +16118,7 @@ Sanguine Syphoner
 Sanitarium Skeleton
 Sanitation Automaton
 Sapling Nursery
+Sapphire Drake
 Sapphire Leech
 Sapphire Medallion
 Saprazzan Heir
@@ -16785,6 +16793,7 @@ Shaman of the Great Hunt
 Shaman of the Pack
 Shamanic Revelation
 Shamble Back
+Shambleshark
 Shambling Attendants
 Shambling Cie'th
 Shambling Ghast
@@ -17180,9 +17189,12 @@ Simian Spirit Guide
 Simic Ascendancy
 Simic Charm
 Simic Cluestone
+Simic Fluxmage
 Simic Growth Chamber
 Simic Guildgate
+Simic Keyrune
 Simic Locket
+Simic Manipulator
 Simic Signet
 Simic Sky Swallower
 Simoon
@@ -17822,6 +17834,7 @@ Speedway Fanatic
 Spell Blast
 Spell Pierce
 Spell Queller	intent: ExileTargetSpellEffect
+Spell Rupture
 Spell Satchel
 Spell Shrivel
 Spell Snare
@@ -20717,6 +20730,7 @@ Urabrask	intent: GrantStaticAbilityEffect
 Urabrask's Anointer
 Urabrask's Forge
 Urabrask, Heretic Praetor	intent: ReplaceNextDrawWithEffect
+Urban Evolution
 Urban Retreat
 Urban Utopia
 Urbis Protector
@@ -22310,6 +22324,7 @@ Zagras, Thief of Heartbeats
 Zahid, Djinn of the Lamp
 Zahur, Glory's Past
 Zalto, Fire Giant Duke
+Zameck Guildmage
 Zanam Djinn
 Zanarkand, Ancient Metropolis
 Zap
