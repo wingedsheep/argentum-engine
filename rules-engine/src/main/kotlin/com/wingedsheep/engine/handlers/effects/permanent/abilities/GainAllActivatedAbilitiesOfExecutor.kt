@@ -68,9 +68,9 @@ class GainAllActivatedAbilitiesOfExecutor(
         // an error — the ability just gains nothing (CR 608.2b: an effect does as much as it can).
         val donorId = context.resolveTarget(effect.donor)
         val donorEntity = donorId?.let { state.getEntity(it) }
-        val donorCard = donorEntity?.get<CardComponent>()
-        val donorDef = donorCard?.let { cardRegistry.getCard(it.cardDefinitionId) }
-            ?: return EffectResult.success(state)
+        val donorCard = donorEntity?.get<CardComponent>() ?: return EffectResult.success(state)
+        // Null for an inline token donor: its own abilities are its CardComponent's copiable text.
+        val donorDef = cardRegistry.getCard(donorCard.cardDefinitionId)
         val donorClassLevel = donorEntity.get<ClassLevelComponent>()?.currentLevel
 
         val gained = com.wingedsheep.engine.state.components.identity.ownActivatedAbilities(donorCard, donorDef, donorClassLevel)

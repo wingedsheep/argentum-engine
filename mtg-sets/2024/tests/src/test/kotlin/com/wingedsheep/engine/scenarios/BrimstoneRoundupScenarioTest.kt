@@ -82,7 +82,7 @@ class BrimstoneRoundupScenarioTest : ScenarioTestBase() {
                     token, game.state.getEntity(token)!!.without<SummoningSicknessComponent>()
                 )
 
-                val abilityId = game.state.grantedActivatedAbilities.first { it.entityId == token }.ability.id
+                val abilityId = game.state.getEntity(token)!!.get<CardComponent>()!!.copyActivatedAbilities.first().id
                 val activation = game.execute(
                     ActivateAbility(
                         playerId = game.player1Id,

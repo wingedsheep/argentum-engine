@@ -3,6 +3,7 @@ package com.wingedsheep.ai.engine
 import com.wingedsheep.engine.core.DeclareAttackers
 import com.wingedsheep.engine.core.DeclareBlockers
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.p02.cards.AlabornZealot
@@ -107,6 +108,19 @@ class BlockTriggersKillTest : FunSpec({
     test("a bare blocks trigger has no triggering entity, so it is not read as a kill") {
         val board = board("Test Bare Zealot")
         board.attackers(advisor(blockTriggersKill = true)) shouldContain board.attacker
+    }
+
+    test("a token created with the Zealot's block trigger is read as a killer too") {
+        // An inline token's own abilities are copiable text on its CardComponent, not a grant.
+        val board = board("Test Squire")
+        val state = board.driver.state
+        val squireCard = state.getEntity(board.blocker)!!.get<CardComponent>()!!
+        val tokenCard = squireCard.copy(
+            cardDefinitionId = "token:Human-Soldier",
+            copyTriggeredAbilities = AlabornZealot.script.triggeredAbilities,
+        )
+        board.driver.replaceState(state.withEntity(board.blocker, state.getEntity(board.blocker)!!.with(tokenCard)))
+        board.attackers(advisor(blockTriggersKill = true)) shouldNotContain board.attacker
     }
 
     test("with the flag off, the 6/5 attacks into the Zealot (the playtest misplay)") {

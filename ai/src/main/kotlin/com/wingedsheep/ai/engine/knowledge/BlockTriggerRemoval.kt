@@ -79,7 +79,9 @@ internal object BlockTriggerRemoval {
         val entity = state.getEntity(blocker) ?: return null
         if (entity.has<FaceDownComponent>()) return null
         val card = entity.get<CardComponent>() ?: return null
-        val printed = cardRegistry.getCard(card.cardDefinitionId)?.script?.triggeredAbilities.orEmpty()
+        // A token's own triggers (and copy-exception text) are copiable values on its CardComponent.
+        val printed = cardRegistry.getCard(card.cardDefinitionId)?.script?.triggeredAbilities.orEmpty() +
+            card.copyTriggeredAbilities
         val granted = state.grantedTriggeredAbilities.filter { it.entityId == blocker }.map { it.ability }
         if (printed.isEmpty() && granted.isEmpty()) return null
 

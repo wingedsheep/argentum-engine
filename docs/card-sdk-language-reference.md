@@ -3318,9 +3318,15 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `staticAbilities?` parameter covers the common static-only case (e.g. a token with "This token can't
   block" — Broodrage Mycoid's `CantBlock(GroupFilter.source())`). For `triggeredAbilities` **and**
   `activatedAbilities`, drop to the raw `CreateTokenEffect` constructor, which exposes all three —
-  each list is granted to every created token at resolution (permanent
-  duration) via `GameState.granted{Static,Triggered,Activated}Abilities`, so the legal-action
-  enumerator and `ActivateAbilityHandler` pick them up like any other granted ability. Example:
+  the abilities a token is created with are part of its **copiable values** (CR 707.2), so they ride on
+  the token's `CardComponent` (`copyStaticAbilities` / `copyTriggeredAbilities` / `copyActivatedAbilities`):
+  a copy of the token (Clone, Cackling Counterpart, "becomes a copy") has them too, and "loses all
+  abilities" strips them. The one exception is **mana abilities** (an Eldrazi Scion's "Sacrifice this
+  creature: Add {C}"), which are granted permanently via `GameState.grantedActivatedAbilities` because the
+  mana solver reads printed and granted mana abilities only — so for now a copy of an Eldrazi Scion/Spawn
+  token lacks its mana ability, and "loses all abilities" leaves it in place (tracked as its own gap).
+  Deathpact Angel's Cleric (GTC) is the
+  copy-proof example. Example:
   Mourner's Surprise's "1/1 red Mercenary creature token with \"{T}: Target creature you control
   gets +1/+0 until end of turn. Activate only as a sorcery.\"" passes a single
   `ActivatedAbility(cost = AbilityCost.Tap, effect = Effects.ModifyStats(1, 0), targetRequirements =
