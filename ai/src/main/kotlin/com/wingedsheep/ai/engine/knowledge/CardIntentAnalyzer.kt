@@ -3442,6 +3442,19 @@ object CardIntentAnalyzer {
     }
 
     /**
+     * Whether [ability] makes our opponents lose life each time we gain it — "whenever you gain life
+     * this turn, each opponent loses that much life" (Vizkopa Guildmage). Spent by any life we gain
+     * while it lasts: lifelink in a fight, a lifegain spell or trigger.
+     */
+    internal fun drainsOpponentsOnOwnLifeGain(ability: TriggeredAbility): Boolean {
+        val event = ability.trigger as? EventPattern.LifeGainEvent ?: return false
+        if (event.player != Player.You) return false
+        return readingLeaves(ability.effect).any {
+            it is LoseLifeEffect && it.target == EffectTarget.PlayerRef(Player.EachOpponent)
+        }
+    }
+
+    /**
      * Whether [replacement] puts +1/+1 counters on every creature of ours that enters — "each
      * creature you control enters with an additional +1/+1 counter on it" (Zameck Guildmage's
      * grant for the turn). A self-only one is a card's own entry, not a grant over what follows.

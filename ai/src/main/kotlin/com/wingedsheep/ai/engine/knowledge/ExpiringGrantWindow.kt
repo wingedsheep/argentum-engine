@@ -376,7 +376,7 @@ internal object ExpiringGrantWindow {
             if (payoff.kind == PayoffKind.ENTRY) {
                 return@none state.isActiveTurnFor(playerId) && state.step.phase != Phase.ENDING
             }
-            if (payoff.kind == PayoffKind.GRAVEYARD_DRAIN) {
+            if (payoff.kind == PayoffKind.GRAVEYARD_DRAIN || payoff.kind == PayoffKind.LIFE_GAIN_DRAIN) {
                 return@none state.step.phase != Phase.ENDING
             }
             if (payoff.kind == PayoffKind.ACTIVATION) {
@@ -434,7 +434,8 @@ internal object ExpiringGrantWindow {
                 }
                 PayoffKind.LAND -> affected.any { canStillMatter(state, projected, playerId, it) }
                 PayoffKind.SHIELD, PayoffKind.SILENCE, PayoffKind.CONNECT, PayoffKind.STRIP, PayoffKind.ACTIVATION,
-                PayoffKind.LURE, PayoffKind.FORCED_ATTACK, PayoffKind.ENTRY, PayoffKind.GRAVEYARD_DRAIN -> true // answered above
+                PayoffKind.LURE, PayoffKind.FORCED_ATTACK, PayoffKind.ENTRY, PayoffKind.GRAVEYARD_DRAIN,
+                PayoffKind.LIFE_GAIN_DRAIN -> true // answered above
                 PayoffKind.BORROW -> affected.any { projected.isCreature(it) } &&
                     (state.step in UNTIL_ATTACKERS_DECLARED || state.step in FIGHT_STILL_AHEAD ||
                         controlsASacrificeOutlet(state, playerId, intents))
@@ -1545,6 +1546,15 @@ internal object ExpiringGrantWindow {
          * Not deferred ([holds]): it is not spent on one fight.
          */
         GRAVEYARD_DRAIN,
+
+        /**
+         * A trigger until end of turn that drains each opponent for the life we gain — "whenever you
+         * gain life this turn, each opponent loses that much life" (Vizkopa Guildmage). It is spent
+         * by the life still to be gained this turn: lifelink in a fight, a lifegain spell or trigger,
+         * on either turn. So, like [GRAVEYARD_DRAIN], it buys something until the ending phase and
+         * nothing there. Not deferred ([holds]): it is not spent on one fight.
+         */
+        LIFE_GAIN_DRAIN,
     }
 
     /**
@@ -1737,6 +1747,11 @@ internal object ExpiringGrantWindow {
                 leaf is CreateGlobalTriggeredAbilityEffect && leaf.duration == Duration.EndOfTurn &&
                     CardIntentAnalyzer.drainsOwnerOfOpponentsCards(leaf.ability) ->
                     payoffs += Payoff(PayoffKind.GRAVEYARD_DRAIN, null)
+                // "Whenever you gain life this turn, each opponent loses that much life" (Vizkopa
+                // Guildmage): see [PayoffKind.LIFE_GAIN_DRAIN].
+                leaf is CreateGlobalTriggeredAbilityEffect && leaf.duration == Duration.EndOfTurn &&
+                    CardIntentAnalyzer.drainsOpponentsOnOwnLifeGain(leaf.ability) ->
+                    payoffs += Payoff(PayoffKind.LIFE_GAIN_DRAIN, null)
                 // A source chosen on resolution has no target to land on: null.
                 isSilence(leaf) -> payoffs += Payoff(
                     PayoffKind.SILENCE,
