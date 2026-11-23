@@ -1165,6 +1165,67 @@ data class EntersWithKeywords(
     }
 }
 
+/**
+ * Permanent enters the battlefield with added [characteristics] (CR 614.1c) — "each other creature
+ * you control enters … as a Mutant in addition to its other types" (Master Biomancer). The static,
+ * printed counterpart of the [com.wingedsheep.sdk.scripting.effects.EntersWithCharacteristics] entry
+ * rider a resolving `MoveToZone` / `MoveCollection` carries (Dance of the Manse), and it applies the
+ * very same changes: card types and subtypes (or replaced creature types) in layer 4, colors in
+ * layer 5, base P/T in layer 7b, each a permanent, entry-timestamped floating effect on the new
+ * object that is stripped when it leaves (CR 400.7). No trigger, no stack: the permanent is that
+ * type from the moment it arrives, so its own "enters" triggers and later entry replacements see it.
+ *
+ * Closest neighbours: [EntersWithKeywords] (the same entry-time grant, but of abilities in layer 6 —
+ * its name and `keywords` field are ability-shaped, so a type axis there would make it lie) and
+ * [EntersAsCopy] (copiable values of another object, not additions on top of the card's own).
+ *
+ * @param characteristics What the entering permanent gains as it enters.
+ * @param condition When non-null, applied only if it holds at entry, judged against the entering
+ *                  permanent (as on [EntersWithKeywords]).
+ * @param selfOnly Only the permanent carrying this effect, as it enters ("this creature enters as …").
+ * @param otherOnly Only *other* permanents matching [appliesTo] ("each other creature you control
+ *                  enters as …"): the carrier's own entry skips it.
+ */
+@SerialName("EntersAs")
+@Serializable
+data class EntersAs(
+    val characteristics: com.wingedsheep.sdk.scripting.effects.EntersWithCharacteristics,
+    val condition: Condition? = null,
+    val selfOnly: Boolean = false,
+    val otherOnly: Boolean = false,
+    override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
+        filter = GameObjectFilter.Creature.youControl(),
+        to = Zone.BATTLEFIELD
+    )
+) : ReplacementEffect {
+    init {
+        require(!(selfOnly && otherOnly)) { "EntersAs can't be both selfOnly and otherOnly" }
+    }
+
+    override val description: String = buildString {
+        append("If ${appliesTo.description}, it enters as ")
+        val c = characteristics
+        val parts = buildList {
+            if (c.power != null) add("${c.power}/${c.toughness}")
+            c.addedColors.forEach { add(it.displayName.lowercase()) }
+            c.creatureSubtypes?.forEach { add(it.value) }
+            c.addedSubtypes.forEach { add(it.value) }
+            c.addedCardTypes.forEach { add(it.name.lowercase()) }
+        }
+        append("a ${parts.joinToString(" ")}")
+        append(if (c.creatureSubtypes != null) " and loses all other creature types" else " in addition to its other types")
+        if (condition != null) append(" if ${condition.description}")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
+        val newAppliesTo = appliesTo.applyTextReplacement(replacer)
+        val newCondition = condition?.applyTextReplacement(replacer)
+        return if (newAppliesTo !== appliesTo || newCondition !== condition)
+            copy(appliesTo = newAppliesTo, condition = newCondition)
+        else this
+    }
+}
+
 // =============================================================================
 // Damage Replacement Effects
 // =============================================================================

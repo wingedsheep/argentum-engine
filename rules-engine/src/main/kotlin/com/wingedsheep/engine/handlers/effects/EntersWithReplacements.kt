@@ -35,12 +35,15 @@ import com.wingedsheep.sdk.scripting.EntersWithCounters
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.EntersWithDynamicCounters
 import com.wingedsheep.sdk.scripting.EntersWithKeywords
+import com.wingedsheep.sdk.scripting.EntersAs
+import com.wingedsheep.engine.handlers.effects.zones.CharacteristicsEntry
 import com.wingedsheep.sdk.scripting.Vanishing
 import com.wingedsheep.sdk.scripting.conditions.SourceChosenModeIs
 
 /**
  * Applies "enters with …" replacement effects (CR 614.1c) — counters
- * ([EntersWithCounters] / [EntersWithDynamicCounters]) and keywords ([EntersWithKeywords]) —
+ * ([EntersWithCounters] / [EntersWithDynamicCounters]), keywords ([EntersWithKeywords]) and added
+ * characteristics ([EntersAs]) —
  * both the entering permanent's own effects and global ones sourced from *other* battlefield
  * permanents (e.g., Gev, Scaled Scorch granting +1/+1 counters to creatures you control that
  * enter the battlefield).
@@ -310,6 +313,15 @@ object EntersWithReplacements {
                     val (grantState, grantEvents) = grantKeywords(newState, effect, entityId, entityName, context)
                     newState = grantState
                     events.addAll(grantEvents)
+                }
+                is EntersAs -> {
+                    // "Each other creature you control enters as …" must not change its own source.
+                    if (effect.otherOnly) continue
+                    val context = EffectContext(sourceId = entityId, controllerId = controllerId)
+                    if (effect.condition != null &&
+                        !predicateEvaluator.conditions.evaluate(newState, effect.condition!!, context)
+                    ) continue
+                    newState = CharacteristicsEntry.apply(newState, entityId, controllerId, effect.characteristics)
                 }
                 else -> { /* Other replacement effects handled elsewhere */ }
             }
@@ -648,12 +660,72 @@ object EntersWithReplacements {
                         events.addAll(grantEvents)
                         true
                     }
+                    is EntersAs -> {
+                        if (effect.selfOnly) continue
+                        if (!matchesEnterFilter(effect.appliesTo, enteringEntityId, sourceId, sourceControllerId, newState, predicateEvaluator = predicateEvaluator)) continue
+                        // The condition describes the ENTERING permanent, as on the branches above.
+                        if (effect.condition != null) {
+                            val condContext = EffectContext(
+                                sourceId = enteringEntityId,
+                                controllerId = sourceControllerId,
+                                affectedEntityId = enteringEntityId,
+                            )
+                            if (!predicateEvaluator.conditions.evaluate(newState, effect.condition!!, condContext)) continue
+                        }
+                        // The entering permanent's controller owns the change, like the rider path.
+                        newState = CharacteristicsEntry.apply(newState, enteringEntityId, enteringControllerId, effect.characteristics)
+                        true
+                    }
                     else -> false /* Other replacement effects handled elsewhere */
                 }
                 if (applied) newState = spendGrant(newState, source)
             }
         }
         return newState to events
+    }
+
+    /**
+     * Apply every [EntersAs] that will change [entityId] as it enters — its own (not `otherOnly`) and
+     * those of other battlefield permanents and durational grants (not `selfOnly`, `appliesTo`
+     * matching) — to a **scratch** state where it already stands on the battlefield. This is what
+     * pre-entry judgments ([EntryCharacteristics.projectedAsEntering]: "would a creature enter",
+     * Sunburst) read, so they see the object as it will exist (CR 614.12); the real entry applies the
+     * same effects through [applyFromDefinition] / [applyGlobal]. Never call it on live state.
+     */
+    fun applyEntersAsToScratch(
+        scratch: GameState,
+        entityId: EntityId,
+        controllerId: EntityId,
+        cardRegistry: CardRegistry,
+        predicateEvaluator: PredicateEvaluator,
+    ): GameState {
+        var newState = scratch
+        val cardDef = scratch.getEntity(entityId)?.get<CardComponent>()
+            ?.let { cardRegistry.getCard(it.cardDefinitionId) }
+        cardDef?.script?.replacementEffects?.filterIsInstance<EntersAs>()?.forEach { effect ->
+            if (effect.otherOnly || Zone.BATTLEFIELD !in effect.activeZones) return@forEach
+            val context = EffectContext(sourceId = entityId, controllerId = controllerId)
+            if (effect.condition != null && !predicateEvaluator.conditions.evaluate(newState, effect.condition!!, context)) return@forEach
+            newState = CharacteristicsEntry.apply(newState, entityId, controllerId, effect.characteristics)
+        }
+        val sources = scratch.getBattlefield().filter { it != entityId }.flatMap { sourceId ->
+            val sourceController = scratch.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
+                ?: return@flatMap emptyList()
+            scratch.activeReplacementSource(sourceId)?.replacementEffects.orEmpty()
+                .filterIsInstance<EntersAs>().map { Triple(sourceId, sourceController, it) }
+        } + scratch.grantedReplacementEffects.mapNotNull { grant ->
+            (grant.replacement as? EntersAs)?.let { Triple(grant.entityId, grant.controllerId, it) }
+        }
+        for ((sourceId, sourceController, effect) in sources) {
+            if (effect.selfOnly || Zone.BATTLEFIELD !in effect.activeZones) continue
+            if (!matchesEnterFilter(effect.appliesTo, entityId, sourceId, sourceController, newState, predicateEvaluator)) continue
+            if (effect.condition != null) {
+                val context = EffectContext(sourceId = entityId, controllerId = sourceController, affectedEntityId = entityId)
+                if (!predicateEvaluator.conditions.evaluate(newState, effect.condition!!, context)) continue
+            }
+            newState = CharacteristicsEntry.apply(newState, entityId, controllerId, effect.characteristics)
+        }
+        return newState
     }
 
     /**
