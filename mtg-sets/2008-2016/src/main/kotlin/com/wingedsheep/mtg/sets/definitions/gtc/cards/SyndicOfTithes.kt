@@ -11,7 +11,7 @@ private const val EXTORT_TEXT = "Extort (Whenever you cast a spell, you may pay 
 
 /**
  * Syndic of Tithes
- * {2}{W}
+ * {1}{W}
  * Creature — Human Cleric
  * 2/2
  * Extort (Whenever you cast a spell, you may pay {W/B}. If you do, each opponent loses 1 life and
@@ -21,7 +21,7 @@ private const val EXTORT_TEXT = "Extort (Whenever you cast a spell, you may pay 
  * [Effects.MayPay] of `{W/B}` over [Effects.DrainLife].
  */
 val SyndicOfTithes = card("Syndic of Tithes") {
-    manaCost = "{2}{W}"
+    manaCost = "{1}{W}"
     colorIdentity = "W"
     typeLine = "Creature — Human Cleric"
     power = 2
