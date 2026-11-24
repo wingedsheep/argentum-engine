@@ -8645,58 +8645,6 @@
     ]
 }
 
-// Racecourse Fury
-{
-    "name": "Racecourse Fury",
-    "manaCost": "{R}",
-    "typeLine": "Enchantment — Aura",
-    "oracleText": "Enchant land\nEnchanted land has \"{T}: Target creature gains haste until end of turn.\"",
-    "script": {
-        "staticAbilities": [
-            {
-                "type": "GrantActivatedAbility",
-                "ability": {
-                    "id": "Racecourse Fury:1",
-                    "cost": "CostTap",
-                    "effect": {
-                        "type": "GrantKeyword",
-                        "keyword": "HASTE",
-                        "target": {
-                            "type": "BoundVariable",
-                            "name": "target"
-                        }
-                    },
-                    "targetRequirements": [
-                        {
-                            "type": "TargetObject",
-                            "filter": {
-                                "baseFilter": "creature"
-                            },
-                            "id": "target"
-                        }
-                    ]
-                }
-            }
-        ],
-        "auraTarget": {
-            "type": "TargetObject",
-            "filter": {
-                "baseFilter": "land"
-            }
-        }
-    },
-    "metadata": {
-        "collectorNumber": "104",
-        "rarity": "UNCOMMON",
-        "artist": "Sam Burley",
-        "flavorText": "Close finishes are settled by who can dismount and get to weapons first.",
-        "imageUri": "https://cards.scryfall.io/normal/front/1/5/15d13d35-b5f7-4d3d-a1fa-84178b28acae.jpg?1783940353"
-    },
-    "colorIdentityOverride": [
-        "RED"
-    ]
-}
-
 // Rakdos Cackler
 {
     "name": "Rakdos Cackler",
