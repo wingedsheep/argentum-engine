@@ -48,6 +48,7 @@ class AttachedAuraRemovalPolarityAiTest : ScenarioTestBase() {
                 .withCardOnBattlefield(2, "Forest")
                 .withCardAttachedTo(2, "Wild Growth", "Forest")
                 .withLandsOnBattlefield(1, "Plains", 2)
+                .withCardAttachedTo(1, "Wild Growth", "Plains")
                 .withCardOnBattlefield(1, "Street Sweeper")
                 .build()
             game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
@@ -56,7 +57,7 @@ class AttachedAuraRemovalPolarityAiTest : ScenarioTestBase() {
             val response = AIPlayer.create(cardRegistry, game.player1Id, AiProfile.LIVE).respondToDecision(game.state, decision)
             val target = response.shouldBeInstanceOf<TargetsResponse>().selectedTargets.values.flatten().single()
 
-            withClue("the opponent's Forest carries the only Aura") {
+            withClue("both sides have an enchanted land; it strips the opponent's, not its own") {
                 game.state.projectedState.getController(target) shouldBe game.player2Id
             }
         }

@@ -107,6 +107,9 @@ class SoulTitheScenarioTest : ScenarioTestBase() {
 
                 // Player2's turn → Player1's upkeep.
                 game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
+                withClue("nothing triggers on the Aura controller's upkeep") {
+                    game.state.stack.isEmpty() shouldBe true
+                }
                 game.resolveStack()
 
                 withClue("Player1 controls the Aura, but its upkeep isn't the Bears' controller's") {
