@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.FlipCoinEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
@@ -343,6 +344,8 @@ object EffectWalker {
      * doing a thing N times is for what the thing is for, and N is only how much. So does a
      * do-while ([RepeatWhileEffect], Ad Nauseam's "you may repeat this process"): whether it goes
      * round again is the loop's condition, what each round does is the card's payoff.
+     * A coin flip ([FlipCoinEffect], Volatile Rig, Skittish Valesk) opens onto both its won and
+     * lost branches the same way: the coin only picks which one happens.
      *
      * The static readers that ask what a card is *for* ([CardIntentAnalyzer], [TargetPolarityAnalyzer])
      * read this walk. [leaves] keeps stopping at the gate, because widening it would move the rater's
@@ -357,6 +360,7 @@ object EffectWalker {
                 listOfNotNull(leaf.ifNotEmpty, leaf.ifEmpty).flatMap { payoffLeaves(it) }
             leaf is RepeatDynamicTimesEffect -> payoffLeaves(leaf.body)
             leaf is RepeatWhileEffect -> payoffLeaves(leaf.body)
+            leaf is FlipCoinEffect -> listOfNotNull(leaf.wonEffect, leaf.lostEffect).flatMap { payoffLeaves(it) }
             leaf is ChooseActionEffect && choosesOwnBranch(leaf) ->
                 leaf.choices.flatMap { payoffLeaves(it.effect) }
             leaf !is GatedEffect || leaf.decisionMaker != null -> listOf(leaf)

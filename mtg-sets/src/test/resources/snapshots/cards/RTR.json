@@ -2369,6 +2369,75 @@
     }
 }
 
+// Chronic Flooding
+{
+    "name": "Chronic Flooding",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nWhenever enchanted land becomes tapped, its controller mills three cards.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Chronic Flooding:1",
+                "trigger": "TapEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "player": "ControllerOfTriggeringEntity",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "ControllerOfTriggeringEntity"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "artist": "Scott Chou",
+        "flavorText": "With the Izzet occupied elsewhere, many of their public works fell into disrepair.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1a757425-3cf2-4aca-b415-5ec2d5f753fe.jpg?1783940370",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "Chronic Flooding's ability will trigger whenever the enchanted land becomes tapped for any reason, not just because its controller taps it for mana."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "Chronic Flooding becoming attached to a tapped land won't cause its ability to immediately trigger. That land must go from untapped to tapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Cobblebrute
 {
     "name": "Cobblebrute",
@@ -2605,6 +2674,88 @@
     ]
 }
 
+// Conjured Currency
+{
+    "name": "Conjured Currency",
+    "manaCost": "{5}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, you may exchange control of this enchantment and target permanent you neither own nor control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Conjured Currency:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "ExchangeControl",
+                        "target1": "Self",
+                        "target2": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "descriptionOverride": "You may exchange control of this enchantment and target permanent you neither own nor control."
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsPermanent"
+                            ],
+                            "controllerPredicate": {
+                                "type": "ControllerAnd",
+                                "predicates": [
+                                    {
+                                        "type": "ControllerNot",
+                                        "predicate": "OwnedByYou"
+                                    },
+                                    {
+                                        "type": "ControllerNot",
+                                        "predicate": "ControlledByYou"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "You may exchange control of this enchantment and target permanent you neither own nor control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "RARE",
+        "artist": "Steve Argyle",
+        "flavorText": "A bargain in Keyhole Downs is always too good to be true.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a7c2ea6e-7d29-4526-b135-9bbb1eed9d4a.jpg?1783940370",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "The only legal target for Conjured Currency's ability is a permanent both owned and controlled by another player, although it doesn't have to be the same player. For example, a permanent owned by an opponent but controlled by your teammate (or another opponent) could be chosen as the target."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "The exchange occurs only if Conjured Currency and the target permanent are both on the battlefield and controlled by different players when the ability resolves. In addition, the target permanent must be one you neither own nor control. If any of these things aren't true when the ability tries to resolve, the exchange won't happen and neither permanent will change controllers."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "You don't necessarily have to control Conjured Currency when its ability resolves in order for the exchange to happen. If another player has gained control of Conjured Currency while the ability is on the stack, and a third player controls the target (and you don't own it), you may choose to have those two players exchange control of the relevant permanents."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Corpsejack Menace
 {
     "name": "Corpsejack Menace",
@@ -2735,6 +2886,70 @@
     "colorIdentityOverride": [
         "GREEN",
         "WHITE"
+    ]
+}
+
+// Crosstown Courier
+{
+    "name": "Crosstown Courier",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Vedalken",
+    "oracleText": "Whenever this creature deals combat damage to a player, that player mills that many cards.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Crosstown Courier:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "ContextProperty",
+                                    "key": "TRIGGER_DAMAGE_AMOUNT"
+                                },
+                                "player": "TriggeringPlayer",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "TriggeringPlayer"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, that player mills that many cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "artist": "Chase Stone",
+        "flavorText": "Information travels quickly through Ravnica's network of messengers and thought agents.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8c8875a3-9f56-4947-9655-aa5d95f06de0.jpg?1783940370"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3368,6 +3583,97 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Doorkeeper
+{
+    "name": "Doorkeeper",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Homunculus",
+    "oracleText": "Defender\n{2}{U}, {T}: Target player mills X cards, where X is the number of creatures you control with defender.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Doorkeeper:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": "creature kw:defender"
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}{U}, {T}: Target player mills X cards, where X is the number of creatures you control with defender."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "artist": "Kev Walker",
+        "flavorText": "One piercing stare usually convinces thieves to go elsewhere.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c31221f-3753-4d5c-905a-6b558ab648ae.jpg?1783940369",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "The number of creatures with defender you control is counted when the ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4271,6 +4577,59 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Faerie Impostor
+{
+    "name": "Faerie Impostor",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Faerie Rogue",
+    "oracleText": "Flying\nWhen this creature enters, sacrifice it unless you return another creature you control to its owner's hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Faerie Impostor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomReturnToHand",
+                            "filter": "creature"
+                        }
+                    },
+                    "suffer": "SacrificeSelf"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "rarity": "UNCOMMON",
+        "artist": "Johann Bodin",
+        "flavorText": "Many Tin Street shops display a sign on the door: \"No cloaks allowed.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7dfddc9d-85f6-4b37-9973-14c69f6818ec.jpg?1783940370",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "Returning another creature you control to its owner's hand is optional. You may choose to sacrifice Faerie Impostor, even if you could return a creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -6094,6 +6453,143 @@
     ]
 }
 
+// Izzet Keyrune
+{
+    "name": "Izzet Keyrune",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {U} or {R}.\n{U}{R}: Until end of turn, this artifact becomes a 2/1 blue and red Elemental artifact creature.\nWhenever this artifact deals combat damage to a player, you may draw a card. If you do, discard a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Izzet Keyrune:4",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Izzet Keyrune:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Izzet Keyrune:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Izzet Keyrune:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{U}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "creatureTypes": [
+                        "Elemental"
+                    ],
+                    "addTypes": [
+                        "ARTIFACT"
+                    ],
+                    "colors": [
+                        "BLUE",
+                        "RED"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/3/83e4e83b-cbb8-4efd-b6c4-4459a29177ac.jpg?1783940324"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Izzet Staticaster
 {
     "name": "Izzet Staticaster",
@@ -6958,6 +7454,107 @@
     ]
 }
 
+// Mercurial Chemister
+{
+    "name": "Mercurial Chemister",
+    "manaCost": "{3}{U}{R}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{U}, {T}: Draw two cards.\n{R}, {T}, Discard a card: This creature deals damage to target creature equal to the discarded card's mana value.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mercurial Chemister:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            },
+            {
+                "id": "Mercurial Chemister:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{R}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": "AtomDiscard"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "DiscardedAsCost",
+                        "numericProperty": "ManaValue"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "rarity": "RARE",
+        "artist": "Wesley Burt",
+        "flavorText": "What some see as \"distracted\" is really \"fathoming the unfathomable.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/881728ce-4b18-410e-9cdb-4d439ce0b21d.jpg?1783940336",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "If the discarded card has {X} in its mana cost, X is 0."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "If the discarded card has no mana symbols in its upper right corner (because it's a land card, for example), its mana value is 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Minotaur Aggressor
 {
     "name": "Minotaur Aggressor",
@@ -6978,6 +7575,97 @@
         "artist": "Lucas Graciano",
         "flavorText": "The smelting district is home to many who see the guilds as not for them.",
         "imageUri": "https://cards.scryfall.io/normal/front/e/2/e22959dc-8759-454e-80b9-623a799af354.jpg?1783940354"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Mizzium Mortars
+{
+    "name": "Mizzium Mortars",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Mizzium Mortars deals 4 damage to target creature you don't control.\nOverload {3}{R}{R}{R} (You may cast this spell for its overload cost. If you do, change \"target\" in its text to \"each.\")",
+    "keywords": [
+        "OVERLOAD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Overload",
+            "cost": "{3}{R}{R}{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 4
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerNot",
+                            "predicate": "ControlledByYou"
+                        }
+                    }
+                },
+                "id": "t0"
+            }
+        ],
+        "overloadSpellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerNot",
+                            "predicate": "ControlledByYou"
+                        }
+                    }
+                }
+            },
+            "body": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 4
+                },
+                "target": "IterationEntity"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "RARE",
+        "artist": "Noah Bradley",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d4ded88d-2688-4f5e-a8b2-16216cf9c792.jpg?1783940354",
+        "rulings": [
+            {
+                "date": "2024-01-12",
+                "text": "Because a spell with overload doesn't target when its overload cost is paid, it may affect permanents with hexproof or with protection from the appropriate color."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "Note that if the spell with overload is dealing damage, protection from that spell's color will still prevent that damage."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED"
@@ -7292,6 +7980,207 @@
     ]
 }
 
+// Niv-Mizzet, Dracogenius
+{
+    "name": "Niv-Mizzet, Dracogenius",
+    "manaCost": "{2}{U}{U}{R}{R}",
+    "typeLine": "Legendary Creature — Dragon Wizard",
+    "oracleText": "Flying\nWhenever Niv-Mizzet deals damage to a player, you may draw a card.\n{U}{R}: Niv-Mizzet deals 1 damage to any target.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Niv-Mizzet, Dracogenius:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Niv-Mizzet, Dracogenius:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{U}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "183",
+        "rarity": "MYTHIC",
+        "artist": "Todd Lockwood",
+        "flavorText": "He has no patience for minds that do not inspire him or explode by trying.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c345e475-8095-41b5-90b4-771fcf80b939.jpg?1783940334"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
+// Nivix Guildmage
+{
+    "name": "Nivix Guildmage",
+    "manaCost": "{U}{R}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{1}{U}{R}: Draw a card, then discard a card.\n{2}{U}{R}: Copy target instant or sorcery spell you control. You may choose new targets for the copy.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nivix Guildmage:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{U}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Nivix Guildmage:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{U}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "CopyTargetSpell",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "instant|sorcery ctrl:you",
+                            "zone": "Stack"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "182",
+        "rarity": "UNCOMMON",
+        "artist": "Scott M. Fischer",
+        "flavorText": "\"The only action worth taking is one with an unknown outcome.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9d3fde47-8d9e-4a84-b8a5-dcfe0c1d443c.jpg?1783940335",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "Nivix Guildmage's second ability can target (and copy) any instant or sorcery spell you control, not just one with targets."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "The copy will have the same targets as the spell it's copying unless you choose new ones. You may change any number of the targets, including all of them or none of them. If, for one of the targets, you can't choose a new legal target, then it remains unchanged (even if the current target is illegal)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Nivmagus Elemental
 {
     "name": "Nivmagus Elemental",
@@ -7551,6 +8440,111 @@
     ]
 }
 
+// Psychic Spiral
+{
+    "name": "Psychic Spiral",
+    "manaCost": "{4}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Shuffle all cards from your graveyard into your library. Target player mills that many cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "StoreNumber",
+                    "name": "psychicSpiralCount",
+                    "amount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard"
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard"
+                            },
+                            "storeAs": "graveyardCards"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "graveyardCards",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Shuffled"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "VariableReference",
+                                    "variableName": "psychicSpiralCount"
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Pancoast",
+        "flavorText": "An elocutor forces criminals to confess to the laws they merely intended to break.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/59b09c16-f611-4c90-a990-e22bf46bd0e2.jpg?1783940367",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "Psychic Spiral won’t be shuffled into your library, and it won’t be counted when determining how many cards the target player puts into their graveyard. It will be put into your graveyard after you follow its instructions."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "If you cast Psychic Spiral when there are no cards in your graveyard, you’ll still shuffle your library."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Pursuit of Flight
 {
     "name": "Pursuit of Flight",
@@ -7645,6 +8639,58 @@
         "artist": "Jack Wang",
         "flavorText": "\"The Izzet are an equation that turns lunacy into explosions.\"\n—Leonos, Azorius arbiter",
         "imageUri": "https://cards.scryfall.io/normal/front/6/c/6cff95b7-79eb-4796-9a01-31ff355681ab.jpg?1783940353"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Racecourse Fury
+{
+    "name": "Racecourse Fury",
+    "manaCost": "{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nEnchanted land has \"{T}: Target creature gains haste until end of turn.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Racecourse Fury:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "GrantKeyword",
+                        "keyword": "HASTE",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "target"
+                        }
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "rarity": "UNCOMMON",
+        "artist": "Sam Burley",
+        "flavorText": "Close finishes are settled by who can dismount and get to weapons first.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/15d13d35-b5f7-4d3d-a1fa-84178b28acae.jpg?1783940353"
     },
     "colorIdentityOverride": [
         "RED"
@@ -10381,6 +11427,126 @@
     ]
 }
 
+// Teleportal
+{
+    "name": "Teleportal",
+    "manaCost": "{U}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature you control gets +1/+0 until end of turn and can't be blocked this turn.\nOverload {3}{U}{R} (You may cast this spell for its overload cost. If you do, change \"target\" in its text to \"each.\")",
+    "keywords": [
+        "OVERLOAD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Overload",
+            "cost": "{3}{U}{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "CANT_BE_BLOCKED",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ],
+        "overloadSpellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "CantBeBlockedGroup",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "202",
+        "rarity": "UNCOMMON",
+        "artist": "Scott M. Fischer",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/4/e438c718-ac18-45d5-824e-5b697c5f0692.jpg?1783940330",
+        "rulings": [
+            {
+                "date": "2024-01-12",
+                "text": "If you don't pay the overload cost of a spell with overload, that spell will have a single target. If you pay the overload cost, the spell won't have any targets."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "Because a spell with overload doesn't target when its overload cost is paid, it may affect permanents with hexproof or with protection from the appropriate color."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying (such as an overload cost), add any cost increases, then apply any cost reductions. The mana value of the spell remains unchanged, no matter what the total cost to cast it was."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "If you are instructed to cast a spell with overload \"without paying its mana cost,\" you can't choose to pay its overload cost instead."
+            },
+            {
+                "date": "2017-03-14",
+                "text": "The set of creatures that gets +1/+0 from an overloaded Teleportal is determined as the spell resolves. Creatures you begin to control later in the turn won't get +1/+0. However, because the second part of Teleportal's effect doesn't change the characteristics of any permanents, the set of creatures that can't be blocked is constantly updated. Any creature you control at the moment blockers are chosen can't be blocked."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Tenement Crasher
 {
     "name": "Tenement Crasher",
@@ -11281,6 +12447,98 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Volatile Rig
+{
+    "name": "Volatile Rig",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Trample\nThis creature attacks each combat if able.\nWhenever this creature is dealt damage, flip a coin. If you lose the flip, sacrifice this creature.\nWhen this creature dies, flip a coin. If you lose the flip, it deals 4 damage to each creature and each player.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Volatile Rig:1",
+                "trigger": "DamageReceivedEvent",
+                "effect": {
+                    "type": "FlipCoin",
+                    "lostEffect": "SacrificeSelf"
+                },
+                "descriptionOverride": "Whenever this creature is dealt damage, flip a coin. If you lose the flip, sacrifice this creature."
+            },
+            {
+                "id": "Volatile Rig:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "FlipCoin",
+                    "lostEffect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    }
+                                },
+                                "body": {
+                                    "type": "DealDamage",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 4
+                                    },
+                                    "target": "IterationEntity"
+                                }
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Players",
+                                    "players": "Each"
+                                },
+                                "body": {
+                                    "type": "DealDamage",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 4
+                                    },
+                                    "target": "Controller"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "When this creature dies, flip a coin. If you lose the flip, it deals 4 damage to each creature and each player."
+            }
+        ],
+        "staticAbilities": [
+            "MustAttack"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "236",
+        "rarity": "RARE",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/5055ed18-b234-4702-92eb-4d483431ff47.jpg?1783940323",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "If Volatile Rig is dealt damage by multiple sources at the same time (for example, multiple blocking creatures), its first triggered ability will trigger only once."
+            }
+        ]
+    }
 }
 
 // Zanikev Locust

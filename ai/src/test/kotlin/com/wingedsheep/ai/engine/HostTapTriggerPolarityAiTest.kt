@@ -7,6 +7,7 @@ import com.wingedsheep.ai.engine.knowledge.TargetPolarity
 import com.wingedsheep.ai.engine.knowledge.TargetPolarityAnalyzer
 import com.wingedsheep.mtg.sets.definitions.lea.cards.PsychicVenom
 import com.wingedsheep.mtg.sets.definitions.roe.cards.ContaminatedGround
+import com.wingedsheep.mtg.sets.definitions.rtr.cards.ChronicFlooding
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
@@ -22,6 +23,12 @@ class HostTapTriggerPolarityAiTest : FunSpec({
     test("an Aura draining its host's controller on tap reads harmful") {
         TargetPolarityAnalyzer.forSpell(ContaminatedGround) shouldBe listOf(TargetPolarity.HARMFUL)
         TargetPolarityAnalyzer.forSpell(PsychicVenom) shouldBe listOf(TargetPolarity.HARMFUL)
+    }
+
+    test("an Aura milling its host's controller on tap reads harmful") {
+        TargetPolarityAnalyzer.forSpell(ChronicFlooding) shouldBe listOf(TargetPolarity.HARMFUL)
+        val reading = AiReadingAudit.read(ChronicFlooding)
+        withClue("$reading") { reading.readFully shouldBe true }
     }
 
     test("its controller's life loss is a clock on that player") {

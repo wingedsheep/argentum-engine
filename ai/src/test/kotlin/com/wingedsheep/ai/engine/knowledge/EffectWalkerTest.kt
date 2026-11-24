@@ -4,6 +4,10 @@ import com.wingedsheep.ai.engine.LimitedCardRater
 import com.wingedsheep.mtg.sets.definitions.ala.cards.AdNauseam
 import com.wingedsheep.mtg.sets.definitions.msh.cards.AimScientists
 import com.wingedsheep.mtg.sets.definitions.msh.cards.LeaderSuperGenius
+import com.wingedsheep.mtg.sets.definitions.rtr.cards.VolatileRig
+import com.wingedsheep.ai.audit.AiReadingAudit
+import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
+import com.wingedsheep.sdk.scripting.effects.FlipCoinEffect
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.scripting.effects.ConniveEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
@@ -54,6 +58,20 @@ class EffectWalkerTest : FunSpec({
         withClue("Ad Nauseam's reveal-and-lose-life rounds are what the intent reader tags it by") {
             (CardIntentAnalyzer.analyze(AdNauseam).tags.isNotEmpty()) shouldBe true
         }
+    }
+
+    test("a coin flip is read as both its branches, not as one opaque leaf") {
+        val flip = Effects.FlipCoin(wonEffect = Effects.DrawCards(1), lostEffect = Effects.DealDamage(4, com.wingedsheep.sdk.scripting.targets.EffectTarget.Controller))
+            as FlipCoinEffect
+        val leaves = EffectWalker.payoffLeaves(flip)
+        leaves.filterIsInstance<DrawCardsEffect>() shouldHaveSize 1
+        leaves.filterIsInstance<DealDamageEffect>() shouldHaveSize 1
+        leaves.filterIsInstance<FlipCoinEffect>() shouldHaveSize 0
+    }
+
+    test("Volatile Rig's coin-flip triggers read fully") {
+        val reading = AiReadingAudit.read(VolatileRig)
+        withClue("$reading") { reading.readFully shouldBe true }
     }
 
     test("a conniving card still reads as card draw") {

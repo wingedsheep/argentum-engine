@@ -3173,6 +3173,7 @@ object TargetPolarityAnalyzer {
      * What an attachment's "whenever enchanted land becomes tapped" trigger does to the host's
      * side (`Triggers.attached.becomesTapped`): the tapped host is the triggering entity, so
      * draining or burning its controller is a tax on using it — Psychic Venom, Contaminated Ground.
+     * Milling that player is the same tax (Chronic Flooding's "that land's controller mills three cards").
      */
     private fun hostTapTriggerReadings(ability: TriggeredAbility): List<TargetPolarity> {
         if (ability.binding != TriggerBinding.ATTACHED || ability.trigger !is EventPattern.TapEvent) return emptyList()
@@ -3181,6 +3182,10 @@ object TargetPolarityAnalyzer {
             when (leaf) {
                 is LoseLifeEffect -> TargetPolarity.HARMFUL.takeIf { leaf.target == hostController }
                 is DealDamageEffect -> TargetPolarity.HARMFUL.takeIf { leaf.target == hostController }
+                is GatherCardsEffect -> TargetPolarity.HARMFUL.takeIf {
+                    val top = leaf.source as? CardSource.TopOfLibrary
+                    top != null && top.isMill && top.player == Player.ControllerOfTriggeringEntity
+                }
                 else -> null
             }
         }
