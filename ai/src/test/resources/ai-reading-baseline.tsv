@@ -1285,6 +1285,7 @@ Awe Strike
 Awe for the Guilds
 Axebane Beast
 Axebane Ferox
+Axebane Guardian
 Axebane Stag
 Axegrinder Giant
 Axelrod Gunnarson
@@ -3241,6 +3242,7 @@ Choose Your Weapon
 Chorale of the Void
 Chord of Calling
 Choreographed Sparks
+Chorus of Might
 Chorus of Woe
 Chorus of the Conclave
 Chorus of the Tides
@@ -3593,6 +3595,7 @@ Commencement of Festivities
 Commercial District
 Commissar Severina Raine
 Commit // Memory
+Common Bond
 Common Crook
 Common Goal
 Communal Brewing
@@ -3848,6 +3851,7 @@ Courier of Comestibles
 Courier's Briefcase
 Courier's Capsule
 Courser of Kruphix
+Coursers' Accord
 Court Cleric
 Court Street Denizen
 Court of Grace	intent: TakeDesignationEffect
@@ -5368,6 +5372,7 @@ Druid of Horns
 Druid of the Anima
 Druid of the Cowl
 Druid of the Spade
+Druid's Deliverance
 Drumbellower
 Drunau Corpse Trawler
 Dry Spell
@@ -6296,6 +6301,7 @@ Eyeblight's Ending
 Eyekite
 Eyeless Watcher
 Eyes Everywhere
+Eyes in the Skies
 Eyes of Gitaxias
 Eyes of the Beholder
 Eyes of the Wisent
@@ -8397,10 +8403,12 @@ Groundskeeper
 Groundswell
 Group Project
 Grove Rumbler
+Grove of the Guardian
 Grovetender Druids
 Grow Extra Arms
 Grow from the Ashes
 Growing Dread
+Growing Ranks
 Growing Rites of Itlimoc
 Growth Curve
 Growth Cycle
@@ -9147,6 +9155,7 @@ Horn of Gondor
 Horn of Ramos
 Horn of the Mark
 Hornbash Mentor
+Horncaller's Chant
 Horned Cheetah
 Horned Loch-Whale
 Horned Sliver
@@ -11371,6 +11380,7 @@ Loxodon Peacekeeper	intent: GainControlByRankEffect
 Loxodon Punisher
 Loxodon Restorer
 Loxodon Sergeant
+Loxodon Smiter
 Loxodon Stalwart
 Loxodon Surveyor
 Loxodon Warhammer
@@ -15833,6 +15843,7 @@ Root Out
 Root Sliver
 Root Snare
 Root-Kin Ally
+Rootborn Defenses
 Rootbound Crag
 Rootbreaker Wurm
 Rootcast Apprenticeship
@@ -16641,6 +16652,7 @@ Secrets of the Key
 Secure the Scene
 Secure the Wastes
 Securitron Squadron
+Security Blockade
 Security Bypass	polarity: Aura>ConditionalStaticAbility; polarity: Aura>GrantTriggeredAbility
 Security Rhox
 Sedge Scorpion
@@ -16712,6 +16724,7 @@ Selesnya Cluestone
 Selesnya Evangel
 Selesnya Guildgate
 Selesnya Guildmage
+Selesnya Keyrune
 Selesnya Locket
 Selesnya Sagittars
 Selesnya Sanctuary
@@ -20459,6 +20472,7 @@ Trophy Hunter
 Trophy Mage
 Tropical Island
 Trostani Discordant	intent: ForEach>GiveControlToTargetPlayerEffect
+Trostani's Judgment
 Trostani's Summoner
 Trostani, Three Whispers
 Trouble in Pairs
