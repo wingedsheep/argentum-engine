@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.dsk.cards
+package com.wingedsheep.mtg.sets.definitions.rtr.cards
 
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.core.Keyword
@@ -41,10 +41,10 @@ val EtherealArmor = card("Ethereal Armor") {
     }
 
     metadata {
-        rarity = Rarity.UNCOMMON
-        collectorNumber = "7"
-        artist = "Tyler Walpole"
-        flavorText = "Clad in the light of conviction and hope, Linette strode forth to face Duskmourn's terrors without fear."
-        imageUri = "https://cards.scryfall.io/normal/front/f/d/fd0e8a82-0201-483e-a976-5f29764b35a4.jpg?1726285881"
+        rarity = Rarity.COMMON
+        collectorNumber = "9"
+        artist = "Daarken"
+        flavorText = "Metal is scarce, smiths are pricey, and plate mail is heavy."
+        imageUri = "https://cards.scryfall.io/normal/front/7/6/76960e65-e5c7-4414-b9a5-37d7b2ded4a0.jpg?1783940376"
     }
 }

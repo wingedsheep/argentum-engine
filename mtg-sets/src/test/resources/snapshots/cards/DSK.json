@@ -5052,55 +5052,6 @@
     ]
 }
 
-// Ethereal Armor
-{
-    "name": "Ethereal Armor",
-    "manaCost": "{W}",
-    "typeLine": "Enchantment — Aura",
-    "oracleText": "Enchant creature\nEnchanted creature gets +1/+1 for each enchantment you control and has first strike.",
-    "script": {
-        "staticAbilities": [
-            {
-                "type": "GrantDynamicStats",
-                "filter": {
-                    "baseFilter": "permanent",
-                    "scope": "AttachedTo"
-                },
-                "powerBonus": {
-                    "type": "AggregateBattlefield",
-                    "player": "You",
-                    "filter": "enchantment"
-                },
-                "toughnessBonus": {
-                    "type": "AggregateBattlefield",
-                    "player": "You",
-                    "filter": "enchantment"
-                }
-            },
-            {
-                "type": "GrantKeyword",
-                "keyword": "FIRST_STRIKE"
-            }
-        ],
-        "auraTarget": {
-            "type": "TargetObject",
-            "filter": {
-                "baseFilter": "creature"
-            }
-        }
-    },
-    "metadata": {
-        "collectorNumber": "7",
-        "rarity": "UNCOMMON",
-        "artist": "Tyler Walpole",
-        "flavorText": "Clad in the light of conviction and hope, Linette strode forth to face Duskmourn's terrors without fear.",
-        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd0e8a82-0201-483e-a976-5f29764b35a4.jpg?1726285881"
-    },
-    "colorIdentityOverride": [
-        "WHITE"
-    ]
-}
-
 // Exorcise
 {
     "name": "Exorcise",

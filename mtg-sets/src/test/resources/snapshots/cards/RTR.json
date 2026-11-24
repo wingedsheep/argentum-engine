@@ -803,6 +803,62 @@
     ]
 }
 
+// Axebane Guardian
+{
+    "name": "Axebane Guardian",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Human Druid",
+    "oracleText": "Defender\n{T}: Add X mana in any combination of colors, where X is the number of creatures you control with defender.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Axebane Guardian:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddDynamicMana",
+                    "amountSource": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature kw:defender"
+                    },
+                    "allowedColors": [
+                        "WHITE",
+                        "BLUE",
+                        "BLACK",
+                        "RED",
+                        "GREEN"
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "Add X mana in any combination of colors, where X is the number of creatures you control with defender."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "artist": "Slawomir Maniak",
+        "flavorText": "Only a worthy few are permitted within the sentient forest known as Axebane.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/725584fe-9e97-4020-89b1-5e5b45a5beb2.jpg?1783940351",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "Axebane Guardian's activated ability is a mana ability. It doesn't use the stack and can't be responded to. The number of creatures with defender you control is counted, and the color(s) of mana produced chosen, immediately after the ability is activated when the ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Axebane Stag
 {
     "name": "Axebane Stag",
@@ -2208,6 +2264,70 @@
     ]
 }
 
+// Chorus of Might
+{
+    "name": "Chorus of Might",
+    "manaCost": "{3}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Until end of turn, target creature gets +1/+1 for each creature you control and gains trample.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    },
+                    "toughnessModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "artist": "Christopher Moeller",
+        "flavorText": "\"In each of us is the strength of all of us.\"\n—Trostani",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/214dc9c1-154d-4c35-845d-dd2928f1e142.jpg?1783940349",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "The number of creatures you control is counted only when Chorus of Might resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Chromatic Lantern
 {
     "name": "Chromatic Lantern",
@@ -2396,6 +2516,71 @@
     ]
 }
 
+// Common Bond
+{
+    "name": "Common Bond",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Put a +1/+1 counter on target creature.\nPut a +1/+1 counter on target creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "151",
+        "artist": "Raymond Swanland",
+        "flavorText": "Wolf riders hone their skills traversing the perilous rooftops, each dizzying step bringing elf and wolf closer together.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/59965953-1522-4103-9a6c-5534205d34d9.jpg?1783940343",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "You may choose the same creature for both targets. You may also choose two different creatures. This is because the word “target” is used twice."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Concordia Pegasus
 {
     "name": "Concordia Pegasus",
@@ -2510,6 +2695,46 @@
     "colorIdentityOverride": [
         "BLUE",
         "RED"
+    ]
+}
+
+// Coursers' Accord
+{
+    "name": "Coursers' Accord",
+    "manaCost": "{4}{G}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create a 3/3 green Centaur creature token, then populate. (Create a token that's a copy of a creature token you control.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Centaur"
+                    ]
+                },
+                {
+                    "type": "CreateTokenCopyOfChosenPermanent",
+                    "filter": "creature token"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "artist": "Nils Hamm",
+        "flavorText": "Bleak rumors reached Trostani's ears. She decreed that no one should travel alone.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f027ceb0-5d2b-4cf6-87ad-e6b9b1e20634.jpg?1783940342"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
     ]
 }
 
@@ -3501,6 +3726,38 @@
     ]
 }
 
+// Druid's Deliverance
+{
+    "name": "Druid's Deliverance",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Prevent all combat damage that would be dealt to you this turn. Populate. (Create a token that's a copy of a creature token you control.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "PreventDamageShield",
+                    "scope": "CombatOnly"
+                },
+                {
+                    "type": "CreateTokenCopyOfChosenPermanent",
+                    "filter": "creature token"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "\"So many oppose us, but we are the reed that bends without breaking.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/3/83b35961-f4d5-4e14-a793-335147110627.jpg?1783940349"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Dryad Militant
 {
     "name": "Dryad Militant",
@@ -3891,6 +4148,54 @@
     ]
 }
 
+// Ethereal Armor
+{
+    "name": "Ethereal Armor",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +1/+1 for each enchantment you control and has first strike.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "enchantment"
+                },
+                "toughnessBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "enchantment"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FIRST_STRIKE"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "artist": "Daarken",
+        "flavorText": "Metal is scarce, smiths are pricey, and plate mail is heavy.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/76960e65-e5c7-4414-b9a5-37d7b2ded4a0.jpg?1783940376"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Explosive Impact
 {
     "name": "Explosive Impact",
@@ -3924,6 +4229,48 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Eyes in the Skies
+{
+    "name": "Eyes in the Skies",
+    "manaCost": "{3}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Create a 1/1 white Bird creature token with flying, then populate. (Create a token that's a copy of a creature token you control.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Bird"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ]
+                },
+                {
+                    "type": "CreateTokenCopyOfChosenPermanent",
+                    "filter": "creature token"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "artist": "James Ryman",
+        "flavorText": "\"What root and branch cannot reach, our winged friends will attend to.\"\n—Zunak, Selesnya strategist",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/e/befef095-3429-4dd7-aa01-2f7f619675d4.jpg?1783940377"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -5010,6 +5357,119 @@
     ]
 }
 
+// Grove of the Guardian
+{
+    "name": "Grove of the Guardian",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{3}{G}{W}, {T}, Tap two untapped creatures you control, Sacrifice this land: Create an 8/8 green and white Elemental creature token with vigilance.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Grove of the Guardian:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Grove of the Guardian:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{G}{W}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomTapPermanents",
+                                "count": 2,
+                                "filter": "creature"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 8,
+                    "toughness": 8,
+                    "colors": [
+                        "GREEN",
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Elemental"
+                    ],
+                    "keywords": [
+                        "VIGILANCE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/6/b64c5f80-4676-4860-be0e-20bcf2227405.jpg?1783940381"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "240",
+        "rarity": "RARE",
+        "artist": "Christine Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3cf60ca0-e01f-499c-8d04-d59050f38c33.jpg?1783940321",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "To activate Grove of the Guardian's second ability you can tap any two untapped creatures you control, including ones you haven't controlled continuously since the beginning of your most recent turn."
+            }
+        ]
+    }
+}
+
+// Growing Ranks
+{
+    "name": "Growing Ranks",
+    "manaCost": "{2}{G/W}{G/W}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, populate. (Create a token that's a copy of a creature token you control.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Growing Ranks:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateTokenCopyOfChosenPermanent",
+                    "filter": "creature token"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "217",
+        "rarity": "RARE",
+        "artist": "Seb McKinnon",
+        "flavorText": "\"We will grow an army large enough to withstand the Izzet's madness.\"\n—Trostani",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/12f31616-1249-4964-b81a-4435405a2449.jpg?1783940327"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Guttersnipe
 {
     "name": "Guttersnipe",
@@ -5248,6 +5708,48 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Horncaller's Chant
+{
+    "name": "Horncaller's Chant",
+    "manaCost": "{7}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create a 4/4 green Rhino creature token with trample, then populate. (Create a token that's a copy of a creature token you control.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Rhino"
+                    ],
+                    "keywords": [
+                        "TRAMPLE"
+                    ]
+                },
+                {
+                    "type": "CreateTokenCopyOfChosenPermanent",
+                    "filter": "creature token"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "artist": "Eric Velhagen",
+        "flavorText": "\"The Selesnya are gathering armies. Do you still believe they aren't preparing for war?\"\n—Teysa, to Isperia",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b8d33ed-9ca2-41d1-ba35-fdeb5b88ad44.jpg?1783940348"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -6197,6 +6699,50 @@
     "colorIdentityOverride": [
         "BLACK",
         "GREEN"
+    ]
+}
+
+// Loxodon Smiter
+{
+    "name": "Loxodon Smiter",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Creature — Elephant Soldier",
+    "oracleText": "This spell can't be countered.\nIf a spell or ability an opponent controls causes you to discard this card, put it onto the battlefield instead of putting it into your graveyard.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChange",
+                "newDestination": "Battlefield",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Hand",
+                    "to": "Graveyard"
+                },
+                "selfOnly": true,
+                "requiredCause": "DiscardedByOpponentEffect"
+            }
+        ],
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "178",
+        "rarity": "RARE",
+        "artist": "Ryan Barger",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/69247168-2bfb-4cce-a2a6-61459a0fbce4.jpg?1783940336",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "If you discard Loxodon Smiter and put it onto the battlefield, you've still discarded a card. Abilities that trigger when you discard a card (such as the one from Liliana's Caress) will still trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
     ]
 }
 
@@ -8027,6 +8573,47 @@
     "colorIdentityOverride": []
 }
 
+// Rootborn Defenses
+{
+    "name": "Rootborn Defenses",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Populate. Creatures you control gain indestructible until end of turn. (To populate, create a token that's a copy of a creature token you control.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateTokenCopyOfChosenPermanent",
+                    "filter": "creature token"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "INDESTRUCTIBLE",
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "artist": "Mark Zug",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/deccfa48-b8df-4dcc-ba1b-920f8352def7.jpg?1783940374"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Rubbleback Rhino
 {
     "name": "Rubbleback Rhino",
@@ -8200,6 +8787,78 @@
     ]
 }
 
+// Security Blockade
+{
+    "name": "Security Blockade",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nWhen this Aura enters, create a 2/2 white Knight creature token with vigilance.\nEnchanted land has \"{T}: Prevent the next 1 damage that would be dealt to you this turn.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Security Blockade:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Knight"
+                    ],
+                    "keywords": [
+                        "VIGILANCE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/6/7/67d3d039-248a-4eb8-be5c-12959b458fea.jpg?1783940383"
+                },
+                "descriptionOverride": "When this Aura enters, create a 2/2 white Knight creature token with vigilance."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Security Blockade:2",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "PreventDamageShield",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "rarity": "UNCOMMON",
+        "artist": "James Ryman",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e6250b31-8592-48b2-a877-3637c9ee7d49.jpg?1783940374",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "You must target a land to cast Security Blockade. If that land is an illegal target when Security Blockade tries to resolve, it won't resolve and won't enter. You won't get the Knight token."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Selesnya Charm
 {
     "name": "Selesnya Charm",
@@ -8344,6 +9003,80 @@
     "colorIdentityOverride": [
         "WHITE",
         "GREEN"
+    ]
+}
+
+// Selesnya Keyrune
+{
+    "name": "Selesnya Keyrune",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {G} or {W}.\n{G}{W}: This artifact becomes a 3/3 green and white Wolf artifact creature until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Selesnya Keyrune:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Selesnya Keyrune:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Selesnya Keyrune:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{G}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "creatureTypes": [
+                        "Wolf"
+                    ],
+                    "addTypes": [
+                        "ARTIFACT"
+                    ],
+                    "colors": [
+                        "GREEN",
+                        "WHITE"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "233",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "A mark of unity when you want one; a fierce guardian when you need one.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/1645eafd-cd17-463a-9d7e-42f5f7b5196f.jpg?1783940323"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
     ]
 }
 
@@ -10072,6 +10805,51 @@
     "colorIdentityOverride": [
         "BLACK",
         "GREEN"
+    ]
+}
+
+// Trostani's Judgment
+{
+    "name": "Trostani's Judgment",
+    "manaCost": "{5}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target creature, then populate. (Create a token that's a copy of a creature token you control.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "CreateTokenCopyOfChosenPermanent",
+                    "filter": "creature token"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "artist": "Christopher Moeller",
+        "flavorText": "\"Some cannot be saved as they are, but all can serve the Worldsoul.\"\n—Trostani",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d707bdb1-1f8c-4cc0-be01-496f3f03b878.jpg?1783940371"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
