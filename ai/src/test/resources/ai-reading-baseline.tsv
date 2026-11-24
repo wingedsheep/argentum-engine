@@ -4399,6 +4399,7 @@ Dazzling Theater // Prop Room
 De-evolve
 Dead Drop
 Dead Man's Chest
+Dead Reveler
 Dead Revels
 Dead Weight
 Dead-Iron Sledge
@@ -5288,6 +5289,7 @@ Dreamtide Whale
 Dredge
 Dredger's Insight
 Dredging Claw
+Dreg Mangler
 Dreg Reaver
 Dreg Recycler
 Drey Keeper
@@ -7434,6 +7436,7 @@ Gate to Phyrexia
 Gate to the Aether	intent: MoveToZoneEffect; intent: Pipeline(TopOfLibrary→?)
 Gate to the Afterlife
 Gatebreaker Ram
+Gatecreeper Vine
 Gatekeeper Gargoyle
 Gatekeeper of Malakir
 Gates Ablaze
@@ -8094,11 +8097,13 @@ Golem-Skin Gauntlets
 Golgari Brownscale
 Golgari Charm
 Golgari Cluestone
+Golgari Decoy
 Golgari Findbroker
 Golgari Germination
 Golgari Grave-Troll
 Golgari Guildgate
 Golgari Guildmage
+Golgari Keyrune
 Golgari Locket
 Golgari Longlegs
 Golgari Raiders
@@ -8203,6 +8208,7 @@ Grasslands
 Grateful Apparition
 Gratuitous Violence
 Gravblade Heavy
+Grave Betrayal
 Grave Birthing
 Grave Bramble
 Grave Exchange
@@ -8335,6 +8341,7 @@ Grim Reaper, Lethal Legionnaire
 Grim Reminder
 Grim Repriser
 Grim Return
+Grim Roustabout
 Grim Servant
 Grim Strider
 Grim Tutor
@@ -10001,6 +10008,7 @@ Jan Jansen, Chaos Crafter
 Jandor's Ring
 Jandor's Saddlebags
 Janjeet Sentry
+Jarad's Orders
 Jarad, Golgari Lich Lord
 Jareth, Leonine Titan
 Jarl of the Forsaken
@@ -10637,6 +10645,8 @@ Kor Sky Climber
 Korlessa, Scale Singer
 Kormus Bell
 Korozda Gorgon
+Korozda Guildmage
+Korozda Monitor
 Korvold and the Noble Thief
 Korvold, Fae-Cursed King
 Koth of the Homestead
@@ -16836,6 +16846,7 @@ Severed Strands
 Sevinne's Reclamation
 Sewer Crocodile
 Sewer Rats
+Sewer Shambler
 Sewer-veillance Cam
 Sewerdreg
 Seymour Flux
@@ -17594,6 +17605,7 @@ Slith Firewalker
 Slith Predator
 Slith Strider
 Slither Blade
+Slitherhead
 Slithering Cryptid
 Slitherwisp
 Sliver Construct
@@ -19403,6 +19415,7 @@ Terror of Mount Velus
 Terror of Towashi
 Terror of the Fairgrounds
 Terror of the Peaks
+Terrus Wurm
 Tersa Lightshatter	intent: GrantMayPlayFromExileEffect
 Teshar, Ancestor's Apostle
 Test of Conviction
@@ -19880,6 +19893,7 @@ Threnody Singer
 Thresher Lizard
 Thrill of Possibility
 Thrill of the Hunt
+Thrill-Kill Assassin
 Thrill-Kill Disciple
 Thrilling Discovery
 Thriss, Nantuko Primus
@@ -22454,6 +22468,7 @@ Zalto, Fire Giant Duke
 Zameck Guildmage
 Zanam Djinn
 Zanarkand, Ancient Metropolis
+Zanikev Locust
 Zap
 Zar Ojanen, Scion of Efrava
 Zareth San, the Trickster	intent: Pipeline(Entity→battlefield)
