@@ -778,7 +778,9 @@ object Effects {
     fun Surveil(amount: DynamicAmount): Effect = LibraryPatterns.surveil(amount)
 
     /**
-     * Target player discards N cards (controller chooses, mandatory).
+     * Target player discards N cards (the discarding player chooses, mandatory). [target] may be
+     * [EffectTarget.TargetController] — "Destroy target creature. Its controller discards a card."
+     * (Assassin's Strike): that player chooses from their own hand, last-known controller once gone.
      * Delegates to the LibraryPatterns/HandPatterns pipeline: Gather → Select → Move (Discard).
      */
     fun Discard(count: Int = 1, target: EffectTarget = EffectTarget.Controller): Effect =

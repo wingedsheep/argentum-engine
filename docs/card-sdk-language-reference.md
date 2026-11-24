@@ -2161,7 +2161,11 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   `MoveCollection("notLand" → graveyard, moveType = Discard)`.
 - `Discard(count, target)` — controller-of-target chooses; mandatory. `count` is an `Int` or a
   `DynamicAmount` ("discard X cards, where X is …" — e.g. Converge's Arcane Omens with
-  `DynamicAmounts.colorsOfManaSpent()`).
+  `DynamicAmounts.colorsOfManaSpent()`). `target = EffectTarget.TargetController` (or
+  `PlayerRef(Player.ControllerOf(..))`) is "its controller discards" after acting on a targeted
+  permanent — Assassin's Strike: `Destroy(t) then Discard(1, EffectTarget.TargetController)`. That
+  player chooses from their own hand (`Chooser.ControllerOfTarget`), read through the last-known
+  controller once the permanent has left, so a stolen creature's thief discards, not its owner.
 - `EachOpponentDiscards(count)` — each opponent discards N; `count` may be an `Int` or a `DynamicAmount` read at resolution (Bladecoil Serpent: `manaOfColorSpent(Color.BLACK) / 2`).
 - `EachPlayerDiscards(count)` — each player, *including you*, discards N, each choosing from their own hand — Rankle's Prank, Liliana of the Veil, Liliana, Defiant Necromancer. The rules' simultaneous hidden choice (CR 101.4, 101.4a): a `ForEachPlayerCollecting(Player.ActivePlayerFirst)` has each player in APNAP order choose without anything moving, then one `MoveType.Discard` move discards every chosen card at once, each into its owner's graveyard — no later chooser sees an earlier player's discard, and discard triggers see one simultaneous event.
 - `EachPlayerPutsCardsOnTopOfLibrary(count = 1)` — each player, *including you*, puts N cards from their own hand on top of their own library, each choosing their own — Sadistic Augermage. A tuck rather than a discard (`MoveType.Default`, feeding no discard trigger), iterated in APNAP order; unlike `EachPlayerDiscards` each iteration moves its card before the next player chooses (the cards stay hidden either way).
@@ -21909,7 +21913,8 @@ Counter effects live in §4 (`AddCounters`, `RemoveCounters`, `Proliferate`, `Mo
     ignoring per-iteration swaps), `ControllerOfSelection` (the controller of the cards in `from` — resolved from the
     first card's projected controller), `DefendingPlayer` (the player the source is attacking, CR 508.1), or
     `ControllerOfTarget` (the controller of the targeted *permanent*,
-    `context.targets[0]`, falling back to its owner once it has left the battlefield). Use `ControllerOfSelection` for
+    `context.targets[0]`, falling back to its last-known controller, then its owner, once it has left the battlefield —
+    the same ladder as `Player.ControllerOf`). Use `ControllerOfSelection` for
     "their controller chooses…" where the deciding player is whoever controls the gathered cards and may be you or an
     opponent (Barrin's Spite: gather the two targeted creatures, their controller sacrifices one, the other is returned
     to hand). Use `ControllerOfTarget` for "destroy target permanent. Its controller searches/chooses…" where the
