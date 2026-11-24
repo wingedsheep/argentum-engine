@@ -1,1 +1,1 @@
-- #TBD Reads detain (can't attack + its activated abilities locked, until your next turn) as a tapper aimed at the opponent's permanent, and Palisade Giant / Ancient Adamantoise's redirect of your side's damage onto themselves as protection
+- #4851 Reads detain (can't attack + its activated abilities locked, until your next turn) as a tapper aimed at the opponent's permanent, and Palisade Giant / Ancient Adamantoise's redirect of your side's damage onto themselves as protection
