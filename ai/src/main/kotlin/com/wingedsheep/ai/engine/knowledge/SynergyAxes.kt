@@ -13,7 +13,13 @@ import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.CompositeStaticAbility
+import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.GrantActivatedAbility
+import com.wingedsheep.sdk.scripting.GrantDynamicStats
+import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.ModifyStats
+import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.TriggerBinding
@@ -199,9 +205,9 @@ data class SynergyProfile(
  *    [CardIntentAnalyzer] tags with), its activation and additional costs (a sacrifice), its
  *    keywords (lifelink) and its type line (a creature enters; an instant is cast).
  *
- * Deliberately narrow: static abilities that reward a resource ("creatures you control with +1/+1
- * counters have trample") and keyword mechanics that make tokens on their own (afterlife,
- * fabricate) are not read, so they score as no synergy rather than a guessed one. A false negative
+ * Deliberately narrow: static abilities are read only where they help nothing but the resource
+ * (+1/+1-counter keyword grants, anthems for your tokens), and keyword mechanics that make tokens
+ * on their own (afterlife, fabricate) are not read, so they score as no synergy rather than a guessed one. A false negative
  * costs a missed bonus; a false positive would pull a deck toward cards that do nothing together.
  *
  * Memoized per card name, like [CardIntentAnalyzer] and [GraveyardSynergy].
@@ -318,6 +324,9 @@ object SynergyAxes {
                     }
                 }
             ) add(SynergyAxis.PLUS_COUNTERS)
+            // "Creature tokens you control get +1/+1" (Intangible Virtue, Phantom General): the
+            // anthem reaches only the tokens the deck makes — with none made, it helps nothing.
+            if (scripts.any { script -> script.staticAbilities.any(::helpsOwnTokens) }) add(SynergyAxis.TOKENS)
         }
         val feeds = buildSet {
             scripts.forEach { addAll(feedsOf(it, card.typeLine.isCreature)) }
@@ -400,6 +409,19 @@ object SynergyAxes {
     /** [PrintedFilter.matches], memoized per card name and filter; an unreadable answer is a no. */
     internal fun matches(card: CardDefinition, filter: GameObjectFilter): Boolean =
         matchCache.getOrPut(card.name to filter) { PrintedFilter.matches(card, filter) == true }
+
+    /** A static that pumps or grants a keyword only to tokens you control. */
+    private fun helpsOwnTokens(ability: StaticAbility): Boolean = when (ability) {
+        is ConditionalStaticAbility -> helpsOwnTokens(ability.ability)
+        is CompositeStaticAbility -> ability.abilities.any(::helpsOwnTokens)
+        is ModifyStats -> ability.powerBonus + ability.toughnessBonus > 0 && ownTokens(ability.filter.baseFilter)
+        is GrantDynamicStats -> ownTokens(ability.filter.baseFilter)
+        is GrantKeyword -> ownTokens(ability.filter.baseFilter)
+        else -> false
+    }
+
+    private fun ownTokens(filter: GameObjectFilter): Boolean =
+        filter.controllerPredicate == ControllerPredicate.ControlledByYou && CardPredicate.IsToken in filter.cardPredicates
 
     // ── Rewards ────────────────────────────────────────────────────────────────
 

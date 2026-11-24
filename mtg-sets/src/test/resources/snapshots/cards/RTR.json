@@ -2438,6 +2438,72 @@
     ]
 }
 
+// Civic Saber
+{
+    "name": "Civic Saber",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+0 for each of its colors.\nEquip {1}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Civic Saber:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "EntityProperty",
+                    "entity": "EquippedCreature",
+                    "numericProperty": "ColorCount"
+                },
+                "toughnessBonus": {
+                    "type": "Fixed",
+                    "amount": 0
+                }
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "227",
+        "rarity": "UNCOMMON",
+        "artist": "Jung Park",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/29c9247e-05f4-44bb-86e3-90a60e880374.jpg?1783940324"
+    },
+    "colorIdentityOverride": []
+}
+
 // Cobblebrute
 {
     "name": "Cobblebrute",
@@ -3309,6 +3375,58 @@
     ]
 }
 
+// Death's Presence
+{
+    "name": "Death's Presence",
+    "manaCost": "{5}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a creature you control dies, put X +1/+1 counters on target creature you control, where X is the power of the creature that died.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Death's Presence:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "TriggeringEntity",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "RARE",
+        "artist": "Ryan Barger",
+        "flavorText": "\"We traffic in flesh, not souls. Still, it's a shame to let anything go to waste.\"\n—Cevraya, Golgari shaman",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fa82c57d-4bb9-407c-b973-7abc793b6f47.jpg?1783940349"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Deathrite Shaman
 {
     "name": "Deathrite Shaman",
@@ -3532,6 +3650,236 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Destroy the Evidence
+{
+    "name": "Destroy the Evidence",
+    "manaCost": "{4}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target land. Its controller reveals cards from the top of their library until they reveal a land card, then puts those cards into their graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "GatherUntilMatch",
+                    "player": {
+                        "type": "ControllerOf",
+                        "targetDescription": "target land"
+                    },
+                    "filter": "land",
+                    "storeMatch": "matched1",
+                    "storeRevealed": "revealed1"
+                },
+                {
+                    "type": "RevealCollection",
+                    "from": "revealed1"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "revealed1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "ControllerOf",
+                            "targetDescription": "target land"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "land"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "artist": "Clint Cearley",
+        "flavorText": "Everyone knew the Dimir had done the damage. Everyone suspected the Izzet had hired them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bca53097-108d-457e-831c-e3d6cb499a41.jpg?1783940363"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Detention Sphere
+{
+    "name": "Detention Sphere",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, you may exile target nonland permanent not named Detention Sphere and all other permanents with the same name as that permanent.\nWhen this enchantment leaves the battlefield, return the exiled cards to the battlefield under their owner's control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Detention Sphere:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": "ChosenTargets",
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "gathered0",
+                                "filter": {
+                                    "statePredicates": [
+                                        "IsFaceUp"
+                                    ]
+                                },
+                                "storeMatching": "matching1"
+                            },
+                            {
+                                "type": "StoreCardName",
+                                "from": "matching1",
+                                "storeAs": "cardName2"
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsPermanent",
+                                            {
+                                                "type": "NameEqualsChosen",
+                                                "variableName": "cardName2"
+                                            }
+                                        ]
+                                    },
+                                    "excludeChosenTargets": true
+                                },
+                                "storeAs": "gathered3"
+                            },
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Exile",
+                                "linkToSource": true
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Collection",
+                                    "collection": "gathered3"
+                                },
+                                "body": {
+                                    "type": "MoveToZone",
+                                    "target": "IterationEntity",
+                                    "destination": "Exile",
+                                    "linkToSource": true
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "When this enchantment enters, you may exile target nonland permanent not named Detention Sphere and all other permanents with the same name as that permanent."
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsNonland",
+                                "IsPermanent",
+                                {
+                                    "type": "Not",
+                                    "predicate": {
+                                        "type": "NameEquals",
+                                        "name": "Detention Sphere"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this enchantment enters, you may exile target nonland permanent not named Detention Sphere and all other permanents with the same name as that permanent."
+            },
+            {
+                "id": "Detention Sphere:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/afee5464-83b7-4d7a-b407-9ee7de21535b.jpg?1783940341",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "Although the target of the \"enters\" ability must not be a land, lands with the same name as that permanent will be exiled."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "The \"enters\" ability has only one target. The other permanents with that name aren't targeted. For example, a permanent with protection from white will be exiled if it has the same name as the target nonland permanent."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "If the target nonland permanent is an illegal target when the \"enters\" ability tries to resolve, it won't resolve and none of its effects will happen. No permanents will be exiled, including those with the same name as the target."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "If Detention Sphere leaves the battlefield before its \"enters\" ability has resolved, its leaves-the-battlefield ability will trigger and do nothing. Then the \"enters\" ability will resolve and exile the targeted nonland permanent and other permanents with that name indefinitely."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
     ]
 }
 
@@ -5829,6 +6177,179 @@
     ]
 }
 
+// Guild Feud
+{
+    "name": "Guild Feud",
+    "manaCost": "{5}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, target opponent reveals the top three cards of their library, may put a creature card from among them onto the battlefield, then puts the rest into their graveyard. You do the same with the top three cards of your library. If two creatures are put onto the battlefield this way, those creatures fight each other.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Guild Feud:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "player": "TargetOpponent"
+                            },
+                            "storeAs": "gathered0",
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "TargetPlayer",
+                            "filter": "creature",
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "You may put a creature card from among them onto the battlefield",
+                            "selectedLabel": "Onto the battlefield",
+                            "remainderLabel": "Into your graveyard",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "storeMovedAs": "moved2",
+                            "underOwnersControl": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeAs": "gathered4",
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered4",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "creature",
+                            "storeSelected": "selected5",
+                            "storeRemainder": "remainder5",
+                            "prompt": "You may put a creature card from among them onto the battlefield",
+                            "selectedLabel": "Onto the battlefield",
+                            "remainderLabel": "Into your graveyard",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected5",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "storeMovedAs": "moved6"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder5",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "moved2",
+                            "ifNotEmpty": {
+                                "type": "ConditionalOnCollection",
+                                "collection": "moved6",
+                                "ifNotEmpty": {
+                                    "type": "Fight",
+                                    "target1": {
+                                        "type": "PipelineTarget",
+                                        "collectionName": "moved2"
+                                    },
+                                    "target2": {
+                                        "type": "PipelineTarget",
+                                        "collectionName": "moved6"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "At the beginning of your upkeep, target opponent reveals the top three cards of their library, may put a creature card from among them onto the battlefield, then puts the rest into their graveyard. You do the same with the top three cards of your library. If two creatures are put onto the battlefield this way, those creatures fight each other."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "rarity": "RARE",
+        "artist": "Karl Kopinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8e622878-0aea-4401-873e-d34bf05ee98d.jpg?1783940355",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "Guild Feud has one target: the opponent. You'll see what creature that player puts onto the battlefield before revealing the top three cards of your library and deciding whether to put a creature onto the battlefield yourself."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "If no creatures or only one creature is put onto the battlefield this way, no fight happens."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "Players can't cast spells or activate abilities between the creatures being put onto the battlefield and them fighting each other. Notably, you can't respond with a spell like Giant Growth."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "Any abilities that trigger when the two creatures enter will be put on the stack after the fight, even if one or both creatures die."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Guttersnipe
 {
     "name": "Guttersnipe",
@@ -6404,6 +6925,62 @@
         ]
     },
     "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Isperia, Supreme Judge
+{
+    "name": "Isperia, Supreme Judge",
+    "manaCost": "{2}{W}{W}{U}{U}",
+    "typeLine": "Legendary Creature — Sphinx",
+    "oracleText": "Flying\nWhenever a creature attacks you or a planeswalker you control, you may draw a card.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Isperia, Supreme Judge:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsAttackingYouOrYourPlaneswalkers"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "rarity": "MYTHIC",
+        "artist": "Scott M. Fischer",
+        "flavorText": "\"I serve only justice. But through that duty, I serve all of Ravnica.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b2cce2d4-3944-4ff0-98e8-80f19697f108.jpg?1783940339"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
         "BLUE"
     ]
 }
@@ -7351,6 +7928,89 @@
     ]
 }
 
+// Mana Bloom
+{
+    "name": "Mana Bloom",
+    "manaCost": "{X}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "This enchantment enters with X charge counters on it.\nRemove a charge counter from this enchantment: Add one mana of any color. Activate only once each turn.\nAt the beginning of your upkeep, if this enchantment has no charge counters on it, return it to its owner's hand.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mana Bloom:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "CHARGE"
+                        }
+                    },
+                    "operator": "EQ",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Mana Bloom:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomRemoveCounters",
+                        "counterType": "CHARGE",
+                        "self": true
+                    }
+                },
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "restrictions": [
+                    "OncePerTurn"
+                ],
+                "isManaAbility": true,
+                "descriptionOverride": "Remove a charge counter from this enchantment: Add one mana of any color. Activate only once each turn."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "counterType": "CHARGE",
+                "count": "CastX"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "rarity": "RARE",
+        "artist": "Mike Bierek",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d7592d88-64e8-4a31-b00a-f65d4b1867fc.jpg?1783940347",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "Mana Bloom's last ability will trigger only if it has no charge counters on it at the beginning of your upkeep. If it has one charge counter on it as your turn begins, you won't have priority to remove the counter until after this check."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Martial Law
 {
     "name": "Martial Law",
@@ -8225,6 +8885,80 @@
     ]
 }
 
+// Oak Street Innkeeper
+{
+    "name": "Oak Street Innkeeper",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Elf",
+    "oracleText": "During turns other than yours, tapped creatures you control have hexproof.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF",
+                    "filter": {
+                        "baseFilter": "creature tapped ctrl:you"
+                    }
+                },
+                "condition": "IsNotYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "The city is vast and perilous, but there are places where a weary traveler can feel very much at home.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/08274d1b-52b7-46c1-8f93-7631d2e21def.jpg?1783940347"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Ogre Jailbreaker
+{
+    "name": "Ogre Jailbreaker",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Ogre Rogue",
+    "oracleText": "Defender\nThis creature can attack as though it didn't have defender as long as you control a Gate.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanAttackDespiteDefender",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "land Gate"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "artist": "Karl Kopinski",
+        "flavorText": "It took three years for it to occur to him to use the chain as a weapon, but once it did, he made up for lost time.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/a/9a96c83d-96d9-4f8f-8020-77990130ad81.jpg?1783940361"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Pack Rat
 {
     "name": "Pack Rat",
@@ -8386,6 +9120,40 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Phantom General
+{
+    "name": "Phantom General",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Spirit Soldier",
+    "oracleText": "Creature tokens you control get +1/+1.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature token ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "UNCOMMON",
+        "artist": "Christopher Moeller",
+        "flavorText": "After his death, the general was reunited with fallen soldiers from over thirty of his campaigns.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11f42791-070a-4e3a-91c8-b801980abb76.jpg?1783940375"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -8639,6 +9407,58 @@
         "artist": "Jack Wang",
         "flavorText": "\"The Izzet are an equation that turns lunacy into explosions.\"\n—Leonos, Azorius arbiter",
         "imageUri": "https://cards.scryfall.io/normal/front/6/c/6cff95b7-79eb-4796-9a01-31ff355681ab.jpg?1783940353"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Racecourse Fury
+{
+    "name": "Racecourse Fury",
+    "manaCost": "{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nEnchanted land has \"{T}: Target creature gains haste until end of turn.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Racecourse Fury:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "GrantKeyword",
+                        "keyword": "HASTE",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "target"
+                        }
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "rarity": "UNCOMMON",
+        "artist": "Sam Burley",
+        "flavorText": "Close finishes are settled by who can dismount and get to weapons first.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/15d13d35-b5f7-4d3d-a1fa-84178b28acae.jpg?1783940353"
     },
     "colorIdentityOverride": [
         "RED"
@@ -9367,6 +10187,79 @@
     ]
 }
 
+// Righteous Authority
+{
+    "name": "Righteous Authority",
+    "manaCost": "{3}{W}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +1/+1 for each card in its controller's hand.\nAt the beginning of the draw step of enchanted creature's controller, that player draws an additional card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Righteous Authority:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "DRAW"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "descriptionOverride": "At the beginning of the draw step of enchanted creature's controller, that player draws an additional card."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "Count",
+                    "player": "ControllerOfAffectedEntity",
+                    "zone": "Hand"
+                },
+                "toughnessBonus": {
+                    "type": "Count",
+                    "player": "ControllerOfAffectedEntity",
+                    "zone": "Hand"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "rarity": "RARE",
+        "artist": "Scott Chou",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/6695e5bb-56a9-49ab-8940-72336e845875.jpg?1783940334",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "The triggered ability is put onto the stack after you have already drawn your card for the turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Risen Sanctuary
 {
     "name": "Risen Sanctuary",
@@ -9390,6 +10283,81 @@
     "colorIdentityOverride": [
         "GREEN",
         "WHITE"
+    ]
+}
+
+// Rites of Reaping
+{
+    "name": "Rites of Reaping",
+    "manaCost": "{4}{B}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature gets +3/+3 until end of turn. Another target creature gets -3/-3 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -3
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetOther",
+                "baseRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    }
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "rarity": "UNCOMMON",
+        "artist": "David Rapoza",
+        "flavorText": "Don't cross a Devkarin elf unless you long for an early grave.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/115d504f-3aec-4374-8cd8-732d56c448f2.jpg?1783940333"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
     ]
 }
 
@@ -9777,6 +10745,242 @@
     },
     "colorIdentityOverride": [
         "WHITE",
+        "BLUE"
+    ]
+}
+
+// Search the City
+{
+    "name": "Search the City",
+    "manaCost": "{4}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, exile the top five cards of your library.\nWhenever you play a card with the same name as one of the exiled cards, you may put one of those cards with that name into its owner's hand. Then if there are no cards exiled with this enchantment, sacrifice it. If you do, take an extra turn after this one.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Search the City:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this enchantment enters, exile the top five cards of your library."
+            },
+            {
+                "id": "Search the City:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "SharesNameWithLinkedExile"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "SharesNameWith",
+                                        "entity": "TriggeringEntity"
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may put an exiled card with the same name into its owner's hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "ContextProperty",
+                                        "key": "LINKED_EXILE_CARD_COUNT"
+                                    },
+                                    "operator": "EQ",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.DoAction",
+                                    "action": {
+                                        "type": "SacrificeTarget",
+                                        "target": "Self"
+                                    },
+                                    "successCriterion": "SuccessCriterion.PermanentsSacrificed"
+                                },
+                                "then": "TakeExtraTurn",
+                                "descriptionOverride": "Sacrifice this enchantment. If you do, take an extra turn after this one."
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you play a card with the same name as one of the exiled cards, you may put one of those cards with that name into its owner's hand. Then if there are no cards exiled with this enchantment, sacrifice it. If you do, take an extra turn after this one."
+            },
+            {
+                "id": "Search the City:3",
+                "trigger": "LandPlayedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "SharesNameWith",
+                                        "entity": "TriggeringEntity"
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may put an exiled card with the same name into its owner's hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "ContextProperty",
+                                        "key": "LINKED_EXILE_CARD_COUNT"
+                                    },
+                                    "operator": "EQ",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.DoAction",
+                                    "action": {
+                                        "type": "SacrificeTarget",
+                                        "target": "Self"
+                                    },
+                                    "successCriterion": "SuccessCriterion.PermanentsSacrificed"
+                                },
+                                "then": "TakeExtraTurn",
+                                "descriptionOverride": "Sacrifice this enchantment. If you do, take an extra turn after this one."
+                            }
+                        }
+                    ]
+                },
+                "triggerRestriction": {
+                    "type": "EntityMatches",
+                    "entity": "TriggeringEntity",
+                    "filter": {
+                        "cardPredicates": [
+                            "SharesNameWithLinkedExile"
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever you play a card with the same name as one of the exiled cards, you may put one of those cards with that name into its owner's hand. Then if there are no cards exiled with this enchantment, sacrifice it. If you do, take an extra turn after this one."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "RARE",
+        "artist": "Jack Wang",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9cd77575-fedc-45b1-a53b-dfed0f34c875.jpg?1783940366",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "To “play a card” is to play that card as a land or cast that card as a spell, whichever is appropriate."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "You can put only one card into its owner’s hand for each card you play."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "If you don’t sacrifice Search the City, perhaps because it was destroyed in response to its ability triggering, you won’t take an extra turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
         "BLUE"
     ]
 }
@@ -10549,6 +11753,37 @@
         "BLACK",
         "RED"
     ]
+}
+
+// Slime Molding
+{
+    "name": "Slime Molding",
+    "manaCost": "{X}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create an X/X green Ooze creature token.",
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "power": 0,
+            "toughness": 0,
+            "colors": [
+                "GREEN"
+            ],
+            "creatureTypes": [
+                "Ooze"
+            ],
+            "imageUri": "https://cards.scryfall.io/normal/front/a/6/a686e51d-e8c3-4ed6-8357-c3d38d56dd09.jpg?1783940381",
+            "dynamicPower": "XValue",
+            "dynamicToughness": "XValue"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "rarity": "UNCOMMON",
+        "artist": "Marco Nelor",
+        "flavorText": "\"Give me enough refuse and mana and I will summon an ooze that can engulf all of Ravnica.\"\n—Cevraya, Golgari shaman",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/44a439e8-d586-4995-abfc-3dee5c860968.jpg?1783940346"
+    }
 }
 
 // Slitherhead
