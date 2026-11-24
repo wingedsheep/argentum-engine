@@ -2293,7 +2293,7 @@ Botanical Plaza
 Botanical Sanctum
 Bothersome Noisemaker
 Bottle Gnomes
-Bottle of Suleiman	intent: FlipCoinEffect
+Bottle of Suleiman
 Bottle-Cap Blast
 Bottled Cloister	intent: Pipeline(hand→exile)
 Bottomless Pit
@@ -2413,7 +2413,7 @@ Breathe Your Last
 Breathstealer
 Bred for the Hunt
 Breeches, Eager Pillager
-Breeches, the Blastmaker	intent: FlipCoinEffect; polarity: FlipCoinEffect
+Breeches, the Blastmaker	polarity: CopyTargetSpellEffect
 Breeding Pit
 Breeding Pool
 Breena, the Demagogue
@@ -3134,7 +3134,7 @@ Chaos Spewer
 Chaos Wand
 Chaos Warp
 Chaoslace	intent: ChangeColorEffect; polarity: ChangeColorEffect
-Chaotic Strike	polarity: FlipCoinEffect
+Chaotic Strike	polarity: DrawCardsEffect
 Chaotic Transformation
 Chapel Geist
 Chaplain of Alms
@@ -3263,6 +3263,7 @@ Chrome Steed
 Chromeshell Crab
 Chromium
 Chromium, the Mutable	timing: RemoveAllAbilitiesEffect; timing: SetCreatureSubtypesEffect
+Chronic Flooding
 Chronicle of Victory
 Chronicler of Heroes
 Chronosavant
@@ -3666,6 +3667,7 @@ Congregate
 Congregation Gryff
 Congregation at Dawn
 Conifer Strider
+Conjured Currency
 Conjurer's Closet
 Connecting the Dots
 Connive // Concoct
@@ -3968,6 +3970,7 @@ Crossroads Candleguide
 Crossroads Consecrator
 Crossroads Village
 Crossroads Watcher
+Crosstown Courier
 Crossway Troublemakers
 Crosswinds
 Crow of Dark Tidings
@@ -5074,6 +5077,7 @@ Doomskar Titan
 Doomskar Warrior	polarity: GrantTriggeredAbilityEffect
 Doomwake Giant
 Door of Destinies
+Doorkeeper
 Doorkeeper Thrull
 Doors of Durin
 Doppelgang
@@ -6338,6 +6342,7 @@ Faerie Fencing
 Faerie Formation
 Faerie Guidemother
 Faerie Harbinger
+Faerie Impostor
 Faerie Mastermind
 Faerie Mechanist
 Faerie Miscreant
@@ -7922,9 +7927,9 @@ Gobbling Ooze
 Goblin Anarchomancer
 Goblin Arsonist
 Goblin Artillery
-Goblin Artisans	intent: FlipCoinEffect; polarity: FlipCoinEffect
+Goblin Artisans	polarity: DrawCardsEffect
 Goblin Assailant
-Goblin Assassin	intent: ForEach>FlipCoinEffect
+Goblin Assassin
 Goblin Assault Team
 Goblin Balloon Brigade
 Goblin Banneret
@@ -8000,7 +8005,7 @@ Goblin Picker
 Goblin Piker
 Goblin Piledriver	intent: ModifyStatsEffect
 Goblin Plate Mail
-Goblin Psychopath	intent: FlipCoinEffect
+Goblin Psychopath	intent: RedirectCombatDamageToControllerEffect
 Goblin Pyromancer
 Goblin Rabblemaster
 Goblin Raider
@@ -9813,7 +9818,7 @@ Inventor's Goggles
 Inventors' Fair
 Inventory Management	intent: ForEach>AttachToChosenHostEffect
 Invert // Invent	polarity: ForEachEffect; timing: ForEach>SwitchPowerToughnessEffect
-Invert Polarity	intent: FlipCoinEffect; polarity: FlipCoinEffect
+Invert Polarity	polarity: mixed(ChangeTriggeringObjectTargetsEffect+CounterEffect+GainControlEffect)
 Inverted Iceberg
 Inverter of Truth
 Investigator's Journal
@@ -9953,6 +9958,7 @@ Izzet Chronarch
 Izzet Cluestone
 Izzet Generatorium
 Izzet Guildgate
+Izzet Keyrune
 Izzet Locket
 Izzet Signet
 Izzet Staticaster
@@ -11998,6 +12004,7 @@ Merciless Executioner
 Merciless Javelineer
 Merciless Repurposing
 Merciless Resolve
+Mercurial Chemister
 Mercurial Geists
 Mercurial Kite
 Mercurial Pretender
@@ -12126,7 +12133,7 @@ Migrating Ketradon
 Migration Path
 Migratory Greathorn
 Miirym, Sentinel Wyrm
-Mijae Djinn	intent: FlipCoinEffect
+Mijae Djinn
 Mikaeus, the Lunarch
 Mikaeus, the Unhallowed
 Mikey & Don, Party Planners
@@ -12352,6 +12359,7 @@ Misty Rainforest
 Mite Overseer
 Mithril Coat
 Mizzium Meddler
+Mizzium Mortars
 Mizzium Skin
 Mizzium Tank
 Mizzix's Mastery
@@ -13100,6 +13108,7 @@ Nissa, Who Shakes the World
 Nissa, Worldwaker
 Nita, Forum Conciliator
 Niv-Mizzet Reborn
+Niv-Mizzet, Dracogenius
 Niv-Mizzet, Ghost Counsel
 Niv-Mizzet, Guildpact
 Niv-Mizzet, Parun
@@ -13108,6 +13117,7 @@ Niv-Mizzet, Visionary
 Niv-Mizzet, the Firemind
 Nivix Barrier
 Nivix Cyclops
+Nivix Guildmage
 Nivmagus Elemental
 No Admittance
 No Escape
@@ -13518,7 +13528,7 @@ Orchard Spirit
 Orchard Strider
 Orcish Artillery
 Orcish Bowmasters
-Orcish Captain	intent: FlipCoinEffect; polarity: FlipCoinEffect
+Orcish Captain	polarity: mixed(ModifyStatsEffect)
 Orcish Lumberjack
 Orcish Mechanics
 Orcish Medicine
@@ -14202,7 +14212,7 @@ Plargg, Dean of Chaos
 Plasm Capture
 Plasma Bolt
 Plasma Cascade
-Plasma Caster	intent: FlipCoinEffect; polarity: FlipCoinEffect
+Plasma Caster	polarity: (slot named by no leaf)
 Plasma Elemental
 Plasma Jockey
 Plate Armor
@@ -14575,6 +14585,7 @@ Psychic Pickpocket
 Psychic Puppetry
 Psychic Purge
 Psychic Rebuttal
+Psychic Spiral
 Psychic Strike
 Psychic Symbiont
 Psychic Trance	intent: GrantActivatedAbilityToGroupEffect
@@ -14925,7 +14936,7 @@ Ral's Staticaster
 Ral, Caller of Storms
 Ral, Crackling Wit	combat: GrantSpellKeywordEffect
 Ral, Izzet Viceroy
-Ral, Monsoon Mage	intent: FlipCoinEffect
+Ral, Monsoon Mage
 Ral, Storm Conduit
 Rally
 Rally Maneuver
@@ -15680,7 +15691,7 @@ Rising Miasma
 Rising Populace
 Rising of the Day
 Risk Factor
-Risky Move	intent: FlipCoinEffect; intent: GainControlByActivePlayerEffect; polarity: FlipCoinEffect
+Risky Move	intent: GainControlByActivePlayerEffect; intent: GiveControlToTargetPlayerEffect; polarity: (slot named by no leaf)
 Risky Research
 Risky Shortcut
 Risona, Asari Commander
@@ -16450,7 +16461,7 @@ Scorching Winds
 Scorchmark
 Scorchwalker
 Scoria Elemental
-Scoria Wurm	intent: FlipCoinEffect
+Scoria Wurm
 Scorn Effigy
 Scorn-Blade Berserker
 Scorned Villager
@@ -17442,7 +17453,7 @@ Skittering Skirge
 Skittering Surveyor
 Skitterskin
 Skittish Kavu
-Skittish Valesk	intent: FlipCoinEffect
+Skittish Valesk
 Skizzik
 Skoa, Embermage
 Skola Grovedancer
@@ -18597,6 +18608,7 @@ Stream of Acid
 Stream of Life
 Streambed Aquitects	intent: SetLandTypeEffect; polarity: SetLandTypeEffect
 Street Riot
+Street Spasm
 Streetbreaker Wurm
 Streetwise Negotiator
 Strength Bobblehead
@@ -19238,7 +19250,7 @@ Taunting Challenge
 Taunting Elf
 Taurean Mauler
 Tavern Ruffian
-Tavern Swindler	intent: FlipCoinEffect
+Tavern Swindler
 Tawnos's Coffin	intent: ExileWithAurasNotingCountersEffect; intent: ReturnNotedExileTappedWithAurasEffect; polarity: ExileWithAurasNotingCountersEffect
 Tawnos's Tinkering
 Tawnos's Wand
@@ -19298,6 +19310,7 @@ Telekinesis
 Telekinetic Sliver
 Telepathic Spies	intent: LookAtTargetHandEffect
 Teleport
+Teleportal
 Teleportation Circle
 Telethopter
 Telim'Tor
@@ -19602,7 +19615,7 @@ The Flame of Keld	intent: GrantDamageBonusEffect
 The Gaffer
 The Gitrog Monster
 The Gitrog, Ravenous Ride
-The Gold Saucer	intent: FlipCoinEffect
+The Gold Saucer
 The Goose Mother
 The Great Aurora
 The Great Goblin
@@ -20023,7 +20036,7 @@ Tidal Terror
 Tidal Visionary	intent: ChangeColorToChosenEffect; polarity: ChangeColorToChosenEffect
 Tide Drifter
 Tide Skimmer
-Tide of War	intent: FlipCoinEffect
+Tide of War
 Tidebinder Mage
 Tidecaller Mentor
 Tidehollow Strix
@@ -20310,6 +20323,7 @@ Training Regimen
 Trait Doctoring
 Traitorous Blood
 Traitorous Greed
+Traitorous Instinct
 Tramway Station
 Tranquil Cove
 Tranquil Domain
@@ -21433,6 +21447,7 @@ Voja, Jaws of the Conclave
 Volatile Arsonist
 Volatile Fault
 Volatile Fjord
+Volatile Rig
 Volatile Stormdrake	polarity: SacrificeTargetEffect
 Volatile Wanderglyph
 Volcanic Awakening
@@ -22424,7 +22439,7 @@ Yawgmoth Demon
 Yawgmoth's Agenda
 Yawgmoth's Vile Offering
 Yawgmoth, Thran Physician
-Ydwen Efreet	intent: FlipCoinEffect
+Ydwen Efreet	intent: CantBlockEffect; intent: RemoveFromCombatEffect
 Year of Hell
 Yellow Scarves Cavalry
 Yellow Scarves General

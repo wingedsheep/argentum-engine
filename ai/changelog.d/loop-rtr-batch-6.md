@@ -1,0 +1,1 @@
+- #4857 Reads a coin flip (Volatile Rig, Skittish Valesk) as both of its branches, and an Aura whose "enchanted land becomes tapped" trigger mills that land's controller (Chronic Flooding) as a curse to cast on an opponent's land
