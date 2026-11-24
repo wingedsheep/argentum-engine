@@ -698,6 +698,7 @@ Annex Sentry
 Annie Flash, the Veteran
 Annie Joins Up
 Annihilate
+Annihilating Fire
 Annihilating Glare
 Annoyed Altisaur
 Annul
@@ -1026,6 +1027,7 @@ Ascent of the Worthy
 Asceticism
 Asgardian Citadel
 Ash Barrens
+Ash Zealot
 Ash, Party Crasher
 Asha's Favor
 Ashaya, Soul of the Wild
@@ -1933,6 +1935,7 @@ Blinkmoth Infusion	intent: ForEach>TapUntapEffect
 Blinkmoth Urn
 Blinkmoth Well
 Blister Beetle
+Blistercoil Weird
 Blistergrub
 Blistering Barrier
 Blistering Dieflyn
@@ -2016,6 +2019,7 @@ Bloodfire Kavu
 Bloodfire Mentor
 Bloodflow Connoisseur
 Bloodforged Battle-Axe
+Bloodfray Giant
 Bloodghast
 Bloodgift Demon
 Bloodhall Priest
@@ -2091,6 +2095,7 @@ Blunt the Assault
 Blur Sliver
 Blur of Blades
 Blurred Mongoose
+Blustersquall
 Boa Constrictor
 Boar-q-pine
 Board the Weatherlight
@@ -3112,6 +3117,7 @@ Channeled Force
 Channeler Initiate
 Chant of Vitu-Ghazi
 Chaos Channeler
+Chaos Imps
 Chaos Maw
 Chaos Orb	intent: FlipOntoBattlefieldEffect; intent: Pipeline(?→graveyard)
 Chaos Spewer
@@ -3174,6 +3180,7 @@ Cheerful Osteomancer
 Cheering Crowd
 Chelonian Tackle
 Chemister's Insight
+Chemister's Trick
 Cherished Hatchling
 Chevill, Bane of Monsters	intent: AddCountersEffect; polarity: AddCountersEffect
 Chief Engineer
@@ -3814,6 +3821,7 @@ Council's Deliberation
 Counsel of the Soratami
 Count on Luck
 Counterbalance
+Counterflux
 Counterintelligence
 Countermand
 Countersculpt
@@ -5082,6 +5090,7 @@ Dovin, Hand of Control
 Down // Dirty
 Down in the Valley
 Down, Down to Goblin-town
+Downsize
 Downwind Ambusher
 Dowsing Dagger
 Dowsing Device
@@ -5465,6 +5474,7 @@ Dwynen, Gilt-Leaf Daen
 Dyadrine, Synthesis Amalgam
 Dying Wish
 Dying to Serve
+Dynacharge
 Dynamite Diver
 Dynavolt Tower
 Dáin Ironfoot
@@ -5980,6 +5990,7 @@ Ephara, God of the Polis
 Ephemeral Shields
 Epic Confrontation
 Epic Downfall
+Epic Experiment
 Epic Fight
 Epic Proportions
 Epicure of Blood
@@ -6048,6 +6059,7 @@ Esper Origins
 Esper Sentinel	intent: GatedEffect
 Esquire of the King
 Essence Anchor
+Essence Backlash
 Essence Burn
 Essence Capture	polarity: AddCountersEffect; polarity: CounterEffect
 Essence Channeler
@@ -6759,6 +6771,7 @@ Firemane Avenger
 Firemane Commando
 Firemantle Mage
 Firemind Vessel
+Firemind's Foresight
 Firemind's Research
 Fires of Invention
 Fires of Mount Doom
@@ -9309,6 +9322,7 @@ Hylderblade
 Hymn of the Faller
 Hymn to Tourach
 Hyperion Blacksmith
+Hypersonic Dragon
 Hypnotic Cloud
 Hypnotic Grifter
 Hypnotic Siren
@@ -9910,6 +9924,7 @@ Izzet Generatorium
 Izzet Guildgate
 Izzet Locket
 Izzet Signet
+Izzet Staticaster
 J. Jonah Jameson	intent: SuspectEffect; polarity: SuspectEffect
 Jace Beleren
 Jace Reawakened	intent: MakePlottedEffect; intent: Pipeline(hand→exile)
