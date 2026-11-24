@@ -802,6 +802,13 @@ object LimitedCardRater {
                 else -> 0.3
             }
             is ExileUntilLeavesEffect -> 1.4               // O-Ring removal
+            // Detain's second half — "its activated abilities can't be activated" granted to the
+            // permanent its can't-attack half already benches. The tapper's worth is priced once,
+            // on the can't-attack leaf; the lock is a rider on it, not a second tapper.
+            is GrantStaticAbilityEffect ->
+                if (effect.ability.let { it is com.wingedsheep.sdk.scripting.PreventActivatedAbilities &&
+                        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsSource in it.filter.statePredicates }
+                ) 0.1 else tagValue(CardIntentAnalyzer.leafTags(effect))
             is ForceSacrificeEffect -> 1.2                  // edict
             is PutOnLibraryPositionOfChoiceEffect -> 1.0    // tuck
 

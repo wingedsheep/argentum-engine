@@ -757,6 +757,16 @@ object CardIntentAnalyzer {
                 // answer [auraTokenTags] reads.
                 is CreateAuraTokenEffect -> if (auraTokenHarmsOwnTarget(leaf, requirements)) emptyList()
                     else listOf(leaf)
+                // "Can't attack", "can't block" and detain's granted activation lock bench an
+                // opposing permanent — the tapper and evasion payoffs [tagsOf] reads. On our own
+                // creature they are a price: a slot kept to our side, a creature this pipeline just
+                // returned to our battlefield (Extraction Specialist), or one this ability steals
+                // (Opportunistic Dragon, Possession Engine) is not a blocker taken from them.
+                is CantAttackEffect -> if (benchesOwnPermanent(leaf.target, requirements, payoff)) emptyList() else listOf(leaf)
+                is CantBlockEffect -> if (benchesOwnPermanent(leaf.target, requirements, payoff)) emptyList() else listOf(leaf)
+                is GrantStaticAbilityEffect ->
+                    if (leaf.ability is PreventActivatedAbilities && benchesOwnPermanent(leaf.target, requirements, payoff)) emptyList()
+                    else listOf(leaf)
                 // Pulling our own attacker out of combat (Reconnaissance) saves it — no answer to
                 // anything; [tagsOf] reads the move off any other creature as one.
                 is RemoveFromCombatEffect -> if (TargetPolarityAnalyzer.targetsOwnSide(leaf.target, requirements)) emptyList()
@@ -2980,7 +2990,20 @@ object CardIntentAnalyzer {
         // Heroism's grant): a static handed out for a while reads as the static itself would — but
         // only its extra-blocking half is taken here; every other granted static is its own shape
         // (a forced attack, an activation lock, a cast permission) and stays unread until read.
-        is GrantStaticAbilityEffect -> tagsOf(effect.ability).filterTo(mutableSetOf()) { it == IntentTag.EXTRA_BLOCKING }
+        //
+        // "Its activated abilities can't be activated" handed to another permanent for a while —
+        // detain's second half (Azorius Arrester, Lyev Skyknight), a lock scoped to the holder
+        // itself — reads as [IntentTag.TAPPER], not [IntentTag.ACTIVATION_LOCK]: it shuts down one
+        // chosen permanent for a turn, the Icy Manipulator's payoff (a tapped permanent can't use
+        // its tap abilities or fight either), while ACTIVATION_LOCK is the standing, board-wide
+        // hoser lock the draft heuristic prices low.
+        is GrantStaticAbilityEffect -> {
+            val ability = effect.ability
+            if (ability is PreventActivatedAbilities && StatePredicate.IsSource in ability.filter.statePredicates &&
+                hitsAnotherPermanent(effect.target)
+            ) setOf(IntentTag.TAPPER)
+            else tagsOf(ability).filterTo(mutableSetOf()) { it == IntentTag.EXTRA_BLOCKING }
+        }
         is GrantKeywordToSpellEffect ->
             runCatching { Keyword.valueOf(effect.keyword) }.getOrNull()?.let(::ownSpellKeywordTags) ?: emptySet()
         is GrantEvasionKeywordEffect, is GrantCantBeBlockedByChosenColorEffect -> setOf(IntentTag.EVASION_GRANT)
@@ -3018,6 +3041,10 @@ object CardIntentAnalyzer {
         // taken out of the opponent's defence — the single-creature form of the team-wide evasion
         // above. "This creature can't block" on its own source is a drawback, not a payoff.
         is CantBlockEffect -> if (hitsAnotherPermanent(effect.target)) setOf(IntentTag.EVASION_GRANT) else emptySet()
+        // "Target creature can't attack" — detain's first half (Azorius Arrester, Martial Law),
+        // Inaction Injunction: one attacker kept out of combat until it matters, the payoff a tapper
+        // buys by tapping it. "This creature can't attack" on its own source is a drawback.
+        is CantAttackEffect -> if (hitsAnotherPermanent(effect.target)) setOf(IntentTag.TAPPER) else emptySet()
         // "Whenever this becomes the target of a spell an opponent controls, counter that spell
         // unless its controller discards a card" (Reality Smasher; Amulet of Safekeeping): Ward's
         // tax on answering our permanent, the same [IntentTag.PROTECTION] the keyword reads as.
@@ -3698,6 +3725,12 @@ object CardIntentAnalyzer {
         EffectTarget.ControllerOfTriggeringEntity, EffectTarget.ControllerOfDamageSource -> true
         else -> false
     }
+
+    /** See the `CantAttackEffect` case of [readingLeaves]: the benched permanent is ours. */
+    private fun benchesOwnPermanent(target: EffectTarget, requirements: List<TargetRequirement>, payoff: List<Effect>): Boolean =
+        target is EffectTarget.PipelineTarget ||
+            TargetPolarityAnalyzer.targetsOwnSide(target, requirements) ||
+            payoff.any { it is GainControlEffect && it.target == target }
 
     /** The requirement [target] is bound to, or null when it names no declared slot. */
     private fun slotOf(target: EffectTarget, requirements: List<TargetRequirement>): TargetRequirement? = when (target) {

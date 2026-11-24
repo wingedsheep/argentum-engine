@@ -47,6 +47,7 @@ import com.wingedsheep.sdk.scripting.GrantLandwalkOfChosenType
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
 import com.wingedsheep.sdk.scripting.GrantStaticAbility
+import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
 import com.wingedsheep.sdk.scripting.UntapSelfDuringOtherUntapSteps
 import com.wingedsheep.sdk.scripting.RedirectZoneChange
 import com.wingedsheep.sdk.scripting.RedirectZoneChangeWith
@@ -89,6 +90,7 @@ import com.wingedsheep.sdk.scripting.effects.AttachTargetEquipmentToCreatureEffe
 import com.wingedsheep.sdk.scripting.effects.BecomePreparedEffect
 import com.wingedsheep.sdk.scripting.effects.UnprepareEffect
 import com.wingedsheep.sdk.scripting.effects.CantBeRegeneratedEffect
+import com.wingedsheep.sdk.scripting.effects.CantAttackEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
 import com.wingedsheep.sdk.scripting.effects.CanAttackDespiteDefenderThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellEffect
@@ -2053,6 +2055,8 @@ object TargetPolarityAnalyzer {
             is DealDamageEffect -> leaf.target to TargetPolarity.HARMFUL
             is GainControlEffect -> leaf.target to TargetPolarity.HARMFUL
             is CantBlockEffect -> leaf.target to TargetPolarity.HARMFUL
+            // "Target creature can't attack" (detain, Inaction Injunction): an attacker benched.
+            is CantAttackEffect -> leaf.target to TargetPolarity.HARMFUL
             // "Creatures target opponent controls don't untap during their next untap step"
             // (Imaginary Threats, Exhaustion, Mana Vapors): the target player's permanents stay
             // tapped through a turn — a tapper's lock on that player, never a gift.
@@ -2249,8 +2253,14 @@ object TargetPolarityAnalyzer {
             // "If a triggered ability of that creature triggers, it triggers an additional time"
             // (Lwaxana Troi, Charming Guest): a doubler only ever repeats its holder's controller's
             // own triggers, so it is aimed at a creature of yours.
-            is GrantStaticAbilityEffect -> if (leaf.ability is AdditionalSourceTriggers) leaf.target to TargetPolarity.BENEFICIAL
-                else return emptyList()
+            // "Its activated abilities can't be activated" handed to the target itself (detain's
+            // second half): a lock on what it holds, aimed at the opponent's permanent.
+            is GrantStaticAbilityEffect -> when {
+                leaf.ability is AdditionalSourceTriggers -> leaf.target to TargetPolarity.BENEFICIAL
+                (leaf.ability as? PreventActivatedAbilities)?.filter?.statePredicates?.contains(StatePredicate.IsSource) == true ->
+                    leaf.target to TargetPolarity.HARMFUL
+                else -> return emptyList()
+            }
             // Only a creature with a prepare spell can become prepared, and its controller is the
             // one who may cast that spell (Hexhaven Dueling Arena); unpreparing takes it away.
             is BecomePreparedEffect -> leaf.target to TargetPolarity.BENEFICIAL

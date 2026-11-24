@@ -320,6 +320,122 @@
     ]
 }
 
+// Archon of the Triumvirate
+{
+    "name": "Archon of the Triumvirate",
+    "manaCost": "{5}{W}{U}",
+    "typeLine": "Creature — Archon",
+    "oracleText": "Flying\nWhenever this creature attacks, detain up to two target nonland permanents your opponents control. (Until your next turn, those permanents can't attack or block and their activated abilities can't be activated.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Archon of the Triumvirate:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CantAttack",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "duration": "UntilYourNextTurn"
+                            },
+                            {
+                                "type": "CantBlockTargetCreatures",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "duration": "UntilYourNextTurn"
+                            },
+                            {
+                                "type": "GrantStaticAbility",
+                                "ability": {
+                                    "type": "PreventActivatedAbilities",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsPermanent"
+                                        ],
+                                        "statePredicates": [
+                                            "IsSource"
+                                        ]
+                                    }
+                                },
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "duration": "UntilYourNextTurn"
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "nonland permanent ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "rarity": "RARE",
+        "artist": "David Rapoza",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bf91d847-4a87-4a65-8d6d-e20d538c5cec.jpg?1783940345",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "The nonland permanents will be detained before blockers are chosen. Notably, a creature detained this way can't block before it is detained."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "The two nonland permanents can be controlled by the same opponent or by different opponents."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Activated abilities include a colon and are written in the form \"[cost]: [effect].\" No one can activate any activated abilities, including mana abilities, of a detained permanent."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The static abilities of a detained permanent still apply. The triggered abilities of a detained permanent can still trigger."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a creature is already attacking or blocking when it's detained, it won't be removed from combat. It will continue to attack or block."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a permanent's activated ability is on the stack when that permanent is detained, the ability will be unaffected."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a noncreature permanent is detained and later turns into a creature, it won't be able to attack or block."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Archweaver
 {
     "name": "Archweaver",
@@ -393,6 +509,48 @@
     },
     "colorIdentityOverride": [
         "GREEN",
+        "WHITE"
+    ]
+}
+
+// Armory Guard
+{
+    "name": "Armory Guard",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Giant Soldier",
+    "oracleText": "This creature has vigilance as long as you control a Gate.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "VIGILANCE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "land Gate"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "artist": "Karl Kopinski",
+        "flavorText": "The Dimir agents watched from the shadows. \"Eight hours, and I've yet to see him blink,\" Nefara hissed. \"I suggest we find another way in.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c03498c1-b7f7-41fb-8e2a-1c087d4e9990.jpg?1783940378"
+    },
+    "colorIdentityOverride": [
         "WHITE"
     ]
 }
@@ -511,6 +669,53 @@
     ]
 }
 
+// Avenging Arrow
+{
+    "name": "Avenging Arrow",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature that dealt damage this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "HasDealtDamage",
+                                "thisTurnOnly": true
+                            }
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "artist": "James Ryman",
+        "flavorText": "\"Forgive the theft. Punish the deception.\"\n—Alcarus, Selesnya archer",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/696678ff-44dc-4fe4-bf17-024e86cd0220.jpg?1783940378"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Axebane Stag
 {
     "name": "Axebane Stag",
@@ -528,6 +733,111 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Azorius Arrester
+{
+    "name": "Azorius Arrester",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "When this creature enters, detain target creature an opponent controls. (Until your next turn, that creature can't attack or block and its activated abilities can't be activated.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Azorius Arrester:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CantAttack",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "CantBlockTargetCreatures",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "GrantStaticAbility",
+                            "ability": {
+                                "type": "PreventActivatedAbilities",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsPermanent"
+                                    ],
+                                    "statePredicates": [
+                                        "IsSource"
+                                    ]
+                                }
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "artist": "Wayne Reynolds",
+        "flavorText": "\"You have the right to remain silent. Mostly because I tire of your excuses.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/199f7563-563e-483c-8317-5380a83db955.jpg?1783940377",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Activated abilities include a colon and are written in the form \"[cost]: [effect].\" No one can activate any activated abilities, including mana abilities, of a detained permanent."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The static abilities of a detained permanent still apply. The triggered abilities of a detained permanent can still trigger."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a creature is already attacking or blocking when it's detained, it won't be removed from combat. It will continue to attack or block."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a permanent's activated ability is on the stack when that permanent is detained, the ability will be unaffected."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a noncreature permanent is detained and later turns into a creature, it won't be able to attack or block."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When a player leaves a multiplayer game, any continuous effects with durations that last until that player's next turn or until a specific point in that turn will last until that turn would have begun. They neither expire immediately nor last indefinitely."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -656,6 +966,199 @@
         "artist": "Drew Baker",
         "flavorText": "Enter the Senate, the seat of justice and the foundation of Ravnican society.",
         "imageUri": "https://cards.scryfall.io/normal/front/9/8/984e37df-0734-493a-a958-f519a0c98580.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
+// Azorius Justiciar
+{
+    "name": "Azorius Justiciar",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "When this creature enters, detain up to two target creatures your opponents control. (Until your next turn, those creatures can't attack or block and their activated abilities can't be activated.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Azorius Justiciar:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CantAttack",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "duration": "UntilYourNextTurn"
+                            },
+                            {
+                                "type": "CantBlockTargetCreatures",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "duration": "UntilYourNextTurn"
+                            },
+                            {
+                                "type": "GrantStaticAbility",
+                                "ability": {
+                                    "type": "PreventActivatedAbilities",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsPermanent"
+                                        ],
+                                        "statePredicates": [
+                                            "IsSource"
+                                        ]
+                                    }
+                                },
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "duration": "UntilYourNextTurn"
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rahn",
+        "flavorText": "\"Your potential to commit a crime warrants further investigation.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f56272e-c05e-446b-8871-e3783dd29a8b.jpg?1783940377",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "The two creatures can be controlled by the same opponent or by different opponents."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Activated abilities include a colon and are written in the form \"[cost]: [effect].\" No one can activate any activated abilities, including mana abilities, of a detained permanent."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The static abilities of a detained permanent still apply. The triggered abilities of a detained permanent can still trigger."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a creature is already attacking or blocking when it's detained, it won't be removed from combat. It will continue to attack or block."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a permanent's activated ability is on the stack when that permanent is detained, the ability will be unaffected."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a noncreature permanent is detained and later turns into a creature, it won't be able to attack or block."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When a player leaves a multiplayer game, any continuous effects with durations that last until that player's next turn or until a specific point in that turn will last until that turn would have begun. They neither expire immediately nor last indefinitely."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Azorius Keyrune
+{
+    "name": "Azorius Keyrune",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {W} or {U}.\n{W}{U}: This artifact becomes a 2/2 white and blue Bird artifact creature with flying until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Azorius Keyrune:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Azorius Keyrune:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Azorius Keyrune:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{W}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "creatureTypes": [
+                        "Bird"
+                    ],
+                    "addTypes": [
+                        "ARTIFACT"
+                    ],
+                    "colors": [
+                        "WHITE",
+                        "BLUE"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "225",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "\"The higher the mind soars, the greater its understanding of the law.\"\n—Isperia",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/23a05db7-dcae-4180-8ad1-60ba6fb30816.jpg?1783940325"
     },
     "colorIdentityOverride": [
         "WHITE",
@@ -3748,6 +4251,214 @@
     ]
 }
 
+// Inaction Injunction
+{
+    "name": "Inaction Injunction",
+    "manaCost": "{1}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Detain target creature an opponent controls. (Until your next turn, that creature can't attack or block and its activated abilities can't be activated.)\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CantAttack",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "UntilYourNextTurn"
+                },
+                {
+                    "type": "CantBlockTargetCreatures",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "UntilYourNextTurn"
+                },
+                {
+                    "type": "GrantStaticAbility",
+                    "ability": {
+                        "type": "PreventActivatedAbilities",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsPermanent"
+                            ],
+                            "statePredicates": [
+                                "IsSource"
+                            ]
+                        }
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "UntilYourNextTurn"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "artist": "Wayne Reynolds",
+        "flavorText": "\"To prevent action is to prevent transgression.\"\n—Azorius Arrester motto",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/5342ec3c-9d26-474a-9df5-c21ac90bb233.jpg?1783940369",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Activated abilities include a colon and are written in the form \"[cost]: [effect].\" No one can activate any activated abilities, including mana abilities, of a detained permanent."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The static abilities of a detained permanent still apply. The triggered abilities of a detained permanent can still trigger."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a creature is already attacking or blocking when it's detained, it won't be removed from combat. It will continue to attack or block."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a permanent's activated ability is on the stack when that permanent is detained, the ability will be unaffected."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a noncreature permanent is detained and later turns into a creature, it won't be able to attack or block."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When a player leaves a multiplayer game, any continuous effects with durations that last until that player's next turn or until a specific point in that turn will last until that turn would have begun. They neither expire immediately nor last indefinitely."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Isperia's Skywatch
+{
+    "name": "Isperia's Skywatch",
+    "manaCost": "{5}{U}",
+    "typeLine": "Creature — Vedalken Knight",
+    "oracleText": "Flying\nWhen this creature enters, detain target creature an opponent controls. (Until your next turn, that creature can't attack or block and its activated abilities can't be activated.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Isperia's Skywatch:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CantAttack",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "CantBlockTargetCreatures",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "GrantStaticAbility",
+                            "ability": {
+                                "type": "PreventActivatedAbilities",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsPermanent"
+                                    ],
+                                    "statePredicates": [
+                                        "IsSource"
+                                    ]
+                                }
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/019ba84d-d236-45c5-a8ad-75def7736d0c.jpg?1783940368",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Activated abilities include a colon and are written in the form \"[cost]: [effect].\" No one can activate any activated abilities, including mana abilities, of a detained permanent."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The static abilities of a detained permanent still apply. The triggered abilities of a detained permanent can still trigger."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a creature is already attacking or blocking when it's detained, it won't be removed from combat. It will continue to attack or block."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a permanent's activated ability is on the stack when that permanent is detained, the ability will be unaffected."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a noncreature permanent is detained and later turns into a creature, it won't be able to attack or block."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When a player leaves a multiplayer game, any continuous effects with durations that last until that player's next turn or until a specific point in that turn will last until that turn would have begun. They neither expire immediately nor last indefinitely."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Izzet Guildgate
 {
     "name": "Izzet Guildgate",
@@ -4243,6 +4954,218 @@
     ]
 }
 
+// Lyev Skyknight
+{
+    "name": "Lyev Skyknight",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Flying\nWhen this creature enters, detain target nonland permanent an opponent controls. (Until your next turn, that permanent can't attack or block and its activated abilities can't be activated.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lyev Skyknight:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CantAttack",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "CantBlockTargetCreatures",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "GrantStaticAbility",
+                            "ability": {
+                                "type": "PreventActivatedAbilities",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsPermanent"
+                                    ],
+                                    "statePredicates": [
+                                        "IsSource"
+                                    ]
+                                }
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "nonland permanent ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "rarity": "UNCOMMON",
+        "artist": "Johannes Voss",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11cbeb3b-1579-4318-a024-4a2c06896eaf.jpg?1783940337",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Activated abilities include a colon and are written in the form \"[cost]: [effect].\" No one can activate any activated abilities, including mana abilities, of a detained permanent."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The static abilities of a detained permanent still apply. The triggered abilities of a detained permanent can still trigger."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a creature is already attacking or blocking when it's detained, it won't be removed from combat. It will continue to attack or block."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a permanent's activated ability is on the stack when that permanent is detained, the ability will be unaffected."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a noncreature permanent is detained and later turns into a creature, it won't be able to attack or block."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When a player leaves a multiplayer game, any continuous effects with durations that last until that player's next turn or until a specific point in that turn will last until that turn would have begun. They neither expire immediately nor last indefinitely."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
+// Martial Law
+{
+    "name": "Martial Law",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, detain target creature an opponent controls. (Until your next turn, that creature can't attack or block and its activated abilities can't be activated.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Martial Law:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CantAttack",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "CantBlockTargetCreatures",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "GrantStaticAbility",
+                            "ability": {
+                                "type": "PreventActivatedAbilities",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsPermanent"
+                                    ],
+                                    "statePredicates": [
+                                        "IsSource"
+                                    ]
+                                }
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "RARE",
+        "artist": "Tyler Jacobson",
+        "flavorText": "\"The good of society matters much more than the inconvenience of a few.\"\n—Agmand Sarv, Azorius hussar",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/21078b6f-a39d-4ec8-879e-ad10d97c3ff6.jpg?1783940374",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Activated abilities include a colon and are written in the form \"[cost]: [effect].\" No one can activate any activated abilities, including mana abilities, of a detained permanent."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The static abilities of a detained permanent still apply. The triggered abilities of a detained permanent can still trigger."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a creature is already attacking or blocking when it's detained, it won't be removed from combat. It will continue to attack or block."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a permanent's activated ability is on the stack when that permanent is detained, the ability will be unaffected."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a noncreature permanent is detained and later turns into a creature, it won't be able to attack or block."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When a player leaves a multiplayer game, any continuous effects with durations that last until that player's next turn or until a specific point in that turn will last until that turn would have begun. They neither expire immediately nor last indefinitely."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Minotaur Aggressor
 {
     "name": "Minotaur Aggressor",
@@ -4266,6 +5189,119 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Mizzium Skin
+{
+    "name": "Mizzium Skin",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control gets +0/+1 and gains hexproof until end of turn.\nOverload {1}{U} (You may cast this spell for its overload cost. If you do, change \"target\" in its text to \"each.\")",
+    "keywords": [
+        "OVERLOAD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Overload",
+            "cost": "{1}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ],
+        "overloadSpellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    },
+                    {
+                        "type": "GrantKeyword",
+                        "keyword": "HEXPROOF",
+                        "target": "IterationEntity"
+                    }
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "artist": "Scott Chou",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d9859344-4efc-4b87-a3fb-147e496cee68.jpg?1783940367",
+        "rulings": [
+            {
+                "date": "2024-01-12",
+                "text": "If you don't pay the overload cost of a spell with overload, that spell will have a single target. If you pay the overload cost, the spell won't have any targets."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "Because a spell with overload doesn't target when its overload cost is paid, it may affect permanents with hexproof or with protection from the appropriate color."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying (such as an overload cost), add any cost increases, then apply any cost reductions. The mana value of the spell remains unchanged, no matter what the total cost to cast it was."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "If you are instructed to cast a spell with overload \"without paying its mana cost,\" you can't choose to pay its overload cost instead."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4323,6 +5359,144 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// New Prahv Guildmage
+{
+    "name": "New Prahv Guildmage",
+    "manaCost": "{W}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{W}{U}: Target creature gains flying until end of turn.\n{3}{W}{U}: Detain target nonland permanent an opponent controls. (Until your next turn, that permanent can't attack or block and its activated abilities can't be activated.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "New Prahv Guildmage:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{W}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            },
+            {
+                "id": "New Prahv Guildmage:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{W}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CantAttack",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "CantBlockTargetCreatures",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "GrantStaticAbility",
+                            "ability": {
+                                "type": "PreventActivatedAbilities",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsPermanent"
+                                    ],
+                                    "statePredicates": [
+                                        "IsSource"
+                                    ]
+                                }
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "nonland permanent ctrl:opponent"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "rarity": "UNCOMMON",
+        "artist": "Karl Kopinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/698b47d1-c72e-4dc3-b28b-7421e0163f22.jpg?1783940335",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "If a noncreature permanent is detained and later turns into a creature, it won't be able to attack or block."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Activated abilities include a colon and are written in the form \"[cost]: [effect].\" No one can activate any activated abilities, including mana abilities, of a detained permanent."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The static abilities of a detained permanent still apply. The triggered abilities of a detained permanent can still trigger."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a creature is already attacking or blocking when it's detained, it won't be removed from combat. It will continue to attack or block."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a permanent's activated ability is on the stack when that permanent is detained, the ability will be unaffected."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When a player leaves a multiplayer game, any continuous effects with durations that last until that player's next turn or until a specific point in that turn will last until that turn would have begun. They neither expire immediately nor last indefinitely."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
     ]
 }
 
@@ -4426,6 +5600,64 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Palisade Giant
+{
+    "name": "Palisade Giant",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Creature — Giant Soldier",
+    "oracleText": "All damage that would be dealt to you and other permanents you control is dealt to this creature instead.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 7
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "RedirectDamage",
+                "redirectTo": "Self",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "You"
+                    }
+                }
+            },
+            {
+                "type": "RedirectDamage",
+                "redirectTo": "Self",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": "permanent ctrl:you"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "RARE",
+        "artist": "Greg Staples",
+        "flavorText": "Refusing guild allegiances, she fights for those who can't protect themselves.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fdfd37ca-e4c9-4674-a75f-15d8ebcce72b.jpg?1783940375",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "Applying this redirection effect doesn't change whether the damage is combat damage."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "If you control more than one Palisade Giant, you choose which redirection effect to apply. You can't divide damage dealt by one source. For example, if an attacking creature would deal 8 damage to you and you control two Palisade Giants, you may have that damage dealt to either of the Palisade Giants. You can't have 4 damage dealt to each Giant or choose to have the 8 damage dealt to you."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -5286,6 +6518,55 @@
     ]
 }
 
+// Search Warrant
+{
+    "name": "Search Warrant",
+    "manaCost": "{W}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player reveals their hand. You gain life equal to the number of cards in that player's hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RevealHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Count",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "193",
+        "artist": "Steven Belledin",
+        "flavorText": "\"And would you care to explain why your satchel is radiating an aura of unstable energy?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d55f625a-6e9e-40ba-ae46-cf6bafc0a41b.jpg?1783940332"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Selesnya Charm
 {
     "name": "Selesnya Charm",
@@ -5542,6 +6823,68 @@
         "imageUri": "https://cards.scryfall.io/normal/front/5/8/5839556c-6635-44c4-96ed-666e4466b929.jpg?1783940366"
     },
     "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Skymark Roc
+{
+    "name": "Skymark Roc",
+    "manaCost": "{2}{W}{U}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying\nWhenever this creature attacks, you may return target creature defending player controls with toughness 2 or less to its owner's hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skymark Roc:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "ToughnessAtMost",
+                                    "max": 2
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByDefendingPlayer"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "rarity": "UNCOMMON",
+        "artist": "Christopher Moeller",
+        "flavorText": "\"Try not to look guilty. Or delicious.\"\n—Thorpe, street urchin",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/60601296-2229-4c48-94cc-1903926750ce.jpg?1783940331"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
         "BLUE"
     ]
 }
