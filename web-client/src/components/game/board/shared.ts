@@ -937,6 +937,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.MANIFESTATION,
   // Five-Alarm Fire: one per creature that deals combat damage; remove five to deal 5 damage.
   CounterType.BLAZE,
+  // Azor's Elocutors: one each upkeep, five wins the game; damage to its controller removes one.
+  CounterType.FILIBUSTER,
   CounterType.PLUS_ONE_PLUS_TWO,
   CounterType.PLUS_TWO_PLUS_TWO,
   CounterType.MINUS_TWO_MINUS_TWO,
