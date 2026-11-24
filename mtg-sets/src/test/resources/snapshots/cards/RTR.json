@@ -736,6 +736,107 @@
     ]
 }
 
+// Azor's Elocutors
+{
+    "name": "Azor's Elocutors",
+    "manaCost": "{3}{W/U}{W/U}",
+    "typeLine": "Creature — Human Advisor",
+    "oracleText": "At the beginning of your upkeep, put a filibuster counter on this creature. Then if this creature has five or more filibuster counters on it, you win the game.\nWhenever a source deals damage to you, remove a filibuster counter from this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Azor's Elocutors:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "FILIBUSTER",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": "FILIBUSTER"
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 5
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "WinGame",
+                                "message": "Azor's Elocutors reached five filibuster counters."
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Azor's Elocutors:2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "You"
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "RemoveCounters",
+                    "counterType": "FILIBUSTER",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "210",
+        "rarity": "RARE",
+        "artist": "Johannes Voss",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/61e82934-546b-4734-a715-b22ace4c5a9b.jpg?1783940329",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "You’ll only win the game if Azor’s Elocutors has five or more filibuster counters on it when the first ability resolves. For example, if Azor’s Elocutors has four filibuster counters on it and you somehow add another during your main phase, you won’t win the game immediately."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "The second ability of Azor’s Elocutors removes one filibuster counter per source, no matter how much damage that source dealt. For example, if two attacking creatures deal damage to you at the same time, two filibuster counters will be removed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Azorius Arrester
 {
     "name": "Azorius Arrester",

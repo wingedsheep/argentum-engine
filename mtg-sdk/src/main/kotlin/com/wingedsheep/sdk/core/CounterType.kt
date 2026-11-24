@@ -1010,6 +1010,13 @@ value class CounterType(val name: String) {
          */
         val BLAZE = CounterType("BLAZE")
 
+        /**
+         * Filibuster counter (RTR — Azor's Elocutors). Passive tally with no inherent rule: the
+         * creature's upkeep trigger adds one and wins the game at five, and each source that deals
+         * damage to its controller removes one.
+         */
+        val FILIBUSTER = CounterType("FILIBUSTER")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -1185,6 +1192,7 @@ value class CounterType(val name: String) {
             CRYSTAL,
             MANIFESTATION,
             BLAZE,
+            FILIBUSTER,
         )
 
         /**
