@@ -2510,6 +2510,78 @@
     ]
 }
 
+// Dead Reveler
+{
+    "name": "Dead Reveler",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "Unleash (You may have this creature enter with a +1/+1 counter on it. It can't block as long as it has a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "UNLEASH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "CantBlock",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "unleash_counter",
+                        "label": "Unleash",
+                        "description": "+1/+1 counter; can't block while it has one",
+                        "iconKey": "plusOneCounter"
+                    },
+                    {
+                        "id": "unleash_none",
+                        "label": "Don't unleash",
+                        "description": "No counter; can block"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "unleash_counter"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "artist": "David Palumbo",
+        "flavorText": "He's the unlife of the party.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/909a0a38-2c22-4b49-8938-1a8162c077e6.jpg?1783940363"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Deadbridge Goliath
 {
     "name": "Deadbridge Goliath",
@@ -3896,6 +3968,104 @@
     ]
 }
 
+// Gatecreeper Vine
+{
+    "name": "Gatecreeper Vine",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Plant",
+    "oracleText": "Defender\nWhen this creature enters, you may search your library for a basic land card or a Gate card, reveal it, put it into your hand, then shuffle.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gatecreeper Vine:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            {
+                                                "type": "Or",
+                                                "predicates": [
+                                                    "IsBasicLand",
+                                                    {
+                                                        "type": "And",
+                                                        "predicates": [
+                                                            "IsLand",
+                                                            {
+                                                                "type": "HasSubtype",
+                                                                "subtype": "Gate"
+                                                            }
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a basic land or land Gate card to put into your hand",
+                                "selectedLabel": "Put into your hand"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "artist": "Trevor Claxton",
+        "flavorText": "Every inch of Ravnica is home to something.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5dabcc2f-7536-44e3-a495-bbfc526fdc5d.jpg?1783940349"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Gobbling Ooze
 {
     "name": "Gobbling Ooze",
@@ -4074,6 +4244,84 @@
     ]
 }
 
+// Golgari Decoy
+{
+    "name": "Golgari Decoy",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Elf Rogue",
+    "oracleText": "All creatures able to block this creature do so.\nScavenge {3}{G}{G} ({3}{G}{G}, Exile this card from your graveyard: Put a number of +1/+1 counters equal to this card's power on target creature. Scavenge only as a sorcery.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Golgari Decoy:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{G}{G}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Scavenge {3}{G}{G}"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MustBeBlockedStatic",
+                "allCreatures": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "UNCOMMON",
+        "artist": "Marco Nelor",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/1/511a42a8-71ce-476f-98fa-fc0dc822edcf.jpg?1783940348",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Exiling the creature card with scavenge is part of the cost of activating the scavenge ability. Once the ability is activated and the cost is paid, it's too late to stop the ability from being activated by trying to remove the creature card from the graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Golgari Guildgate
 {
     "name": "Golgari Guildgate",
@@ -4119,6 +4367,83 @@
     ]
 }
 
+// Golgari Keyrune
+{
+    "name": "Golgari Keyrune",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {B} or {G}.\n{B}{G}: This artifact becomes a 2/2 black and green Insect artifact creature with deathtouch until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Golgari Keyrune:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Golgari Keyrune:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Golgari Keyrune:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "keywords": [
+                        "DEATHTOUCH"
+                    ],
+                    "creatureTypes": [
+                        "Insect"
+                    ],
+                    "addTypes": [
+                        "ARTIFACT"
+                    ],
+                    "colors": [
+                        "BLACK",
+                        "GREEN"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "229",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "Like a single ant, it only hints at the colony below.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/913b803f-ba82-4660-86be-49677d1e32c9.jpg?1783940324"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Golgari Longlegs
 {
     "name": "Golgari Longlegs",
@@ -4137,6 +4462,197 @@
     "colorIdentityOverride": [
         "BLACK",
         "GREEN"
+    ]
+}
+
+// Grave Betrayal
+{
+    "name": "Grave Betrayal",
+    "manaCost": "{5}{B}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a creature you don't control dies, return it to the battlefield under your control with an additional +1/+1 counter on it at the beginning of the next end step. That creature is a black Zombie in addition to its other colors and types.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Grave Betrayal:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerNot",
+                            "predicate": "ControlledByYou"
+                        }
+                    },
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "Entity",
+                                "entity": "TriggeringEntity"
+                            },
+                            "storeAs": "graveBetrayalDeadCreature"
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "step": "END",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "graveBetrayalDeadCreature",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield"
+                                        },
+                                        "addCounterType": "PLUS_ONE_PLUS_ONE",
+                                        "entersWith": {
+                                            "addedSubtypes": [
+                                                "Zombie"
+                                            ],
+                                            "addedColors": [
+                                                "BLACK"
+                                            ]
+                                        }
+                                    }
+                                ]
+                            },
+                            "carryCollections": [
+                                "graveBetrayalDeadCreature"
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "RARE",
+        "artist": "Lucas Graciano",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/47b38c68-8e72-4afc-bb5e-0b40880fdda9.jpg?1783940362",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "Grave Betrayal doesn't overwrite any previous colors or types. Rather, it adds another color and another creature type."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "If the creature is normally colorless, it will simply be black. It won't be both black and colorless."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "If a creature you don't control dies during the end step, that creature won't return to the battlefield until the beginning of the next end step."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "If the creature card leaves the graveyard before the delayed triggered ability resolves, it won't return to the battlefield. This is also true if the card leaves the graveyard and returns to the graveyard before that ability resolves."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "The phrase \"with an additional +1/+1 counter on it\" means that the creature enters with one more +1/+1 counter than it would normally enter with. It doesn't keep any counters it had on it when it died."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Grim Roustabout
+{
+    "name": "Grim Roustabout",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Skeleton Warrior",
+    "oracleText": "Unleash (You may have this creature enter with a +1/+1 counter on it. It can't block as long as it has a +1/+1 counter on it.)\n{1}{B}: Regenerate this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "UNLEASH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Grim Roustabout:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "CantBlock",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "unleash_counter",
+                        "label": "Unleash",
+                        "description": "+1/+1 counter; can't block while it has one",
+                        "iconKey": "plusOneCounter"
+                    },
+                    {
+                        "id": "unleash_none",
+                        "label": "Don't unleash",
+                        "description": "No counter; can block"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "unleash_counter"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "artist": "Steven Belledin",
+        "flavorText": "He'll point you to your death row seats.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1a5ae3f5-5466-4058-a2cd-1a036cb38a8e.jpg?1783940362"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -4717,6 +5233,90 @@
     ]
 }
 
+// Jarad's Orders
+{
+    "name": "Jarad's Orders",
+    "manaCost": "{2}{B}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for up to two creature cards and reveal them. Put one into your hand and the other into your graveyard. Then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "creature"
+                    },
+                    "storeAs": "gathered0",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "prompt": "Search your library for up to two creature cards"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "selected1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected2",
+                    "storeRemainder": "remainder2",
+                    "prompt": "Choose which creature card goes to your hand; the other goes to your graveyard.",
+                    "selectedLabel": "Into your hand",
+                    "remainderLabel": "Into your graveyard"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "remainder2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"The Izzet are searching for something. Discern what or die trying.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c59171ce-7dc6-4dd9-a124-3c2c3028d93d.jpg?1783940337"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Judge's Familiar
 {
     "name": "Judge's Familiar",
@@ -4871,6 +5471,80 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Korozda Monitor
+{
+    "name": "Korozda Monitor",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Lizard",
+    "oracleText": "Trample\nScavenge {5}{G}{G} ({5}{G}{G}, Exile this card from your graveyard: Put a number of +1/+1 counters equal to this card's power on target creature. Scavenge only as a sorcery.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Korozda Monitor:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}{G}{G}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Scavenge {5}{G}{G}"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "artist": "Lars Grant-West",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2f319d57-7a54-4b10-86d4-58d7b3994844.jpg?1783940348",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Exiling the creature card with scavenge is part of the cost of activating the scavenge ability. Once the ability is activated and the cost is paid, it's too late to stop the ability from being activated by trying to remove the creature card from the graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -6902,6 +7576,80 @@
     ]
 }
 
+// Sewer Shambler
+{
+    "name": "Sewer Shambler",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "Swampwalk (This creature can't be blocked as long as defending player controls a Swamp.)\nScavenge {2}{B} ({2}{B}, Exile this card from your graveyard: Put a number of +1/+1 counters equal to this card's power on target creature. Scavenge only as a sorcery.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "SWAMPWALK"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sewer Shambler:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Scavenge {2}{B}"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "artist": "Nils Hamm",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0ae7ba14-c901-4266-ae31-812e001916d3.jpg?1783940360",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Exiling the creature card with scavenge is part of the cost of activating the scavenge ability. Once the ability is activated and the cost is paid, it's too late to stop the ability from being activated by trying to remove the creature card from the graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Skyline Predator
 {
     "name": "Skyline Predator",
@@ -6987,6 +7735,80 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLUE"
+    ]
+}
+
+// Slitherhead
+{
+    "name": "Slitherhead",
+    "manaCost": "{B/G}",
+    "typeLine": "Creature — Plant Zombie",
+    "oracleText": "Scavenge {0} ({0}, Exile this card from your graveyard: Put a number of +1/+1 counters equal to this card's power on target creature. Scavenge only as a sorcery.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Slitherhead:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{0}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Scavenge {0}"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Staples",
+        "flavorText": "\"It makes better use of Uncle Dragi's head than he ever did.\"\n—Pesha, retired blacksmith",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d9327905-a254-4885-8310-69fc153ec52f.jpg?1783940326",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Exiling the creature card with scavenge is part of the cost of activating the scavenge ability. Once the ability is activated and the cost is paid, it's too late to stop the ability from being activated by trying to remove the creature card from the graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
     ]
 }
 
@@ -7620,6 +8442,78 @@
     ]
 }
 
+// Terrus Wurm
+{
+    "name": "Terrus Wurm",
+    "manaCost": "{6}{B}",
+    "typeLine": "Creature — Zombie Wurm",
+    "oracleText": "Scavenge {6}{B} ({6}{B}, Exile this card from your graveyard: Put a number of +1/+1 counters equal to this card's power on target creature. Scavenge only as a sorcery.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Terrus Wurm:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{6}{B}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Scavenge {6}{B}"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "artist": "Cliff Childs",
+        "flavorText": "\"We follow it through its tunnels, and where it dies, we farm.\"\n—Mihas, spore druid",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/1998135c-7b7f-402b-a8a5-4f4af131b1bc.jpg?1783940359",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Exiling the creature card with scavenge is part of the cost of activating the scavenge ability. Once the ability is activated and the cost is paid, it's too late to stop the ability from being activated by trying to remove the creature card from the graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Thoughtflare
 {
     "name": "Thoughtflare",
@@ -7685,6 +8579,80 @@
     "colorIdentityOverride": [
         "RED",
         "BLUE"
+    ]
+}
+
+// Thrill-Kill Assassin
+{
+    "name": "Thrill-Kill Assassin",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Assassin",
+    "oracleText": "Deathtouch\nUnleash (You may have this creature enter with a +1/+1 counter on it. It can't block as long as it has a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEATHTOUCH",
+        "UNLEASH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "CantBlock",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "unleash_counter",
+                        "label": "Unleash",
+                        "description": "+1/+1 counter; can't block while it has one",
+                        "iconKey": "plusOneCounter"
+                    },
+                    {
+                        "id": "unleash_none",
+                        "label": "Don't unleash",
+                        "description": "No counter; can block"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "unleash_counter"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "UNCOMMON",
+        "artist": "Tyler Jacobson",
+        "flavorText": "As the bounty on Massacre Girl rose, so did the number of imitators.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a9f32204-eda7-4184-92e5-9da8b15b2359.jpg?1783940359"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -8247,5 +9215,80 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Zanikev Locust
+{
+    "name": "Zanikev Locust",
+    "manaCost": "{5}{B}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "Flying\nScavenge {2}{B}{B} ({2}{B}{B}, Exile this card from your graveyard: Put a number of +1/+1 counters equal to this card's power on target creature. Scavenge only as a sorcery.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Zanikev Locust:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}{B}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Scavenge {2}{B}{B}"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "UNCOMMON",
+        "artist": "Cliff Childs",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/adcbd7ee-8958-46fe-abb0-e899e7d2e654.jpg?1783940358",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Exiling the creature card with scavenge is part of the cost of activating the scavenge ability. Once the ability is activated and the cost is paid, it's too late to stop the ability from being activated by trying to remove the creature card from the graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
