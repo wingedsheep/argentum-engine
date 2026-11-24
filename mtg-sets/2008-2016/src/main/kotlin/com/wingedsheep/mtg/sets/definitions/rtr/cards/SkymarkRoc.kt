@@ -43,6 +43,7 @@ val SkymarkRoc = card("Skymark Roc") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "196"
         artist = "Christopher Moeller"
+        flavorText = "\"Try not to look guilty. Or delicious.\"\n—Thorpe, street urchin"
         imageUri = "https://cards.scryfall.io/normal/front/6/0/60601296-2229-4c48-94cc-1903926750ce.jpg?1783940331"
     }
 }

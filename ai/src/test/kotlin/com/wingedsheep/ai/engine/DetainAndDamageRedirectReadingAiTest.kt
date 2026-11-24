@@ -4,7 +4,12 @@ import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.ai.engine.knowledge.TargetPolarity
 import com.wingedsheep.ai.engine.knowledge.TargetPolarityAnalyzer
+import com.wingedsheep.mtg.sets.definitions.dft.cards.PossessionEngine
+import com.wingedsheep.mtg.sets.definitions.eld.cards.OpportunisticDragon
 import com.wingedsheep.mtg.sets.definitions.fin.cards.AncientAdamantoise
+import com.wingedsheep.mtg.sets.definitions.rtr.cards.InactionInjunction
+import com.wingedsheep.mtg.sets.definitions.rtr.cards.LyevSkyknight
+import com.wingedsheep.mtg.sets.definitions.snc.cards.ExtractionSpecialist
 import com.wingedsheep.mtg.sets.definitions.rtr.cards.AzoriusArrester
 import com.wingedsheep.mtg.sets.definitions.rtr.cards.PalisadeGiant
 import com.wingedsheep.sdk.scripting.effects.CantAttackEffect
@@ -13,6 +18,8 @@ import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.GrantStaticAbilityEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldNotContain
+import io.kotest.matchers.doubles.shouldBeLessThan
 import io.kotest.matchers.shouldBe
 
 /**
@@ -35,6 +42,25 @@ class DetainAndDamageRedirectReadingAiTest : FunSpec({
         val tags = CardIntentAnalyzer.analyze(AzoriusArrester).tags
         tags shouldContain IntentTag.TAPPER
         tags shouldContain IntentTag.EVASION_GRANT
+    }
+
+    test("every detain card reads as a tapper") {
+        listOf(InactionInjunction, LyevSkyknight).forEach { card ->
+            CardIntentAnalyzer.analyze(card).tags shouldContain IntentTag.TAPPER
+        }
+    }
+
+    test("can't attack on our own creature is a price, not a tapper") {
+        // The creature it just returned to our battlefield, or the one it steals.
+        listOf(ExtractionSpecialist, OpportunisticDragon, PossessionEngine).forEach { card ->
+            CardIntentAnalyzer.analyze(card).tags shouldNotContain IntentTag.TAPPER
+        }
+    }
+
+    test("the rater prices detain's tapper once: the granted lock is a rider on can't attack") {
+        val cantAttack = leaves(detain.effect).filterIsInstance<CantAttackEffect>().single()
+        val lock = leaves(detain.effect).filterIsInstance<GrantStaticAbilityEffect>().single()
+        LimitedCardRater.effectValue(lock) shouldBeLessThan LimitedCardRater.effectValue(cantAttack)
     }
 
     test("detain's can't-attack half alone aims at the opponent's creature") {

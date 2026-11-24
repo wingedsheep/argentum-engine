@@ -757,6 +757,16 @@ object CardIntentAnalyzer {
                 // answer [auraTokenTags] reads.
                 is CreateAuraTokenEffect -> if (auraTokenHarmsOwnTarget(leaf, requirements)) emptyList()
                     else listOf(leaf)
+                // "Can't attack", "can't block" and detain's granted activation lock bench an
+                // opposing permanent — the tapper and evasion payoffs [tagsOf] reads. On our own
+                // creature they are a price: a slot kept to our side, a creature this pipeline just
+                // returned to our battlefield (Extraction Specialist), or one this ability steals
+                // (Opportunistic Dragon, Possession Engine) is not a blocker taken from them.
+                is CantAttackEffect -> if (benchesOwnPermanent(leaf.target, requirements, payoff)) emptyList() else listOf(leaf)
+                is CantBlockEffect -> if (benchesOwnPermanent(leaf.target, requirements, payoff)) emptyList() else listOf(leaf)
+                is GrantStaticAbilityEffect ->
+                    if (leaf.ability is PreventActivatedAbilities && benchesOwnPermanent(leaf.target, requirements, payoff)) emptyList()
+                    else listOf(leaf)
                 // Pulling our own attacker out of combat (Reconnaissance) saves it — no answer to
                 // anything; [tagsOf] reads the move off any other creature as one.
                 is RemoveFromCombatEffect -> if (TargetPolarityAnalyzer.targetsOwnSide(leaf.target, requirements)) emptyList()
@@ -3715,6 +3725,12 @@ object CardIntentAnalyzer {
         EffectTarget.ControllerOfTriggeringEntity, EffectTarget.ControllerOfDamageSource -> true
         else -> false
     }
+
+    /** See the `CantAttackEffect` case of [readingLeaves]: the benched permanent is ours. */
+    private fun benchesOwnPermanent(target: EffectTarget, requirements: List<TargetRequirement>, payoff: List<Effect>): Boolean =
+        target is EffectTarget.PipelineTarget ||
+            TargetPolarityAnalyzer.targetsOwnSide(target, requirements) ||
+            payoff.any { it is GainControlEffect && it.target == target }
 
     /** The requirement [target] is bound to, or null when it names no declared slot. */
     private fun slotOf(target: EffectTarget, requirements: List<TargetRequirement>): TargetRequirement? = when (target) {
