@@ -2,10 +2,12 @@ package com.wingedsheep.ai.engine.knowledge
 
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.PreventDamage
+import com.wingedsheep.sdk.scripting.RedirectDamage
 import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.scripting.events.Recipient
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Reads a standing damage-prevention shield over its controller's side: "if a source an opponent
@@ -19,11 +21,20 @@ import com.wingedsheep.sdk.scripting.references.Player
  * opponents control" — shields them as much as us, and is not read as ours. A creature's shield
  * over itself alone ("prevent all damage that would be dealt to this creature") is part of its body,
  * which the combat simulation already sees, and is left out.
+ *
+ * A redirect onto the shield's own body is the same shield: "all damage that would be dealt to you
+ * and other permanents you control is dealt to this creature instead" (Palisade Giant, Ancient
+ * Adamantoise, Martyrs of Korlis) keeps the damage off us and our other permanents, soaked by a
+ * high-toughness body. A redirect elsewhere (Harsh Judgment's "to that spell's controller") is not.
  */
 internal object DamageShields {
     fun reads(replacement: ReplacementEffect): Boolean {
-        val prevention = replacement as? PreventDamage ?: return false
-        val event = prevention.appliesTo as? EventPattern.DamageEvent ?: return false
+        val pattern = when (replacement) {
+            is PreventDamage -> replacement.appliesTo
+            is RedirectDamage -> if (replacement.redirectTo == EffectTarget.Self) replacement.appliesTo else return false
+            else -> return false
+        }
+        val event = pattern as? EventPattern.DamageEvent ?: return false
         return oursOnly(event.recipient)
     }
 

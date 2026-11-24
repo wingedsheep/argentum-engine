@@ -2980,7 +2980,20 @@ object CardIntentAnalyzer {
         // Heroism's grant): a static handed out for a while reads as the static itself would — but
         // only its extra-blocking half is taken here; every other granted static is its own shape
         // (a forced attack, an activation lock, a cast permission) and stays unread until read.
-        is GrantStaticAbilityEffect -> tagsOf(effect.ability).filterTo(mutableSetOf()) { it == IntentTag.EXTRA_BLOCKING }
+        //
+        // "Its activated abilities can't be activated" handed to another permanent for a while —
+        // detain's second half (Azorius Arrester, Lyev Skyknight), a lock scoped to the holder
+        // itself — reads as [IntentTag.TAPPER], not [IntentTag.ACTIVATION_LOCK]: it shuts down one
+        // chosen permanent for a turn, the Icy Manipulator's payoff (a tapped permanent can't use
+        // its tap abilities or fight either), while ACTIVATION_LOCK is the standing, board-wide
+        // hoser lock the draft heuristic prices low.
+        is GrantStaticAbilityEffect -> {
+            val ability = effect.ability
+            if (ability is PreventActivatedAbilities && StatePredicate.IsSource in ability.filter.statePredicates &&
+                hitsAnotherPermanent(effect.target)
+            ) setOf(IntentTag.TAPPER)
+            else tagsOf(ability).filterTo(mutableSetOf()) { it == IntentTag.EXTRA_BLOCKING }
+        }
         is GrantKeywordToSpellEffect ->
             runCatching { Keyword.valueOf(effect.keyword) }.getOrNull()?.let(::ownSpellKeywordTags) ?: emptySet()
         is GrantEvasionKeywordEffect, is GrantCantBeBlockedByChosenColorEffect -> setOf(IntentTag.EVASION_GRANT)
@@ -3018,6 +3031,10 @@ object CardIntentAnalyzer {
         // taken out of the opponent's defence — the single-creature form of the team-wide evasion
         // above. "This creature can't block" on its own source is a drawback, not a payoff.
         is CantBlockEffect -> if (hitsAnotherPermanent(effect.target)) setOf(IntentTag.EVASION_GRANT) else emptySet()
+        // "Target creature can't attack" — detain's first half (Azorius Arrester, Martial Law),
+        // Inaction Injunction: one attacker kept out of combat until it matters, the payoff a tapper
+        // buys by tapping it. "This creature can't attack" on its own source is a drawback.
+        is CantAttackEffect -> if (hitsAnotherPermanent(effect.target)) setOf(IntentTag.TAPPER) else emptySet()
         // "Whenever this becomes the target of a spell an opponent controls, counter that spell
         // unless its controller discards a card" (Reality Smasher; Amulet of Safekeeping): Ward's
         // tax on answering our permanent, the same [IntentTag.PROTECTION] the keyword reads as.
