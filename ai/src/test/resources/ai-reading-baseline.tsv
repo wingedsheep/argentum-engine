@@ -3321,6 +3321,7 @@ Citywatch Sphinx
 Citywide Bust
 Civic Gardener
 Civic Guildmage	polarity: MoveToZoneEffect
+Civic Saber
 Civic Stalwart
 Civic Wayfinder
 Civil Servant
@@ -4466,6 +4467,7 @@ Death or Glory
 Death to Our Enemies
 Death's Approach
 Death's Oasis
+Death's Presence
 Death's-Head Buzzard
 Death-Priest of Myrkul
 Death-Rattle Oni
@@ -4749,6 +4751,7 @@ Destined // Lead
 Destined Confrontation
 Destiny Spinner
 Destroy Evil
+Destroy the Evidence
 Destructive Digger
 Destructive Revelry
 Destructive Tampering
@@ -4758,6 +4761,7 @@ Detection Tower	intent: GrantStaticAbilityEffect; timing: GrantStaticAbilityEffe
 Detective's Phoenix
 Detective's Satchel
 Detention Chariot
+Detention Sphere
 Detention Vortex
 Detonate
 Devastate
@@ -8489,6 +8493,7 @@ Guidelight Pathmaker
 Guidelight Synergist
 Guiding Hydra
 Guiding Voice
+Guild Feud
 Guild Globe
 Guild Summit
 Guild Thief
@@ -9922,6 +9927,7 @@ Isolation Zone
 Isolation at Orthanc
 Isolinear Processor
 Isperia's Skywatch
+Isperia, Supreme Judge
 Isshin, Two Heavens as One
 Isu the Abominable	intent: PayManaCostEffect
 It Doesn't Add Up
@@ -11641,6 +11647,7 @@ Mammoth Bellow
 Mammoth Growth
 Mammoth Spider
 Man-o'-War
+Mana Bloom
 Mana Clash
 Mana Confluence
 Mana Cylix
@@ -13245,6 +13252,7 @@ Nyxborn Triton
 Nyxborn Unicorn
 Nyxborn Wolf
 O'aka, Traveling Merchant
+Oak Street Innkeeper
 Oaken Brawler
 Oaken Siren
 Oakenform
@@ -13345,6 +13353,7 @@ Ogre Battledriver
 Ogre Berserker
 Ogre Chitterlord
 Ogre Errant
+Ogre Jailbreaker
 Ogre Leadfoot
 Ogre Resister
 Ogre Sentry
@@ -13987,6 +13996,7 @@ Phantasmal Shieldback
 Phantasmal Terrain	polarity: Aura>SetEnchantedLandTypeFromChosen
 Phantatog
 Phantom Carriage
+Phantom General
 Phantom Interference
 Phantom Monster
 Phantom Nantuko
@@ -14797,6 +14807,7 @@ Rabid Bloodsucker
 Rabid Gnaw
 Rabid Wombat
 Raccoon Rallier
+Racecourse Fury
 Racers' Ring
 Racers' Scoreboard
 Rack and Ruin
@@ -15601,6 +15612,7 @@ Riftburst Hellion
 Riftwing Cloudskate
 Rig for War
 Rigging Runner
+Righteous Authority
 Righteous Avengers
 Righteous Blow
 Righteous Cause
@@ -15706,6 +15718,7 @@ Rite of the Dragoncaller
 Rite of the Moth
 Rite of the Serpent
 Rites of Flourishing
+Rites of Reaping
 Rith's Attendant
 Rith, Liberated Primeval
 Rith, the Awakener
@@ -16608,6 +16621,7 @@ Search Warrant
 Search for Azcanta
 Search for Glory
 Search for Tomorrow
+Search the City
 Searchlight Companion
 Searchlight Geist
 Searing Barb
@@ -17617,6 +17631,7 @@ Slickshot Lockpicker
 Slickshot Show-Off
 Slickshot Vault-Buster
 Slime Against Humanity
+Slime Molding
 Slimebind
 Slimefoot's Survey
 Slimefoot, the Stowaway
