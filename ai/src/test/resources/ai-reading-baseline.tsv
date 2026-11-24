@@ -879,6 +879,7 @@ Archon of Emeria
 Archon of Falling Stars
 Archon of Justice
 Archon of Sun's Grace
+Archon of the Triumvirate
 Archon of the Wild Rose
 Archon's Glory
 Archpriest of Iona
@@ -961,6 +962,7 @@ Armored Warhorse
 Armored Whirl Turtle
 Armored Wolf-Rider
 Armorer Guildmage
+Armory Guard
 Armory Mice
 Armory Paladin
 Armory Veteran
@@ -1257,6 +1259,7 @@ Avengers Hangar
 Avengers Tower
 Avengers: Under Siege
 Avenging Angel
+Avenging Arrow
 Avenging Hunter	intent: TakeDesignationEffect
 Averna, the Chaos Bloom
 Avian Changeling
@@ -1302,10 +1305,13 @@ Aziza, Mage Tower Captain
 Azog, Moria's Ruin
 Azor's Gateway
 Azor, the Lawbringer
+Azorius Arrester
 Azorius Chancery
 Azorius Charm
 Azorius Cluestone
 Azorius Guildgate
+Azorius Justiciar
+Azorius Keyrune
 Azorius Knight-Arbiter
 Azorius Locket
 Azorius Signet
@@ -5587,7 +5593,7 @@ Edgewalker
 Edgewall Inn
 Edgewall Innkeeper
 Edgewall Pack
-Edifice of Authority	intent: CantAttackEffect; polarity: CantAttackEffect
+Edifice of Authority
 Eerie Gravestone
 Eerie Interference
 Eerie Interlude
@@ -6678,7 +6684,7 @@ Fifty Feet of Rope
 Fight On!
 Fight Rigging	intent: Pipeline(TopOfLibrary→exile|library)
 Fight as One
-Fight or Flight	intent: ChoosePileEffect; intent: ForEach>CantAttackEffect; intent: Pipeline(ControlledPermanents→?)
+Fight or Flight
 Fight with Fire
 Fighter Class
 Fighting Drake
@@ -9509,6 +9515,7 @@ In the Eye of Chaos
 In the Pale Moonlight
 In the Presence of Ages
 In the Trenches
+Inaction Injunction
 Iname, Death Aspect
 Iname, Life Aspect	intent: Pipeline(ChosenTargets→hand); polarity: Pipeline(ChosenTargets→hand)
 Incandescent Aria
@@ -9886,6 +9893,7 @@ Isolated Chapel
 Isolation Zone
 Isolation at Orthanc
 Isolinear Processor
+Isperia's Skywatch
 Isshin, Two Heavens as One
 Isu the Abominable	intent: PayManaCostEffect
 It Doesn't Add Up
@@ -11430,6 +11438,7 @@ Luxurious Locomotive
 Luxury Suite
 Lwaxana Troi, Charming Guest	intent: GrantStaticAbilityEffect
 Lyev Decree
+Lyev Skyknight
 Lynx
 Lyra Dawnbringer
 Lyra, Archangel of Dawn
@@ -11751,6 +11760,7 @@ Marshmist Titan
 Martial Coup
 Martial Glory
 Martial Impetus
+Martial Law
 Martyr for the Cause
 Martyr of Dusk
 Martyr's Cry
@@ -12315,6 +12325,7 @@ Misty Rainforest
 Mite Overseer
 Mithril Coat
 Mizzium Meddler
+Mizzium Skin
 Mizzium Tank
 Mizzix's Mastery
 Mizzix, Replica Rider
@@ -12925,6 +12936,7 @@ New Blood
 New Generation's Technique
 New Horizons
 New Perspectives
+New Prahv Guildmage
 New Way Forward
 News Helicopter
 Nexus Wardens
@@ -13706,6 +13718,7 @@ Pale Bears
 Pale Rider of Trostad
 Paleoloth
 Palinchron	intent: Pipeline(BattlefieldMatching→?); intent: TapUntapCollectionEffect
+Palisade Giant
 Palladia-Mors
 Palladia-Mors, the Ruiner
 Palladium Myr
@@ -16548,6 +16561,7 @@ Sealock Monster
 Seam Rip
 Sear
 Search Party Captain
+Search Warrant
 Search for Azcanta
 Search for Glory
 Search for Tomorrow
@@ -17469,6 +17483,7 @@ Skyline Predator
 Skyline Scout
 Skymarch Bloodletter
 Skymarcher Aspirant
+Skymark Roc
 Skyraker Giant
 Skyreaping
 Skyrider Elf
@@ -21521,7 +21536,7 @@ Wall of Brambles
 Wall of Caltrops	intent: GrantKeywordEffect
 Wall of Deceit
 Wall of Distortion
-Wall of Dust	intent: CantAttackEffect
+Wall of Dust
 Wall of Earth
 Wall of Essence
 Wall of Fire
