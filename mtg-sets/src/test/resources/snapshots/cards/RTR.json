@@ -1797,6 +1797,81 @@
     ]
 }
 
+// Carnival Hellsteed
+{
+    "name": "Carnival Hellsteed",
+    "manaCost": "{4}{B}{R}",
+    "typeLine": "Creature — Nightmare Horse",
+    "oracleText": "First strike, haste\nUnleash (You may have this creature enter with a +1/+1 counter on it. It can't block as long as it has a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "FIRST_STRIKE",
+        "HASTE",
+        "UNLEASH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "CantBlock",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "unleash_counter",
+                        "label": "Unleash",
+                        "description": "+1/+1 counter; can't block while it has one",
+                        "iconKey": "plusOneCounter"
+                    },
+                    {
+                        "id": "unleash_none",
+                        "label": "Don't unleash",
+                        "description": "No counter; can block"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "unleash_counter"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "rarity": "RARE",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d8ada7ce-c693-48f0-a6e3-766f61d93370.jpg?1783940343"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Catacomb Slug
 {
     "name": "Catacomb Slug",
@@ -2434,6 +2509,58 @@
     },
     "colorIdentityOverride": [
         "BLUE",
+        "RED"
+    ]
+}
+
+// Cryptborn Horror
+{
+    "name": "Cryptborn Horror",
+    "manaCost": "{1}{B/R}{B/R}",
+    "typeLine": "Creature — Horror",
+    "oracleText": "Trample\nThis creature enters with X +1/+1 counters on it, where X is the total life lost by your opponents this turn.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": {
+                    "type": "TurnTracking",
+                    "player": "EachOpponent",
+                    "tracker": "LIFE_LOST_AMOUNT"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "RARE",
+        "artist": "Richard Wright",
+        "flavorText": "Although Cryptwitch Merree vanished after a spat with Rakdos, her playthings lingered.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8ffd77d7-3fe6-4493-96eb-f62183c0358d.jpg?1783940327",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "If no opponent has lost life on the turn Cryptborn Horror enters, it will enter with no +1/+1 counters on it and be put into its owner's graveyard (unless something else is raising its toughness)."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "Cryptborn Horror cares about the total life lost, not necessarily what an opponent's life total is compared to what it was at the beginning of the turn. For example, if an opponent loses 5 life and then gains 10 life on the turn Cryptborn Horror enters, it will enter with five +1/+1 counters on it."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "In multiplayer games, life lost the turn Cryptborn Horror enters by opponents who left the game later that turn will count toward the value of X."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
         "RED"
     ]
 }
@@ -4552,6 +4679,77 @@
     ]
 }
 
+// Gore-House Chainwalker
+{
+    "name": "Gore-House Chainwalker",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Unleash (You may have this creature enter with a +1/+1 counter on it. It can't block as long as it has a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "UNLEASH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "CantBlock",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "unleash_counter",
+                        "label": "Unleash",
+                        "description": "+1/+1 counter; can't block while it has one",
+                        "iconKey": "plusOneCounter"
+                    },
+                    {
+                        "id": "unleash_none",
+                        "label": "Don't unleash",
+                        "description": "No counter; can block"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "unleash_counter"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/56ba132f-95fc-4b99-a1dc-ebe6f622bb41.jpg?1783940355"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Grave Betrayal
 {
     "name": "Grave Betrayal",
@@ -4863,6 +5061,192 @@
         "imageUri": "https://cards.scryfall.io/normal/front/9/d/9d8590ea-512c-4e09-97cc-7f07d0706f2b.jpg"
     },
     "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Havoc Festival
+{
+    "name": "Havoc Festival",
+    "manaCost": "{4}{B}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Players can't gain life.\nAt the beginning of each player's upkeep, that player loses half their life, rounded up.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Havoc Festival:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Divide",
+                        "numerator": {
+                            "type": "LifeTotal",
+                            "player": "TriggeringPlayer"
+                        },
+                        "denominator": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventLifeGain",
+                "appliesTo": {
+                    "type": "LifeGainEvent",
+                    "player": "Each"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "166",
+        "rarity": "RARE",
+        "artist": "Johannes Voss",
+        "flavorText": "\"We can't control enemies who have no regard for their own survival.\"\n—Arrester Lavinia, Tenth Precinct",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/04560623-c768-4273-a40d-7e3f39e832cf.jpg?1783940339",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "Spells and abilities that would cause a player to gain life still resolve, but the life-gain part has no effect."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "Effects that would replace gaining life with another effect won't apply because it's impossible for players to gain life."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "If an effect says to set a player's life total to a certain number and that number is higher than the player's current life total, that part of the effect won't do anything. (If the number is lower than the player's current life total, the effect will work as normal.)"
+            },
+            {
+                "date": "2012-10-01",
+                "text": "The amount of life lost is calculated when the triggered ability resolves. For example, if a player has 20 life and there are two Havoc Festivals on the battlefield, the first ability will cause that player to lose 10 life and then the second ability will cause that player to lose 5 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
+// Hellhole Flailer
+{
+    "name": "Hellhole Flailer",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Creature — Ogre Warrior",
+    "oracleText": "Unleash (You may have this creature enter with a +1/+1 counter on it. It can't block as long as it has a +1/+1 counter on it.)\n{2}{B}{R}, Sacrifice this creature: It deals damage equal to its power to target player or planeswalker.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "UNLEASH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hellhole Flailer:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}{R}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayerOrPlaneswalker",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "CantBlock",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "unleash_counter",
+                        "label": "Unleash",
+                        "description": "+1/+1 counter; can't block while it has one",
+                        "iconKey": "plusOneCounter"
+                    },
+                    {
+                        "id": "unleash_none",
+                        "label": "Don't unleash",
+                        "description": "No counter; can block"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "unleash_counter"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Prescott",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/4984a089-84af-4387-9a0d-819b119b5565.jpg?1783940338"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
         "RED"
     ]
 }
@@ -6721,6 +7105,79 @@
     ]
 }
 
+// Rakdos Cackler
+{
+    "name": "Rakdos Cackler",
+    "manaCost": "{B/R}",
+    "typeLine": "Creature — Devil",
+    "oracleText": "Unleash (You may have this creature enter with a +1/+1 counter on it. It can't block as long as it has a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "UNLEASH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "CantBlock",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "unleash_counter",
+                        "label": "Unleash",
+                        "description": "+1/+1 counter; can't block while it has one",
+                        "iconKey": "plusOneCounter"
+                    },
+                    {
+                        "id": "unleash_none",
+                        "label": "Don't unleash",
+                        "description": "No counter; can block"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "unleash_counter"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "220",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Barger",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f873c0b-e779-4f09-8e9c-94a1765eb5da.jpg?1783940326"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Rakdos Charm
 {
     "name": "Rakdos Charm",
@@ -6875,6 +7332,83 @@
     ]
 }
 
+// Rakdos Keyrune
+{
+    "name": "Rakdos Keyrune",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {B} or {R}.\n{B}{R}: This artifact becomes a 3/1 black and red Devil artifact creature with first strike until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Rakdos Keyrune:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Rakdos Keyrune:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Rakdos Keyrune:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "keywords": [
+                        "FIRST_STRIKE"
+                    ],
+                    "creatureTypes": [
+                        "Devil"
+                    ],
+                    "addTypes": [
+                        "ARTIFACT"
+                    ],
+                    "colors": [
+                        "BLACK",
+                        "RED"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "232",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "The Rakdos use it for everything you can think of and plenty more than that.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f6124b4c-49a1-42e3-a6ff-62de231c7823.jpg?1783940323"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Rakdos Ragemutt
 {
     "name": "Rakdos Ragemutt",
@@ -7012,6 +7546,135 @@
         "artist": "Wayne Reynolds",
         "flavorText": "\"If there were such a thing as a soul, I think it would be behind the gallbladder but above the kidneys.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/0/6/06899549-5534-4d11-86c1-afd1796e18b1.jpg?1783940326"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
+// Rakdos's Return
+{
+    "name": "Rakdos's Return",
+    "manaCost": "{X}{B}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Rakdos's Return deals X damage to target opponent or planeswalker. That player or that planeswalker's controller discards X cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": "XValue",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "TargetIsPlayer"
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": "XValue"
+                                },
+                                "chooser": "TargetPlayer",
+                                "storeSelected": "discarded",
+                                "prompt": "Choose cards to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    },
+                    "otherwise": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "player": {
+                                        "type": "ControllerOf",
+                                        "targetDescription": "target"
+                                    }
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": "XValue"
+                                },
+                                "chooser": "ControllerOfTarget",
+                                "storeSelected": "discarded",
+                                "prompt": "Choose cards to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard",
+                                    "player": {
+                                        "type": "ControllerOf",
+                                        "targetDescription": "target"
+                                    }
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponentOrPlaneswalker",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "188",
+        "rarity": "MYTHIC",
+        "artist": "Daarken",
+        "flavorText": "When Lord Rakdos stirred from his slumber, everyone else's nightmare began.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d72981c0-1632-4d64-9341-2a76047d9b36.jpg?1783940334"
     },
     "colorIdentityOverride": [
         "BLACK",
@@ -7187,6 +7850,114 @@
     "colorIdentityOverride": [
         "GREEN",
         "WHITE"
+    ]
+}
+
+// Rix Maadi Guildmage
+{
+    "name": "Rix Maadi Guildmage",
+    "manaCost": "{B}{R}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "{B}{R}: Target blocking creature gets -1/-1 until end of turn.\n{B}{R}: Target player who lost life this turn loses 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Rix Maadi Guildmage:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature blocking"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            },
+            {
+                "id": "Rix Maadi Guildmage:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t1",
+                        "restriction": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "TurnTracking",
+                                "player": "Candidate",
+                                "tracker": "LIFE_LOST"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "descriptionOverride": "target player who lost life this turn"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "192",
+        "rarity": "UNCOMMON",
+        "artist": "Karl Kopinski",
+        "flavorText": "Insatiable, irresistible, and insane.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb737465-5de8-4015-befe-2bf386da2a89.jpg?1783940332",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "A blocking creature is one that has been declared as a blocker this combat, or one that was put onto the battlefield blocking this combat. Unless that creature leaves combat, it continues to be a blocking creature through the end of combat step, even if the creature or creatures it was blocking are no longer on the battlefield or have otherwise left combat."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -7737,6 +8508,144 @@
     ]
 }
 
+// Shrieking Affliction
+{
+    "name": "Shrieking Affliction",
+    "manaCost": "{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of each opponent's upkeep, if that player has one or fewer cards in hand, they lose 3 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shrieking Affliction:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "TriggeringPlayer",
+                        "zone": "Hand"
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "rarity": "UNCOMMON",
+        "artist": "Johann Bodin",
+        "flavorText": "A gargoyle's voice reaches pitches that will shatter glass and warp bone.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/dfd08894-2534-4114-9365-40809ba95eb2.jpg?1783940360",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "Shrieking Affliction's ability will trigger only if an opponent begins their upkeep with one or fewer cards in hand. The ability will check the number of cards in that player's hand again when it tries to resolve. If that player has two or more cards in hand at that time, that player won't lose life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Skull Rend
+{
+    "name": "Skull Rend",
+    "manaCost": "{3}{B}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Skull Rend deals 2 damage to each opponent. Those players each discard two cards at random.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "Random",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                "storeSelected": "discarded"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "195",
+        "artist": "Greg Staples",
+        "flavorText": "\"We could never accept anyone with a face that pretty or a mind that sane.\"\n—Nyoser, Gore-House ringleader",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1c8efb23-bac0-41d2-b4ee-27a6b1fe3134.jpg?1783940332"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Skyline Predator
 {
     "name": "Skyline Predator",
@@ -7822,6 +8731,96 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLUE"
+    ]
+}
+
+// Slaughter Games
+{
+    "name": "Slaughter Games",
+    "manaCost": "{2}{B}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "This spell can't be countered.\nChoose a nonland card name. Search target opponent's graveyard, hand, and library for any number of cards with that name and exile them. Then that player shuffles.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ChooseOption",
+                    "optionType": "CARD_NAME",
+                    "storeAs": "cardName0",
+                    "cardNamePool": "NONLAND"
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromMultipleZones",
+                        "zones": [
+                            "Graveyard",
+                            "Hand",
+                            "Library"
+                        ],
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "filter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "NameEqualsChosen",
+                                    "variableName": "cardName0"
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "gathered1",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": "ChooseAnyNumber",
+                    "storeSelected": "selected2",
+                    "prompt": "Choose any number of cards with that name to exile",
+                    "selectedLabel": "Exile"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                {
+                    "type": "ShuffleLibrary",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ],
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "197",
+        "rarity": "RARE",
+        "artist": "Steve Prescott",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bf37391d-db35-40a7-908a-abb53895793c.jpg?1783940332"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -7937,6 +8936,78 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Spawn of Rix Maadi
+{
+    "name": "Spawn of Rix Maadi",
+    "manaCost": "{3}{B}{R}",
+    "typeLine": "Creature — Horror",
+    "oracleText": "Unleash (You may have this creature enter with a +1/+1 counter on it. It can't block as long as it has a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "keywords": [
+        "UNLEASH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "CantBlock",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "unleash_counter",
+                        "label": "Unleash",
+                        "description": "+1/+1 counter; can't block while it has one",
+                        "iconKey": "plusOneCounter"
+                    },
+                    {
+                        "id": "unleash_none",
+                        "label": "Don't unleash",
+                        "description": "No counter; can block"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "unleash_counter"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "199",
+        "artist": "Min Yum",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/6196e702-7f76-49db-8ee4-bd343359d498.jpg?1783940332"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -8059,6 +9130,78 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLUE"
+    ]
+}
+
+// Splatter Thug
+{
+    "name": "Splatter Thug",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "First strike\nUnleash (You may have this creature enter with a +1/+1 counter on it. It can't block as long as it has a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FIRST_STRIKE",
+        "UNLEASH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "CantBlock",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "unleash_counter",
+                        "label": "Unleash",
+                        "description": "+1/+1 counter; can't block while it has one",
+                        "iconKey": "plusOneCounter"
+                    },
+                    {
+                        "id": "unleash_none",
+                        "label": "Don't unleash",
+                        "description": "No counter; can block"
+                    }
+                ]
+            },
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "unleash_counter"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "artist": "Kev Walker",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c511805-3392-4033-8679-811711a0aaca.jpg?1783940353"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -8975,6 +10118,63 @@
                 "text": "A monocolored creature is exactly one color. Colorless creatures aren't monocolored."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Underworld Connections
+{
+    "name": "Underworld Connections",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nEnchanted land has \"{T}, Pay 1 life: Draw a card.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Underworld Connections:1",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            "CostTap",
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomPayLife",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "83",
+        "rarity": "RARE",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "If you're looking for it, it's available. The question is how much you're willing to pay.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19c52e3b-b3b8-4243-96fe-fa4c8eea7c59.jpg?1783940358"
     },
     "colorIdentityOverride": [
         "BLACK"
