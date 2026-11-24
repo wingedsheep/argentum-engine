@@ -1,0 +1,1 @@
+- #PR The engine AI reads "creature tokens you control get +1/+1" anthems (Phantom General, Intangible Virtue) as payoffs for its token makers in draft and deckbuilding.
