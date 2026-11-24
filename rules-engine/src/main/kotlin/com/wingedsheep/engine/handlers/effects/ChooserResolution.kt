@@ -141,15 +141,11 @@ object ChooserResolution {
             val targetId = context.targets.firstOrNull()?.let {
                 TargetResolutionUtils.run { it.toEntityId() }
             }
-            // Fall back to the owner once the permanent has left the battlefield (e.g. it was
-            // destroyed earlier in the same resolution) — CR 608.2h last-known information.
-            // Projected first, so a target under a control-changing effect answers with its
-            // current controller (Layer 2), not the base one.
-            val controller = targetId?.let {
-                state.projectedState.getController(it)
-                    ?: state.getEntity(it)?.get<ControllerComponent>()?.playerId
-                    ?: state.getEntity(it)?.get<CardComponent>()?.ownerId
-            }
+            // The same ladder as Player.ControllerOf, so the player whose hand is gathered and the
+            // player who chooses from it never split: projected controller first (Layer 2), then
+            // the last-known controller once the permanent has left the battlefield — e.g.
+            // destroyed earlier in the same resolution (CR 608.2h) — and finally its owner.
+            val controller = targetId?.let { TargetResolutionUtils.controllerOf(state, it) }
             controller?.let { Outcome.Resolved(it) }
                 ?: Outcome.Unresolvable("No target to derive its controller from")
         }

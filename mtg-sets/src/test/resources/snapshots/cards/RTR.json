@@ -625,6 +625,93 @@
     ]
 }
 
+// Assassin's Strike
+{
+    "name": "Assassin's Strike",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target creature. Its controller discards a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "ControllerOf",
+                                    "targetDescription": "target"
+                                }
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "ControllerOfTarget",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "ControllerOf",
+                                    "targetDescription": "target"
+                                }
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "rarity": "UNCOMMON",
+        "artist": "Chase Stone",
+        "flavorText": "When Selesnya missionaries moved into the Shanav Quarter, they faced scorn, ridicule, and ultimately martyrdom.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f796e320-9898-45d4-9d7a-6d35de53c9ab.jpg?1783940365"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Auger Spree
 {
     "name": "Auger Spree",

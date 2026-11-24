@@ -23,6 +23,8 @@ internal fun effectTargetToPlayer(target: EffectTarget): Player = when (target) 
     is EffectTarget.BoundVariable -> Player.BoundVariable(target.name, target.description)
     is EffectTarget.PlayerRef -> target.player
     EffectTarget.ControllerOfTriggeringEntity -> Player.ControllerOfTriggeringEntity
+    // "Destroy target creature. Its controller discards a card." (Assassin's Strike)
+    EffectTarget.TargetController -> Player.ControllerOf("target")
     else -> error(
         "No Player reference for EffectTarget $target. Pipeline effects (mill, exileTop, the " +
             "Hand patterns) are keyed by Player, so a target with no mapping would silently " +
@@ -54,7 +56,11 @@ internal fun effectTargetToChooser(target: EffectTarget): Chooser = when (target
         // player's own choice from their own hand, so the chooser follows the acting player rather
         // than defaulting to the ability's controller — who is, by definition, the attacker.
         is Player.DefendingPlayer -> Chooser.DefendingPlayer
+        // "Its controller discards a card" (Assassin's Strike): the target's controller picks from
+        // their own hand — never the caster. Last-known controller once the target has left.
+        is Player.ControllerOf -> Chooser.ControllerOfTarget
         else -> Chooser.Controller
     }
+    EffectTarget.TargetController -> Chooser.ControllerOfTarget
     else -> Chooser.Controller
 }
