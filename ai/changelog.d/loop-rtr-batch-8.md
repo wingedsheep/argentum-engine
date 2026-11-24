@@ -1,0 +1,2 @@
+- #TBD Aims a recurring "sacrifice/destroy it unless its controller pays" Aura (Soul Tithe, Erosion) at an opponent's permanent and values it as removal
+- #TBD Reads "destroy all Auras attached to target permanent" (Street Sweeper) as removal aimed at an opponent's enchanted permanent

@@ -913,10 +913,12 @@ object CardIntentAnalyzer {
                     if (power === leaf.powerModifier && toughness === leaf.toughnessModifier) listOf(leaf)
                     else listOf(leaf.copy(powerModifier = power, toughnessModifier = toughness))
                 }
-                is GatedEffect -> punisherBranchLeaves(leaf, requirements) ?: listOf(leaf)
+                is GatedEffect -> punisherBranchLeaves(leaf, requirements)
+                    ?: hostTaxSuffer(leaf)?.let { readingLeaves(it, requirements) } ?: listOf(leaf)
                 is ChooseActionEffect -> punisherChoiceLeaves(leaf, requirements) ?: listOf(leaf)
                 is AnyPlayerMayPayEffect -> opponentOfferLeaves(leaf, requirements) ?: listOf(leaf)
-                is PayOrSufferEffect -> opponentPunisherLeaves(leaf, requirements) ?: listOf(leaf)
+                is PayOrSufferEffect -> opponentPunisherLeaves(leaf, requirements)
+                    ?: hostTaxSuffer(leaf)?.let { readingLeaves(it, requirements) } ?: listOf(leaf)
                 else -> listOf(leaf)
             }
         }
@@ -2273,6 +2275,18 @@ object CardIntentAnalyzer {
             // by the fight rather than by a target — spot removal, never a whole group.
             if (leaf.source == CardSource.LastKnownCombatPairedWithSource) {
                 groups[leaf.storeAs] = groups[leaf.storeAs] ?: false
+                continue
+            }
+            // "Destroy all Auras attached to target land" (Street Sweeper), "exile it and all Auras
+            // attached to it" (Silence the Believers): what hangs off one permanent is a few, picked
+            // by that host — spot removal of the attachments, never a whole group. Attachments
+            // confined to our own (Orzhov Charm returning "all Auras you control attached to it")
+            // are the rescue's passengers, not an answer.
+            val attached = leaf.source as? CardSource.AttachedTo
+            if (attached != null) {
+                if (attached.zone == Zone.BATTLEFIELD &&
+                    attached.filter.controllerPredicate != ControllerPredicate.ControlledByYou
+                ) groups[leaf.storeAs] = groups[leaf.storeAs] ?: false
                 continue
             }
             val (player, filter) = when (val source = leaf.source) {
@@ -3787,6 +3801,46 @@ object CardIntentAnalyzer {
      */
     fun sacrificesOwnAttachedHost(effect: SacrificeTargetEffect): Boolean =
         !effect.sacrificedByItsController && effect.target in ATTACHED_HOSTS
+
+    /**
+     * The suffer of a tax on the permanent this card is attached to — "at the beginning of the
+     * upkeep of enchanted permanent's controller, that player sacrifices it unless they pay {X}"
+     * (Soul Tithe), "destroy that land unless that player pays {1} or 1 life" (Erosion) — or null.
+     *
+     * [leaf] is an unless-clause another player answers: a [PayOrSufferEffect], or a decided
+     * [GatedEffect] with one branch empty, whose other branch only destroys, exiles or sacrifices the
+     * attached host. A one-shot tax ("counter it unless its controller pays {1}") can be bought out
+     * once and stays unread ([punisherBranchLeaves]); this one recurs every turn the Aura stays, so
+     * the host's controller either pays it forever or loses the permanent — soft removal, read as
+     * its suffer. Paid by our own controller it is an upkeep cost, not this.
+     */
+    fun hostTaxSuffer(leaf: Effect): Effect? {
+        fun ours(player: EffectTarget?) =
+            player == null || player == EffectTarget.Controller || player == EffectTarget.PlayerRef(Player.You)
+        val suffer = when (leaf) {
+            is PayOrSufferEffect -> leaf.suffer.takeUnless { ours(leaf.player) }
+            is GatedEffect -> {
+                val otherwise = leaf.otherwise
+                when {
+                    ours(leaf.decisionMaker) || otherwise == null -> null
+                    EffectWalker.payoffLeaves(leaf.then).isEmpty() -> otherwise
+                    EffectWalker.payoffLeaves(otherwise).isEmpty() -> leaf.then
+                    else -> null
+                }
+            }
+            else -> null
+        } ?: return null
+        val leaves = EffectWalker.payoffLeaves(suffer)
+        return suffer.takeIf { leaves.isNotEmpty() && leaves.all(::removesAttachedHost) }
+    }
+
+    /** "Destroy / exile / sacrifice enchanted permanent" — the attached host leaving the battlefield for good. */
+    private fun removesAttachedHost(leaf: Effect): Boolean = when (leaf) {
+        is SacrificeTargetEffect -> leaf.target in ATTACHED_HOSTS && leaf.sacrificedByItsController
+        is MoveToZoneEffect -> leaf.target in ATTACHED_HOSTS &&
+            (leaf.destination == Zone.GRAVEYARD || leaf.destination == Zone.EXILE)
+        else -> false
+    }
 
     private val ATTACHED_HOSTS: Set<EffectTarget> = setOf(
         EffectTarget.EquippedCreature,

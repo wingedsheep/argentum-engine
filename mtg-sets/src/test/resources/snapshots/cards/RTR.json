@@ -7279,6 +7279,222 @@
     ]
 }
 
+// Jace, Architect of Thought
+{
+    "name": "Jace, Architect of Thought",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Legendary Planeswalker — Jace",
+    "oracleText": "+1: Until your next turn, whenever a creature an opponent controls attacks, it gets -1/-0 until end of turn.\n−2: Reveal the top three cards of your library. An opponent separates those cards into two piles. Put one pile into your hand and the other on the bottom of your library in any order.\n−8: For each player, search that player's library for a nonland card and exile it, then that player shuffles. You may cast those cards without paying their mana costs.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Jace, Architect of Thought:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "TriggeringEntity"
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "AttackEvent",
+                            "filter": "creature ctrl:opponent"
+                        },
+                        "binding": "ANY"
+                    },
+                    "expiry": "DelayedTriggerExpiry.UntilControllersNextTurn"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Until your next turn, whenever a creature an opponent controls attacks, it gets -1/-0 until end of turn."
+            },
+            {
+                "id": "Jace, Architect of Thought:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "chooser": "Opponent",
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "Separate the revealed cards into two piles. The cards you select form Pile 1; the rest form Pile 2.",
+                            "selectedLabel": "Pile 1",
+                            "remainderLabel": "Pile 2",
+                            "alwaysPrompt": true
+                        },
+                        {
+                            "type": "ChoosePile",
+                            "pileA": "selected1",
+                            "pileB": "remainder1",
+                            "storeChosenAs": "chosenPile2",
+                            "storeOtherAs": "otherPile2",
+                            "prompt": "Choose which pile goes to your hand; the other goes on the bottom of your library."
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "chosenPile2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "otherPile2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "ControllerChooses"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Reveal the top three cards of your library. An opponent separates them into two piles. Put one pile into your hand and the other on the bottom of your library in any order."
+            },
+            {
+                "id": "Jace, Architect of Thought:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -8
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "Each"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Library",
+                                            "filter": "nonland"
+                                        },
+                                        "storeAs": "gathered1",
+                                        "lookAudience": "None",
+                                        "search": true,
+                                        "searcher": "ControllerOfSource"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered1",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "chooser": "SourceController",
+                                        "storeSelected": "selected2",
+                                        "prompt": "Search this player's library for a nonland card to exile",
+                                        "selectedLabel": "Exile"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "selected2",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Exile"
+                                        }
+                                    },
+                                    "ShuffleLibrary"
+                                ]
+                            },
+                            "collectCollections": {
+                                "selected2": "collected5"
+                            }
+                        },
+                        {
+                            "type": "CastAnyNumberFromCollectionWithoutPayingCost",
+                            "from": "collected5"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "For each player, search that player's library for a nonland card and exile it, then that player shuffles. You may cast those cards without paying their mana costs."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "MYTHIC",
+        "artist": "Jaime Jones",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d4df3a38-678e-42dc-a3fd-d1d399368f07.jpg?1783940367",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "Jace's first ability creates a delayed triggered ability that triggers whenever a creature an opponent controls attacks. It doesn't matter which player or planeswalker that creature is attacking."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "You pick one of your opponents when Jace's second ability resolves. The ability doesn't target that opponent. You (not your opponent) choose which pile is put into your hand and which pile is put on the bottom of your library."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "Piles can be empty. If one of the piles is empty, you choose to put all the revealed cards in your hand or on the bottom of your library."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "When resolving Jace's third ability, you search each player's library (including yours) and exile the nonland cards before casting any of them."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "If you can't cast a card, perhaps because there are no legal targets available, or if you choose not to cast one, it will remain exiled. Jace's ability won't allow you to cast it later."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "If a card has {X} in its mana cost, you must choose 0 as its value."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Jarad's Orders
 {
     "name": "Jarad's Orders",
@@ -11860,6 +12076,81 @@
     ]
 }
 
+// Sluiceway Scorpion
+{
+    "name": "Sluiceway Scorpion",
+    "manaCost": "{2}{B}{G}",
+    "typeLine": "Creature — Scorpion",
+    "oracleText": "Deathtouch (Any amount of damage this deals to a creature is enough to destroy it.)\nScavenge {1}{B}{G} ({1}{B}{G}, Exile this card from your graveyard: Put a number of +1/+1 counters equal to this card's power on target creature. Scavenge only as a sorcery.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sluiceway Scorpion:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}{G}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Scavenge {1}{B}{G}"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b6dbadf-a6f7-4876-9c3f-44e4a33b2bee.jpg",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Exiling the creature card with scavenge is part of the cost of activating the scavenge ability. Once the ability is activated and the cost is paid, it's too late to stop the ability from being activated by trying to remove the creature card from the graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Slum Reaper
 {
     "name": "Slum Reaper",
@@ -11898,6 +12189,199 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Soul Tithe
+{
+    "name": "Soul Tithe",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant nonland permanent\nAt the beginning of the upkeep of enchanted permanent's controller, that player sacrifices it unless they pay {X}, where X is its mana value.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Soul Tithe:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayDynamicManaCost",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "EnchantedPermanent",
+                                "numericProperty": "ManaValue"
+                            },
+                            "payer": "TriggeringPlayer"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": []
+                    },
+                    "otherwise": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "EnchantedPermanent",
+                                "filter": "permanent ctrl:triggering-player"
+                            }
+                        },
+                        "then": {
+                            "type": "SacrificeTarget",
+                            "target": "EnchantedPermanent",
+                            "sacrificedByItsController": true
+                        }
+                    },
+                    "decisionMaker": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "descriptionOverride": "At the beginning of the upkeep of enchanted permanent's controller, that player sacrifices it unless they pay {X}, where X is its mana value."
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "nonland permanent"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "UNCOMMON",
+        "artist": "Dave Kendall",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/7/77e546ce-f498-4136-9015-bb262c301716.jpg?1783940373",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "The mana value of a creature token is 0, unless that token is a copy of another creature, in which case it copies that creature's mana cost."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "If the permanent has {X} in its mana cost, X is 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Soulsworn Spirit
+{
+    "name": "Soulsworn Spirit",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "This creature can't be blocked.\nWhen this creature enters, detain target creature an opponent controls. (Until your next turn, that creature can't attack or block and its activated abilities can't be activated.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "flags": [
+        "CANT_BE_BLOCKED"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Soulsworn Spirit:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CantAttack",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "CantBlockTargetCreatures",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "GrantStaticAbility",
+                            "ability": {
+                                "type": "PreventActivatedAbilities",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsPermanent"
+                                    ],
+                                    "statePredicates": [
+                                        "IsSource"
+                                    ]
+                                }
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "rarity": "UNCOMMON",
+        "artist": "James Ryman",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/32602ed9-c0a7-4498-a333-235eaae628df.jpg?1783940366",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "Activated abilities include a colon and are written in the form \"[cost]: [effect].\" No one can activate any activated abilities, including mana abilities, of a detained permanent."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The static abilities of a detained permanent still apply. The triggered abilities of a detained permanent can still trigger."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a creature is already attacking or blocking when it's detained, it won't be removed from combat. It will continue to attack or block."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a permanent's activated ability is on the stack when that permanent is detained, the ability will be unaffected."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If a noncreature permanent is detained and later turns into a creature, it won't be able to attack or block."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When a player leaves a multiplayer game, any continuous effects with durations that last until that player's next turn or until a specific point in that turn will last until that turn would have begun. They neither expire immediately nor last indefinitely."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -12300,6 +12784,119 @@
     "colorIdentityOverride": [
         "BLACK",
         "GREEN"
+    ]
+}
+
+// Street Sweeper
+{
+    "name": "Street Sweeper",
+    "manaCost": "{6}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Whenever this creature attacks, destroy all Auras attached to target land.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Street Sweeper:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "AttachedToTarget",
+                                "host": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "filter": "permanent Aura"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "land"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "234",
+        "rarity": "UNCOMMON",
+        "artist": "Izzy",
+        "flavorText": "The sweepers roam endlessly, scrubbing away the refuse—and anything else too slow or too clumsy to get out of their way.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4a62827a-183f-4bef-b6ce-20a4577f6d30.jpg?1783940323",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "Street Sweeper's ability is mandatory, but you can choose a land with no Auras attached to it as the target."
+            }
+        ]
+    }
+}
+
+// Sundering Growth
+{
+    "name": "Sundering Growth",
+    "manaCost": "{G/W}{G/W}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target artifact or enchantment, then populate. (Create a token that's a copy of a creature token you control.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "CreateTokenCopyOfChosenPermanent",
+                    "filter": "creature token"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|enchantment"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "artist": "David Palumbo",
+        "flavorText": "\"One day every pillar will be a tree and every hall a glade.\"\n—Trostani",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/14d5048e-cb76-48c4-8a95-70dcc14775f6.jpg?1783940326"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
     ]
 }
 
@@ -13202,6 +13799,71 @@
     ]
 }
 
+// Trostani, Selesnya's Voice
+{
+    "name": "Trostani, Selesnya's Voice",
+    "manaCost": "{G}{G}{W}{W}",
+    "typeLine": "Legendary Creature — Dryad",
+    "oracleText": "Whenever another creature you control enters, you gain life equal to that creature's toughness.\n{1}{G}{W}, {T}: Populate. (Create a token that's a copy of a creature token you control.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Trostani, Selesnya's Voice:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "TriggeringEntity",
+                        "numericProperty": "Toughness"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Trostani, Selesnya's Voice:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{G}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfChosenPermanent",
+                    "filter": "creature token"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "rarity": "MYTHIC",
+        "artist": "Chippy",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9d1d9d86-5666-4e59-9766-137657b4e040.jpg?1783940330"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Ultimate Price
 {
     "name": "Ultimate Price",
@@ -13581,6 +14243,78 @@
     ]
 }
 
+// Vitu-Ghazi Guildmage
+{
+    "name": "Vitu-Ghazi Guildmage",
+    "manaCost": "{G}{W}",
+    "typeLine": "Creature — Dryad Shaman",
+    "oracleText": "{4}{G}{W}: Create a 3/3 green Centaur creature token.\n{2}{G}{W}: Populate. (Create a token that's a copy of a creature token you control.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Vitu-Ghazi Guildmage:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{G}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Centaur"
+                    ]
+                }
+            },
+            {
+                "id": "Vitu-Ghazi Guildmage:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfChosenPermanent",
+                    "filter": "creature token"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Chan",
+        "flavorText": "\"Preachers of freedom forget that conformity can be beautiful.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/5/e54f8e61-550f-4493-b8ba-65f81b2457d3.jpg?1783940330",
+        "rulings": [
+            {
+                "date": "2024-01-12",
+                "text": "Populate doesn't target the creature token you're copying. You choose that creature token as you're taking the populate action. You can choose any creature token you control."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "If you control no creature tokens when you populate, nothing will happen."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Voidwielder
 {
     "name": "Voidwielder",
@@ -13722,6 +14456,222 @@
             }
         ]
     }
+}
+
+// Wayfaring Temple
+{
+    "name": "Wayfaring Temple",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Wayfaring Temple's power and toughness are each equal to the number of creatures you control.\nWhenever this creature deals combat damage to a player, populate. (Create a token that's a copy of a creature token you control.)",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature"
+            }
+        }
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wayfaring Temple:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfChosenPermanent",
+                    "filter": "creature token"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "rarity": "RARE",
+        "artist": "Peter Mohrbacher",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/2125e6aa-f916-4dfa-a9fe-82bb546012af.jpg?1783940328"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
+// Wild Beastmaster
+{
+    "name": "Wild Beastmaster",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "Whenever this creature attacks, each other creature you control gets +X/+X until end of turn, where X is this creature's power.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wild Beastmaster:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "IfPositive",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Power"
+                            }
+                        },
+                        "toughnessModifier": {
+                            "type": "IfPositive",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Power"
+                            }
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "flavorText": "\"When they covered the world in city, all they did was give themselves nowhere to run.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a4d4ef98-949b-49db-b4f9-a070f8b4ff47.jpg?1783940345",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If this creature's power is negative as its ability resolves, X is considered to be 0."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "The value of X is determined when the triggered ability resolves. If Wild Beastmaster is no longer on the battlefield at that time, use its last known power to determine the value of X."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Worldspine Wurm
+{
+    "name": "Worldspine Wurm",
+    "manaCost": "{8}{G}{G}{G}",
+    "typeLine": "Creature — Wurm",
+    "oracleText": "Trample\nWhen this creature dies, create three 5/5 green Wurm creature tokens with trample.\nWhen Worldspine Wurm is put into a graveyard from anywhere, shuffle it into its owner's library.",
+    "creatureStats": {
+        "power": 15,
+        "toughness": 15
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Worldspine Wurm:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "power": 5,
+                    "toughness": 5,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Wurm"
+                    ],
+                    "keywords": [
+                        "TRAMPLE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/3/3/33ee3f6c-5df6-4271-b2f9-86b9afffab7b.jpg?1783940381"
+                },
+                "descriptionOverride": "When this creature dies, create three 5/5 green Wurm creature tokens with trample."
+            },
+            {
+                "id": "Worldspine Wurm:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Library",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "ShuffleLibrary",
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "OwnerOfSource"
+                            }
+                        }
+                    ]
+                },
+                "activeZones": [
+                    "Graveyard"
+                ],
+                "descriptionOverride": "When Worldspine Wurm is put into a graveyard from anywhere, shuffle it into its owner's library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "rarity": "MYTHIC",
+        "artist": "Richard Wright",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/543d55cb-3a6b-4620-af25-10ae74ed32c4.jpg?1783940344",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "Worldspine Wurm's last ability is a triggered ability, not a replacement ability. Players can respond to this ability, for example, by trying to exile Worldspine Wurm from the graveyard before it's shuffled into a library."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Zanikev Locust
