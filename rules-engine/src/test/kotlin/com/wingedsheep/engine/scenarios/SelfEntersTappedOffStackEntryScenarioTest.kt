@@ -230,14 +230,12 @@ class SelfEntersTappedOffStackEntryScenarioTest : ScenarioTestBase() {
             }
         }
 
-        context("the shock-land shape resolves fail-closed") {
+        context("the shock-land shape reads the payment made before the move") {
 
-            test("a shock land put onto the battlefield by an effect enters TAPPED, unasked") {
-                // Godless Shrine is EntersTapped(payLifeCost = 2). Offering the choice needs a
-                // continuation the two off-stack executors don't have yet, so moveToZone resolves
-                // the pair to the outcome a player who declines gets: tapped. Deliberately
-                // asserted, because the alternative (silently untapped) is the bug this change
-                // fixes.
+            test("a shock land moved without a recorded payment enters TAPPED, unasked") {
+                // Godless Shrine is EntersTapped(payLifeCost = 2). The effect executors ask before
+                // the move (EffectEntryPayments) and pass the answer as paidToEnter; a bare
+                // transition that was never asked resolves to the outcome of declining: tapped.
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
                     .withCardInGraveyard(1, "Godless Shrine")
@@ -255,6 +253,23 @@ class SelfEntersTappedOffStackEntryScenarioTest : ScenarioTestBase() {
                 withClue("a pure state transition cannot pause, so nothing was asked") {
                     moved.state.pendingDecision shouldBe null
                 }
+            }
+
+            test("a shock land whose life was paid before the move enters untapped") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInGraveyard(1, "Godless Shrine")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val land = graveyardCard(game.state, game.player1Id, "Godless Shrine")
+                val moved = zones.moveToZone(
+                    game.state, land, Zone.BATTLEFIELD,
+                    ZoneEntryOptions(controllerId = game.player1Id, paidToEnter = true)
+                )
+
+                moved.state.isTapped(land) shouldBe false
             }
         }
 
