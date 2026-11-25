@@ -441,6 +441,8 @@ object LimitedCardRater {
         Keyword.LIFELINK to 0.4,
         Keyword.VIGILANCE to 0.2,
         Keyword.AFFLICT to 0.3,
+        // +1/+1 to a lone attacker every turn, from any permanent type (Cathedral of War).
+        Keyword.EXALTED to 0.3,
         // A card off the top of the opponent's library per hit; processors' fuel.
         Keyword.INGEST to 0.1,
         // Speed

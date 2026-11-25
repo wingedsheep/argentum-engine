@@ -16,6 +16,7 @@ import com.wingedsheep.ai.engine.knowledge.VehicleBody
 import com.wingedsheep.ai.engine.knowledge.Speed
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.scripting.CanBlockAdditionalForCreatureGroup
 import com.wingedsheep.sdk.scripting.EntersWithCounters
@@ -121,9 +122,13 @@ object AiCardRating {
 
     private fun board(card: CardDefinition, intent: CardIntent): Board {
         val type = card.typeLine
+        // A non-creature's printed exalted is paid on top of what the permanent is (a creature's is
+        // in its keyword body below) — [BoardPresence.permanentValue].
+        val exalted = if (Keyword.EXALTED in card.keywords) Part("Exalted", BoardPresence.EXALTED_INSTANCE_VALUE) else null
         if (type.isLand) {
+            val parts = listOfNotNull(Part("Untapped land", BoardPresence.LAND_UNTAPPED), exalted)
             return Board(
-                BoardKind.LAND, BoardPresence.LAND_UNTAPPED, listOf(Part("Untapped land", BoardPresence.LAND_UNTAPPED)),
+                BoardKind.LAND, parts.sumOf { it.value }, parts,
                 "Every land is worth the same on the battlefield; a tapped one a little less.",
             )
         }
@@ -233,7 +238,7 @@ object AiCardRating {
             VehicleBody.CREWABLE_SHARE * BoardPresence.creatureBodyValue(
                 vehicleP, vehicleT, card.keywords.mapTo(HashSet()) { it.name }, diminishingReturns = true,
             )
-        val parts = if (vehicle != null) {
+        val readParts = if (vehicle != null) {
             val ability = (prior - CardIntent.UNKNOWN.staticPriorValue).coerceAtLeast(0.0)
             listOfNotNull(
                 Part("Vehicle body ($vehicleP/$vehicleT, crew $crew)", vehicle,
@@ -245,6 +250,7 @@ object AiCardRating {
         } else {
             listOf(Part(if (type.isAura) "Attached Aura floor" else "Planeswalker floor", floor))
         }
+        val parts = readParts + listOfNotNull(exalted)
         val rule = when {
             CardType.PLANESWALKER in type.cardTypes ->
                 "In play it scales with loyalty: about ${BoardPresence.LOYALTY_VALUE} per counter."

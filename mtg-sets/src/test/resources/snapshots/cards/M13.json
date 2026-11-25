@@ -590,6 +590,43 @@
     ]
 }
 
+// Cathedral of War
+{
+    "name": "Cathedral of War",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped.\nExalted (Whenever a creature you control attacks alone, that creature gets +1/+1 until end of turn.)\n{T}: Add {C}.",
+    "keywords": [
+        "EXALTED"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Cathedral of War:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "221",
+        "rarity": "RARE",
+        "artist": "Kekai Kotaki",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd222c07-0b28-41cb-9237-ad7991ab078f.jpg?1783940455"
+    }
+}
+
 // Chandra's Fury
 {
     "name": "Chandra's Fury",
@@ -1144,6 +1181,69 @@
     ]
 }
 
+// Faith's Reward
+{
+    "name": "Faith's Reward",
+    "manaCost": "{3}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Return to the battlefield all permanent cards in your graveyard that were put there from the battlefield this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsPermanent"
+                            ],
+                            "statePredicates": [
+                                "PutIntoGraveyardFromBattlefieldThisTurn"
+                            ]
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "RARE",
+        "artist": "Raymond Swanland",
+        "flavorText": "\"I thought the wind was ushering me to my final destination, but it lifted me to my feet and I fought on.\"\n—Idrus, war priest of Thune",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/9/799ed076-4724-47bb-94a0-11b42a9826eb.jpg?1783940519",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "Permanent cards that were put into your graveyard from anywhere else, such as a card that was discarded, stay in the graveyard. Permanent cards that you gained control of and went to another player's graveyard from the battlefield will likewise stay in the graveyard."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "You choose what an Aura card put onto the battlefield this way will enchant. You can't choose any permanent cards entering at the same time as that Aura. If there's nothing legal for the Aura to enchant, it stays in the graveyard."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "Permanent spells that were countered earlier in the turn never entered, so they won't return to the battlefield because of Faith's Reward."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Firewing Phoenix
 {
     "name": "Firewing Phoenix",
@@ -1554,6 +1654,40 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Knight of Glory
+{
+    "name": "Knight of Glory",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Protection from black (This creature can't be blocked, targeted, dealt damage, or enchanted by anything black.)\nExalted (Whenever a creature you control attacks alone, that creature gets +1/+1 until end of turn.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "EXALTED"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Color",
+                "color": "BLACK"
+            }
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "UNCOMMON",
+        "artist": "Peter Mohrbacher",
+        "flavorText": "\"I will uphold the law, and no manner of foe will stop me.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/1646cb67-e0ac-4f2d-af21-618ff3613d69.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -2298,6 +2432,344 @@
     ]
 }
 
+// Ring of Evos Isle
+{
+    "name": "Ring of Evos Isle",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "{2}: Equipped creature gains hexproof until end of turn. (It can't be the target of spells or abilities your opponents control.)\nAt the beginning of your upkeep, put a +1/+1 counter on equipped creature if it's blue.\nEquip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ring of Evos Isle:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "EquippedCreature",
+                            "filter": "creature blue"
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "EquippedCreature"
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, put a +1/+1 counter on equipped creature if it's blue."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Ring of Evos Isle:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF",
+                    "target": "EquippedCreature"
+                },
+                "descriptionOverride": "{2}: Equipped creature gains hexproof until end of turn."
+            },
+            {
+                "id": "Ring of Evos Isle:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "211",
+        "rarity": "UNCOMMON",
+        "artist": "Erica Yang",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a7c740a8-1bbc-4ec8-a72c-01aee9e48f3d.jpg?1783940459"
+    },
+    "colorIdentityOverride": []
+}
+
+// Ring of Kalonia
+{
+    "name": "Ring of Kalonia",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature has trample. (It can deal excess combat damage to the player or planeswalker it's attacking.)\nAt the beginning of your upkeep, put a +1/+1 counter on equipped creature if it's green.\nEquip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ring of Kalonia:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "EquippedCreature",
+                            "filter": "creature green"
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "EquippedCreature"
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, put a +1/+1 counter on equipped creature if it's green."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Ring of Kalonia:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE"
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "UNCOMMON",
+        "artist": "Erica Yang",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/2082e04f-f972-424e-a724-7a5975215538.jpg?1783940458"
+    },
+    "colorIdentityOverride": []
+}
+
+// Ring of Thune
+{
+    "name": "Ring of Thune",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature has vigilance. (Attacking doesn't cause it to tap.)\nAt the beginning of your upkeep, put a +1/+1 counter on equipped creature if it's white.\nEquip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ring of Thune:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "EquippedCreature",
+                            "filter": "creature white"
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "EquippedCreature"
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, put a +1/+1 counter on equipped creature if it's white."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Ring of Thune:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE"
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "213",
+        "rarity": "UNCOMMON",
+        "artist": "Erica Yang",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1ee2e94f-5b06-4df0-ba87-4499b1ee4dba.jpg?1783940459"
+    },
+    "colorIdentityOverride": []
+}
+
+// Ring of Valkas
+{
+    "name": "Ring of Valkas",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature has haste. (It can attack and {T} no matter when it came under your control.)\nAt the beginning of your upkeep, put a +1/+1 counter on equipped creature if it's red.\nEquip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ring of Valkas:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "EquippedCreature",
+                            "filter": "creature red"
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "EquippedCreature"
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, put a +1/+1 counter on equipped creature if it's red."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Ring of Valkas:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE"
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "214",
+        "rarity": "UNCOMMON",
+        "artist": "Erica Yang",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/546e9fc1-03ff-4ae5-9488-51bf2e627486.jpg?1783940459"
+    },
+    "colorIdentityOverride": []
+}
+
 // Roaring Primadox
 {
     "name": "Roaring Primadox",
@@ -2948,6 +3420,51 @@
     ]
 }
 
+// Touch of the Eternal
+{
+    "name": "Touch of the Eternal",
+    "manaCost": "{5}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, count the number of permanents you control. Your life total becomes that number.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Touch of the Eternal:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "SetLifeTotal",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent"
+                    }
+                },
+                "descriptionOverride": "count the number of permanents you control. Your life total becomes that number."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "rarity": "RARE",
+        "artist": "Christopher Moeller",
+        "flavorText": "\"Time is a vigilant tyrant, but there are those who have broken free of its gaze.\"\n—Laikas, Erunian monk",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/55c5f0c2-99e6-42b7-aa16-61d5815d060d.jpg?1783940511",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "This change of life total counts as life gain or life loss, as appropriate. Other effects that interact with life gain or life loss will interact with this effect accordingly."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Trading Post
 {
     "name": "Trading Post",
@@ -3213,6 +3730,54 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// War Falcon
+{
+    "name": "War Falcon",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying\nThis creature can't attack unless you control a Knight or a Soldier.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsPermanent",
+                            {
+                                "type": "HasAnyOfSubtypes",
+                                "subtypes": [
+                                    "Knight",
+                                    "Soldier"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "artist": "Volkan Baǵa",
+        "flavorText": "The falcon is the picture of nobility, maintaining a regal bearing even as it conducts the bloody business of war.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7e092a0d-c031-4a76-86c1-7f83878a06e8.jpg?1783940511"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

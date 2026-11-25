@@ -59,6 +59,62 @@
     ]
 }
 
+// Angelic Benediction
+{
+    "name": "Angelic Benediction",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Exalted (Whenever a creature you control attacks alone, that creature gets +1/+1 until end of turn.)\nWhenever a creature you control attacks alone, you may tap target creature.",
+    "keywords": [
+        "EXALTED"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Angelic Benediction:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "creature ctrl:you",
+                    "requires": [
+                        "AttacksAlone"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "descriptionOverride": "Whenever a creature you control attacks alone, you may tap target creature."
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever a creature you control attacks alone, you may tap target creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "rarity": "UNCOMMON",
+        "artist": "Michael Komarck",
+        "flavorText": "\"Even in single combat, I am never alone.\"\n—Rafiq of the Many",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd1b9071-7dde-4128-8b18-1d7b07904638.jpg?1783942585"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Angelsong
 {
     "name": "Angelsong",
@@ -2436,6 +2492,31 @@
         "BLUE",
         "BLACK",
         "RED"
+    ]
+}
+
+// Guardians of Akrasa
+{
+    "name": "Guardians of Akrasa",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Defender (This creature can't attack.)\nExalted (Whenever a creature you control attacks alone, that creature gets +1/+1 until end of turn.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEFENDER",
+        "EXALTED"
+    ],
+    "metadata": {
+        "collectorNumber": "12",
+        "artist": "Alan Pollack",
+        "flavorText": "\"Only by the bravery of those who put loyalty above glory is our home kept safe.\"\n—Elspeth",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4f718030-cc41-4e0d-a1ca-a33f577dc1fb.jpg?1783942582"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

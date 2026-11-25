@@ -4625,6 +4625,70 @@
     ]
 }
 
+// Serra Avatar
+{
+    "name": "Serra Avatar",
+    "manaCost": "{4}{W}{W}{W}",
+    "typeLine": "Creature — Avatar",
+    "oracleText": "Serra Avatar's power and toughness are each equal to your life total.\nWhen Serra Avatar is put into a graveyard from anywhere, shuffle it into its owner's library.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": "YourLifeTotal"
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": "YourLifeTotal"
+        }
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Serra Avatar:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Library",
+                            "fromZone": "Graveyard"
+                        },
+                        "ShuffleLibrary"
+                    ]
+                },
+                "activeZones": [
+                    "Graveyard"
+                ],
+                "descriptionOverride": "When Serra Avatar is put into a graveyard from anywhere, shuffle it into its owner's library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "rarity": "RARE",
+        "artist": "Dermot Power",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/288b0976-78e8-4fbe-8607-2e55d8761d3e.jpg?1783946368",
+        "rulings": [
+            {
+                "date": "2022-12-08",
+                "text": "The ability that defines Serra Avatar's power and toughness works in all zones, not only the battlefield."
+            },
+            {
+                "date": "2022-12-08",
+                "text": "If Serra Avatar is no longer in your graveyard when its triggered ability resolves, you still shuffle your library."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Serra Zealot
 {
     "name": "Serra Zealot",
