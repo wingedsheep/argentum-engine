@@ -351,6 +351,7 @@ Ajani's Mantra
 Ajani's Presence
 Ajani's Pridemate
 Ajani's Response
+Ajani's Sunstriker
 Ajani's Welcome
 Ajani, Adversary of Tyrants
 Ajani, Caller of the Pride
@@ -890,6 +891,7 @@ Archway of Innovation	combat: GrantNextSpellKeywordEffect; intent: GrantNextSpel
 Archweaver
 Archwing Dragon
 Arclight Phoenix
+Arctic Aven
 Arctic Treeline
 Ardent Dustspeaker
 Ardent Electromancer
@@ -1137,6 +1139,7 @@ Atsushi, the Blazing Sky
 Attack-in-the-Box
 Attendant of Vraska
 Attended Healer
+Attended Knight
 Attended Socialite
 Attentive Skywarden	intent: TransformEffect
 Attentive Sunscribe
@@ -1564,6 +1567,7 @@ Battlefield Promotion
 Battlefield Raptor
 Battlefield Scavenger
 Battlefield Thaumaturge
+Battleflight Eagle
 Battlefly Swarm
 Battlefront Krushok
 Battleground Geist
@@ -2179,6 +2183,7 @@ Bombadil's Song
 Bombard
 Bomber Corps
 Bombur, Gentle Dreamer
+Bond Beetle
 Bond of Discipline
 Bond of Flourishing
 Bond of Insight
@@ -2313,6 +2318,7 @@ Boundary Lands Ranger
 Bounding Felidar
 Bounding Krasis
 Bounding Wolf
+Bountiful Harvest
 Bountiful Landscape
 Bountiful Promenade
 Bounty Agent
@@ -3266,6 +3272,7 @@ Chromium, the Mutable	timing: RemoveAllAbilitiesEffect; timing: SetCreatureSubty
 Chronic Flooding
 Chronicle of Victory
 Chronicler of Heroes
+Chronomaton
 Chronosavant
 Chronostutter
 Chthonian Nightmare
@@ -3372,6 +3379,7 @@ Clear a Path
 Clear the Mind
 Clear the Stage
 Clearwater Pathway
+Cleaver Riot
 Cleaver Skaab
 Cleaving Reaper
 Cleaving Skyrider
@@ -3869,6 +3877,7 @@ Coveted Prize
 Covetous Castaway
 Covetous Urge
 Cowabunga!
+Cower in Fear
 Cowl Prowler
 Crabomination
 Crack Open
@@ -3907,6 +3916,7 @@ Crater Elemental
 Crater's Claws
 Craterclaw Colossus
 Craterhoof Behemoth
+Craterize
 Craven Giant
 Craven Hulk
 Craven Knight
@@ -3947,6 +3957,7 @@ Crimson Acolyte
 Crimson Caravaneer
 Crimson Kobolds
 Crimson Manticore
+Crimson Muckwader
 Crimson Operative
 Crimson Wisps
 Crippling Blight
@@ -5113,6 +5124,7 @@ Dovin, Hand of Control
 Down // Dirty
 Down in the Valley
 Down, Down to Goblin-town
+Downpour
 Downsize
 Downwind Ambusher
 Dowsing Dagger
@@ -6347,6 +6359,7 @@ Faerie Formation
 Faerie Guidemother
 Faerie Harbinger
 Faerie Impostor
+Faerie Invaders
 Faerie Mastermind
 Faerie Mechanist
 Faerie Miscreant
@@ -6810,6 +6823,7 @@ Fireslinger
 Firespitter Whelp
 Firestorm Phoenix
 Firewake Sliver
+Firewing Phoenix
 Firion, Wild Rose Warrior
 Firja's Retribution
 Firja, Judge of Valor
@@ -6934,6 +6948,7 @@ Flight of Equenauts
 Flight of Fancy
 Flight-Deck Coordinator
 Fling
+Flinthoof Boar
 Flip the Switch
 Flitterstep Eidolon
 Flitterwing Nuisance
@@ -7861,6 +7876,7 @@ Glorfindel, Dauntless Rescuer
 Glorifier of Dusk
 Glorifier of Suffering
 Glorious Anthem
+Glorious Charge
 Glorious Decay
 Glorious End
 Glorious Gale
@@ -7938,6 +7954,7 @@ Goblin Assault Team
 Goblin Balloon Brigade
 Goblin Banneret
 Goblin Barrage
+Goblin Battle Jester
 Goblin Berserker
 Goblin Bird-Grabber
 Goblin Blast-Runner
@@ -8462,6 +8479,7 @@ Guardian Automaton
 Guardian Beast
 Guardian Gladewalker
 Guardian Idol
+Guardian Lions
 Guardian Project
 Guardian Shield-Bearer
 Guardian Sunmare
@@ -8651,6 +8669,7 @@ Harbin, Vanguard Aviator
 Harbinger of the Hunt
 Harbinger of the Seas
 Harbinger of the Tides
+Harbor Bandit
 Hard Cover
 Hard-Hitting Question
 Hard-Won Jitte
@@ -8772,6 +8791,7 @@ Headstrong Brute
 Headwater Sentries
 Heal the Scars
 Healer of the Glade
+Healer of the Pride
 Healer's Flock
 Healer's Hawk
 Healing Grace
@@ -11159,6 +11179,7 @@ Liliana's Mastery
 Liliana's Reaver
 Liliana's Scorn
 Liliana's Scrounger	intent: AddCountersToCollectionEffect; intent: SelectTargetEffect
+Liliana's Shade
 Liliana's Specter
 Liliana's Spoils
 Liliana's Standard Bearer
@@ -11861,6 +11882,7 @@ Master of Waves
 Master of Winds
 Master of the Feast
 Master of the Hunt
+Master of the Pearl Trident
 Master of the Veil
 Master of the Wild Hunt
 Master the Way
@@ -14433,6 +14455,7 @@ Primal Command
 Primal Druid
 Primal Empathy
 Primal Frenzy
+Primal Huntbeast
 Primal Might
 Primal Prayers
 Primal Rage
@@ -14481,6 +14504,7 @@ Pristine Talisman
 Private Eye
 Privileged Position
 Prized Amalgam
+Prized Elephant
 Prized Griffin
 Prized Unicorn
 Prizefight
@@ -15181,6 +15205,7 @@ Reckless Air Strike
 Reckless Amplimancer
 Reckless Assault
 Reckless Barbarian
+Reckless Brute
 Reckless Bushwhacker
 Reckless Charge
 Reckless Cohort
@@ -16833,6 +16858,7 @@ Serpent Specialist
 Serpent Warrior
 Serpent of Yawning Depths
 Serpent of the Pass
+Serpent's Gift
 Serpent's Pass
 Serpent-Blade Assailant
 Serpentine Ambush
@@ -18084,6 +18110,7 @@ Spidery Grasp
 Spike Drone
 Spike Jester
 Spike-Tailed Ceratops
+Spiked Baloth
 Spiked Corridor // Torture Pit
 Spiked Pit Trap
 Spiked Ripsaw
@@ -18278,6 +18305,7 @@ Stadium Headliner
 Stadium Tidalmage
 Staff of Compleation
 Staff of Domination
+Staff of Nin
 Staff of Zegon
 Staff of the Death Magus
 Staff of the Flame Magus
@@ -21131,6 +21159,7 @@ Vedalken Outlander
 Vega, the Watcher
 Veil of Assimilation
 Veil of Summer	timing: ForEach>GrantEvasionKeywordEffect; timing: GrantEvasionKeywordEffect; timing: GrantSpellsCantBeCounteredEffect
+Veilborn Ghoul
 Veiled Shade
 Vein Ripper
 Veloheart Bike
@@ -21711,6 +21740,7 @@ Warbriar Blessing
 Warbringer
 Warchanter Skald
 Warchanter of Mogis
+Warclamp Mastiff
 Warcry Phoenix
 Ward Sliver
 Warded Battlements
