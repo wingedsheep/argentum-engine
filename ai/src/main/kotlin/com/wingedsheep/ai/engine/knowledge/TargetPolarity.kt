@@ -705,6 +705,7 @@ object TargetPolarityAnalyzer {
                 continue
             }
             if (leaf is GatherCardsEffect) {
+                attachmentRemovalSlot(leaf, effect, requirements)?.let { perSlot[it] += TargetPolarity.HARMFUL }
                 val top = leaf.source as? CardSource.TopOfLibrary
                 if (top != null) {
                     val slot = playerSlotOf(top.player, requirements)
@@ -1711,6 +1712,31 @@ object TargetPolarityAnalyzer {
      */
     internal fun removesChosenTargets(move: MoveCollectionEffect, effect: Effect): Boolean =
         move.from in allChosenTargets(effect) && removesForGood(move, effect)
+
+    /**
+     * "Destroy all Auras attached to target land" (Street Sweeper): [gather] collects what is
+     * attached to a target ([CardSource.AttachedTo]) and a later step puts that collection into a
+     * graveyard or exile for good. The target itself is untouched, but the Auras and Equipment on a
+     * permanent are overwhelmingly its controller's own — Wild Growth on their land, a pump on
+     * their creature — so stripping them is aimed at an opponent's permanent, the slot reading
+     * [TargetPolarity.HARMFUL]. A slot only our own permanents fill is left alone (there the strip is
+     * the price of something else), as is an attachment filter confined to our own.
+     */
+    private fun attachmentRemovalSlot(
+        gather: GatherCardsEffect,
+        effect: Effect,
+        requirements: List<TargetRequirement>,
+    ): Int? {
+        val source = gather.source as? CardSource.AttachedTo ?: return null
+        if (source.zone != Zone.BATTLEFIELD) return null
+        if (source.filter.controllerPredicate == ControllerPredicate.ControlledByYou) return null
+        val slot = slotOf(source.host, requirements) ?: return null
+        if (isOwnSide(requirements[slot])) return null
+        val removed = EffectWalker.leaves(effect).any {
+            it is MoveCollectionEffect && it.from == gather.storeAs && removesForGood(it, effect)
+        }
+        return slot.takeIf { removed }
+    }
 
     /**
      * Whether [move] puts what it moves into a graveyard or exile for good — [removesChosenTargets]
@@ -2778,6 +2804,13 @@ object TargetPolarityAnalyzer {
             readings += EffectWalker.payoffLeaves(effect).mapNotNull(::enchantedPlayerLeafPolarity)
             readings += hostControllerHarms(effect)
             readings += hostCarrierHarms(effect)
+            // "That player sacrifices it unless they pay {X}" (Soul Tithe), "destroy that land unless
+            // that player pays {1} or 1 life" (Erosion): the host's controller pays every upkeep or
+            // loses it — a curse on the host either way ([CardIntentAnalyzer.hostTaxSuffer] only
+            // answers for a suffer that takes the host off the battlefield).
+            if (EffectWalker.payoffLeaves(effect).any { CardIntentAnalyzer.hostTaxSuffer(it) != null }) {
+                readings += TargetPolarity.HARMFUL
+            }
         }
         // A replacement effect on an Aura (Sandskin's "prevent all combat damage dealt to and by
         // enchanted creature") is read nowhere above, and is often the whole card. Without it the
