@@ -33,6 +33,7 @@ import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.costs.CostAtom
+import com.wingedsheep.sdk.scripting.costs.TapCostDirection
 import com.wingedsheep.sdk.scripting.effects.AttachTargetEquipmentToCreatureEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
@@ -145,8 +146,10 @@ internal object CardAsks {
             // enchantment, Atog's artifact — is fuelled only by the deck's cards of that kind. A
             // broad sacrifice (a creature, a land) is a sac outlet, which [SynergyAxes] reads, and
             // must not mark the whole card as fed by any deck.
+            // So is one paid for by tapping a narrow kind — Clock of Omens' "tap two untapped
+            // artifacts you control": the deck's own artifacts are what keep it running.
             for (ability in script.activatedAbilities) {
-                sacrificeFilters(ability.cost).forEach { filter ->
+                (sacrificeFilters(ability.cost) + tapFilters(ability.cost)).forEach { filter ->
                     if (!opponents(filter) && !namesCreatureType(filter) && !namesTokenType(filter) &&
                         PrintedFilter.isNarrow(filter, false) == true
                     ) {
@@ -323,6 +326,15 @@ internal object CardAsks {
     private fun sacrificeFilters(cost: AbilityCost): List<GameObjectFilter> = when (cost) {
         is AbilityCost.Atom -> listOfNotNull((cost.atom as? CostAtom.Sacrifice)?.filter)
         is AbilityCost.Composite -> cost.costs.flatMap(::sacrificeFilters)
+        else -> emptyList()
+    }
+
+    /** The permanents an activation cost taps (Clock of Omens' "tap two untapped artifacts you control"). */
+    private fun tapFilters(cost: AbilityCost): List<GameObjectFilter> = when (cost) {
+        is AbilityCost.Atom -> listOfNotNull(
+            (cost.atom as? CostAtom.TapPermanents)?.takeIf { it.direction == TapCostDirection.TAP }?.filter,
+        )
+        is AbilityCost.Composite -> cost.costs.flatMap(::tapFilters)
         else -> emptyList()
     }
 

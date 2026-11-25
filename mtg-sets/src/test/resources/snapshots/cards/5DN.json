@@ -485,6 +485,53 @@
     ]
 }
 
+// Clock of Omens
+{
+    "name": "Clock of Omens",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "Tap two untapped artifacts you control: Untap target artifact.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Clock of Omens:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "count": 2,
+                        "filter": "artifact"
+                    }
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "rarity": "UNCOMMON",
+        "artist": "Alex Horley-Orlandelli",
+        "flavorText": "Those near the clock don't hear it anymore, but their every movement is in time with its ticking.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0ffce71b-eb60-4649-a62b-a1b4acaa9d2d.jpg?1783944385"
+    }
+}
+
 // Composite Golem
 {
     "name": "Composite Golem",
