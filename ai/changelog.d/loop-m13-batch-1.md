@@ -1,1 +1,1 @@
-- #TBD The AI values exalted on any permanent, one instance per printed keyword or exalted counter (board value, draft rating, combat-enhancement intent), so it aims removal at Cathedral of War over a basic and no longer reads Guardians of Akrasa as a bare 0/4
+- #4865 The AI values exalted on any permanent, one instance per printed keyword or exalted counter (board value, draft rating, combat-enhancement intent), so it aims removal at Cathedral of War over a basic and no longer reads Guardians of Akrasa as a bare 0/4
