@@ -1,3 +1,54 @@
+// Acidic Slime
+{
+    "name": "Acidic Slime",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Ooze",
+    "oracleText": "Deathtouch (Any amount of damage this deals to a creature is enough to destroy it.)\nWhen this creature enters, destroy target artifact, enchantment, or land.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Acidic Slime:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact|enchantment|land"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "rarity": "UNCOMMON",
+        "artist": "Karl Kopinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f1377f45-edee-4922-825b-6f22163ff63d.jpg?1783942367"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Act of Treason
 {
     "name": "Act of Treason",

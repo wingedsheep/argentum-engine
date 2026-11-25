@@ -1,0 +1,1 @@
+- #4863 Reads an activation cost that taps a narrow kind of permanent you control (Clock of Omens' "tap two untapped artifacts") as asking the deck for that kind, so draft and deckbuilding value it beside artifacts

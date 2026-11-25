@@ -1157,3 +1157,59 @@
         "BLUE"
     ]
 }
+
+// Wit's End
+{
+    "name": "Wit's End",
+    "manaCost": "{5}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player discards their hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "discardedHand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "discardedHand",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "moveType": "Discard"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "flavorText": "\"Some images are so powerful that one glance burns them into your mind forever. Come, let us gaze on nothingness.\"\n—Szadek",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/68f8e20c-6d8e-45a1-aabd-176d8df843db.jpg?1783943424"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
