@@ -69,5 +69,25 @@ class ShockLandEffectEntryScenarioTest : ScenarioTestBase() {
             game.shockTapped() shouldBe true
             game.getLifeTotal(1) shouldBe 1
         }
+
+        test("a search that puts the land onto the battlefield tapped doesn't ask (Farseek)") {
+            val game = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardInHand(1, "Farseek")
+                .withLandsOnBattlefield(1, "Forest", 2)
+                .withCardInLibrary(1, shock)
+                .withActivePlayer(1)
+                .withPriorityPlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            game.castSpell(1, "Farseek").error shouldBe null
+            game.resolveStack()
+            game.getPendingDecision().shouldBeInstanceOf<SelectCardsDecision>()
+            game.selectCards(game.findCardsInLibrary(1, shock)).error shouldBe null
+
+            game.getPendingDecision() shouldBe null
+            game.shockTapped() shouldBe true
+            game.getLifeTotal(1) shouldBe 20
+        }
     }
 }
