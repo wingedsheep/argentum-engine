@@ -4404,6 +4404,46 @@
     ]
 }
 
+// Serra Avenger
+{
+    "name": "Serra Avenger",
+    "manaCost": "{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "You can't cast Serra Avenger during your first, second, or third turns of the game.\nFlying, vigilance",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "castRestrictions": [
+            {
+                "type": "CastOnlyIfCondition",
+                "condition": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "ControllerTurnsTakenAtMost",
+                        "threshold": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "rarity": "RARE",
+        "artist": "Scott M. Fischer",
+        "flavorText": "\"Those who endure in the face of suffering, those whose faith shines long in evil days, they shall see salvation.\"\n—*Song of All*, canto 904",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e9d7c1c-3bfd-4705-9bc2-5ca3f84cc32a.jpg?1783943249"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Shadow Sliver
 {
     "name": "Shadow Sliver",
