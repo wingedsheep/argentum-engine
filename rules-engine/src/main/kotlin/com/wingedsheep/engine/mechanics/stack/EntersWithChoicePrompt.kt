@@ -336,7 +336,7 @@ internal class EntersWithChoicePrompt(
         cardComponent: CardComponent,
         chooserId: EntityId
     ): ExecutionResult {
-        val playerIds = state.turnOrder
+        val playerIds = state.activePlayers
         val playerNames = playerIds.map { pid ->
             state.getEntity(pid)
                 ?.get<com.wingedsheep.engine.state.components.identity.PlayerComponent>()?.name
@@ -379,7 +379,7 @@ internal class EntersWithChoicePrompt(
         // are made before the permanent enters. We surface the opponent prompt now so
         // the chosen opponent is durably recorded in [CastChoicesComponent]. In a 1v1
         // game this collapses to a forced choice but the prompt is still surfaced.
-        val opponentIds = state.turnOrder.filter { it != chooserId }
+        val opponentIds = state.getOtherPlayers(chooserId)
         if (opponentIds.isEmpty()) return null
         val opponentNames = opponentIds.map { pid ->
             state.getEntity(pid)

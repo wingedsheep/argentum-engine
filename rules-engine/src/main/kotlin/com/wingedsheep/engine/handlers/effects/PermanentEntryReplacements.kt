@@ -836,7 +836,7 @@ object PermanentEntryReplacements {
             }
 
             ChoiceType.OPPONENT -> {
-                val opponentIds = state.turnOrder.filter { it != chooserId }
+                val opponentIds = state.getOtherPlayers(chooserId)
                 if (opponentIds.isEmpty()) return null
                 val opponentNames = playerNames(state, opponentIds)
                 pause(
@@ -858,7 +858,7 @@ object PermanentEntryReplacements {
             }
 
             ChoiceType.PLAYER -> {
-                val playerIds = state.turnOrder
+                val playerIds = state.activePlayers
                 pause(
                     { id -> ChooseOptionDecision(
                         id = id,

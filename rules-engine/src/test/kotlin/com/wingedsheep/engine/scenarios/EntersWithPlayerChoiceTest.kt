@@ -32,7 +32,8 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  * Pins:
  *  - the choice is made as the permanent enters, before it is on the battlefield — a replacement
  *    effect's choice, like every other `EntersWithChoice` (Rule 614.12a);
- *  - every player is an option, the chooser included — unlike `ChoiceType.OPPONENT`;
+ *  - every player still in the game is an option, the chooser included — unlike `ChoiceType.OPPONENT` —
+ *    and a player who has lost is not (they stay in turn order for history only);
  *  - the answer is recorded under `ChoiceSlot.PLAYER` and read back by `Player.ChosenPlayer`, and
  *    leaves the `OPPONENT` slot empty;
  *  - it is asked on both entry paths: cast and resolved, and put onto the battlefield by an effect.
@@ -110,5 +111,25 @@ class EntersWithPlayerChoiceTest : FunSpec({
 
         val onField = d.state.getBattlefield().single { d.state.getEntity(it)?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.name == totem.name }
         d.state.getEntity(onField)!!.chosenPlayer() shouldBe d.player2
+    }
+
+    test("a player who has left the game is not offered") {
+        val d = GameTestDriver()
+        d.registerCards(TestCards.all + listOf(totem, reanimate))
+        val (p1, p2, p3) = d.initMultiplayer(List(3) { Deck.of("Mountain" to 40) }, startingPlayer = 0)
+        d.replaceState(d.state.updateEntity(p3) {
+            it.with(com.wingedsheep.engine.state.components.player.PlayerLostComponent(
+                com.wingedsheep.engine.state.components.player.LossReason.LIFE_ZERO))
+        })
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val id = d.putCardInHand(p1, totem.name)
+        d.giveMana(p1, Color.RED, 1)
+        d.castSpell(p1, id).error shouldBe null
+        d.bothPass()
+
+        val decision = d.state.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>()
+        decision.options.size shouldBe 2
+        d.submitDecision(p1, OptionChosenResponse(decision.id, 1)).error shouldBe null
+        d.state.getEntity(id)!!.chosenPlayer() shouldBe p2
     }
 })
