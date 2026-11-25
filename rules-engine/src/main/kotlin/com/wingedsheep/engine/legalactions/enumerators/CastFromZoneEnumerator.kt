@@ -1212,22 +1212,18 @@ class CastFromZoneEnumerator(
     /**
      * The picker payload and payability of the non-mana costs a cast from another zone owes, read
      * off the shared spell-cost seam so every cost kind brings its own picker and affordability
-     * check. Composites are flattened so each step is checked on its own; the client drives one
-     * picker per cast, so the first cost that has one supplies it.
+     * check. Composites are flattened so each step is checked on its own; the first cost with a
+     * picker leads and the rest ride in `AdditionalCostData.alsoRequired`, as on a hand cast.
      */
     private fun presentOwedCosts(
         context: EnumerationContext,
         castCardId: EntityId,
         costs: List<AdditionalCost>,
     ): Pair<AdditionalCostData?, Boolean> {
-        val env = SpellCostEnumeration(context, castCardId)
-        var info: AdditionalCostData? = null
-        var payable = true
-        for (cost in SpellCosts.flattenComposites(costs)) {
-            val candidates = SpellCosts.candidates(env, cost)
-            if (!SpellCosts.canPayFrom(env, cost, candidates)) payable = false
-            if (info == null) info = SpellCosts.present(env, cost, candidates)?.second
-        }
+        // Every picker the cast owes is published — the first leads, the rest ride in
+        // `alsoRequired` — so an escape spell that also prints "discard a card" (Big Score under
+        // Underworld Breach) asks for both the discard and the escape exile (CR 601.2h).
+        val (payable, info) = additionalCostPresentation(SpellCostEnumeration(context, castCardId), costs)
         return info to payable
     }
 
