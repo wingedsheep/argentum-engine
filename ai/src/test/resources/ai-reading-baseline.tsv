@@ -6065,7 +6065,7 @@ Eriette, the Beguiler
 Erkenbrand, Lord of Westfold
 Erode
 Eroded Canyon
-Erosion	intent: PayOrSufferEffect; polarity: Aura>PayOrSufferEffect
+Erosion
 Errand-Rider of Gondor
 Errant Ephemeron
 Errant and Giada
@@ -7495,7 +7495,7 @@ Gathering Throng
 Gathering of Darkness
 Gatstaf Arsonists
 Gauntlet of Might
-Gauntlets of Chaos	intent: Pipeline(AttachedTo→graveyard); polarity: Pipeline(AttachedTo→graveyard)
+Gauntlets of Chaos	polarity: Pipeline(AttachedTo→graveyard)
 Gauntlets of Light
 Gavony Dawnguard
 Gavony Silversmith
@@ -10012,6 +10012,7 @@ Jace's Scrutiny
 Jace's Sentinel
 Jace's Triumph
 Jace, Arcane Strategist
+Jace, Architect of Thought
 Jace, Cunning Castaway
 Jace, Ingenious Mind-Mage
 Jace, Memory Adept
@@ -17711,6 +17712,7 @@ Slobad, Iron Goblin
 Slogurk, the Overslime
 Sludge Crawler
 Sludge Monster	intent: AddCountersEffect; polarity: AddCountersEffect
+Sluiceway Scorpion
 Slum Reaper
 Slumbering Cerberus
 Slumbering Keepguard
@@ -17916,6 +17918,7 @@ Soul Shatter
 Soul Shred
 Soul Summons
 Soul Swallower
+Soul Tithe
 Soul Transfer
 Soul Warden
 Soul of Emancipation
@@ -17959,6 +17962,7 @@ Soulscour
 Soulstinger
 Soulstone Sanctuary
 Soulsurge Elemental
+Soulsworn Spirit
 Sound the Trumpets
 Sourbread Auntie
 Soured Springs
@@ -18668,6 +18672,7 @@ Stream of Life
 Streambed Aquitects	intent: SetLandTypeEffect; polarity: SetLandTypeEffect
 Street Riot
 Street Spasm
+Street Sweeper
 Streetbreaker Wurm
 Streetwise Negotiator
 Strength Bobblehead
@@ -18852,6 +18857,7 @@ Sunder the Gateway
 Sunderflock
 Sundering Archaic
 Sundering Eruption
+Sundering Growth
 Sundering Stroke
 Sundering Vitae
 Sundial, Dawn Tyrant
@@ -20549,6 +20555,7 @@ Tropical Island
 Trostani Discordant	intent: ForEach>GiveControlToTargetPlayerEffect
 Trostani's Judgment
 Trostani's Summoner
+Trostani, Selesnya's Voice
 Trostani, Three Whispers
 Trouble in Pairs
 Troubled Healer
@@ -21425,6 +21432,7 @@ Vitaspore Thallid
 Vito's Inquisitor
 Vito, Fanatic of Aclazotz
 Vito, Thorn of the Dusk Rose
+Vitu-Ghazi Guildmage
 Vitu-Ghazi Inspector
 Vitu-Ghazi, the City-Tree
 Viv Vision, Teen Synthezoid
@@ -21903,6 +21911,7 @@ Way of the Warlord
 Way of the Wildspeaker
 Wayfarer's Bauble
 Wayfaring Giant
+Wayfaring Temple
 Waylaying Pirates
 Wayspeaker Bodyguard
 Wayward Giant
@@ -22088,6 +22097,7 @@ Wielding the Green Dragon
 Wight
 Wight of Precinct Six
 Wight of the Reliquary
+Wild Beastmaster
 Wild Cantor
 Wild Celebrants
 Wild Ceratok
@@ -22394,6 +22404,7 @@ Worlds Within Worlds
 Worldslayer
 Worldsoul Colossus
 Worldsoul's Rage
+Worldspine Wurm
 Worldwalker Helm
 Wormhole Serpent
 Worms of the Earth
