@@ -947,10 +947,20 @@ class ModalAndCloneContinuationResumer(
                 if (response !is OptionChosenResponse) {
                     return ExecutionResult.error(state, "Expected option chosen response for opponent choice")
                 }
-                val chosenOpponent = continuation.opponentIds.getOrNull(response.optionIndex)
+                val chosenOpponent = continuation.playerIds.getOrNull(response.optionIndex)
                     ?: return ExecutionResult.error(state, "Invalid opponent index: ${response.optionIndex}")
                 state.updateEntity(spellId) { c ->
                     c.withCastChoice(ChoiceSlot.OPPONENT, ChoiceValue.EntityChoice(chosenOpponent))
+                }
+            }
+            com.wingedsheep.sdk.scripting.ChoiceType.PLAYER -> {
+                if (response !is OptionChosenResponse) {
+                    return ExecutionResult.error(state, "Expected option chosen response for player choice")
+                }
+                val chosenPlayer = continuation.playerIds.getOrNull(response.optionIndex)
+                    ?: return ExecutionResult.error(state, "Invalid player index: ${response.optionIndex}")
+                state.updateEntity(spellId) { c ->
+                    c.withCastChoice(ChoiceSlot.PLAYER, ChoiceValue.EntityChoice(chosenPlayer))
                 }
             }
             com.wingedsheep.sdk.scripting.ChoiceType.CARD_NAME -> {

@@ -1,0 +1,1 @@
+- #4864 Names an opponent, not itself, for "as this enters, choose a player" (Stuffy Doll), and reads a permanent damaging itself as fuel for its own "whenever this is dealt damage" trigger.

@@ -334,6 +334,10 @@ object CardIntentAnalyzer {
             // on the defending player — see [LandTypeAttackEnabler].
             if (leaf is AddSubtypeEffect && LandTypeAttackEnabler.of(source, leaf)) tags += IntentTag.EVASION_GRANT
             if (leaf is AttachEquipmentEffect && stealsItsHost(source)) tags += IntentTag.REMOVAL
+            // "{T}: This creature deals 1 damage to itself" beside "whenever this creature is dealt
+            // damage, it deals that much damage to the chosen player" (Stuffy Doll): the self-damage
+            // is how the card fires its own trigger, so it is for whatever that trigger is for.
+            if (leaf is DealDamageEffect && leaf.target == EffectTarget.Self) tags += ownDamageTriggerTags(source)
             // "Put a fate counter on another target creature" beside "exile target creature that
             // has a fate counter on it" (Triad of Fates): marking the victim is the targeting half
             // of that removal — [TargetPolarityAnalyzer.markerCounterPolarity].
@@ -346,6 +350,16 @@ object CardIntentAnalyzer {
         }
         return CardIntent.UNKNOWN.copy(tags = tags, removalReach = removalReach)
     }
+
+    /**
+     * What [source]'s own "whenever this is dealt damage" triggers are for — the payoff damage it
+     * deals itself cashes in. Empty without a source or such a trigger: damage to itself alone is a
+     * price, not a purpose.
+     */
+    private fun ownDamageTriggerTags(source: CardDefinition?): Set<IntentTag> =
+        source?.script?.triggeredAbilities.orEmpty()
+            .filter { it.binding == TriggerBinding.SELF && (it.trigger as? EventPattern.DamageReceivedEvent)?.recipient == null }
+            .flatMapTo(mutableSetOf()) { analyzeEffect(it.effect, listOfNotNull(it.targetRequirement) + it.additionalTargetRequirements).tags }
 
     /**
      * Whether [source] takes control of whatever it is attached to ([ControlEnchantedPermanent]):

@@ -387,13 +387,14 @@ data class EntersWithChoiceSpellContinuation(
      */
     val landTypes: List<String> = emptyList(),
     /**
-     * For [com.wingedsheep.sdk.scripting.ChoiceType.OPPONENT] choices, the positionally
-     * aligned list of candidate opponent player entity ids presented in the decision.
-     * The response's chosen index indexes into this list to recover the player id
-     * stored on the resulting `CastChoicesComponent` under
-     * [com.wingedsheep.sdk.scripting.ChoiceSlot.OPPONENT].
+     * For [com.wingedsheep.sdk.scripting.ChoiceType.OPPONENT] and
+     * [com.wingedsheep.sdk.scripting.ChoiceType.PLAYER] choices, the positionally aligned list of
+     * candidate player entity ids presented in the decision (opponents only, or every player).
+     * The response's chosen index indexes into this list to recover the player id stored on the
+     * resulting `CastChoicesComponent` under [com.wingedsheep.sdk.scripting.ChoiceSlot.OPPONENT] /
+     * [com.wingedsheep.sdk.scripting.ChoiceSlot.PLAYER].
      */
-    val opponentIds: List<EntityId> = emptyList(),
+    val playerIds: List<EntityId> = emptyList(),
     /**
      * Set on an [com.wingedsheep.sdk.scripting.ChoiceType.OPPONENT] question that is not itself a
      * printed choice but the controller picking *which* opponent makes this [forChoice] choice — "an
@@ -456,9 +457,9 @@ data class EntersWithChoiceOnBattlefieldContinuation(
     /** For [com.wingedsheep.sdk.scripting.ChoiceType.BASIC_LAND_TYPE] choices, see
      *  [EntersWithChoiceSpellContinuation.landTypes]. */
     val landTypes: List<String> = emptyList(),
-    /** For [com.wingedsheep.sdk.scripting.ChoiceType.OPPONENT] choices, see
-     *  [EntersWithChoiceSpellContinuation.opponentIds]. */
-    val opponentIds: List<EntityId> = emptyList(),
+    /** For [com.wingedsheep.sdk.scripting.ChoiceType.OPPONENT] / [com.wingedsheep.sdk.scripting.ChoiceType.PLAYER]
+     *  choices, see [EntersWithChoiceSpellContinuation.playerIds]. */
+    val playerIds: List<EntityId> = emptyList(),
     /** See [EntersWithChoiceSpellContinuation.forChoice]. */
     val forChoice: com.wingedsheep.sdk.scripting.ChoiceType? = null,
     /** For [com.wingedsheep.sdk.scripting.ChoiceType.CARD_NAME] choices, the land card names

@@ -60,6 +60,8 @@ internal class EntersWithChoicePrompt(
                 promptBasicLandType(state, spellId, controllerId, ownerId, cardComponent, chooserId)
             ChoiceType.OPPONENT ->
                 promptOpponent(state, spellId, controllerId, ownerId, cardComponent, chooserId)
+            ChoiceType.PLAYER ->
+                promptPlayer(state, spellId, controllerId, ownerId, cardComponent, chooserId)
             ChoiceType.CARD_NAME ->
                 promptCardName(state, spellId, controllerId, ownerId, cardComponent, choice, chooserId)
             ChoiceType.NUMBER ->
@@ -86,7 +88,7 @@ internal class EntersWithChoicePrompt(
             controllerId = controllerId,
             ownerId = ownerId,
             choiceType = ChoiceType.OPPONENT,
-            opponentIds = opponentIds,
+            playerIds = opponentIds,
             forChoice = choice.choiceType
         )
         return state.suspendForDecision(
@@ -325,6 +327,46 @@ internal class EntersWithChoicePrompt(
         )
     }
 
+    /** "As this enters, choose a player" — any player, the chooser included (Stuffy Doll). */
+    private fun promptPlayer(
+        state: GameState,
+        spellId: EntityId,
+        controllerId: EntityId,
+        ownerId: EntityId,
+        cardComponent: CardComponent,
+        chooserId: EntityId
+    ): ExecutionResult {
+        val playerIds = state.activePlayers
+        val playerNames = playerIds.map { pid ->
+            state.getEntity(pid)
+                ?.get<com.wingedsheep.engine.state.components.identity.PlayerComponent>()?.name
+                ?: "Player ${pid.value}"
+        }
+        val continuation = EntersWithChoiceSpellContinuation(
+            spellId = spellId,
+            controllerId = controllerId,
+            ownerId = ownerId,
+            choiceType = ChoiceType.PLAYER,
+            playerIds = playerIds
+        )
+        return state.suspendForDecision(
+            question = { decisionId ->
+                ChooseOptionDecision(
+                    id = decisionId,
+                    playerId = chooserId,
+                    prompt = "Choose a player",
+                    context = DecisionContext(
+                        sourceId = spellId,
+                        sourceName = cardComponent.name,
+                        phase = DecisionPhase.RESOLUTION
+                    ),
+                    options = playerNames
+                )
+            },
+            answer = continuation
+        )
+    }
+
     private fun promptOpponent(
         state: GameState,
         spellId: EntityId,
@@ -337,7 +379,7 @@ internal class EntersWithChoicePrompt(
         // are made before the permanent enters. We surface the opponent prompt now so
         // the chosen opponent is durably recorded in [CastChoicesComponent]. In a 1v1
         // game this collapses to a forced choice but the prompt is still surfaced.
-        val opponentIds = state.turnOrder.filter { it != chooserId }
+        val opponentIds = state.getOtherPlayers(chooserId)
         if (opponentIds.isEmpty()) return null
         val opponentNames = opponentIds.map { pid ->
             state.getEntity(pid)
@@ -349,7 +391,7 @@ internal class EntersWithChoicePrompt(
             controllerId = controllerId,
             ownerId = ownerId,
             choiceType = ChoiceType.OPPONENT,
-            opponentIds = opponentIds
+            playerIds = opponentIds
         )
         return state.suspendForDecision(
             question = { decisionId ->

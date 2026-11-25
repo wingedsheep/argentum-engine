@@ -1381,6 +1381,7 @@ class DecisionResponder(
         if (topOrBottomWeighsTheDraw && castabilityAwareCardSelection) {
             topOrBottomByDraw(state, decision)?.let { return it }
         }
+        enteringPlayerChoice(state, decision, playerId)?.let { return it }
         if (priors != null) return respondOptionInformed(state, decision, playerId, priors)
 
         val best = decision.options.indices.maxByOrNull { index ->
@@ -1389,6 +1390,33 @@ class DecisionResponder(
                 playerId
             )
         }!!
+        return OptionChosenResponse(decision.id, best)
+    }
+
+    /**
+     * "As this enters, choose a player" ([com.wingedsheep.sdk.scripting.ChoiceType.PLAYER]). The
+     * choice only records a name on the permanent, so every option simulates to the same board and
+     * the plain tie fell to the first seat — the AI named itself as Stuffy Doll's victim whenever it
+     * sat first. Such a player is the one the permanent acts on later (Stuffy Doll's damage), so
+     * ties lean to an opponent; a simulated difference still wins. Null for any other question.
+     */
+    private fun enteringPlayerChoice(
+        state: GameState,
+        decision: ChooseOptionDecision,
+        playerId: EntityId,
+    ): OptionChosenResponse? {
+        val answer = (state.peekContinuation() as? Suspension)?.takeIf { it.question.id == decision.id }?.answer
+        val playerIds = when (answer) {
+            is EntersWithChoiceSpellContinuation ->
+                answer.playerIds.takeIf { answer.choiceType == com.wingedsheep.sdk.scripting.ChoiceType.PLAYER }
+            is EntersWithChoiceOnBattlefieldContinuation ->
+                answer.playerIds.takeIf { answer.choiceType == com.wingedsheep.sdk.scripting.ChoiceType.PLAYER }
+            else -> null
+        }?.takeIf { it.size == decision.options.size } ?: return null
+        val best = bestWithTieBreak(
+            decision.options.indices.toList(),
+            { if (playerIds[it] == playerId) 0.0 else 1.0 },
+        ) { index -> evaluateResult(state, simulator.simulateDecision(state, OptionChosenResponse(decision.id, index)), playerId) }
         return OptionChosenResponse(decision.id, best)
     }
 
