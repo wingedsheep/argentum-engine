@@ -820,6 +820,8 @@ class CastFromZoneEnumerator(
                                 addAll(effectiveScript?.targetRequirements ?: emptyList())
                                 effectiveScript?.castAuraTarget?.let { add(it) }
                             }
+                            val autoTapPreview = if (playForFree) freeCostPreview(context, effectiveCost, spellContext)
+                                else paidCostPreview(context, effectiveCost, spellContext)
 
                             if (targetReqs.isNotEmpty()) {
                                 val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, sourceId = cardId, targetingSourceType = TargetingSourceType.SPELL)
@@ -848,6 +850,7 @@ class CastFromZoneEnumerator(
                                             manaCostByTargetCount = costByTargetCount,
                                             hasXCost = hasXCost,
                                             maxAffordableX = maxAffordableX,
+                                            autoTapPreview = autoTapPreview,
                                             sourceZone = sourceZoneLabel,
                                             additionalCostInfo = exileAdditionalCostInfo
                                         )
@@ -870,6 +873,7 @@ class CastFromZoneEnumerator(
                                                 manaCostByTargetCount = costByTargetCount,
                                                 hasXCost = hasXCost,
                                                 maxAffordableX = maxAffordableX,
+                                                autoTapPreview = autoTapPreview,
                                                 sourceZone = sourceZoneLabel,
                                                 additionalCostInfo = AdditionalCostData(
                                                     description = "creature to blight",
@@ -891,6 +895,7 @@ class CastFromZoneEnumerator(
                                         manaCostByTargetCount = costByTargetCount,
                                         hasXCost = hasXCost,
                                         maxAffordableX = maxAffordableX,
+                                        autoTapPreview = autoTapPreview,
                                         sourceZone = sourceZoneLabel,
                                         additionalCostInfo = exileAdditionalCostInfo
                                     )
@@ -905,6 +910,7 @@ class CastFromZoneEnumerator(
                                             manaCostByTargetCount = costByTargetCount,
                                             hasXCost = hasXCost,
                                             maxAffordableX = maxAffordableX,
+                                            autoTapPreview = autoTapPreview,
                                             sourceZone = sourceZoneLabel,
                                             additionalCostInfo = AdditionalCostData(
                                                 description = "creature to blight",
@@ -1148,6 +1154,7 @@ class CastFromZoneEnumerator(
                             addAll(exiledCardDef?.script?.targetRequirements ?: emptyList())
                             exiledCardDef?.script?.castAuraTarget?.let { add(it) }
                         }
+                        val autoTapPreview = effectiveCost?.let { paidCostPreview(context, it) }
                         if (targetReqs.isNotEmpty()) {
                             val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, sourceId = exiledId, targetingSourceType = TargetingSourceType.SPELL)
                             val allSatisfied = context.targetUtils.allRequirementsSatisfied(targetInfos)
@@ -1172,6 +1179,7 @@ class CastFromZoneEnumerator(
                                         xConstrainsTargetCountExactly = firstInfo.xConstrainsCountExactly,
                                         manaCostString = costString,
                                         manaCostByTargetCount = costByTargetCount,
+                                        autoTapPreview = autoTapPreview,
                                         sourceZone = "EXILE",
                                         additionalCostInfo = perCardAdditionalCostInfo
                                     )
@@ -1185,6 +1193,7 @@ class CastFromZoneEnumerator(
                                     action = CastSpell(playerId, exiledId),
                                     manaCostString = costString,
                                     manaCostByTargetCount = costByTargetCount,
+                                    autoTapPreview = autoTapPreview,
                                     sourceZone = "EXILE",
                                     additionalCostInfo = perCardAdditionalCostInfo
                                 )
@@ -1332,6 +1341,7 @@ class CastFromZoneEnumerator(
                             addAll(cardDef.script.targetRequirements)
                             cardDef.script.castAuraTarget?.let { add(it) }
                         }
+                        val autoTapPreview = paidCostPreview(context, effectiveCost)
 
                         if (targetReqs.isNotEmpty()) {
                             val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, sourceId = cardId, targetingSourceType = TargetingSourceType.SPELL)
@@ -1357,6 +1367,7 @@ class CastFromZoneEnumerator(
                                         xConstrainsTargetCountExactly = firstInfo.xConstrainsCountExactly,
                                         manaCostString = costString,
                                         manaCostByTargetCount = costByTargetCount,
+                                        autoTapPreview = autoTapPreview,
                                         sourceZone = sourceZoneName,
                                         additionalCostInfo = zoneAdditionalCostInfo
                                     )
@@ -1370,6 +1381,7 @@ class CastFromZoneEnumerator(
                                     action = zoneCast,
                                     manaCostString = costString,
                                     manaCostByTargetCount = costByTargetCount,
+                                    autoTapPreview = autoTapPreview,
                                     sourceZone = sourceZoneName,
                                     additionalCostInfo = zoneAdditionalCostInfo
                                 )
@@ -1455,6 +1467,7 @@ class CastFromZoneEnumerator(
                         addAll(cardDef.script.targetRequirements)
                         cardDef.script.castAuraTarget?.let { add(it) }
                     }
+                    val autoTapPreview = paidCostPreview(context, effectiveCost)
 
                     if (targetReqs.isNotEmpty()) {
                         val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, sourceId = cardId, targetingSourceType = TargetingSourceType.SPELL)
@@ -1475,6 +1488,7 @@ class CastFromZoneEnumerator(
                                     targetRequirements = targetInfos.surfacedRequirements(),
                                     manaCostString = costString,
                                     manaCostByTargetCount = costByTargetCount,
+                                    autoTapPreview = autoTapPreview,
                                     sourceZone = "GRAVEYARD"
                                 )
                             )
@@ -1487,6 +1501,7 @@ class CastFromZoneEnumerator(
                                 action = CastSpell(playerId, cardId),
                                 manaCostString = costString,
                                 manaCostByTargetCount = costByTargetCount,
+                                autoTapPreview = autoTapPreview,
                                 sourceZone = "GRAVEYARD"
                             )
                         )
@@ -3463,6 +3478,19 @@ class CastFromZoneEnumerator(
 
     /** A free cast's price as the client shows it: "{0}", or the increases it still owes. */
     private fun freeCostString(cost: ManaCost): String = cost.toString().ifEmpty { "{0}" }
+
+    /**
+     * The auto-tap preview for a paid cast. Beyond the highlight, a non-null preview is what makes
+     * [com.wingedsheep.engine.view.LegalActionEnricher] publish the player's mana sources — without
+     * it the client has nothing to offer a manual payment from.
+     */
+    private fun paidCostPreview(
+        context: EnumerationContext,
+        cost: ManaCost,
+        spellContext: com.wingedsheep.engine.mechanics.mana.SpellPaymentContext? = null,
+    ): List<EntityId>? = if (context.skipAutoTapPreview) null else context.manaSolver.solve(
+        context.state, context.playerId, cost, spellContext = spellContext, precomputedSources = context.availableManaSources,
+    )?.sources?.map { it.entityId }
 
     /** The auto-tap preview for a free cast — nothing to tap unless an increase applies. */
     private fun freeCostPreview(
