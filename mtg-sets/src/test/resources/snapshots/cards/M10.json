@@ -305,6 +305,33 @@
     ]
 }
 
+// Bountiful Harvest
+{
+    "name": "Bountiful Harvest",
+    "manaCost": "{4}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "You gain 1 life for each land you control.",
+    "script": {
+        "spellEffect": {
+            "type": "GainLife",
+            "amount": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "artist": "Jason Chan",
+        "flavorText": "Following the sun's cycle, harvest season comes once a year—unless the druids bid the sun behave otherwise.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d225382c-cc6f-4224-82b5-4309b72feb0b.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Captain of the Watch
 {
     "name": "Captain of the Watch",
@@ -1195,6 +1222,46 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLUE"
+    ]
+}
+
+// Glorious Charge
+{
+    "name": "Glorious Charge",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Creatures you control get +1/+1 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            "body": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "target": "IterationEntity"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "artist": "Izzy",
+        "flavorText": "\"One's blade is only as sharp as one's conviction.\"\n—Ajani Goldmane",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8c6dfcf8-a09b-4402-af80-90fe15b2ce0a.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
