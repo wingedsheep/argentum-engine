@@ -1,3 +1,54 @@
+// Acidic Slime
+{
+    "name": "Acidic Slime",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Ooze",
+    "oracleText": "Deathtouch (Any amount of damage this deals to a creature is enough to destroy it.)\nWhen this creature enters, destroy target artifact, enchantment, or land.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Acidic Slime:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact|enchantment|land"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "rarity": "UNCOMMON",
+        "artist": "Karl Kopinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f1377f45-edee-4922-825b-6f22163ff63d.jpg?1783942367"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Act of Treason
 {
     "name": "Act of Treason",
@@ -299,6 +350,33 @@
         "artist": "Jesper Ejsing",
         "flavorText": "\"Only fools and bandits use roads.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/b/d/bdd0f8c8-1a1f-4d9b-a6e1-3654f3995012.jpg?1783942366"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Bountiful Harvest
+{
+    "name": "Bountiful Harvest",
+    "manaCost": "{4}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "You gain 1 life for each land you control.",
+    "script": {
+        "spellEffect": {
+            "type": "GainLife",
+            "amount": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "artist": "Jason Chan",
+        "flavorText": "Following the sun's cycle, harvest season comes once a year—unless the druids bid the sun behave otherwise.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d225382c-cc6f-4224-82b5-4309b72feb0b.jpg"
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -1195,6 +1273,46 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLUE"
+    ]
+}
+
+// Glorious Charge
+{
+    "name": "Glorious Charge",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Creatures you control get +1/+1 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            "body": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "target": "IterationEntity"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "artist": "Izzy",
+        "flavorText": "\"One's blade is only as sharp as one's conviction.\"\n—Ajani Goldmane",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8c6dfcf8-a09b-4402-af80-90fe15b2ce0a.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

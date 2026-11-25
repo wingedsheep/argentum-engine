@@ -334,6 +334,10 @@ object CardIntentAnalyzer {
             // on the defending player — see [LandTypeAttackEnabler].
             if (leaf is AddSubtypeEffect && LandTypeAttackEnabler.of(source, leaf)) tags += IntentTag.EVASION_GRANT
             if (leaf is AttachEquipmentEffect && stealsItsHost(source)) tags += IntentTag.REMOVAL
+            // "{T}: This creature deals 1 damage to itself" beside "whenever this creature is dealt
+            // damage, it deals that much damage to the chosen player" (Stuffy Doll): the self-damage
+            // is how the card fires its own trigger, so it is for whatever that trigger is for.
+            if (leaf is DealDamageEffect && leaf.target == EffectTarget.Self) tags += ownDamageTriggerTags(source)
             // "Put a fate counter on another target creature" beside "exile target creature that
             // has a fate counter on it" (Triad of Fates): marking the victim is the targeting half
             // of that removal — [TargetPolarityAnalyzer.markerCounterPolarity].
@@ -346,6 +350,16 @@ object CardIntentAnalyzer {
         }
         return CardIntent.UNKNOWN.copy(tags = tags, removalReach = removalReach)
     }
+
+    /**
+     * What [source]'s own "whenever this is dealt damage" triggers are for — the payoff damage it
+     * deals itself cashes in. Empty without a source or such a trigger: damage to itself alone is a
+     * price, not a purpose.
+     */
+    private fun ownDamageTriggerTags(source: CardDefinition?): Set<IntentTag> =
+        source?.script?.triggeredAbilities.orEmpty()
+            .filter { it.binding == TriggerBinding.SELF && (it.trigger as? EventPattern.DamageReceivedEvent)?.recipient == null }
+            .flatMapTo(mutableSetOf()) { analyzeEffect(it.effect, listOfNotNull(it.targetRequirement) + it.additionalTargetRequirements).tags }
 
     /**
      * Whether [source] takes control of whatever it is attached to ([ControlEnchantedPermanent]):
@@ -483,6 +497,10 @@ object CardIntentAnalyzer {
         }
 
         for (script in scripts) for (replacement in script.replacementEffects) tags += standingReplacementTags(replacement)
+        // Printed exalted is a standing trigger for the team, not part of the card's own body: it
+        // pumps whichever creature attacks alone, and it does so from a land or an enchantment too
+        // (Cathedral of War, Angelic Benediction).
+        if (Keyword.EXALTED in card.keywords) tags += IntentTag.COMBAT_ENHANCEMENT
 
         val activated = scripts.flatMap { it.activatedAbilities }
         if (activated.any { it.isManaAbility }) tags += IntentTag.RAMP
@@ -3773,6 +3791,12 @@ object CardIntentAnalyzer {
      * Last Mercy, Long Rest: "your life total becomes your starting life total") — the gain
      * [leafTagsOf] reads it as. The reset is cast or triggered when behind, where it restores the
      * life lost; a format's starting total (40 in Commander) is the game's, never a hard-coded 20.
+     *
+     * A dynamic total is left unread: "your life total becomes the number of permanents you
+     * control" (Touch of the Eternal) is a heavy loss while the board is small and a stabiliser
+     * only once the board outnumbers the life left — a gain or a loss by the position, which the
+     * evaluator prices when the set resolves. Calling it life gain would draft it into lifegain
+     * decks and hold it as a lifegain card.
      */
     private fun setsOwnLifeAboveStart(effect: SetLifeTotalEffect): Boolean {
         val ours = effect.target == EffectTarget.Controller || effect.target == EffectTarget.PlayerRef(Player.You)
@@ -4673,7 +4697,7 @@ object CardIntentAnalyzer {
         }
         if (Keyword.FLASH in card.keywords) return Speed.INSTANT
         if (scripts.any { script -> script.activatedAbilities.any { !it.isManaAbility } }) return Speed.ACTIVATED
-        if (scripts.any { it.staticAbilities.isNotEmpty() } || IntentTag.ANTHEM in tags ||
+        if (scripts.any { it.staticAbilities.isNotEmpty() } || IntentTag.ANTHEM in tags || Keyword.EXALTED in card.keywords ||
             IntentTag.DAMAGE_AMPLIFIER in tags || IntentTag.LIFEGAIN_LOCK in tags ||
             scripts.any { script -> script.replacementEffects.any(DamageShields::reads) }) return Speed.STATIC
         return Speed.SORCERY
@@ -5147,8 +5171,9 @@ object CardIntentAnalyzer {
     private val SPENT_ON_RESOLUTION = setOf(IntentTag.CARD_SELECTION, IntentTag.LIFEGAIN)
 
     /**
-     * Keywords that win or open a fight without adding power or toughness — see
-     * [IntentTag.COMBAT_ENHANCEMENT]. Haste is here because it is spent attacking this turn;
+     * Keywords that win or open a fight without a printed pump — see
+     * [IntentTag.COMBAT_ENHANCEMENT]. Exalted's +1/+1 only reaches a creature attacking alone, so it
+     * reads as a combat edge rather than a pump. Haste is here because it is spent attacking this turn;
      * reach (a blocker's keyword), defender, banding and the like are not gifts a controller hands
      * its attacker.
      */
@@ -5160,6 +5185,8 @@ object CardIntentAnalyzer {
         Keyword.WITHER, Keyword.INFECT,
         // A copy attacking each other opponent: spent attacking, as haste is.
         Keyword.MYRIAD,
+        // +1/+1 to whichever of our creatures attacks alone, every turn (CR 702.83a).
+        Keyword.EXALTED,
     )
 
     private val PROTECTIVE_KEYWORDS = setOf(

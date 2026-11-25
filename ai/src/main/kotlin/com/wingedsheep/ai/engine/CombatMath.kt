@@ -834,6 +834,7 @@ object CombatMath {
         if (Keyword.INDESTRUCTIBLE.name in keywords) value += 3.0
         if (Keyword.HEXPROOF.name in keywords) value += 1.5
         if (Keyword.VIGILANCE.name in keywords) value += 0.8
+        if (Keyword.EXALTED.name in keywords) value += com.wingedsheep.ai.engine.evaluation.BoardPresence.EXALTED_INSTANCE_VALUE
         return value
     }
 

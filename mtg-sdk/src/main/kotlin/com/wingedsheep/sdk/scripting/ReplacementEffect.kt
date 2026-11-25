@@ -3016,6 +3016,14 @@ enum class ChoiceType {
      */
     OPPONENT,
     /**
+     * Choose a player — any player, the chooser included, e.g. Stuffy Doll: "As Stuffy Doll enters, choose a player." Stored under
+     * [com.wingedsheep.sdk.scripting.ChoiceSlot.PLAYER] as an `EntityChoice` holding the chosen
+     * player's entity id, and read back through
+     * [com.wingedsheep.sdk.scripting.references.Player.ChosenPlayer]. [OPPONENT] is the
+     * opponents-only sibling.
+     */
+    PLAYER,
+    /**
      * Choose a land card name (e.g., Petrified Hamlet: "When this land enters, choose a land
      * card name"). Stored on the permanent in a
      * [com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent] under
@@ -3356,6 +3364,11 @@ data class EntersWithChoice(
             "As this permanent enters, an opponent chooses an opponent"
         } else {
             "As this permanent enters, choose an opponent"
+        }
+        ChoiceType.PLAYER -> if (chooser == Player.AnOpponent) {
+            "As this permanent enters, an opponent chooses a player"
+        } else {
+            "As this permanent enters, choose a player"
         }
         ChoiceType.CARD_NAME -> if (cardNameSource == CardNameSource.OPPONENTS_REVEALED_HANDS) {
             val chooses = if (chooser == Player.AnOpponent) "An opponent chooses" else "You choose"

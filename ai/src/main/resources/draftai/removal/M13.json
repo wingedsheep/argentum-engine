@@ -1,0 +1,144 @@
+{
+  "Acidic Slime": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Chandra's Fury": [
+    "removal",
+    "creature-removal"
+  ],
+  "Chandra, the Firebrand": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Cower in Fear": [
+    "removal",
+    "creature-removal"
+  ],
+  "Crippling Blight": [
+    "removal",
+    "creature-removal"
+  ],
+  "Divine Verdict": [
+    "removal",
+    "creature-removal"
+  ],
+  "Encrust": [
+    "removal",
+    "creature-removal"
+  ],
+  "Erase": [
+    "removal",
+    "enchantment-removal"
+  ],
+  "Essence Drain": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Flames of the Firebrand": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Intrepid Hero": [
+    "removal",
+    "creature-removal"
+  ],
+  "Liliana of the Dark Realms": [
+    "removal",
+    "creature-removal"
+  ],
+  "Magmaquake": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Murder": [
+    "removal",
+    "creature-removal"
+  ],
+  "Mutilate": [
+    "removal",
+    "creature-removal"
+  ],
+  "Naturalize": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Nefarox, Overlord of Grixis": [
+    "removal",
+    "creature-removal"
+  ],
+  "Nicol Bolas, Planeswalker": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Oblivion Ring": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Pacifism": [
+    "removal",
+    "creature-removal"
+  ],
+  "Planar Cleansing": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Plummet": [
+    "removal",
+    "creature-removal"
+  ],
+  "Prey Upon": [
+    "removal",
+    "creature-removal"
+  ],
+  "Public Execution": [
+    "removal",
+    "creature-removal"
+  ],
+  "Searing Spear": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Smelt": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Staff of Nin": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Turn to Slag": [
+    "removal",
+    "creature-removal"
+  ],
+  "Void Stalker": [
+    "removal",
+    "creature-removal"
+  ],
+  "Volcanic Geyser": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Xathrid Gorgon": [
+    "removal",
+    "creature-removal"
+  ]
+}

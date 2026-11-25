@@ -448,6 +448,35 @@
     ]
 }
 
+// Fervor
+{
+    "name": "Fervor",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Creatures you control have haste. (They can attack and {T} as soon as they come under your control.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "RARE",
+        "artist": "Franz Vohwinkel",
+        "flavorText": "\"If your blood doesn't run hot, I will make it run in the sands!\"\n—Maraxus of Keld",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b4df70ea-2b6b-4e25-a564-655989ef16fa.jpg?1783946728"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Festering Evil
 {
     "name": "Festering Evil",

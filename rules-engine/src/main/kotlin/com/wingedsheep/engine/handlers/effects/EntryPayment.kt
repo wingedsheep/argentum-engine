@@ -19,6 +19,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EntersOnlyIfPaid
+import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 
@@ -53,6 +54,14 @@ object EntryPayment {
         cardDef?.script?.replacementEffects?.filterIsInstance<EntersOnlyIfPaid>()?.firstOrNull()?.cost
 
     /**
+     * The life [cardDef]'s own shock-land clause asks for — "As this land enters, you may pay 2 life.
+     * If you don't, it enters tapped." ([EntersTapped.payLifeCost]) — as a [PayCost], or null.
+     */
+    fun untappedLifeCostOf(cardDef: CardDefinition?): PayCost? =
+        cardDef?.script?.replacementEffects?.filterIsInstance<EntersTapped>()?.firstOrNull()
+            ?.payLifeCost?.let { PayCost.Atom(CostAtom.PayLife(it)) }
+
+    /**
      * The cost [entityId] asks for as it would exist on the battlefield (CR 614.12): the copied card's
      * when it enters as a copy — a granted entry copy (Mystic Reflection) or [entryCopy] — else its own.
      */
@@ -62,7 +71,19 @@ object EntryPayment {
         entryCopy: com.wingedsheep.engine.handlers.effects.copy.EntryCopyChoice?,
         cardRegistry: CardRegistry,
         predicateEvaluator: PredicateEvaluator,
-    ): PayCost? {
+    ): PayCost? = costOf(enteringDefinition(state, entityId, entryCopy, cardRegistry, predicateEvaluator))
+
+    /**
+     * The definition [entityId] enters with (CR 614.12): the copied card's when it enters as a copy —
+     * a granted entry copy (Mystic Reflection) or [entryCopy] — else its own.
+     */
+    fun enteringDefinition(
+        state: GameState,
+        entityId: EntityId,
+        entryCopy: com.wingedsheep.engine.handlers.effects.copy.EntryCopyChoice?,
+        cardRegistry: CardRegistry,
+        predicateEvaluator: PredicateEvaluator,
+    ): CardDefinition? {
         val choice = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy
             .find(state, entityId, predicateEvaluator)?.chosen(entryCopy) ?: entryCopy
         val card = choice?.takeIf { it.copiedCard != null }
@@ -70,7 +91,7 @@ object EntryPayment {
             ?.getEntity(entityId)?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
             ?: state.getEntity(entityId)?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
             ?: return null
-        return costOf(cardRegistry.getCard(card.cardDefinitionId))
+        return cardRegistry.getCard(card.cardDefinitionId)
     }
 
     /** Whether [payerId] can pay [cost] for [sourceId] right now (CR 118.3). */
@@ -98,9 +119,11 @@ object EntryPayment {
         predicateEvaluator: PredicateEvaluator,
         answer: AnswerContinuation,
         events: List<GameEvent> = emptyList(),
+        declinedEntersTapped: Boolean = false,
     ): ExecutionResult {
         val clause = cost.description.replaceFirstChar { it.uppercase() }
-        val prompt = "$clause to put $cardName onto the battlefield? If you don't, it goes to the graveyard."
+        val prompt = if (declinedEntersTapped) "$clause to have $cardName enter untapped?"
+        else "$clause to put $cardName onto the battlefield? If you don't, it goes to the graveyard."
         val context = DecisionContext(sourceId = sourceId, sourceName = cardName, phase = DecisionPhase.RESOLUTION)
         val candidates = selectionCandidates(state, payerId, cost, sourceId, predicateEvaluator)
         return if (candidates != null) {
@@ -129,7 +152,7 @@ object EntryPayment {
                         prompt = prompt,
                         context = context,
                         yesText = clause,
-                        noText = "Put it into the graveyard",
+                        noText = if (declinedEntersTapped) "Enter tapped" else "Put it into the graveyard",
                     )
                 },
                 answer = answer,
@@ -197,8 +220,19 @@ private fun costPaymentCount(cost: PayCost): Int = (cost as? PayCost.Atom)?.atom
  * the answer is recorded on the [com.wingedsheep.engine.handlers.EffectContext]
  * ([EntryChoiceAnswers.paidToEnter]) and the move instruction is replayed; the zone transition then
  * reads it ([ZoneEntryOptions.paidToEnter]) and sends an unpaid entrant to the graveyard.
+ *
+ * A shock land's "you may pay 2 life; if you don't, it enters tapped"
+ * ([com.wingedsheep.sdk.scripting.EntersTapped.payLifeCost]) rides the same question and record: a
+ * fetched or reanimated shock land is asked before it moves, and the transition leaves a paid one
+ * untapped. A card carries at most one such as-enters payment, so one answer per entrant suffices.
  */
 object EffectEntryPayments {
+    /**
+     * @param entersTapped the move itself puts the cards onto the battlefield tapped ("put it onto
+     *   the battlefield tapped"). A shock land entering that way still may pay, but stays tapped
+     *   either way, so the meaningless question is skipped — as `PlayLandHandler` skips it under a
+     *   permission that forces the land tapped.
+     */
     fun prepare(
         state: GameState,
         effect: com.wingedsheep.sdk.scripting.effects.Effect,
@@ -206,6 +240,7 @@ object EffectEntryPayments {
         entrants: Map<EntityId, EntityId>,
         registry: CardRegistry,
         predicateEvaluator: PredicateEvaluator,
+        entersTapped: Boolean = false,
     ): com.wingedsheep.engine.core.EffectResult? {
         val playerOrder = state.apnapOrder.withIndex().associate { it.value to it.index }
         var answered = context
@@ -213,8 +248,18 @@ object EffectEntryPayments {
             if (id in state.getBattlefield()) continue
             if (answered.entryChoices[id]?.paidToEnter != null) continue
             val card = state.getEntity(id)?.get<com.wingedsheep.engine.state.components.identity.CardComponent>() ?: continue
-            val cost = EntryPayment.enteringCost(state, id, answered.entryCopies[id], registry, predicateEvaluator)
-                ?: continue
+            val enteringDef = EntryPayment.enteringDefinition(state, id, answered.entryCopies[id], registry, predicateEvaluator)
+            val onlyIfPaid = EntryPayment.costOf(enteringDef)
+            // A shock land ("As this land enters, you may pay 2 life. If you don't, it enters
+            // tapped.") pays the same way; declining taps it instead of binning it. Not asked when
+            // the move enters it tapped anyway, or when a battlefield static (Blood Moon) strips
+            // the clause as it arrives (CR 614.12) — the transition then ignores it.
+            val untappedLife = if (onlyIfPaid == null && !entersTapped) {
+                EntryPayment.untappedLifeCostOf(enteringDef)?.takeUnless {
+                    EntryCharacteristics.wouldLoseAllAbilities(state, id, controller, registry, predicateEvaluator)
+                }
+            } else null
+            val cost = onlyIfPaid ?: untappedLife ?: continue
             if (!EntryPayment.canPay(state, controller, cost, id, registry, predicateEvaluator)) {
                 answered = recorded(answered, id, paid = false)
                 continue
@@ -223,6 +268,7 @@ object EffectEntryPayments {
                 EntryPayment.ask(
                     state, controller, id, card.name, cost, predicateEvaluator,
                     com.wingedsheep.engine.core.EffectEntryPaymentContinuation(effect, answered, id, controller, cost),
+                    declinedEntersTapped = untappedLife != null,
                 )
             )
         }

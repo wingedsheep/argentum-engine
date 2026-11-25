@@ -298,8 +298,9 @@ enum class ChoiceSlot {
 
     /**
      * A player — any player, not only an opponent — recorded as the object entered, stored as a
-     * [ChoiceValue.EntityChoice] carrying the player entity id (Takklemaggot returning as a
-     * non-Aura enchantment that hurts "that player"). Read back through
+     * [ChoiceValue.EntityChoice] carrying the player entity id: an
+     * `EntersWithChoice(ChoiceType.PLAYER)` answer (Stuffy Doll), or Takklemaggot returning as a
+     * non-Aura enchantment that hurts "that player". Read back through
      * [com.wingedsheep.sdk.scripting.references.Player.ChosenPlayer].
      */
     PLAYER,

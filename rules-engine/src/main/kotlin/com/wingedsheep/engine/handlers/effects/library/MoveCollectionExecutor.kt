@@ -207,7 +207,9 @@ class MoveCollectionExecutor(
             // "If this would enter, you may [pay] instead" (EntersOnlyIfPaid) — asked once each entry
             // copy is settled (CR 614.12), since it decides whether each card enters at all.
             com.wingedsheep.engine.handlers.effects.EffectEntryPayments.prepare(
-                state, effect, context, entrants, cardRegistry, predicateEvaluator
+                state, effect, context, entrants, cardRegistry, predicateEvaluator,
+                entersTapped = (destination as? CardDestination.ToZone)?.placement
+                    .let { it == ZonePlacement.Tapped || it == ZonePlacement.TappedAndAttacking },
             )?.let { return it }
             if (targetFinder != null) {
                 val prepared = com.wingedsheep.engine.handlers.effects.copy.CopyAuraEntry.prepare(

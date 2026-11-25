@@ -540,11 +540,51 @@ object BoardPresence : BoardFeature {
                     ?: CardIntent.UNKNOWN.staticPriorValue) - CardIntent.UNKNOWN.staticPriorValue)
                     .coerceAtLeast(0.0)
             } else 0.0
-            return (creatureValue(state, projected, entityId, container, creatureValuation, context) + growth + millValue + abilityValue)
+            // [creatureBodyValue] already pays for one exalted instance through the keyword.
+            val extraExalted = (exaltedInstances(projected, entityId, container, card) - 1).coerceAtLeast(0)
+            return (creatureValue(state, projected, entityId, container, creatureValuation, context) + growth + millValue + abilityValue +
+                extraExalted * EXALTED_INSTANCE_VALUE)
                 .coerceAtLeast(0.1)
         }
 
-        // Non-creature permanents
+        // Exalted pays off on any permanent type (Cathedral of War, Angelic Benediction): each
+        // instance is a +1/+1 for a lone attacker every turn, on top of what the permanent is.
+        return nonCreatureValue(state, projected, entityId, container, card, intents, creatureValuation) +
+            exaltedInstances(projected, entityId, container, card) * EXALTED_INSTANCE_VALUE
+    }
+
+    /**
+     * How many exalted triggers [entityId] carries (CR 702.83b — each instance triggers separately),
+     * counted the way the engine counts them: the printed keyword unless all abilities are lost,
+     * plus one per exalted counter, and one when the keyword is only granted by a static.
+     */
+    internal fun exaltedInstances(
+        projected: ProjectedState,
+        entityId: EntityId,
+        container: ComponentContainer,
+        card: CardComponent,
+    ): Int {
+        if (!projected.hasKeyword(entityId, Keyword.EXALTED)) return 0
+        val counters = container.get<CountersComponent>()?.getCount(CounterType.EXALTED) ?: 0
+        val printed = if (Keyword.EXALTED in card.baseKeywords && !projected.hasLostAllAbilities(entityId)) 1 else 0
+        return maxOf(printed + counters, 1)
+    }
+
+    /**
+     * One exalted instance: +1/+1 until end of turn to a creature that attacks alone, every turn —
+     * a little under vigilance's 0.8, about provoke's worth.
+     */
+    internal const val EXALTED_INSTANCE_VALUE = 0.5
+
+    private fun nonCreatureValue(
+        state: GameState,
+        projected: ProjectedState,
+        entityId: EntityId,
+        container: ComponentContainer,
+        card: CardComponent,
+        intents: IntentCatalog,
+        creatureValuation: CreatureValuation,
+    ): Double {
         if (card.isLand) {
             return if (container.has<TappedComponent>()) LAND_TAPPED else LAND_UNTAPPED
         }
@@ -876,6 +916,8 @@ object BoardPresence : BoardFeature {
         if (Keyword.LIFELINK.name in keywords) value += 0.5 + power * 0.3
         if (Keyword.VIGILANCE.name in keywords) value += 0.8  // attacks without cost
         if (Keyword.PROVOKE.name in keywords) value += 0.5
+        // Exalted: one instance's +1/+1 to a lone attacker each turn ([permanentValue] adds the rest).
+        if (Keyword.EXALTED.name in keywords) value += EXALTED_INSTANCE_VALUE
         // Afflict: every block costs the defender life (CR 702.130a), a tax on blocking it.
         if (Keyword.AFFLICT.name in keywords) value += 0.6
         // Ingest: every hit exiles the damaged player's top card (CR 702.115a) — a little mill,

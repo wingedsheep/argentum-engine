@@ -5396,7 +5396,10 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   address `Player.ChosenOpponent`. (Permanent gift cards don't need it: `gift(kind)` records the
   promised opponent in the same slot as part of the cast — see § 11 "Gift".) The *as-enters* analogue
   is `EntersWithChoice(ChoiceType.OPPONENT)`,
-  which writes the same slot (Jihad, The Rack).
+  which writes the same slot (Jihad, The Rack). Its any-player sibling `EntersWithChoice(ChoiceType.PLAYER)`
+  — "as this enters, choose a player", every player offered, the chooser included — writes
+  `ChoiceSlot.PLAYER` instead, read back through `Player.ChosenPlayer` (Stuffy Doll:
+  `DealDamage(triggerDamageAmount(), PlayerRef(Player.ChosenPlayer))` on `Triggers.self.isDealtDamage()`).
 - `Effects.ChooseCardTypeForSource(allowedCardTypes=null, lookAtOpponentHand=false, slot=ChoiceSlot.CARD_TYPE, prompt)`
   — the controller picks a card type (CR 205.2a), **stored durably on the source entity** under
   `ChoiceSlot.CARD_TYPE` (a `ChoiceValue.TextChoice`) and read back at cost-calculation / projection
@@ -6475,7 +6478,8 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   `TargetOpponent`, `EachOpponent`, `DefendingPlayer`, or `TriggeringPlayer`.
 - `Player.ChosenOpponent` — the opponent locked into the source's `ChoiceSlot.OPPONENT` slot.
 - `Player.ChosenPlayer` — the player (any player, the source's controller included) recorded in the source's
-  `ChoiceSlot.PLAYER` slot as it entered — written by `PutOntoBattlefieldAsNonAura(chosenPlayer = …)`.
+  `ChoiceSlot.PLAYER` slot as it entered — written by `EntersWithChoice(ChoiceType.PLAYER)` (Stuffy Doll) or
+  `PutOntoBattlefieldAsNonAura(chosenPlayer = …)`.
   `StepEvent(step, Player.ChosenPlayer)` fires only on that player's step (Takklemaggot's "that player's upkeep").
 - `Player.EnchantedPlayer` — the player the source Aura is attached to ("enchant player", CR 303),
   read from the source's `AttachedToComponent` when its target is a player. Use it both for the payoff

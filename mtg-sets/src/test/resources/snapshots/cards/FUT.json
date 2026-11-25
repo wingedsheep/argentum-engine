@@ -1,3 +1,71 @@
+// Akroma's Memorial
+{
+    "name": "Akroma's Memorial",
+    "manaCost": "{7}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "Creatures you control have flying, first strike, vigilance, trample, haste, and protection from black and from red.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FIRST_STRIKE",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            {
+                "type": "GrantProtection",
+                "color": "BLACK",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            {
+                "type": "GrantProtection",
+                "color": "RED",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "\"No rest. No mercy. No matter what.\"\n—Memorial inscription",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d2cb3bdf-dff5-4285-ad67-ae7ca84c9fbc.jpg?1783943092"
+    }
+}
+
 // Aven Mindcensor
 {
     "name": "Aven Mindcensor",

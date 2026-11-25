@@ -48,6 +48,14 @@ class SetLifeTotalReadingAiTest : ScenarioTestBase() {
             }
         }
 
+        test("our own life total set to a count of our permanents is not read as life gain") {
+            // Touch of the Eternal: a heavy loss while the board is small, a stabiliser only once
+            // the board outnumbers the life left — the evaluator prices the set when it resolves.
+            val touch = cardRegistry.requireCard("Touch of the Eternal")
+            CardIntentAnalyzer.analyze(touch).tags shouldNotContain IntentTag.LIFEGAIN
+            SynergyAxes.of(touch).feeds shouldNotContain SynergyAxis.LIFEGAIN
+        }
+
         test("our own life total reset to our starting life total reads as life gain") {
             // Resolute Archangel's "if your life total is less than your starting life total, it
             // becomes equal to your starting life total", Oketra's Last Mercy: the format's total.

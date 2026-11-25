@@ -257,6 +257,28 @@
     ]
 }
 
+// Aven Squire
+{
+    "name": "Aven Squire",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Bird Soldier",
+    "oracleText": "Flying\nExalted (Whenever a creature you control attacks alone, that creature gets +1/+1 until end of turn.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING",
+        "EXALTED"
+    ],
+    "metadata": {
+        "collectorNumber": "3",
+        "artist": "David Palumbo",
+        "flavorText": "When the meek charge into battle, courage becomes infectious.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/60301dbd-40d1-4af8-8e2b-797febfa859f.jpg?1783942493"
+    }
+}
+
 // Aven Trailblazer
 {
     "name": "Aven Trailblazer",
