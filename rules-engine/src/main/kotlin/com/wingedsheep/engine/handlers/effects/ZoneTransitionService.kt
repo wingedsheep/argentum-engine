@@ -98,8 +98,10 @@ data class ZoneEntryOptions(
     /** "As this enters, choose …" answers made before the move ([EffectEntryChoices]). */
     val entryChoices: Map<com.wingedsheep.sdk.scripting.ChoiceSlot, com.wingedsheep.engine.state.components.battlefield.ChoiceValue> = emptyMap(),
     /**
-     * The entrant's [com.wingedsheep.sdk.scripting.EntersOnlyIfPaid] cost was paid before the move
-     * ([EntryPayment]). Without it such a card goes to its owner's graveyard instead of entering.
+     * The entrant's as-enters payment was made before the move ([EffectEntryPayments]): its
+     * [com.wingedsheep.sdk.scripting.EntersOnlyIfPaid] cost — without it such a card goes to its
+     * owner's graveyard instead of entering — or a shock land's life
+     * ([com.wingedsheep.sdk.scripting.EntersTapped.payLifeCost]) — without it the land enters tapped.
      */
     val paidToEnter: Boolean = false,
     /**
@@ -1916,7 +1918,7 @@ class ZoneTransitionService(
         // return from exile, a search-library move — arrives here, and until this call each of
         // them entered untapped no matter what the card said.
         val selfEntersTapped = !options.faceDown &&
-            selfEntersTapped(withDayboundEntry, entityId, controllerId)
+            selfEntersTapped(withDayboundEntry, entityId, controllerId, options.paidToEnter)
         val withTapResolved = when {
             // "Instead it enters tapped and attacking" (PermanentsEnterTapped.attackDefender —
             // Kira Nerys, Firebrand): a tapped-and-attacking entry, so — like options.tappedAndAttacking
@@ -1965,13 +1967,11 @@ class ZoneTransitionService(
      *  - **plain** ("This land enters tapped.") — always applies;
      *  - **`unlessCondition`** ("… unless you control two or more other lands.") — applies when the
      *    condition evaluates **false**, the same polarity the cast path uses in `StackResolver`;
-     *  - **`payLifeCost`** (shock lands: "… unless you pay 2 life.") — a *player decision*, and
-     *    [moveToZone] has nowhere to pause. It resolves fail-closed to **tapped**: the outcome a
-     *    player who declines to pay gets. Offering the choice needs a continuation in the two
-     *    off-stack executors (`MoveToZoneEffectExecutor`, `MoveCollectionExecutor`) the way
-     *    `StackResolver` offers it for a resolving permanent spell; until then a reanimated or
-     *    fetched shock land enters tapped without being asked, rather than silently untapped as it
-     *    did before this method consulted the clause at all.
+     *  - **`payLifeCost`** (shock lands: "… you may pay 2 life. If you don't, it enters tapped.")
+     *    — a *player decision*, and [moveToZone] has nowhere to pause. The effect executors ask it
+     *    before the move ([EffectEntryPayments]) and pass the answer as
+     *    [ZoneEntryOptions.paidToEnter] ([paidLife]); an entry that was never asked (a duration
+     *    return) resolves fail-closed to **tapped**, the outcome of declining.
      *
      * The card definition is re-read from [state] rather than taken from the caller's snapshot so
      * a double-faced card that reverted to its front face on the way in is asked about the face
@@ -1982,6 +1982,7 @@ class ZoneTransitionService(
         state: GameState,
         entityId: EntityId,
         controllerId: EntityId,
+        paidLife: Boolean,
     ): Boolean {
         val cardDefinitionId = state.getEntity(entityId)?.get<CardComponent>()?.cardDefinitionId
             ?: return false
@@ -1995,6 +1996,7 @@ class ZoneTransitionService(
         if (EntryCharacteristics.wouldLoseAllAbilities(state, entityId, controllerId, cardRegistry, predicateEvaluator)) {
             return false
         }
+        if (entersTapped.payLifeCost != null) return !paidLife
         val unlessCondition = entersTapped.unlessCondition ?: return true
         return !conditionEvaluator.evaluate(
             state,

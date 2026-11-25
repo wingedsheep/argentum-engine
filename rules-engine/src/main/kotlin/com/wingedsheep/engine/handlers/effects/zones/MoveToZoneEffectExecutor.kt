@@ -183,7 +183,9 @@ class MoveToZoneEffectExecutor(
             // copy is settled (CR 614.12: of the card as it would exist on the battlefield), and
             // before anything else, since it decides whether the card enters at all.
             com.wingedsheep.engine.handlers.effects.EffectEntryPayments.prepare(
-                state, effect, context, mapOf(targetId to controllerId), cardRegistry, zones.predicateEvaluator
+                state, effect, context, mapOf(targetId to controllerId), cardRegistry, zones.predicateEvaluator,
+                entersTapped = effect.placement == ZonePlacement.Tapped ||
+                    effect.placement == ZonePlacement.TappedAndAttacking,
             )?.let { return it }
         }
 
