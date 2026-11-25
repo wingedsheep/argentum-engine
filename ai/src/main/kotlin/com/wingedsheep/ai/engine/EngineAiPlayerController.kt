@@ -128,13 +128,23 @@ class EngineAiPlayerController(
     private val seatPlayers = mutableMapOf<EntityId, AIPlayer>()
 
     /**
-     * The [offered] declaration's seat owes, chosen by an engine AI playing that seat. It doesn't
-     * exploit the choice for us, but it honours the seat's own must-block / must-attack
-     * requirements, where a declaration under our own id is rejected outright. Falls back to the
+     * The [offered] declaration's seat owes: an opponent's blocks left empty when that is legal,
+     * otherwise the declaration an engine AI playing that seat would make. That one doesn't exploit
+     * the choice for us, but it honours the seat's own must-block / must-attack requirements, where
+     * a declaration under our own id is rejected outright. Falls back to the
      * offered (empty) declaration if that AI picks anything else.
      */
     private fun declarationFor(offered: GameAction, gameState: GameState): GameAction {
         val seat = offered.playerId
+        // An opponent's blocks are ours to make (Odric, Master Tactician; Brutal Hordechief; Master
+        // Warcraft): every blocker kept home is damage through and no attacker lost, so declare
+        // none whenever the engine allows it. A requirement on their creatures (Hordechief's "block
+        // this turn if able") makes the empty declaration illegal; then the seat's own AI builds one
+        // that honours it.
+        if (offered is DeclareBlockers && gameState.isOpponentOf(seat, playerId)) {
+            val none = DeclareBlockers(seat, emptyMap())
+            if (aiPlayer.isAccepted(gameState, none)) return none
+        }
         val chosen = seatPlayers.getOrPut(seat) { AIPlayer.create(cardRegistry, seat, AiProfile.LIVE) }
             .chooseAction(gameState)
         return if (chosen::class == offered::class && chosen.playerId == seat) chosen else offered

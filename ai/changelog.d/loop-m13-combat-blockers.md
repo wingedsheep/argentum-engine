@@ -1,0 +1,1 @@
+- #PR The engine AI leaves an opponent's blocks empty when it gets to declare them (Odric, Master Tactician; Master Warcraft; Brutal Hordechief when no block is forced), and reads taking over or forcing an opponent's blocks as combat enhancement

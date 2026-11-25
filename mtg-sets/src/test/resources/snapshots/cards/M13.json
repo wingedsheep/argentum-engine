@@ -2235,6 +2235,54 @@
     ]
 }
 
+// Odric, Master Tactician
+{
+    "name": "Odric, Master Tactician",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "First strike (This creature deals combat damage before creatures without first strike.)\nWhenever Odric and at least three other creatures attack, you choose which creatures block this combat and how those creatures block.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Odric, Master Tactician:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        {
+                            "type": "AttackerCountAtLeast",
+                            "n": 4
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ControlCombatDeclarations",
+                    "declarations": [
+                        "BLOCKERS"
+                    ],
+                    "duration": "EndOfCombat"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "RARE",
+        "artist": "Michael Komarck",
+        "flavorText": "\"Fear holds no place in faith's battle plan.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/13bfcec9-a789-41f1-aa3d-4e4cdd7555b2.jpg?1783915716"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Omniscience
 {
     "name": "Omniscience",

@@ -8,7 +8,7 @@ import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.scripting.effects.CombatDeclaration
-import com.wingedsheep.sdk.scripting.effects.ControlCombatDeclarationsThisTurnEffect
+import com.wingedsheep.sdk.scripting.effects.ControlCombatDeclarationsEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.engine.legalactions.LegalActionEnumerator
 import com.wingedsheep.engine.support.GameTestDriver
@@ -95,7 +95,7 @@ class SharedTeamBlockingAiTest : FunSpec({
         game.passPriorityUntil(Step.DECLARE_BLOCKERS)
         for ((controller, players) in listOf(a to Player.Each, b to Player.You)) {
             game.replaceState(ControlCombatDeclarationsExecutor().execute(game.state,
-                ControlCombatDeclarationsThisTurnEffect(setOf(CombatDeclaration.BLOCKERS), players),
+                ControlCombatDeclarationsEffect(setOf(CombatDeclaration.BLOCKERS), players),
                 EffectContext(sourceId = null, controllerId = controller)).state)
         }
         return game to listOf(attacker, first, second)

@@ -807,7 +807,7 @@ Families:
 - `CompositeEffect(effects: List<Effect>, stopOnError: Boolean, descriptionOverride: String?, descriptionAmounts: List<DynamicAmount>)` — Multiple effects that happen together.
 - `ConditionalOnCollectionEffect(collection: String, ifNotEmpty: Effect, ifEmpty: Effect?, minSize: Int, countDistinctCardTypes: Boolean, filter: GameObjectFilter)` — Conditionally execute an effect based on the size of a named collection.
 - `ConniveEffect(subject: EffectTarget, body: Effect, replacementsApplied: Boolean, count: DynamicAmount)` — "subject connives" (CR 701.50) — the named keyword action, wrapping the pipeline that carries it out.
-- `ControlCombatDeclarationsThisTurnEffect(declarations: Set<CombatDeclaration>, declaringPlayers: Player)` — "You choose which creatures attack this turn.
+- `ControlCombatDeclarationsEffect(declarations: Set<CombatDeclaration>, declaringPlayers: Player, duration: Duration)` — "You choose which creatures attack this turn.
 - `ControlPlayerDuringResolutionEffect(target: EffectTarget, resolvingObject: EffectTarget?)` — Move input authority for target only while the captured stack object resolves.
 - `ConvertCountersToTokensEffect(counterType: CounterType, tokenFactory: CreateTokenEffect)` — "Remove any number of counterType counters from the source.
 - `CopyCardIntoCollectionEffect(source: EffectTarget, storeAs: String)` — Copy a single card referenced by source and store the copy's entity id in the pipeline collection storeAs.

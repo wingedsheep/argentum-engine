@@ -10184,7 +10184,7 @@
     "typeLine": "Instant",
     "oracleText": "Cast this spell only before attackers are declared.\nYou choose which creatures attack this turn.\nYou choose which creatures block this turn and how those creatures block.",
     "script": {
-        "spellEffect": "ControlCombatDeclarationsThisTurn",
+        "spellEffect": "ControlCombatDeclarations",
         "castRestrictions": [
             {
                 "type": "CastOnlyIfCondition",

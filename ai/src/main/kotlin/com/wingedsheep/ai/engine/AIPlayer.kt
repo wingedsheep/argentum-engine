@@ -110,6 +110,13 @@ class AIPlayer(
     /**
      * Respond to a pending decision.
      */
+    /**
+     * Whether the engine accepts [action] as the next step from [state] — for a declaration this
+     * seat builds for another seat (a routed block declaration it wants to leave empty), where the
+     * owing seat's requirements decide what's legal.
+     */
+    fun isAccepted(state: GameState, action: GameAction): Boolean = simulator.step(state, action) != null
+
     fun respondToDecision(state: GameState, decision: PendingDecision): DecisionResponse {
         return responder.respond(state, decision, playerId)
     }

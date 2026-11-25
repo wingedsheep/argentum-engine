@@ -2546,7 +2546,7 @@ Brushwagg
 Brutal Cathar
 Brutal Deceiver	intent: Pipeline(TopOfLibrary→?)
 Brutal Expulsion
-Brutal Hordechief	combat: MustBlockGroupEffect; intent: ControlCombatDeclarationsThisTurnEffect; intent: MustBlockGroupEffect; timing: MustBlockGroupEffect
+Brutal Hordechief	timing: ControlCombatDeclarationsEffect; timing: MustBlockGroupEffect
 Brutal Nightstalker
 Brute Force
 Brute Strength
@@ -11880,7 +11880,7 @@ Master Splicer
 Master Symmetrist
 Master Transmuter
 Master Trinketeer
-Master Warcraft	intent: ControlCombatDeclarationsThisTurnEffect
+Master Warcraft	timing: ControlCombatDeclarationsEffect
 Master of Barbs
 Master of Ceremonies
 Master of Cruelties	intent: GrantKeywordEffect

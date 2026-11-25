@@ -3047,6 +3047,16 @@ object CardIntentAnalyzer {
         // so" (Magitek Scythe, Lure effects): the attacker picks its fight, or drags every blocker
         // off the rest of the team. Read for our attacker; nobody lures their opponent's creature.
         is MustBeBlockedEffect -> setOf(IntentTag.COMBAT_ENHANCEMENT)
+        // "Creatures your opponents control block this turn if able" (Brutal Hordechief): the lure
+        // turned on a whole side — their creatures thrown into blocks they would not choose.
+        is MustBlockGroupEffect ->
+            if (opponentsOnly(effect.filter.baseFilter.controllerPredicate)) setOf(IntentTag.COMBAT_ENHANCEMENT) else emptySet()
+        // "You choose which creatures block this combat and how those creatures block" (Odric,
+        // Master Tactician), "you choose how those creatures block" (Brutal Hordechief), Master
+        // Warcraft: the attacker picks every fight — blockers kept home or sent where they die.
+        // Taking over only your own declarations changes nothing.
+        is ControlCombatDeclarationsEffect ->
+            if (effect.declaringPlayers != Player.You) setOf(IntentTag.COMBAT_ENHANCEMENT) else emptySet()
         // "Target creature blocks this turn if able" (Peema Aether-Seer, Culvert Ambusher): the
         // other half of a lure — the attacker drags an opposing creature into a block it would not
         // choose, onto a deathtoucher or a bigger attacker. Read for our attack, like the lure.
