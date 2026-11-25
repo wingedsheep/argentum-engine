@@ -4742,6 +4742,79 @@
     ]
 }
 
+// Stuffy Doll
+{
+    "name": "Stuffy Doll",
+    "manaCost": "{5}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Indestructible\nAs this creature enters, choose a player.\nWhenever this creature is dealt damage, it deals that much damage to the chosen player.\n{T}: This creature deals 1 damage to itself.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "keywords": [
+        "INDESTRUCTIBLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Stuffy Doll:1",
+                "trigger": "DamageReceivedEvent",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "ChosenPlayer"
+                    }
+                },
+                "descriptionOverride": "Whenever this creature is dealt damage, it deals that much damage to the chosen player."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Stuffy Doll:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "{T}: This creature deals 1 damage to itself."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "PLAYER"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "264",
+        "rarity": "RARE",
+        "artist": "Dave Allsop",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/14ca7425-a499-4864-b955-369ef2577849.jpg?1783943197",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "A creature can be dealt an amount of damage greater than its toughness. For example, if Stuffy Doll is dealt 3 damage, its triggered ability deals 3 damage, not 1, to the chosen player."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "If your life total is brought to 0 or less at the same time that Stuffy Doll is dealt damage, you lose the game before its triggered ability goes on the stack."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Swarmyard
 {
     "name": "Swarmyard",

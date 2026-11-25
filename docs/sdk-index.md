@@ -1516,7 +1516,7 @@ Families:
 - `Player.BoundVariable(name: String)` — The player chosen for the target declared as name — the player-typed reading of a named target handle (com.wingedsheep.sdk.scripting.targets.EffectTarget.BoundVariable).
 - `Player.Candidate` — The player currently being considered as a target (CR 115).
 - `Player.ChosenOpponent` — The opponent locked into the source's com.wingedsheep.sdk.scripting.ChoiceSlot.OPPONENT slot (set by an `EntersWithChoice(ChoiceType.OPPONENT, …)` replacement effect).
-- `Player.ChosenPlayer` — The player — any player, the source's controller included — locked into the source's com.wingedsheep.sdk.scripting.ChoiceSlot.PLAYER slot, written as the permanent entered by the effect that put it…
+- `Player.ChosenPlayer` — The player — any player, the source's controller included — locked into the source's com.wingedsheep.sdk.scripting.ChoiceSlot.PLAYER slot, written as the permanent entered by an `EntersWithChoice(C…
 - `Player.ContextPlayer(index: Int)` — A player from the context (for multi-target spells)
 - `Player.ControllerOf(targetDescription: String)` — Controller of a permanent (used with EffectTarget)
 - `Player.ControllerOfAffectedEntity` — Controller of the permanent a continuous effect is currently modifying — "enchanted creature gets -X/-0, where X is the number of cards in **its controller's** graveyard" (Disturbing Conversion).

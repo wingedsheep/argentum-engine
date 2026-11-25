@@ -520,8 +520,10 @@ object PermanentEntryReplacements {
                 ?.let { ChoiceSlot.MODE to ChoiceValue.TextChoice(it) }
             ChoiceType.BASIC_LAND_TYPE -> option(question.landTypes)
                 ?.let { ChoiceSlot.LAND_TYPE to ChoiceValue.TextChoice(it) }
-            ChoiceType.OPPONENT -> option(question.opponentIds)
+            ChoiceType.OPPONENT -> option(question.playerIds)
                 ?.let { ChoiceSlot.OPPONENT to ChoiceValue.EntityChoice(it) }
+            ChoiceType.PLAYER -> option(question.playerIds)
+                ?.let { ChoiceSlot.PLAYER to ChoiceValue.EntityChoice(it) }
             ChoiceType.CARD_NAME -> option(question.cardNames)
                 ?.let { ChoiceSlot.CARD_NAME to ChoiceValue.TextChoice(it) }
             ChoiceType.NUMBER -> (response as? NumberChosenResponse)
@@ -685,7 +687,7 @@ object PermanentEntryReplacements {
                     entityId = entityId,
                     controllerId = controllerId,
                     choiceType = ChoiceType.OPPONENT,
-                    opponentIds = opponentIds,
+                    playerIds = opponentIds,
                     forChoice = choice.choiceType,
                     fromZone = fromZone,
                 ),
@@ -849,7 +851,27 @@ object PermanentEntryReplacements {
                         entityId = entityId,
                         controllerId = controllerId,
                         choiceType = ChoiceType.OPPONENT,
-                        opponentIds = opponentIds,
+                        playerIds = opponentIds,
+                        fromZone = fromZone
+                    )
+                )
+            }
+
+            ChoiceType.PLAYER -> {
+                val playerIds = state.turnOrder
+                pause(
+                    { id -> ChooseOptionDecision(
+                        id = id,
+                        playerId = chooserId,
+                        prompt = "Choose a player",
+                        context = context(),
+                        options = playerNames(state, playerIds)
+                    ) },
+                    EntersWithChoiceOnBattlefieldContinuation(
+                        entityId = entityId,
+                        controllerId = controllerId,
+                        choiceType = ChoiceType.PLAYER,
+                        playerIds = playerIds,
                         fromZone = fromZone
                     )
                 )

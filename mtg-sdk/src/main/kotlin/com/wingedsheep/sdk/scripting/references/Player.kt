@@ -323,6 +323,7 @@ sealed interface Player {
     /**
      * The player — any player, the source's controller included — locked into the source's
      * [com.wingedsheep.sdk.scripting.ChoiceSlot.PLAYER] slot, written as the permanent entered by
+     * an `EntersWithChoice(ChoiceType.PLAYER)` replacement (Stuffy Doll), or by
      * the effect that put it there (`PutOntoBattlefieldAsNonAuraEffect.chosenPlayer`): Takklemaggot's
      * "that player" is whoever chose not to give it a new host, possibly its own controller.
      * Null when no player was recorded.
