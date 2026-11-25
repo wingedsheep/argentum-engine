@@ -397,6 +397,7 @@ Akroan Sergeant
 Akroan Skyguard
 Akroma's Blessing
 Akroma's Devoted
+Akroma's Memorial
 Akroma's Vengeance
 Akroma's Will
 Akroma, Angel of Fury
@@ -642,6 +643,7 @@ Angelheart Protector
 Angelic Accord
 Angelic Arbiter
 Angelic Ascension
+Angelic Benediction
 Angelic Blessing
 Angelic Captain
 Angelic Cub
@@ -1247,6 +1249,7 @@ Aven Sentry
 Aven Skirmisher
 Aven Smokeweaver
 Aven Soulgazer	intent: LookAtFaceDownEffect; polarity: LookAtFaceDownEffect
+Aven Squire
 Aven Sunstriker
 Aven Surveyor
 Aven Tactician
@@ -2937,6 +2940,7 @@ Cathartic Reunion
 Cathedral Acolyte
 Cathedral Sanctifier
 Cathedral of Serra
+Cathedral of War
 Cathodion
 Caught Red-Handed
 Caught in the Brights
@@ -5884,7 +5888,7 @@ Emet-Selch, Unsundered
 Emiel the Blessed
 Emil, Vastlands Roamer
 Emissary Escort
-Emissary of Soulfire	intent: AddCountersEffect; polarity: AddCountersEffect
+Emissary of Soulfire	polarity: AddCountersEffect
 Emissary of Sunrise
 Emissary of the Sleepless
 Emmara Tandris
@@ -6382,6 +6386,7 @@ Fairgrounds Warden
 Faith Unbroken
 Faith of the Devoted
 Faith's Fetters
+Faith's Reward
 Faithbearer Paladin
 Faithbound Judge	intent: LoseGameEffect
 Faithful Mending
@@ -8500,6 +8505,7 @@ Guardian of the Gateless
 Guardian of the Great Conduit
 Guardian of the Great Door
 Guardian of the Halls
+Guardians of Akrasa
 Guardians of Koilos
 Guardians of Meletis
 Guardians of Oboro
@@ -10607,6 +10613,7 @@ Knight of Autumn
 Knight of Dawn's Light
 Knight of Doves
 Knight of Dusk's Shadow
+Knight of Glory
 Knight of Grace
 Knight of Malice
 Knight of Meadowgrain
@@ -15660,10 +15667,14 @@ Rimeshield Frost Giant
 Rimewood Falls
 Rimrock Knight	timing: ModifyStatsEffect
 Rin and Seri, Inseparable
+Ring of Evos Isle
 Ring of Immortals
+Ring of Kalonia
 Ring of Ma'rûf	intent: ReplaceNextDrawWithEffect
 Ring of Renewal
 Ring of Three Wishes
+Ring of Thune
+Ring of Valkas
 Ring of the Lucii
 Ringing Strike Mastery
 Rings of Brighthearth
@@ -16872,6 +16883,8 @@ Serpentine Spike
 Serra Advocate
 Serra Angel
 Serra Ascendant
+Serra Avatar
+Serra Avenger
 Serra Disciple
 Serra Paragon
 Serra Redeemer
@@ -20296,6 +20309,7 @@ Touch of Brilliance
 Touch of Darkness	intent: ForEach>ChangeColorEffect; polarity: ForEachEffect
 Touch of Invisibility
 Touch of Moonglove
+Touch of the Eternal
 Touch of the Void
 Touch the Spirit Realm
 Tough Cookie
@@ -21722,6 +21736,7 @@ War Chariot
 War Effort
 War Elemental
 War Elephant
+War Falcon
 War Flare
 War Historian
 War Horn
