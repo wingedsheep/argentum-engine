@@ -73,6 +73,7 @@ import com.wingedsheep.sdk.scripting.effects.LookAtTargetHandEffect
 import com.wingedsheep.sdk.scripting.effects.LoseAllCreatureTypesEffect
 import com.wingedsheep.sdk.scripting.effects.SetCreatureSubtypesEffect
 import com.wingedsheep.sdk.scripting.effects.AddSubtypeEffect
+import com.wingedsheep.sdk.scripting.effects.LoseGameEffect
 import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.references.Player
@@ -2329,6 +2330,8 @@ object TargetPolarityAnalyzer {
             }
             is GainLifeEffect -> if (leaf.target.isSlot()) leaf.target to TargetPolarity.BENEFICIAL else return emptyList()
             is LoseLifeEffect -> if (leaf.target.isSlot()) leaf.target to TargetPolarity.HARMFUL else return emptyList()
+            // "Target player loses the game" (Door to Nothingness): only ever aimed at an opponent.
+            is LoseGameEffect -> if (leaf.target.isSlot()) leaf.target to TargetPolarity.HARMFUL else return emptyList()
             // "Target player can't cast spells this turn" (Orim's Chant, Xanathar): a ban is only ever
             // worth putting on someone else.
             is CantCastSpellsEffect -> if (leaf.target.isSlot()) leaf.target to TargetPolarity.HARMFUL else return emptyList()
