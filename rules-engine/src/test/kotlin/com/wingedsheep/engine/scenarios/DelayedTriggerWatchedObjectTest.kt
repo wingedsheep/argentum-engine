@@ -39,6 +39,21 @@ class DelayedTriggerWatchedObjectTest : FunSpec({
             )
         }
     }
+    // Recipient-scoped: "whenever a source deals damage to that creature" (no end-of-turn expiry,
+    // so only the identity check can drop it).
+    val damageWatcher = card("Test Damage Watcher") {
+        typeLine = "Artifact"
+        activatedAbility {
+            cost = Costs.Tap
+            val creature = target(TargetFilter.Creature)
+            effect = Effects.CreateDelayedTrigger(
+                trigger = Triggers.a(GameObjectFilter.Any).dealsDamage(),
+                watchedRecipient = creature,
+                expiry = DelayedTriggerExpiry.Never,
+                effect = Effects.GainLife(DynamicAmount.Fixed(5)),
+            )
+        }
+    }
     val bouncer = card("Test Bouncer") {
         typeLine = "Artifact"
         activatedAbility {
@@ -67,7 +82,7 @@ class DelayedTriggerWatchedObjectTest : FunSpec({
 
     fun setup(): Pair<GameTestDriver, EntityId> {
         val d = GameTestDriver().also {
-            it.registerCards(TestCards.all + listOf(watcher, bouncer, emptyWatcher))
+            it.registerCards(TestCards.all + listOf(watcher, damageWatcher, bouncer, emptyWatcher))
             it.initMirrorMatch(Deck.of("Island" to 40))
             it.passPriorityUntil(Step.PRECOMBAT_MAIN)
         }
@@ -122,6 +137,50 @@ class DelayedTriggerWatchedObjectTest : FunSpec({
         d.activate(player, watcher.name, courser)
         d.activate(player, bouncer.name, courser)
         d.state.delayedTriggers.size shouldBe 1
+        d.passPriorityUntil(Step.UPKEEP)
+        d.state.delayedTriggers shouldBe emptyList()
+    }
+
+    fun GameTestDriver.bolt(player: EntityId, creature: EntityId) {
+        val bolt = putCardInHand(player, "Lightning Bolt")
+        giveMana(player, Color.RED, 1)
+        castSpell(player, bolt, listOf(creature))
+        bothPass()
+    }
+
+    test("damage to the watched recipient fires the trigger, even when that damage kills it") {
+        val (d, player) = setup()
+        val courser = d.putPermanentOnBattlefield(player, "Centaur Courser")
+        d.activate(player, damageWatcher.name, courser)
+        d.bolt(player, courser)
+        (courser in d.getPermanents(player)) shouldBe false
+        d.state.stack.size shouldBe 1
+        d.bothPass()
+        d.getLifeTotal(player) shouldBe 25
+    }
+
+    test("the watched recipient back on the battlefield is a new object the trigger does not watch") {
+        val (d, player) = setup()
+        val courser = d.putPermanentOnBattlefield(player, "Centaur Courser")
+        d.activate(player, damageWatcher.name, courser)
+        d.activate(player, bouncer.name, courser)
+        d.giveMana(player, Color.GREEN, 1)
+        d.giveColorlessMana(player, 2)
+        d.castSpell(player, courser, emptyList())
+        d.bothPass()
+        (courser in d.getPermanents(player)) shouldBe true
+        d.bolt(player, courser)
+        d.state.stack.size shouldBe 0
+        d.getLifeTotal(player) shouldBe 20
+    }
+
+    test("a recipient watcher whose object changed zones is dropped at cleanup") {
+        val (d, player) = setup()
+        val courser = d.putPermanentOnBattlefield(player, "Centaur Courser")
+        d.activate(player, damageWatcher.name, courser)
+        val created = d.state.delayedTriggers.single()
+        created.watchedRecipientObject shouldBe d.state.objectRef(courser)
+        d.activate(player, bouncer.name, courser)
         d.passPriorityUntil(Step.UPKEEP)
         d.state.delayedTriggers shouldBe emptyList()
     }

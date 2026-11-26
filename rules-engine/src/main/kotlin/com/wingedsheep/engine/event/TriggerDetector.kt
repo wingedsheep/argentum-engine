@@ -1464,9 +1464,20 @@ class TriggerDetector(
             return pattern.events.firstNotNullOfOrNull { matchedDelayedAtom(spec.copy(event = it), event, delayed, state) }
         }
         return pattern.takeIf {
-            matchesEventForWatchedEntity(spec, event, delayed.watchedEntityId, delayed.watchedRecipientId, delayed.id, delayed.sourceId, delayed.controllerId, state, delayed.watchedObject)
+            matchesEventForWatchedEntity(spec, event, delayed.watchedEntityId, delayed.watchedRecipientId, delayed.id, delayed.sourceId, delayed.controllerId, state, delayed.watchedObject, delayed.watchedRecipientObject)
         }
     }
+
+    /**
+     * Whether [entityId] is still the object [watched] names. An object no longer on the battlefield
+     * (the damage that killed it) is still judged the same; one back on the battlefield is a new
+     * object (CR 400.7). No recorded identity always matches.
+     */
+    private fun isWatchedObject(
+        entityId: EntityId,
+        watched: com.wingedsheep.engine.state.ObjectRef?,
+        state: GameState,
+    ): Boolean = watched == null || entityId !in state.getBattlefield() || state.objectRef(entityId) == watched
 
     private fun matchesEventForWatchedEntity(
         spec: com.wingedsheep.sdk.scripting.TriggerSpec,
@@ -1477,7 +1488,8 @@ class TriggerDetector(
         sourceId: EntityId,
         controllerId: EntityId,
         state: GameState,
-        watchedObject: com.wingedsheep.engine.state.ObjectRef? = null
+        watchedObject: com.wingedsheep.engine.state.ObjectRef? = null,
+        watchedRecipientObject: com.wingedsheep.engine.state.ObjectRef? = null
     ): Boolean {
         val specEvent = spec.event
         return when (specEvent) {
@@ -1519,6 +1531,10 @@ class TriggerDetector(
                 // Recipient-scoped ("…to *that player* this turn"): the damaged entity must be
                 // the baked recipient. The spec's recipient filter still applies on top.
                 if (watchedRecipientId != null && event.targetId != watchedRecipientId) return false
+                // Only the recipient object the trigger was created for (CR 400.7): the same card
+                // back on the battlefield is a new object. One already gone (killed by this
+                // damage) stays it.
+                if (watchedRecipientId != null && !isWatchedObject(watchedRecipientId, watchedRecipientObject, state)) return false
                 matcher.matchesDealsDamageTrigger(specEvent, event, state, controllerId, sourceId)
             }
             // "Until end of turn, whenever a creature an opponent controls is dealt damage, destroy
@@ -1533,8 +1549,7 @@ class TriggerDetector(
                     if (!matcher.matchesDamageType(specEvent.damageType, event)) return false
                     // Only the object the trigger was created for (CR 400.7): the same card back on
                     // the battlefield is a new object. One already gone (killed by this damage) stays it.
-                    event.targetId == watchedEntityId && (watchedObject == null ||
-                        watchedEntityId !in state.getBattlefield() || state.objectRef(watchedEntityId) == watchedObject)
+                    event.targetId == watchedEntityId && isWatchedObject(watchedEntityId, watchedObject, state)
                 } else matcher.matchesTrigger(specEvent, spec.binding, event, sourceId, controllerId, state)
             }
             // "When damage is prevented this way": fires only for this delayed trigger's own

@@ -1431,6 +1431,7 @@ class CleanupPhaseManager(
             val remainingDelayed = newState.delayedTriggers.filter { delayed ->
                 // A watcher whose object has become a new object (CR 400.7) can never fire again.
                 if (delayed.watchedObject != null && !newState.isCurrentObject(delayed.watchedObject)) return@filter false
+                if (delayed.watchedRecipientObject != null && !newState.isCurrentObject(delayed.watchedRecipientObject)) return@filter false
                 when (delayed.expiry) {
                     is DelayedTriggerExpiry.EndOfTurn -> false
                     is DelayedTriggerExpiry.EndOfPlayersNextTurn -> {
