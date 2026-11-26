@@ -552,19 +552,19 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
     ],
   },
   M13: {
-    tagline: 'A classic core set built around exalted: knights, angels and Sublime Archangel reward attacking with one creature at a time.',
+    tagline: 'A classic core set built around exalted: knights, soldiers and Sublime Archangel reward attacking with one creature at a time.',
     setting: 'A core set gathered from across the Multiverse, led by Nicol Bolas, Ajani, Chandra, Garruk, Jace and Liliana.',
     gameplay: 'Games are straightforward and creature-driven, decided by curve, combat tricks and the removal at common. Exalted pumps a creature each time it attacks alone, so white and black decks push one big attacker a turn while the rest hold the ground. Blue flies and draws, red burns, and green brings the biggest bodies.',
     tips: [
       'Exalted stacks: three exalted permanents make a lone attacker +3/+3, so count your exalted before deciding to attack with everything.',
-      'An exalted attacker is a single target: hold removal like Murder and Pacifism for the creature the opponent keeps sending in alone.',
+      'An exalted attacker is a single target: hold an instant-speed answer for the creature the opponent keeps sending in alone.',
       'Removal like Searing Spear, Murder and Pacifism is plentiful at common: pick it early.',
     ],
     tryIf: 'classic core-set Limited and lone-attacker exalted aggression',
     power: 2, speed: 3, complexity: 2,
     themes: ['aggro', 'flyers'],
     mechanics: [
-      { name: 'Exalted', inPlay: 'Whenever a creature you control attacks alone, it gets +1/+1 until end of turn for each instance of exalted among your permanents.' },
+      { name: 'Exalted', inPlay: 'Sending one big attacker while the rest stay home to block is often better than an alpha strike, and every exalted creature pumps that attacker even if it never attacks itself.' },
     ],
   },
   M14: {

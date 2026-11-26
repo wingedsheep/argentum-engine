@@ -1462,11 +1462,11 @@ object SetArchetypes {
                 Archetype("Aggro", listOf(Color.BLACK, Color.RED),
                     "Attack early with Bloodthrone Vampire, Torch Fiend and Bloodhunter Bat, clear blockers with Searing Spear and Murder, and make an attacker lethal with Mark of the Vampire. A fast deck that keeps the opponent on the back foot."),
                 Archetype("Big Creatures", listOf(Color.RED, Color.GREEN),
-                    "Ramp with Arbor Elf into big bodies like Duskdale Wurm and Prized Elephant, and push damage through with Titanic Growth and Bladetusk Boar. A stompy midrange deck that wins on the ground."),
+                    "Ramp with Arbor Elf into big bodies like Duskdale Wurm and Vastwood Gorger, and push damage through with Titanic Growth, Flinthoof Boar and Bladetusk Boar. A stompy midrange deck that wins on the ground."),
                 Archetype("Exalted Auras", listOf(Color.GREEN, Color.WHITE),
                     "Build one big attacker with exalted from Aven Squire and Guardians of Akrasa, then stack Rancor and Titanic Growth on it while Sentinel Spider holds the ground. An aggressive deck that bets on one creature at a time."),
                 Archetype("Spells", listOf(Color.BLUE, Color.RED),
-                    "Chain instants and sorceries like Searing Spear, Unsummon and Divination to make Drake tokens with Talrand's Invocation and Talrand, Sky Summoner. A tempo deck that wins by spells as much as by creatures."),
+                    "Chain instants and sorceries like Searing Spear, Unsummon, Divination and Talrand's Invocation, and let Talrand, Sky Summoner turn each one into a Drake. A tempo deck that wins by spells as much as by creatures."),
             )
         ),
         "M14" to SetSynergies(

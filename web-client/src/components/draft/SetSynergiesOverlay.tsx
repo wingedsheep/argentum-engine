@@ -3490,7 +3490,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Big Creatures',
         colors: ['R', 'G'],
         keyCard: 'Duskdale Wurm',
-        description: 'Ramp with Arbor Elf into big bodies like Duskdale Wurm and Prized Elephant, and push damage through with Titanic Growth and Bladetusk Boar. A stompy midrange deck that wins on the ground.',
+        description: 'Ramp with Arbor Elf into big bodies like Duskdale Wurm and Vastwood Gorger, and push damage through with Titanic Growth, Flinthoof Boar and Bladetusk Boar. A stompy midrange deck that wins on the ground.',
       },
       {
         name: 'Exalted Auras',
@@ -3502,7 +3502,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Spells',
         colors: ['U', 'R'],
         keyCard: 'Talrand\'s Invocation',
-        description: 'Chain instants and sorceries like Searing Spear, Unsummon and Divination to make Drake tokens with Talrand\'s Invocation and Talrand, Sky Summoner. A tempo deck that wins by spells as much as by creatures.',
+        description: 'Chain instants and sorceries like Searing Spear, Unsummon, Divination and Talrand\'s Invocation, and let Talrand, Sky Summoner turn each one into a Drake. A tempo deck that wins by spells as much as by creatures.',
       },
     ],
   },
