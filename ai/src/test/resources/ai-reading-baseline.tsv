@@ -2323,6 +2323,7 @@ Boundary Lands Ranger
 Bounding Felidar
 Bounding Krasis
 Bounding Wolf
+Boundless Realms
 Bountiful Harvest
 Bountiful Landscape
 Bountiful Promenade
@@ -3124,6 +3125,7 @@ Chandra, Pyrogenius
 Chandra, Pyromaster
 Chandra, Spark Hunter
 Chandra, Torch of Defiance
+Chandra, the Firebrand
 Change of Fortune
 Change the Equation
 Changeling Berserker	intent: EmitChampionedEventEffect
@@ -5688,6 +5690,7 @@ Elderfang Disciple
 Elderfang Ritualist
 Elderfang Venom
 Elderleaf Mentor
+Elderscale Wurm
 Eldrazi Aggressor
 Eldrazi Devastator
 Eldrazi Displacer
@@ -7323,6 +7326,7 @@ Fungal Fortitude	intent: MoveToZoneEffect
 Fungal Infection
 Fungal Plots
 Fungal Rebirth
+Fungal Sprouting
 Fungusaur
 Furious Assault
 Furious Bellow
@@ -7464,6 +7468,7 @@ Garruk, Apex Predator
 Garruk, Caller of Beasts
 Garruk, Curse Breaker
 Garruk, Cursed Huntsman
+Garruk, Primal Hunter
 Garruk, Savage Herald	intent: ForEach>GrantStaticAbilityEffect
 Garruk, Unleashed
 Garruk, Veiled Butcher
@@ -8434,6 +8439,7 @@ Grotesque Mutation
 Grothama, All-Devouring	intent: EachPlayerDrawsForDamageDealtToSourceEffect
 Ground Assault
 Ground Rift
+Ground Seal
 Groundbreaker
 Groundchuck & Dirtbag
 Grounded for Life
@@ -11600,6 +11606,7 @@ Magma Spray
 Magma Vein
 Magmablood Archaic
 Magmakin Artillerist
+Magmaquake
 Magmaroth
 Magmatic Channeler
 Magmatic Chasm
@@ -11803,6 +11810,7 @@ Marit Lage's Slumber
 Maritime Guard
 Mark for Death
 Mark of Eviction
+Mark of Mutiny
 Mark of the Vampire
 Marked by Honor
 Marker Beetles
@@ -12232,6 +12240,7 @@ Mind's Dilation
 Mind's Eye
 Mindblaze
 Mindbreak Trap	intent: ForEach>ExileTargetSpellEffect
+Mindclaw Shaman
 Mindcrank
 Mindeye Drake
 Mindful Biomancer
@@ -12738,6 +12747,7 @@ Mutinous Massacre
 Mutiny
 Mutual Destruction
 Muxus, Goblin Grandee
+Mwonvuli Beast Tracker
 My Precious
 Mycologist
 Mycosynth Lattice
@@ -14420,6 +14430,7 @@ Predator's Rapport
 Predator's Strike
 Predator, Flagship
 Predatory Nightstalker
+Predatory Rampage
 Predatory Sliver
 Predatory Wurm
 Predictive Preparations
@@ -15057,6 +15068,7 @@ Ranger's Firebrand
 Ranger's Guile
 Ranger's Hawk
 Ranger's Longbow
+Ranger's Path
 Rangers of Ithilien
 Rangers' Aetherhive
 Rangers' Refueler
@@ -17107,7 +17119,7 @@ Shepherding Spirits
 Sheriff of Safe Passage
 Shessra, Death's Whisper
 Shield Bearer
-Shield Broker	polarity: mixed(AddCountersEffect+GainControlEffect)
+Shield Broker
 Shield Mare
 Shield Wall
 Shield of Duty and Reason
@@ -17729,6 +17741,7 @@ Sludge Monster	intent: AddCountersEffect; polarity: AddCountersEffect
 Sluiceway Scorpion
 Slum Reaper
 Slumbering Cerberus
+Slumbering Dragon
 Slumbering Keepguard
 Slumbering Trudge
 Slumbering Walker
@@ -22543,6 +22556,7 @@ Yellowjacket, Heartless Marauder
 Yenna, Redtooth Regent
 Yes Man, Personal Securitron	polarity: ReflexiveTriggerEffect
 Yeva's Forcemage
+Yeva, Nature's Herald
 Ygra, Eater of All
 Yidaro, Wandering Monster
 Yip Yip!
