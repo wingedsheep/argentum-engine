@@ -2495,6 +2495,7 @@ const passiveCounterPalette: Record<string, CounterBadgePalette> = {
   HONE: { bg: 'rgba(36, 42, 50, 0.95)', border: 'rgba(196, 214, 228, 0.8)', color: '#e4eef8', glow: 'rgba(196, 214, 228, 0.65)' },
   STORAGE: { bg: 'rgba(34, 40, 52, 0.95)', border: 'rgba(150, 170, 200, 0.7)', color: '#c8d6ea', glow: 'rgba(150, 170, 200, 0.55)' },
   OIL: { bg: 'rgba(18, 26, 22, 0.95)', border: 'rgba(120, 190, 150, 0.7)', color: '#b8e6c8', glow: 'rgba(120, 190, 150, 0.55)' },
+  PETRIFICATION: { bg: 'rgba(44, 44, 42, 0.95)', border: 'rgba(170, 168, 160, 0.75)', color: '#d8d6ce', glow: 'rgba(170, 168, 160, 0.55)' },
   HUNGER: { bg: 'rgba(48, 26, 26, 0.95)', border: 'rgba(200, 120, 100, 0.7)', color: '#e8b0a0', glow: 'rgba(200, 120, 100, 0.55)' },
   AGE: { bg: 'rgba(40, 36, 28, 0.95)', border: 'rgba(196, 170, 120, 0.7)', color: '#e6d3a8', glow: 'rgba(196, 170, 120, 0.55)' },
   DOOM: { bg: 'rgba(26, 18, 30, 0.95)', border: 'rgba(150, 100, 170, 0.7)', color: '#c8a0d8', glow: 'rgba(150, 100, 170, 0.55)' },

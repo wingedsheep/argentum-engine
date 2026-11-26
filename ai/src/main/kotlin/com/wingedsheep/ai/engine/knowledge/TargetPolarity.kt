@@ -2536,7 +2536,9 @@ object TargetPolarityAnalyzer {
     )
 
     private val HARMFUL_COUNTERS = setOf(
-        CounterType.STUN, CounterType.FINALITY,
+        // Petrification marks a creature Xathrid Gorgon has locked down (defender, no activations):
+        // the counter itself does nothing, but it is only ever placed as part of that lock.
+        CounterType.STUN, CounterType.FINALITY, CounterType.PETRIFICATION,
     ) + CardIntentAnalyzer.MARKED_FOR_REMOVAL_COUNTERS
 
     /**
