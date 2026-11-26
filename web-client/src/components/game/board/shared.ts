@@ -824,6 +824,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.HUNGER,
   // Xathrid Gorgon's petrification marker.
   CounterType.PETRIFICATION,
+  // Hellion Crucible's pressure tally: two pay for the Hellion.
+  CounterType.PRESSURE,
   // Age counters (cumulative upkeep — Mystic Remora): the count *is* next upkeep's bill.
   CounterType.AGE,
   // Phyrexia: All Will Be One's oil — spent, counted and proliferated by the cards that care.

@@ -8,9 +8,6 @@ import com.wingedsheep.sdk.model.Printing
 /**
  * Magic 2013 (2012)
  *
- * mtgish-tooling auto-generated seed: only the cards relocated here as their canonical
- * earliest printing. Intentionally incomplete relative to the official set.
- *
  * Set Code: M13
  * Release Date: 2012-07-13
  */
@@ -20,7 +17,6 @@ object Magic2013Set : MtgSet {
     override val displayName = "Magic 2013"
     override val releaseDate = "2012-07-13"
     override val sealedSupported = false
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)

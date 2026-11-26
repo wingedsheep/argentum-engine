@@ -2265,6 +2265,104 @@
     ]
 }
 
+// Hellion Crucible
+{
+    "name": "Hellion Crucible",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{1}{R}, {T}: Put a pressure counter on this land.\n{1}{R}, {T}, Remove two pressure counters from this land and sacrifice it: Create a 4/4 red Hellion creature token with haste. (It can attack and {T} as soon as it comes under your control.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hellion Crucible:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Hellion Crucible:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{R}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PRESSURE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "{1}{R}, {T}: Put a pressure counter on this land."
+            },
+            {
+                "id": "Hellion Crucible:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{R}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "PRESSURE",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "self": true
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Hellion"
+                    ],
+                    "keywords": [
+                        "HASTE"
+                    ]
+                },
+                "descriptionOverride": "{1}{R}, {T}, Remove two pressure counters from this land and sacrifice it: Create a 4/4 red Hellion creature token with haste."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "226",
+        "rarity": "RARE",
+        "artist": "Trevor Claxton",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/ad8274ef-a46a-4f5f-8ad1-6ce828f24210.jpg?1783940453"
+    }
+}
+
 // Hydrosurge
 {
     "name": "Hydrosurge",
