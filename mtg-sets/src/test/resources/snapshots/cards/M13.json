@@ -997,7 +997,10 @@
                 "text": "The controller of the creature targeted by the second ability chooses which attacking creature that creature blocks."
             }
         ]
-    }
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Cower in Fear
@@ -5854,61 +5857,50 @@
             "type": "Composite",
             "effects": [
                 {
-                    "type": "ForEach",
-                    "space": {
-                        "type": "IterationSpace.Group",
-                        "filter": {
-                            "baseFilter": "permanent"
-                        }
-                    },
-                    "body": {
-                        "type": "MoveToZone",
-                        "target": "IterationEntity",
-                        "destination": "Exile"
+                    "type": "GatherCards",
+                    "source": "BattlefieldMatching",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
                     }
                 },
                 {
-                    "type": "ForEach",
-                    "space": {
-                        "type": "IterationSpace.Players",
-                        "players": "Each"
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": "Each"
                     },
-                    "body": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "GatherCards",
-                                "source": {
-                                    "type": "FromZone",
-                                    "zone": "Hand"
-                                },
-                                "storeAs": "gathered0"
-                            },
-                            {
-                                "type": "MoveCollection",
-                                "from": "gathered0",
-                                "destination": {
-                                    "type": "ToZone",
-                                    "zone": "Exile"
-                                }
-                            },
-                            {
-                                "type": "GatherCards",
-                                "source": {
-                                    "type": "FromZone",
-                                    "zone": "Graveyard"
-                                },
-                                "storeAs": "gathered2"
-                            },
-                            {
-                                "type": "MoveCollection",
-                                "from": "gathered2",
-                                "destination": {
-                                    "type": "ToZone",
-                                    "zone": "Exile"
-                                }
-                            }
-                        ]
+                    "storeAs": "gathered2"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "player": "Each"
+                    },
+                    "storeAs": "gathered4"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered4",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
                     }
                 },
                 {

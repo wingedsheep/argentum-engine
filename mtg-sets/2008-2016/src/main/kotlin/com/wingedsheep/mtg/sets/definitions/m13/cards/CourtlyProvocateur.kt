@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  */
 val CourtlyProvocateur = card("Courtly Provocateur") {
     manaCost = "{2}{U}"
+    colorIdentity = "U"
     typeLine = "Creature — Human Wizard"
     power = 1
     toughness = 1

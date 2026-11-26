@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -28,18 +28,13 @@ val Worldfire = card("Worldfire") {
         "Each player's life total becomes 1."
 
     spell {
-        effect = Effects.ForEachInGroup(
-            filter = GroupFilter.AllPermanents,
-            effect = Effects.Move(EffectTarget.IterationEntity, Zone.EXILE)
-        ) then Effects.ForEachPlayer(
-            players = Player.Each,
-            Effects.Pipeline {
-                val hand = gather(CardSource.FromZone(Zone.HAND))
-                exile(hand)
-                val graveyard = gather(CardSource.FromZone(Zone.GRAVEYARD))
-                exile(graveyard)
-            }
-        ) then Effects.ForEachPlayer(
+        // One batch per sentence: every permanent leaves at once (no leaves-the-battlefield
+        // trigger sees a partial board), then every hand and graveyard.
+        effect = Effects.Pipeline {
+            exile(gather(GameObjectFilter.Any))
+            exile(gather(CardSource.FromZone(Zone.HAND, Player.Each, GameObjectFilter.Any)))
+            exile(gather(CardSource.FromZone(Zone.GRAVEYARD, Player.Each, GameObjectFilter.Any)))
+        } then Effects.ForEachPlayer(
             players = Player.Each,
             Effects.SetLifeTotal(1, EffectTarget.Controller)
         )
