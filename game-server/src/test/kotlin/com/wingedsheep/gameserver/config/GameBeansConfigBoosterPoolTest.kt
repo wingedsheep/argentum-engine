@@ -713,6 +713,47 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         }
     }
 
+    test("Magic 2013 draft pack is 10 commons, 3 uncommons and one rare or mythic") {
+        // Draft Booster (mtg.wtf/pack/m13): 10 commons, 3 uncommons, a rare or mythic (rares 2/121, mythics 1/121)
+        // and a basic land (supplied at deck building). The foil replacing a common in 9 packs of 40 is cosmetic.
+        val m13 = boosterGenerator.availableSets["M13"].shouldNotBeNull()
+        m13.fullyImplemented shouldBe true
+        m13.boosterStrategy shouldBe StandardBooster(commons = 10, mythicChance = 15.0 / 121)
+        val eligible = m13.cards.filter { it.metadata.inBooster && !it.typeLine.isFreelyAddedBasicLand }
+        // Scryfall `set:m13 is:booster -t:basic` (101 / 60 / 53 / 15): every card opens.
+        eligible.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 101, Rarity.UNCOMMON to 60, Rarity.RARE to 53, Rarity.MYTHIC to 15,
+        )
+        val eligibleNames = eligible.mapTo(hashSetOf()) { it.name }
+        var mythics = 0
+        val packs = 4000
+        repeat(packs) {
+            val pack = boosterGenerator.generateBooster("M13")
+            withClue("pack ${pack.map { it.name }}") {
+                pack.size shouldBe 14
+                pack.map { it.name }.toSet().size shouldBe 14
+                pack.all { it.name in eligibleNames } shouldBe true
+                pack.count { it.metadata.rarity == Rarity.COMMON } shouldBe 10
+                pack.count { it.metadata.rarity == Rarity.UNCOMMON } shouldBe 3
+            }
+            mythics += pack.count { it.metadata.rarity == Rarity.MYTHIC }
+        }
+        // 53 rares printed twice and 15 mythics once.
+        (mythics.toDouble() / packs) shouldBe ((15.0 / 121) plusOrMinus 0.02)
+        boosterGenerator.getBasicLands("M13").keys shouldBe setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
+
+        // A host ban leaves the banned commons' slots to other commons.
+        val banned = eligible.filter { it.metadata.rarity == Rarity.COMMON }.take(5).mapTo(hashSetOf()) { it.name }
+        repeat(200) {
+            val pack = boosterGenerator.generateBooster("M13", bannedCardNames = banned)
+            withClue("pack ${pack.map { it.name }}") {
+                pack.size shouldBe 14
+                pack.none { it.name in banned } shouldBe true
+                pack.count { it.metadata.rarity == Rarity.COMMON } shouldBe 10
+            }
+        }
+    }
+
     test("Magic 2014 draft pack is 10 commons, 3 uncommons and one rare or mythic") {
         // Draft Booster (mtg.wtf/pack/m14): 10 commons, 3 uncommons, a rare or mythic (rares 2/121, mythics 1/121)
         // and a basic land (supplied at deck building). The foil replacing a common in 9 packs of 40 is cosmetic.

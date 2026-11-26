@@ -1449,6 +1449,26 @@ object SetArchetypes {
                     "Play cheap creatures with value on entering or dying, then sacrifice them to emerge Eldrazi for a fraction of their cost. A ramp-flavoured value deck that cashes every body into a bigger threat."),
             )
         ),
+        "M13" to SetSynergies(
+            setCode = "M13",
+            setName = "Magic 2013",
+            archetypes = listOf(
+                Archetype("Fliers", listOf(Color.WHITE, Color.BLUE),
+                    "Take to the air with Battleflight Eagle, Griffin Protector, Welkin Tern, Wind Drake and Serra Angel, and clear the way with Pacifism and Sleep. A tempo deck that races in the sky while the ground stays stalled."),
+                Archetype("Exalted Knights", listOf(Color.WHITE, Color.BLACK),
+                    "Attack with one creature at a time and pump it with exalted from Knight of Glory, Knight of Infamy, Duty-Bound Dead, Servant of Nefarox and Sublime Archangel. A focused aggressive deck that turns a lone attacker into a big threat every turn."),
+                Archetype("Control", listOf(Color.BLUE, Color.BLACK),
+                    "Hold the ground with Augur of Bolas and Archaeomancer, answer threats with Murder, Essence Scatter and Ravenous Rats, and refill with Divination. A patient control deck that wins once the opponent runs out of threats."),
+                Archetype("Aggro", listOf(Color.BLACK, Color.RED),
+                    "Attack early with Bloodthrone Vampire, Torch Fiend and Bloodhunter Bat, clear blockers with Searing Spear and Murder, and make an attacker lethal with Mark of the Vampire. A fast deck that keeps the opponent on the back foot."),
+                Archetype("Big Creatures", listOf(Color.RED, Color.GREEN),
+                    "Ramp with Arbor Elf into big bodies like Duskdale Wurm and Prized Elephant, and push damage through with Titanic Growth and Bladetusk Boar. A stompy midrange deck that wins on the ground."),
+                Archetype("Exalted Auras", listOf(Color.GREEN, Color.WHITE),
+                    "Build one big attacker with exalted from Aven Squire and Guardians of Akrasa, then stack Rancor and Titanic Growth on it while Sentinel Spider holds the ground. An aggressive deck that bets on one creature at a time."),
+                Archetype("Spells", listOf(Color.BLUE, Color.RED),
+                    "Chain instants and sorceries like Searing Spear, Unsummon and Divination to make Drake tokens with Talrand's Invocation and Talrand, Sky Summoner. A tempo deck that wins by spells as much as by creatures."),
+            )
+        ),
         "M14" to SetSynergies(
             setCode = "M14",
             setName = "Magic 2014",

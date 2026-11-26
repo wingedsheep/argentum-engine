@@ -68,6 +68,31 @@ class SetArchetypesTest : StringSpec({
         synergies.archetypes.all { it.creatureTypes.isEmpty() } shouldBe true
     }
 
+    "Magic 2013 exposes seven colour-pair plans built on its mechanics, none tribal" {
+        val synergies = requireNotNull(SetArchetypes.getForSet("m13"))
+
+        synergies.setName shouldBe "Magic 2013"
+        synergies.archetypes.map { it.name } shouldContainExactly listOf(
+            "Fliers",
+            "Exalted Knights",
+            "Control",
+            "Aggro",
+            "Big Creatures",
+            "Exalted Auras",
+            "Spells",
+        )
+        synergies.archetypes.map { it.colors.toSet() } shouldContainExactly listOf(
+            setOf(Color.WHITE, Color.BLUE),
+            setOf(Color.WHITE, Color.BLACK),
+            setOf(Color.BLUE, Color.BLACK),
+            setOf(Color.BLACK, Color.RED),
+            setOf(Color.RED, Color.GREEN),
+            setOf(Color.GREEN, Color.WHITE),
+            setOf(Color.BLUE, Color.RED),
+        )
+        synergies.archetypes.all { it.creatureTypes.isEmpty() } shouldBe true
+    }
+
     "Theros exposes its ten gold-uncommon signposts, only the Minotaurs tribal" {
         val synergies = requireNotNull(SetArchetypes.getForSet("ths"))
 

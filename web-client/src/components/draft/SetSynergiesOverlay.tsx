@@ -3458,6 +3458,54 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  M13: {
+    setCode: 'M13',
+    setName: 'Magic 2013',
+    archetypes: [
+      {
+        name: 'Fliers',
+        colors: ['W', 'U'],
+        keyCard: 'Battleflight Eagle',
+        description: 'Take to the air with Battleflight Eagle, Griffin Protector, Welkin Tern, Wind Drake and Serra Angel, and clear the way with Pacifism and Sleep. A tempo deck that races in the sky while the ground stays stalled.',
+      },
+      {
+        name: 'Exalted Knights',
+        colors: ['W', 'B'],
+        keyCard: 'Knight of Glory',
+        description: 'Attack with one creature at a time and pump it with exalted from Knight of Glory, Knight of Infamy, Duty-Bound Dead, Servant of Nefarox and Sublime Archangel. A focused aggressive deck that turns a lone attacker into a big threat every turn.',
+      },
+      {
+        name: 'Control',
+        colors: ['U', 'B'],
+        keyCard: 'Augur of Bolas',
+        description: 'Hold the ground with Augur of Bolas and Archaeomancer, answer threats with Murder, Essence Scatter and Ravenous Rats, and refill with Divination. A patient control deck that wins once the opponent runs out of threats.',
+      },
+      {
+        name: 'Aggro',
+        colors: ['B', 'R'],
+        keyCard: 'Bloodthrone Vampire',
+        description: 'Attack early with Bloodthrone Vampire, Torch Fiend and Bloodhunter Bat, clear blockers with Searing Spear and Murder, and make an attacker lethal with Mark of the Vampire. A fast deck that keeps the opponent on the back foot.',
+      },
+      {
+        name: 'Big Creatures',
+        colors: ['R', 'G'],
+        keyCard: 'Duskdale Wurm',
+        description: 'Ramp with Arbor Elf into big bodies like Duskdale Wurm and Prized Elephant, and push damage through with Titanic Growth and Bladetusk Boar. A stompy midrange deck that wins on the ground.',
+      },
+      {
+        name: 'Exalted Auras',
+        colors: ['G', 'W'],
+        keyCard: 'Rancor',
+        description: 'Build one big attacker with exalted from Aven Squire and Guardians of Akrasa, then stack Rancor and Titanic Growth on it while Sentinel Spider holds the ground. An aggressive deck that bets on one creature at a time.',
+      },
+      {
+        name: 'Spells',
+        colors: ['U', 'R'],
+        keyCard: 'Talrand\'s Invocation',
+        description: 'Chain instants and sorceries like Searing Spear, Unsummon and Divination to make Drake tokens with Talrand\'s Invocation and Talrand, Sky Summoner. A tempo deck that wins by spells as much as by creatures.',
+      },
+    ],
+  },
   M14: {
     setCode: 'M14',
     setName: 'Magic 2014',

@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-m13',
+    date: '2026-11-26',
+    kind: 'set',
+    setCode: 'M13',
+    title: 'Magic 2013 is complete',
+    body:
+      "Nicol Bolas's core set brings exalted back: knights, angels and Sublime Archangel reward attacking with one creature at a time, while fliers, Talrand's drake-making spells and big green bodies round out the colour pairs. Drafts play like classic core-set Limited, simple cards and clean two-colour decks where combat math decides the game.",
+    tryIf: 'straightforward two-colour Limited and lone-attacker exalted aggression',
+  },
+  {
     id: 'set-rtr',
     date: '2026-11-26',
     kind: 'set',

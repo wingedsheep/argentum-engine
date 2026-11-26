@@ -551,6 +551,22 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Devotion', inPlay: 'Gods and devotion payoffs reward heavy commitment to one or two colours, making splashes costlier.' },
     ],
   },
+  M13: {
+    tagline: 'A classic core set built around exalted: knights, angels and Sublime Archangel reward attacking with one creature at a time.',
+    setting: 'A core set gathered from across the Multiverse, led by Nicol Bolas, Ajani, Chandra, Garruk, Jace and Liliana.',
+    gameplay: 'Games are straightforward and creature-driven, decided by curve, combat tricks and the removal at common. Exalted pumps a creature each time it attacks alone, so white and black decks push one big attacker a turn while the rest hold the ground. Blue flies and draws, red burns, and green brings the biggest bodies.',
+    tips: [
+      'Exalted stacks: three exalted permanents make a lone attacker +3/+3, so count your exalted before deciding to attack with everything.',
+      'An exalted attacker is a single target: hold removal like Murder and Pacifism for the creature the opponent keeps sending in alone.',
+      'Removal like Searing Spear, Murder and Pacifism is plentiful at common: pick it early.',
+    ],
+    tryIf: 'classic core-set Limited and lone-attacker exalted aggression',
+    power: 2, speed: 3, complexity: 2,
+    themes: ['aggro', 'flyers'],
+    mechanics: [
+      { name: 'Exalted', inPlay: 'Whenever a creature you control attacks alone, it gets +1/+1 until end of turn for each instance of exalted among your permanents.' },
+    ],
+  },
   M14: {
     tagline: 'A classic core set where the Slivers return: every Sliver shares its ability with the rest of the hive, beside evergreen flyers, deathtouch and burn.',
     setting: 'A core set gathered from across the Multiverse, led by Chandra, Garruk, Liliana, Ajani and Jace, with the Slivers back after years away.',
