@@ -2407,6 +2407,87 @@
     ]
 }
 
+// Gallows at Willow Hill
+{
+    "name": "Gallows at Willow Hill",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{3}, {T}, Tap three untapped Humans you control: Destroy target creature. Its controller creates a 1/1 white Spirit creature token with flying.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Gallows at Willow Hill:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomTapPermanents",
+                                "count": 3,
+                                "filter": "permanent Human"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "WHITE"
+                            ],
+                            "creatureTypes": [
+                                "Spirit"
+                            ],
+                            "keywords": [
+                                "FLYING"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/5/9/59e79ba0-33c8-46c8-8694-8bf854345fe7.jpg?1783940638",
+                            "controller": "TargetController"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "215",
+        "rarity": "RARE",
+        "artist": "John Avon",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/a/8a840ee7-5728-4b1b-92ac-54612e5397b3.jpg?1783940652"
+    }
+}
+
 // Geist Snatch
 {
     "name": "Geist Snatch",
@@ -3035,6 +3116,65 @@
         "flavorText": "\"Drain the victim's blood, sell the corpse, and use the soul on guard duty. No muss, no fuss, no problems.\"\n—Olivia Voldaren",
         "imageUri": "https://cards.scryfall.io/normal/front/7/d/7d97f8b8-bdb0-4d4b-b077-9affe2f9cd91.jpg?1783940652"
     }
+}
+
+// Havengul Vampire
+{
+    "name": "Havengul Vampire",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Vampire",
+    "oracleText": "Whenever this creature deals combat damage to a player, put a +1/+1 counter on it.\nWhenever another creature dies, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Havengul Vampire:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Havengul Vampire:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "rarity": "UNCOMMON",
+        "artist": "James Ryman",
+        "flavorText": "\"That slowly decreasing pulse—that's the beat I waltz to.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cbc09839-1463-40b8-86bd-fb96797b2633.jpg?1783940684"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Heirs of Stromkirk
@@ -3988,6 +4128,55 @@
         "artist": "Bud Cook",
         "flavorText": "Avacyn's return did not rid him of his desire for revenge.",
         "imageUri": "https://cards.scryfall.io/normal/front/2/3/2371bd0c-ca38-4a62-b525-bef4d1ca0646.jpg?1783940731"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Midvast Protector
+{
+    "name": "Midvast Protector",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "When this creature enters, target creature you control gains protection from the color of your choice until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Midvast Protector:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ChooseColorThen",
+                    "then": {
+                        "type": "GrantProtectionFromChosenColor",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "artist": "James Ryman",
+        "flavorText": "\"I cultivated my faith in Avacyn despite meager returns. Now my faith is repaid.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d4f6214f-90cb-4575-b221-3c8d0ed65ffe.jpg?1783940732"
     },
     "colorIdentityOverride": [
         "WHITE"
