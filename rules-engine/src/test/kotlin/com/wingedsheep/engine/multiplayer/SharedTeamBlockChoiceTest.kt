@@ -24,7 +24,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.CombatDeclaration
-import com.wingedsheep.sdk.scripting.effects.ControlCombatDeclarationsThisTurnEffect
+import com.wingedsheep.sdk.scripting.effects.ControlCombatDeclarationsEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -48,7 +48,7 @@ class SharedTeamBlockChoiceTest : FunSpec({
     fun GameTestDriver.grant(controller: EntityId, players: Player) {
         replaceState(ControlCombatDeclarationsExecutor().execute(
             state,
-            ControlCombatDeclarationsThisTurnEffect(setOf(CombatDeclaration.BLOCKERS), players),
+            ControlCombatDeclarationsEffect(setOf(CombatDeclaration.BLOCKERS), players),
             EffectContext(sourceId = null, controllerId = controller),
         ).state)
     }

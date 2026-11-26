@@ -643,7 +643,7 @@ data class HijackNextTurnEffect(
 }
 
 /**
- * A combat declaration a [ControlCombatDeclarationsThisTurnEffect] can hand to another player:
+ * A combat declaration a [ControlCombatDeclarationsEffect] can hand to another player:
  * the active player's attack declaration (CR 508.1) or a defending player's block declaration
  * (CR 509.1).
  */
@@ -655,16 +655,21 @@ enum class CombatDeclaration {
 
 /**
  * "You choose which creatures attack this turn. You choose which creatures block this turn and how
- * those creatures block." (Master Warcraft, the default) — or, narrowed by [declarations] and
- * [declaringPlayers], "you choose how [creatures your opponents control] block" (Brutal Hordechief:
- * `declarations = {BLOCKERS}`, `declaringPlayers = Player.EachOpponent`).
+ * those creatures block." (Master Warcraft, the default) — or, narrowed by [declarations],
+ * [declaringPlayers] and [duration], "you choose how [creatures your opponents control] block"
+ * (Brutal Hordechief: `declarations = {BLOCKERS}`, `declaringPlayers = Player.EachOpponent`) and
+ * "you choose which creatures block this combat and how those creatures block" (Odric, Master
+ * Tactician: `declarations = {BLOCKERS}`, `duration = Duration.EndOfCombat`).
  *
- * For the rest of the turn the ability's controller makes each of [declarations] owed by one of
- * [declaringPlayers], in every combat phase. Only the *declarations* move — unlike
- * [HijackNextTurnEffect] (Mindslaver), no other decision, no priority and no hidden information
- * changes hands. The chosen attackers and blockers must still be legal under the normal rules for
- * the players who control them (ruling), and they stay those players' creatures — including
- * creatures that weren't on the battlefield when the effect began (Brutal Hordechief ruling).
+ * Until [duration] ends the ability's controller makes each of [declarations] owed by one of
+ * [declaringPlayers] — in every combat phase of the turn ([Duration.EndOfTurn]), or only in the
+ * current or next combat phase ([Duration.EndOfCombat]: the grant ends with the combat phase it was
+ * created in, so a later additional combat phase this turn is declared as usual). Only the
+ * *declarations* move — unlike [HijackNextTurnEffect] (Mindslaver), no other decision, no priority
+ * and no hidden information changes hands. The chosen attackers and blockers must still be legal
+ * under the normal rules for the players who control them (ruling), and they stay those players'
+ * creatures — including creatures that weren't on the battlefield when the effect began (Brutal
+ * Hordechief ruling).
  *
  * [declaringPlayers] is resolved to concrete players when the effect resolves. If several such
  * effects cover the same player's declaration in one turn, the one created last wins (Brutal
@@ -673,38 +678,49 @@ enum class CombatDeclaration {
  * @property declarations Which declarations the controller takes over.
  * @property declaringPlayers Whose declarations: [Player.Each], [Player.EachOpponent],
  *   [Player.EachOtherPlayer] or [Player.You].
+ * @property duration [Duration.EndOfTurn] ("this turn") or [Duration.EndOfCombat] ("this combat").
  */
-@SerialName("ControlCombatDeclarationsThisTurn")
+@SerialName("ControlCombatDeclarations")
 @Serializable
-data class ControlCombatDeclarationsThisTurnEffect(
+data class ControlCombatDeclarationsEffect(
     val declarations: Set<CombatDeclaration> = setOf(CombatDeclaration.ATTACKERS, CombatDeclaration.BLOCKERS),
-    val declaringPlayers: Player = Player.Each
+    val declaringPlayers: Player = Player.Each,
+    val duration: Duration = Duration.EndOfTurn
 ) : Effect {
     init {
-        require(declarations.isNotEmpty()) { "ControlCombatDeclarationsThisTurnEffect needs a declaration" }
+        require(declarations.isNotEmpty()) { "ControlCombatDeclarationsEffect needs a declaration" }
         require(declaringPlayers in SUPPORTED_PLAYERS) {
-            "ControlCombatDeclarationsThisTurnEffect can't take over the declarations of $declaringPlayers"
+            "ControlCombatDeclarationsEffect can't take over the declarations of $declaringPlayers"
+        }
+        require(duration == Duration.EndOfTurn || duration == Duration.EndOfCombat) {
+            "ControlCombatDeclarationsEffect lasts this turn or this combat, not $duration"
         }
     }
 
-    override val description: String = when {
-        declaringPlayers == Player.Each && declarations.size == 2 ->
-            "You choose which creatures attack this turn. You choose which creatures block this turn and how those creatures block"
-        else -> {
-            val whose = when (declaringPlayers) {
-                Player.EachOpponent -> "creatures your opponents control"
-                Player.EachOtherPlayer -> "creatures other players control"
-                Player.You -> "creatures you control"
-                else -> "creatures"
-            }
-            declarations.sorted().joinToString(". ") {
-                when (it) {
-                    CombatDeclaration.ATTACKERS -> "You choose which $whose attack this turn"
-                    CombatDeclaration.BLOCKERS -> "You choose how $whose block this turn"
+    override val description: String
+        get() {
+            val window = if (duration == Duration.EndOfCombat) "this combat" else "this turn"
+            return when {
+                declaringPlayers == Player.Each && declarations.size == 2 ->
+                    "You choose which creatures attack $window. You choose which creatures block $window and how those creatures block"
+                declaringPlayers == Player.Each && declarations == setOf(CombatDeclaration.BLOCKERS) ->
+                    "You choose which creatures block $window and how those creatures block"
+                else -> {
+                    val whose = when (declaringPlayers) {
+                        Player.EachOpponent -> "creatures your opponents control"
+                        Player.EachOtherPlayer -> "creatures other players control"
+                        Player.You -> "creatures you control"
+                        else -> "creatures"
+                    }
+                    declarations.sorted().joinToString(". ") {
+                        when (it) {
+                            CombatDeclaration.ATTACKERS -> "You choose which $whose attack $window"
+                            CombatDeclaration.BLOCKERS -> "You choose how $whose block $window"
+                        }
+                    }
                 }
             }
         }
-    }
 
     private companion object {
         val SUPPORTED_PLAYERS = setOf(Player.Each, Player.EachOpponent, Player.EachOtherPlayer, Player.You)

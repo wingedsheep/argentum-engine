@@ -1521,7 +1521,7 @@
                             }
                         },
                         {
-                            "type": "ControlCombatDeclarationsThisTurn",
+                            "type": "ControlCombatDeclarations",
                             "declarations": [
                                 "BLOCKERS"
                             ],

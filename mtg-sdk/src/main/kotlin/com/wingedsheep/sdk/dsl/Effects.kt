@@ -7122,18 +7122,31 @@ object Effects {
      * `castOnlyIf(Conditions.BeforeAttackersDeclared)` for the card's timing line.
      */
     fun ChooseAttackersAndBlockersThisTurn(): Effect =
-        com.wingedsheep.sdk.scripting.effects.ControlCombatDeclarationsThisTurnEffect()
+        com.wingedsheep.sdk.scripting.effects.ControlCombatDeclarationsEffect()
 
     /**
      * "You choose how [creatures controlled by [players]] block this turn" — only the block
      * declarations those players owe move to the controller (Brutal Hordechief:
      * `ChooseBlockersThisTurn(Player.EachOpponent)`, usually after `MustBlockGroup`).
-     * See [com.wingedsheep.sdk.scripting.effects.ControlCombatDeclarationsThisTurnEffect].
+     * See [com.wingedsheep.sdk.scripting.effects.ControlCombatDeclarationsEffect].
      */
     fun ChooseBlockersThisTurn(players: Player = Player.Each): Effect =
-        com.wingedsheep.sdk.scripting.effects.ControlCombatDeclarationsThisTurnEffect(
+        com.wingedsheep.sdk.scripting.effects.ControlCombatDeclarationsEffect(
             declarations = setOf(com.wingedsheep.sdk.scripting.effects.CombatDeclaration.BLOCKERS),
             declaringPlayers = players
+        )
+
+    /**
+     * "You choose which creatures block this combat and how those creatures block" — the block
+     * declarations owed by [players] move to the controller for the current (or next) combat phase
+     * only, then lapse as it ends (Odric, Master Tactician, off its attack trigger).
+     * See [com.wingedsheep.sdk.scripting.effects.ControlCombatDeclarationsEffect].
+     */
+    fun ChooseBlockersThisCombat(players: Player = Player.Each): Effect =
+        com.wingedsheep.sdk.scripting.effects.ControlCombatDeclarationsEffect(
+            declarations = setOf(com.wingedsheep.sdk.scripting.effects.CombatDeclaration.BLOCKERS),
+            declaringPlayers = players,
+            duration = Duration.EndOfCombat
         )
 
     /**

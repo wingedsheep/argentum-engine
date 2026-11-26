@@ -6,26 +6,27 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.player.CombatDeclarationControlComponent
 import com.wingedsheep.engine.state.components.player.CombatDeclarationGrant
-import com.wingedsheep.sdk.scripting.effects.ControlCombatDeclarationsThisTurnEffect
+import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.effects.ControlCombatDeclarationsEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import kotlin.reflect.KClass
 
 /**
- * Executor for [ControlCombatDeclarationsThisTurnEffect] (Master Warcraft, Brutal Hordechief): adds
+ * Executor for [ControlCombatDeclarationsEffect] (Master Warcraft, Brutal Hordechief): adds
  * a turn-stamped [CombatDeclarationGrant] to the controller naming the declarations it takes over
  * and the players who owe them, resolved now. Grants from earlier turns are dropped on the way;
- * the rest lapse by themselves when the turn ends. Among grants covering the same declaration the
+ * the rest lapse by themselves when the turn ends ("this combat" grants as the combat phase ends). Among grants covering the same declaration the
  * latest wins, by timestamp. Routing the declarations is
  * [com.wingedsheep.engine.mechanics.combat.CombatDeclarationControl].
  */
-class ControlCombatDeclarationsExecutor : EffectExecutor<ControlCombatDeclarationsThisTurnEffect> {
+class ControlCombatDeclarationsExecutor : EffectExecutor<ControlCombatDeclarationsEffect> {
 
-    override val effectType: KClass<ControlCombatDeclarationsThisTurnEffect> =
-        ControlCombatDeclarationsThisTurnEffect::class
+    override val effectType: KClass<ControlCombatDeclarationsEffect> =
+        ControlCombatDeclarationsEffect::class
 
     override fun execute(
         state: GameState,
-        effect: ControlCombatDeclarationsThisTurnEffect,
+        effect: ControlCombatDeclarationsEffect,
         context: EffectContext
     ): EffectResult {
         val ticked = state.tick()
@@ -35,13 +36,14 @@ class ControlCombatDeclarationsExecutor : EffectExecutor<ControlCombatDeclaratio
             Player.EachOtherPlayer -> ticked.getOtherPlayers(controller)
             Player.You -> listOf(controller)
             Player.Each -> ticked.activePlayers
-            else -> error("ControlCombatDeclarationsThisTurnEffect can't resolve ${effect.declaringPlayers}")
+            else -> error("ControlCombatDeclarationsEffect can't resolve ${effect.declaringPlayers}")
         }.toSet()
         val grant = CombatDeclarationGrant(
             turnNumber = ticked.turnNumber,
             timestamp = ticked.timestamp,
             declarations = effect.declarations,
-            declaringPlayers = declaringPlayers
+            declaringPlayers = declaringPlayers,
+            endsWithCombat = effect.duration == Duration.EndOfCombat
         )
         val newState = ticked.updateEntity(controller) { container ->
             val current = container.get<CombatDeclarationControlComponent>()?.grants

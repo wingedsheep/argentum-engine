@@ -37,6 +37,10 @@ import com.wingedsheep.sdk.scripting.effects.MarkMustBlockEffect
 import com.wingedsheep.sdk.scripting.effects.MustAttackWindow
 import com.wingedsheep.sdk.scripting.effects.CantBeBlockedGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockGroupEffect
+import com.wingedsheep.sdk.scripting.effects.CombatDeclaration
+import com.wingedsheep.sdk.scripting.effects.ControlCombatDeclarationsEffect
+import com.wingedsheep.sdk.scripting.effects.MustBlockGroupEffect
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.LearnEffect
@@ -737,6 +741,8 @@ internal object ExpiringGrantWindow {
      *    (and once attackers are declared, only while something is attacking).
      *  - **Must block** ("target creature blocks this turn if able", Peema Aether-Seer) — the same
      *    window as can't block: only an attack of ours gives the creature something to block.
+     *    A group lure, and a take-over of the opponents' block declaration (Brutal Hordechief's
+     *    "block this turn if able, and you choose how those creatures block"), likewise.
      *  - **Tapped and locked** — "tap target creature or planeswalker; its activated abilities can't
      *    be activated this turn" (Deadlock Trap, Koma's serpent sacrifice): the lock buys something
      *    whenever the permanent has an activated ability to lose, so it is the leaf's call then.
@@ -757,7 +763,7 @@ internal object ExpiringGrantWindow {
      *
      * Any other leaf, a targeted restriction on a creature of ours, a target that cannot be
      * resolved, or a stack object that threatens us hands the decision back to the leaf score. A
-     * group can't-block sweeps ours in unasked, so our own members of it are skipped instead.
+     * group block lever sweeps ours in unasked, so our own members of it are skipped instead.
      */
     private fun restrictionHasNoWindow(
         state: GameState,
@@ -766,7 +772,7 @@ internal object ExpiringGrantWindow {
         activation: ActivateAbility,
         intents: IntentCatalog,
     ): Boolean {
-        val (restrictions, groupCantBlocks, sideBenefit) = restrictionShape(ability.effect) ?: return false
+        val (restrictions, groupBlockLevers, sideBenefit) = restrictionShape(ability.effect) ?: return false
         if (somethingOnTheStackThreatensUs(state, playerId, intents)) return false
 
         val projected = state.projectedState
@@ -798,7 +804,7 @@ internal object ExpiringGrantWindow {
         // want them or not, and keeping our own creature from blocking buys us nothing on any
         // turn — on ours we never block, on theirs it only costs us a blocker. An opposing one it
         // can still keep out of a block is the leaf's call; nothing else is a window.
-        for (group in groupCantBlocks) {
+        for (group in groupBlockLevers) {
             val members = groupMembers(state, projected, playerId, group, activation.sourceId, intents) ?: return false
             for (creature in members) {
                 if (projected.getController(creature) == playerId) continue
@@ -809,7 +815,7 @@ internal object ExpiringGrantWindow {
 
         // The side benefit is bought again in the restriction's own window, unless activating now
         // keeps the source tapped through it.
-        return tapsItsSource(ability) && ourTurn && groupCantBlocks.isEmpty() &&
+        return tapsItsSource(ability) && ourTurn && groupBlockLevers.isEmpty() &&
             restrictions.all { (kind, _) -> kind == Restriction.CANT_ATTACK }
     }
 
@@ -876,7 +882,7 @@ internal object ExpiringGrantWindow {
      */
     private fun restrictionShape(effect: Effect): RestrictionShape? {
         val restrictions = mutableListOf<Pair<Restriction, EffectTarget>>()
-        val groupCantBlocks = mutableListOf<GroupFilter>()
+        val groupBlockLevers = mutableListOf<GroupFilter>()
         val tapped = mutableListOf<EffectTarget>()
         var sideBenefit = false
         for (leaf in EffectWalker.leaves(effect)) {
@@ -889,7 +895,14 @@ internal object ExpiringGrantWindow {
                 leaf is MarkMustBlockEffect && (leaf.duration == Duration.EndOfTurn || leaf.duration == Duration.EndOfCombat) ->
                     restrictions += Restriction.MUST_BLOCK to leaf.target
                 leaf is CantBlockGroupEffect && leaf.duration == Duration.EndOfTurn && isPlainBattlefieldGroup(leaf.filter) ->
-                    groupCantBlocks += leaf.filter
+                    groupBlockLevers += leaf.filter
+                // "Creatures your opponents control block this turn if able, and you choose how those
+                // creatures block" (Brutal Hordechief): a group lure and a take-over of the opponents'
+                // block declaration both bend only a block still to come — can't-block's own window,
+                // our turn before blocks, on the opposing creatures that are untapped.
+                leaf is MustBlockGroupEffect && leaf.duration == Duration.EndOfTurn && isPlainBattlefieldGroup(leaf.filter) ->
+                    groupBlockLevers += leaf.filter
+                takesOverOpposingBlocks(leaf) -> groupBlockLevers += GroupFilter.AllCreaturesOpponentsControl
                 locksActivatedAbilities(leaf) -> restrictions += Restriction.TAPPED_AND_LOCKED to (leaf as GrantStaticAbilityEffect).target
                 leaf is AddCountersEffect && leaf.target == EffectTarget.Self -> sideBenefit = true
                 leaf is TapUntapEffect && leaf.tap && leaf.target == EffectTarget.Self -> Unit
@@ -899,9 +912,14 @@ internal object ExpiringGrantWindow {
         }
         val locked = restrictions.filter { it.first == Restriction.TAPPED_AND_LOCKED }.map { it.second }
         if (locked.toSet() != tapped.toSet()) return null
-        return if (restrictions.isEmpty() && groupCantBlocks.isEmpty()) null
-        else RestrictionShape(restrictions, groupCantBlocks, sideBenefit)
+        return if (restrictions.isEmpty() && groupBlockLevers.isEmpty()) null
+        else RestrictionShape(restrictions, groupBlockLevers, sideBenefit)
     }
+
+    /** "You choose which creatures your opponents block with this turn / this combat", and nothing else. */
+    private fun takesOverOpposingBlocks(leaf: Effect): Boolean =
+        leaf is ControlCombatDeclarationsEffect && leaf.declarations == setOf(CombatDeclaration.BLOCKERS) &&
+            leaf.declaringPlayers != Player.You
 
     /** A [isPlainBattlefieldGroup] of permanents we control and nothing else's — "creatures you control". */
     private fun isOurPlainGroup(group: GroupFilter): Boolean =
@@ -916,7 +934,7 @@ internal object ExpiringGrantWindow {
     /** What [restrictionShape] found: targeted restrictions, group can't-blocks, and a source counter. */
     private data class RestrictionShape(
         val restrictions: List<Pair<Restriction, EffectTarget>>,
-        val groupCantBlocks: List<GroupFilter>,
+        val groupBlockLevers: List<GroupFilter>,
         val sideBenefit: Boolean,
     )
 

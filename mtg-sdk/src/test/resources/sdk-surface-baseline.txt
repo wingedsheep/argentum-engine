@@ -595,7 +595,7 @@ CollectEvidenceEffect — Effect
 CompositeEffect — Effect
 ConditionalOnCollectionEffect — Effect
 ConniveEffect — Effect
-ControlCombatDeclarationsThisTurnEffect — Effect
+ControlCombatDeclarationsEffect — Effect
 ControlPlayerDuringResolutionEffect — Effect
 ConvertCountersToTokensEffect — Effect
 CopyCardIntoCollectionEffect — Effect

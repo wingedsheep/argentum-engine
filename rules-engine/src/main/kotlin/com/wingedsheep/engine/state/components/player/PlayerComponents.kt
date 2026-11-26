@@ -2556,7 +2556,13 @@ data class CombatDeclarationGrant(
     /** When the effect was created; the latest grant covering a declaration wins. */
     val timestamp: Long,
     val declarations: Set<CombatDeclaration>,
-    val declaringPlayers: Set<EntityId>
+    val declaringPlayers: Set<EntityId>,
+    /**
+     * "This combat" rather than "this turn": the grant is dropped when the combat phase ends
+     * ([com.wingedsheep.engine.mechanics.combat.CombatManager.endCombat]), so a later combat phase
+     * this turn is declared as usual.
+     */
+    val endsWithCombat: Boolean = false
 )
 
 /**

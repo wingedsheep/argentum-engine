@@ -216,6 +216,10 @@ class CombatManager(
             }
         )
 
+        // "You choose which creatures block this combat" (Odric, Master Tactician) ends with the
+        // combat phase; "this turn" grants stay for any later combat phase this turn.
+        newState = CombatDeclarationControl.endCombatGrants(newState)
+
         if (newState.enlistmentsThisCombat.isNotEmpty()) newState = newState.copy(enlistmentsThisCombat = emptyList())
 
         if (combatPhaseRan) newState = endNextCombatAttackRequirements(newState, state.projectedState)

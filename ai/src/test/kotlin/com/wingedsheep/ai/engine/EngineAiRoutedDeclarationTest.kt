@@ -63,5 +63,38 @@ class EngineAiRoutedDeclarationTest : ScenarioTestBase() {
             }
             game.execute(action).error shouldBe null
         }
+
+        test("the AI holding Odric's grant keeps the defender's creatures home") {
+            val game = scenario()
+                .withPlayers("AI", "Human")
+                .withCardOnBattlefield(1, "Odric, Master Tactician")
+                .withCardOnBattlefield(1, "Grizzly Bears")
+                .withCardOnBattlefield(1, "Savannah Lions")
+                .withCardOnBattlefield(1, "Llanowar Elves")
+                .withCardOnBattlefield(2, "Hill Giant")
+                .withCardInLibrary(1, "Plains")
+                .withCardInLibrary(2, "Plains")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            game.advanceTo(Step.DECLARE_ATTACKERS)
+            game.declareAttackers(
+                mapOf("Odric, Master Tactician" to 2, "Grizzly Bears" to 2, "Savannah Lions" to 2, "Llanowar Elves" to 2)
+            ).error shouldBe null
+            game.resolveStack()
+            game.advanceTo(Step.DECLARE_BLOCKERS)
+
+            val controller = EngineAiPlayerController(cardRegistry, game.player1Id, { game.state })
+            val view = ClientStateTransformer(cardRegistry, predicateEvaluator = services.predicateEvaluator).transform(game.state, game.player1Id)
+            val response = controller.chooseAction(view, game.getLegalActions(1), null, emptyList())
+
+            val action = response.shouldBeInstanceOf<ActionResponse.SubmitAction>().action
+                .shouldBeInstanceOf<DeclareBlockers>()
+            action.playerId shouldBe game.player2Id
+            withClue("a Hill Giant kept home is three more damage and no attacker lost") {
+                action.blockers.filterValues { it.isNotEmpty() }.keys shouldBe emptySet()
+            }
+            game.execute(action).error shouldBe null
+        }
     }
 }

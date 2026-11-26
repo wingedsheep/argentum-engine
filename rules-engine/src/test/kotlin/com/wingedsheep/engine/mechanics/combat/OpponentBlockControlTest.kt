@@ -11,7 +11,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.CombatDeclaration
-import com.wingedsheep.sdk.scripting.effects.ControlCombatDeclarationsThisTurnEffect
+import com.wingedsheep.sdk.scripting.effects.ControlCombatDeclarationsEffect
 import com.wingedsheep.sdk.scripting.effects.MustBlockGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
@@ -22,7 +22,7 @@ import io.kotest.matchers.shouldNotBe
 
 /**
  * Brutal Hordechief's "creatures your opponents control block this turn if able, and you choose how
- * those creatures block": [MustBlockGroupEffect] plus [ControlCombatDeclarationsThisTurnEffect]
+ * those creatures block": [MustBlockGroupEffect] plus [ControlCombatDeclarationsEffect]
  * narrowed to the opponents' block declarations.
  *
  * The rules pinned, from Brutal Hordechief's rulings and CR 509.1 / 611.2c:
@@ -43,7 +43,7 @@ class OpponentBlockControlTest : FunSpec({
         toughness = 2
     }
 
-    val chooseOpponentsBlocks = ControlCombatDeclarationsThisTurnEffect(
+    val chooseOpponentsBlocks = ControlCombatDeclarationsEffect(
         declarations = setOf(CombatDeclaration.BLOCKERS),
         declaringPlayers = Player.EachOpponent
     )
@@ -56,7 +56,7 @@ class OpponentBlockControlTest : FunSpec({
         return driver to players
     }
 
-    fun GameTestDriver.resolve(controller: EntityId, effect: ControlCombatDeclarationsThisTurnEffect) {
+    fun GameTestDriver.resolve(controller: EntityId, effect: ControlCombatDeclarationsEffect) {
         replaceState(ControlCombatDeclarationsExecutor().execute(state, effect, EffectContext(sourceId = null, controllerId = controller)).state)
     }
 
@@ -149,7 +149,7 @@ class OpponentBlockControlTest : FunSpec({
 
     test("a narrower grant keeps a wider one the same player holds") {
         val (driver, p) = driverWith(2)
-        driver.resolve(p[1], ControlCombatDeclarationsThisTurnEffect())
+        driver.resolve(p[1], ControlCombatDeclarationsEffect())
         driver.resolve(p[1], chooseOpponentsBlocks)
 
         withClue("P2's Master Warcraft still hands it P1's attack declaration") {

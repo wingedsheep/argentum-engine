@@ -92,6 +92,10 @@ import com.wingedsheep.sdk.scripting.effects.MarkExileOnDeathEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.MustAttackGroupEffect
+import com.wingedsheep.sdk.scripting.effects.ControlCombatDeclarationsEffect
+import com.wingedsheep.sdk.scripting.conditions.BeforeFirstCombatStepThisTurn
+import com.wingedsheep.sdk.scripting.CastRestriction
+import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.scripting.effects.PayExactCountersEffect
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.effects.ProliferateEffect
@@ -486,6 +490,12 @@ object AiReadingAudit {
                                 intent.grantsInstantSpeedLoyalty) ||
                             (leaf is MustAttackGroupEffect && IntentTag.FORCED_ATTACK in intent.tags &&
                                 script === card.script && card.cardFaces.isEmpty()) ||
+                            // "Cast this spell only before attackers are declared. You choose which
+                            // creatures attack / block this turn" (Master Warcraft): the cast restriction
+                            // is the window. The engine refuses the cast once the turn's first attack is
+                            // declared, and before then both declarations are still to come, on either
+                            // player's turn; what they are worth there is the simulation's to price.
+                            (leaf is ControlCombatDeclarationsEffect && castsOnlyBeforeAttackers(script)) ||
                             // A spell that only grants keywords until end of turn is floored where no
                             // fight is left; the floor asks it of the whole spell, not one leaf — of
                             // the half cast, for a split, Adventure or prepare face.
@@ -1427,6 +1437,11 @@ object AiReadingAudit {
             leaf.target != EffectTarget.Self
 
     /** Whether [effect] carries a `duration` of [Duration.EndOfTurn]. Effects share no interface for it. */
+    private fun castsOnlyBeforeAttackers(script: CardScript): Boolean =
+        script.castRestrictions.any {
+            (it as? CastRestriction.OnlyIfCondition)?.condition == BeforeFirstCombatStepThisTurn(Step.DECLARE_ATTACKERS)
+        }
+
     private fun endsThisTurn(effect: Effect): Boolean = property(effect, "getDuration") == Duration.EndOfTurn
 
     /** P/T, keyword, P/T-counter or blocking changes — the shapes a combat simulation must see. */

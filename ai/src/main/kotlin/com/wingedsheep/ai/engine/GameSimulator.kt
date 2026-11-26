@@ -137,6 +137,13 @@ class GameSimulator(
     }
 
     /**
+     * Whether the engine accepts [action] from [state] at all — a step that pauses for a decision
+     * (an "isn't blocked" trigger that needs a target) counts, unlike [step].
+     */
+    fun accepts(state: GameState, action: GameAction): Boolean =
+        state.pendingDecision == null && processor.process(state, action).result.error == null
+
+    /**
      * [action] applied as one engine step, with nothing resolved after it: a cast leaves its spell
      * on the stack and priority with whoever the rules give it to. Null when the engine rejects
      * the action or pauses for a decision. For a caller that hands priority around the stack

@@ -4,6 +4,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisCombatComponent
 import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent
 import com.wingedsheep.engine.state.components.player.CombatDeclarationControlComponent
+import com.wingedsheep.engine.state.components.player.CombatDeclarationGrant
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.scripting.effects.CombatDeclaration
 import com.wingedsheep.sdk.model.EntityId
@@ -82,4 +83,22 @@ object CombatDeclarationControl {
      */
     fun inputActorFor(state: GameState, playerId: EntityId): EntityId =
         declarerFor(state, playerId) ?: state.actorFor(playerId)
+
+    /**
+     * Drops every "this combat" grant ([CombatDeclarationGrant.endsWithCombat]) as the combat
+     * phase ends; a holder left with none loses the component.
+     */
+    fun endCombatGrants(state: GameState): GameState {
+        var newState = state
+        for (holder in state.turnOrder) {
+            val grants = state.getEntity(holder)?.get<CombatDeclarationControlComponent>()?.grants ?: continue
+            if (grants.none { it.endsWithCombat }) continue
+            val kept = grants.filterNot { it.endsWithCombat }
+            newState = newState.updateEntity(holder) { container ->
+                if (kept.isEmpty()) container.without<CombatDeclarationControlComponent>()
+                else container.with(CombatDeclarationControlComponent(kept))
+            }
+        }
+        return newState
+    }
 }

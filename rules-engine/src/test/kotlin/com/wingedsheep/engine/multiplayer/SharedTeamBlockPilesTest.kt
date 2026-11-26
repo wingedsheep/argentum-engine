@@ -19,7 +19,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.model.GameRng
 import com.wingedsheep.sdk.scripting.CantBeBlockedByMoreThan
 import com.wingedsheep.sdk.scripting.effects.CombatDeclaration
-import com.wingedsheep.sdk.scripting.effects.ControlCombatDeclarationsThisTurnEffect
+import com.wingedsheep.sdk.scripting.effects.ControlCombatDeclarationsEffect
 import com.wingedsheep.sdk.scripting.effects.RandomizedBlockerPilesEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import io.kotest.core.spec.style.FunSpec
@@ -66,7 +66,7 @@ class SharedTeamBlockPilesTest : FunSpec({
         val declarations = ControlCombatDeclarationsExecutor()
         for ((controller, affected) in if (mixed) listOf(players[0] to Player.Each, players[2] to Player.You) else emptyList()) {
             d.replaceState(declarations.execute(
-                d.state, ControlCombatDeclarationsThisTurnEffect(setOf(CombatDeclaration.BLOCKERS), affected),
+                d.state, ControlCombatDeclarationsEffect(setOf(CombatDeclaration.BLOCKERS), affected),
                 EffectContext(sourceId = null, controllerId = controller),
             ).state)
         }
