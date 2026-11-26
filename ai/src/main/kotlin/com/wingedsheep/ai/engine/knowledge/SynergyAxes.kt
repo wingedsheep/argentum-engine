@@ -23,6 +23,7 @@ import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.TriggerBinding
+import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.PermanentTypeEnteredBattlefieldThisTurn
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
@@ -646,12 +647,12 @@ object SynergyAxes {
             // creature target, or the source itself when it is a creature: a death, the sac outlet's
             // feed. A land or artifact sacrificed is no death; "its controller sacrifices it" can be
             // an opponent's edict, and stays unread here.
-            // "Sacrifice another creature" (Disciple of Bolas): the resolving player — us, outside an
-            // opponent-run ForEach (skipped above) — sacrifices a creature of their own.
-            if (leaf is SacrificeEffect && couldBeCreature(leaf.filter)) add(SynergyAxis.DEATH)
             if (leaf is SacrificeTargetEffect && !leaf.sacrificedByItsController &&
                 sacrificesACreature(leaf.target, requirements, creatureSource)
             ) add(SynergyAxis.DEATH)
+            // "Sacrifice another creature" (Disciple of Bolas): the resolving player — us, outside an
+            // opponent-run ForEach (skipped above) — sacrifices a creature of their own.
+            if (leaf is SacrificeEffect && couldBeCreature(leaf.filter)) add(SynergyAxis.DEATH)
             // The reaction a prevention shield carries ("for each 1 damage prevented this way,
             // create a 2/1 Inkling", Inkshield) produces what it does when the shield fires.
             if (leaf is PreventDamageEffect) leaf.onPrevented?.let { addAll(effectFeeds(it, creatureSource)) }
@@ -754,7 +755,7 @@ object SynergyAxes {
             script.triggeredAbilities.any {
                 exilesOpponentsCards(
                     it.effect, it.allTargetRequirements, watchesOpponents(it.trigger),
-                    damagedPlayerIsAnOpponent = combatDamagesAPlayer(it.trigger),
+                    damagedPlayerIsAnOpponent = combatDamagesAPlayer(it),
                 )
             } ||
             script.activatedAbilities.any { exilesOpponentsCards(it.effect, it.targetRequirements, triggeredByOpponent = false) }
@@ -815,12 +816,17 @@ object SynergyAxes {
         }
     }
 
-    /** "Whenever a land an opponent controls enters": the triggering object is always an opponent's. */
-    /** A "deals combat damage to a player" trigger, whose triggering player is the one damaged. */
-    private fun combatDamagesAPlayer(pattern: EventPattern): Boolean =
-        pattern is EventPattern.DealsDamageEvent && pattern.damageType == DamageType.Combat &&
-            pattern.recipient == Recipient.AnyPlayer
+    /**
+     * "Whenever this creature deals combat damage to a player": the damaged (triggering) player is
+     * the one it attacked, an opponent. A trigger watching any creature's combat damage could name you.
+     */
+    private fun combatDamagesAPlayer(ability: TriggeredAbility): Boolean {
+        val pattern = ability.trigger
+        return ability.binding == TriggerBinding.SELF && pattern is EventPattern.DealsDamageEvent &&
+            pattern.damageType == DamageType.Combat && pattern.recipient == Recipient.AnyPlayer
+    }
 
+    /** "Whenever a land an opponent controls enters": the triggering object is always an opponent's. */
     private fun watchesOpponents(pattern: EventPattern): Boolean = when (pattern) {
         is EventPattern.ZoneChangeEvent -> opponents(pattern.filter)
         is EventPattern.PermanentsEnteredEvent -> opponents(pattern.filter)
