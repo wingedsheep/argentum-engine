@@ -1173,6 +1173,63 @@
     ]
 }
 
+// Mutilate
+{
+    "name": "Mutilate",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "All creatures get -1/-1 until end of turn for each Swamp you control.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            },
+            "body": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land Swamp"
+                    },
+                    "multiplier": -1
+                },
+                "toughnessModifier": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land Swamp"
+                    },
+                    "multiplier": -1
+                },
+                "target": "IterationEntity"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "rarity": "RARE",
+        "artist": "Eric Peterson",
+        "flavorText": "\"They appreciate my handiwork. I hear their joy in every scream.\"\n—Chainer, dementia master",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/6189cab3-1963-4590-9cbc-7ab4a693d7c6.jpg?1783945154",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "The effect is based on the number of Swamps you control when Mutilate resolves. Only creatures on the battlefield at that time will be affected. The effect won't change later in the turn, even if the number of Swamps you control changes."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Nantuko Cultivator
 {
     "name": "Nantuko Cultivator",
