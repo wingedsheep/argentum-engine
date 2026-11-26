@@ -1,1 +1,1 @@
-- #TBD Door to Nothingness-style "target player loses the game" abilities read as harmful, so the AI aims them at an opponent
+- #4876 Door to Nothingness-style "target player loses the game" abilities read as harmful, so the AI aims them at an opponent
