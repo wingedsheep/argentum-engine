@@ -4089,6 +4089,42 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  RTR: {
+    setCode: 'RTR',
+    setName: 'Return to Ravnica',
+    archetypes: [
+      {
+        name: 'Azorius Detain',
+        colors: ['W', 'U'],
+        keyCard: 'New Prahv Guildmage',
+        description: "Detain the opponent's best blockers and attackers while flyers and defensive creatures hold the ground. A tempo-control deck that buys time with detain and wins in the air.",
+      },
+      {
+        name: 'Izzet Overload',
+        colors: ['U', 'R'],
+        keyCard: 'Nivix Guildmage',
+        description: "Fill the deck with instants and sorceries, reward each one with spell-cast payoffs and cast overload spells late to sweep the opponent's side. A spells-matter tempo deck that wins with card quality and burn.",
+      },
+      {
+        name: 'Rakdos Unleash',
+        colors: ['B', 'R'],
+        keyCard: 'Rix Maadi Guildmage',
+        description: "Unleash creatures with +1/+1 counters and attack every turn, punishing the opponent's life total with drain and burn. A fast aggro deck that gives up blocking to hit harder.",
+      },
+      {
+        name: 'Golgari Scavenge',
+        colors: ['B', 'G'],
+        keyCard: 'Korozda Guildmage',
+        description: "Trade creatures freely, then scavenge them from the graveyard to grow the survivors with +1/+1 counters. A grindy midrange deck that keeps getting value from cards already spent.",
+      },
+      {
+        name: 'Selesnya Populate',
+        colors: ['G', 'W'],
+        keyCard: 'Vitu-Ghazi Guildmage',
+        description: "Make creature tokens, then populate to copy the best of them, then go wide and pump the team with anthems. A go-wide midrange deck whose army outgrows the opponent's blockers.",
+      },
+    ],
+  },
   GTC: {
     setCode: 'GTC',
     setName: 'Gatecrash',

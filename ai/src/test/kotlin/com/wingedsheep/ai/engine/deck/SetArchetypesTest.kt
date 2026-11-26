@@ -938,6 +938,27 @@ class SetArchetypesTest : StringSpec({
             "Sliver Ramp" to listOf("Sliver"),
         )
     }
+    "Return to Ravnica exposes its five guild archetypes, one per guild colour pair" {
+        val synergies = requireNotNull(SetArchetypes.getForSet("rtr"))
+
+        synergies.setName shouldBe "Return to Ravnica"
+        synergies.archetypes.map { it.name } shouldContainExactly listOf(
+            "Azorius Detain",
+            "Izzet Overload",
+            "Rakdos Unleash",
+            "Golgari Scavenge",
+            "Selesnya Populate",
+        )
+        synergies.archetypes.map { it.colors.toSet() } shouldContainExactly listOf(
+            setOf(Color.WHITE, Color.BLUE),
+            setOf(Color.BLUE, Color.RED),
+            setOf(Color.BLACK, Color.RED),
+            setOf(Color.BLACK, Color.GREEN),
+            setOf(Color.GREEN, Color.WHITE),
+        )
+        synergies.archetypes.all { it.creatureTypes.isEmpty() } shouldBe true
+    }
+
     "Gatecrash exposes its five guild archetypes, one per guild colour pair" {
         val synergies = requireNotNull(SetArchetypes.getForSet("gtc"))
 
