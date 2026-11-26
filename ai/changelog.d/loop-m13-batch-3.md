@@ -1,0 +1,1 @@
+- #TBD The AI reads a +1/+1 counter put on a creature it just stole (Mark of Mutiny) as part of the theft, so it aims the spell at the opponent's best creature.

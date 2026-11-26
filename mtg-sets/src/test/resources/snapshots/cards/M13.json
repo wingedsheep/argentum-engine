@@ -611,6 +611,73 @@
     ]
 }
 
+// Boundless Realms
+{
+    "name": "Boundless Realms",
+    "manaCost": "{6}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for up to X basic land cards, where X is the number of lands you control, put them onto the battlefield tapped, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "basicland"
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "land"
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for basic land cards (up to the number of lands you control) to put onto the battlefield tapped",
+                    "selectedLabel": "Put onto the battlefield tapped"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "RARE",
+        "artist": "Cliff Childs",
+        "flavorText": "\"Planeswalking cannot be taught. Either you see the doors or you do not.\"\n—Nissa Revane",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e3c3cf16-ba81-4558-b1a6-79942a02f629.jpg?1783940474",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "The number of basic land cards you put onto the battlefield is equal to the number of lands you control when Boundless Realms begins resolving."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Captain's Call
 {
     "name": "Captain's Call",
@@ -1324,6 +1391,103 @@
     }
 }
 
+// Elderscale Wurm
+{
+    "name": "Elderscale Wurm",
+    "manaCost": "{4}{G}{G}{G}",
+    "typeLine": "Creature — Wurm",
+    "oracleText": "Trample\nWhen this creature enters, if your life total is less than 7, your life total becomes 7.\nAs long as you have 7 or more life, damage that would reduce your life total to less than 7 reduces it to 7 instead.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Elderscale Wurm:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "SetLifeTotal",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "LifeTotal",
+                        "player": "You"
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 6
+                    }
+                },
+                "descriptionOverride": "If your life total is less than 7, your life total becomes 7."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "LifeLossFloor",
+                "floor": 7,
+                "restrictions": [
+                    {
+                        "type": "Compare",
+                        "left": {
+                            "type": "LifeTotal",
+                            "player": "You"
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 7
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "rarity": "MYTHIC",
+        "artist": "Richard Wright",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/20f3f63d-0f04-4945-9895-940c916a2547.jpg?1783940473",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "Elderscale Wurm's last ability doesn't prevent damage. It only changes the result of damage dealt to you. For example, a creature with lifelink that deals damage to you will still cause its controller to gain life, even if that damage would reduce your life total to less than 7."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "Elderscale Wurm's last ability doesn't affect the loss or payment of life."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "If you have less than 7 life, damage dealt to you reduces your life total as normal."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "If damage is dealt to you and Elderscale Wurm at the same time, and that damage is enough to destroy Elderscale Wurm and reduce your life total to 7 or less, Elderscale Wurm's ability will still apply. For example, if you have 10 life and a spell deals 10 damage to you and 10 damage to Elderscale Wurm, you'll end up at 7 life and Elderscale Wurm will be destroyed."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "In a Commander game, combat damage you're dealt by a commander is still tracked, even if it doesn't change your life total."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Encrust
 {
     "name": "Encrust",
@@ -1604,6 +1768,50 @@
     "colorIdentityOverride": [
         "GREEN",
         "RED"
+    ]
+}
+
+// Fungal Sprouting
+{
+    "name": "Fungal Sprouting",
+    "manaCost": "{3}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create X 1/1 green Saproling creature tokens, where X is the greatest power among creatures you control.",
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "count": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature",
+                "aggregation": "MAX",
+                "property": "POWER"
+            },
+            "power": 1,
+            "toughness": 1,
+            "colors": [
+                "GREEN"
+            ],
+            "creatureTypes": [
+                "Saproling"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "173",
+        "rarity": "UNCOMMON",
+        "artist": "Brad Rigney",
+        "flavorText": "\"Saprolings need only a host to feed upon. Numbers will take care of the rest.\"\n—Ghave, Guru of Spores",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/97413ae3-037e-4786-85a3-e92604acd771.jpg?1783940471",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "Fungal Sprouting doesn't target any creature. The greatest power among creatures you control is determined when Fungal Sprouting resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -2386,6 +2594,65 @@
     ]
 }
 
+// Magmaquake
+{
+    "name": "Magmaquake",
+    "manaCost": "{X}{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Magmaquake deals X damage to each creature without flying and each planeswalker.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "And",
+                                        "predicates": [
+                                            "IsCreature",
+                                            {
+                                                "type": "NotKeyword",
+                                                "keyword": "FLYING"
+                                            }
+                                        ]
+                                    },
+                                    "IsPlaneswalker"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            },
+            "body": {
+                "type": "DealDamage",
+                "amount": "XValue",
+                "target": "IterationEntity"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "rarity": "RARE",
+        "artist": "Gabor Szikszai",
+        "flavorText": "\"Where will you run when I punish you with the very ground you flee on?\"\n—Nicol Bolas",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac85679e-17c7-4525-8eed-979d04feb8f1.jpg?1783940481",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "Magmaquake doesn't target any creature or planeswalker. For example, it will deal damage to a creature without flying that has hexproof."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Mark of the Vampire
 {
     "name": "Mark of the Vampire",
@@ -2529,6 +2796,113 @@
     ]
 }
 
+// Mindclaw Shaman
+{
+    "name": "Mindclaw Shaman",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Lizard Shaman",
+    "oracleText": "When this creature enters, target opponent reveals their hand. You may cast an instant or sorcery spell from among those cards without paying its mana cost.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mindclaw Shaman:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RevealHand",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "instant|sorcery",
+                            "storeSelected": "selected2",
+                            "prompt": "You may cast an instant or sorcery from their hand without paying its mana cost",
+                            "selectedLabel": "Cast for free",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "CastFromCollectionWithoutPayingCost",
+                            "from": "selected2"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "flavorText": "Nicol Bolas gives power to those who will abuse it most.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f342fe9-aa73-4222-b908-d4035b5746be.jpg?1783940480",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "Any player can respond to Mindclaw Shaman's triggered ability. However, once that ability starts resolving and the target opponent reveals their hand, players can't respond until after the ability finishes resolving. For example, the opponent can't cast the instant or sorcery card you choose to cast in order to stop you from casting it."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "You cast the card from the opponent's hand immediately. Ignore timing restrictions based on the card's type. Other timing restrictions, such as \"Cast [this card] only during combat,\" must be followed."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "The card goes to its owner's graveyard after it resolves (or otherwise leaves the stack), not yours."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "If you can't cast any instant or sorcery card (perhaps because there are no legal targets available) or if you choose not to cast one, then Mindclaw Shaman's ability finishes resolving and the game moves on."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "If you cast a card \"without paying its mana cost,\" you can't pay any alternative costs. You can pay additional costs such as kicker costs. If the card has mandatory additional costs, you must pay those."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "If the card has X in its mana cost, you must choose 0 as its value."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Murder
 {
     "name": "Murder",
@@ -2562,6 +2936,86 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Mwonvuli Beast Tracker
+{
+    "name": "Mwonvuli Beast Tracker",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Human Scout",
+    "oracleText": "When this creature enters, search your library for a creature card with deathtouch, hexproof, reach, or trample and reveal it. Shuffle and put that card on top.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mwonvuli Beast Tracker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "creature kw:deathtouch|kw:hexproof|kw:reach|kw:trample"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a creature card with deathtouch or with hexproof or with reach or with trample to put on top of your library",
+                            "selectedLabel": "Put on top of your library"
+                        },
+                        "ShuffleLibrary",
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            },
+                            "revealed": true
+                        },
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "rarity": "UNCOMMON",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"The more dangerous, the better.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/0034d32c-cc82-48d7-a913-d58cc3d3afeb.jpg?1783940470",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "The creature card must have one of the listed abilities, not an ability that grants one of the listed abilities to the creature. For example, you couldn't put Prized Elephant, which has \"{G}: Prized Elephant gains trample until end of turn,\" on top of your library this way."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -2699,6 +3153,76 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Predatory Rampage
+{
+    "name": "Predatory Rampage",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Creatures you control get +3/+3 until end of turn. Each creature your opponents control blocks this turn if able.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "MustBlockGroup",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "rarity": "RARE",
+        "artist": "Wayne England",
+        "flavorText": "\"It is the fate of the weak to fall.\"\n—Garruk Wildspeaker",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3e054ea5-3657-4198-9715-6acc0e362da3.jpg?1783940471",
+        "rulings": [
+            {
+                "date": "2023-07-28",
+                "text": "Each creature controlled by an opponent blocks only if it's able to do so as the declare blockers step begins. If, at that time, the creature is tapped, is affected by a spell or ability that says it can't block, or no creatures are attacking that player, a planeswalker controlled by that player, or a battle that player protects, then it doesn't block. If there's a cost associated with having the creature block, the player isn't forced to pay that cost, so it doesn't block in that case either."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "Only creatures you control when Predatory Rampage resolves will get +3/+3. Creatures that enter or that you gain control of later in the turn are unaffected."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "Each creature your opponents control blocks if able, even if that creature wasn't on the battlefield or wasn't controlled by an opponent when Predatory Rampage resolved."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "Your opponent still chooses which attacking creature each creature they control blocks."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -2871,6 +3395,65 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Ranger's Path
+{
+    "name": "Ranger's Path",
+    "manaCost": "{3}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for up to two Forest cards, put them onto the battlefield tapped, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "land Forest"
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for up to two Forest land cards to put onto the battlefield tapped",
+                    "selectedLabel": "Put onto the battlefield tapped"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "The forest can seem like a dense maze. Those who travel the canopy know otherwise.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/6/26858a53-1054-407a-b2a2-34a7c4ae0f10.jpg?1783940467"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -3563,6 +4146,109 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Slumbering Dragon
+{
+    "name": "Slumbering Dragon",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nThis creature can't attack or block unless it has five or more +1/+1 counters on it.\nWhenever a creature attacks you or a planeswalker you control, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Slumbering Dragon:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsAttackingYouOrYourPlaneswalkers"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "PLUS_ONE_PLUS_ONE"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                }
+            },
+            {
+                "type": "CantBlockUnless",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "PLUS_ONE_PLUS_ONE"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/277cbd0d-c8da-4a37-965c-6a60771df2f7.jpg?1783940479",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "Slumbering Dragon's second ability counts all +1/+1 counters on it, not just the ones added by its third ability."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "The +1/+1 counter is put on Slumbering Dragon before blockers are declared. This may allow Slumbering Dragon to \"wake up\" and block the creature that attacked and caused its ability to trigger."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "Slumbering Dragon's third ability will trigger once for each creature that attacks you or a planeswalker you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -4720,6 +5406,50 @@
         "artist": "Eric Deschamps",
         "flavorText": "\"Nature can't be stopped. It rips and tears at Ravnica's tallest buildings to claim its place in the sun.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/3/f/3f9ebf02-56b3-492e-88fb-2e95f13f5764.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Yeva, Nature's Herald
+{
+    "name": "Yeva, Nature's Herald",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Legendary Creature — Elf Shaman",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nYou may cast green creature spells as though they had flash.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantFlashToSpellType",
+                "filter": "creature green",
+                "controllerOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "197",
+        "rarity": "RARE",
+        "artist": "Eric Deschamps",
+        "flavorText": "\"I can call an army to my side in the blink of an eye. Best not blink.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/80acb6dc-a9bd-4f12-9025-623416bdfc32.jpg?1783940469",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "You still pay the costs for green creature spells you cast."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "Yeva's ability applies to green creature cards in any zone, provided something is allowing you to cast them. For example, if the top card of your library is a green creature card and you control Garruk's Horde, you can cast that card as though it had flash."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "GREEN"

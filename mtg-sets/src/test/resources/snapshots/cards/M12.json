@@ -452,6 +452,117 @@
     ]
 }
 
+// Chandra, the Firebrand
+{
+    "name": "Chandra, the Firebrand",
+    "manaCost": "{3}{R}",
+    "typeLine": "Legendary Planeswalker — Chandra",
+    "oracleText": "+1: Chandra deals 1 damage to any target.\n−2: When you next cast an instant or sorcery spell this turn, copy that spell. You may choose new targets for the copy.\n−6: Chandra deals 6 damage to each of up to six targets.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Chandra, the Firebrand:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Chandra deals 1 damage to any target."
+            },
+            {
+                "id": "Chandra, the Firebrand:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": "CopyNextSpellCast",
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "When you next cast an instant or sorcery spell this turn, copy that spell. You may choose new targets for the copy."
+            },
+            {
+                "id": "Chandra, the Firebrand:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -6
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 6
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "count": 6,
+                        "minCount": 0,
+                        "optional": true
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Chandra deals 6 damage to each of up to six targets."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "rarity": "MYTHIC",
+        "artist": "D. Alexander Gregory",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/efb37556-186f-4660-8b75-c52ef16a6d8f.jpg?1783941073",
+        "rulings": [
+            {
+                "date": "2011-09-22",
+                "text": "Chandra's second ability creates a delayed triggered ability that will copy the next instant or sorcery spell you cast that turn, regardless of whether that spell has targets."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "The copy is created on the stack, so it's not \"cast.\" Abilities that trigger when a player casts a spell won't trigger."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "The copy will have the same targets as the spell it's copying unless you choose new ones. If the copied spell is modal, the copy has the same mode; if it has an X determined as it was cast, the copy has the same value of X."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "When you activate Chandra's last ability, you choose up to six targets. No damage is divided, and Chandra deals 6 damage to each target that is still legal when the ability resolves."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Circle of Flame
 {
     "name": "Circle of Flame",
@@ -766,6 +877,108 @@
             }
         ]
     },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Garruk, Primal Hunter
+{
+    "name": "Garruk, Primal Hunter",
+    "manaCost": "{2}{G}{G}{G}",
+    "typeLine": "Legendary Planeswalker — Garruk",
+    "oracleText": "+1: Create a 3/3 green Beast creature token.\n−3: Draw cards equal to the greatest power among creatures you control.\n−6: Create a 6/6 green Wurm creature token for each land you control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Garruk, Primal Hunter:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Beast"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/3/b/3bb48d4f-e39f-4d51-9bb1-efca7dbfdc83.jpg?1783941037"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Garruk, Primal Hunter:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature",
+                        "aggregation": "MAX",
+                        "property": "POWER"
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Garruk, Primal Hunter:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -6
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land"
+                    },
+                    "power": 6,
+                    "toughness": 6,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Wurm"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/8/4/84dc847c-7a37-4c7f-b02c-30b3e4c91fb6.jpg?1783941037"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "174",
+        "rarity": "MYTHIC",
+        "artist": "D. Alexander Gregory",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/2/82d586bf-bed3-4390-b81d-d101c2ae524c.jpg?1783941060",
+        "rulings": [
+            {
+                "date": "2011-09-22",
+                "text": "For Garruk's second ability, the greatest power among creatures you control is determined when that ability begins resolving."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "If the greatest power among creatures you control is 0 or less, you'll draw no cards. You won't discard any cards this way."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "For Garruk's third ability, the number of Wurm tokens you put onto the battlefield is determined when that ability begins resolving."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
     "colorIdentityOverride": [
         "GREEN"
     ]

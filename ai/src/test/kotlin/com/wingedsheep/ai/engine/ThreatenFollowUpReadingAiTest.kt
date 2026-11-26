@@ -15,8 +15,9 @@ import io.kotest.matchers.shouldBe
 
 /**
  * "Gain control of target creature until end of turn. Untap that creature. It gains haste" and its
- * riders — Threaten untapping *before* it steals, Goatnap's "if it's a Goat, it gets +3/+0" — are one
- * theft: the untap, the haste and the pump go to the creature we took, so the slot reads as the theft
+ * riders — Threaten untapping *before* it steals, Goatnap's "if it's a Goat, it gets +3/+0", Mark of
+ * Mutiny's +1/+1 counter — are one
+ * theft: the untap, the haste, the pump and the counter go to the creature we took, so the slot reads as the theft
  * (harmful to the creature's controller), not as a theft and a gift that disagree.
  */
 class ThreatenFollowUpReadingAiTest : ScenarioTestBase() {
@@ -31,14 +32,14 @@ class ThreatenFollowUpReadingAiTest : ScenarioTestBase() {
 
     init {
         test("a theft's untap, haste and pump on the stolen creature read as part of the theft") {
-            for (card in listOf("Goatnap", "Threaten", "Act of Treason", "Traitorous Blood")) {
+            for (card in listOf("Goatnap", "Threaten", "Act of Treason", "Traitorous Blood", "Mark of Mutiny")) {
                 val script = cardRegistry.requireCard(card).script
                 withClue("$card: the slot is the creature we take, so it reads harmful to its controller") {
                     TargetPolarityAnalyzer.forRequirements(script.spellEffect, script.targetRequirements) shouldBe listOf(TargetPolarity.HARMFUL)
                 }
             }
         }
-        for (card in listOf("Goatnap", "Threaten")) {
+        for (card in listOf("Goatnap", "Threaten", "Mark of Mutiny")) {
             test("$card steals the opponent's creature rather than untapping our own") {
                 val result = decide({ s ->
                     s.withPlayers()
