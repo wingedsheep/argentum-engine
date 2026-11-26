@@ -14458,6 +14458,142 @@
     }
 }
 
+// Vraska the Unseen
+{
+    "name": "Vraska the Unseen",
+    "manaCost": "{3}{B}{G}",
+    "typeLine": "Legendary Planeswalker — Vraska",
+    "oracleText": "+1: Until your next turn, whenever a creature deals combat damage to Vraska, destroy that creature.\n−3: Destroy target nonland permanent.\n−7: Create three 1/1 black Assassin creature tokens with \"Whenever this token deals combat damage to a player, that player loses the game.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Vraska the Unseen:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": "DamageSource",
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "DealsDamageEvent",
+                            "damageType": "DamageCombat",
+                            "sourceFilter": "creature"
+                        },
+                        "binding": "ANY"
+                    },
+                    "watchedRecipient": "Self",
+                    "expiry": "DelayedTriggerExpiry.UntilControllersNextTurn"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Until your next turn, whenever a creature deals combat damage to Vraska, destroy that creature."
+            },
+            {
+                "id": "Vraska the Unseen:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "nonland permanent"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Destroy target nonland permanent."
+            },
+            {
+                "id": "Vraska the Unseen:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Assassin"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/8/9/89eb9f92-d189-4438-b6fe-cb253055d63e.jpg?1783940382",
+                    "triggeredAbilities": [
+                        {
+                            "id": "Vraska the Unseen:3",
+                            "trigger": {
+                                "type": "DealsDamageEvent",
+                                "damageType": "DamageCombat",
+                                "recipient": {
+                                    "type": "RecipientPlayer",
+                                    "player": "Any"
+                                }
+                            },
+                            "effect": {
+                                "type": "LoseGame",
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "TriggeringPlayer"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Create three 1/1 black Assassin creature tokens with \"Whenever this token deals combat damage to a player, that player loses the game.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "208",
+        "rarity": "MYTHIC",
+        "artist": "Aleksi Briclot",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/8971938c-cd26-4b83-96d7-1408cd0b0de6.jpg?1783940329",
+        "rulings": [
+            {
+                "date": "2012-10-01",
+                "text": "If an effect creates a copy of one of the Assassin creature tokens, the copy will also have the triggered ability."
+            },
+            {
+                "date": "2012-10-01",
+                "text": "Each Assassin token's triggered ability will trigger whenever it deals combat damage to any player, including you."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Wayfaring Temple
 {
     "name": "Wayfaring Temple",

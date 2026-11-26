@@ -151,6 +151,9 @@ class CreateDelayedTriggerExecutor(
         val watchedRecipientId = effect.watchedRecipient?.let {
             context.resolvePlayerTarget(it, state) ?: context.resolveTarget(it)
         }
+        // A permanent recipient is watched as the object it is now (CR 400.7); a player has no
+        // object identity to follow.
+        val watchedRecipientObject = watchedRecipientId?.takeIf { it !in state.turnOrder }?.let(state::objectRef)
 
         // For step-based delayed triggers that restrict to a specific player's turn (e.g.
         // Nafs Asp's "at the beginning of their next draw step"): resolve the player target
@@ -242,6 +245,7 @@ class CreateDelayedTriggerExecutor(
             watchedEntityId = watchedEntityId,
             watchedObject = watchedObject,
             watchedRecipientId = watchedRecipientId,
+            watchedRecipientObject = watchedRecipientObject,
             expiry = expiry,
             expiryPlayerId = expiryPlayerId,
             expiresAfterTurn = expiryPlayerId?.let { state.turnNumber + 1 },

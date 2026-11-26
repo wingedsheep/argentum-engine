@@ -11207,7 +11207,11 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
     creation time (e.g. `EffectTarget.ContextTarget(0)` for a just-chosen target opponent), so the
     trigger fires only for hits to that specific player. The `TriggerSpec`'s `recipient` / `sourceFilter`
     still apply on top (use `Recipient.AnyPlayer` + `sourceFilter = Creature.youControl()`).
-    Orthogonal to `watchedTarget` (source scope) — set at most one.
+    Orthogonal to `watchedTarget` (source scope) — set at most one. A permanent recipient is
+    watched as the object it was at creation (CR 400.7): "until your next turn, whenever a creature
+    deals combat damage to Vraska" (Vraska the Unseen, `watchedRecipient = EffectTarget.Self`) still
+    fires for the damage that kills her, ignores her if she leaves and returns, and the cleanup step
+    drops the trigger once that object is gone.
   - **Step-based `watchedTarget`** — on a delayed trigger with a `step` (no `trigger`) there is no
     event to scope, so a `watchedTarget` is baked in at creation and becomes the fired trigger's
     *triggering entity* (`EffectTarget.TriggeringEntity` / `EffectTarget.TriggeringEntity`) — "at end of

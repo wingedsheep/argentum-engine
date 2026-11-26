@@ -8,8 +8,7 @@ import com.wingedsheep.sdk.model.Printing
 /**
  * Return to Ravnica (2012)
  *
- * mtgish-tooling auto-generated seed: only the cards relocated here as their canonical
- * earliest printing. Intentionally incomplete relative to the official set.
+ * Every card of the set is implemented; cards first printed elsewhere carry a `Printing` row.
  *
  * Set Code: RTR
  * Release Date: 2012-10-05
@@ -21,7 +20,6 @@ object ReturnToRavnicaSet : MtgSet {
     override val releaseDate = "2012-10-05"
     override val block = "Return to Ravnica"
     override val sealedSupported = false
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)

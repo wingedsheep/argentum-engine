@@ -57,6 +57,14 @@ data class DelayedTriggeredAbility(
      * [com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect.watchedRecipient].
      */
     val watchedRecipientId: EntityId? = null,
+    /**
+     * The identity of [watchedRecipientId]'s object when the trigger was created, for a recipient
+     * that is a permanent (null for a player). "Until your next turn, whenever a creature deals
+     * combat damage to Vraska" watches that object only (CR 400.7): the same card back on the
+     * battlefield is a new object, so damage to it no longer matches, and the cleanup step drops
+     * the trigger once the object is no longer current.
+     */
+    val watchedRecipientObject: com.wingedsheep.engine.state.ObjectRef? = null,
     /** For event-based delayed triggers: the expiry rule. */
     val expiry: DelayedTriggerExpiry? = null,
     /**
