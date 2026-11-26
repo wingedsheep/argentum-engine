@@ -768,6 +768,65 @@
     ]
 }
 
+// Door to Nothingness
+{
+    "name": "Door to Nothingness",
+    "manaCost": "{5}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact enters tapped.\n{W}{W}{U}{U}{B}{B}{R}{R}{G}{G}, {T}, Sacrifice this artifact: Target player loses the game.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Door to Nothingness:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{W}{W}{U}{U}{B}{B}{R}{R}{G}{G}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "LoseGame",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "rarity": "RARE",
+        "artist": "Puddnhead",
+        "flavorText": "\"All memory of your existence will be wiped from reality. You will die, and no one will mourn.\"\n—Memnarch",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c92ffeae-6b51-4426-a080-b1b065b1290d.jpg?1783944383"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Dross Crocodile
 {
     "name": "Dross Crocodile",

@@ -919,6 +919,57 @@
     ]
 }
 
+// Battle of Wits
+{
+    "name": "Battle of Wits",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, if you have 200 or more cards in your library, you win the game.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Battle of Wits:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": "WinGame",
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Library"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 200
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, if you have 200 or more cards in your library, you win the game."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "RARE",
+        "artist": "Mark Brill",
+        "flavorText": "The wizard who reads a thousand books is powerful. The wizard who memorizes a thousand books is insane.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/7/57f3c75b-0fe0-48e0-b468-bb928565e9dd.jpg?1783945265",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "Battle of Wits has an \"intervening 'if' clause.\" This means that if you don't have 200 or more cards in your library at the beginning of your upkeep, the ability won't trigger. If the ability does trigger, but you have fewer than 200 cards in your library when the ability resolves, the ability will do nothing."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Beast Attack
 {
     "name": "Beast Attack",

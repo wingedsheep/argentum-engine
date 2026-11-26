@@ -2552,6 +2552,120 @@
     ]
 }
 
+// Redirect
+{
+    "name": "Redirect",
+    "manaCost": "{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "You may choose new targets for target spell.",
+    "script": {
+        "spellEffect": {
+            "type": "ChangeTriggeringObjectTargets",
+            "spell": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "RARE",
+        "artist": "Izzy",
+        "flavorText": "\"Your strategy is marvelous. I've just made a few minor adjustments.\"\n—Veris, watcher of Indi Keep",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/60bae44b-c6f2-40bf-a427-aee5cfbdfea9.jpg?1783941822",
+        "rulings": [
+            {
+                "date": "2010-08-15",
+                "text": "You may change any number of the targets, including all of them or none of them. If, for one of the targets, you can't choose a new legal target, then it remains unchanged (even if the current target is illegal)."
+            },
+            {
+                "date": "2010-08-15",
+                "text": "If the targeted spell is modal (that is, it says \"Choose one —\" or the like), you can't choose a different mode."
+            },
+            {
+                "date": "2010-08-15",
+                "text": "If you cast Redirect targeting a spell that targets a spell on the stack (like Cancel does, for example), you can't change that spell's target to itself. You can, however, change that spell's target to Redirect. If you do, that spell won't resolve when it tries to resolve because Redirect will have left the stack by then."
+            },
+            {
+                "date": "2010-08-15",
+                "text": "Redirect can target any spell, not just an instant or sorcery spell. For example, you could use it to change the target of an Aura spell. However, if the targeted spell has no targets (for example, if it's an instant or sorcery spell that doesn't specifically use the word \"target,\" or if it's a creature spell), Redirect won't have any effect on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Reverberate
+{
+    "name": "Reverberate",
+    "manaCost": "{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Copy target instant or sorcery spell. You may choose new targets for the copy.",
+    "script": {
+        "spellEffect": {
+            "type": "CopyTargetSpell",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "instant|sorcery",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "rarity": "RARE",
+        "artist": "jD",
+        "flavorText": "\"I'm not indecisive. I just don't like to limit my options.\"\n—Maxti, pyromancer",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd435013-0ab9-42f4-985c-66ea2b3760e9.jpg?1783941802",
+        "rulings": [
+            {
+                "date": "2010-08-15",
+                "text": "Reverberate can target (and copy) any instant or sorcery spell, not just one with targets. It doesn't matter who controls it."
+            },
+            {
+                "date": "2010-08-15",
+                "text": "The copy will have the same targets as the spell it's copying unless you choose new ones. You may change any number of the targets, including all of them or none of them. If, for one of the targets, you can't choose a new legal target, then it remains unchanged (even if the current target is illegal)."
+            },
+            {
+                "date": "2010-08-15",
+                "text": "If the spell Reverberate copies is modal (that is, it says \"Choose one —\" or the like), the copy will have the same mode. You can't choose a different one."
+            },
+            {
+                "date": "2010-08-15",
+                "text": "If the spell Reverberate copies has an X whose value was determined as it was cast (like Earthquake does), the copy has the same value of X."
+            },
+            {
+                "date": "2010-08-15",
+                "text": "You can't choose to pay any additional costs for the copy. However, effects based on any additional costs that were paid for the original spell are copied as though those same costs were paid for the copy too."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Roc Egg
 {
     "name": "Roc Egg",

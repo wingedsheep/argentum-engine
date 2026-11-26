@@ -917,6 +917,89 @@
     ]
 }
 
+// Courtly Provocateur
+{
+    "name": "Courtly Provocateur",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{T}: Target creature attacks this turn if able.\n{T}: Target creature blocks this turn if able.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Courtly Provocateur:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "MarkMustAttack",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Target creature attacks this turn if able."
+            },
+            {
+                "id": "Courtly Provocateur:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "MarkMustBlock",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "Target creature blocks this turn if able."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "UNCOMMON",
+        "artist": "James Ryman",
+        "flavorText": "\"My one regret is that I have mastered an art that leaves its audience unable to applaud.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba912207-a8bf-4ffb-9967-34029cb09f7f.jpg?1783940508",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "After the first ability resolves, the creature attacks only if it's able to do so as the declare attackers step begins. If there's a cost associated with having the creature attack, the player isn't forced to pay that cost."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "The controller of the creature targeted by the first ability chooses which player or planeswalker that creature attacks."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "After the second ability resolves, the creature blocks only if it's able to do so as the declare blockers step begins. If there's a cost associated with having the creature block, the player isn't forced to pay that cost."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "The controller of the creature targeted by the second ability chooses which attacking creature that creature blocks."
+            }
+        ]
+    }
+}
+
 // Cower in Fear
 {
     "name": "Cower in Fear",
@@ -1813,6 +1896,139 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Gem of Becoming
+{
+    "name": "Gem of Becoming",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{3}, {T}, Sacrifice this artifact: Search your library for an Island card, a Swamp card, and a Mountain card. Reveal those cards, put them into your hand, then shuffle.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Gem of Becoming:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library"
+                            },
+                            "storeAs": "gathered0",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "Island",
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "Search your library for an Island card",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "Swamp",
+                            "storeSelected": "selected2",
+                            "storeRemainder": "remainder2",
+                            "prompt": "Search your library for a Swamp card",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder2",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "Mountain",
+                            "storeSelected": "selected3",
+                            "prompt": "Search your library for a Mountain card",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "descriptionOverride": "Search your library for an Island card, a Swamp card, and a Mountain card. Reveal those cards, put them into your hand, then shuffle."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "UNCOMMON",
+        "artist": "Jack Wang",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e07bc36-2207-48f4-a151-4ccb0c6d851d.jpg?1783940464",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "You don't have to find all three cards, even if they're present in your library. For example, you can activate the ability just to find an Island card and a Swamp card."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Goblin Battle Jester
@@ -3864,6 +4080,97 @@
     "colorIdentityOverride": []
 }
 
+// Ring of Xathrid
+{
+    "name": "Ring of Xathrid",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "{2}: Regenerate equipped creature. (The next time that creature would be destroyed this turn, instead tap it, remove it from combat, and heal all damage on it.)\nAt the beginning of your upkeep, put a +1/+1 counter on equipped creature if it's black.\nEquip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ring of Xathrid:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "EquippedCreature",
+                            "filter": "creature black"
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "EquippedCreature"
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, put a +1/+1 counter on equipped creature if it's black."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Ring of Xathrid:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "EquippedCreature"
+                },
+                "descriptionOverride": "{2}: Regenerate equipped creature."
+            },
+            {
+                "id": "Ring of Xathrid:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "215",
+        "rarity": "UNCOMMON",
+        "artist": "Erica Yang",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/47e2aa59-63dc-4e28-8cdc-2ca868ff8f59.jpg?1783940458"
+    },
+    "colorIdentityOverride": []
+}
+
 // Roaring Primadox
 {
     "name": "Roaring Primadox",
@@ -3983,6 +4290,85 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Sands of Delirium
+{
+    "name": "Sands of Delirium",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{X}, {T}: Target player mills X cards.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sands of Delirium:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{X}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": "XValue",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{X}, {T}: Target player mills X cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "216",
+        "rarity": "RARE",
+        "artist": "Charles Urbach",
+        "flavorText": "It counts down your last few moments of sanity.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/78c9d3bf-c858-42f4-bb61-3292f9a7141b.jpg?1783940457",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "If the player has fewer than X cards in their library, they put all of them into their graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Searing Spear
@@ -4286,6 +4672,116 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Spelltwine
+{
+    "name": "Spelltwine",
+    "manaCost": "{5}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile target instant or sorcery card from your graveyard and target instant or sorcery card from an opponent's graveyard. Copy those cards. Cast the copies if able without paying their mana costs. Exile Spelltwine.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    },
+                    "storeMovedAs": "moved1"
+                },
+                {
+                    "type": "CopyCollectionIntoCollection",
+                    "from": "moved1",
+                    "storeAs": "copies2"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "copies2",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected3",
+                    "storeRemainder": "remainder3",
+                    "prompt": "Choose the copy to cast first"
+                },
+                {
+                    "type": "CastFromCollectionWithoutPayingCost",
+                    "from": "selected3"
+                },
+                {
+                    "type": "CastFromCollectionWithoutPayingCost",
+                    "from": "remainder3"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "instant|sorcery own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "instant|sorcery own:opponent",
+                    "zone": "Graveyard"
+                },
+                "id": "t1"
+            }
+        ],
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "rarity": "RARE",
+        "artist": "Noah Bradley",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/4/e4d2f5ab-c6be-4661-843c-51b4977a9bea.jpg?1783940505",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "Spelltwine has two targets: the instant or sorcery card in your graveyard and the one in an opponent's graveyard. You can't cast Spelltwine unless you can choose both legal targets."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "If one of Spelltwine's targets is illegal when Spelltwine tries to resolve, you'll still exile and copy the remaining legal target."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "The copies are created in exile and cast from exile. The cards remain exiled."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "You can cast the copies in either order."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "The copy you cast first will already be on the stack when you cast the other copy. If that spell targets a spell, you may choose the first copy as a legal target."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "If the card has X in its mana cost, you must choose 0 as its value."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4634,6 +5130,78 @@
     ]
 }
 
+// Thundermaw Hellkite
+{
+    "name": "Thundermaw Hellkite",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nHaste (This creature can attack and {T} as soon as it comes under your control.)\nWhen this creature enters, it deals 1 damage to each creature with flying your opponents control. Tap those creatures.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thundermaw Hellkite:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature kw:flying ctrl:opponent"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "TapUntap",
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "rarity": "MYTHIC",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d0476e0f-61df-46a6-aaf1-8ee79c701160.jpg?1783940479",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "Thundermaw Hellkite will deal 1 damage to each creature with flying your opponents control whether those creatures are tapped or untapped."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "If the damage that would be dealt to a creature with flying is prevented, that creature will still be tapped. If that damage is redirected to another creature, the creature with flying will be tapped, not necessarily the creature that ultimately was dealt damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Timberpack Wolf
 {
     "name": "Timberpack Wolf",
@@ -4885,6 +5453,45 @@
         "imageUri": "https://cards.scryfall.io/normal/front/2/0/20604b28-d096-40f8-a30c-3bc89e708676.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Tricks of the Trade
+{
+    "name": "Tricks of the Trade",
+    "manaCost": "{3}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+0 and can't be blocked.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 0
+            },
+            {
+                "type": "CantBeBlocked",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "artist": "Steven Belledin",
+        "flavorText": "\"Pathetic. You might as well have protected your treasures with a paper box and some string.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8c796ef9-4061-4f82-9ee9-3bc446804ee9.jpg?1783940501"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Veilborn Ghoul
@@ -5230,6 +5837,117 @@
         "artist": "Lucas Graciano",
         "flavorText": "No guts, no glory.",
         "imageUri": "https://cards.scryfall.io/normal/front/a/4/a4e513b8-25c2-4645-abcc-a6e9d5f51e09.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Worldfire
+{
+    "name": "Worldfire",
+    "manaCost": "{6}{R}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile all permanents. Exile all cards from all hands and graveyards. Each player's life total becomes 1.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "permanent"
+                        }
+                    },
+                    "body": {
+                        "type": "MoveToZone",
+                        "target": "IterationEntity",
+                        "destination": "Exile"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Graveyard"
+                                },
+                                "storeAs": "gathered2"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered2",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "SetLifeTotal",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "rarity": "MYTHIC",
+        "artist": "Izzy",
+        "flavorText": "Even the smallest spark may set a world ablaze.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2ef3d4b5-0453-4bf0-b018-23b0c3b9ae11.jpg?1783940477",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "These actions are performed in order, but no triggered abilities resolve in between them and no player may cast spells or activate abilities in between them. This means that if a permanent's ability triggers on a player losing life, that permanent will be exiled first and won't be on the battlefield when your life total becomes 1. Leaves-the-battlefield triggers won't resolve until you're done resolving Worldfire entirely."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "If your life total is greater than 1 when Worldfire resolves, the change in life total will count as life loss. Other effects that interact with life loss will interact with this effect accordingly."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "Worldfire won't be exiled. It will go to your graveyard as the final part of its resolution."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED"

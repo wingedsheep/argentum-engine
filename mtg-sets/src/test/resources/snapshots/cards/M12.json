@@ -1761,6 +1761,108 @@
     ]
 }
 
+// Sphinx of Uthuun
+{
+    "name": "Sphinx of Uthuun",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Creature — Sphinx",
+    "oracleText": "Flying\nWhen this creature enters, reveal the top five cards of your library. An opponent separates those cards into two piles. Put one pile into your hand and the other into your graveyard.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sphinx of Uthuun:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "revealed",
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "revealed",
+                            "selection": "ChooseAnyNumber",
+                            "chooser": "Opponent",
+                            "storeSelected": "pileA",
+                            "storeRemainder": "pileB",
+                            "prompt": "Separate the revealed cards into two piles. The cards you select form Pile 1; the rest form Pile 2.",
+                            "selectedLabel": "Pile 1",
+                            "remainderLabel": "Pile 2",
+                            "alwaysPrompt": true
+                        },
+                        {
+                            "type": "ChoosePile",
+                            "pileA": "pileA",
+                            "pileB": "pileB",
+                            "storeChosenAs": "keepPile",
+                            "storeOtherAs": "otherPile",
+                            "prompt": "Choose which pile goes to your Hand; the other goes to your Graveyard."
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "keepPile",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "otherPile",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "rarity": "RARE",
+        "artist": "Kekai Kotaki",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a290648a-63c3-400b-98d3-5a5aa5505027.jpg",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "You (not your opponent) choose which pile to put into your hand and which to put into your graveyard."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "A pile can have no cards in it. In this case, you'll choose whether to put all the revealed cards into your hand or into your graveyard."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "In multiplayer games, you choose an opponent to separate the cards when the ability resolves. This doesn't target that opponent. Because the cards are revealed, all players may see the cards and offer opinions."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Stingerfling Spider
 {
     "name": "Stingerfling Spider",

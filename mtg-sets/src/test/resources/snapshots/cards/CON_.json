@@ -2065,6 +2065,237 @@
     ]
 }
 
+// Nicol Bolas, Planeswalker
+{
+    "name": "Nicol Bolas, Planeswalker",
+    "manaCost": "{4}{U}{B}{B}{R}",
+    "typeLine": "Legendary Planeswalker — Bolas",
+    "oracleText": "+3: Destroy target noncreature permanent.\n−2: Gain control of target creature.\n−9: Nicol Bolas deals 7 damage to target player or planeswalker. That player or that planeswalker's controller discards seven cards, then sacrifices seven permanents of their choice.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nicol Bolas, Planeswalker:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 3
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "noncreature permanent"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Nicol Bolas, Planeswalker:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Nicol Bolas, Planeswalker:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -9
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 7
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t2"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": "TargetIsPlayer"
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand",
+                                            "player": {
+                                                "type": "BoundVariable",
+                                                "name": "t2"
+                                            }
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 7
+                                            }
+                                        },
+                                        "chooser": "TargetPlayer",
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 7 cards to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard",
+                                            "player": {
+                                                "type": "BoundVariable",
+                                                "name": "t2"
+                                            }
+                                        },
+                                        "moveType": "Discard"
+                                    },
+                                    {
+                                        "type": "ForceSacrifice",
+                                        "filter": "permanent",
+                                        "count": 7,
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t2"
+                                        }
+                                    }
+                                ]
+                            },
+                            "otherwise": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand",
+                                            "player": {
+                                                "type": "ControllerOf",
+                                                "targetDescription": "target"
+                                            }
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 7
+                                            }
+                                        },
+                                        "chooser": "ControllerOfTarget",
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 7 cards to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard",
+                                            "player": {
+                                                "type": "ControllerOf",
+                                                "targetDescription": "target"
+                                            }
+                                        },
+                                        "moveType": "Discard"
+                                    },
+                                    {
+                                        "type": "ForceSacrifice",
+                                        "filter": "permanent",
+                                        "count": 7,
+                                        "target": "TargetController"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayerOrPlaneswalker",
+                        "id": "t2"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "rarity": "MYTHIC",
+        "artist": "D. Alexander Gregory",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/8/48ee3939-bc12-4275-a446-9de36f0b4672.jpg?1783942466",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "If the damage from Nicol Bolas's third ability is prevented or redirected, the rest of the effect will still happen. Specifically, the number of cards discarded and permanents sacrificed isn't tied to the amount of damage dealt."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "For the third ability, if the player is an illegal target when the ability tries to resolve, the ability doesn't resolve and none of its effects will happen. No damage will be dealt, no cards will be discarded, and no permanents will be sacrificed."
+            },
+            {
+                "date": "2009-02-01",
+                "text": "The control-change effect has no duration. It will last until the game ends or the affected creature leaves the battlefield. It may be superseded by a later control-change effect."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Noble Hierarch
 {
     "name": "Noble Hierarch",
