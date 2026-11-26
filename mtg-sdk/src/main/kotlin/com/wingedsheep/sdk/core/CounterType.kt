@@ -619,6 +619,13 @@ value class CounterType(val name: String) {
         val HUNGER = CounterType("HUNGER")
 
         /**
+         * Petrification counter (M13 — Xathrid Gorgon). A pure marker with no rule of its own, like
+         * [HUNGER]: the Gorgon's ability grants defender, the artifact type, colorlessness and the
+         * activation ban as separate permanent effects, so removing the counter changes nothing.
+         */
+        val PETRIFICATION = CounterType("PETRIFICATION")
+
+        /**
          * Age counter (CR 702.24, cumulative upkeep). Each upkeep the cumulative upkeep trigger puts one on
          * its permanent and then charges the upkeep cost once per age counter; the counter itself has no
          * rule of its own (CR 702.24b: the counters aren't tied to any one instance of the ability).
@@ -1134,6 +1141,7 @@ value class CounterType(val name: String) {
             HONE,
             STORAGE,
             HUNGER,
+            PETRIFICATION,
             AGE,
             SLIME,
             OIL,
