@@ -626,6 +626,13 @@ value class CounterType(val name: String) {
         val PETRIFICATION = CounterType("PETRIFICATION")
 
         /**
+         * Pressure counter (M13 — Hellion Crucible). Passive tally with no rule of its own: one
+         * ability adds them, and the token ability's cost removes two
+         * ([com.wingedsheep.sdk.dsl.Costs.RemoveCounterFromSelf]).
+         */
+        val PRESSURE = CounterType("PRESSURE")
+
+        /**
          * Age counter (CR 702.24, cumulative upkeep). Each upkeep the cumulative upkeep trigger puts one on
          * its permanent and then charges the upkeep cost once per age counter; the counter itself has no
          * rule of its own (CR 702.24b: the counters aren't tied to any one instance of the ability).
@@ -1142,6 +1149,7 @@ value class CounterType(val name: String) {
             STORAGE,
             HUNGER,
             PETRIFICATION,
+            PRESSURE,
             AGE,
             SLIME,
             OIL,
