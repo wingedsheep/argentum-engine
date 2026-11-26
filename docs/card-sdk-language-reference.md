@@ -15671,8 +15671,10 @@ MacCready, Lamplight Mayor (granted).
   supplies the CR 702.83a trigger from [`Exalted`](../mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/scripting/Exalted.kt)
   — `Triggers.a(Creature.youControl()).attacks(setOf(AttackPredicate.Alone))`, effect
   `ModifyStats(1, 1, TriggeringEntity)` — gated on the projected keyword (lost with all abilities). One trigger
-  per instance: the printed keyword plus one per exalted counter (see Counters); a static grant of the bare
-  keyword counts as one instance, because projection can't count repeated grants.
+  per instance: the printed keyword, plus one per exalted counter (see Counters), plus one per static grant —
+  projection tallies each continuous effect granting the bare keyword, so two Sublime Archangels ("other
+  creatures you control have exalted") give every other creature two instances, and an Archangel the other one's
+  grant reaches has two (printed + granted).
 - `Keyword.MYRIAD` — **engine-live.** Declare it and nothing else: `keywords(Keyword.MYRIAD)`, or
   `keywordAbilities(KeywordAbility.Simple(Keyword.MYRIAD), KeywordAbility.Simple(Keyword.MYRIAD))` for
   "Myriad, myriad" (Scurry of Squirrels). The engine supplies the CR 702.116a trigger from

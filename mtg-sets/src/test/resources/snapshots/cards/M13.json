@@ -3198,6 +3198,49 @@
     "colorIdentityOverride": []
 }
 
+// Sublime Archangel
+{
+    "name": "Sublime Archangel",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nExalted (Whenever a creature you control attacks alone, that creature gets +1/+1 until end of turn.)\nOther creatures you control have exalted. (If a creature has multiple instances of exalted, each triggers separately.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "EXALTED"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "EXALTED",
+                "filter": {
+                    "baseFilter": "creature ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "MYTHIC",
+        "artist": "Cynthia Sheppard",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f5cc38bc-55a4-446a-b054-48fb90216946.jpg?1783940511",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "Whenever a creature you control attacks alone, count the number of instances of exalted among permanents you control. After those abilities resolve, that’s how many times the creature will get +1/+1."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Switcheroo
 {
     "name": "Switcheroo",

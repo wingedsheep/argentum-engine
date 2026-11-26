@@ -70,7 +70,7 @@ data class ProjectedValues(
     val name: String? = null,
     val keywords: Set<String> = emptySet(),
     /**
-     * How many continuous effects granted each `RENOWN_<n>` string in [keywords] since the last "loses all abilities" or removal of that
+     * How many continuous effects granted each `RENOWN_<n>` (or bare `EXALTED`) string in [keywords] since the last "loses all abilities" or removal of that
      * keyword. [keywords] is a set, so two "attacking creatures you control have renown 1" grants
      * leave one `RENOWN_1`; this keeps the second instance, which CR 702.112c makes a second
      * trigger. Printed keywords are not counted. Read it through [ProjectedState.grantedKeywordInstances],
@@ -383,6 +383,17 @@ class ProjectedState(
         val values = projectedValues[entityId] ?: return 0
         if (keyword !in values.keywords) return 0
         return maxOf(1, values.grantedKeywordInstances[keyword] ?: 0)
+    }
+
+    /**
+     * How many continuous effects granted [keyword] to the object — the raw tally behind
+     * [grantedKeywordInstances], zero when no grant put it there (printed, or from a keyword
+     * counter). For keywords whose instances also come from elsewhere, e.g. exalted.
+     */
+    fun keywordGrantCount(entityId: EntityId, keyword: String): Int {
+        val values = projectedValues[entityId] ?: return 0
+        if (keyword !in values.keywords) return 0
+        return values.grantedKeywordInstances[keyword] ?: 0
     }
 
     fun hasKeyword(entityId: EntityId, keyword: Keyword): Boolean =

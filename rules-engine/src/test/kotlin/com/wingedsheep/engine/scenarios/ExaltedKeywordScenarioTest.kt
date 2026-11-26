@@ -30,6 +30,8 @@ import io.kotest.matchers.shouldBe
  * | 122.1b — an exalted counter grants exalted; each counter is an instance | "each exalted counter is its own trigger" |
  * | printed + counter instances add | "printed exalted plus a counter is two instances" |
  * | lose all abilities strips printed exalted but not the counter's | "losing all abilities keeps counter exalted" |
+ * | each static grant is its own instance | "two exalted grants are two instances" |
+ * | a grant adds to the printed instance | "printed exalted plus a grant is two instances" |
  * | the pump lasts until end of turn | "the bonus ends at cleanup" |
  */
 class ExaltedKeywordScenarioTest : FunSpec({
@@ -51,10 +53,24 @@ class ExaltedKeywordScenarioTest : FunSpec({
         }
     }
 
+    /** "Other creatures you control have exalted" with no exalted of its own. */
+    val exaltedGranter = card("Test Exalted Granter") {
+        manaCost = "{W}"
+        typeLine = "Creature — Angel"
+        power = 1
+        toughness = 1
+        staticAbility {
+            ability = com.wingedsheep.sdk.scripting.GrantKeyword(
+                Keyword.EXALTED,
+                com.wingedsheep.sdk.scripting.filters.unified.GroupFilter.OtherCreaturesYouControl,
+            )
+        }
+    }
+
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(TestCards.all)
-        listOf(exaltedBear, strip).forEach { driver.registerCard(it) }
+        listOf(exaltedBear, strip, exaltedGranter).forEach { driver.registerCard(it) }
         driver.initMirrorMatch(deck = Deck.of("Plains" to 40), startingLife = 20)
         return driver
     }
@@ -181,6 +197,31 @@ class ExaltedKeywordScenarioTest : FunSpec({
         }
         driver.resolveAll()
         driver.power(bears) shouldBe 3
+    }
+
+    test("two exalted grants are two instances") {
+        val driver = createDriver()
+        driver.creature("Test Exalted Granter")
+        driver.creature("Test Exalted Granter")
+        val bears = driver.creature("Grizzly Bears")
+
+        withClue("each granter gives the other one exalted, and the bears two: 1 + 1 + 2") {
+            driver.attackWith(listOf(bears)) shouldBe 4
+        }
+        driver.resolveAll()
+        driver.power(bears) shouldBe 6
+    }
+
+    test("printed exalted plus a grant is two instances") {
+        val driver = createDriver()
+        driver.creature("Test Exalted Granter")
+        val exalted = driver.creature("Test Exalted Bear")
+
+        withClue("the bear's printed exalted and its granted one") {
+            driver.attackWith(listOf(exalted)) shouldBe 2
+        }
+        driver.resolveAll()
+        driver.power(exalted) shouldBe 4
     }
 
     test("the bonus ends at cleanup") {

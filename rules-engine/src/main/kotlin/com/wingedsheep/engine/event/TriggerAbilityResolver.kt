@@ -995,8 +995,9 @@ class TriggerAbilityResolver(
     /**
      * Exalted (CR 702.83) as the keyword-derived triggered ability it is — see
      * [com.wingedsheep.sdk.scripting.Exalted]. Gated on the projected keyword; the instance count
-     * is the printed keyword (unless all abilities are lost) plus one per exalted counter, and at
-     * least one when the keyword is present only through a static grant.
+     * is the printed keyword (unless all abilities are lost), plus one per exalted counter, plus one
+     * per static grant (projection tallies them — two Sublime Archangels give each other creature
+     * two instances), and at least one while the projected keyword is there at all.
      */
     private fun getExaltedTriggeredAbilities(
         entityId: EntityId,
@@ -1011,7 +1012,8 @@ class TriggerAbilityResolver(
         val printed = if (!projected.hasLostAllAbilities(entityId) &&
             cardRegistry.getCard(cardDefinitionId)?.keywords?.contains(com.wingedsheep.sdk.core.Keyword.EXALTED) == true
         ) 1 else 0
-        val instances = maxOf(printed + counters, 1)
+        val granted = projected.keywordGrantCount(entityId, com.wingedsheep.sdk.core.Keyword.EXALTED.name)
+        val instances = maxOf(printed + counters + granted, 1)
         return List(instances) { com.wingedsheep.sdk.scripting.Exalted.trigger(it) }
     }
 

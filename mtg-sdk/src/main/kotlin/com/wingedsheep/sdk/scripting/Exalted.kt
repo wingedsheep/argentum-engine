@@ -23,8 +23,9 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *   (CR 122.1b; Emissary of Soulfire's ruling: "a creature with multiple exalted counters will have
  *   that many instances of exalted"), and survives "loses all abilities" like every keyword counter.
  *
- * A static grant ("other creatures you control have exalted") floats the bare keyword, which
- * projection can't count, so a granted-only permanent has exactly one instance.
+ * - **static grants** — each continuous effect granting it ("other creatures you control have
+ *   exalted", Sublime Archangel) is one more instance; projection tallies the grants, so two
+ *   Archangels give every other creature two.
  *
  * "Attacks alone" is [AttackPredicate.Alone]: the only creature declared as an attacker that combat
  * (CR 506.5), so a creature that enters attacking later never re-triggers or un-triggers it.
