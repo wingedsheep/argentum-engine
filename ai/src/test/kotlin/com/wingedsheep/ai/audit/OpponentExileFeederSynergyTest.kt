@@ -27,6 +27,10 @@ class OpponentExileFeederSynergyTest : FunSpec({
         }
     }
 
+    test("searching the combat-damaged player's zones for a name and exiling the hits feeds opponent exile") {
+        SynergyAxes.of(named("Shimian Specter")).feeds shouldContain SynergyAxis.OPPONENT_EXILE
+    }
+
     test("exiling our own library top feeds nothing of theirs") {
         val ownTop = card("Own Library Exile Probe") {
             manaCost = "{1}"

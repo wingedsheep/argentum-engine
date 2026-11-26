@@ -41,6 +41,8 @@ import com.wingedsheep.sdk.scripting.effects.MoveCountersEffect
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CopyEachSpellCastEffect
+import com.wingedsheep.sdk.scripting.events.DamageType
+import com.wingedsheep.sdk.scripting.events.Recipient
 import com.wingedsheep.sdk.scripting.events.SpellCastPredicate
 import com.wingedsheep.sdk.scripting.effects.CopyEachTargetSpellEffect
 import com.wingedsheep.sdk.scripting.effects.CopyNextSpellCastEffect
@@ -55,6 +57,7 @@ import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordToSpellEffect
 import com.wingedsheep.sdk.scripting.effects.CreateGlobalTriggeredAbilityEffect
+import com.wingedsheep.sdk.scripting.effects.SacrificeEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
@@ -643,6 +646,9 @@ object SynergyAxes {
             // creature target, or the source itself when it is a creature: a death, the sac outlet's
             // feed. A land or artifact sacrificed is no death; "its controller sacrifices it" can be
             // an opponent's edict, and stays unread here.
+            // "Sacrifice another creature" (Disciple of Bolas): the resolving player — us, outside an
+            // opponent-run ForEach (skipped above) — sacrifices a creature of their own.
+            if (leaf is SacrificeEffect && couldBeCreature(leaf.filter)) add(SynergyAxis.DEATH)
             if (leaf is SacrificeTargetEffect && !leaf.sacrificedByItsController &&
                 sacrificesACreature(leaf.target, requirements, creatureSource)
             ) add(SynergyAxis.DEATH)
@@ -746,7 +752,10 @@ object SynergyAxes {
     private fun exilesOpponentsCards(script: CardScript): Boolean =
         script.spellEffect?.let { exilesOpponentsCards(it, script.targetRequirements, triggeredByOpponent = false) } == true ||
             script.triggeredAbilities.any {
-                exilesOpponentsCards(it.effect, it.allTargetRequirements, watchesOpponents(it.trigger))
+                exilesOpponentsCards(
+                    it.effect, it.allTargetRequirements, watchesOpponents(it.trigger),
+                    damagedPlayerIsAnOpponent = combatDamagesAPlayer(it.trigger),
+                )
             } ||
             script.activatedAbilities.any { exilesOpponentsCards(it.effect, it.targetRequirements, triggeredByOpponent = false) }
 
@@ -761,6 +770,7 @@ object SynergyAxes {
         requirements: List<TargetRequirement>,
         triggeredByOpponent: Boolean,
         youAreAnOpponent: Boolean = false,
+        damagedPlayerIsAnOpponent: Boolean = false,
     ): Boolean {
         fun isOpponent(player: Player): Boolean = when (player) {
             in CardIntentAnalyzer.OPPONENT_PLAYERS -> true
@@ -768,6 +778,9 @@ object SynergyAxes {
             is Player.ContextPlayer -> requirements.getOrNull(player.index) is TargetOpponent
             is Player.BoundVariable -> requirements.firstOrNull { it.id == player.name } is TargetOpponent
             Player.ControllerOfTriggeringEntity -> triggeredByOpponent
+            // "Whenever this creature deals combat damage to a player, that player …" (Shimian
+            // Specter): combat damage only ever reaches the defending player, an opponent.
+            Player.TriggeringPlayer -> damagedPlayerIsAnOpponent
             else -> false
         }
         val leaves = CardIntentAnalyzer.gateInteriorLeaves(effect)
@@ -784,6 +797,8 @@ object SynergyAxes {
                     is CardSource.TopOfLibrary -> source.player
                     is CardSource.FromZone -> source.player.takeIf { source.zone != Zone.EXILE }
                     is CardSource.ControlledPermanents -> source.player
+                    // "Search that player's graveyard, hand, and library for … and exile them".
+                    is CardSource.FromMultipleZones -> source.player.takeIf { Zone.EXILE !in source.zones }
                     else -> null
                 }
                 if (player != null && isOpponent(player)) theirs += leaf.storeAs
@@ -801,6 +816,11 @@ object SynergyAxes {
     }
 
     /** "Whenever a land an opponent controls enters": the triggering object is always an opponent's. */
+    /** A "deals combat damage to a player" trigger, whose triggering player is the one damaged. */
+    private fun combatDamagesAPlayer(pattern: EventPattern): Boolean =
+        pattern is EventPattern.DealsDamageEvent && pattern.damageType == DamageType.Combat &&
+            pattern.recipient == Recipient.AnyPlayer
+
     private fun watchesOpponents(pattern: EventPattern): Boolean = when (pattern) {
         is EventPattern.ZoneChangeEvent -> opponents(pattern.filter)
         is EventPattern.PermanentsEnteredEvent -> opponents(pattern.filter)

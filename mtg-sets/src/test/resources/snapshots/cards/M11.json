@@ -1450,6 +1450,60 @@
     ]
 }
 
+// Harbor Serpent
+{
+    "name": "Harbor Serpent",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Creature — Serpent",
+    "oracleText": "Islandwalk (This creature can't be blocked as long as defending player controls an Island.)\nThis creature can't attack unless there are five or more Islands on the battlefield.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "ISLANDWALK"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "Each",
+                        "filter": "land Island"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "artist": "Daarken",
+        "flavorText": "Like most giant monsters villagers worship as gods, it proves a fickle master.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aa10b43f-eb63-4999-92a0-56826031b686.jpg?1783941826",
+        "rulings": [
+            {
+                "date": "2010-08-15",
+                "text": "Harbor Serpent's abilities care about lands with the land type Island, not necessarily lands named Island."
+            },
+            {
+                "date": "2010-08-15",
+                "text": "The second ability checks how many Islands are on the battlefield (regardless of who controls them) only as attackers are declared. Once Harbor Serpent is declared as an attacker, it will continue to attack even if the number of Islands on the battlefield falls below five."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Hoarding Dragon
 {
     "name": "Hoarding Dragon",

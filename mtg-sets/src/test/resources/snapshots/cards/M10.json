@@ -2836,6 +2836,121 @@
     ]
 }
 
+// Vampire Nocturnus
+{
+    "name": "Vampire Nocturnus",
+    "manaCost": "{1}{B}{B}{B}",
+    "typeLine": "Creature — Vampire",
+    "oracleText": "Play with the top card of your library revealed.\nAs long as the top card of your library is black, this creature and other Vampire creatures you control get +2/+1 and have flying.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            "RevealTopOfLibrary",
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 1,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "LibraryTop",
+                    "filter": "black"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "LibraryTop",
+                    "filter": "black"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 1,
+                    "filter": {
+                        "baseFilter": "creature Vampire ctrl:you",
+                        "excludeSelf": true
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "LibraryTop",
+                    "filter": "black"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "filter": {
+                        "baseFilter": "creature Vampire ctrl:you",
+                        "excludeSelf": true
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "LibraryTop",
+                    "filter": "black"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "rarity": "MYTHIC",
+        "artist": "Raymond Swanland",
+        "flavorText": "\"Your life will set with the sun.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9df4f1ea-dbaa-456c-884c-97f03b64fa17.jpg?1783942378",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "If the top card of your library is black, Vampire Nocturnus will give itself +2/+1 and flying even if it's somehow not a Vampire."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "The top card of your library isn't in your hand, so you can't suspend it, cycle it, discard it, or activate any of its activated abilities."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "If the top card of your library changes while you're casting a spell, playing a land, or activating an ability, the new top card won't be revealed until you finish doing so."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "When playing with the top card of your library revealed, if an effect tells you to draw several cards, reveal each one before you draw it."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "To work as an evasion ability, an attacking creature must already have flying when the declare blockers step begins. Once a creature has become blocked, giving it flying won't change that."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Wall of Frost
 {
     "name": "Wall of Frost",

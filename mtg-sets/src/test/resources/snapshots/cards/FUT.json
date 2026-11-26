@@ -1121,6 +1121,132 @@
     ]
 }
 
+// Shimian Specter
+{
+    "name": "Shimian Specter",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Specter",
+    "oracleText": "Flying\nWhenever this creature deals combat damage to a player, that player reveals their hand. You choose a nonland card from it. Search that player's graveyard, hand, and library for all cards with the same name as that card and exile them. Then that player shuffles.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shimian Specter:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RevealHand",
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "TriggeringPlayer"
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": "TriggeringPlayer"
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "nonland",
+                            "storeSelected": "selected2",
+                            "prompt": "Choose a nonland card",
+                            "showAllCards": true,
+                            "alwaysPrompt": true
+                        },
+                        {
+                            "type": "StoreCardName",
+                            "from": "selected2",
+                            "storeAs": "cardName3"
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromMultipleZones",
+                                "zones": [
+                                    "Graveyard",
+                                    "Hand",
+                                    "Library"
+                                ],
+                                "player": "TriggeringPlayer",
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "NameEqualsChosen",
+                                            "variableName": "cardName3"
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered4",
+                            "search": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered4",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": "TriggeringPlayer"
+                            }
+                        },
+                        {
+                            "type": "ShuffleLibrary",
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "TriggeringPlayer"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "rarity": "RARE",
+        "artist": "Anthony S. Waters",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e6faa406-aa7a-49ce-a42e-00e98f3fb74e.jpg?1783943111",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "The cards you're searching for must be found and exiled if they're in the graveyard because it's a public zone. Finding those cards in the hand and library is optional, because those zones are hidden (even if the hand is temporarily revealed)."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "If the player has no nonland cards in their hand, you can still search that player's library and have them shuffle it."
+            }
+        ]
+    }
+}
+
 // Sprout Swarm
 {
     "name": "Sprout Swarm",

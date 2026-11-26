@@ -1,0 +1,1 @@
+- #TBD The AI reads "sacrifice another creature" effects (Disciple of Bolas) as feeding its death synergies, and Shimian Specter-style "search that player's graveyard, hand and library and exile" as stocking processors.

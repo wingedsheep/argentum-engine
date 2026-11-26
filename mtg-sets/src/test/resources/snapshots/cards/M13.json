@@ -457,6 +457,61 @@
     ]
 }
 
+// Blood Reckoning
+{
+    "name": "Blood Reckoning",
+    "manaCost": "{3}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a creature attacks you or a planeswalker you control, that creature's controller loses 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Blood Reckoning:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsAttackingYouOrYourPlaneswalkers"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "ControllerOfTriggeringEntity"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "UNCOMMON",
+        "artist": "Wayne Reynolds",
+        "flavorText": "\"There is no greater folly than standing against me.\"\n—Nicol Bolas",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/24577bb2-61b0-4675-84e6-5d675b28fc0e.jpg?1783940498",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "Blood Reckoning will trigger once for each creature that attacks you or a planeswalker you control."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "Creatures that are put onto the battlefield attacking were never declared as attackers and won't cause Blood Reckoning to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Bloodhunter Bat
 {
     "name": "Bloodhunter Bat",
@@ -1008,6 +1063,112 @@
     ]
 }
 
+// Diabolic Revelation
+{
+    "name": "Diabolic Revelation",
+    "manaCost": "{X}{3}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for up to X cards, put those cards into your hand, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library"
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": "XValue"
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for cards (up to X) to put into your hand",
+                    "selectedLabel": "Put into your hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "RARE",
+        "artist": "Raymond Swanland",
+        "flavorText": "\"There are some secrets so dark no human mind should ever contain them. Interested?\"\n—Nefarox, Overlord of Grixis",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/145d6d7b-1e87-47b7-baf3-d201458ad996.jpg?1783940497"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Disciple of Bolas
+{
+    "name": "Disciple of Bolas",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "When this creature enters, sacrifice another creature. You gain X life and draw X cards, where X is that creature's power.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Disciple of Bolas:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Sacrifice",
+                            "filter": "creature",
+                            "excludeSource": true
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": "TotalPowerSacrificedThisWay"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": "TotalPowerSacrificedThisWay"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "flavorText": "\"Lord Bolas has shown me how each miserable little life holds untold resources.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4dd57f8-27bc-4ad9-a79e-48a68af33b02.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Downpour
 {
     "name": "Downpour",
@@ -1098,6 +1259,69 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Duskmantle Prowler
+{
+    "name": "Duskmantle Prowler",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Vampire Rogue",
+    "oracleText": "Haste (This creature can attack and {T} as soon as it comes under your control.)\nExalted (Whenever a creature you control attacks alone, that creature gets +1/+1 until end of turn.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE",
+        "EXALTED"
+    ],
+    "metadata": {
+        "collectorNumber": "91",
+        "rarity": "UNCOMMON",
+        "artist": "Johannes Voss",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bcb031da-d41a-496a-b78e-0773f6504303.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Duty-Bound Dead
+{
+    "name": "Duty-Bound Dead",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Skeleton",
+    "oracleText": "Exalted (Whenever a creature you control attacks alone, that creature gets +1/+1 until end of turn.)\n{3}{B}: Regenerate this creature. (The next time this creature would be destroyed this turn, instead tap it, remove it from combat, and heal all damage on it.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 2
+    },
+    "keywords": [
+        "EXALTED"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Duty-Bound Dead:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "artist": "Johannes Voss",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/1/5150aa90-1284-4261-8625-2528139f0015.jpg?1783940496"
+    }
 }
 
 // Encrust
@@ -1657,6 +1881,78 @@
     ]
 }
 
+// Jace's Phantasm
+{
+    "name": "Jace's Phantasm",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Illusion",
+    "oracleText": "Flying\nThis creature gets +4/+4 as long as an opponent has ten or more cards in their graveyard.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 4,
+                    "toughnessBonus": 4,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "GreatestAmongPlayers",
+                        "players": "EachOpponent",
+                        "inner": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Graveyard"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 10
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "rarity": "UNCOMMON",
+        "artist": "Johann Bodin",
+        "flavorText": "In the abstract memories of the Iquati, Jace found interesting ideas to improve upon.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/16829504-385c-4154-8e6d-f3fbaf273890.jpg?1783940507",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "The last ability of Jace's Phantasm constantly monitors each opponent's graveyard to see if the bonus applies. If the stated condition becomes no longer true, the bonus immediately stops applying."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "If Jace's Phantasm is dealt lethal damage at the same time as an opponent's creature, and that creature will become that opponent's tenth card in their graveyard, Jace's Phantasm will be destroyed before it gets +4/+4. This is because all creatures that have been dealt lethal damage are destroyed at the same time."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "In a multiplayer game, a single opponent must have ten or more cards in their graveyard for the bonus to apply, although this opponent may change over the course of the game. You don't have to pick a single opponent; the ability will monitor each opponent's graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Knight of Glory
 {
     "name": "Knight of Glory",
@@ -1688,6 +1984,40 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Knight of Infamy
+{
+    "name": "Knight of Infamy",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Protection from white (This creature can't be blocked, targeted, dealt damage, or enchanted by anything white.)\nExalted (Whenever a creature you control attacks alone, that creature gets +1/+1 until end of turn.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "EXALTED"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Color",
+                "color": "WHITE"
+            }
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "96",
+        "rarity": "UNCOMMON",
+        "artist": "Peter Mohrbacher",
+        "flavorText": "\"Your laws, like your bones, were made to be broken.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e339853-5b6b-47b7-8d88-e9d3befb803f.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -2235,6 +2565,52 @@
     ]
 }
 
+// Nefarox, Overlord of Grixis
+{
+    "name": "Nefarox, Overlord of Grixis",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Legendary Creature — Demon",
+    "oracleText": "Flying\nExalted (Whenever a creature you control attacks alone, that creature gets +1/+1 until end of turn.)\nWhenever Nefarox attacks alone, defending player sacrifices a creature of their choice.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "EXALTED"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nefarox, Overlord of Grixis:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        "AttacksAlone"
+                    ]
+                },
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "creature",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "DefendingPlayer"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "rarity": "RARE",
+        "artist": "Aleksi Briclot",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/abc382f3-fdb9-4987-acf4-bf1ac4fd2ef7.jpg?1783940497"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Odric, Master Tactician
 {
     "name": "Odric, Master Tactician",
@@ -2408,6 +2784,93 @@
     "colorIdentityOverride": [
         "GREEN",
         "WHITE"
+    ]
+}
+
+// Public Execution
+{
+    "name": "Public Execution",
+    "manaCost": "{5}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature an opponent controls. Each other creature that player controls gets -2/-0 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "controllerPredicate": {
+                                    "type": "ControlledByReferencedPlayer",
+                                    "target": "TargetController"
+                                }
+                            },
+                            "excludeTarget": true
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "rarity": "UNCOMMON",
+        "artist": "Anthony Palumbo",
+        "flavorText": "Though the executioner did not speak, the villagers got the message.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/8/48188942-d0ba-4503-bd75-c7a5329bb7c8.jpg?1783940491",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "If the target creature regenerates or has indestructible, each other creature controlled by that creature's controller will still get -2/-0."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "Only creatures controlled by the player when Public Execution resolves will get -2/-0. Creatures that enter under that player's control or that the player gains control of later in the turn are unaffected."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "Public Execution targets only the creature it destroys. If that creature is an illegal target when Public Execution tries to resolve, it won't resolve and none of its effects will happen. No creature will get -2/-0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -3033,6 +3496,30 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Servant of Nefarox
+{
+    "name": "Servant of Nefarox",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "Exalted (Whenever a creature you control attacks alone, that creature gets +1/+1 until end of turn.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "EXALTED"
+    ],
+    "metadata": {
+        "collectorNumber": "108",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"My cause is power, and at the altar of power I will gladly forfeit my soul.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e00a2b22-a473-44ae-919f-29bc8be05543.jpg?1783940490"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -3821,6 +4308,94 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Void Stalker
+{
+    "name": "Void Stalker",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "{2}{U}, {T}: Put this creature and target creature on top of their owners' libraries, then those players shuffle their libraries.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Void Stalker:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Library",
+                            "placement": "Shuffled",
+                            "fromZone": "Battlefield"
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Library",
+                            "placement": "Shuffled",
+                            "fromZone": "Battlefield"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}{U}, {T}: Put this creature and target creature on top of their owners' libraries, then those players shuffle their libraries."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "rarity": "RARE",
+        "artist": "Marco Nelor",
+        "flavorText": "Now you see it, now you're gone.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7fc30e31-4796-4e98-992c-a56cd51ad3c9.jpg?1783940500",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "You can activate Void Stalker's ability targeting a creature you control, including Void Stalker itself. In that case, only you will shuffle your library."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "If the target creature is an illegal target when the ability tries to resolve, it won't resolve and none of its effects will happen. No creature will leave the battlefield and no library will be shuffled."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "If Void Stalker leaves the battlefield before its ability resolves, the target creature will be shuffled into its owner's library but Void Stalker will remain wherever it is."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
