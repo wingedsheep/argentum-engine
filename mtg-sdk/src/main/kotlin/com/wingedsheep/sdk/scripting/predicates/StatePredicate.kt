@@ -1293,6 +1293,24 @@ sealed interface StatePredicate {
         override val description: String = "paired"
     }
 
+    /**
+     * Is soulbond-paired (CR 702.95b) with a creature matching [partner] — the relational sibling
+     * of [IsPaired]: "can't attack or block unless it's paired with a creature with soulbond"
+     * (Flowering Lumberknot, `partner = Creature.withKeyword(SOULBOND)`), and, with
+     * `partner = Any.withStatePredicate(IsEntity(target))`, "the creature paired with
+     * the target" (Joint Assault's "that creature also gets +2/+2").
+     *
+     * Reads the live link like [IsPaired], so a partner that has left the battlefield counts as
+     * no partner at once (CR 702.95e). [partner] is matched against the projected partner with
+     * the asking ability's context. Fails closed in the group/projection and trigger-gating
+     * contexts that can't evaluate a nested filter.
+     */
+    @SerialName("IsPairedWith")
+    @Serializable
+    data class IsPairedWith(val partner: GameObjectFilter) : Entity {
+        override val description: String = "paired with ${partner.description}"
+    }
+
     // =============================================================================
     // Equipment / Auras (Entity)
     // =============================================================================

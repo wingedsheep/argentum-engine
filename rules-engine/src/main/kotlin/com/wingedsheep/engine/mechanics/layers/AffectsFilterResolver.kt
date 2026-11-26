@@ -610,6 +610,9 @@ internal class AffectsFilterResolver(
         StatePredicate.IsBlockingIterationEntity -> false
         // Role-relative ("blocking it"); needs an effect context, never present in projection.
         is StatePredicate.IsBlockingEntity -> false
+        // Nested partner filter needs the full evaluator — fails closed in projection like the
+        // other relational predicates here.
+        is StatePredicate.IsPairedWith -> false
         // Reference-relative identity; projection has no effect context to resolve it.
         is StatePredicate.IsEntity -> false
         // Source-relative: "created with the source" needs the ability's source permanent, absent

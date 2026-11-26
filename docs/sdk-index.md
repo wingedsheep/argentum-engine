@@ -1816,6 +1816,7 @@ Families:
 - `StatePredicate.IsMonstrous` — Permanent that currently has the monstrous designation (CR 701.37b, Theros).
 - `StatePredicate.IsOnBattlefield` — The object is on the battlefield *right now*.
 - `StatePredicate.IsPaired` — Is soulbond-**paired** with another creature (CR 702.95b).
+- `StatePredicate.IsPairedWith(partner: GameObjectFilter)` — Is soulbond-paired (CR 702.95b) with a creature matching partner — the relational sibling of IsPaired: "can't attack or block unless it's paired with a creature with soulbond" (Flowering Lumberknot…
 - `StatePredicate.IsPrepared` — The permanent is prepared (Secrets of Strixhaven prepare): it has a castable copy of its prepare spell in exile.
 - `StatePredicate.IsProtectedBy(protector: ControllerPredicate)` — A battle whose protector (CR 310.9) satisfies protector — the battle's analogue of the controller predicate.
 - `StatePredicate.IsRenowned` — Permanent that currently has the renowned designation (CR 702.112b, Magic Origins).

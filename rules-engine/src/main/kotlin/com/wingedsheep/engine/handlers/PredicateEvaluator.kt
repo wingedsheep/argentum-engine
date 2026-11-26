@@ -2559,6 +2559,15 @@ class PredicateEvaluator(
             StatePredicate.IsPaired ->
                 com.wingedsheep.engine.mechanics.SoulbondPairing.isPaired(state, entityId)
 
+            // "Paired with a creature with soulbond" (Flowering Lumberknot) / "the creature paired
+            // with the target" (Joint Assault, partner = IsEntity(reference)). The partner is matched
+            // with the asking ability's context; without one the candidate's controller stands in.
+            is StatePredicate.IsPairedWith -> {
+                val partnerId = com.wingedsheep.engine.mechanics.SoulbondPairing.partnerOf(state, entityId)
+                val asking = context ?: projected.getController(entityId)?.let { PredicateContext(controllerId = it) }
+                partnerId != null && asking != null && matches(state, projected, partnerId, predicate.partner, asking)
+            }
+
             // Counter state
             is StatePredicate.HasCounter -> {
                 val countersComponent = container.get<CountersComponent>()

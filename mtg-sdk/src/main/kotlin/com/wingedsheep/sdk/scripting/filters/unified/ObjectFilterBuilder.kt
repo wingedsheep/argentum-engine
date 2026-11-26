@@ -1173,6 +1173,19 @@ interface ObjectFilterBuilder<out Self> {
     fun unpaired() = withStatePredicate(StatePredicate.Not(StatePredicate.IsPaired))
 
     /**
+     * Must be soulbond-paired with a creature matching [partner] — "unless it's paired with a
+     * creature with soulbond" (Flowering Lumberknot). See [StatePredicate.IsPairedWith].
+     */
+    fun pairedWith(partner: GameObjectFilter) = withStatePredicate(StatePredicate.IsPairedWith(partner))
+
+    /**
+     * Must be soulbond-paired with the creature [reference] names — "the creature paired with the
+     * target creature" (Joint Assault, its `target(...)` handle).
+     */
+    fun pairedWith(reference: EffectTarget.SingleEntity) =
+        pairedWith(GameObjectFilter.Any.withStatePredicate(StatePredicate.IsEntity(reference)))
+
+    /**
      * Must have blocked, or been blocked by, a creature matching [partner] this turn — as that
      * creature stood when the block was declared: "target creature that blocked or was blocked by a
      * legendary creature this turn" (You Cannot Pass!, `Creature.legendary()`), "… by a Zombie this
