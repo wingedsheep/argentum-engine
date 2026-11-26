@@ -43,10 +43,12 @@ data class EntryCopyOrders(
 )
 
 /**
- * Granted "enters as a copy of *that* object" replacements — an [EntersAsCopy] with a bound
- * [EntersAsCopy.copyOf] recorded in [GameState.grantedReplacementEffects] ("the next time one or more
- * creatures or planeswalkers enter this turn, they enter as copies of the chosen creature" — Mystic
- * Reflection). Unlike a permanent's own as-enters copy there is nothing to choose, so every entry path
+ * "Enters as a copy of *that* object" replacements that apply to other objects entering — an
+ * [EntersAsCopy] with a [EntersAsCopy.copyOf]: granted with a bound reference in
+ * [GameState.grantedReplacementEffects] ("the next time one or more creatures or planeswalkers enter
+ * this turn, they enter as copies of the chosen creature" — Mystic Reflection), or printed on a
+ * battlefield permanent with a source-relative reference ("Nontoken creatures you control enter as a
+ * copy of enchanted creature" — Infinite Reflection). Unlike a permanent's own as-enters copy there is nothing to choose, so every entry path
  * reads it the same way: the permanent-spell resolver, the effect move pipeline (`EffectCopyEntry`,
  * `EffectEntryChoices`, the zone transition) and the token / direct-insertion paths.
  *
@@ -90,10 +92,19 @@ object GrantedEntryCopy {
             answer?.let { a -> options.firstOrNull { it.sameCopyAs(a) } } ?: choice
     }
 
-    /** The granted copy replacements that modify [entityId]'s entry, or null when none applies. */
-    fun find(state: GameState, entityId: EntityId, evaluator: PredicateEvaluator): Found? {
+    /**
+     * The copy replacements that modify [entityId]'s entry — granted ones and printed ones on
+     * battlefield permanents ([printedOptions]) — or null when none applies. [entrantControllerId]
+     * is the player the entrant will enter under, when that isn't yet its [ControllerComponent] (an
+     * effect move from a graveyard "under your control"), so an "enter … you control" filter reads it.
+     */
+    fun find(
+        state: GameState,
+        entityId: EntityId,
+        evaluator: PredicateEvaluator,
+        entrantControllerId: EntityId? = null,
+    ): Found? {
         val grants = state.grantedReplacementEffects
-        if (grants.isEmpty()) return null
         val options = mutableListOf<EntryCopyChoice>()
         val indices = mutableListOf<Int>()
         for (index in grants.indices.reversed()) {
@@ -111,7 +122,52 @@ object GrantedEntryCopy {
                 options += option
             }
         }
+        for (option in printedOptions(state, entityId, evaluator, entrantControllerId)) {
+            if (options.none { it.copiedCard == option.copiedCard && it.replacement.exceptions == option.replacement.exceptions }) {
+                options += option
+            }
+        }
         return if (options.isEmpty()) null else Found(indices, options)
+    }
+
+    /**
+     * Printed "<entrants> enter as a copy of <that object>" replacements on battlefield permanents
+     * — an [EntersAsCopy] whose [EntersAsCopy.copyOf] names an object relative to its source:
+     * "Nontoken creatures you control enter as a copy of enchanted creature" (Infinite Reflection,
+     * [EffectTarget.EnchantedCreature]) or "… as a copy of this" ([EffectTarget.Self]). The
+     * reference is resolved as the entrant enters, from the source's current attachment, and must
+     * be on the battlefield then: a static ability has no grant-time snapshot to fall back on. An
+     * entrant can't copy itself. Never spent — the replacement lasts as long as its source.
+     */
+    private fun printedOptions(
+        state: GameState,
+        entityId: EntityId,
+        evaluator: PredicateEvaluator,
+        entrantControllerId: EntityId?,
+    ): List<EntryCopyChoice> {
+        val printed = com.wingedsheep.engine.replacement.ActiveReplacements.all(state) {
+            it is EntersAsCopy && it.copyOf != null
+        }.filterNot { it.granted }
+        if (printed.isEmpty()) return emptyList()
+        val battlefield = state.getBattlefield()
+        val probe = if (entrantControllerId == null ||
+            state.getEntity(entityId)?.get<ControllerComponent>()?.playerId == entrantControllerId) state
+        else state.updateEntity(entityId) { it.with(ControllerComponent(entrantControllerId)) }
+        return printed.mapNotNull { active ->
+            val replacement = active.effect as EntersAsCopy
+            val pattern = replacement.appliesTo as? EventPattern.ZoneChangeEvent ?: return@mapNotNull null
+            if (pattern.to != Zone.BATTLEFIELD) return@mapNotNull null
+            val context = PredicateContext(sourceId = active.sourceId, controllerId = active.controllerId)
+            if (!evaluator.matches(probe, probe.projectedState, entityId, pattern.filter, context)) return@mapNotNull null
+            val referenceId = com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveTarget(
+                replacement.copyOf!!,
+                com.wingedsheep.engine.handlers.EffectContext(sourceId = active.sourceId, controllerId = active.controllerId),
+                state,
+            ) ?: return@mapNotNull null
+            if (referenceId == entityId || referenceId !in battlefield) return@mapNotNull null
+            val copied = state.getEntity(referenceId)?.copiableCardComponent() ?: return@mapNotNull null
+            EntryCopyChoice(replacement, copied, referenceId)
+        }
     }
 
     /**

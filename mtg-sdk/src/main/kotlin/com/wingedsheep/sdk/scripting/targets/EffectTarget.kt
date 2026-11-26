@@ -377,6 +377,10 @@ sealed interface EffectTarget {
      * [com.wingedsheep.sdk.scripting.EventPattern.BecomesUnattachedEvent] trigger, where the
      * triggering entity is the attachment and this resolves to the host on the other end.
      *
+     * Also an attachment's own enters trigger — "when this Aura enters attached to a creature, …
+     * that creature" (Infinite Reflection): there it is the host the attachment entered on, frozen
+     * when the trigger fires, so moving the Aura before resolution doesn't change it.
+     *
      * Used by Eriette, the Beguiler ("gain control of that permanent"), Assimilation Aegis
      * ("that creature becomes a copy …"), and Stitcher's Graft ("sacrifice that permanent"). On the
      * unattach side the host may already have left the battlefield — it then resolves to nothing and

@@ -337,6 +337,15 @@ data class TriggerContext(
      */
     val unattachedFromEntityId: EntityId? = null,
     /**
+     * For an attachment's own "enters" trigger — the permanent it entered attached to, frozen at
+     * trigger time. Resolves
+     * [com.wingedsheep.sdk.scripting.targets.EffectTarget.AttachedToTriggeringPermanent] for "when
+     * this Aura enters attached to a creature, … that creature" (Infinite Reflection): if the Aura
+     * is moved to another creature before the trigger resolves, "that creature" is still the first
+     * one (the card's ruling). `null` otherwise.
+     */
+    val enteredAttachedToEntityId: EntityId? = null,
+    /**
      * For a battlefield-departure trigger — the creature the departing permanent chose as it
      * entered, frozen off the leave event's last-known snapshot. Resolves
      * [com.wingedsheep.sdk.scripting.targets.EffectTarget.ChosenCreature] for the departed

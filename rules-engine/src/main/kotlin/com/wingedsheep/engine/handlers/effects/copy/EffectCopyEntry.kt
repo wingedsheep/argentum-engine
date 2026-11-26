@@ -42,7 +42,7 @@ object EffectCopyEntry {
             if (id in context.entryCopies || id in state.getBattlefield()) continue
             // A granted copy of a bound object (Mystic Reflection) supersedes the entrant's own
             // choice; the transition installs it, asking for an order between grants by replay.
-            if (GrantedEntryCopy.find(state, id, evaluator) != null) continue
+            if (GrantedEntryCopy.find(state, id, evaluator, controller) != null) continue
             val card = state.getEntity(id)?.get<CardComponent>() ?: continue
             val replacement = registry.getCard(card.cardDefinitionId)?.script?.replacementEffects
                 ?.filterIsInstance<EntersAsCopy>()?.firstOrNull { it.copyOf == null }

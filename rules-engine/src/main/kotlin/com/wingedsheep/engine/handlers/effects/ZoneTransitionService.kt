@@ -1044,7 +1044,7 @@ class ZoneTransitionService(
                 // among several, the one the controller chose to apply last (asked by replay).
                 // A face-down entrant is modified too: it copies under its face-down status (CR 708.10).
                 val grantedCopy = com.wingedsheep.engine.handlers.effects.copy
-                    .GrantedEntryCopy.find(newState, entityId, predicateEvaluator)
+                    .GrantedEntryCopy.find(newState, entityId, predicateEvaluator, destControllerId)
                 var grantedChoice: com.wingedsheep.engine.handlers.effects.copy.EntryCopyChoice? = null
                 if (grantedCopy != null) {
                     val (choice, decided) = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy
