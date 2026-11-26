@@ -89,7 +89,35 @@ internal class PlayerActiveEffectsProjector(
      * controller, then one per kind of shield totalled across every floating effect.
      */
     private fun damagePreventionShields(state: GameState, playerId: EntityId, audience: Audience): List<ClientPlayerEffect> =
-        controllerGroupShieldBadges(state, playerId) + tallyShields(state, playerId, audience).badges(state, audience)
+        controllerGroupShieldBadges(state, playerId) + groupPoolBadges(state, playerId, audience) +
+            tallyShields(state, playerId, audience).badges(state, audience)
+
+    /**
+     * "Prevent the next N damage that would be dealt to you and/or permanents you control" pools,
+     * one badge per pool on its controller — the pool is theirs to split, so it sits with them even
+     * when it covers only their permanents.
+     */
+    private fun groupPoolBadges(state: GameState, playerId: EntityId, audience: Audience): List<ClientPlayerEffect> =
+        state.floatingEffects.mapNotNull { floatingEffect ->
+            val pool = floatingEffect.effect.modification as? SerializableModification.PreventNextDamage
+            if (pool == null || !pool.isGroupShield || floatingEffect.controllerId != playerId || pool.remainingAmount <= 0) {
+                return@mapNotNull null
+            }
+            val recipients = listOfNotNull(
+                "you".takeIf { pool.groupIncludesController },
+                pool.recipientGroup?.let { groupText(state, it, audience) }
+            ).joinToString(" and/or ")
+            val kind = if (pool.combatOnly) "combat damage" else "damage"
+            val ending = durationPhrase(state, floatingEffect)
+            ClientPlayerEffect(
+                effectId = "prevent_damage_pool_${floatingEffect.id.value}",
+                name = "Prevent ${pool.remainingAmount}",
+                description = "The next ${pool.remainingAmount} $kind that would be dealt to $recipients is prevented" +
+                    (ending?.let { " ($it)" } ?: ""),
+                icon = "prevent-damage",
+                duration = ending
+            )
+        }
 
     /** "Prevent all damage to creatures you control and you" shields, one badge per shield. */
     private fun controllerGroupShieldBadges(state: GameState, playerId: EntityId): List<ClientPlayerEffect> =
