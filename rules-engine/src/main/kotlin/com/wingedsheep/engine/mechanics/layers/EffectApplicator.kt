@@ -47,7 +47,9 @@ internal class EffectApplicator(
      * renown 1 twice is two triggers, CR 702.112c, not one renown 2), so distinct Ns sit side by
      * side. Renown grants are also tallied in [MutableProjectedValues.grantedKeywordInstances],
      * because the set alone can't tell one "has renown 1" grant from two — and unlike crew, the
-     * number of renown instances matters.
+     * number of renown instances matters. Bare exalted is tallied the same way: each grant of it is
+     * its own triggered ability, so two "other creatures you control have exalted"
+     * statics give a creature two instances.
      */
     private fun addKeyword(values: MutableProjectedValues, keyword: String) {
         // "Can't have or gain [keyword]" (Modification.RemoveKeyword.prohibitsGain) beats any grant.
@@ -58,7 +60,9 @@ internal class EffectApplicator(
         val n = if (split > 0) keyword.substring(split + 1).toIntOrNull() else null
         if (n == null || keyword.startsWith(CREW_PREFIX) || keyword.startsWith(RENOWN_PREFIX)) {
             keywords.add(keyword)
-            if (keyword.startsWith(RENOWN_PREFIX)) values.grantedKeywordInstances.merge(keyword, 1, Int::plus)
+            if (keyword.startsWith(RENOWN_PREFIX) || keyword == EXALTED_KEYWORD) {
+                values.grantedKeywordInstances.merge(keyword, 1, Int::plus)
+            }
             return
         }
         val prefix = keyword.substring(0, split + 1)
@@ -608,3 +612,4 @@ private val CREW_PREFIX = "${com.wingedsheep.sdk.core.Keyword.CREW.name}_"
 
 /** Prefix of a granted renown keyword ([com.wingedsheep.sdk.scripting.KeywordAbility.grantedRenown]); see `addKeyword`. */
 private val RENOWN_PREFIX = "${com.wingedsheep.sdk.core.Keyword.RENOWN.name}_"
+private val EXALTED_KEYWORD = com.wingedsheep.sdk.core.Keyword.EXALTED.name
