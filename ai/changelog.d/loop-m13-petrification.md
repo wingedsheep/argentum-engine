@@ -1,1 +1,1 @@
-- #TBD Aims Xathrid Gorgon's petrification lock (petrification counter, defender, no activations) at an opponent's creature instead of reading the target as a coin toss
+- #4872 Aims Xathrid Gorgon's petrification lock (petrification counter, defender, no activations) at an opponent's creature instead of reading the target as a coin toss
