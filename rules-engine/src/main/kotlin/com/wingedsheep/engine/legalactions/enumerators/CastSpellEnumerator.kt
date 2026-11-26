@@ -893,7 +893,10 @@ class CastSpellEnumerator(
                     autoTapPreview = if (context.skipAutoTapPreview) null else if (freeCastCost.isEmpty()) emptyList() else
                         context.manaSolver.solve(state, playerId, freeCastCost, spellContext = spellContext, precomputedSources = cachedSources)
                             ?.sources?.map { it.entityId },
-                    additionalCostInfo = null
+                    // Waiving the mana cost leaves mandatory additional costs in place, so the free
+                    // variant carries the same selection prompt as the paid cast — e.g. Abhorrent
+                    // Oculus's six-card graveyard exile under Omniscience.
+                    additionalCostInfo = costInfo
                 )
             } else null
 
@@ -1231,6 +1234,7 @@ class CastSpellEnumerator(
                                 description = "Cast ${cardComponent.name} (Free)",
                                 action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), useWithoutPayingManaCost = true),
                                 manaCostString = freeCastResult.manaCostString,
+                                additionalCostInfo = freeCastResult.additionalCostInfo,
                                 requiresDamageDistribution = requiresDamageDistribution,
                                 totalDamageToDistribute = totalDamageToDistribute,
                                 minDamagePerTarget = minDamagePerTarget,
@@ -1404,6 +1408,7 @@ class CastSpellEnumerator(
                                 xConstrainsTargetCount = firstReqInfo.xConstrainsCount,
                                 xConstrainsTargetCountExactly = firstReqInfo.xConstrainsCountExactly,
                                 manaCostString = freeCastResult.manaCostString,
+                                additionalCostInfo = freeCastResult.additionalCostInfo,
                                 requiresDamageDistribution = requiresDamageDistribution,
                                 totalDamageToDistribute = totalDamageToDistribute,
                                 minDamagePerTarget = minDamagePerTarget,
@@ -1509,6 +1514,7 @@ class CastSpellEnumerator(
                         description = "Cast ${cardComponent.name} (Free)",
                         action = CastSpell(playerId, cardId, useWithoutPayingManaCost = true),
                         manaCostString = freeCastResult.manaCostString,
+                        additionalCostInfo = freeCastResult.additionalCostInfo,
                         autoTapPreview = freeCastResult.autoTapPreview
                     ))
                 }
