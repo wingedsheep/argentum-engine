@@ -373,10 +373,25 @@ sealed interface SerializableModification {
      * [onPreventedTargets] / [onPreventedNamedTargets] / [onPreventedBound], frozen as for
      * [PreventAllDamageToGroup]. Damage that can't be prevented doesn't spend the shield and
      * queues nothing.
+     *
+     * With [recipientGroup] or [groupIncludesController] set, the shield has no affected entities:
+     * it is one pool shared by every recipient in the group, judged against projected state at
+     * damage time with the shield's controller as "you" — "prevent the next X damage that would be
+     * dealt to you and/or permanents you control this turn" (Divine Deflection). Simultaneous damage
+     * to several of them is split by the protected player (CR 615.7's allocation), and the reaction
+     * is owed once per settled action for the pool's total, not once per recipient.
      */
     @Serializable
     data class PreventNextDamage(
         val remainingAmount: Int,
+        /** Permanents covered by a shared pool instead of the affected entities; see the class doc. */
+        @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+        @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+        val recipientGroup: GameObjectFilter? = null,
+        /** The shield's controller is covered by the shared pool too ("you and/or …"). */
+        @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+        @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+        val groupIncludesController: Boolean = false,
         /** If set, only prevents damage from this specific source (used for CR 615.7 prevention distribution) */
         val onlyFromSource: EntityId? = null,
         val controllerGainsLife: Boolean = false,
@@ -385,7 +400,10 @@ sealed interface SerializableModification {
         val onPreventedTargets: List<ChosenTarget> = emptyList(),
         val onPreventedNamedTargets: Map<String, ChosenTarget> = emptyMap(),
         val onPreventedBound: List<CapturedObjectBinding> = emptyList(),
-    ) : SerializableModification
+    ) : SerializableModification {
+        /** True for a shared pool over a recipient group rather than its affected entities. */
+        val isGroupShield: Boolean get() = recipientGroup != null || groupIncludesController
+    }
 
     /**
      * Damage prevention: prevent all damage that would be dealt to the affected entities.

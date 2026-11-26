@@ -350,6 +350,36 @@ class PreventDamageExecutor(
         val modification: SerializableModification
 
         when {
+            // A capped pool shared by a recipient group: "prevent the next X damage that would be
+            // dealt to you and/or permanents you control this turn. If damage is prevented this way,
+            // ~ deals that much damage to any target" (Divine Deflection). The protected player
+            // splits the pool across simultaneous damage as it would be dealt.
+            (effect.recipientGroup != null || effect.recipientGroupIncludesController) && effect.amount != null -> {
+                if (sourceFilter != null || !effect.preventDamage || effect.nextInstanceOnly ||
+                    effect.halvePreventedDamage || effect.direction != PreventionDirection.ToTarget
+                ) {
+                    return EffectResult.error(
+                        state,
+                        "A recipient-group amount shield prevents the next N damage from any source; " +
+                            "a source filter, preventDamage = false, nextInstanceOnly, halve and FromTarget aren't supported"
+                    )
+                }
+                val amount = amountEvaluator.evaluate(state, effect.amount!!, context)
+                if (amount <= 0) return EffectResult.success(state)
+                affectedEntities = emptySet()
+                modification = SerializableModification.PreventNextDamage(
+                    amount,
+                    recipientGroup = effect.recipientGroup,
+                    groupIncludesController = effect.recipientGroupIncludesController,
+                    controllerGainsLife = effect.gainLifeFromPrevented,
+                    combatOnly = effect.scope == PreventionScope.CombatOnly,
+                    onPrevented = effect.onPrevented,
+                    onPreventedTargets = if (effect.onPrevented != null) context.targets else emptyList(),
+                    onPreventedNamedTargets = if (effect.onPrevented != null) context.pipeline.namedTargets else emptyMap(),
+                    onPreventedBound = if (effect.onPrevented == null) emptyList() else frozenBindings(state, context),
+                )
+            }
+
             // Recipient-side prevention: "prevent all damage that would be dealt to creatures you
             // control this turn", and the two shapes that include the player — "to you and creatures
             // you control" (group + flag) and "to you" alone (flag, no group; Scarecrow). No specific
@@ -359,7 +389,7 @@ class PreventDamageExecutor(
                 // The group shield prevents all covered damage and nothing else; a reaction riding
                 // it must not hide a shape it would silently ignore (Eye for an Eye's "still
                 // deals that damage", a capped amount, a next-instance or halving shield).
-                if (effect.onPrevented != null && (!effect.preventDamage || effect.amount != null ||
+                if (effect.onPrevented != null && (!effect.preventDamage ||
                         effect.nextInstanceOnly || effect.halvePreventedDamage || effect.gainLifeFromPrevented)
                 ) {
                     return EffectResult.error(

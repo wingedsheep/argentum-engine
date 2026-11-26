@@ -563,6 +563,13 @@ object DamageReplacementChain {
             val damageRef = d.sourceRef ?: state.objectRef(sourceId) ?: return true
             return damageRef == shieldRef
         }
+        // A "prevent the next N" shield covers its affected entities, or — as a shared pool — every
+        // recipient in its group, judged now with the shield's controller as "you".
+        fun coversNext(floating: ActiveFloatingEffect, mod: SerializableModification.PreventNextDamage, recipient: EntityId): Boolean =
+            if (!mod.isGroupShield) recipient in floating.effect.affectedEntities
+            else mod.groupIncludesController && recipient == floating.controllerId ||
+                mod.recipientGroup != null && recipient in state.getBattlefield() &&
+                evaluator.matches(viewState, projected, recipient, mod.recipientGroup!!, PredicateContext(controllerId = floating.controllerId))
         fun replace(floating: ActiveFloatingEffect, replacement: SerializableModification?): GameState = state.copy(
             floatingEffects = state.floatingEffects.mapNotNull { old ->
                 if (old.id != floating.id) old else replacement?.let { old.copy(effect = old.effect.copy(modification = it)) }
@@ -610,10 +617,10 @@ object DamageReplacementChain {
                 is SerializableModification.DoubleDamageToPlayer -> if (d.targetId == mod.playerId || projected.getController(d.targetId) == mod.playerId) {
                     amount("double damage (${d.amount * 2})", d.amount * 2, "multiply")
                 }
-                is SerializableModification.PreventNextDamage -> if (!disabled && targetMatches &&
+                is SerializableModification.PreventNextDamage -> if (!disabled && coversNext(floating, mod, d.targetId) &&
                     (mod.onlyFromSource == null || mod.onlyFromSource == d.sourceId) && (!mod.combatOnly || d.isCombatDamage) && mod.remainingAmount > 0) {
                     val maximum = minOf(mod.remainingAmount, d.amount)
-                    val shared = later().any { it.amount > 0 && it.targetId in floating.effect.affectedEntities &&
+                    val shared = later().any { it.amount > 0 && coversNext(floating, mod, it.targetId) &&
                         (mod.onlyFromSource == null || mod.onlyFromSource == it.sourceId) && (!mod.combatOnly || it.isCombatDamage) }
                     out += Candidate(key, "$hostName — prevent ${if (shared) "up to ${mod.remainingAmount}" else maximum.toString()} damage", floating.sourceId,
                         allocation = Allocation(key, mod.remainingAmount, "Prevent") { current, prevented ->
@@ -776,6 +783,9 @@ object DamageReplacementChain {
     ): GameState {
         val effect = requireNotNull(mod.onPrevented)
         val hostId = floating.sourceId ?: floating.controllerId
+        // A shared pool reacts once for everything it prevented across its recipients.
+        @Suppress("NAME_SHADOWING")
+        val recipientId = if (mod.isGroupShield) floating.controllerId else recipientId
         val riders = state.pendingReplacementRiders
         val existing = riders.indexOfFirst {
             it.effect == effect && it.hostId == hostId && it.controllerId == floating.controllerId &&

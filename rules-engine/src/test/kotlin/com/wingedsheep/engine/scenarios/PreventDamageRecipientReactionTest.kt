@@ -203,8 +203,8 @@ class PreventDamageRecipientReactionTest : FunSpec({
         listOf(
             // "Instead it still deals that damage" (Eye for an Eye's shape) on a "to you" shield.
             PreventDamageEffect(recipientGroupIncludesController = true, preventDamage = false, onPrevented = reaction),
-            // A capped amount, which the group shield would widen to "prevent all".
-            PreventDamageEffect(recipientGroupIncludesController = true, amount = DynamicAmounts.fixed(2), onPrevented = reaction),
+            // A capped pool that would still deal the damage — the pool only prevents.
+            PreventDamageEffect(recipientGroupIncludesController = true, amount = DynamicAmounts.fixed(2), preventDamage = false, onPrevented = reaction),
             PreventDamageEffect(recipientGroupIncludesController = true, nextInstanceOnly = true, onPrevented = reaction),
         ).forEach { shape ->
             val result = executor.execute(driver.state, shape, EffectContext(sourceId = null, controllerId = player))

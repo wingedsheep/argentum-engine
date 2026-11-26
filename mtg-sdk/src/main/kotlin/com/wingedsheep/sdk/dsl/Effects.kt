@@ -7310,7 +7310,9 @@ object Effects {
      * @param amount "The next N damage"; null prevents all of it.
      * @param combatOnly "Combat damage" rather than all damage.
      * @param toGroup Protect every permanent matching this filter instead of [target] — "to
-     *   creatures you control" — re-evaluated whenever damage would be dealt.
+     *   creatures you control" — re-evaluated whenever damage would be dealt. With [amount] the group
+     *   shares one "prevent the next N" pool, split by the protected player over simultaneous damage
+     *   (Divine Deflection).
      * @param alsoToYou Add the controller to the recipients: "to **you and** creatures you control",
      *   or, without [toGroup], "to you" alone for a [PreventionSourceFilter.Matching] shield
      *   (Scarecrow, Heavy Fog).

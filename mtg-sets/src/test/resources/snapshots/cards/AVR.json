@@ -1809,6 +1809,53 @@
     ]
 }
 
+// Divine Deflection
+{
+    "name": "Divine Deflection",
+    "manaCost": "{X}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Prevent the next X damage that would be dealt to you and/or permanents you control this turn. If damage is prevented this way, Divine Deflection deals that much damage to any target.",
+    "script": {
+        "spellEffect": {
+            "type": "PreventDamageShield",
+            "recipientGroup": {
+                "cardPredicates": [
+                    "IsPermanent"
+                ],
+                "controllerPredicate": "ControlledByYou"
+            },
+            "recipientGroupIncludesController": true,
+            "amount": "XValue",
+            "onPrevented": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "ContextProperty",
+                    "key": "PREVENTED_DAMAGE_AMOUNT"
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "RARE",
+        "artist": "Steve Prescott",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ec06e42f-e294-44ef-8fa8-1d1a4c2090d8.jpg?1783940736"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Dread Slaver
 {
     "name": "Dread Slaver",
