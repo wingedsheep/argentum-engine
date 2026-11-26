@@ -54,14 +54,14 @@ class DivineDeflectionScenarioTest : FunSpec({
         d.getLifeTotal(p2) shouldBe 20
     }
 
-    test("damage to you is prevented too, and a target that left takes nothing") {
+    test("damage to you is prevented up to X, and a target that left takes nothing") {
         val d = newGame()
         val p1 = d.player1
         val p2 = d.player2
         val enemy = d.putCreatureOnBattlefield(p2, "Grizzly Bears")
 
-        d.giveMana(p1, Color.WHITE, 4)
-        d.castXSpell(p1, d.putCardInHand(p1, "Divine Deflection"), 3, listOf(enemy)).error shouldBe null
+        d.giveMana(p1, Color.WHITE, 3)
+        d.castXSpell(p1, d.putCardInHand(p1, "Divine Deflection"), 2, listOf(enemy)).error shouldBe null
         d.resolve()
 
         // The target dies before any damage is prevented.
@@ -73,7 +73,8 @@ class DivineDeflectionScenarioTest : FunSpec({
         d.castSpell(p1, d.putCardInHand(p1, "Lightning Bolt"), listOf(p1)).error shouldBe null
         d.resolve()
 
-        d.getLifeTotal(p1) shouldBe 20
+        // 2 of the Bolt prevented, 1 gets through.
+        d.getLifeTotal(p1) shouldBe 19
         d.getLifeTotal(p2) shouldBe 20
     }
 })
