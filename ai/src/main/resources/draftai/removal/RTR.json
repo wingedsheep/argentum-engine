@@ -1,0 +1,150 @@
+{
+  "Abrupt Decay": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Aerial Predation": [
+    "removal",
+    "creature-removal"
+  ],
+  "Annihilating Fire": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Arrest": [
+    "removal",
+    "creature-removal"
+  ],
+  "Assassin's Strike": [
+    "removal",
+    "creature-removal"
+  ],
+  "Auger Spree": [
+    "removal",
+    "creature-removal"
+  ],
+  "Avenging Arrow": [
+    "removal",
+    "creature-removal"
+  ],
+  "Azorius Charm": [
+    "removal",
+    "creature-removal"
+  ],
+  "Batterhorn": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Detention Sphere": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Dreadbore": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Electrickery": [
+    "removal",
+    "creature-removal"
+  ],
+  "Explosive Impact": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Golgari Charm": [
+    "removal",
+    "creature-removal",
+    "enchantment-removal"
+  ],
+  "Izzet Charm": [
+    "removal",
+    "creature-removal"
+  ],
+  "Izzet Staticaster": [
+    "removal",
+    "creature-removal"
+  ],
+  "Launch Party": [
+    "removal",
+    "creature-removal"
+  ],
+  "Mercurial Chemister": [
+    "removal",
+    "creature-removal"
+  ],
+  "Mizzium Mortars": [
+    "removal",
+    "creature-removal"
+  ],
+  "Niv-Mizzet, Dracogenius": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Pyroconvergence": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Rakdos Charm": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Rites of Reaping": [
+    "removal",
+    "creature-removal"
+  ],
+  "Selesnya Charm": [
+    "removal",
+    "creature-removal"
+  ],
+  "Slum Reaper": [
+    "removal",
+    "creature-removal"
+  ],
+  "Stab Wound": [
+    "removal",
+    "creature-removal"
+  ],
+  "Street Spasm": [
+    "removal",
+    "creature-removal"
+  ],
+  "Sundering Growth": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Supreme Verdict": [
+    "removal",
+    "creature-removal"
+  ],
+  "Trostani's Judgment": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ultimate Price": [
+    "removal",
+    "creature-removal"
+  ],
+  "Vandalblast": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Vraska the Unseen": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ]
+}

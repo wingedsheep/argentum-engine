@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-rtr',
+    date: '2026-11-26',
+    kind: 'set',
+    setCode: 'RTR',
+    title: 'Return to Ravnica is complete',
+    body:
+      "The guild city returns with its first five guilds: Azorius detain locking down blockers, Izzet overload spells that hit every opposing creature, Rakdos unleash attackers, Golgari scavenge growing creatures from the graveyard and Selesnya populate copying tokens. Drafts settle into five distinct two-colour guild decks, with Guildgates and Keyrunes to stretch into a third colour.",
+    tryIf: 'guild identity, two-colour decks and graveyard and token value',
+  },
+  {
     id: 'set-gtc',
     date: '2026-11-23',
     kind: 'set',

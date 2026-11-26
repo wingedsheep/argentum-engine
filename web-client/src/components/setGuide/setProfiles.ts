@@ -452,6 +452,26 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Clash', inPlay: 'Both players reveal their top card for a bonus, which also lets you send bad draws to the bottom.' },
     ],
   },
+  RTR: {
+    tagline: "The first five Ravnican guilds, each with its own mechanic and its own way to win: a format where you settle into one guild's colour pair and play to its plan.",
+    setting: 'Ravnica, a city-plane run by guilds, where the Azorius, Izzet, Rakdos, Golgari and Selesnya vie for control after the Guildpact has dissolved.',
+    gameplay: "Games are mid-paced and reward guild synergy. Azorius detain taps down blockers and attackers for a turn, Izzet overload spells scale from one target to every opposing creature, Rakdos unleash creatures trade blocking for a +1/+1 counter, Golgari scavenge creatures leave counters behind when they die, and Selesnya populate copies the best token on the board. Each guild's gold cards pull hard towards its colour pair, and Guildgates and Keyrunes make a light splash possible.",
+    tips: [
+      'Commit to a guild early: the gold commons and uncommons are the best cards in each colour pair, and a two-colour deck plays most smoothly.',
+      'Watch for overload: an Izzet player with six or seven mana can turn a single-target spell into a one-sided sweeper.',
+      'Scavenge late: a Golgari creature in the graveyard is still a pile of +1/+1 counters waiting for the right target.',
+    ],
+    tryIf: 'guild identity, two-colour decks and graveyard and token value',
+    power: 3, speed: 3, complexity: 3,
+    themes: ['multicolor', 'tokens', 'counters'],
+    mechanics: [
+      { name: 'Detain', inPlay: "Azorius cards stop a permanent from attacking, blocking or using its activated abilities until your next turn, clearing the way for an attack or blunting the opponent's." },
+      { name: 'Overload', inPlay: "Izzet spells can be cast for their overload cost, replacing 'target' with 'each', so a removal spell or trick hits the whole board." },
+      { name: 'Unleash', inPlay: 'Rakdos creatures may enter with a +1/+1 counter, but then they can\'t block, so the deck attacks every turn.' },
+      { name: 'Scavenge', inPlay: 'Golgari creature cards can be exiled from the graveyard at sorcery speed to put +1/+1 counters equal to their power on a creature.' },
+      { name: 'Populate', inPlay: 'Selesnya cards create a copy of a creature token you control, so the best token on the board keeps multiplying.' },
+    ],
+  },
   GTC: {
     tagline: "Five Ravnican guilds, each with its own mechanic and its own way to win: a fast, aggressive format where you settle into one guild's colour pair and play to its plan.",
     setting: 'Ravnica, where the Boros, Dimir, Gruul, Orzhov and Simic guilds take centre stage as tensions between the guilds rise.',

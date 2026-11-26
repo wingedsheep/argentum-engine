@@ -1754,6 +1754,22 @@ object SetArchetypes {
                     creatureTypes = listOf("Hero")),
             )
         ),
+        "RTR" to SetSynergies(
+            setCode = "RTR",
+            setName = "Return to Ravnica",
+            archetypes = listOf(
+                Archetype("Azorius Detain", listOf(Color.WHITE, Color.BLUE),
+                    "Detain the opponent's best blockers and attackers while flyers and defensive creatures hold the ground. A tempo-control deck that buys time with detain and wins in the air."),
+                Archetype("Izzet Overload", listOf(Color.BLUE, Color.RED),
+                    "Fill the deck with instants and sorceries, reward each one with spell-cast payoffs and cast overload spells late to sweep the opponent's side. A spells-matter tempo deck that wins with card quality and burn."),
+                Archetype("Rakdos Unleash", listOf(Color.BLACK, Color.RED),
+                    "Unleash creatures with +1/+1 counters and attack every turn, punishing the opponent's life total with drain and burn. A fast aggro deck that gives up blocking to hit harder."),
+                Archetype("Golgari Scavenge", listOf(Color.BLACK, Color.GREEN),
+                    "Trade creatures freely, then scavenge them from the graveyard to grow the survivors with +1/+1 counters. A grindy midrange deck that keeps getting value from cards already spent."),
+                Archetype("Selesnya Populate", listOf(Color.GREEN, Color.WHITE),
+                    "Make creature tokens, then populate to copy the best of them and go wide with anthems and convoke. A go-wide midrange deck whose army outgrows the opponent's blockers."),
+            )
+        ),
         "GTC" to SetSynergies(
             setCode = "GTC",
             setName = "Gatecrash",
