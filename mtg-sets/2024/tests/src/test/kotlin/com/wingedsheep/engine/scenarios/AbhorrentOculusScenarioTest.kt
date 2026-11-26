@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainAll
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
@@ -65,6 +66,36 @@ class AbhorrentOculusScenarioTest : FunSpec({
         // The six cards are exiled as the spell is cast.
         driver.getExile(me).shouldContainAll(graveyardCards)
         driver.getGraveyard(me).size shouldBe 0
+
+        while (driver.state.stack.isNotEmpty()) driver.bothPass()
+        driver.getCreatures(me).map { driver.getCardName(it) } shouldContainAll listOf("Abhorrent Oculus")
+    }
+
+    test("a free cast under Omniscience still prompts for the six-card graveyard exile") {
+        val driver = newDriver()
+        val me = driver.player1
+
+        driver.putPermanentOnBattlefield(me, "Omniscience")
+        val graveyardCards = driver.fillGraveyard(me, 6)
+        val spell = driver.putCardInHand(me, "Abhorrent Oculus")
+
+        // The free variant must carry the exile prompt, or the client submits it with no
+        // cards chosen and the cast is rejected outright.
+        val free = driver.legalActions(me).single {
+            it.actionType == "CastWithoutPayingManaCost" && (it.action as? CastSpell)?.cardId == spell
+        }
+        val costInfo = free.additionalCostInfo.shouldNotBeNull()
+        costInfo.costType shouldBe "ExileFromGraveyard"
+        costInfo.validExileTargets.shouldContainAll(graveyardCards)
+        costInfo.exileMinCount shouldBe 6
+
+        val cast = driver.submit(
+            (free.action as CastSpell).copy(
+                additionalCostPayment = AdditionalCostPayment(exiledCards = graveyardCards),
+            )
+        )
+        cast.error shouldBe null
+        driver.getExile(me).shouldContainAll(graveyardCards)
 
         while (driver.state.stack.isNotEmpty()) driver.bothPass()
         driver.getCreatures(me).map { driver.getCardName(it) } shouldContainAll listOf("Abhorrent Oculus")
