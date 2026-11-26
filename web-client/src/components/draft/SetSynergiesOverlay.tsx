@@ -4121,7 +4121,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Selesnya Populate',
         colors: ['G', 'W'],
         keyCard: 'Vitu-Ghazi Guildmage',
-        description: "Make creature tokens, then populate to copy the best of them and go wide with anthems and convoke. A go-wide midrange deck whose army outgrows the opponent's blockers.",
+        description: "Make creature tokens, then populate to copy the best of them, then go wide and pump the team with anthems. A go-wide midrange deck whose army outgrows the opponent's blockers.",
       },
     ],
   },

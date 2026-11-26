@@ -1767,7 +1767,7 @@ object SetArchetypes {
                 Archetype("Golgari Scavenge", listOf(Color.BLACK, Color.GREEN),
                     "Trade creatures freely, then scavenge them from the graveyard to grow the survivors with +1/+1 counters. A grindy midrange deck that keeps getting value from cards already spent."),
                 Archetype("Selesnya Populate", listOf(Color.GREEN, Color.WHITE),
-                    "Make creature tokens, then populate to copy the best of them and go wide with anthems and convoke. A go-wide midrange deck whose army outgrows the opponent's blockers."),
+                    "Make creature tokens, then populate to copy the best of them, then go wide and pump the team with anthems. A go-wide midrange deck whose army outgrows the opponent's blockers."),
             )
         ),
         "GTC" to SetSynergies(

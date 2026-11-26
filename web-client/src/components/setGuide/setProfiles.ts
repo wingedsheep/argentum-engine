@@ -467,7 +467,7 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
     mechanics: [
       { name: 'Detain', inPlay: "Azorius cards stop a permanent from attacking, blocking or using its activated abilities until your next turn, clearing the way for an attack or blunting the opponent's." },
       { name: 'Overload', inPlay: "Izzet spells can be cast for their overload cost, replacing 'target' with 'each', so a removal spell or trick hits the whole board." },
-      { name: 'Unleash', inPlay: 'Rakdos creatures may enter with a +1/+1 counter, but then they can\'t block, so the deck attacks every turn.' },
+      { name: 'Unleash', inPlay: 'Rakdos creatures may enter with a +1/+1 counter but can\'t block while they have one, so the deck attacks every turn.' },
       { name: 'Scavenge', inPlay: 'Golgari creature cards can be exiled from the graveyard at sorcery speed to put +1/+1 counters equal to their power on a creature.' },
       { name: 'Populate', inPlay: 'Selesnya cards create a copy of a creature token you control, so the best token on the board keeps multiplying.' },
     ],
