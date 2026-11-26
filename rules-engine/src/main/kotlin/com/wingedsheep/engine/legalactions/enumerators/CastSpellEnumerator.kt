@@ -953,6 +953,55 @@ class CastSpellEnumerator(
                             )
                         )
                     }
+                    // Free cast (Omniscience, Weftwalking, …) of a modal spell: the same mode
+                    // choice as the paid cast (CR 700.2a — modes are still chosen), with only the
+                    // mana cost waived. Per-mode and escalate mana are additional costs and still
+                    // owed, which [computeModeEnumeration] adds on top of [freeCastCost].
+                    if (freeCastResult != null && freeCastCost != null) {
+                        val payChooseCount = if (modalEffect.chooseAllIfBlightPaid) {
+                            modalEffect.minChooseCount
+                        } else {
+                            modalEffect.chooseCount
+                        }
+                        add(
+                            ModalCastVariant(
+                                effect = modalEffect.copy(
+                                    chooseCount = payChooseCount,
+                                    minChooseCount = modalEffect.minChooseCount
+                                ),
+                                baseEffectiveCost = freeCastCost,
+                                additionalCostInfo = freeCastResult.additionalCostInfo,
+                                manaCostString = freeCastResult.manaCostString,
+                                autoTapPreview = freeCastResult.autoTapPreview,
+                                descriptionSuffix = " (Free)",
+                                free = true
+                            )
+                        )
+                        // Blight is an additional cost, so it stays payable on a free cast and
+                        // still unlocks every mode (Pyrrhic Strike under Omniscience).
+                        if (modalEffect.chooseAllIfBlightPaid &&
+                            blightOrPayCost != null &&
+                            offer.blightCreatures.isNotEmpty()
+                        ) {
+                            val all = modalEffect.modes.size
+                            add(
+                                ModalCastVariant(
+                                    effect = modalEffect.copy(chooseCount = all, minChooseCount = all),
+                                    baseEffectiveCost = freeCastCost,
+                                    additionalCostInfo = AdditionalCostData(
+                                        description = "creature to blight",
+                                        costType = "Blight",
+                                        validBlightTargets = offer.blightCreatures,
+                                        blightAmount = blightOrPayCost.blightAmount
+                                    ),
+                                    manaCostString = freeCastResult.manaCostString,
+                                    autoTapPreview = freeCastResult.autoTapPreview,
+                                    descriptionSuffix = " (Free, Blight ${blightOrPayCost.blightAmount})",
+                                    free = true
+                                )
+                            )
+                        }
+                    }
                 }
             } else emptyList()
 
@@ -1002,16 +1051,17 @@ class CastSpellEnumerator(
                                         cardId,
                                         targets = listOf(autoTarget),
                                         chosenModes = listOf(modeIndex),
-                                        modeTargetsOrdered = listOf(listOf(autoTarget))
+                                        modeTargetsOrdered = listOf(listOf(autoTarget)),
+                                        useWithoutPayingManaCost = variant.free
                                     ),
-                                    hasXCost = hasXCost,
-                                    maxAffordableX = maxAffordableX,
+                                    hasXCost = hasXCost && !variant.free,
+                                    maxAffordableX = if (variant.free) null else maxAffordableX,
                                     additionalCostInfo = modeEnum.additionalCostInfo,
-                                    hasConvoke = hasConvoke,
-                                    convokeCreatures = convokeCreatures,
-                                    hasDelve = hasDelve,
-                                    delveCards = delveCards,
-                                    minDelveNeeded = minDelveNeeded,
+                                    hasConvoke = hasConvoke && !variant.free,
+                                    convokeCreatures = if (variant.free) null else convokeCreatures,
+                                    hasDelve = hasDelve && !variant.free,
+                                    delveCards = if (variant.free) null else delveCards,
+                                    minDelveNeeded = if (variant.free) null else minDelveNeeded,
                                     manaCostString = modeEnum.manaCostString,
                                     manaCostByTargetCount = modeEnum.manaCostByTargetCount,
                                     autoTapPreview = modeEnum.autoTapPreview
@@ -1020,7 +1070,7 @@ class CastSpellEnumerator(
                                 result.add(LegalAction(
                                     actionType = "CastSpellMode",
                                     description = mode.description + variant.descriptionSuffix,
-                                    action = CastSpell(playerId, cardId, chosenModes = listOf(modeIndex)),
+                                    action = CastSpell(playerId, cardId, chosenModes = listOf(modeIndex), useWithoutPayingManaCost = variant.free),
                                     validTargets = firstInfo.validTargets,
                                     requiresTargets = true,
                                     targetCount = firstInfo.maxTargets,
@@ -1032,14 +1082,14 @@ class CastSpellEnumerator(
                                     xConstrainsTargetPower = firstInfo.xConstrainsPower,
                                     xConstrainsTargetCount = firstInfo.xConstrainsCount,
                                     xConstrainsTargetCountExactly = firstInfo.xConstrainsCountExactly,
-                                    hasXCost = hasXCost,
-                                    maxAffordableX = maxAffordableX,
+                                    hasXCost = hasXCost && !variant.free,
+                                    maxAffordableX = if (variant.free) null else maxAffordableX,
                                     additionalCostInfo = modeEnum.additionalCostInfo,
-                                    hasConvoke = hasConvoke,
-                                    convokeCreatures = convokeCreatures,
-                                    hasDelve = hasDelve,
-                                    delveCards = delveCards,
-                                    minDelveNeeded = minDelveNeeded,
+                                    hasConvoke = hasConvoke && !variant.free,
+                                    convokeCreatures = if (variant.free) null else convokeCreatures,
+                                    hasDelve = hasDelve && !variant.free,
+                                    delveCards = if (variant.free) null else delveCards,
+                                    minDelveNeeded = if (variant.free) null else minDelveNeeded,
                                     manaCostString = modeEnum.manaCostString,
                                     manaCostByTargetCount = modeEnum.manaCostByTargetCount,
                                     autoTapPreview = modeEnum.autoTapPreview
@@ -1050,15 +1100,15 @@ class CastSpellEnumerator(
                             result.add(LegalAction(
                                 actionType = "CastSpellMode",
                                 description = mode.description + variant.descriptionSuffix,
-                                action = CastSpell(playerId, cardId, chosenModes = listOf(modeIndex)),
-                                hasXCost = hasXCost,
-                                maxAffordableX = maxAffordableX,
+                                action = CastSpell(playerId, cardId, chosenModes = listOf(modeIndex), useWithoutPayingManaCost = variant.free),
+                                hasXCost = hasXCost && !variant.free,
+                                maxAffordableX = if (variant.free) null else maxAffordableX,
                                 additionalCostInfo = modeEnum.additionalCostInfo,
-                                hasConvoke = hasConvoke,
-                                convokeCreatures = convokeCreatures,
-                                hasDelve = hasDelve,
-                                delveCards = delveCards,
-                                minDelveNeeded = minDelveNeeded,
+                                hasConvoke = hasConvoke && !variant.free,
+                                convokeCreatures = if (variant.free) null else convokeCreatures,
+                                hasDelve = hasDelve && !variant.free,
+                                delveCards = if (variant.free) null else delveCards,
+                                minDelveNeeded = if (variant.free) null else minDelveNeeded,
                                 manaCostString = modeEnum.manaCostString,
                                 autoTapPreview = modeEnum.autoTapPreview
                             ))
@@ -1108,15 +1158,15 @@ class CastSpellEnumerator(
                         result.add(LegalAction(
                             actionType = "CastSpellModal",
                             description = "Cast ${cardComponent.name}${variant.descriptionSuffix}",
-                            action = CastSpell(playerId, cardId),
-                            hasXCost = hasXCost,
-                            maxAffordableX = maxAffordableX,
+                            action = CastSpell(playerId, cardId, useWithoutPayingManaCost = variant.free),
+                            hasXCost = hasXCost && !variant.free,
+                            maxAffordableX = if (variant.free) null else maxAffordableX,
                             additionalCostInfo = variant.additionalCostInfo,
-                            hasConvoke = hasConvoke,
-                            convokeCreatures = convokeCreatures,
-                            hasDelve = hasDelve,
-                            delveCards = delveCards,
-                            minDelveNeeded = minDelveNeeded,
+                            hasConvoke = hasConvoke && !variant.free,
+                            convokeCreatures = if (variant.free) null else convokeCreatures,
+                            hasDelve = hasDelve && !variant.free,
+                            delveCards = if (variant.free) null else delveCards,
+                            minDelveNeeded = if (variant.free) null else minDelveNeeded,
                             manaCostString = variant.manaCostString,
                             autoTapPreview = variant.autoTapPreview,
                             modalEnumeration = ModalLegalEnumeration(
@@ -3072,7 +3122,9 @@ class CastSpellEnumerator(
         val additionalCostInfo: AdditionalCostData?,
         val manaCostString: String,
         val autoTapPreview: List<EntityId>?,
-        val descriptionSuffix: String
+        val descriptionSuffix: String,
+        /** Cast via a "without paying its mana cost" permission ([CastSpell.useWithoutPayingManaCost]). */
+        val free: Boolean = false
     )
 
     /**
