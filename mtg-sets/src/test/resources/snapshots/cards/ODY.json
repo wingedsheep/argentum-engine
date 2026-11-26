@@ -3311,6 +3311,51 @@
     ]
 }
 
+// Ground Seal
+{
+    "name": "Ground Seal",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, draw a card.\nCards in graveyards can't be the targets of spells or abilities.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ground Seal:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            "CardsInZonesCantBeTargeted"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "242",
+        "rarity": "RARE",
+        "artist": "Edward P. Beard, Jr.",
+        "flavorText": "\"Let all we have buried be buried forever.\"\n—Seton, centaur druid",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/977383a8-9a31-4aad-ace2-6ed4d0dd1cbe.jpg?1783945217",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "Only spells and abilities that target cards in graveyards will be affected. Abilities that don't target cards in graveyards (like the one Tormod's Crypt has) can still affect those cards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Halberdier
 {
     "name": "Halberdier",

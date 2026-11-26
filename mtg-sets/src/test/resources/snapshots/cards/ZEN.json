@@ -3367,6 +3367,83 @@
     ]
 }
 
+// Mark of Mutiny
+{
+    "name": "Mark of Mutiny",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Gain control of target creature until end of turn. Put a +1/+1 counter on it and untap it. That creature gains haste until end of turn. (It can attack and {T} this turn.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "rarity": "UNCOMMON",
+        "artist": "Mike Bierek",
+        "flavorText": "The flame of anger is hard to douse once lit.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/58a0a019-239d-428e-85a2-e19cae8f4b58.jpg?1783942142",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "Mark of Mutiny can target any creature, even one that you already control or that is already untapped."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "The +1/+1 counter remains on the creature after the control-changing effect ends."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Marsh Flats
 {
     "name": "Marsh Flats",

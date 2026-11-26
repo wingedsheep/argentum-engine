@@ -542,6 +542,11 @@ object TargetPolarityAnalyzer {
                     // a boost to the creature we took is ours to attack with, part of the theft.
                     is ModifyStatsEffect ->
                         if (part.target in stolen && raisesOnly(part)) gifts += part else stolen.clear()
+                    // "Put a +1/+1 counter on it and untap it" (Mark of Mutiny): a counter that only
+                    // grows the creature we took is ours to attack with, part of the theft.
+                    is AddCountersEffect ->
+                        if (part.target in stolen && counterPolarity(part.counterType) == TargetPolarity.BENEFICIAL) gifts += part
+                        else stolen.clear()
                     // "You may attach an Equipment you control to that creature" (Unexpected Request):
                     // the Equipment rides the stolen creature into the attack, part of the theft.
                     // "If that artifact is an Equipment, attach it to this creature" (Thieving
