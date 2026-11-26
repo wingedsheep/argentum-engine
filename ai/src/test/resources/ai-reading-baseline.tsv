@@ -2000,6 +2000,7 @@ Blood Pact
 Blood Pet
 Blood Petal Celebrant
 Blood Price
+Blood Reckoning
 Blood Researcher
 Blood Rites
 Blood Scrivener
@@ -4825,6 +4826,7 @@ Dhund Operative
 Diabolic Edict
 Diabolic Intent
 Diabolic Machine
+Diabolic Revelation
 Diabolic Tutor
 Diabolic Vision
 Diamond City
@@ -4918,6 +4920,7 @@ Disappearing Act
 Disarm	intent: ForEach>UnattachEquipmentEffect; intent: Pipeline(AttachedTo→?); polarity: Pipeline(AttachedTo→?)
 Discerning Financier
 Discerning Peddler
+Disciple of Bolas
 Disciple of Deceit
 Disciple of Freyalise
 Disciple of Grace
@@ -5461,6 +5464,7 @@ Duskdale Wurm
 Duskfang Mentor
 Duskmantle Guildmage
 Duskmantle Operative
+Duskmantle Prowler
 Duskmantle Seer
 Duskmantle, House of Shadow
 Duskmourn's Domination
@@ -5483,6 +5487,7 @@ Dutiful Return
 Dutiful Servants
 Dutiful Thrull
 Duty Beyond Death
+Duty-Bound Dead
 Dwalin, Weaponmaster	intent: ForEach>AddCountersEffect
 Dwarfhold Champion
 Dwarven Armorer
@@ -8679,6 +8684,7 @@ Harbinger of the Hunt
 Harbinger of the Seas
 Harbinger of the Tides
 Harbor Bandit
+Harbor Serpent
 Hard Cover
 Hard-Hitting Question
 Hard-Won Jitte
@@ -10005,6 +10011,7 @@ Jace's Defeat
 Jace's Ingenuity
 Jace's Machinations
 Jace's Mindseeker
+Jace's Phantasm
 Jace's Projection	intent: AddCountersEffect
 Jace's Ruse
 Jace's Sanctum
@@ -10616,6 +10623,7 @@ Knight of Doves
 Knight of Dusk's Shadow
 Knight of Glory
 Knight of Grace
+Knight of Infamy
 Knight of Malice
 Knight of Meadowgrain
 Knight of New Benalia
@@ -12725,6 +12733,7 @@ Mutant Town Musicians
 Mutant's Prey
 Mutational Advantage	timing: ForEach>GrantKeywordEffect
 Mutavault
+Mutilate
 Mutinous Massacre
 Mutiny
 Mutual Destruction
@@ -12938,6 +12947,7 @@ Needleverge Pathway
 Neelix, Moral Support
 Neerdiv, Devious Diver
 Nef-Crop Entangler
+Nefarox, Overlord of Grixis
 Nefashu
 Negate
 Neglected Heirloom
@@ -14646,6 +14656,7 @@ Pteramander
 Pterodon Knight
 PuPu UFO
 Public Enemy	polarity: Aura>DrawCardsEffect; polarity: Aura>MustAttack
+Public Execution
 Public Thoroughfare
 Puca's Eye
 Pugnacious Hammerskull
@@ -16904,6 +16915,7 @@ Serum Tank
 Serum Visionary
 Serum Visions
 Serum-Core Chimera
+Servant of Nefarox
 Servant of Tymaret
 Servant of Volrath
 Servant of the Conduit
@@ -17121,6 +17133,7 @@ Shiko, Paragon of the Way
 Shilgengar, Sire of Famine
 Shimatsu the Bloodcloaked
 Shimian Night Stalker	polarity: RedirectNextDamageEffect; timing: RedirectNextDamageEffect
+Shimian Specter
 Shimmer Dragon
 Shimmer Myr
 Shimmer of Possibility
@@ -21099,6 +21112,7 @@ Vampire Interloper
 Vampire Neonate
 Vampire Nighthawk
 Vampire Noble
+Vampire Nocturnus
 Vampire Opportunist
 Vampire Revenant
 Vampire Scrivener
@@ -21507,6 +21521,7 @@ Void Rend
 Void Shatter
 Void Snare
 Void Squall
+Void Stalker
 Void Winnower
 Voidforged Titan
 Voidmage Apprentice
