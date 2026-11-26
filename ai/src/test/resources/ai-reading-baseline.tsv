@@ -1558,6 +1558,7 @@ Battle at the Bridge
 Battle for Bretagard
 Battle of Frost and Fire
 Battle of Hoover Dam
+Battle of Wits
 Battle-Mad Ronin
 Battle-Rage Blessing
 Battle-Rattle Shaman
@@ -3875,6 +3876,7 @@ Coursers' Accord
 Court Cleric
 Court Street Denizen
 Court of Grace	intent: TakeDesignationEffect
+Courtly Provocateur
 Covenant of Blood
 Cover of Darkness
 Covert Cutpurse
@@ -5103,6 +5105,7 @@ Doomskar Titan
 Doomskar Warrior	polarity: GrantTriggeredAbilityEffect
 Doomwake Giant
 Door of Destinies
+Door to Nothingness
 Doorkeeper
 Doorkeeper Thrull
 Doors of Durin
@@ -7537,6 +7540,7 @@ Geistlight Snare
 Geistwave
 Gelatinous Cube	polarity: MoveToZoneEffect
 Gelectrode
+Gem of Becoming
 Gemhide Sliver
 Gempalm Avenger
 Gempalm Incinerator
@@ -13061,6 +13065,7 @@ Nick Valentine, Private Eye
 Nicol Bolas
 Nicol Bolas, Dragon-God
 Nicol Bolas, God-Pharaoh
+Nicol Bolas, Planeswalker
 Nicol Bolas, the Deceiver
 Nicol Bolas, the Ravager
 Night Clubber
@@ -15307,6 +15312,7 @@ Redcap Heelslasher
 Redcap Melee
 Redcap Raiders
 Redcap Thief
+Redirect
 Redirect Lightning
 Rediscover the Way
 Redoubled Stormsinger
@@ -15588,6 +15594,7 @@ Revenant
 Revenge of Ravens
 Revenge of the Drowned
 Revenge of the Rats
+Reverberate
 Reverberating Summons
 Reverberation	polarity: RedirectNextDamageEffect; timing: RedirectNextDamageEffect
 Revered Dead
@@ -15700,6 +15707,7 @@ Ring of Renewal
 Ring of Three Wishes
 Ring of Thune
 Ring of Valkas
+Ring of Xathrid
 Ring of the Lucii
 Ringing Strike Mastery
 Rings of Brighthearth
@@ -16302,6 +16310,7 @@ Sandblast
 Sandcrafter Mage
 Sandman's Quicksand
 Sandman, Shifting Scoundrel
+Sands of Delirium
 Sandskin	polarity: Aura>(nothing on the host)
 Sandskitter Outrider
 Sandsower
@@ -18097,6 +18106,7 @@ Spellrune Painter
 Spellscorn Coven
 Spellskite
 Spellstutter Sprite
+Spelltwine
 Spellweaver Eternal
 Spellweaver Helix	intent: Pipeline(ChosenTargets→exile); polarity: Pipeline(ChosenTargets→exile)
 Spelunking
@@ -18112,6 +18122,7 @@ Sphinx of Foresight
 Sphinx of Forgotten Lore
 Sphinx of Magosi
 Sphinx of New Prahv
+Sphinx of Uthuun
 Sphinx of the Chimes
 Sphinx of the Final Word
 Sphinx of the Guildpact
@@ -20099,6 +20110,7 @@ Thundering Wurm
 Thunderkin Awakener
 Thundermane Dragon
 Thundermare
+Thundermaw Hellkite
 Thunderous Debut
 Thunderous Might
 Thunderous Orator
@@ -20537,6 +20549,7 @@ Tribute to the World Tree
 Triceraton Commander
 Trick Shot
 Trickery Charm	polarity: BecomeCreatureTypeEffect
+Tricks of the Trade
 Trickster's Elk
 Trickster's Stratagem
 Trickster's Talisman
@@ -22429,6 +22442,7 @@ World Map
 World Shaper
 World War Hulk	intent: GrantFreeCastThisTurnEffect
 World-Weary
+Worldfire
 Worldly Counsel
 Worldly Tutor
 Worlds Within Worlds
