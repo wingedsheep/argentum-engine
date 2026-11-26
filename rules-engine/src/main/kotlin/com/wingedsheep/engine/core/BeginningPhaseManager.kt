@@ -577,6 +577,7 @@ class BeginningPhaseManager(
         is StatePredicate.BlockPairedWithEntityThisTurn -> false
         is StatePredicate.BlockPairedWithMatchingThisTurn -> false
         is StatePredicate.IsBlockingEntity -> false
+        is StatePredicate.IsPairedWith -> false
         // Reference-relative identity; untap filtering carries no references.
         is StatePredicate.IsEntity -> false
         // Untap candidates are battlefield permanents, so back face up is the whole CR 701.27g test.

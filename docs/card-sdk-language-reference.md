@@ -8611,6 +8611,14 @@ work for abilities-on-stack (which carry no `CardComponent`).
   source-relative "paired **with this creature**" — the affected set of a soulbond payoff — use
   `GroupFilter.soulbondPair()` (`Scope.SoulbondPair`) instead; a plain predicate can't express it,
   because group-static projection has no per-recipient source.
+- `IsPairedWith(partner: GameObjectFilter)` (filter builders `pairedWith(filter)` / `pairedWith(reference)`) — the
+  creature is soulbond-paired with a creature matching `partner`, read through the live link (CR 702.95e: a partner
+  that left counts as none). "Can't attack or block unless it's paired with a creature with soulbond" (Flowering
+  Lumberknot: `Conditions.SourceMatches(Creature.pairedWith(Creature.withKeyword(Keyword.SOULBOND)))` in
+  `CantAttackUnless` / `CantBlockUnless`). `pairedWith(reference)` (e.g. a spell's `target(...)` handle) wraps `IsEntity` and names "the
+  creature paired with the target" — Joint Assault's "if it's paired with a creature, that creature also gets +2/+2" is a
+  `ForEachInGroup` over `Creature.pairedWith(creature)`, empty when the target is unpaired. Fails closed in
+  group-static projection and trigger gating, which can't evaluate the nested filter.
 - `IsFaceDown` / `IsFaceUp` — currently face-down (CR 708). On a **zone-change trigger** off the
   battlefield both read last-known information (`EntitySnapshot.wasFaceDown`) rather than the live
   `FaceDownComponent`: a card put into a graveyard is turned face up (CR 708.4) and the battlefield
@@ -16312,8 +16320,8 @@ MacCready, Lamplight Mayor (granted).
   breaks the pair the moment CR 702.95e applies, `ZoneMovementUtils.stripBattlefieldComponents` clears the leaving half,
   and `CreaturesPairedEvent` / `CreaturesUnpairedEvent` surface it to the client as `pairedWithId` (which the
   `SoulbondBonds` overlay draws as a bond between the two battlefield slots). Query pairing from a filter or condition
-  with `GameObjectFilter.paired()` / `.unpaired()` (`StatePredicate.IsPaired`) and `Conditions.SourceIsPaired` /
-  `SourceIsUnpaired`.
+  with `GameObjectFilter.paired()` / `.unpaired()` (`StatePredicate.IsPaired`), `.pairedWith(...)`
+  (`StatePredicate.IsPairedWith`, relational) and `Conditions.SourceIsPaired` / `SourceIsUnpaired`.
 - `Training` — "Training (Whenever this creature and at least one other creature with power greater than this creature's
   power attack, put a +1/+1 counter on this creature.)" (CR 702.149, Innistrad: Midnight Hunt; also WHO, SLD). Display-only
   keyword; wire the behavior with the `card { training() }` builder helper. It adds the keyword plus one attack-triggered

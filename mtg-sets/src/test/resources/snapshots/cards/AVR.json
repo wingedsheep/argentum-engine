@@ -2407,6 +2407,83 @@
     ]
 }
 
+// Flowering Lumberknot
+{
+    "name": "Flowering Lumberknot",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Treefolk",
+    "oracleText": "This creature can't attack or block unless it's paired with a creature with soulbond.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "IsPairedWith",
+                                "partner": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "HasKeyword",
+                                            "keyword": "SOULBOND"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "type": "CantBlockUnless",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "IsPairedWith",
+                                "partner": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "HasKeyword",
+                                            "keyword": "SOULBOND"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "178",
+        "artist": "Nic Klein",
+        "flavorText": "\"It used to eat us trappers. Now it follows us around like some kind of hound dog.\"\n—Alena, trapper of Kessig",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/78fa2ddc-142b-4562-8812-ecb72e3bae57.jpg?1783940669"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Gallows at Willow Hill
 {
     "name": "Gallows at Willow Hill",
@@ -3430,6 +3507,95 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Joint Assault
+{
+    "name": "Joint Assault",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +2/+2 until end of turn. If it's paired with a creature, that creature also gets +2/+2 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "IsPairedWith",
+                                        "partner": {
+                                            "statePredicates": [
+                                                {
+                                                    "type": "IsEntity",
+                                                    "reference": {
+                                                        "type": "BoundVariable",
+                                                        "name": "t0"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "183",
+        "artist": "Raymond Swanland",
+        "flavorText": "\"By my power, werewolves shall become the wolfir, our allies in combat against darkness.\"\n—Avacyn's Cursemute Decree",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/6516c7c6-d49b-49c5-8968-563622c2c8c1.jpg?1783940665"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 

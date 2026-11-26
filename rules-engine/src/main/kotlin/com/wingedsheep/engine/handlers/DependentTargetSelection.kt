@@ -62,6 +62,8 @@ object DependentTargetSelection {
         is StatePredicate.And -> predicate.predicates.any(::referencesTarget)
         is StatePredicate.Or -> predicate.predicates.any(::referencesTarget)
         is StatePredicate.Not -> referencesTarget(predicate.predicate)
+        // "target creature paired with target creature" — the nested partner filter may name a slot.
+        is StatePredicate.IsPairedWith -> referencesTarget(predicate.partner)
         else -> isTargetReference(when (predicate) {
             is StatePredicate.BlockPairedWithEntityThisTurn -> predicate.reference
             is StatePredicate.IsBlockingEntity -> predicate.reference

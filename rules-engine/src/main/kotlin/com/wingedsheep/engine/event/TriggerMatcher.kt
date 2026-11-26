@@ -3166,6 +3166,7 @@ class TriggerMatcher(
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.BlockPairedWithEntityThisTurn -> false
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.BlockPairedWithMatchingThisTurn -> false
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsBlockingEntity -> false
+        is com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsPairedWith -> false
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsEntity -> false
         // Suspected (CR 701.60a) reads off the floating-effect list, which is available here, so a
         // "whenever a suspected creature …" trigger filter gates exactly instead of failing open.
