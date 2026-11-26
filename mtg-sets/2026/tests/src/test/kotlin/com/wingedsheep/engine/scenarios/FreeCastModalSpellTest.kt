@@ -1,16 +1,21 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.core.ChooseTargetsDecision
+import com.wingedsheep.engine.core.TargetsResponse
 import com.wingedsheep.engine.legalactions.support.EnumerationTestDriver
 import com.wingedsheep.engine.legalactions.support.setupP1
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.mtg.sets.definitions.ddj.cards.IzzetCharm
 import com.wingedsheep.mtg.sets.definitions.ecl.cards.PyrrhicStrike
 import com.wingedsheep.mtg.sets.definitions.lrw.cards.CrypticCommand
 import com.wingedsheep.mtg.sets.definitions.m13.cards.Omniscience
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -34,6 +39,10 @@ class FreeCastModalSpellTest : FunSpec({
 
     fun EnumerationTestDriver.handCard(name: String): EntityId =
         game.state.getZone(ZoneKey(player1, Zone.HAND))
+            .first { game.state.getEntity(it)?.get<CardComponent>()?.name == name }
+
+    fun EnumerationTestDriver.bf(name: String): EntityId =
+        game.state.getZone(ZoneKey(player1, Zone.BATTLEFIELD))
             .first { game.state.getEntity(it)?.get<CardComponent>()?.name == name }
 
     test("a choose-one spell offers each castable mode for free") {
@@ -82,5 +91,39 @@ class FreeCastModalSpellTest : FunSpec({
         val blight = casts.single { it.actionType == "CastSpellModal" }
         blight.additionalCostInfo.shouldNotBeNull().costType shouldBe "Blight"
         blight.modalEnumeration.shouldNotBeNull().minChooseCount shouldBe 2
+    }
+
+    test("the free blight cast resolves both modes and blights the fodder") {
+        val driver = setup("Pyrrhic Strike")
+        val p1 = driver.player1
+        val fodder = driver.bf("Force of Nature")
+        val enchantment = driver.bf("Test Enchantment")
+        val creature = driver.bf("Centaur Courser")
+        val blight = driver.enumerateFor(p1).castActionsFor("Pyrrhic Strike")
+            .single { it.actionType == "CastSpellModal" }
+
+        driver.game.submit(
+            (blight.action as CastSpell).copy(
+                chosenModes = listOf(0, 1),
+                additionalCostPayment = AdditionalCostPayment(blightAmount = 2, blightTargets = listOf(fodder)),
+            )
+        ).error shouldBe null
+
+        var safety = 0
+        while (driver.game.pendingDecision is ChooseTargetsDecision && safety < 10) {
+            val decision = driver.game.pendingDecision as ChooseTargetsDecision
+            val req = decision.targetRequirements.first()
+            val legal = decision.legalTargets[req.index].orEmpty()
+            val pick = listOf(enchantment, creature).first { it in legal }
+            driver.game.submitDecision(p1, TargetsResponse(decision.id, mapOf(req.index to listOf(pick))))
+            safety++
+        }
+        safety = 0
+        while (driver.game.stackSize > 0 && safety < 20) { driver.game.bothPass(); safety++ }
+
+        driver.game.findPermanent(p1, "Test Enchantment") shouldBe null
+        driver.game.findPermanent(p1, "Centaur Courser") shouldBe null
+        driver.game.state.getEntity(fodder)?.get<CountersComponent>()
+            ?.getCount(CounterType.MINUS_ONE_MINUS_ONE) shouldBe 2
     }
 })
