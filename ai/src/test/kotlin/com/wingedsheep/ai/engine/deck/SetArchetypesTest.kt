@@ -1004,6 +1004,28 @@ class SetArchetypesTest : StringSpec({
         )
         synergies.archetypes.all { it.creatureTypes.isEmpty() } shouldBe true
     }
+
+    "Avacyn Restored models its ten colour pairs from its mechanics, with one Human deck" {
+        val synergies = requireNotNull(SetArchetypes.getForSet("avr"))
+
+        synergies.setName shouldBe "Avacyn Restored"
+        synergies.archetypes.map { it.name } shouldContainExactly listOf(
+            "Fliers",
+            "Control",
+            "Aggro",
+            "Wolfir Soulbond",
+            "Soulbond Counters",
+            "Sacrifice Drain",
+            "Miracle Spells",
+            "Undying Midrange",
+            "Humans Aggro",
+            "Soulbond Tempo",
+        )
+        synergies.archetypes.map { it.colors.toSet() } shouldContainExactly ALL_COLOR_PAIRS.toList()
+        synergies.archetypes.filter { it.creatureTypes.isNotEmpty() }.associate { it.name to it.creatureTypes } shouldBe mapOf(
+            "Humans Aggro" to listOf("Human"),
+        )
+    }
 })
 
 private val ALL_COLOR_PAIRS = linkedSetOf(

@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-avr',
+    date: '2026-11-27',
+    kind: 'set',
+    setCode: 'AVR',
+    title: 'Avacyn Restored is complete',
+    body:
+      "Avacyn returns to Innistrad and the humans fight back: soulbond creatures pair up to share their bonuses, miracles turn a lucky draw into a game-swinging spell for almost nothing, and angels fill the skies while undying horrors refuse to stay dead. Drafts play as creature-heavy two-colour decks where who you pair with whom decides combat.",
+    tryIf: 'creature-pairing synergies, big swingy topdecks and classic two-colour Limited',
+  },
+  {
     id: 'set-m13',
     date: '2026-11-26',
     kind: 'set',

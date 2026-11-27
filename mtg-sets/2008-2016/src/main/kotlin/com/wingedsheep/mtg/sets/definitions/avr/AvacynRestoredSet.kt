@@ -1,6 +1,8 @@
 package com.wingedsheep.mtg.sets.definitions.avr
 
 import com.wingedsheep.mtg.sets.discovery.CardDiscovery
+import com.wingedsheep.sdk.limited.BoosterStrategy
+import com.wingedsheep.sdk.limited.StandardBooster
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.MtgSet
 import com.wingedsheep.sdk.model.Printing
@@ -22,6 +24,15 @@ object AvacynRestoredSet : MtgSet {
     override val displayName = "Avacyn Restored"
     override val releaseDate = "2012-05-04"
     override val block = "Innistrad"
+
+    /**
+     * Draft Booster: 10 commons, 3 uncommons and a rare or mythic (rares print twice on the sheet,
+     * mythics once: 53 rares and 15 mythics make the upgrade 15 in 121), plus a basic land from a
+     * basic-only land slot, supplied at deck building. The foil that replaced a common in 9 packs of
+     * 40 is cosmetic and not modelled. Every non-basic card opens (Scryfall `set:avr is:booster -t:basic`
+     * is 101 / 60 / 53 / 15). Figures from mtg.wtf/pack/avr (taw/magic-search-engine) and Scryfall.
+     */
+    override val boosterStrategy: BoosterStrategy = StandardBooster(commons = 10, mythicChance = 15.0 / 121)
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)

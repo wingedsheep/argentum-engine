@@ -3458,6 +3458,73 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  AVR: {
+    setCode: 'AVR',
+    setName: 'Avacyn Restored',
+    archetypes: [
+      {
+        name: 'Fliers',
+        colors: ['W', 'U'],
+        keyCard: 'Wingcrafter',
+        description: 'Take to the air with Seraph of Dawn, Voice of the Provinces, Moonlight Geist and Scrapskin Drake, and pair Wingcrafter with a ground body to give it flying. A tempo deck that races in the sky while Crippling Chill and Vanishment clear blockers.',
+      },
+      {
+        name: 'Control',
+        colors: ['U', 'B'],
+        keyCard: 'Mist Raven',
+        description: 'Hold the board with Polluted Dead and Fettergeist, answer threats with Death Wind, Barter in Blood and Mist Raven, and win with fliers once the opponent runs out of creatures. A patient control deck that trades one for one and wins the long game.',
+      },
+      {
+        name: 'Aggro',
+        colors: ['B', 'R'],
+        keyCard: 'Falkenrath Exterminator',
+        description: 'Attack early with Heirs of Stromkirk, Bloodflow Connoisseur and Riot Ringleader, and clear blockers with Pillar of Flame, Bone Splinters and Death Wind. A fast deck that keeps the opponent on the back foot until Falkenrath Exterminator takes over.',
+      },
+      {
+        name: 'Wolfir Soulbond',
+        colors: ['R', 'G'],
+        keyCard: 'Lightning Mauler',
+        description: 'Pair Lightning Mauler and Hanweir Lancer with the biggest green bodies, like Wolfir Silverheart and Pathbreaker Wurm, so every attacker hits harder and arrives early. A stompy deck that wins combat on the ground.',
+      },
+      {
+        name: 'Soulbond Counters',
+        colors: ['G', 'W'],
+        keyCard: 'Trusted Forcemage',
+        description: 'Pair creatures with Trusted Forcemage, Nearheath Pilgrim and Spectral Gateguards, grow the team with Timberland Guide and Cathars\' Crusade, and outsize every blocker. A go-wide midrange deck where each new creature strengthens another.',
+      },
+      {
+        name: 'Sacrifice Drain',
+        colors: ['W', 'B'],
+        keyCard: 'Blood Artist',
+        description: 'Trade creatures freely while Blood Artist drains the opponent for each death, bring them back with undying from Butcher Ghoul and Evernight Shade or with Unhallowed Pact, and gain life off Seraph Sanctuary. A grindy deck that wins races by draining.',
+      },
+      {
+        name: 'Miracle Spells',
+        colors: ['U', 'R'],
+        keyCard: 'Tandem Lookout',
+        description: 'Draw extra cards with Tandem Lookout and Mad Prophet so miracles like Thunderous Wrath and Devastation Tide come off the top on the opponent\'s turn, and copy the best instant with Dual Casting. A tempo deck that wins with spells as much as creatures.',
+      },
+      {
+        name: 'Undying Midrange',
+        colors: ['B', 'G'],
+        keyCard: 'Howlgeist',
+        description: 'Play undying creatures like Howlgeist, Butcher Ghoul and Evernight Shade that come back stronger, stop fliers with Gloomwidow, and rebuy threats with Grave Exchange. A grindy midrange deck that gets two uses out of every creature.',
+      },
+      {
+        name: 'Humans Aggro',
+        colors: ['R', 'W'],
+        keyCard: 'Kruin Striker',
+        description: 'Curve out with Humans like Thraben Valiant, Fervent Cathar and Kruin Striker, grow the team with Banners Raised and Thatcher Revolt, and finish with Kessig Malcontents counting your Humans. A fast tribal deck that ends the game before the angels arrive.',
+        creatureTypes: ['Human'],
+      },
+      {
+        name: 'Soulbond Tempo',
+        colors: ['G', 'U'],
+        keyCard: 'Galvanic Alchemist',
+        description: 'Pair Galvanic Alchemist, Elgaud Shieldmate and Wingcrafter with green beef like Wolfir Silverheart and Pathbreaker Wurm, stop fliers with Geist Trappers, and tap blockers with Crippling Chill. A value deck whose pairs are bigger than anything the opponent plays.',
+      },
+    ],
+  },
   M13: {
     setCode: 'M13',
     setName: 'Magic 2013',
