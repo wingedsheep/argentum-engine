@@ -8612,7 +8612,8 @@ work for abilities-on-stack (which carry no `CardComponent`).
   outlives its resolution (a `PreventionSourceFilter.Matching` shield, a floating group effect) a
   context-bound reference — target, pipeline, bound variable, triggering / damage / cost object — is
   pinned to that object's id as the effect resolves (`ResolutionFilterBaker`), so the exclusion keeps
-  working: Terrifying Presence is
+  working (and is dropped when that object leaves the battlefield — returned, it is a new object, CR
+  400.7): Terrifying Presence is
   `Effects.PreventCombatDamageFrom(GameObjectFilter.Creature.otherThan(EffectTarget.ContextTarget(0)))`.
 - `HasGreatestPower` (filter builder `hasGreatestPower()`) / `HasLeastPower` (filter builder
   `hasLeastPower()`) — has the greatest / least projected power among creatures *its controller*

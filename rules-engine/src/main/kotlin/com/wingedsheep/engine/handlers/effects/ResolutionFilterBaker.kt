@@ -137,6 +137,28 @@ object ResolutionFilterBaker {
         }
 
     /**
+     * [filter] with every identity test pinned to [leavingId] rewritten to name nothing, for when
+     * that object leaves the battlefield: it comes back as a new object (CR 400.7) the pinned
+     * effect never saw. "Creatures other than target creature" then covers the returned creature,
+     * and a positive pin matches nothing — the empty [StatePredicate.Or] is the constant false.
+     */
+    fun unpin(filter: GameObjectFilter, leavingId: com.wingedsheep.sdk.model.EntityId): GameObjectFilter {
+        fun rewrite(predicate: StatePredicate): StatePredicate = when (predicate) {
+            is StatePredicate.IsEntity ->
+                if ((predicate.reference as? EffectTarget.SpecificEntity)?.entityId == leavingId) StatePredicate.Or(emptyList())
+                else predicate
+            is StatePredicate.Not -> rewrite(predicate.predicate).let { if (it == predicate.predicate) predicate else StatePredicate.Not(it) }
+            is StatePredicate.And -> predicate.predicates.map(::rewrite).let { if (it == predicate.predicates) predicate else StatePredicate.And(it) }
+            is StatePredicate.Or -> predicate.predicates.map(::rewrite).let { if (it == predicate.predicates) predicate else StatePredicate.Or(it) }
+            else -> predicate
+        }
+        val statePredicates = filter.statePredicates.map(::rewrite)
+        val anyOf = filter.anyOf.map { unpin(it, leavingId) }
+        return if (statePredicates == filter.statePredicates && anyOf == filter.anyOf) filter
+        else filter.copy(statePredicates = statePredicates, anyOf = anyOf)
+    }
+
+    /**
      * An object reference only the resolving context can answer. The source, its attachments and
      * the granter mean the same object at the point of use, so they stay symbolic.
      */

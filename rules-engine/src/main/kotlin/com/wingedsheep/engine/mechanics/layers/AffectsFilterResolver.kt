@@ -616,7 +616,7 @@ internal class AffectsFilterResolver(
         // Reference-relative identity: a reference pinned at resolution (ResolutionFilterBaker)
         // names its object outright; any other needs an effect context projection doesn't have.
         is StatePredicate.IsEntity ->
-            (predicate.reference as? com.wingedsheep.sdk.scripting.targets.EffectTarget.SpecificEntity)
+            (predicate.reference as? EffectTarget.SpecificEntity)
                 ?.entityId == entityId
         // Source-relative: "created with the source" needs the ability's source permanent, absent
         // in group-static projection. Only meaningful in target/gather-filter contexts via

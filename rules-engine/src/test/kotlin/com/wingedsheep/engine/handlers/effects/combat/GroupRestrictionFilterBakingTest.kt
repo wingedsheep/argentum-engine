@@ -20,6 +20,7 @@ import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -283,6 +284,40 @@ class GroupRestrictionFilterBakingTest : FunSpec({
 
         d.state.projectedState.cantBlock(marked) shouldBe false
         d.state.projectedState.cantBlock(other) shouldBe true
+
+        // Leaving and returning makes it a new object (CR 400.7) the pin never named.
+        d.replaceState(ZoneMovementUtils.removeFloatingEffectsTargeting(d.state, marked))
+        d.state.projectedState.cantBlock(marked) shouldBe true
+        d.state.projectedState.cantBlock(other) shouldBe true
+    }
+
+    test("a prevention shield's pinned otherThan(target) is unpinned when that object leaves the battlefield") {
+        val d = driver()
+        val spared = d.putCreatureOnBattlefield(d.player1, "Grizzly Bears")
+        val other = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
+        val context = EffectContext(
+            sourceId = null,
+            controllerId = d.player1,
+            targets = listOf(ChosenTarget.Permanent(spared))
+        )
+        val shield = com.wingedsheep.sdk.dsl.Effects.PreventCombatDamageFrom(
+            GameObjectFilter.Creature.otherThan(EffectTarget.ContextTarget(0))
+        ) as com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
+        d.replaceState(PreventDamageExecutor(d.services.predicateEvaluator.amounts).execute(d.state, shield, context).state)
+
+        fun shieldFilter() = d.state.floatingEffects.mapNotNull {
+            it.effect.modification as? com.wingedsheep.engine.mechanics.layers.SerializableModification.PreventCombatDamageFromGroup
+        }.single().filter
+        val evaluator = d.services.predicateEvaluator
+        val ctx = PredicateContext(controllerId = d.player1)
+        evaluator.matches(d.state, d.state.projectedState, spared, shieldFilter(), ctx) shouldBe false
+        evaluator.matches(d.state, d.state.projectedState, other, shieldFilter(), ctx) shouldBe true
+
+        d.replaceState(ZoneMovementUtils.removeFloatingEffectsTargeting(d.state, spared))
+        withClue("the returned creature is a new object the shield covers") {
+            evaluator.matches(d.state, d.state.projectedState, spared, shieldFilter(), ctx) shouldBe true
+        }
+        evaluator.matches(d.state, d.state.projectedState, other, shieldFilter(), ctx) shouldBe true
     }
 })
 
