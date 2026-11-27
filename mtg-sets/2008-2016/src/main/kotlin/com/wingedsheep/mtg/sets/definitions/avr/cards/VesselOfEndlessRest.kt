@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AbilityCost
+import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -34,7 +34,7 @@ val VesselOfEndlessRest = card("Vessel of Endless Rest") {
     }
 
     activatedAbility {
-        cost = AbilityCost.Tap
+        cost = Costs.Tap
         effect = Effects.AddAnyColorMana(1)
         manaAbility = true
         timing = TimingRule.ManaAbility
