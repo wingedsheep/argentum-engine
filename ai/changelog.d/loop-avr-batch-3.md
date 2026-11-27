@@ -1,0 +1,1 @@
+- #PR The AI reads Auras that return their dying host under your control (Unhallowed Pact) as useful on either side — death insurance on its own creature, a steal on the opponent's

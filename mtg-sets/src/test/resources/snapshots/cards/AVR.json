@@ -1480,6 +1480,115 @@
     "colorIdentityOverride": []
 }
 
+// Corpse Traders
+{
+    "name": "Corpse Traders",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "{2}{B}, Sacrifice a creature: Target opponent reveals their hand. You choose a card from it. That player discards that card. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Corpse Traders:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Choose a card for that player to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "rarity": "UNCOMMON",
+        "artist": "Kev Walker",
+        "flavorText": "Those without breath can't complain.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/df3eed10-7a8f-4c89-8be8-389f979e10b7.jpg?1783940704",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "If you cast this as normal during your main phase, it will enter the battlefield and you'll receive priority. If no abilities trigger because of this, you can activate its ability immediately, before any other player has a chance to remove it from the battlefield."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "You can sacrifice Corpse Traders to pay the cost of its ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Craterhoof Behemoth
 {
     "name": "Craterhoof Behemoth",
@@ -1709,6 +1818,78 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Dark Impostor
+{
+    "name": "Dark Impostor",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Vampire Assassin",
+    "oracleText": "{4}{B}{B}: Exile target creature and put a +1/+1 counter on this creature.\nThis creature has all activated abilities of all creature cards exiled with it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Dark Impostor:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{B}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile",
+                            "linkToSource": true
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Exile target creature and put a +1/+1 counter on Dark Impostor."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "HasAllActivatedAbilitiesOfCards",
+                "donors": "LinkedExile",
+                "cardFilter": "creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "rarity": "RARE",
+        "artist": "Johannes Voss",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8f5e8815-cda8-407d-847c-968b72c061e8.jpg?1783940704"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -1993,6 +2174,63 @@
     ]
 }
 
+// Demonic Rising
+{
+    "name": "Demonic Rising",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your end step, if you control exactly one creature, create a 5/5 black Demon creature token with flying.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Demonic Rising:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 5,
+                    "toughness": 5,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Demon"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    },
+                    "operator": "EQ",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "RARE",
+        "artist": "Trevor Claxton",
+        "flavorText": "Which is the greater folly, summoning the demon or expecting gratitude from it?",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2136a82-b535-47f6-9eee-5b7585ac5cf1.jpg?1783940702"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Demonic Taskmaster
 {
     "name": "Demonic Taskmaster",
@@ -2029,6 +2267,69 @@
         "artist": "Chris Rahn",
         "flavorText": "Subservience to greater power is the only law in the pit.",
         "imageUri": "https://cards.scryfall.io/normal/front/f/b/fb5d6266-30a7-4360-84bc-22b52fb782b3.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Demonlord of Ashmouth
+{
+    "name": "Demonlord of Ashmouth",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "Flying\nWhen this creature enters, exile it unless you sacrifice another creature.\nUndying (When this creature dies, if it had no +1/+1 counters on it, return it to the battlefield under its owner's control with a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "UNDYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Demonlord of Ashmouth:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomSacrifice",
+                            "filter": "creature",
+                            "excludeSelf": true
+                        }
+                    },
+                    "suffer": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Exile"
+                    }
+                },
+                "descriptionOverride": "When this creature enters, exile it unless you sacrifice another creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "rarity": "RARE",
+        "artist": "Lucas Graciano",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/785da9a3-09af-45aa-bc04-4ab69cfb2ba4.jpg?1783940701",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "Demonlord of Ashmouth's \"enters\" ability will trigger no matter how it entered, including because of its undying ability."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "You don't have to sacrifice another creature, even if you control one. You may choose to exile Demonlord of Ashmouth."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -3161,6 +3462,70 @@
     ]
 }
 
+// Essence Harvest
+{
+    "name": "Essence Harvest",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player loses X life and you gain X life, where X is the greatest power among creatures you control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature",
+                        "aggregation": "MAX",
+                        "property": "POWER"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature",
+                        "aggregation": "MAX",
+                        "property": "POWER"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "artist": "Daarken",
+        "flavorText": "Captain Lewenheart uncovered evidence of a demon cult among the clergy. The Skirsdag never gave him a chance to prove his case.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c3fac03-a019-4faa-bc1c-09e3a394fff7.jpg?1783940699",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "The value of X is determined when Essence Harvest resolves. If you control no creatures that time, no life will be lost or gained."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "Essence Harvest targets only the player. It doesn't target any creatures. If that player is an illegal target when Essence Harvest tries to resolve, it won't resolve and none of its effects will happen. No life will be lost or gained."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Evernight Shade
 {
     "name": "Evernight Shade",
@@ -4021,6 +4386,50 @@
     ]
 }
 
+// Ghoulflesh
+{
+    "name": "Ghoulflesh",
+    "manaCost": "{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets -1/-1 and is a black Zombie in addition to its other colors and types.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": -1,
+                "toughnessBonus": -1
+            },
+            {
+                "type": "GrantColor",
+                "color": "BLACK"
+            },
+            {
+                "type": "GrantSubtype",
+                "subtype": "Zombie",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "artist": "Igor Kieryluk",
+        "flavorText": "The body dies in stages. First the skin, then the muscle. The brain is last, much to the victim's dismay.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2eed3d1b-3142-437c-99e9-85ba76e23e6d.jpg?1783940699"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Gisela, Blade of Goldnight
 {
     "name": "Gisela, Blade of Goldnight",
@@ -4813,6 +5222,64 @@
     ]
 }
 
+// Homicidal Seclusion
+{
+    "name": "Homicidal Seclusion",
+    "manaCost": "{4}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "As long as you control exactly one creature, that creature gets +3/+1 and has lifelink.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "CompositeStaticAbility",
+                    "abilities": [
+                        {
+                            "type": "ModifyStats",
+                            "powerBonus": 3,
+                            "toughnessBonus": 1,
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "LIFELINK",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        }
+                    ]
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    },
+                    "operator": "EQ",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "rarity": "UNCOMMON",
+        "artist": "Cliff Childs",
+        "flavorText": "\"Damned crows and their endless squawking . . . blocks out the voices in my head . . .\"\n—Hermit of Hanne Hall",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/022960a1-8223-4b83-aea2-85359c39f3b8.jpg?1783940696"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Hound of Griselbrand
 {
     "name": "Hound of Griselbrand",
@@ -4905,6 +5372,43 @@
         "artist": "David Palumbo",
         "flavorText": "\"I have seen a hundred mortal families rise and fall. I shall outlast a thousand more.\"\n—Olivia Voldaren",
         "imageUri": "https://cards.scryfall.io/normal/front/1/d/1d1de712-86ac-4c03-be86-2403cd121f66.jpg?1783940696"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Hunted Ghoul
+{
+    "name": "Hunted Ghoul",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "This creature can't block Humans.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanOnlyBlockCreaturesWith",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "NotSubtype",
+                            "subtype": "Human"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "artist": "Ryan Pancoast",
+        "flavorText": "Even after Hanweir was saved, Gisa's lost ghouls would shamble through, still following the twisted orders of their imprisoned master.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bb443cf7-70bd-4df7-b446-107e099c19e3.jpg?1783940695"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -5977,6 +6481,92 @@
     ]
 }
 
+// Mental Agony
+{
+    "name": "Mental Agony",
+    "manaCost": "{3}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player discards two cards and loses 2 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "hand"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "hand",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "chooser": "TargetPlayer",
+                    "storeSelected": "discarded",
+                    "prompt": "Choose 2 cards to discard"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "discarded",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "moveType": "Discard"
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "artist": "Greg Staples",
+        "flavorText": "\"His mind is feeble. Feed him to the bats.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4f8a1d51-aa7f-41fd-b97d-56bc48221615.jpg?1783940695",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "If the targeted player has fewer than two cards in their hand, that player will still lose 2 life (and discard one card, if applicable)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Midnight Duelist
 {
     "name": "Midnight Duelist",
@@ -6802,6 +7392,71 @@
         "artist": "Jason A. Engle",
         "flavorText": "After the zombie attack, crops withered on the vine, and the thriving village became a ghost town almost overnight.",
         "imageUri": "https://cards.scryfall.io/normal/front/0/3/036c1954-37d3-4787-8df8-f2d0dd39058a.jpg?1783940692"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Predator's Gambit
+{
+    "name": "Predator's Gambit",
+    "manaCost": "{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+1.\nEnchanted creature has intimidate as long as its controller controls no other creatures. (It can't be blocked except by artifact creatures and/or creatures that share a color with it.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "INTIMIDATE"
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "ControllerMeets",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "creature"
+                                    },
+                                    "operator": "LTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/88810a96-d5f8-4030-93f1-e2ad0d480317.jpg?1783940692"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -7718,6 +8373,60 @@
     ]
 }
 
+// Rush of Blood
+{
+    "name": "Rush of Blood",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +X/+0 until end of turn, where X is its power.",
+    "script": {
+        "spellEffect": {
+            "type": "ModifyStats",
+            "powerModifier": {
+                "type": "EntityProperty",
+                "entity": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "numericProperty": "Power"
+            },
+            "toughnessModifier": {
+                "type": "Fixed",
+                "amount": 0
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "rarity": "UNCOMMON",
+        "artist": "Cynthia Sheppard",
+        "flavorText": "Sometimes it's not for sustenance or to feed the dependence. Sometimes it's just to feel again.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2884824-d138-47f2-913b-32cd475e9584.jpg?1783940683",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "The value of X is determined when Rush of Blood resolves. The bonus won't change later in the turn if the creature's power changes."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Scalding Devil
 {
     "name": "Scalding Devil",
@@ -8337,6 +9046,57 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Somberwald Vigilante
+{
+    "name": "Somberwald Vigilante",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Whenever this creature becomes blocked by a creature, this creature deals 1 damage to that creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Somberwald Vigilante:1",
+                "trigger": {
+                    "type": "BecomesBlockedEvent",
+                    "filter": "creature"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "TriggeringEntity",
+                    "damageSource": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "artist": "John Stanko",
+        "flavorText": "He has nothing left but his resentment.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e69eb29-a7e4-4826-9535-9a073136c688.jpg?1783940677",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "Somberwald Vigilante's ability will trigger for each creature it becomes blocked by."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "The ability resolves before combat damage is dealt, so it could cause blocking creatures to be destroyed and thus not deal combat damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -9103,6 +9863,185 @@
     ]
 }
 
+// Treacherous Pit-Dweller
+{
+    "name": "Treacherous Pit-Dweller",
+    "manaCost": "{B}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "When this creature enters from a graveyard, target opponent gains control of it.\nUndying (When this creature dies, if it had no +1/+1 counters on it, return it to the battlefield under its owner's control with a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "UNDYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Treacherous Pit-Dweller:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Graveyard",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GiveControlToTargetPlayer",
+                    "permanent": "Self",
+                    "newController": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters from a graveyard, target opponent gains control of it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/eec7dfd7-d7b2-44fa-b351-022a19fe81b8.jpg?1783940690"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Triumph of Cruelty
+{
+    "name": "Triumph of Cruelty",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, target opponent discards a card if you control the creature with the greatest power or tied for the greatest power.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Triumph of Cruelty:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "All",
+                            "conditions": [
+                                {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "creature"
+                                },
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "EachOtherPlayer",
+                                        "filter": {
+                                            "cardPredicates": [
+                                                "IsCreature",
+                                                {
+                                                    "type": "CompareNumericProperty",
+                                                    "property": "POWER",
+                                                    "operator": "GT",
+                                                    "amount": {
+                                                        "type": "AggregateBattlefield",
+                                                        "player": "You",
+                                                        "filter": "creature",
+                                                        "aggregation": "MAX",
+                                                        "property": "POWER"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "operator": "EQ",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "chooser": "TargetPlayer",
+                                "storeSelected": "discarded",
+                                "prompt": "Choose 1 card to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "UNCOMMON",
+        "artist": "Izzy",
+        "flavorText": "\"I've seen corpses prettier than you, beastmage.\"\n—Liliana Vess",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/906618e2-2638-4017-9d6e-e6f282967a81.jpg?1783940690",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "Triumph of Cruelty's ability will trigger at the beginning of each of your upkeeps regardless of who controls the creature with the greatest power. The ability checks whether the opponent will discard a card when it resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Triumph of Ferocity
 {
     "name": "Triumph of Ferocity",
@@ -9527,6 +10466,73 @@
         "artist": "Dave Kendall",
         "flavorText": "Heartless killer in life, brainless killer in death.",
         "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d330058-16af-4486-aa89-b6be759e35d4.jpg?1783940690"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Unhallowed Pact
+{
+    "name": "Unhallowed Pact",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen enchanted creature dies, return that card to the battlefield under your control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Unhallowed Pact:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "Entity",
+                                "entity": "TriggeringEntity"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "artist": "Volkan Baǵa",
+        "flavorText": "Agreements with demons seldom end at the grave.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b26d73e6-9138-43b2-8031-6e3b25fa33f9.jpg?1783940690",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "The card will return to the battlefield under your control only if it's still in the graveyard when Unhallowed Pact's ability resolves. If it's not (perhaps because an ability like undying has already returned it to the battlefield), nothing happens."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "If Unhallowed Pact is enchanting a token creature, that creature can't return to the battlefield."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK"
