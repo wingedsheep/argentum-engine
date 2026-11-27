@@ -104,6 +104,7 @@ const SELECTION_COST_TYPES: readonly string[] = [
   'SacrificeVariable',
   'TapPermanents',
   'TapForCostReduction',
+  'TapVariable',
   'BouncePermanent',
   'DiscardCard',
   'ExileFromGraveyard',
@@ -568,9 +569,14 @@ export function mergeResult(
         if (costType === 'Conspire') {
           return { ...action, conspiredCreatures: selectedTargets }
         }
-        // Teamwork (CR 702.194a) and "sacrifice any number of Spirits" (Devouring Greed) pay
-        // through the shared variable-count permanent channel.
-        if (costType === 'TapForTotalPower' || costType === 'SacrificeVariable') {
+        // Teamwork (CR 702.194a), "sacrifice any number of Spirits" (Devouring Greed) and "tap any
+        // number of untapped creatures you control" (Burn at the Stake) pay through the shared
+        // variable-count permanent channel.
+        if (
+          costType === 'TapForTotalPower' ||
+          costType === 'SacrificeVariable' ||
+          costType === 'TapVariable'
+        ) {
           return {
             ...action,
             additionalCostPayment: {
@@ -1001,6 +1007,16 @@ export function enterPhase(
         case 'TapForCostReduction':
           validTargets = [...(costInfo.validTapTargets ?? [])]
           minTargets = 0
+          maxTargets = validTargets.length
+          flags.isSacrificeSelection = true
+          flags.isTapPermanentSelection = true
+          flags.targetDescription = costInfo.description
+          break
+        // "Tap any number of untapped creatures you control" (Burn at the Stake): from the floor
+        // (usually none) up to every candidate.
+        case 'TapVariable':
+          validTargets = [...(costInfo.validTapTargets ?? [])]
+          minTargets = costInfo.tapCount ?? 0
           maxTargets = validTargets.length
           flags.isSacrificeSelection = true
           flags.isTapPermanentSelection = true

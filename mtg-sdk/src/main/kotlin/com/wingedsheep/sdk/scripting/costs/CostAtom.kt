@@ -307,6 +307,8 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
                 else -> "$minCount or more "
             })
             if (excludeSelf) append("other ")
+            // Only untapped permanents can be tapped (CR 701.26a), and the printed text says so.
+            if (action == PermanentCostAction.TAP) append("untapped ")
             append("${filter.description}s you control")
             if (minMeasure > 0) when (xMeasure) {
                 VariableCostMeasure.TOTAL_POWER -> append(" with total power $minMeasure or more")

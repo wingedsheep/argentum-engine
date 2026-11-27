@@ -2964,11 +2964,12 @@ class CastSpellEnumerator(
                 payXLifeMaxX = offer.payXLifeMaxX
             )
         }
-        // "You may sacrifice any number of Spirits" (Devouring Greed). With nothing to sacrifice
-        // there is nothing to pick, and a zero-floor cost is paid by choosing none.
+        // "You may sacrifice any number of Spirits" (Devouring Greed), "tap any number of untapped
+        // creatures you control" (Burn at the Stake). With no candidate there is nothing to pick,
+        // and a zero-floor cost is paid by choosing none.
         val variablePermanentsCost = offer.variablePermanentsCost
         if (variablePermanentsCost != null && offer.variablePermanentsTargets.isNotEmpty()) {
-            return VariablePermanentsCostKind.sacrificeVariableData(variablePermanentsCost, offer.variablePermanentsTargets)
+            return VariablePermanentsCostKind.variableData(variablePermanentsCost, offer.variablePermanentsTargets)
         }
         // Every selection cost the spell carries is offered — "discard a card and sacrifice a
         // creature" asks for both (CR 601.2h). The first leads; the rest ride in `alsoRequired`.

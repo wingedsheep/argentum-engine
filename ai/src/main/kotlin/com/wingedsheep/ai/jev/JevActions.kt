@@ -159,13 +159,16 @@ internal class JevActions(
         }
         // "Sacrifice any number of …" (Devouring Greed) returns its picks in the variable-count channel.
         val variableSacrifice = c.costType == "SacrificeVariable"
+        // "Tap any number of untapped creatures you control" (Burn at the Stake) likewise.
+        val variableTap = c.costType == "TapVariable"
         return AdditionalCostPayment(
             sacrificedPermanents = if (variableSacrifice) emptyList()
             else select("Sacrifice for ${c.description}", c.validSacrificeTargets, c.sacrificeCount),
             // "Discard X cards" (Nahiri's Wrath) owes exactly the announced X.
             discardedCards = select("Discard for ${c.description}", c.validDiscardTargets,
                 if (c.countIsX) x ?: 0 else c.discardCount),
-            tappedPermanents = select("Tap for ${c.description}", c.validTapTargets, c.tapCount),
+            tappedPermanents = if (variableTap) emptyList()
+            else select("Tap for ${c.description}", c.validTapTargets, c.tapCount),
             bouncedPermanents = select("Return to hand for ${c.description}", c.validBounceTargets, c.bounceCount),
             exiledCards = if (c.validCraftMaterials.isNotEmpty())
                 select("Exile craft materials", c.validCraftMaterials, c.craftMinCount, c.craftMaxCount ?: c.validCraftMaterials.size)
@@ -185,6 +188,8 @@ internal class JevActions(
                 select("Sacrifice for ${c.description}", c.validSacrificeTargets, x ?: 0)
             else if (variableSacrifice)
                 select("Sacrifice for ${c.description}", c.validSacrificeTargets, c.sacrificeCount, c.validSacrificeTargets.size)
+            else if (variableTap)
+                select("Tap for ${c.description}", c.validTapTargets, c.tapCount, c.validTapTargets.size)
             else if (c.costType == "TapForTotalPower")
                 cards("Tap creatures with total power at least ${c.tapForPowerRequired}", c.tapForPowerCreatures.map { it.entityId })
             // null, not empty: an empty list is the answer "none", and would skip the engine's own

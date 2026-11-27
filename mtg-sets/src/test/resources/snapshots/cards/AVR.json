@@ -644,6 +644,59 @@
     ]
 }
 
+// Burn at the Stake
+{
+    "name": "Burn at the Stake",
+    "manaCost": "{2}{R}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, tap any number of untapped creatures you control.\nBurn at the Stake deals damage to any target equal to three times the number of creatures tapped this way.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Multiply",
+                "amount": {
+                    "type": "ContextProperty",
+                    "key": "TAPPED_AS_COST_COUNT"
+                },
+                "multiplier": 3
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomVariablePermanents",
+                    "filter": "creature",
+                    "minCount": 0,
+                    "excludeSelf": false,
+                    "action": "TAP",
+                    "xMeasure": "COUNT"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d46e9902-81fb-4a3c-9f2f-d3faf031631d.jpg?1783940688"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Butcher Ghoul
 {
     "name": "Butcher Ghoul",

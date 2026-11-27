@@ -1415,6 +1415,10 @@ class DynamicAmountEvaluator(
 
         ContextPropertyKey.ADDITIONAL_COST_EXILED_COUNT -> context.exiledCardCount
 
+        // Every permanent tapped to pay the cost, recorded at payment (CR 601.2h): untapping or
+        // leaving the battlefield since doesn't undo that it was tapped this way.
+        ContextPropertyKey.TAPPED_AS_COST_COUNT -> context.tappedPermanents.size
+
         // Every card discarded to pay the cost, in whatever zone it is now: the discard is a fact
         // of the cast, not a reference to an object that must still be in the graveyard (Nahiri's
         // Wrath ruling — madness exile and later moves still count).

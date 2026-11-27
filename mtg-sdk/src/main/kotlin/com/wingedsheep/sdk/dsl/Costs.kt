@@ -824,6 +824,30 @@ object Costs {
         )
 
         /**
+         * Tap a variable number (at least [minCount]) of untapped permanents matching [filter] you
+         * control — the tapping twin of [SacrificePermanents]. The default floor of 0 is "tap any
+         * number of untapped creatures you control" (Burn at the Stake): tapping none is a legal
+         * payment. The tapped permanents are recorded on the spell, so
+         * `DynamicAmounts.permanentsTappedAsCost()` counts them ("for each creature tapped this
+         * way") and `EffectTarget.TappedAsCost(i)` / `CardSource.TappedAsCost` name them.
+         *
+         * Tapping this way is a cost, not the `{T}` symbol, so summoning sickness (CR 302.6)
+         * doesn't apply; only untapped permanents may be chosen (CR 701.26a).
+         */
+        fun TapPermanentsVariable(
+            filter: GameObjectFilter = GameObjectFilter.Creature,
+            minCount: Int = 0
+        ): AdditionalCost = AdditionalCost.Atom(
+            CostAtom.VariablePermanents(
+                filter = filter,
+                minCount = minCount,
+                excludeSelf = false,
+                action = PermanentCostAction.TAP,
+                xMeasure = VariableCostMeasure.COUNT
+            )
+        )
+
+        /**
          * Tap any number of permanents matching [filter] you control whose **total projected
          * power** is [totalPower] or more — the "tap creatures for total power N" selection crew
          * and saddle already use, re-exposed as a spell's additional cost (Teamwork N,

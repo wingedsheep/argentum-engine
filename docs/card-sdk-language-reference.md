@@ -1294,6 +1294,17 @@ cast action advertises the first selection cost as `additionalCostInfo` and the 
   castability check and X ceiling assume every candidate is used, netting a candidate that is itself a
   mana source (a mana dork) at N − 1; the engine AI picks the fewest candidates (least valuable first)
   that make the cast payable.
+- `Costs.additional.TapPermanentsVariable(filter = GameObjectFilter.Creature, minCount = 0)` — "as an
+  additional cost to cast this spell, tap any number of untapped creatures you control" (Burn at the
+  Stake). The tapping twin of `Costs.additional.SacrificePermanents`: a `CostAtom.VariablePermanents` with
+  `action = TAP` and `xMeasure = COUNT`. The enumerator offers a `costType = "TapVariable"` picker
+  (`validTapTargets` = your untapped matching permanents, `tapCount` = the floor); the client returns the
+  picks in `additionalCostPayment.variableCostPermanents`. Only untapped permanents may be chosen
+  (CR 701.26a) and summoning sickness doesn't apply (a cost, not `{T}`). The taps are recorded on the
+  spell, so "the number of creatures tapped this way" is `DynamicAmounts.permanentsTappedAsCost()`
+  (fixed at payment — a tapped creature that later leaves still counts), and `EffectTarget.TappedAsCost(i)`
+  / `CardSource.TappedAsCost` name them. For "… this spell costs {1} less for each" use
+  `TapAnyNumberForCostReduction` instead.
 - `Costs.additional.TapForTotalPower(totalPower, filter = GameObjectFilter.Creature)` — "tap any number of
   creatures you control with total power N or more" (Teamwork N, CR 702.194a). A
   `CostAtom.VariablePermanents` with `action = TAP`, `xMeasure = TOTAL_POWER`, `minMeasure = N` and
@@ -18334,7 +18345,7 @@ forbids `DynamicAmount.X` in card definitions.
   `triggerCountersRemoved()`, `triggerDiscoverValue()`, `triggerManaProduced()`, `triggeringSpellManaValue()`,
   `manaSpentOnTriggeringSpell()`, `modesChosenOnTriggeringSpell()`, `lastKnownPlusOneCounters()`,
   `lastKnownCounterCount()`, `linkedExileCardCount()`, `linkedExileDistinctCardTypeCount()`,
-  `targetCount()`, `additionalCostExiledCount()`, `discardedAsCostTotalManaValue()`, `colorsSpentOnTriggeringSpell()`,
+  `targetCount()`, `additionalCostExiledCount()`, `permanentsTappedAsCost()`, `discardedAsCostTotalManaValue()`, `colorsSpentOnTriggeringSpell()`,
   `xValueOfTriggeringSpell()`, `diedBatchTotalPower()`, `preventedDamage()`.
 
 ### Math
@@ -19198,6 +19209,8 @@ Army just amassed by a sibling/action effect, or any cost-chosen entity. The plu
     source as it last existed on the battlefield (Hooded Hydra / Shadow Urchin).
   - `ADDITIONAL_COST_EXILED_COUNT` — cost-step accumulator. (The blight-X amount moved to
     `DynamicAmount.CastChoice(ChoiceSlot.BLIGHT_AMOUNT)`.)
+  - `TAPPED_AS_COST_COUNT` — permanents tapped to pay the spell's additional cost or the ability's
+    activation cost, recorded at payment (Burn at the Stake; `DynamicAmounts.permanentsTappedAsCost()`).
   - `TARGET_COUNT` — still-legal targets in the current effect context.
   - `TARGETS_TOTAL_MANA_VALUE` — the summed mana value of the objects targeted (CR 202.3); the
     summing sibling of `TARGET_COUNT`, read from the same target list. Player targets have no mana
