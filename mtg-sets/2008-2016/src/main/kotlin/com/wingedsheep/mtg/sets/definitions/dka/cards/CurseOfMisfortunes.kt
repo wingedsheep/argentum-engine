@@ -26,8 +26,8 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * The search filter excludes every name already on the enchanted player through
  * `nameNotSharedWithAttachmentOf` (Curse of Misfortunes itself included, so it never fetches a
  * second copy of itself). The found Curse enters attached to that player via the move's player
- * host (CR 303.4f — it isn't cast, so it doesn't target); one that couldn't enchant them stays in
- * the library (CR 303.4i).
+ * host (it isn't cast, so it doesn't target — hexproof doesn't stop it); one that couldn't legally
+ * enchant them (protection) stays in the library (CR 303.4i).
  */
 val CurseOfMisfortunes = card("Curse of Misfortunes") {
     manaCost = "{4}{B}"
@@ -61,7 +61,7 @@ val CurseOfMisfortunes = card("Curse of Misfortunes") {
                 )
                 move(chosen, CardDestination.ToZone(Zone.BATTLEFIELD, Player.You), attachTo = enchantedPlayer)
                 run(Effects.ShuffleLibrary())
-                // CR 701.23 — the library was searched whether or not a Curse was found.
+                // CR 701.23b — the library was searched whether or not a Curse was found.
                 run(EmitLibrarySearchedEventEffect)
             },
             prompt = "Search your library for a Curse card?"

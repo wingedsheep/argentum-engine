@@ -1510,11 +1510,9 @@ class PredicateEvaluator(
                 val name = projectedValues?.name ?: card.name
                 if (name.isBlank()) return false
                 val ctx = context ?: return false
-                val hostId = com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
-                    .resolveTarget(predicate.host, ctx.toEffectContext(), state) ?: return false
-                val attached = state.getEntity(hostId)
-                    ?.get<com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent>()
-                    ?.attachedIds.orEmpty()
+                val hostId = TargetResolutionUtils.resolveTarget(predicate.host, ctx.toEffectContext(), state)
+                    ?: return false
+                val attached = state.getEntity(hostId)?.get<AttachmentsComponent>()?.attachedIds.orEmpty()
                 attached.any { otherId ->
                     otherId != entityId && otherId in state.getBattlefield() &&
                         !projected.isFaceDown(otherId) &&
