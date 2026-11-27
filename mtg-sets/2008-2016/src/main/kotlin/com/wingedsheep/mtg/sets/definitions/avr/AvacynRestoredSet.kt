@@ -22,7 +22,6 @@ object AvacynRestoredSet : MtgSet {
     override val displayName = "Avacyn Restored"
     override val releaseDate = "2012-05-04"
     override val block = "Innistrad"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
