@@ -108,7 +108,7 @@ class ChosenCardTypeProtectionTest : ScenarioTestBase() {
         test("an unbound chosen scope on a one-shot player grant protects from nothing") {
             val game = board()
             game.state = game.state.updateEntity(game.player2Id) {
-                it.with(PlayerProtectionComponent(scopes = listOf(ProtectionScope.ChosenCardType())))
+                it.with(PlayerProtectionComponent.of(listOf(ProtectionScope.ChosenCardType())))
             }
             PlayerProtectionRules.isProtectedFromSource(
                 game.state, game.player2Id, game.findPermanent("Grizzly Bears"), game.player1Id,

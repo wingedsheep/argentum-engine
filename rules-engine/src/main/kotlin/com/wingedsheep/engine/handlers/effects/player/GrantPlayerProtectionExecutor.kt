@@ -22,7 +22,8 @@ import kotlin.reflect.KClass
  *
  * Adds (or merges into) a [PlayerProtectionComponent] on the target player. Multiple
  * grants append to the existing scope list. The targeting/damage systems consult the
- * component via [com.wingedsheep.engine.mechanics.targeting.PlayerProtectionRules].
+ * component via [com.wingedsheep.engine.mechanics.targeting.PlayerProtectionRules]. Each grant keeps
+ * its own duration.
  */
 class GrantPlayerProtectionExecutor : EffectExecutor<GrantPlayerProtectionEffect> {
 
@@ -63,9 +64,9 @@ internal fun grantPlayerProtection(
     }
 
     val newState = state.updateEntity(playerId) { container ->
-        val existing = container.get<PlayerProtectionComponent>()
-        val mergedScopes = (existing?.scopes ?: emptyList()) + scope
-        container.with(PlayerProtectionComponent(scopes = mergedScopes, removeOn = removeOn))
+        val existing = container.get<PlayerProtectionComponent>()?.grants.orEmpty()
+        val grant = PlayerProtectionComponent.Grant(scope, removeOn)
+        container.with(PlayerProtectionComponent(if (grant in existing) existing else existing + grant))
     }
 
     val playerName = state.getEntity(playerId)?.get<CardComponent>()?.name ?: "Player"

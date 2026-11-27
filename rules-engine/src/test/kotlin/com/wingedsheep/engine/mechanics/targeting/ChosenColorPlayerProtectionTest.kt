@@ -2,6 +2,7 @@ package com.wingedsheep.engine.mechanics.targeting
 
 import com.wingedsheep.engine.core.ChooseColorDecision
 import com.wingedsheep.engine.core.ColorChosenResponse
+import com.wingedsheep.engine.state.components.player.PlayerEffectRemoval
 import com.wingedsheep.engine.state.components.player.PlayerProtectionComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Color
@@ -20,7 +21,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  * color of your choice" (CR 702.16: protection from a quality; a player can have protection).
  * The grant becomes player protection from `ProtectionScope.Color(<chosen>)`, not a floating
  * keyword, so it protects from sources of that colour only, stacks with a second grant, and ends
- * with its duration.
+ * with its own duration — without ending a longer grant already on the player.
  */
 class ChosenColorPlayerProtectionTest : ScenarioTestBase() {
 
@@ -71,6 +72,17 @@ class ChosenColorPlayerProtectionTest : ScenarioTestBase() {
             game.castWard(Color.GREEN)
             game.protectedFrom("Hill Giant") shouldBe true
             game.protectedFrom("Grizzly Bears") shouldBe true
+        }
+
+        test("an end-of-turn grant expires alone, leaving a longer protection in place") {
+            val game = board()
+            game.state = game.state.updateEntity(game.player1Id) {
+                it.with(PlayerProtectionComponent.of(listOf(ProtectionScope.Color(Color.GREEN)), PlayerEffectRemoval.Permanent))
+            }
+            game.castWard(Color.RED)
+            game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
+            withClue("the red grant ended with the turn") { game.protectedFrom("Hill Giant") shouldBe false }
+            withClue("the permanent green protection didn't") { game.protectedFrom("Grizzly Bears") shouldBe true }
         }
 
         test("the grant ends at end of turn") {

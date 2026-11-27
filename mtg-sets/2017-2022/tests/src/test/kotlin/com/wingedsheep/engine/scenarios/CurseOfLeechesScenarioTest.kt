@@ -194,7 +194,7 @@ class CurseOfLeechesScenarioTest : ScenarioTestBase() {
             test("a player with protection from black can't be chosen, leaving its controller") {
                 val game = lurkerAtDaybreak()
                 game.state = game.state.updateEntity(game.player2Id) {
-                    it.with(PlayerProtectionComponent(listOf(ProtectionScope.Color(Color.BLACK))))
+                    it.with(PlayerProtectionComponent.of(listOf(ProtectionScope.Color(Color.BLACK))))
                 }
 
                 game.castSpell(1, "Grizzly Bears").error shouldBe null
@@ -210,7 +210,7 @@ class CurseOfLeechesScenarioTest : ScenarioTestBase() {
                 val game = lurkerAtDaybreak()
                 for (player in listOf(game.player1Id, game.player2Id)) {
                     game.state = game.state.updateEntity(player) {
-                        it.with(PlayerProtectionComponent(listOf(ProtectionScope.Color(Color.BLACK))))
+                        it.with(PlayerProtectionComponent.of(listOf(ProtectionScope.Color(Color.BLACK))))
                     }
                 }
 

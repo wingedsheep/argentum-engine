@@ -240,13 +240,13 @@ class CopyAuraEntryTest : FunSpec({
         val d = driver()
         val source = d.putAura(playerAura.name, d.player1, d.player1)
         d.replaceState(d.state.updateEntity(d.player2) { it.with(
-            com.wingedsheep.engine.state.components.player.PlayerProtectionComponent(listOf(ProtectionScope.Color(Color.BLACK)))) })
+            com.wingedsheep.engine.state.components.player.PlayerProtectionComponent.of(listOf(ProtectionScope.Color(Color.BLACK)))) })
         val id = d.cast(copier.name)
         d.submitCardSelection(d.player1, listOf(source)).error shouldBe null
         d.state.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>().legalTargets.getValue(0) shouldBe listOf(d.player1)
         d.submitTargetSelection(d.player1, listOf(d.player1)).error shouldBe null
         d.replaceState(d.state.updateEntity(d.player1) { it.with(
-            com.wingedsheep.engine.state.components.player.PlayerProtectionComponent(listOf(ProtectionScope.Everything))) })
+            com.wingedsheep.engine.state.components.player.PlayerProtectionComponent.of(listOf(ProtectionScope.Everything))) })
         d.bothPass()
         (id in d.state.getGraveyard(d.player1)) shouldBe true
         d.state.getEntity(id)!!.get<CardComponent>()!!.name shouldBe copier.name

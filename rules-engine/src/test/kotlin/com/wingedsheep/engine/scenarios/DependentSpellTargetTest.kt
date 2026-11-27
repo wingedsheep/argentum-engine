@@ -72,8 +72,8 @@ class DependentSpellTargetTest : FunSpec({
         val d = setup()
         d.putLandOnBattlefield(d.player2, "Forest")
         d.replaceState(d.state.updateEntity(d.player2) { it.with(
-            com.wingedsheep.engine.state.components.player.PlayerProtectionComponent(
-                scopes = listOf(com.wingedsheep.sdk.scripting.ProtectionScope.Everything)
+            com.wingedsheep.engine.state.components.player.PlayerProtectionComponent.of(
+                listOf(com.wingedsheep.sdk.scripting.ProtectionScope.Everything)
             )
         ) })
         val infos = utils.buildTargetInfos(d.state, d.player1, requirements, targetingSourceType = TargetingSourceType.SPELL)
@@ -89,8 +89,8 @@ class DependentSpellTargetTest : FunSpec({
         val blueId = d.putCardInHand(d.player1, blue.name)
         d.putLandOnBattlefield(d.player2, "Forest")
         d.replaceState(d.state.updateEntity(d.player2) { it.with(
-            com.wingedsheep.engine.state.components.player.PlayerProtectionComponent(
-                scopes = listOf(com.wingedsheep.sdk.scripting.ProtectionScope.Color(com.wingedsheep.sdk.core.Color.RED))
+            com.wingedsheep.engine.state.components.player.PlayerProtectionComponent.of(
+                listOf(com.wingedsheep.sdk.scripting.ProtectionScope.Color(com.wingedsheep.sdk.core.Color.RED))
             )
         ) })
         utils.buildTargetInfos(d.state, d.player1, requirements, redId, TargetingSourceType.SPELL)[0]
@@ -179,8 +179,8 @@ class DependentSpellTargetTest : FunSpec({
         ) }
         resolver.validateTargets(shroudState, targets, controllerId = d.player1, targetRequirements = reqs) shouldBe emptyList()
         val protectedState = d.state.updateEntity(d.player2) { it.with(
-            com.wingedsheep.engine.state.components.player.PlayerProtectionComponent(
-                scopes = listOf(com.wingedsheep.sdk.scripting.ProtectionScope.Everything)
+            com.wingedsheep.engine.state.components.player.PlayerProtectionComponent.of(
+                listOf(com.wingedsheep.sdk.scripting.ProtectionScope.Everything)
             )
         ) }
         resolver.validateTargets(protectedState, targets, controllerId = d.player1, targetRequirements = reqs) shouldBe listOf(targets[0])

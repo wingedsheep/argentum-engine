@@ -300,8 +300,11 @@ class CleanupPhaseManager(
         // the same post-untap hook as floating UntilYourNextTurn effects.
         for (member in activeTeam) {
             val protection = result.getEntity(member)?.get<PlayerProtectionComponent>()
-            if (protection?.removeOn == PlayerEffectRemoval.UntilYourNextTurn) {
-                result = result.updateEntity(member) { it.without<PlayerProtectionComponent>() }
+            if (protection != null && protection.grants.any { it.removeOn == PlayerEffectRemoval.UntilYourNextTurn }) {
+                val lasting = protection.expire(PlayerEffectRemoval.UntilYourNextTurn)
+                result = result.updateEntity(member) {
+                    if (lasting == null) it.without<PlayerProtectionComponent>() else it.with(lasting)
+                }
             }
             val cantGainLife = result.getEntity(member)?.get<CantGainLifeComponent>()
             if (cantGainLife?.removeOn == PlayerEffectRemoval.UntilYourNextTurn) {
@@ -899,8 +902,9 @@ class CleanupPhaseManager(
                         else result.with(PlayerHexproofFromComponent(lasting))
                 }
                 val protection = result.get<PlayerProtectionComponent>()
-                if (protection?.removeOn == PlayerEffectRemoval.EndOfTurn) {
-                    result = result.without<PlayerProtectionComponent>()
+                if (protection != null && protection.grants.any { it.removeOn == PlayerEffectRemoval.EndOfTurn }) {
+                    val lasting = protection.expire(PlayerEffectRemoval.EndOfTurn)
+                    result = if (lasting == null) result.without<PlayerProtectionComponent>() else result.with(lasting)
                 }
                 val cantPlayFromHand = result.get<PlayerCantPlayFromHandComponent>()
                 if (cantPlayFromHand?.removeOn == PlayerEffectRemoval.EndOfTurn) {

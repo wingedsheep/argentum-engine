@@ -170,7 +170,7 @@ class DamageReplacementOrderTest : FunSpec({
             val snapshot = com.wingedsheep.engine.state.components.stack.captureLastKnown(d.state, source)
                 .copy(colors = setOf("RED"), manaValue = 3, controllerId = d.player1)
             d.replaceState(d.state.updateEntity(d.player2) {
-                it.with(PlayerProtectionComponent(scopes = listOf(scope)))
+                it.with(PlayerProtectionComponent.of(listOf(scope)))
             })
             val done = DamageReplacementChain.resolve(d.zones, d.state, listOf(
                 DamageReplacementChain.Instance(source, d.player2, 3, sourceSnapshot = snapshot)
@@ -289,7 +289,7 @@ class DamageReplacementOrderTest : FunSpec({
             val d = driver()
             d.putPermanentOnBattlefield(d.player1, "Order Life Ward")
             d.replaceState(d.state.updateEntity(d.player1) { it.with(
-                PlayerProtectionComponent(scopes = listOf(ProtectionScope.Everything))
+                PlayerProtectionComponent.of(listOf(ProtectionScope.Everything))
             ) })
             d.cast("Order Burn Each")
             d.choose(first, d.player1)
