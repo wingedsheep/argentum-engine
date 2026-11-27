@@ -237,7 +237,7 @@ object LimitedCardRater {
     /** Heuristic base rating of a planeswalker, before its loyalty abilities and rarity. */
     private const val PLANESWALKER_BASE = 3.0
 
-    private fun heuristicRate(card: CardDefinition): Double {
+    internal fun heuristicRate(card: CardDefinition): Double {
         var rating = baseRating(card)
         rating += keywordBonus(card)
         rating += effectBonus(card)
@@ -509,6 +509,14 @@ object LimitedCardRater {
 
     /** The share of its value a removal slot that can aim at nothing keeps. */
     private const val NARROWEST_SHARE = 0.2
+
+    /** A counterspell that can only aim at the spell cast Nth this turn (Second Guess). */
+    private const val NTH_SPELL_COUNTER = 0.3
+
+    /** Whether [requirement] can only aim at a spell in one position of the turn's cast order. */
+    private fun aimsAtOneCastPosition(requirement: TargetRequirement): Boolean =
+        (requirement as? com.wingedsheep.sdk.scripting.targets.TargetObject)?.filter?.baseFilter?.statePredicates
+            ?.any { it is com.wingedsheep.sdk.scripting.predicates.StatePredicate.WasCast && it.nthSpellThisTurn != null } == true
 
     /** What one effect is worth to a limited rating — the leaf scores folded over its tree. */
     internal fun effectValue(effect: Effect): Double = EffectWalker.fold(effect, LimitedScoreFold())
@@ -955,8 +963,9 @@ object LimitedCardRater {
             // Control effects — premium
             is GainControlEffect -> if (effect.duration == Duration.EndOfTurn) 0.6 else 1.5
 
-            // Counterspells
-            is CounterEffect -> 0.8
+            // Counterspells. One that can only aim at the turn's Nth spell (Second Guess: "the
+            // second spell cast this turn") answers a sliver of what an opponent casts.
+            is CounterEffect -> if (targets.any(::aimsAtOneCastPosition)) NTH_SPELL_COUNTER else 0.8
 
             // Everything else — a tutor, a tapper, recursion, discard, a new reading: priced by what
             // the intent reader makes of it. Pipeline stages read as nothing alone (see [pipelineScore]).

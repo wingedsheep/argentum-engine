@@ -1843,7 +1843,7 @@ Families:
 - `StatePredicate.ReceivedCounterThisTurn(counterType: CounterType?, placedByController: Boolean)` — One or more counters were put on this permanent during the current turn — the filter-level form of "…that you've put one or more +1/+1 counters on this turn".
 - `StatePredicate.SharesNameWithSpellCastThisTurn` — Shares a name with a spell cast by any player during the current turn.
 - `StatePredicate.StartedTurnUntapped` — Was on the battlefield **untapped when this turn began**, as the same object it is now — "if Rasputin started the turn untapped".
-- `StatePredicate.WasCast(fromZone: Zone?)` — A spell on the stack that was cast — from fromZone when it is set, from anywhere when it is null.
+- `StatePredicate.WasCast(fromZone: Zone?, nthSpellThisTurn: Int?)` — A spell on the stack that was cast — from fromZone when it is set, from anywhere when it is null.
 - `StatePredicate.WasCastForWarp` — Permanent on the battlefield that was cast for its warp cost (CR 702.185).
 - `StatePredicate.WasDealtDamageBySourceThisTurn` — Was dealt damage this turn by the effect's *source* — the recipient-side view of the source's per-turn damaged-creature record (the same record `Triggers` "a creature dealt damage by this creature…
 - `StatePredicate.WasDealtDamageThisTurn(damageType: DamageType)` — Has been dealt damage this turn.

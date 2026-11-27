@@ -69,6 +69,7 @@ import com.wingedsheep.engine.mechanics.targeting.DynamicTargetCount
 import com.wingedsheep.engine.mechanics.targeting.TargetValidator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.CountersRemovedEvent
@@ -585,7 +586,11 @@ class CastSpellHandler(
         if (castResult.outcome !is Outcome.Done) {
             return castResult
         }
-        currentState = castResult.newState
+        currentState = castResult.newState.updateEntity(action.cardId) { container ->
+            // The cast's position in the turn's cast order ("the second spell cast this turn").
+            container.get<SpellOnStackComponent>()
+                ?.let { container.with(it.copy(castOrdinalThisTurn = stormCount + 1)) } ?: container
+        }
 
         // --- 5. What the cast sets off -----------------------------------------------------------
 

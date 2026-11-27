@@ -5622,6 +5622,44 @@
     ]
 }
 
+// Second Guess
+{
+    "name": "Second Guess",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell that's the second spell cast this turn.",
+    "script": {
+        "spellEffect": "Counter",
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "statePredicates": [
+                            {
+                                "type": "WasCast",
+                                "nthSpellThisTurn": 2
+                            }
+                        ]
+                    },
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "rarity": "UNCOMMON",
+        "artist": "Karl Kopinski",
+        "flavorText": "\"I see where you're going with that. I don't like it.\"\n—Dierk, geistmage",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0d22d093-8e89-4d54-ac04-14c8759de3ea.jpg?1783940711"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Seraph Sanctuary
 {
     "name": "Seraph Sanctuary",

@@ -1743,13 +1743,33 @@ sealed interface StatePredicate {
      *    `Not(WasCast())` on a battlefield-entry `RedirectZoneChange`: the entering object is still
      *    the resolving spell when it was cast, and carries no cast origin otherwise.
      *
+     * [nthSpellThisTurn] narrows the cast to its position in the turn's cast order, counting every
+     * player's spells (1-indexed; the storm count plus one): Second Guess's "counter target spell
+     * that's the second spell cast this turn" is `WasCast(nthSpellThisTurn = 2)`. A copy that
+     * wasn't cast has no position, and neither does a later copy of the Nth spell.
+     *
      * Stack-only: a permanent's "was cast" history is the `WasCast` / `WasCastFromZone`
      * [com.wingedsheep.sdk.scripting.conditions] family instead.
      */
     @SerialName("WasCast")
     @Serializable
-    data class WasCast(val fromZone: com.wingedsheep.sdk.core.Zone? = null) : Entity {
-        override val description: String = if (fromZone == null) "cast" else "cast from ${fromZone.displayName}"
+    data class WasCast(
+        val fromZone: com.wingedsheep.sdk.core.Zone? = null,
+        val nthSpellThisTurn: Int? = null,
+    ) : Entity {
+        init {
+            require(nthSpellThisTurn == null || nthSpellThisTurn >= 1) { "nthSpellThisTurn is 1-indexed" }
+        }
+
+        override val description: String = buildString {
+            append(if (fromZone == null) "cast" else "cast from ${fromZone.displayName}")
+            if (nthSpellThisTurn != null) append(" as the ${ordinal(nthSpellThisTurn)} spell this turn")
+        }
+
+        private fun ordinal(n: Int): String = when (n) {
+            1 -> "first"; 2 -> "second"; 3 -> "third"; 4 -> "fourth"; 5 -> "fifth"
+            else -> "${n}th"
+        }
     }
 
     /**

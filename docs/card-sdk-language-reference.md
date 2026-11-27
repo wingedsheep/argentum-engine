@@ -6767,7 +6767,11 @@ reading `SpellOnStackComponent.castFromZone`, which a copy put onto the stack ne
 a cast copy does (CR 707.12); e.g. `TargetFilter.SpellOnStack.notCast(Zone.HAND)` for "target spell that
 wasn't cast from its owner's hand" — Wash Away, since a card in a hand is owned by that hand's player,
 CR 108.3 — and `TargetFilter.SpellOnStack.youControl().notCast()` for "target spell you control that
-wasn't cast" — Errant, Street Artist). Also honoured by the zone-change redirect path on a **battlefield
+wasn't cast" — Errant, Street Artist); `.nthSpellCastThisTurn(n)` (a spell on the stack that was the
+`n`th spell cast this turn, counting every player's spells — `StatePredicate.WasCast(nthSpellThisTurn = n)`,
+reading the `SpellOnStackComponent.castOrdinalThisTurn` stamped as the cast is recorded; a copy that wasn't
+cast has none; e.g. `TargetFilter.SpellOnStack.nthSpellCastThisTurn(2)` for "target spell that's the second
+spell cast this turn" — Second Guess). Also honoured by the zone-change redirect path on a **battlefield
 entry**: only a spell resolving off the stack carries a cast origin, so anything reanimated, flickered,
 put onto the battlefield or played as a land "wasn't cast" — Containment Priest's "if a nontoken creature
 would enter and it wasn't cast, exile it instead" is `replacementEffect(RedirectZoneChange(newDestination =
