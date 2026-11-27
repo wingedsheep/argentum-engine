@@ -1,0 +1,1 @@
+- #4890 The AI deckbuilder now sees "whenever a creature you control becomes the target of an instant or sorcery spell" triggers (Wild Defiance) and Aura-granted spell-copy abilities (Dual Casting) as payoffs for its instants and sorceries

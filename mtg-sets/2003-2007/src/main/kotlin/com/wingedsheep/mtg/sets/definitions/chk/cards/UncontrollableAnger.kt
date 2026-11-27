@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.MustAttack
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 
@@ -32,7 +33,7 @@ val UncontrollableAnger = card("Uncontrollable Anger") {
         ability = ModifyStats(2, 2)
     }
     staticAbility {
-        ability = MustAttack()
+        ability = MustAttack(GroupFilter.attachedCreature())
     }
     metadata {
         rarity = Rarity.COMMON

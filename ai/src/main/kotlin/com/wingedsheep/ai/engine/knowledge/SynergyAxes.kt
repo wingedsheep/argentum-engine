@@ -302,6 +302,17 @@ object SynergyAxes {
                         script.triggeredAbilities.any { copiesSpells(it.effect, it.allTargetRequirements) }
                 }
             ) add(SynergyAxis.SPELLS)
+            // The same copy handed to our host — Dual Casting's "enchanted creature has '{R}, {T}: Copy
+            // target instant or sorcery spell you control'" — is ours to activate, so it cashes in the
+            // deck's spells like the printed ability would. A curse's grant is the opponent's.
+            if (scripts.any { script ->
+                    !TargetPolarityAnalyzer.cursesHost(script.staticAbilities) &&
+                        script.staticAbilities.any { static ->
+                            static is GrantActivatedAbility && static.filter.scope == Scope.AttachedTo &&
+                                copiesSpells(static.ability.effect, static.ability.targetRequirements)
+                        }
+                }
+            ) add(SynergyAxis.SPELLS)
             // "Enters with a +1/+1 counter on it for each other creature you control with a +1/+1
             // counter on it" (Avatar of the Resolute): the count cashes in the counters the deck has
             // already put down — with none placed, it enters bare.
@@ -485,6 +496,15 @@ object SynergyAxes {
                 pattern.spellFilter.let { it == null || rewardsSpells(it) }
             ) setOf(SynergyAxis.SPELLS)
             else emptySet()
+        // "Whenever a creature you control becomes the target of an instant or sorcery spell" (Wild
+        // Defiance, Silverfur Partisan) fires on the deck's own pump and protection spells: with no
+        // instants or sorceries aimed at our creatures, it waits on the opponent's removal alone.
+        is EventPattern.BecomesTargetEvent ->
+            pattern.sourceFilter.let { source ->
+                if (source != null && !pattern.byOpponent && pattern.includeObjectTargets &&
+                    !opponents(pattern.targetFilter) && rewardsSpells(source)
+                ) setOf(SynergyAxis.SPELLS) else emptySet()
+            }
         // "Whenever a spell or ability you control counters a spell" (Baral) cashes in the deck's
         // counterspells — instants, which is what feeds the spells axis.
         is EventPattern.CounterSpellEvent ->
