@@ -4313,7 +4313,12 @@ object CardIntentAnalyzer {
             }
         }
 
-        is GrantKeyword -> keywordTags(static.keyword)
+        // A standing reach grant to other creatures (Geist Trappers' "both creatures have reach"
+        // while soulbond-paired) opens fliers to them as blockers — more blocks, as Dragon Hunter's
+        // [CanBlockAsThoughHadReach] is. The one-shot "gains reach until end of turn" stays as it was.
+        is GrantKeyword -> keywordTags(static.keyword).ifEmpty {
+            if (static.keyword == Keyword.REACH.name && static.filter.scope != Scope.Self) setOf(IntentTag.EXTRA_BLOCKING) else emptySet()
+        }
         // "Each creature you control with a +1/+1 counter on it has trample / deathtouch" (Crowned
         // Ceratok, Mer-Ek Nightblade): the keyword grant, scoped to our countered creatures. The
         // un-scoped form also reaches the opponent's countered creatures, so it reads as nothing.
@@ -4322,8 +4327,13 @@ object CardIntentAnalyzer {
         // "Creatures your opponents control lose first strike and can't have or gain first strike"
         // (the Born of the Gods Archetypes), "… lose flying": strips a keyword from the opposing
         // board, which tilts every combat our way.
-        is com.wingedsheep.sdk.scripting.RemoveKeywordStatic ->
-            if (opponentsOnly(static.filter.baseFilter.controllerPredicate)) setOf(IntentTag.COMBAT_ENHANCEMENT) else emptySet()
+        // "Enchanted creature loses flying" (Grounded): the same strip aimed at the one creature the
+        // Aura enchants, as Bonds of Mortality's one-shot strip reads — a helpful keyword taken away.
+        is com.wingedsheep.sdk.scripting.RemoveKeywordStatic -> when {
+            opponentsOnly(static.filter.baseFilter.controllerPredicate) -> setOf(IntentTag.COMBAT_ENHANCEMENT)
+            static.filter.scope == Scope.AttachedTo && keywordTags(static.keyword).isNotEmpty() -> setOf(IntentTag.COMBAT_ENHANCEMENT)
+            else -> emptySet()
+        }
         // "Enchanted creature has protection from white" (the Ward cycle, Spectra Ward), from a card
         // type, from the chosen color or from the colors of permanents you control: the static form
         // of the one-shot protection grants [leafTagsOf] reads as a shield, as a granted hexproof is.

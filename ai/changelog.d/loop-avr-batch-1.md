@@ -1,0 +1,2 @@
+- #4889 The AI enchants the opponent's creature with an Aura that strips a helpful keyword from its host (Grounded's "loses flying"), instead of falling back to the removal ranking
+- #4889 The AI reads soulbond's pairing triggers as understood and a paired reach grant (Geist Trappers) as extra blocking, so soulbond creatures no longer rate as unrecognised
