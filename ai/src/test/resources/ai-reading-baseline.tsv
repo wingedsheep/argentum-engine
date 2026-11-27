@@ -644,6 +644,7 @@ Angelfire Ignition
 Angelheart Protector
 Angelic Accord
 Angelic Arbiter
+Angelic Armaments
 Angelic Ascension
 Angelic Benediction
 Angelic Blessing
@@ -1427,6 +1428,7 @@ Banisher Priest
 Banishing Betrayal
 Banishing Light
 Banishing Slash
+Banishing Stroke
 Bankrupt in Blood
 Banner of Kinship
 Banners Raised
@@ -1856,6 +1858,7 @@ Bladebrand	timing: GrantKeywordEffect
 Bladecoil Serpent
 Bladed Ambassador
 Bladed Battle-Fan
+Bladed Bracers
 Bladed Pinions
 Bladegraft Aspirant
 Bladehold War-Whip
@@ -2545,6 +2548,7 @@ Brought Back
 Brown Ouphe
 Bruce Banner	intent: AddCombatPhaseEffect
 Bruenor Battlehammer
+Bruna, Light of Alabaster
 Bruna, the Fading Light
 Bruse Tarl, Roving Rancher
 Brush Off
@@ -2733,6 +2737,7 @@ Call the Mountain Chocobo
 Call the Scions
 Call the Spirit Dragons
 Call to Glory
+Call to Serve
 Call to the Feast
 Call to the Grave
 Call to the Netherworld
@@ -3525,7 +3530,7 @@ Codie, Ravenous Codex
 Codie, Vociferous Codex
 Codsworth, Handy Helper
 Coerced Confession
-Coerced to Kill	polarity: Aura>ControlEnchantedPermanent; polarity: Aura>GrantKeyword; polarity: Aura>GrantSubtype; polarity: Aura>SetBasePowerToughnessStatic
+Coerced to Kill
 Coercion
 Coeurl
 Coffin Purge
@@ -4610,6 +4615,7 @@ Deepwood Tantiv
 Deepwood Wolverine
 Defabricate
 Deface
+Defang
 Defeat
 Defend the Campus
 Defend the Celestus
@@ -8259,7 +8265,7 @@ Grafdigger's Cage
 Graft Surgeon
 Grafted Butcher
 Grafted Growth
-Grafted Identity	polarity: Aura>ControlEnchantedPermanent; polarity: Aura>ModifyStats
+Grafted Identity
 Grakmaw, Skyclave Ravager
 Gran Pulse Ochu
 Gran-Gran
@@ -9175,6 +9181,7 @@ Hologram Stalker
 Holy Armor
 Holy Cow
 Holy Day
+Holy Justiciar
 Holy Light
 Holy Mantle
 Holy Strength
@@ -12619,6 +12626,7 @@ Moonrise Cleric
 Moonshadow
 Moonshaker Cavalry
 Moonsilver Key
+Moonsilver Spear
 Moonsnare Prototype
 Moonsnare Specialist
 Moonstone Eulogist
@@ -12958,6 +12966,7 @@ Naya Charm
 Nazar, the Velvet Fang
 Nazgûl
 Nearheath Chaplain
+Nearheath Pilgrim
 Nebelgast Beguiler
 Nebelgast Herald
 Nebelgast Intruder
@@ -17457,6 +17466,7 @@ Silverback Ape
 Silverback Elder
 Silverback Shaman
 Silverbeak Griffin
+Silverblade Paladin
 Silverbluff Bridge
 Silverchase Fox
 Silverclad Ferocidons
@@ -18133,6 +18143,7 @@ Spectral Gateguards
 Spectral Hunt-Caller
 Spectral Interference
 Spectral Lynx
+Spectral Prison
 Spectral Procession
 Spectral Reserves
 Spectral Sailor
@@ -18271,6 +18282,7 @@ Spire of Industry
 Spirebluff Canal
 Spireside Infiltrator
 Spirespine
+Spirit Away
 Spirit Bonds
 Spirit Link
 Spirit Mascot
@@ -18641,6 +18653,7 @@ Stoic Grove-Guide
 Stoic Rebuttal
 Stoic Sphinx
 Stoke the Flames
+Stolen Goods
 Stolen Grain
 Stolen Identity
 Stolen Stark Tech
@@ -19589,6 +19602,7 @@ Terminal Moraine
 Terminal Velocity
 Terminate
 Termination Facilitator	intent: AddCountersEffect; polarity: AddCountersEffect
+Terminus
 Teroh's Faithful
 Terra Eternal
 Terra Stomper
@@ -21235,6 +21249,7 @@ Vandalize
 Vanguard Seraph
 Vanguard of Brimaz
 Vanguard of the Rose
+Vanguard's Shield
 Vanille, Cheerful l'Cie	intent: MeldEffect
 Vanish from Sight
 Vanish into Eternity
@@ -22630,7 +22645,7 @@ Yavimaya Sapherd
 Yavimaya Sojourner
 Yavimaya Steelcrusher
 Yavimaya Wurm
-Yavimaya's Embrace	polarity: Aura>ControlEnchantedPermanent; polarity: Aura>GrantKeyword; polarity: Aura>ModifyStats
+Yavimaya's Embrace
 Yavimaya, Cradle of Growth
 Yawgmoth Demon
 Yawgmoth's Agenda
