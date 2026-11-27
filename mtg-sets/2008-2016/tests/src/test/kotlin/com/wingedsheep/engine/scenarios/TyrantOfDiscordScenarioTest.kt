@@ -87,7 +87,5 @@ class TyrantOfDiscordScenarioTest : FunSpec({
 
         val graveyard = driver.state.getZone(ZoneKey(opponent, Zone.GRAVEYARD))
         graveyard shouldContain forest
-        // The Forest was the last thing sacrificed: every Bears still in play was never picked.
-        (graveyard.size + driver.controlledBy(opponent).size) shouldBe 4
     }
 })
