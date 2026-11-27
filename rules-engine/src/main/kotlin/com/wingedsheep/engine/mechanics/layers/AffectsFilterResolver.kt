@@ -613,8 +613,11 @@ internal class AffectsFilterResolver(
         // Nested partner filter needs the full evaluator — fails closed in projection like the
         // other relational predicates here.
         is StatePredicate.IsPairedWith -> false
-        // Reference-relative identity; projection has no effect context to resolve it.
-        is StatePredicate.IsEntity -> false
+        // Reference-relative identity: a reference pinned at resolution (ResolutionFilterBaker)
+        // names its object outright; any other needs an effect context projection doesn't have.
+        is StatePredicate.IsEntity ->
+            (predicate.reference as? EffectTarget.SpecificEntity)
+                ?.entityId == entityId
         // Source-relative: "created with the source" needs the ability's source permanent, absent
         // in group-static projection. Only meaningful in target/gather-filter contexts via
         // PredicateEvaluator. Never match here.

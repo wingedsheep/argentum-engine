@@ -422,6 +422,9 @@ class PredicateEvaluator(
             // A departed object is the effect's source only if it is that very object; with no
             // source context the question has no answer.
             StatePredicate.IsSource -> context.sourceId?.let { it == snapshot.entityId }
+            // A reference pinned at resolution names its object outright; any other has no answer here.
+            is StatePredicate.IsEntity ->
+                (predicate.reference as? EffectTarget.SpecificEntity)?.let { it.entityId == snapshot.entityId }
             // Commander-ness belongs to the card (CR 903.3), not to one battlefield visit, so the
             // card's own designation answers it — "if you attacked with your commander" (Neriv).
             StatePredicate.IsCommander -> state.getEntity(snapshot.entityId)
@@ -1958,7 +1961,11 @@ class PredicateEvaluator(
         reference: EffectTarget.SingleEntity,
         context: PredicateContext?,
         projected: ProjectedState
-    ): EntityId? = context?.let {
+    ): EntityId? = if (reference is EffectTarget.SpecificEntity) {
+        // A reference pinned at resolution (ResolutionFilterBaker) names its object outright —
+        // including in projection, which carries no context.
+        reference.entityId
+    } else context?.let {
         when (reference) {
             EffectTarget.EquippedCreature, EffectTarget.EnchantedCreature, EffectTarget.EnchantedPermanent ->
                 it.targetingAttachmentHost

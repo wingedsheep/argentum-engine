@@ -1,0 +1,1 @@
+- #4888 The AI reads "prevent combat damage by creatures other than target creature" (Terrifying Presence) as a beneficial target, aiming it at its own creature.

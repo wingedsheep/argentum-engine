@@ -61,6 +61,7 @@ import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.mechanics.MadnessGrants
+import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.ManaCost
@@ -370,7 +371,8 @@ object ZoneMovementUtils {
      * Effects that exclusively target the leaving entity are removed entirely.
      */
     fun removeFloatingEffectsTargeting(state: GameState, entityId: EntityId): GameState {
-        val updatedEffects = state.floatingEffects.mapNotNull { floatingEffect ->
+        val updatedEffects = state.floatingEffects.mapNotNull { original ->
+            val floatingEffect = unpinIdentityTests(original, entityId)
             val modification = floatingEffect.effect.modification
             // The named attacker is a permanent reference too: a returned card is a new object.
             if (modification is SerializableModification.MustBlockSpecificAttacker &&
@@ -406,6 +408,27 @@ object ZoneMovementUtils {
         } else {
             state.copy(floatingEffects = updatedEffects)
         }
+    }
+
+    /**
+     * A lasting filter's identity test pinned to the leaving object at resolution
+     * ([ResolutionFilterBaker.unpin]) — Terrifying Presence's "creatures other than target
+     * creature" shield, an `otherThan(target)` group restriction — names that object only.
+     */
+    private fun unpinIdentityTests(effect: ActiveFloatingEffect, entityId: EntityId): ActiveFloatingEffect {
+        fun unpin(filter: GameObjectFilter) = ResolutionFilterBaker.unpin(filter, entityId)
+        val group = effect.effect.dynamicGroupFilter
+        val newGroup = group?.let { g -> unpin(g.baseFilter).let { if (it == g.baseFilter) g else g.copy(baseFilter = it) } }
+        val modification = when (val m = effect.effect.modification) {
+            is SerializableModification.PreventCombatDamageFromGroup -> m.copy(filter = unpin(m.filter))
+            is SerializableModification.PreventAllDamageFromGroup -> m.copy(filter = unpin(m.filter))
+            is SerializableModification.PreventNextDamageFromMatching -> m.copy(filter = unpin(m.filter))
+            is SerializableModification.PreventAllDamageTo -> m.copy(sourceFilter = m.sourceFilter?.let(::unpin))
+            is SerializableModification.PreventAllDamageToGroup -> m.copy(sourceFilter = m.sourceFilter?.let(::unpin))
+            else -> m
+        }
+        if (newGroup === group && modification == effect.effect.modification) return effect
+        return effect.copy(effect = effect.effect.copy(dynamicGroupFilter = newGroup, modification = modification))
     }
 
     /**

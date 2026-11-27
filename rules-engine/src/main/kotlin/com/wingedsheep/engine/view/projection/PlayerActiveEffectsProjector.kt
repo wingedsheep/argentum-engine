@@ -31,6 +31,7 @@ import com.wingedsheep.sdk.scripting.CardsInZonesCantBeTargeted
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
+import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerStepScope
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -1243,8 +1244,17 @@ internal class PlayerActiveEffectsProjector(
      * different players stay two badges.
      */
     private fun groupText(state: GameState, filter: GameObjectFilter, audience: Audience): String {
-        val text = filter.pluralPermanentDescription
+        var text = filter.pluralPermanentDescription
         if (SPECIFIC_ENTITY !in text) return text
+        // "creatures other than <the pinned target>" (Terrifying Presence) — the exclusion was
+        // baked to an id at resolution, so it is named here.
+        val excluded = filter.statePredicates.firstNotNullOfOrNull {
+            ((it as? StatePredicate.Not)?.predicate as? StatePredicate.IsEntity)
+                ?.reference as? EffectTarget.SpecificEntity
+        }?.entityId
+        if (excluded != null) {
+            text = text.replace("other than $SPECIFIC_ENTITY", "other than ${publicName(state, excluded, audience)}")
+        }
         val player = ((filter.controllerPredicate as? ControllerPredicate.ControlledByReferencedPlayer)
             ?.target as? EffectTarget.SpecificEntity)?.entityId ?: return text
         return text.replace(SPECIFIC_ENTITY, publicName(state, player, audience))

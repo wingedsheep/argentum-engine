@@ -6841,6 +6841,65 @@
     ]
 }
 
+// Terrifying Presence
+{
+    "name": "Terrifying Presence",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Prevent all combat damage that would be dealt by creatures other than target creature this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "PreventDamageShield",
+            "scope": "CombatOnly",
+            "direction": "FromTarget",
+            "sourceFilter": {
+                "type": "PreventFromMatching",
+                "filter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ],
+                    "statePredicates": [
+                        {
+                            "type": "StateNot",
+                            "predicate": {
+                                "type": "IsEntity",
+                                "reference": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "artist": "Jaime Jones",
+        "flavorText": "Elmut had slaughtered vampires, slain werewolves, and destroyed hordes of zombies. Sadly, he never got over his fear of spiders.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e8d0a22-f31b-45c0-85c7-0101aa63c77b.jpg?1783940661",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "Although Terrifying Presence doesn't affect the target creature, if that creature is an illegal target when Terrifying Presence tries to resolve, it won't resolve and none of its effects will happen. No damage will be prevented."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Thraben Valiant
 {
     "name": "Thraben Valiant",
