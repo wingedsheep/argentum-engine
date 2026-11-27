@@ -38,6 +38,7 @@ import com.wingedsheep.sdk.scripting.GrantOpponentsCantWinGame
 import com.wingedsheep.sdk.scripting.GrantCantLoseGame
 import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.CantBeBlockedBy
+import com.wingedsheep.sdk.scripting.CantBeBlockedByCreaturesWithLessPower
 import com.wingedsheep.sdk.scripting.CantBeBlockedByFewerThan
 import com.wingedsheep.sdk.scripting.CantBeBlockedByMoreThan
 import com.wingedsheep.sdk.scripting.CantBeBlockedUnlessAllDefendersBlock
@@ -4263,6 +4264,10 @@ object CardIntentAnalyzer {
         // "Can't be blocked by more than one creature" (Sinuous Predator, Norwood Riders): no gang
         // block can bring it down, so it gets through at its own size — partial evasion too.
         is CantBeBlockedByMoreThan -> setOf(IntentTag.EVASION_GRANT)
+        // "Creatures with power less than this creature's power can't block it" (Howlgeist) or
+        // "... can't block creatures you control" (Champion of Lambholt): every smaller blocker is
+        // shut out, self-scoped or across the team.
+        is CantBeBlockedByCreaturesWithLessPower -> setOf(IntentTag.EVASION_GRANT)
         // "Can't be blocked except by three or more creatures" (Troll of Khazad-dûm) and "can't be
         // blocked unless all creatures defending player controls block it" (Tromokratis): menace
         // pushed further — a board has to spend several bodies, or all of them, to stop it.

@@ -193,21 +193,29 @@ data class CantBlockCreaturesWithGreaterPower(
 }
 
 /**
- * This creature can't be blocked by creatures with power less than this creature's power.
- * Used for cards like Formation Breaker. The attacker-side dual of
+ * Creatures with power less than this permanent's power can't block the creatures [filter] covers.
+ * Self-scoped (the default) it is Formation Breaker's "can't be blocked by creatures with power less
+ * than this creature's power"; group-scoped it is Champion of Lambholt's "creatures with power less
+ * than this creature's power can't block creatures you control". The threshold is always the
+ * *source's* power — for the self form the source is the attacker. The attacker-side dual of
  * [CantBlockCreaturesWithGreaterPower].
  *
- * The comparison uses projected power for both the attacker (source) and each potential
- * blocker, so it accounts for buffs/debuffs that change power.
+ * The comparison uses projected power for both the source and each potential blocker, so it
+ * accounts for buffs/debuffs that change power.
  *
- * @property filter What this ability applies to (typically [GroupFilter.source])
+ * @property filter What this ability applies to ([GroupFilter.source] or a battlefield group)
  */
 @SerialName("CantBeBlockedByCreaturesWithLessPower")
 @Serializable
 data class CantBeBlockedByCreaturesWithLessPower(
     val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
-    override val description: String = "can't be blocked by creatures with power less than this creature's power"
+    override val description: String =
+        if (filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self) {
+            "can't be blocked by creatures with power less than this creature's power"
+        } else {
+            "creatures with power less than this creature's power can't block ${filter.description}"
+        }
 }
 
 /**

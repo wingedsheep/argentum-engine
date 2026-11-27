@@ -12364,7 +12364,10 @@ in the declare-blockers step, even before the turn-based block action has comple
 - `CantBeBlockedByCreaturesWithLessPower(filter = source())` — attacker-side dual (Formation Breaker): this
   creature can't be blocked by creatures whose projected power is less than its own. Resolved by
   `CantBeBlockedByCreaturesWithLessPowerRule`; both sides use projected power, so a P/T buff raises the
-  threshold.
+  threshold. With a battlefield group filter it covers that group and the threshold stays the *source's*
+  power — Champion of Lambholt's "creatures with power less than this creature's power can't block
+  creatures you control" = `CantBeBlockedByCreaturesWithLessPower(GroupFilter(GameObjectFilter.Creature.youControl()))`
+  (the host matches its own group, so it is covered too; `excludeSelf` leaves it out).
 - `Effects.CreatePermanentEmblem(...)` — emblem with static abilities (planeswalker ultimates).
 - `AttackTax(amountPerAttacker: DynamicAmount, condition: Condition? = null, coversPlaneswalkers: Boolean = false)`
   — Propaganda / Ghostly Prison / Windborn Muse / Collective Restraint. Per-attacker generic-mana tax

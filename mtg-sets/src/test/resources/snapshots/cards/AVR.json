@@ -969,6 +969,60 @@
     "colorIdentityOverride": []
 }
 
+// Champion of Lambholt
+{
+    "name": "Champion of Lambholt",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Creatures with power less than this creature's power can't block creatures you control.\nWhenever another creature you control enters, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Champion of Lambholt:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedByCreaturesWithLessPower",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "rarity": "RARE",
+        "artist": "Christopher Moeller",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e8ab9cd3-2faf-4500-a2ee-90b3a8d559c4.jpg?1783940670",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "The comparison of power is performed only when blockers are declared. Increasing the power of a blocking creature (or decreasing the power of Champion of Lambholt) after this point won't cause any creature to stop blocking or become unblocked."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Cloudshift
 {
     "name": "Cloudshift",

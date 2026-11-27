@@ -1890,7 +1890,7 @@ Families:
 - `CantBeAttackedWhileAttached` — The source permanent can't be chosen as an attack defender while it is attached to another permanent.
 - `CantBeBlocked(filter: GroupFilter)` — This creature can't be blocked.
 - `CantBeBlockedBy(blockerFilter: GameObjectFilter, filter: GroupFilter)` — This creature can't be blocked by creatures matching the filter.
-- `CantBeBlockedByCreaturesWithLessPower(filter: GroupFilter)` — This creature can't be blocked by creatures with power less than this creature's power.
+- `CantBeBlockedByCreaturesWithLessPower(filter: GroupFilter)` — Creatures with power less than this permanent's power can't block the creatures filter covers.
 - `CantBeBlockedByFewerThan(minBlockers: Int, filter: GroupFilter)` — This creature can't be blocked except by minBlockers or more creatures — a generalization of menace (which is the minBlockers = 2 case).
 - `CantBeBlockedByMoreThan(maxBlockers: Int, filter: GroupFilter)` — This creature can't be blocked by more than N creatures.
 - `CantBeBlockedExceptBy(blockerFilter: GameObjectFilter, filter: GroupFilter)` — This creature can't be blocked except by creatures matching the filter.
