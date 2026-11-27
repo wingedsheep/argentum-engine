@@ -1,1 +1,1 @@
-- #TBD Reads a soulbond pair's granted activated ability (pump, mill, self-untap) as if printed on the pair, and a discount on every caster's instants and sorceries (Arcane Melee) as a cost reducer that rewards spells
+- #4894 Reads a soulbond pair's granted activated ability (pump, mill, self-untap) as if printed on the pair, and a discount on every caster's instants and sorceries (Arcane Melee) as a cost reducer that rewards spells
