@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardFace
@@ -477,6 +478,12 @@ object CardIntentAnalyzer {
             }
             if (isExpiringCopy(member)) expiringPump = true
         }
+        // Moving Auras onto a creature (Bruna) is no free equip: drop the Equipment-mover read
+        // unless another ability really moves Equipment.
+        if (IntentTag.EQUIPMENT_RELOCATION in tags) {
+            val movers = roots.filter { attachesOthers(leavesWithForEach(it)) }
+            if (movers.isNotEmpty() && movers.all(::attachesOnlyAuras)) tags -= IntentTag.EQUIPMENT_RELOCATION
+        }
         // A replacing base P/T until end of turn is a body for this turn's fight, like a copy —
         // unless it is the setup for removal (a fight beside it), whose timing the removal owns.
         val setToughness = if (IntentTag.REMOVAL in tags) null else leaves.mapNotNull(::expiringBaseToughnessOf).maxOrNull()
@@ -497,7 +504,13 @@ object CardIntentAnalyzer {
             anthemBonus = maxOf(anthemBonus, anthemBonusOf(static))
         }
 
-        for (script in scripts) for (replacement in script.replacementEffects) tags += standingReplacementTags(replacement)
+        for (script in scripts) for (replacement in script.replacementEffects) {
+            tags += standingReplacementTags(replacement)
+            // "Prevent all damage that would be dealt by enchanted creature" (Defang): the host
+            // stays on the battlefield and deals nothing — a Pacifism the polarity reader already
+            // aims at an opponent's creature ([TargetPolarityAnalyzer.hostDamagePrevention]).
+            if (script.isAura && TargetPolarityAnalyzer.hostDamagePrevention(replacement)) tags += IntentTag.NEUTRALIZE
+        }
         // Printed exalted is a standing trigger for the team, not part of the card's own body: it
         // pumps whichever creature attacks alone, and it does so from a land or an enchantment too
         // (Cathedral of War, Angelic Benediction).
@@ -641,6 +654,29 @@ object CardIntentAnalyzer {
         val onlyLater = later - tagsOfRoots(immediate) -
             scripts.flatMap { it.staticAbilities }.flatMapTo(HashSet()) { tagsOf(it) }
         return tags - onlyLater
+    }
+
+    /** [EffectWalker.leaves] that also opens `for each` bodies, where a group attach sits. */
+    private fun leavesWithForEach(effect: Effect): List<Effect> =
+        EffectWalker.leaves(effect).flatMap { if (it is ForEachEffect) leavesWithForEach(it.body) else listOf(it) }
+
+    private fun attachesOthers(leaves: List<Effect>): Boolean =
+        leaves.any { it is AttachTargetEquipmentToCreatureEffect && it.equipmentTarget != EffectTarget.Self }
+
+    /**
+     * Whether [effect] attaches permanents gathered off the battlefield, and every one it gathers
+     * is an Aura — Bruna, Light of Alabaster's "attach to it any number of Auras on the
+     * battlefield". The attach leaf is the one free equips use, so without this the card would read
+     * as an Equipment mover asking for the deck's Equipment; its fuel is Auras.
+     */
+    internal fun attachesOnlyAuras(effect: Effect): Boolean {
+        val leaves = leavesWithForEach(effect)
+        if (!attachesOthers(leaves)) return false
+        val gathered = leaves.filterIsInstance<GatherCardsEffect>()
+            .mapNotNull { (it.source as? CardSource.BattlefieldMatching)?.filter }
+        return gathered.isNotEmpty() && gathered.all { filter ->
+            filter.cardPredicates.any { it is CardPredicate.HasSubtype && it.subtype == Subtype.AURA }
+        }
     }
 
     /**

@@ -440,6 +440,78 @@
     "colorIdentityOverride": []
 }
 
+// Angelic Armaments
+{
+    "name": "Angelic Armaments",
+    "manaCost": "{3}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +2/+2, has flying, and is a white Angel in addition to its other colors and types.\nEquip {4} ({4}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Angelic Armaments:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            },
+            {
+                "type": "GrantColor",
+                "color": "WHITE"
+            },
+            {
+                "type": "GrantSubtype",
+                "subtype": "Angel",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ]
+    },
+    "equipCost": "{4}",
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "Forged in dark hours from the flame that would not die.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/f/3fa99b48-469d-4112-bdfd-2391fa439514.jpg?1783940654"
+    },
+    "colorIdentityOverride": []
+}
+
 // Appetite for Brains
 {
     "name": "Appetite for Brains",
@@ -646,6 +718,52 @@
     ]
 }
 
+// Banishing Stroke
+{
+    "name": "Banishing Stroke",
+    "manaCost": "{5}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Put target artifact, creature, or enchantment on the bottom of its owner's library.\nMiracle {W} (You may cast this card for its miracle cost when you draw it if it's the first card you drew this turn.)",
+    "keywords": [
+        "MIRACLE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Miracle",
+            "cost": "{W}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Library",
+            "placement": "Bottom"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|creature|enchantment"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/238d8437-1abd-4bb7-8b5b-54f959bc2c79.jpg?1783940740"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Banners Raised
 {
     "name": "Banners Raised",
@@ -718,6 +836,73 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Bladed Bracers
+{
+    "name": "Bladed Bracers",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+1.\nAs long as equipped creature is a Human or an Angel, it has vigilance.\nEquip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Bladed Bracers:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "VIGILANCE"
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EquippedCreature",
+                    "filter": "creature Human|Angel"
+                }
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "213",
+        "artist": "Ryan Yee",
+        "flavorText": "Forged from the rubble of the Helvault.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/897a5116-043c-46aa-880e-be8dcb1618bc.jpg?1783940655"
+    },
+    "colorIdentityOverride": []
 }
 
 // Blessings of Nature
@@ -1013,6 +1198,200 @@
     ]
 }
 
+// Bruna, Light of Alabaster
+{
+    "name": "Bruna, Light of Alabaster",
+    "manaCost": "{3}{W}{W}{U}",
+    "typeLine": "Legendary Creature — Angel",
+    "oracleText": "Flying, vigilance\nWhenever Bruna attacks or blocks, you may attach to it any number of Auras on the battlefield and you may put onto the battlefield attached to it any number of Aura cards that could enchant it from your graveyard and/or hand.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bruna, Light of Alabaster:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "Aura"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected1",
+                            "prompt": "Choose any number of Auras on the battlefield to attach to Bruna",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "selected1"
+                            },
+                            "body": {
+                                "type": "AttachTargetEquipmentToCreature",
+                                "equipmentTarget": "IterationEntity",
+                                "creatureTarget": "Self"
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromMultipleZones",
+                                "zones": [
+                                    "Hand",
+                                    "Graveyard"
+                                ],
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "HasSubtype",
+                                            "subtype": "Aura"
+                                        },
+                                        {
+                                            "type": "CouldAttachTo",
+                                            "reference": "Self"
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered3"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered3",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected4",
+                            "prompt": "Choose any number of Aura cards from your hand and graveyard to put onto the battlefield attached to Bruna"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected4",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "attachTo": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Bruna attacks, you may attach to it any number of Auras on the battlefield and you may put onto the battlefield attached to it any number of Aura cards that could enchant it from your graveyard and/or hand."
+            },
+            {
+                "id": "Bruna, Light of Alabaster:2",
+                "trigger": "BlockEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "Aura"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected1",
+                            "prompt": "Choose any number of Auras on the battlefield to attach to Bruna",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "selected1"
+                            },
+                            "body": {
+                                "type": "AttachTargetEquipmentToCreature",
+                                "equipmentTarget": "IterationEntity",
+                                "creatureTarget": "Self"
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromMultipleZones",
+                                "zones": [
+                                    "Hand",
+                                    "Graveyard"
+                                ],
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "HasSubtype",
+                                            "subtype": "Aura"
+                                        },
+                                        {
+                                            "type": "CouldAttachTo",
+                                            "reference": "Self"
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered3"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered3",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected4",
+                            "prompt": "Choose any number of Aura cards from your hand and graveyard to put onto the battlefield attached to Bruna"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected4",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "attachTo": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Bruna blocks, you may attach to it any number of Auras on the battlefield and you may put onto the battlefield attached to it any number of Aura cards that could enchant it from your graveyard and/or hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "208",
+        "rarity": "MYTHIC",
+        "artist": "Winona Nelson",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e390bc78-31ad-4131-a9e4-93ee0c7c2f34.jpg?1783940656",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "Only Auras that could legally enchant Bruna may be attached to it, whether they're being moved from other permanents or being put onto the battlefield. An Aura with \"enchant land,\" for example, could not be attached to Bruna this way."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "All of these Auras will become attached to Bruna before combat damage is dealt. If Bruna is attacking, these Auras become attached before blockers are declared."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Builder's Blessing
 {
     "name": "Builder's Blessing",
@@ -1117,6 +1496,58 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Call to Serve
+{
+    "name": "Call to Serve",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant nonblack creature\nEnchanted creature gets +1/+2, has flying, and is an Angel in addition to its other types.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            },
+            {
+                "type": "GrantSubtype",
+                "subtype": "Angel",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "NotColor",
+                            "color": "BLACK"
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "artist": "Jaime Jones",
+        "flavorText": "Grace is a gift, never a reward.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce4a3e80-6e95-4346-8ab8-eecc1a09ca24.jpg?1783940740"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -2223,6 +2654,44 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Defang
+{
+    "name": "Defang",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nPrevent all damage that would be dealt by enchanted creature.",
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "source": {
+                        "statePredicates": [
+                            "IsAttachedToBySource"
+                        ]
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "artist": "Steven Belledin",
+        "flavorText": "Once vampires are disarmed, they're given wooden swords and forced to assist in the training of Midnight Duelists.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f12fee0b-c237-4188-a718-1572f72c63ba.jpg?1783940737"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -6005,6 +6474,91 @@
     ]
 }
 
+// Holy Justiciar
+{
+    "name": "Holy Justiciar",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "{2}{W}, {T}: Tap target creature. If that creature is a Zombie, exile it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Holy Justiciar:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "EntityMatches",
+                                    "entity": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "filter": "creature Zombie"
+                                }
+                            },
+                            "then": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Exile"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "rarity": "UNCOMMON",
+        "artist": "David Rapoza",
+        "flavorText": "Her eyes see through the rotting flesh and glimpse a soul in agony, begging for the Blessed Sleep.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/640cad49-1db3-4611-a80d-7ce95f000fad.jpg?1783940731"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Homicidal Seclusion
 {
     "name": "Homicidal Seclusion",
@@ -7688,6 +8242,82 @@
     ]
 }
 
+// Moonsilver Spear
+{
+    "name": "Moonsilver Spear",
+    "manaCost": "{4}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature has first strike.\nWhenever equipped creature attacks, create a 4/4 white Angel creature token with flying.\nEquip {4}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Moonsilver Spear:1",
+                "trigger": "AttackEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Angel"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ]
+                },
+                "descriptionOverride": "Whenever equipped creature attacks, create a 4/4 white Angel creature token with flying."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Moonsilver Spear:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FIRST_STRIKE"
+            }
+        ]
+    },
+    "equipCost": "{4}",
+    "metadata": {
+        "collectorNumber": "217",
+        "rarity": "RARE",
+        "artist": "James Paick",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0b5efb85-1e5f-40ba-97b1-0ef6ac680330.jpg?1783940652"
+    },
+    "colorIdentityOverride": []
+}
+
 // Moorland Inquisitor
 {
     "name": "Moorland Inquisitor",
@@ -7818,6 +8448,150 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Nearheath Pilgrim
+{
+    "name": "Nearheath Pilgrim",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "Soulbond (You may pair this creature with another unpaired creature when either enters. They remain paired for as long as you control both of them.)\nAs long as this creature is paired with another creature, both creatures have lifelink.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "SOULBOND"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nearheath Pilgrim:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "StateNot",
+                                            "predicate": "IsPaired"
+                                        }
+                                    ]
+                                },
+                                "player": "You",
+                                "excludeSelf": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may pair this creature with an unpaired creature you control",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "PairWithSource",
+                            "from": "selected1"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsPaired"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Soulbond (You may pair this creature with another unpaired creature when either enters. They remain paired for as long as you control both of them.)"
+            },
+            {
+                "id": "Nearheath Pilgrim:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "Entity",
+                                    "entity": "TriggeringEntity"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "PairWithSource",
+                                "from": "gathered0"
+                            }
+                        ]
+                    }
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsPaired"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "You may pair that creature with this creature"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "LIFELINK",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "SoulbondPair"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "UNCOMMON",
+        "artist": "Erica Yang",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d81d6fe0-c7c2-46a6-811c-f121284937ea.jpg?1783940730"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -9845,6 +10619,150 @@
     ]
 }
 
+// Silverblade Paladin
+{
+    "name": "Silverblade Paladin",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Soulbond (You may pair this creature with another unpaired creature when either enters. They remain paired for as long as you control both of them.)\nAs long as this creature is paired with another creature, both creatures have double strike.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "SOULBOND"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Silverblade Paladin:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "StateNot",
+                                            "predicate": "IsPaired"
+                                        }
+                                    ]
+                                },
+                                "player": "You",
+                                "excludeSelf": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may pair this creature with an unpaired creature you control",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "PairWithSource",
+                            "from": "selected1"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsPaired"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Soulbond (You may pair this creature with another unpaired creature when either enters. They remain paired for as long as you control both of them.)"
+            },
+            {
+                "id": "Silverblade Paladin:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "Entity",
+                                    "entity": "TriggeringEntity"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "PairWithSource",
+                                "from": "gathered0"
+                            }
+                        ]
+                    }
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsPaired"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "You may pair that creature with this creature"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOUBLE_STRIKE",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "SoulbondPair"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "RARE",
+        "artist": "Jason Chan",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/16298ca0-80d4-4299-a550-500b7ef6ac67.jpg?1783940729"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Slayers' Stronghold
 {
     "name": "Slayers' Stronghold",
@@ -10327,6 +11245,94 @@
     ]
 }
 
+// Spectral Prison
+{
+    "name": "Spectral Prison",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature doesn't untap during its controller's untap step.\nWhen enchanted creature becomes the target of a spell, sacrifice this Aura.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spectral Prison:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "targetFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsAttachedToBySource"
+                        ]
+                    },
+                    "spellsOnly": true
+                },
+                "binding": "ANY",
+                "effect": "SacrificeSelf",
+                "descriptionOverride": "When enchanted creature becomes the target of a spell, sacrifice this Aura."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "artist": "Vincent Proce",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/89d141bc-7307-40c2-a7ed-427caaec5efc.jpg?1783940711"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Spirit Away
+{
+    "name": "Spirit Away",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nYou control enchanted creature.\nEnchanted creature gets +2/+2 and has flying.",
+    "script": {
+        "staticAbilities": [
+            "ControlEnchantedPermanent",
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "rarity": "RARE",
+        "artist": "Greg Staples",
+        "flavorText": "The fear of slipping from the geist's tenuous grip overwhelmed Tolo's joy at his first flight.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d8823bdc-0467-47f1-9bef-a281b4a7071d.jpg?1783940710"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Stern Mentor
 {
     "name": "Stern Mentor",
@@ -10508,6 +11514,85 @@
         "rarity": "UNCOMMON",
         "artist": "Igor Kieryluk",
         "imageUri": "https://cards.scryfall.io/normal/front/f/f/ffe4d34f-68f0-4d79-9aab-58c5304224d9.jpg?1783940710"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Stolen Goods
+{
+    "name": "Stolen Goods",
+    "manaCost": "{3}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent exiles cards from the top of their library until they exile a nonland card. Until end of turn, you may cast that card without paying its mana cost.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherUntilMatch",
+                    "player": "TargetOpponent",
+                    "filter": "nonland",
+                    "storeMatch": "matched0",
+                    "storeRevealed": "revealed0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "revealed0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    }
+                },
+                {
+                    "type": "GrantMayPlayFromExile",
+                    "from": "matched0"
+                },
+                {
+                    "type": "GrantPlayWithoutPayingCost",
+                    "from": "matched0"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "RARE",
+        "artist": "Anthony Francisco",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/53203dfc-5ad5-4c17-9802-ca2f874d327a.jpg?1783940709",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "You cast the card from exile. Each land card exiled this way will remain exiled."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "If you can't cast the nonland card (perhaps because there are no legal targets available) or if you choose not to cast it, it will remain exiled."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "You must follow the normal timing restrictions of the exiled card."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "If you cast a card \"without paying its mana cost,\" you can't pay any alternative costs. You can pay additional costs, such as kicker costs. If the card has mandatory additional costs, you must pay those."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "If the card has {X} in its mana cost, you must choose 0 as its value."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "If there are no nonland cards left in that library, the opponent will exile all cards from their library, and Stolen Goods will finish resolving."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -11025,6 +12110,71 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Terminus
+{
+    "name": "Terminus",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put all creatures on the bottom of their owners' libraries.\nMiracle {W} (You may cast this card for its miracle cost when you draw it if it's the first card you drew this turn.)",
+    "keywords": [
+        "MIRACLE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Miracle",
+            "cost": "{W}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Players",
+                "players": "ActivePlayerFirst"
+            },
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "BattlefieldMatching",
+                            "filter": "creature own:you"
+                        },
+                        "storeAs": "gathered0"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "gathered0",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Library",
+                            "placement": "Bottom"
+                        },
+                        "order": "OwnerChooses"
+                    }
+                ],
+                "descriptionOverride": "put all creatures on the bottom of their owners' libraries"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "RARE",
+        "artist": "James Paick",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/0982ea7e-05a4-4e40-98ab-ea9aa6c7342e.jpg?1783940727",
+        "rulings": [
+            {
+                "date": "2017-03-14",
+                "text": "Each player chooses the order that creatures they own are put onto the bottom of their library. This order isn't revealed to other players."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -12212,6 +13362,74 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Vanguard's Shield
+{
+    "name": "Vanguard's Shield",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +0/+3 and can block an additional creature each combat.\nEquip {3} ({3}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Vanguard's Shield:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 0,
+                "toughnessBonus": 3
+            },
+            {
+                "type": "CanBlockAdditionalForCreatureGroup",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "223",
+        "artist": "Ryan Pancoast",
+        "flavorText": "Wars are not fought on a single front.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce8d9db6-5737-4a1f-ae4e-75821a602784.jpg?1783940649",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "Abilities that allow a creature to block an additional creature are cumulative."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Vanishment

@@ -1,0 +1,1 @@
+- #4895 Reads a buffing steal Aura (Spirit Away) as a theft aimed at the opponent's creature, "prevent all damage dealt by enchanted creature" (Defang) as a neutralizer, and Bruna's Aura-moving trigger as asking for Auras rather than Equipment.
