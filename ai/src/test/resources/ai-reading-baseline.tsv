@@ -857,6 +857,7 @@ Archangel Elspeth
 Archangel of Thune
 Archangel of Tithes
 Archangel of Wrath
+Archangel's Light
 Archdemon of Unx
 Archdruid's Charm
 Archenemy's Charm
@@ -1652,6 +1653,7 @@ Beetleform Mage
 Befoul
 Befriending the Moths
 Befuddle
+Beguiler of Wills
 Behemoth Sledge
 Behemoth of Vault 0	polarity: ReflexiveTriggerEffect
 Behind the Mask
@@ -2412,7 +2414,7 @@ Brazen Upstart
 Brazen Wolves
 Bre of Clan Stoutarm
 Breach
-Breach the Multiverse	intent: ForEach>AddCreatureTypeEffect; intent: ForEach>Pipeline(graveyard→?); intent: Pipeline(?→battlefield)
+Breach the Multiverse
 Breaching Dragonstorm
 Breaching Hippocamp
 Break Asunder
@@ -2422,6 +2424,7 @@ Break Open	intent: TurnFaceUpEffect; polarity: TurnFaceUpEffect
 Break Out
 Break Through the Line
 Break Under Pressure
+Break of Day
 Break the Spell
 Breaker of Armies
 Breaker of Creation
@@ -2745,6 +2748,7 @@ Call to Glory
 Call to Serve
 Call to the Feast
 Call to the Grave
+Call to the Kindred
 Call to the Netherworld
 Callaphe, Beloved of the Sea
 Caller of Gales
@@ -3241,6 +3245,7 @@ Child of the Volcano
 Children of Korlis
 Chill
 Chill Haunting
+Chill of Foreboding
 Chill of the Grave
 Chillbringer
 Chillerpillar
@@ -3876,6 +3881,7 @@ Count on Luck
 Counterbalance
 Counterflux
 Counterintelligence
+Counterlash
 Countermand
 Countersculpt
 Counterspell
@@ -4177,6 +4183,7 @@ Curse Artifact	polarity: Aura>PayOrSufferEffect
 Curse of Exhaustion
 Curse of Hospitality	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile); polarity: Aura>GatherCardsEffect; polarity: Aura>GrantKeyword; polarity: Aura>GrantMayPlayFromExileEffect; polarity: Aura>MoveCollectionEffect
 Curse of Leeches	polarity: Aura>GainLifeEffect; polarity: Aura>LoseLifeEffect
+Curse of Misfortunes
 Curse of Opulence	polarity: Aura>CreatePredefinedTokenEffect; polarity: Aura>ForEachEffect
 Curse of Shaken Faith	polarity: Aura>DealDamageEffect
 Curse of Silence	polarity: Aura>GatedEffect; polarity: Aura>ModifySpellCost
@@ -5074,7 +5081,7 @@ Djinn of Wishes	intent: Pipeline(TopOfLibrary→exile); intent: PlayFromCollecti
 Djinn of the Fountain
 Djinn of the Lamp
 Djinni Windseer	intent: RollDiceEffect
-Do or Die	polarity: Pipeline(BattlefieldMatching→graveyard)
+Do or Die
 Doc Aurlock, Grizzled Genius
 Doc Ock's Henchmen
 Doc Ock's Tentacles
@@ -6488,7 +6495,7 @@ Fallowsage
 False Cure	timing: CreateGlobalTriggeredAbilityEffect
 False Defeat
 False Mourning
-False Orders	polarity: BecomeBlockingEffect; polarity: Pipeline(BattlefieldMatching→?); polarity: RemoveFromCombatEffect
+False Orders
 False Peace	intent: SkipCombatPhasesEffect; polarity: SkipCombatPhasesEffect
 False Summoning
 Familiar's Ruse
@@ -7006,7 +7013,7 @@ Fleshwrither
 Flexible Waterbender
 Flick a Coin
 Flicker of Fate
-Flickerform	intent: Pipeline(AttachedTo|BattlefieldMatching→battlefield|exile); polarity: Aura>CreateDelayedTriggerEffect; polarity: Aura>GatherCardsEffect; polarity: Aura>MoveCollectionEffect
+Flickerform	polarity: Aura>CreateDelayedTriggerEffect; polarity: Aura>GatherCardsEffect; polarity: Aura>MoveCollectionEffect
 Flickering Hound
 Flickering Ward
 Flight
@@ -7562,6 +7569,7 @@ Gauntlet of Might
 Gauntlets of Chaos	polarity: Pipeline(AttachedTo→graveyard)
 Gauntlets of Light
 Gavony Dawnguard
+Gavony Ironwright
 Gavony Silversmith
 Gavony Township
 Gavony Trapper
@@ -9196,6 +9204,7 @@ Hollow Trees
 Hollowhead Sliver
 Hollowhenge Beast
 Hollowhenge Overlord
+Hollowhenge Spirit
 Hollowmurk Siege
 Holo-Engineer
 Hologram Janeway
@@ -10931,7 +10940,7 @@ Laboratory Maniac
 Labyrinth Champion
 Labyrinth Guardian
 Labyrinth Raptor
-Labyrinth of Skophos	polarity: RemoveFromCombatEffect
+Labyrinth of Skophos
 Lace with Moonglove	timing: GrantKeywordEffect
 Lacerate Flesh
 Lady Caleria
@@ -11522,6 +11531,7 @@ Loxodon Surveyor
 Loxodon Warhammer
 Loxodon Wayfarer
 Loyal Apprentice
+Loyal Cathar
 Loyal Gryff
 Loyal Pegasus
 Loyal Retainers
@@ -16529,6 +16539,7 @@ Savannah Sage
 Savanti Romero, Time's Exile
 Saved by the Shell
 Saving Grace
+Saving Grasp
 Savior of Ollenbock
 Savior of the Sleeping
 Savior of the Small
@@ -17348,6 +17359,7 @@ Shrewd Storyteller
 Shriek of Dread
 Shriek, Treblemaker
 Shriekdiver
+Shriekgeist
 Shrieking Affliction
 Shrieking Drake
 Shrieking Mogg
@@ -18909,6 +18921,7 @@ Subway Train
 Succumb to Temptation
 Succumb to the Cold
 Sudden Breakthrough
+Sudden Disappearance
 Sudden Insight
 Sudden Reclamation
 Sudden Setback
@@ -19088,7 +19101,7 @@ Support Mission
 Supportive Parents
 Suppression Bonds
 Suppression Field
-Suppression Ray	polarity: AddCountersToCollectionEffect; polarity: PayCountersEffect; polarity: Pipeline(BattlefieldMatching→?); polarity: TapUntapCollectionEffect
+Suppression Ray
 Supreme Inquisitor	polarity: Pipeline(library→exile)
 Supreme Phantom
 Supreme Verdict
@@ -19293,6 +19306,7 @@ Sythis, Harvest's Hand
 Szadek, Lord of Secrets
 Szarel, Genesis Shepherd
 Szat's Will
+Séance
 T-45 Power Armor
 TCRI Building
 Tablet of Compleation
@@ -20081,6 +20095,7 @@ Thought Erasure
 Thought Harvester
 Thought Monitor
 Thought Prison
+Thought Scour
 Thought Shucker
 Thought Vessel
 Thought-Knot Seer
@@ -20107,6 +20122,7 @@ Thousand-Year Elixir
 Thousand-Year Storm
 Thousand-legged Kami
 Thraben Charm
+Thraben Doomsayer
 Thraben Exorcism
 Thraben Foulbloods
 Thraben Gargoyle
