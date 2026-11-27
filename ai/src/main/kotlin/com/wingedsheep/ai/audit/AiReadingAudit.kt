@@ -54,6 +54,7 @@ import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.GrantProtectionFromChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
+import com.wingedsheep.sdk.scripting.effects.PairWithSourceEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeAuraEffect
 import com.wingedsheep.sdk.scripting.effects.DoubleCountersEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect
@@ -781,7 +782,7 @@ object AiReadingAudit {
         if (sink.findings.size == before && tags.isNotEmpty()) {
             sink += Finding(Check.INTENT, read = true, reason = "knows what it's for: ${tags.sorted().joinToString(", ", transform = ::tagPhrase)}")
         } else if (sink.findings.size == before) {
-            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows or puts counters on, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source or permanents of its choosing, adds counters for its controller or removes them from itself or pays its own, moves counters of any kind or removes them from a target, damages a player, makes one lose life or sets their life total, mills one, returns its controller's own permanents to hand, damages only its controller's permanents, exiles cards from its controller's own graveyard, discards from its controller's own hand, is an unless-clause its payer suffers as an upkeep cost or life loss, or hands its exile pile back to the cards' owners")
+            sink += Finding(Check.INTENT, read = true, reason = "needs no intent: it only grows or puts counters on, shifts the P/T of, untaps, attaches, moves, transforms or animates or sacrifices its own source or permanents of its choosing, adds counters for its controller or removes them from itself or pays its own, moves counters of any kind or removes them from a target, damages a player, makes one lose life or sets their life total, mills one, returns its controller's own permanents to hand, pairs two of its controller's creatures for soulbond, damages only its controller's permanents, exiles cards from its controller's own graveyard, discards from its controller's own hand, is an unless-clause its payer suffers as an upkeep cost or life loss, or hands its exile pile back to the cards' owners")
         }
     }
 
@@ -1520,6 +1521,12 @@ object AiReadingAudit {
      */
     private fun noIntentPipeline(label: String, stages: List<Effect>): Boolean {
         if (label in NO_INTENT_PIPELINES) return true
+        // Soulbond's pairing (CR 702.95a) — "you may pair this creature with another unpaired
+        // creature you control", or with the creature that just entered — moves nothing: it only
+        // links two of its controller's creatures, and the executor refuses any other pair. Like
+        // equip, what the pairing is *for* is the card's reading of its soulbond-pair statics, and
+        // which partner gets the bonus is the simulation's call on the choice.
+        if (stages.any { it is PairWithSourceEffect } && stages.none { it is MoveCollectionEffect }) return true
         // The source's own pile gathered and moved nowhere — turned face up or revealed in place
         // (The Creation of Avacyn's chapter II) — is information, not an action: what the pile is
         // for is read where it is filled or released, and a sibling leaf (the life it costs) is
@@ -1569,6 +1576,7 @@ object AiReadingAudit {
     private val PIPELINE_STAGES = setOf(
         "GatherCardsEffect", "MoveCollectionEffect", "SelectFromCollectionEffect", "FilterCollectionEffect",
         "RevealCollectionEffect", "ShuffleLibraryEffect", "EmitLibrarySearchedEventEffect",
+        "PairWithSourceEffect",
     )
 
     // ─────────────────────────────────────────────────────────────────────────

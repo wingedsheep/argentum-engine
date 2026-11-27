@@ -39,6 +39,7 @@ import com.wingedsheep.sdk.scripting.MustAttack
 import com.wingedsheep.sdk.scripting.EntersWithChoice
 import com.wingedsheep.sdk.scripting.GrantCardType
 import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.RemoveKeywordStatic
 import com.wingedsheep.sdk.scripting.GrantWard
 import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
 import com.wingedsheep.sdk.scripting.PlayersCantActivateAbilities
@@ -3391,6 +3392,9 @@ object TargetPolarityAnalyzer {
             else statsPolarity(DynamicAmount.Fixed(static.powerBonus), DynamicAmount.Fixed(static.toughnessBonus))
                 ?: lastingTradePolarity(static.powerBonus, static.toughnessBonus)
         is GrantKeyword -> if (!reachesHost(static.filter)) null else keywordPolarity(static.keyword)
+        // "Enchanted creature loses flying" (Grounded): the grant turned around — taking away a
+        // keyword that helps its holder is a curse, taking away defender a gift.
+        is RemoveKeywordStatic -> if (!reachesHost(static.filter)) null else keywordPolarity(static.keyword)?.let(::opposite)
         is GrantLandwalkOfChosenType -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.BENEFICIAL
         // "Enchanted land has 'Untap this land during each other player's untap step'" (Urban
         // Burgeoning): the host untaps for its controller on every other turn — a gift to it.
