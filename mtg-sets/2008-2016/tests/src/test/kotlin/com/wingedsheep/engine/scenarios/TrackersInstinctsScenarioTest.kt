@@ -46,6 +46,10 @@ class TrackersInstinctsScenarioTest : ScenarioTestBase() {
             if (game.getPendingDecision() is SelectCardsDecision) game.selectCards(emptyList())
             game.resolveStack()
             game.isInExile(1, "Tracker's Instincts") shouldBe true
+            // Only Giant Growth was left to reveal: no creature, so it goes to the graveyard too.
+            game.isInGraveyard(1, "Giant Growth") shouldBe true
+            game.isInHand(1, "Giant Growth") shouldBe false
+            game.librarySize(1) shouldBe librarySizeBefore - 5
         }
     }
 }

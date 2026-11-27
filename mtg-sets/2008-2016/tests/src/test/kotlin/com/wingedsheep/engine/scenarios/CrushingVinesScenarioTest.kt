@@ -14,6 +14,7 @@ class CrushingVinesScenarioTest : ScenarioTestBase() {
             .withLandsOnBattlefield(1, "Forest", 3)
             .withCardOnBattlefield(2, "Serra Angel")
             .withCardOnBattlefield(2, "Jayemdae Tome")
+            .withCardOnBattlefield(2, "Grizzly Bears")
             .withActivePlayer(1)
             .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
             .build()
@@ -26,6 +27,14 @@ class CrushingVinesScenarioTest : ScenarioTestBase() {
             game.resolveStack()
             game.isInGraveyard(2, "Serra Angel") shouldBe true
             game.isOnBattlefield("Jayemdae Tome") shouldBe true
+        }
+
+        test("first mode can't target a creature without flying") {
+            val game = game()
+            val bears = game.findPermanent("Grizzly Bears")!!
+            val result = game.castSpellWithMode(1, "Crushing Vines", 0, bears)
+            withClue("casting at a non-flier should be rejected") { (result.error != null) shouldBe true }
+            game.isOnBattlefield("Grizzly Bears") shouldBe true
         }
 
         test("second mode destroys target artifact") {
