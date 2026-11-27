@@ -1,1 +1,1 @@
-- #TBD Pays "tap any number of untapped creatures" spell costs (Burn at the Stake): taps every candidate when the spell scales with the count, else only the floor
+- #4885 Pays "tap any number of untapped creatures" spell costs (Burn at the Stake): taps every candidate when the spell scales with the count, else only the floor
