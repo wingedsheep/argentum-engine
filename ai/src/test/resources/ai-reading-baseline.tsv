@@ -1909,6 +1909,7 @@ Blessed Spirits
 Blessing
 Blessing of Belzenlok
 Blessing of Frost
+Blessings of Nature
 Blex, Vexing Pest
 Blight	polarity: Aura>MoveToZoneEffect
 Blight Herder
@@ -2334,6 +2335,7 @@ Bounty of Skemfar
 Bounty of the Luxa
 Bovine Intervention
 Bow of Nylea
+Bower Passage
 Brackish Blunder
 Brackish Trudge
 Brad Boimler, Eager Ensign	intent: GrantCounterPlacementModifierEffect
@@ -4445,7 +4447,7 @@ Deadbridge Shaman
 Deadeye Brawler
 Deadeye Duelist
 Deadeye Harpooner
-Deadeye Navigator	intent: PairWithSourceEffect; intent: Pipeline(BattlefieldMatching→?); intent: Pipeline(Entity→?)
+Deadeye Navigator
 Deadeye Plunderers
 Deadeye Quartermaster
 Deadeye Rig-Hauler
@@ -4912,6 +4914,7 @@ Direct Current
 Direct Hit
 Diregraf Captain
 Diregraf Colossus
+Diregraf Escort
 Diregraf Ghoul
 Diregraf Horde
 Diregraf Rebirth
@@ -5411,6 +5414,8 @@ Druid of the Anima
 Druid of the Cowl
 Druid of the Spade
 Druid's Deliverance
+Druid's Familiar
+Druids' Repository
 Drumbellower
 Drunau Corpse Trawler
 Dry Spell
@@ -5595,6 +5600,7 @@ Easy Prey
 Eat to Extinction
 Eaten Alive
 Eaten by Piranhas
+Eaten by Spiders
 Eater of Hope
 Eater of Virtue
 Eater of the Dead
@@ -7532,6 +7538,7 @@ Gearsmith Prodigy
 Geier Reach Bandit
 Geier Reach Sanitarium
 Geist Snatch
+Geist Trappers
 Geist of Saint Thalia
 Geist of Saint Traft
 Geist of the Archives
@@ -8452,6 +8459,7 @@ Ground Rift
 Ground Seal
 Groundbreaker
 Groundchuck & Dirtbag
+Grounded
 Grounded for Life
 Groundshaker Sliver
 Groundskeeper
@@ -10889,6 +10897,7 @@ Lagonna-Band Trailblazer
 Lagorin, Soul of Alacria
 Lagrella, the Magpie	intent: AddCountersToCollectionEffect; intent: Pipeline(FromLinkedExile→battlefield)
 Laid to Rest
+Lair Delve
 Lair of the Hydra
 Lairwatch Giant
 Lake-town
@@ -11179,7 +11188,7 @@ Lightning Helix
 Lightning Hounds
 Lightning Javelin
 Lightning Mare
-Lightning Mauler	intent: PairWithSourceEffect; intent: Pipeline(BattlefieldMatching→?); intent: Pipeline(Entity→?)
+Lightning Mauler
 Lightning Rift
 Lightning Runner
 Lightning Shrieker
@@ -13111,6 +13120,7 @@ Nightscape Familiar
 Nightscape Master
 Nightshade Dryad
 Nightshade Harvester
+Nightshade Peddler
 Nightshade Stinger
 Nightsnare
 Nightsquad Commando
@@ -13916,6 +13926,7 @@ Path to Exile
 Path to Redemption
 Path to the Festival
 Path to the World Tree
+Pathbreaker Wurm
 Pathfinding Axejaw
 Pathmaker Initiate
 Pathrazer of Ulamog
@@ -14508,6 +14519,7 @@ Primal Huntbeast
 Primal Might
 Primal Prayers
 Primal Rage
+Primal Surge
 Primal Visitation
 Primal Whisperer
 Primal Witchstalker
@@ -15604,6 +15616,7 @@ Revelsong Horn
 Revenant
 Revenge of Ravens
 Revenge of the Drowned
+Revenge of the Hunted
 Revenge of the Rats
 Reverberate
 Reverberating Summons
@@ -18083,7 +18096,7 @@ Spectral Adversary	intent: ForEach>PhaseOutEffect
 Spectral Cloak
 Spectral Denial
 Spectral Flight
-Spectral Gateguards	intent: PairWithSourceEffect; intent: Pipeline(BattlefieldMatching→?); intent: Pipeline(Entity→?)
+Spectral Gateguards
 Spectral Hunt-Caller
 Spectral Interference
 Spectral Lynx
@@ -19300,7 +19313,7 @@ Tamiyo, Field Researcher
 Tamiyo, Inquisitive Student
 Tamiyo, the Moon Sage	polarity: DrawCardsEffect
 Tanazir Quandrix
-Tandem Lookout	intent: PairWithSourceEffect; intent: Pipeline(BattlefieldMatching→?); intent: Pipeline(Entity→?)
+Tandem Lookout
 Tandem Tactics
 Tandem Takedown
 Tangle
@@ -20589,6 +20602,7 @@ Triton Shorethief
 Triton Tactics
 Triton Wavebreaker
 Triton Waverider
+Triumph of Ferocity
 Triumph of Gerrard
 Triumph of the Hordes
 Triumphant Adventurer
@@ -20635,6 +20649,7 @@ Trumpet Blast
 Trumpeting Carnosaur
 Trumpeting Gnarr
 Trumpeting Herd
+Trusted Forcemage
 Trusted Pegasus
 Trusty Boomerang
 Trusty Companion
@@ -22269,7 +22284,7 @@ Wing Shards
 Wing Snare
 Wingbeat Warrior
 Wingblade Disciple
-Wingcrafter	intent: PairWithSourceEffect; intent: Pipeline(BattlefieldMatching→?); intent: Pipeline(Entity→?)
+Wingcrafter
 Winged Coatl
 Winged Portent
 Winged Shepherd
