@@ -50,6 +50,96 @@
     ]
 }
 
+// Aggravate
+{
+    "name": "Aggravate",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Aggravate deals 1 damage to each creature target player controls. Each creature dealt damage this way attacks this turn if able.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "controllerPredicate": {
+                                    "type": "ControlledByReferencedPlayer",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity",
+                        "storeDamagedAs": "stored0"
+                    }
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "stored0",
+                    "filter": "creature",
+                    "storeMatching": "matching1"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Collection",
+                        "collection": "matching1"
+                    },
+                    "body": {
+                        "type": "MarkMustAttack",
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/999f40a7-b723-42e1-83c1-f45a72a26dd4.jpg?1783940693",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "Aggravate targets only the player. Creatures with hexproof that player controls will be dealt damage by Aggravate if it resolves."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "The controller of a creature dealt damage by Aggravate still decides which player or planeswalker the creature attacks."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "If, during a player's declare attackers step, a creature is tapped, is affected by a spell or ability that says it can't attack, or hasn't been under that player's control continuously since the turn began (and doesn't have haste), then it doesn't attack. If there's a cost associated with having a creature attack, the player isn't forced to pay that cost, so it doesn't have to attack in that case either."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Alchemist's Apprentice
 {
     "name": "Alchemist's Apprentice",
@@ -657,6 +747,114 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Bonfire of the Damned
+{
+    "name": "Bonfire of the Damned",
+    "manaCost": "{X}{X}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Bonfire of the Damned deals X damage to target player or planeswalker and each creature that player or that planeswalker's controller controls.\nMiracle {X}{R} (You may cast this card for its miracle cost when you draw it if it's the first card you drew this turn.)",
+    "keywords": [
+        "MIRACLE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Miracle",
+            "cost": "{X}{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": "XValue",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "anyOf": [
+                                    {
+                                        "cardPredicates": [
+                                            "IsCreature"
+                                        ],
+                                        "controllerPredicate": {
+                                            "type": "ControlledByReferencedPlayer",
+                                            "target": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "cardPredicates": [
+                                            "IsCreature"
+                                        ],
+                                        "controllerPredicate": {
+                                            "type": "ControlledByReferencedPlayer",
+                                            "target": "TargetController"
+                                        }
+                                    }
+                                ]
+                            },
+                            "excludeTarget": true
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": "XValue",
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayerOrPlaneswalker",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "rarity": "MYTHIC",
+        "artist": "James Paick",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e60610fe-891d-46de-b556-d03b637dccec.jpg?1783940689",
+        "rulings": [
+            {
+                "date": "2017-03-14",
+                "text": "Bonfire of the Damned targets only the player. Creatures with shroud or hexproof that player controls will be dealt damage by Bonfire of the Damned if it resolves."
+            },
+            {
+                "date": "2017-03-14",
+                "text": "A mana cost of {X}{X} means that you pay twice X. If you want X to be 3, you pay {6}{R} to cast Bonfire of the Damned."
+            },
+            {
+                "date": "2017-03-14",
+                "text": "Bonfire of the Damned’s mana value is based on its mana cost of {X}{X}{R}, even if you’re casting it for its miracle cost. For example, if you cast Bonfire of the Damned for its miracle cost and choose 4 for X, its mana value is 9."
+            },
+            {
+                "date": "2017-03-14",
+                "text": "If the player is an illegal target when Bonfire of the Damned tries to resolve, the spell won’t resolve and none of its effects will happen. No damage will be dealt to any permanent or player."
+            },
+            {
+                "date": "2017-03-14",
+                "text": "Preventing some or all of the damage dealt to the player won’t affect the amount of damage dealt to each creature that player controls. The same is true for any effect that increases or decreases the amount of damage dealt to the player."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -2709,6 +2907,80 @@
     }
 }
 
+// Dual Casting
+{
+    "name": "Dual Casting",
+    "manaCost": "{1}{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature has \"{R}, {T}: Copy target instant or sorcery spell you control. You may choose new targets for the copy.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Dual Casting:1",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{R}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": {
+                        "type": "CopyTargetSpell",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "instant|sorcery ctrl:you",
+                                "zone": "Stack"
+                            },
+                            "id": "t0"
+                        }
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "RARE",
+        "artist": "Johannes Voss",
+        "flavorText": "Hours after the Helvault opened, his powers returned twice as strong as before.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7aa45bfd-7075-470d-8aaa-16e34109eb5a.jpg?1783940686",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "The ability granted by Dual Casting can target (and copy) any instant or sorcery spell you control, not just one with targets."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "The copy will have the same targets as the spell it's copying unless you choose new ones. You may change any number of the targets, including all of them or none of them. If, for one of the targets, you can't choose a new legal target, then it remains unchanged (even if the current target is illegal)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Eaten by Spiders
 {
     "name": "Eaten by Spiders",
@@ -3324,6 +3596,55 @@
         "artist": "John Avon",
         "imageUri": "https://cards.scryfall.io/normal/front/8/a/8a840ee7-5728-4b1b-92ac-54612e5397b3.jpg?1783940652"
     }
+}
+
+// Gang of Devils
+{
+    "name": "Gang of Devils",
+    "manaCost": "{5}{R}",
+    "typeLine": "Creature — Devil",
+    "oracleText": "When this creature dies, it deals 3 damage divided as you choose among one, two, or three targets.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gang of Devils:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DividedDamage",
+                    "totalDamage": 3
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "count": 3,
+                    "minCount": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "rarity": "UNCOMMON",
+        "artist": "Erica Yang",
+        "flavorText": "\"Well, how could I know they'd explode?\"\n—Gregel, township militia",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/0430b9fa-3bc6-4183-ad5b-d70ad401fa97.jpg?1783940684",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "You divide the damage as you put Gang of Devils's triggered ability on the stack, not as it resolves. Each target must be assigned at least 1 damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Geist Snatch
@@ -4054,6 +4375,188 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Guise of Fire
+{
+    "name": "Guise of Fire",
+    "manaCost": "{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +1/-1 and attacks each combat if able.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": -1
+            },
+            "MustAttack"
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "artist": "Dave Kendall",
+        "flavorText": "\"Fire will eventually destroy a zombie, but a fiery zombie destroys a lot of other things first.\"\n—Rem Karolus, Blade of the Inquisitors",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/e/beb10d42-fa19-400c-bad8-ec3827f077bc.jpg?1783940684",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "The controller of the enchanted creature still decides which player or planeswalker the creature attacks."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Hanweir Lancer
+{
+    "name": "Hanweir Lancer",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Soulbond (You may pair this creature with another unpaired creature when either enters. They remain paired for as long as you control both of them.)\nAs long as this creature is paired with another creature, both creatures have first strike.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "SOULBOND"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hanweir Lancer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "StateNot",
+                                            "predicate": "IsPaired"
+                                        }
+                                    ]
+                                },
+                                "player": "You",
+                                "excludeSelf": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may pair this creature with an unpaired creature you control",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "PairWithSource",
+                            "from": "selected1"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsPaired"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Soulbond (You may pair this creature with another unpaired creature when either enters. They remain paired for as long as you control both of them.)"
+            },
+            {
+                "id": "Hanweir Lancer:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "Entity",
+                                    "entity": "TriggeringEntity"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "PairWithSource",
+                                "from": "gathered0"
+                            }
+                        ]
+                    }
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsPaired"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "You may pair that creature with this creature"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FIRST_STRIKE",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "SoulbondPair"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "artist": "Steve Prescott",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/73884fd1-5be9-4ad5-8c72-c0fbe27ad4c1.jpg?1783940684"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -5058,6 +5561,63 @@
     ]
 }
 
+// Lightning Prowess
+{
+    "name": "Lightning Prowess",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature has haste and \"{T}: This creature deals 1 damage to any target.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE"
+            },
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Lightning Prowess:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "damageSource": "Self"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "AnyTarget",
+                            "id": "t0"
+                        }
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "UNCOMMON",
+        "artist": "David Rapoza",
+        "flavorText": "\"Undead flesh is dry and papery. A single spark and 'poof.' No more ghoul.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/5578e3e2-2460-4dfb-9016-527463f2d918.jpg?1783940680"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Lunar Mystic
 {
     "name": "Lunar Mystic",
@@ -5254,6 +5814,83 @@
         "artist": "Kev Walker",
         "flavorText": "As peace returned to Thraben, some cathars made the mistake of letting down their guard.",
         "imageUri": "https://cards.scryfall.io/normal/front/f/1/f1dda42d-55eb-46fc-89da-17cc5bfaa823.jpg?1783940679"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Malignus
+{
+    "name": "Malignus",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Elemental Spirit",
+    "oracleText": "Malignus's power and toughness are each equal to half the highest life total among your opponents, rounded up.\nDamage that would be dealt by this creature can't be prevented.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "Divide",
+                "numerator": {
+                    "type": "GreatestAmongPlayers",
+                    "players": "EachOpponent",
+                    "inner": {
+                        "type": "LifeTotal",
+                        "player": "You"
+                    }
+                },
+                "denominator": {
+                    "type": "Fixed",
+                    "amount": 2
+                }
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "Divide",
+                "numerator": {
+                    "type": "GreatestAmongPlayers",
+                    "players": "EachOpponent",
+                    "inner": {
+                        "type": "LifeTotal",
+                        "player": "You"
+                    }
+                },
+                "denominator": {
+                    "type": "Fixed",
+                    "amount": 2
+                }
+            }
+        }
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "DamageCantBePrevented",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "source": {
+                        "statePredicates": [
+                            "IsSource"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "rarity": "MYTHIC",
+        "artist": "Jung Park",
+        "flavorText": "It descended on Estwald like a sudden storm. Moments later, only ashes and agony remained.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/a/8a6a7000-4a1d-4cd4-a85e-4b7b20d8e543.jpg?1783940680",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "If Malignus becomes blocked by a creature with protection from red, the damage Malignus deals to that creature won't be prevented."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED"
@@ -6756,6 +7393,249 @@
         "artist": "Gabor Szikszai",
         "flavorText": "\"So the vampires like hot blood, do they? Let's see how they handle ours.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/c/0/c043f30b-548f-4c31-a415-0e59c2841dcf.jpg?1783940678"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Rite of Ruin
+{
+    "name": "Rite of Ruin",
+    "manaCost": "{5}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose an order for artifacts, creatures, and lands. Each player sacrifices one permanent of their choice of the first type, sacrifices two of their choice of the second type, then sacrifices three of their choice of the third type.",
+    "script": {
+        "spellEffect": {
+            "type": "ChooseAction",
+            "choices": [
+                {
+                    "label": "Artifacts, then creatures, then lands",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ForceSacrifice",
+                                "filter": "artifact",
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "Each"
+                                }
+                            },
+                            {
+                                "type": "ForceSacrifice",
+                                "filter": "creature",
+                                "count": 2,
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "Each"
+                                }
+                            },
+                            {
+                                "type": "ForceSacrifice",
+                                "filter": "land",
+                                "count": 3,
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "Each"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "label": "Artifacts, then lands, then creatures",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ForceSacrifice",
+                                "filter": "artifact",
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "Each"
+                                }
+                            },
+                            {
+                                "type": "ForceSacrifice",
+                                "filter": "land",
+                                "count": 2,
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "Each"
+                                }
+                            },
+                            {
+                                "type": "ForceSacrifice",
+                                "filter": "creature",
+                                "count": 3,
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "Each"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "label": "Creatures, then artifacts, then lands",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ForceSacrifice",
+                                "filter": "creature",
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "Each"
+                                }
+                            },
+                            {
+                                "type": "ForceSacrifice",
+                                "filter": "artifact",
+                                "count": 2,
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "Each"
+                                }
+                            },
+                            {
+                                "type": "ForceSacrifice",
+                                "filter": "land",
+                                "count": 3,
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "Each"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "label": "Creatures, then lands, then artifacts",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ForceSacrifice",
+                                "filter": "creature",
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "Each"
+                                }
+                            },
+                            {
+                                "type": "ForceSacrifice",
+                                "filter": "land",
+                                "count": 2,
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "Each"
+                                }
+                            },
+                            {
+                                "type": "ForceSacrifice",
+                                "filter": "artifact",
+                                "count": 3,
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "Each"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "label": "Lands, then artifacts, then creatures",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ForceSacrifice",
+                                "filter": "land",
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "Each"
+                                }
+                            },
+                            {
+                                "type": "ForceSacrifice",
+                                "filter": "artifact",
+                                "count": 2,
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "Each"
+                                }
+                            },
+                            {
+                                "type": "ForceSacrifice",
+                                "filter": "creature",
+                                "count": 3,
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "Each"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "label": "Lands, then creatures, then artifacts",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ForceSacrifice",
+                                "filter": "land",
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "Each"
+                                }
+                            },
+                            {
+                                "type": "ForceSacrifice",
+                                "filter": "creature",
+                                "count": 2,
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "Each"
+                                }
+                            },
+                            {
+                                "type": "ForceSacrifice",
+                                "filter": "artifact",
+                                "count": 3,
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "Each"
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "rarity": "RARE",
+        "artist": "Clint Cearley",
+        "flavorText": "Skirsdag cultists refused to quietly accept Avacyn's ascendancy.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/89e7fec3-94b5-411e-aeb0-44a64f517986.jpg?1783940677",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "First you choose the order for the card types. Then each player in turn order (starting with the active player) chooses one permanent they control of the first card type. Then those permanents are sacrificed at the same time. Then each player in turn order chooses two permanents they control of the second card type. Then those permanents are sacrificed at the same time. Finally, each player in turn order chooses three permanents of the third card type, then those permanents are sacrificed at the same time."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "Permanents sacrificed for one card type won't be on the battlefield to be chosen for subsequent card types."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "If any abilities trigger while Rite of Ruin is resolving, those abilities will wait until Rite of Ruin finishes resolving before going on the stack. Starting with the active player, each player puts their abilities on the stack in any order."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED"
@@ -8450,6 +9330,88 @@
     ]
 }
 
+// Ulvenwald Tracker
+{
+    "name": "Ulvenwald Tracker",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "{1}{G}, {T}: Target creature you control fights another target creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ulvenwald Tracker:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{G}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Fight",
+                    "target1": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    },
+                    {
+                        "type": "TargetOther",
+                        "baseRequirement": {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "RARE",
+        "artist": "Christopher Moeller",
+        "flavorText": "\"Peace will come to Innistrad, but only after all abominations have been dealt with, one by one.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/46199391-a4f5-4532-b89c-b7691b229bd0.jpg?1783940658",
+        "rulings": [
+            {
+                "date": "2017-03-14",
+                "text": "The second target of Ulvenwald Tracker's ability can be another creature you control, but it can't be the same creature as the first target."
+            },
+            {
+                "date": "2017-03-14",
+                "text": "If either target of Ulvenwald Tracker's ability is an illegal target when the ability tries to resolve, neither creature will deal or be dealt damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Uncanny Speed
 {
     "name": "Uncanny Speed",
@@ -8809,6 +9771,120 @@
     ]
 }
 
+// Wandering Wolf
+{
+    "name": "Wandering Wolf",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Wolf",
+    "oracleText": "Creatures with power less than this creature's power can't block it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            "CantBeBlockedByCreaturesWithLessPower"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "202",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "Humans still feared wolves, though no connection between them and the curse of lycanthropy had ever been proved.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac606ad5-b8d0-4c93-a9de-5e41229a8229.jpg?1783940658",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "The comparison of power is only done when blockers are declared. Increasing the power of a blocking creature (or decreasing the power of Wandering Wolf) after this point won’t cause any creature to stop blocking or become unblocked."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Wild Defiance
+{
+    "name": "Wild Defiance",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a creature you control becomes the target of an instant or sorcery spell, that creature gets +3/+3 until end of turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wild Defiance:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "targetFilter": "creature ctrl:you",
+                    "spellsOnly": true,
+                    "sourceFilter": "instant|sorcery"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": "TriggeringEntity"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "flavorText": "\"When civilization reaches out its greedy hand, take it off at the wrist.\"\n—Garruk Wildspeaker",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7eaa6be7-2c6f-4442-85d1-ae31ad87fd98.jpg?1783940657"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Wildwood Geist
+{
+    "name": "Wildwood Geist",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "During your turn, this creature gets +2/+2.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 2,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "artist": "Lars Grant-West",
+        "flavorText": "The geists that dwell in the deep forests of Kessig are as untamable as the woods themselves.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/4658b4b2-7043-4ca2-96fd-4f663c20c80f.jpg?1783940657"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Wingcrafter
 {
     "name": "Wingcrafter",
@@ -8989,6 +10065,218 @@
         "artist": "Daniel Ljunggren",
         "flavorText": "Released from a dark curse and bound to a higher calling.",
         "imageUri": "https://cards.scryfall.io/normal/front/8/8/88cc00e5-9683-4ccc-a914-c422b76f6014.jpg?1783940657"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Wolfir Silverheart
+{
+    "name": "Wolfir Silverheart",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Wolf Warrior",
+    "oracleText": "Soulbond (You may pair this creature with another unpaired creature when either enters. They remain paired for as long as you control both of them.)\nAs long as this creature is paired with another creature, each of those creatures gets +4/+4.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "SOULBOND"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wolfir Silverheart:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "StateNot",
+                                            "predicate": "IsPaired"
+                                        }
+                                    ]
+                                },
+                                "player": "You",
+                                "excludeSelf": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may pair this creature with an unpaired creature you control",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "PairWithSource",
+                            "from": "selected1"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsPaired"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Soulbond (You may pair this creature with another unpaired creature when either enters. They remain paired for as long as you control both of them.)"
+            },
+            {
+                "id": "Wolfir Silverheart:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "Entity",
+                                    "entity": "TriggeringEntity"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "PairWithSource",
+                                "from": "gathered0"
+                            }
+                        ]
+                    }
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsPaired"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "You may pair that creature with this creature"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 4,
+                "toughnessBonus": 4,
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "SoulbondPair"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "rarity": "RARE",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/8629c598-11c8-4911-acfb-0643e5feffa8.jpg?1783940656"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Yew Spirit
+{
+    "name": "Yew Spirit",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Spirit Treefolk",
+    "oracleText": "{2}{G}{G}: This creature gets +X/+X until end of turn, where X is its power.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Yew Spirit:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "IfPositive",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "Self",
+                            "numericProperty": "Power"
+                        }
+                    },
+                    "toughnessModifier": {
+                        "type": "IfPositive",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "Self",
+                            "numericProperty": "Power"
+                        }
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "{2}{G}{G}: This creature gets +X/+X until end of turn, where X is its power."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "\"I wonder what dwelled in the primordial forests before humans existed.\"\n—Elder Rimheit",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b9320432-4f89-4363-91e6-2e740535cc2e.jpg?1783940656",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "The value of X is determined when the ability resolves. The bonus won't change later in the turn if the creature's power changes."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If this creature's power is negative as its ability resolves, X is considered to be 0."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "GREEN"
