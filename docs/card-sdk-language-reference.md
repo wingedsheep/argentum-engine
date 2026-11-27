@@ -21682,7 +21682,9 @@ are their printed spellings (`CounterType.printed`). Text converts back only thr
   creature's granted "when this becomes the target of a spell or ability, sacrifice it" ability has something to be
   keyed to (`Duration.WhileAffectedHasCounter(CounterType.MANNEQUIN)`); remove the counter and the drawback goes too.
   `doom`: ATQ — Armageddon Clock (accrued one-per-upkeep, scales the damage dealt to each player in the draw step;
-  a {4} ability removes one). `omen` (`CounterType.OMEN`): VOW — Soulcipher Board, a *countdown* counter — the artifact
+  a {4} ability removes one). `despair` (`CounterType.DESPAIR`): AVR — Descent into Madness, accrued one-per-upkeep;
+  the same resolution reads `countersOnSelf(DESPAIR)` as how many cards each player exiles from hand and/or
+  permanents, and the read falls back to the enchantment's last-known count once it has left (CR 113.7a). `omen` (`CounterType.OMEN`): VOW — Soulcipher Board, a *countdown* counter — the artifact
   enters with three and a per-card "whenever a creature card is put into your graveyard from anywhere" trigger removes
   one, transforming the artifact once a `Compare(countersOnSelf(Named(OMEN)), EQ, 0)` intervening check passes.
   `suspect` (`CounterType.SUSPECT`): VOW — Investigator's Journal, a passive store — the artifact enters with one per

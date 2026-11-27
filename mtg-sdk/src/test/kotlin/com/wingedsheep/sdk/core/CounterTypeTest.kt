@@ -59,6 +59,7 @@ class CounterTypeTest : DescribeSpec({
             CounterType.MANIFESTATION.printed shouldBe "manifestation"
             CounterType.BLAZE.printed shouldBe "blaze"
             CounterType.FILIBUSTER.printed shouldBe "filibuster"
+            CounterType.DESPAIR.printed shouldBe "despair"
         }
     }
 
@@ -126,7 +127,7 @@ class CounterTypeTest : DescribeSpec({
 
     private companion object {
         /** Kinds named after `object Counters` was retired, so they have no legacy constant. */
-        val NEW_KINDS = setOf(CounterType.INCARNATION, CounterType.FORESHADOW, CounterType.BLOODLINE, CounterType.INVITATION, CounterType.IMPOSTOR, CounterType.DEVOTION,
+        val NEW_KINDS = setOf(CounterType.DESPAIR, CounterType.INCARNATION, CounterType.FORESHADOW, CounterType.BLOODLINE, CounterType.INVITATION, CounterType.IMPOSTOR, CounterType.DEVOTION,
             CounterType.THEFT, CounterType.TRAINING, CounterType.MIRE, CounterType.COLLECTION,
             CounterType.REPRIEVE, CounterType.BOUNTY, CounterType.HIT, CounterType.CORPSE, CounterType.BRICK,
             CounterType.VITALITY, CounterType.VOID, CounterType.HARMONY, CounterType.ENLIGHTENED, CounterType.AGE, CounterType.EXPERIENCE, CounterType.VOW,

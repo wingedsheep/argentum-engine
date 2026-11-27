@@ -347,6 +347,13 @@ value class CounterType(val name: String) {
         val DOOM = CounterType("DOOM")
 
         /**
+         * Despair counter (AVR — Descent into Madness). Passive counter accumulated one-per-upkeep; the
+         * same resolution reads the count to size how many cards each player exiles, falling back to the
+         * enchantment's last-known count if it has left the battlefield. No inherent rule.
+         */
+        val DESPAIR = CounterType("DESPAIR")
+
+        /**
          * Possession counter (DSK — Unwilling Vessel). Passive storage counter with no inherent rule;
          * Eerie triggers accumulate it (an enchantment you control entering / fully unlocking a Room
          * each add one) and the card's dies trigger reads the count to size the X/X Spirit token it
@@ -1118,6 +1125,7 @@ value class CounterType(val name: String) {
             SOUL,
             DIVINITY,
             DOOM,
+            DESPAIR,
             POSSESSION,
             FIRE,
             CONQUEROR,
