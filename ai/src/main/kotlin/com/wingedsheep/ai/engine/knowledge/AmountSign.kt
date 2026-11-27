@@ -134,7 +134,8 @@ internal enum class AmountSign {
         private fun contextSign(key: ContextPropertyKey): AmountSign = when (key) {
             ContextPropertyKey.TRIGGER_DIE_RESULT, ContextPropertyKey.TRIGGER_HIGHEST_DIE_RESULT,
             ContextPropertyKey.TRIGGER_DAMAGE_AMOUNT, ContextPropertyKey.TRIGGER_RECIPIENT_TOUGHNESS,
-            ContextPropertyKey.PREVENTED_DAMAGE_AMOUNT, ContextPropertyKey.TRIGGER_LIFE_GAINED,
+            ContextPropertyKey.PREVENTED_DAMAGE_AMOUNT, ContextPropertyKey.WOULD_BE_DAMAGE_AMOUNT,
+            ContextPropertyKey.TRIGGER_LIFE_GAINED,
             ContextPropertyKey.TRIGGER_LIFE_LOST, ContextPropertyKey.ADDITIONAL_COST_EXILED_COUNT,
             ContextPropertyKey.TAPPED_AS_COST_COUNT,
             ContextPropertyKey.DISCARDED_AS_COST_TOTAL_MANA_VALUE, ContextPropertyKey.TARGET_COUNT,

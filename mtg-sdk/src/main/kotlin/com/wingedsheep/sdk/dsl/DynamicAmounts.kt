@@ -837,6 +837,15 @@ object DynamicAmounts {
     fun preventedDamage(): DynamicAmount =
         DynamicAmount.ContextProperty(ContextPropertyKey.PREVENTED_DAMAGE_AMOUNT)
 
+    /**
+     * "That many" read off the damage itself rather than off what was prevented — the amount that
+     * reached a prevention effect, readable inside its `onPrevented` rider. Damage that can't be
+     * prevented still counts in full (Gloom Surgeon: "prevent that damage and exile that many cards
+     * from the top of your library"); [preventedDamage] would read 0 there.
+     */
+    fun wouldBeDamage(): DynamicAmount =
+        DynamicAmount.ContextProperty(ContextPropertyKey.WOULD_BE_DAMAGE_AMOUNT)
+
     // =========================================================================
     // Target-based player values
     // =========================================================================

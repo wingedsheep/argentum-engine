@@ -474,7 +474,7 @@ object DamageReplacementChain {
                         out += Candidate(key, "$hostName — prevent $prevented damage", host,
                             commute = if (effect.amount == null && !effect.half && effect.allBut == null && effect.onPrevented == null) "prevent-all" else null) {
                             val next = if (effect.onPrevented == null || prevented == 0 && !disabled) state else state.copy(pendingReplacementRiders = state.pendingReplacementRiders +
-                                PendingReplacementRider(effect.onPrevented!!, host, controller, d.targetId, amount = prevented))
+                                PendingReplacementRider(effect.onPrevented!!, host, controller, d.targetId, amount = prevented, wouldBeAmount = d.amount))
                             Step(next, listOf(d.copy(amount = d.amount - prevented)))
                         }
                     }
@@ -591,7 +591,7 @@ object DamageReplacementChain {
                     // nothing, but its additional effects take place ("for each 1 damage prevented").
                     if (onPrevented != null) out += Candidate(key, "$hostName — damage can't be prevented", floating.sourceId) {
                         Step(state.copy(pendingReplacementRiders = state.pendingReplacementRiders +
-                            PendingReplacementRider(onPrevented, floating.sourceId ?: floating.controllerId, floating.controllerId, d.targetId, amount = 0,
+                            PendingReplacementRider(onPrevented, floating.sourceId ?: floating.controllerId, floating.controllerId, d.targetId, amount = 0, wouldBeAmount = d.amount,
                                 targets = riderTargets, namedTargets = riderNamedTargets, boundObjects = riderBound)),
                             listOf(d))
                     }
@@ -630,7 +630,7 @@ object DamageReplacementChain {
                             val shrunk = current.copy(floatingEffects = current.floatingEffects.mapNotNull {
                                 if (it.id != floating.id) it else if (left == 0) null else it.copy(effect = it.effect.copy(modification = mod.copy(remainingAmount = left)))
                             })
-                            val next = if (mod.onPrevented == null || prevented <= 0) shrunk else queuePreventedReaction(shrunk, floating, mod, d.targetId, prevented)
+                            val next = if (mod.onPrevented == null || prevented <= 0) shrunk else queuePreventedReaction(shrunk, floating, mod, d.targetId, prevented, d.amount)
                             Step(next, listOf(d.copy(amount = d.amount - prevented)),
                                 gains = if (mod.controllerGainsLife && prevented > 0) mapOf(floating.controllerId to prevented) else emptyMap())
                         }) { error("Finite prevention is allocated over the whole damage batch") }
@@ -780,6 +780,7 @@ object DamageReplacementChain {
         mod: SerializableModification.PreventNextDamage,
         recipientId: EntityId,
         prevented: Int,
+        reached: Int,
     ): GameState {
         val effect = requireNotNull(mod.onPrevented)
         val hostId = floating.sourceId ?: floating.controllerId
@@ -792,9 +793,10 @@ object DamageReplacementChain {
                 it.subjectId == recipientId && it.targets == mod.onPreventedTargets
         }
         val updated = if (existing >= 0) {
-            riders.toMutableList().also { it[existing] = it[existing].copy(amount = it[existing].amount + prevented) }
+            riders.toMutableList().also { it[existing] = it[existing].copy(amount = it[existing].amount + prevented,
+                wouldBeAmount = (it[existing].wouldBeAmount ?: it[existing].amount) + reached) }
         } else {
-            riders + PendingReplacementRider(effect, hostId, floating.controllerId, recipientId, amount = prevented,
+            riders + PendingReplacementRider(effect, hostId, floating.controllerId, recipientId, amount = prevented, wouldBeAmount = reached,
                 targets = mod.onPreventedTargets, namedTargets = mod.onPreventedNamedTargets, boundObjects = mod.onPreventedBound)
         }
         return state.copy(pendingReplacementRiders = updated)

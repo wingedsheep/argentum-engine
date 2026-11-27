@@ -9,6 +9,7 @@ import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.DamageAmplifiers
 import com.wingedsheep.ai.engine.knowledge.LifeGainLocks
 import com.wingedsheep.ai.engine.knowledge.VehicleBody
+import com.wingedsheep.ai.engine.knowledge.DamageShields
 import com.wingedsheep.ai.engine.knowledge.LossShields
 import com.wingedsheep.ai.engine.knowledge.DiscardShields
 import com.wingedsheep.ai.engine.knowledge.EffectWalker
@@ -597,6 +598,8 @@ object LimitedCardRater {
         // A second life for its controller (Exquisite Archangel): about a removal spell's worth
         // of game the opponent has to win twice.
         LossShields.reads(replacement) -> LOSS_SHIELD_VALUE
+        // A creature's "prevent all damage that would be dealt to this creature" (Gloom Surgeon).
+        DamageShields.selfShieldValue(replacement) > 0.0 -> DamageShields.selfShieldValue(replacement)
         // "If an effect causes you to discard a card, you may put it on top of your library
         // instead" (Library of Leng, Nephalia Academy): undoes discard spells, which are rare.
         DiscardShields.reads(replacement) -> TAG_VALUE.getValue(IntentTag.DISCARD_SHIELD)

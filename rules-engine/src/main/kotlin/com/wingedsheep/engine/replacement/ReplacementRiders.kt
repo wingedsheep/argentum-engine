@@ -59,6 +59,8 @@ data class PendingReplacementRider(
     val controllerId: EntityId,
     val subjectId: EntityId,
     val amount: Int = 0,
+    /** The damage that reached a prevention rider's prevention, before it prevented any (null = [amount]). */
+    val wouldBeAmount: Int? = null,
     val countersRemoved: Int = 0,
     val replacesLifeReduction: Boolean = false,
     val replacesGameLoss: Boolean = false,
@@ -138,6 +140,7 @@ object ReplacementRiders {
             triggerContext = TriggerContext(
                 triggeringEntityId = rider.subjectId,
                 damageAmount = rider.amount,
+                wouldBeDamageAmount = rider.wouldBeAmount,
                 counterCount = rider.countersRemoved.takeIf { it > 0 }
             ),
             pipeline = PipelineState(

@@ -1,0 +1,1 @@
+- #4893 The AI's draft heuristic now prices a creature's standing "prevent all damage that would be dealt to this creature" shield (Gloom Surgeon's combat-only form), instead of rating it as a vanilla body

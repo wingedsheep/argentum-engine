@@ -18361,7 +18361,7 @@ forbids `DynamicAmount.X` in card definitions.
   `manaSpentOnTriggeringSpell()`, `modesChosenOnTriggeringSpell()`, `lastKnownPlusOneCounters()`,
   `lastKnownCounterCount()`, `linkedExileCardCount()`, `linkedExileDistinctCardTypeCount()`,
   `targetCount()`, `additionalCostExiledCount()`, `permanentsTappedAsCost()`, `discardedAsCostTotalManaValue()`, `colorsSpentOnTriggeringSpell()`,
-  `xValueOfTriggeringSpell()`, `diedBatchTotalPower()`, `preventedDamage()`.
+  `xValueOfTriggeringSpell()`, `diedBatchTotalPower()`, `preventedDamage()`, `wouldBeDamage()`.
 
 ### Math
 
@@ -20398,7 +20398,12 @@ The priority groups are (CR 616.1a–f):
   additional effect still happens) with `preventedDamage()` = 0 — so Purity gains nothing, while
   **Nine Lives**' amount-free rider still lands: `PreventDamage(appliesTo = DamageEvent(recipient =
   Recipient.You), onPrevented = Effects.AddCounters(CounterType.INCARNATION, 1, EffectTarget.Self))`,
-  one counter per source's damage event. A reflexive "when damage is prevented this way" rider must
+  one counter per source's damage event. A rider whose "that many" counts the **damage itself** rather than what was
+  prevented reads `DynamicAmounts.wouldBeDamage()` — the amount that reached this prevention, before it
+  prevented any — so unpreventable damage still counts in full. **Gloom Surgeon** ("If combat damage would
+  be dealt to this creature, prevent that damage and exile that many cards from the top of your library";
+  its ruling: unpreventable damage still exiles) = `PreventDamage(appliesTo = DamageEvent(recipient =
+  Recipient.Self, damageType = DamageType.Combat), onPrevented = Patterns.Library.exileTop(wouldBeDamage()))`. A reflexive "when damage is prevented this way" rider must
   gate itself on a nonzero amount (CR 615.13 — it triggers only when some damage was prevented):
   Phyrexian Vindicator wraps its `ReflexiveTrigger` in `Effects.If(Conditions.CompareAmounts(
   preventedDamage(), ComparisonOperator.GT, 0), …)`.

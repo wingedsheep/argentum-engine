@@ -1407,6 +1407,8 @@ class DynamicAmountEvaluator(
         ContextPropertyKey.PREVENTED_DAMAGE_AMOUNT,
         ContextPropertyKey.TRIGGER_LIFE_GAINED,
         ContextPropertyKey.TRIGGER_LIFE_LOST -> context.triggerContext?.damageAmount ?: 0
+        ContextPropertyKey.WOULD_BE_DAMAGE_AMOUNT ->
+            context.triggerContext?.let { it.wouldBeDamageAmount ?: it.damageAmount } ?: 0
 
         ContextPropertyKey.LAST_KNOWN_PLUS_ONE_COUNTER_COUNT,
         ContextPropertyKey.TRIGGER_COUNTERS_PLACED_AMOUNT -> context.triggerContext?.counterCount ?: 0
