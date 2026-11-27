@@ -18,8 +18,8 @@ object ProtectionKeywords {
     /**
      * Empty for a scope with no creature-protection keyword (non-color, monocolored, everything);
      * `GrantProtectionFromToGroup` rejects those at construction. A source-bound
-     * [ProtectionScope.ChosenCardType] is also empty here — [resolveChosen] it against the granting
-     * permanent first.
+     * [ProtectionScope.ChosenCardType] or [ProtectionScope.ChosenSubtype] is also empty here —
+     * [resolveChosen] it against the granting permanent first.
      */
     fun keywordsFor(scope: ProtectionScope): Set<String> = when (scope) {
         is ProtectionScope.Color -> setOf("PROTECTION_FROM_${scope.color.name}")
@@ -39,6 +39,7 @@ object ProtectionKeywords {
         is ProtectionScope.ManaValueOtherThan -> setOf(SourceKindProtection.manaValueOtherThanKeyword(scope.value))
         is ProtectionScope.NonColor,
         is ProtectionScope.ChosenCardType,
+        is ProtectionScope.ChosenSubtype,
         is ProtectionScope.ChosenCardName,
         ProtectionScope.Monocolored,
         ProtectionScope.Everything -> emptySet()
@@ -47,21 +48,22 @@ object ProtectionKeywords {
     /**
      * Binds a source-bound scope to the choice its granting permanent [source] made as it entered:
      * [ProtectionScope.ChosenCardType] becomes the [ProtectionScope.CardType] stored under its slot,
-     * or null while nothing is chosen (protection from nothing). Every other scope is returned as is.
+     * [ProtectionScope.ChosenSubtype] the [ProtectionScope.Subtype] (keeping its card-type
+     * narrowing), or null while nothing is chosen (protection from nothing). Every other scope is
+     * returned as is.
      */
     fun resolveChosen(scope: ProtectionScope, source: ComponentContainer?): ProtectionScope? = when (scope) {
-        is ProtectionScope.ChosenCardType -> chosenCardType(source, scope.slot)?.let { ProtectionScope.CardType(it) }
+        is ProtectionScope.ChosenCardType -> chosenText(source, scope.slot)?.let { ProtectionScope.CardType(it) }
+        is ProtectionScope.ChosenSubtype -> chosenText(source, scope.slot)?.let { ProtectionScope.Subtype(it, scope.cardType) }
         else -> scope
     }
 
-    /** The `PROTECTION_FROM_CARDTYPE_<TYPE>` keyword for the card type [source] chose under [slot], or null. */
-    fun chosenCardTypeKeyword(source: ComponentContainer?, slot: ChoiceSlot): String? =
-        chosenCardType(source, slot)?.let { "PROTECTION_FROM_CARDTYPE_${it.uppercase()}" }
+    /** Whether [scope] is bound to its granting permanent's entry choice ([resolveChosen] binds it). */
+    fun isSourceBound(scope: ProtectionScope): Boolean =
+        scope is ProtectionScope.ChosenCardType || scope is ProtectionScope.ChosenSubtype
 
     /** The card name [source] chose under [slot] as it entered, or null while nothing is chosen. */
     fun chosenCardName(source: ComponentContainer?, slot: ChoiceSlot): String? = chosenText(source, slot)
-
-    private fun chosenCardType(source: ComponentContainer?, slot: ChoiceSlot): String? = chosenText(source, slot)
 
     private fun chosenText(source: ComponentContainer?, slot: ChoiceSlot): String? =
         (source?.get<CastChoicesComponent>()?.chosen?.get(slot) as? ChoiceValue.TextChoice)?.text

@@ -695,15 +695,16 @@ sealed interface Modification {
     }
 
     /**
-     * Grants protection from the card type the source chose as it entered, read at apply-time
-     * from the source's `CastChoicesComponent` under [slot] and realized as the same
-     * `PROTECTION_FROM_CARDTYPE_<TYPE>` keyword a fixed card-type protection projects. Nothing is
-     * granted before a type is chosen. Serra's Emissary
-     * (`GrantProtectionFromToGroup(ProtectionScope.ChosenCardType(...))`).
+     * Grants protection from a source-bound [scope] — the card type or subtype the source chose as
+     * it entered — read at apply-time from the source's `CastChoicesComponent` and realized as the
+     * same keyword the fixed scope it resolves to projects (`PROTECTION_FROM_CARDTYPE_<TYPE>`,
+     * `PROTECTION_FROM_SUBTYPE_<X>@<CARDTYPE>`). Nothing is granted before a choice is made.
+     * Serra's Emissary (`ProtectionScope.ChosenCardType`), Riders of Gavony
+     * (`ProtectionScope.ChosenSubtype`).
      */
     @Serializable
-    data class GrantProtectionFromChosenCardType(
-        val slot: com.wingedsheep.sdk.scripting.ChoiceSlot
+    data class GrantProtectionFromChosen(
+        val scope: com.wingedsheep.sdk.scripting.ProtectionScope
     ) : Modification {
         override val layer get() = Layer.ABILITY
     }

@@ -39,13 +39,16 @@ class HexproofFromScopeCoverageTest : FunSpec({
         ProtectionScope.ActivatedAbilities,
         ProtectionScope.TriggeredAbilities,
         ProtectionScope.ChosenCardType(),
+        ProtectionScope.ChosenSubtype(),
         ProtectionScope.ChosenCardName(),
         ProtectionScope.ManaValueParity(com.wingedsheep.sdk.scripting.Parity.ODD),
         ProtectionScope.ManaValueOtherThan(3),
     )
 
-    // A granting permanent that chose "Instant" as it entered — what a source-bound scope reads.
-    val chooser = ComponentContainer().withCastChoice(ChoiceSlot.CARD_TYPE, ChoiceValue.TextChoice("Instant"))
+    // A granting permanent that chose "Instant" and "Goblin" as it entered — what a source-bound scope reads.
+    val chooser = ComponentContainer()
+        .withCastChoice(ChoiceSlot.CARD_TYPE, ChoiceValue.TextChoice("Instant"))
+        .withCastChoice(ChoiceSlot.CREATURE_TYPE, ChoiceValue.TextChoice("Goblin"))
 
     test("the samples cover every ProtectionScope kind") {
         samples.map { it::class }.toSet() shouldBe ProtectionScope::class.sealedSubclasses.toSet()

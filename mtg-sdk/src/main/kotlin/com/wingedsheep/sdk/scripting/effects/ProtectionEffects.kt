@@ -173,6 +173,7 @@ data class GrantPlayerProtectionEffect(
     init {
         // A one-shot grant has no permanent whose entry choice it could read.
         require(scope !is ProtectionScope.ChosenCardType) { "GrantPlayerProtection can't take a chosen card type" }
+        require(scope !is ProtectionScope.ChosenSubtype) { "GrantPlayerProtection can't take a chosen subtype" }
         require(scope !is ProtectionScope.ChosenCardName) { "GrantPlayerProtection can't take a chosen card name" }
     }
 
@@ -192,6 +193,7 @@ fun ProtectionScope.protectionDescription(): String = when (this) {
     ProtectionScope.Monocolored -> "monocolored"
     is ProtectionScope.CardType -> cardType.lowercase() + "s" + (controller?.let { " your opponents control" } ?: "")
     is ProtectionScope.ChosenCardType -> "the chosen card type"
+    is ProtectionScope.ChosenSubtype -> cardType?.let { it.lowercase() + "s of the chosen type" } ?: "the chosen type"
     is ProtectionScope.ChosenCardName -> "the chosen card name"
     is ProtectionScope.Subtype -> subtype + "s"
     is ProtectionScope.Supertype -> supertype.lowercase() + " permanents"

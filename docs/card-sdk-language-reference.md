@@ -15480,6 +15480,14 @@ MacCready, Lamplight Mayor (granted).
   Serra's Emissary pairs an `EntersWithChoice(ChoiceType.MODE)` over card-type ids (as Stenn, Paranoid
   Partisan does) with `GrantProtectionFromToGroup(ProtectionScope.ChosenCardType(ChoiceSlot.MODE),
   GroupFilter(Creature.youControl()))` + `GrantProtectionToController(ProtectionScope.ChosenCardType(ChoiceSlot.MODE))`.
+- `ProtectionScope.ChosenSubtype(slot = ChoiceSlot.CREATURE_TYPE, cardType = "Creature")` — "protection from
+  creatures of the chosen type": the subtype twin of `ChosenCardType`, late-bound to the subtype the
+  **granting permanent** chose as it entered (`EntersWithChoice(ChoiceType.CREATURE_TYPE)` writes
+  `ChoiceSlot.CREATURE_TYPE`), so it then behaves exactly like `ProtectionScope.Subtype(<chosen>, cardType)`
+  (projected `PROTECTION_FROM_SUBTYPE_<X>@CREATURE`; a changeling creature matches, a noncreature of the
+  type doesn't). `cardType = null` drops the narrowing. Protects from nothing until a subtype is chosen.
+  Granted statics only — `GrantProtectionFromToGroup` and `GrantProtectionToController`. Riders of Gavony:
+  `GrantProtectionFromToGroup(ProtectionScope.ChosenSubtype(), GroupFilter(Creature.withSubtype(Subtype.HUMAN).youControl()))`.
 - `ProtectionScope.ChosenCardName(slot = ChoiceSlot.CARD_NAME)` — "protection from the chosen card name"
   (Runed Halo): the name twin of `ChosenCardType`, late-bound to the card name the **granting permanent**
   chose as it entered (`EntersWithChoice(ChoiceType.CARD_NAME)`, stored under `ChoiceSlot.CARD_NAME`).
