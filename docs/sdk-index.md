@@ -284,6 +284,7 @@ Families:
 - `CardPredicate.SharesCreatureTypeWithTriggeringEntity` — Matches creatures that share a creature subtype with the triggering entity
 - `CardPredicate.SharesManaValueWith(entity: EffectTarget.SingleEntity)` — Matches objects whose mana value **equals** the referenced entity's mana value — "that shares a mana value with the exiled card" (Thought Prison).
 - `CardPredicate.SharesNameWith(entity: EffectTarget.SingleEntity)` — Matches objects whose name **equals** the referenced entity's name — "a land with the same name as the exiled card" (Extraplanar Lens).
+- `CardPredicate.SharesNameWithAttachment(host: EffectTarget, filter: GameObjectFilter)` — Matches objects whose name equals that of at least one permanent matching filter that is **attached to** host — a player or a permanent.
 - `CardPredicate.SharesNameWithLinkedExile` — Matches objects whose **name** equals that of **any** card exiled with the asking ability's source — "spells with the same name as a card exiled with Circu" (Circu, Dimir Lobotomist).
 - `CardPredicate.SharesNameWithYourCard(filter: GameObjectFilter, excludeSelf: Boolean, zone: Zone)` — Matches objects whose name equals that of at least one of the evaluating player's cards in zone matching filter — on the battlefield (the default) a permanent they **control**, anywhere else a card…
 - `CardPredicate.TargetsMatching(subfilter: GameObjectFilter)` — Matches a spell or ability on the stack at least one of whose chosen targets matches subfilter.

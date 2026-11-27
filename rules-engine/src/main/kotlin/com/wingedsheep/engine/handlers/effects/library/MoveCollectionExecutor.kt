@@ -395,7 +395,8 @@ class MoveCollectionExecutor(
     /**
      * [MoveCollectionEffect.attachTo]: every Aura, Equipment and Fortification card in [cards]
      * enters the battlefield attached to the named host — no enchant choice, the effect specifies
-     * it (CR 303.4f). Legality is [AttachmentMover.couldAttachCard]'s. An Aura the host can't
+     * it (CR 303.4f). The host may be a player, for an "Enchant player" Aura. Legality is
+     * [AttachmentMover.couldAttachCard]'s. An Aura the host can't
      * legally carry, or every Aura when the host has left the battlefield, stays where it is
      * (CR 303.4i); an Equipment or Fortification that can't be attached instead enters unattached
      * (CR 301.5e), with the rest of the collection, which moves through the ordinary path.
@@ -408,7 +409,11 @@ class MoveCollectionExecutor(
         attachTo: com.wingedsheep.sdk.scripting.targets.EffectTarget,
         effect: MoveCollectionEffect
     ): EffectResult {
-        val hostId = context.resolveTarget(attachTo, state)?.takeIf { it in state.getBattlefield() }
+        // The host is a permanent, or a player for an "Enchant player" Aura (a Curse put onto the
+        // battlefield attached to a player, Curse of Misfortunes). A player who has left the game is
+        // no host, just as a permanent that left the battlefield isn't.
+        fun hostPresent(s: GameState, id: EntityId) = id in s.getBattlefield() || id in s.activePlayers
+        val hostId = context.resolveTarget(attachTo, state)?.takeIf { hostPresent(state, it) }
         val defaultControllerId = resolvePlayer(destination.player, context, state) ?: context.controllerId
         fun controllerOf(cardId: EntityId, card: CardComponent): EntityId = if (effect.underOwnersControl) {
             state.getEntity(cardId)?.get<OwnerComponent>()?.playerId ?: card.ownerId ?: defaultControllerId
@@ -437,7 +442,7 @@ class MoveCollectionExecutor(
                 val controllerId = controllerOf(cardId, card)
                 // The host can leave mid-loop (an earlier entrant's replacement effect); the rest
                 // then behave as if it were already gone.
-                if (hostId !in newState.getBattlefield()) {
+                if (!hostPresent(newState, hostId)) {
                     if (!card.typeLine.isAura) others.add(cardId)
                     continue
                 }

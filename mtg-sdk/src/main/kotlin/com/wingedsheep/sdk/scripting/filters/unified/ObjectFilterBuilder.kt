@@ -558,6 +558,14 @@ interface ObjectFilterBuilder<out Self> {
         withCardPredicate(CardPredicate.Not(CardPredicate.SharesNameWithYourCard(filter, excludeSelf = another)))
 
     /**
+     * Must **not** have the same name as any permanent matching [filter] attached to [host] — "a
+     * Curse card that doesn't have the same name as a Curse attached to enchanted player" (Curse of
+     * Misfortunes). `Not` over [CardPredicate.SharesNameWithAttachment].
+     */
+    fun nameNotSharedWithAttachmentOf(host: EffectTarget, filter: GameObjectFilter) =
+        withCardPredicate(CardPredicate.Not(CardPredicate.SharesNameWithAttachment(host, filter)))
+
+    /**
      * Must share **at least one** creature type with a permanent the evaluating player controls
      * matching [filter] (Descendants' Path: "a creature card that shares a creature type with a
      * creature you control"). `Not` over [CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl];

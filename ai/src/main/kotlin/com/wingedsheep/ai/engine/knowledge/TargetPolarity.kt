@@ -2838,6 +2838,7 @@ object TargetPolarityAnalyzer {
             // life unless they sacrifice a nonland permanent or discard a card" (Torment of Scarabs):
             // the host is the player, named by the leaves that act on them.
             readings += EffectWalker.payoffLeaves(effect).mapNotNull(::enchantedPlayerLeafPolarity)
+            readings += enchantedPlayerCurseMoves(effect)
             readings += hostControllerHarms(effect)
             readings += hostCarrierHarms(effect)
             // "That player sacrifices it unless they pay {X}" (Soul Tithe), "destroy that land unless
@@ -3137,6 +3138,25 @@ object TargetPolarityAnalyzer {
             }
             else -> null
         }
+    }
+
+    /**
+     * "Search your library for a Curse card …, put it onto the battlefield attached to that player"
+     * (Curse of Misfortunes): a pipeline gathers Curse cards and moves them onto the enchanted
+     * player. Every Curse is an Aura aimed at its player's harm, so each such move hurts the host —
+     * the enchant slot is cast on the side the Curses will pile onto.
+     */
+    private fun enchantedPlayerCurseMoves(effect: Effect): List<TargetPolarity> {
+        val leaves = EffectWalker.leaves(effect)
+        val gathersCurses = leaves.filterIsInstance<GatherCardsEffect>().any { gather ->
+            val filter = (gather.source as? CardSource.FromZone)?.filter ?: return@any false
+            filter.cardPredicates.any { it == CardPredicate.HasSubtype(Subtype("Curse")) }
+        }
+        if (!gathersCurses) return emptyList()
+        val enchanted = EffectTarget.PlayerRef(Player.EnchantedPlayer)
+        return leaves.filterIsInstance<MoveCollectionEffect>()
+            .filter { it.attachTo == enchanted }
+            .map { TargetPolarity.HARMFUL }
     }
 
     /**

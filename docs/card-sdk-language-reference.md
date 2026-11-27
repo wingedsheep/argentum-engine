@@ -4463,7 +4463,12 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   battlefield attached to that permanent with no enchant choice — "put that Aura card onto the
   battlefield attached to it" (Auratouched Mage), "return the other cards … attached to that creature"
   (Flickerform), "put an Aura or Equipment card … onto the battlefield attached to Danitha". Legality is
-  `AttachmentMover.couldAttachCard`, the same reading as `.couldAttachTo(ref)`. An Aura the host can't
+  `AttachmentMover.couldAttachCard`, the same reading as `.couldAttachTo(ref)`. The host may also be a
+  **player** (`attachTo = EffectTarget.PlayerRef(Player.EnchantedPlayer)`): an "Enchant player" /
+  "Enchant opponent" Aura (a Curse) enters attached to that player — "put it onto the battlefield
+  attached to that player" (Curse of Misfortunes). The player must still be in the game, the Aura's
+  `auraTarget` must be a player requirement ("opponent" relative to the Aura's new controller) whose
+  restriction holds, and the player mustn't have protection from it; nothing is targeted. An Aura the host can't
   legally enchant (enchant restriction or protection from its color), or every Aura when the host isn't
   on the battlefield, stays where it is (CR 303.4i); an Equipment/Fortification that can't be attached
   (a noncreature host, protection, its own `EquipmentAttachRestriction`, a creature card) **enters
@@ -7634,6 +7639,13 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   the activating player, so the battlefield side is scoped to "you control". Evaluated for real in
   targeting/search/cost contexts; inert (false) in static-projection / trigger-gating, permissive (true)
   in cost-calculation.
+- `.nameNotSharedWithAttachmentOf(host, filter)` — `Not(CardPredicate.SharesNameWithAttachment(host,
+  filter))`: the candidate's name differs from every permanent matching `filter` **attached to `host`**
+  (a player or a permanent), whoever controls those attachments. Curse of Misfortunes: "a Curse card
+  that doesn't have the same name as a Curse attached to enchanted player" —
+  `curse.nameNotSharedWithAttachmentOf(EffectTarget.PlayerRef(Player.EnchantedPlayer), curse)`. Names
+  read through the projection; face-down attachments have no name. Live-evaluator only, like
+  `SharesNameWithYourCard` (matchers without the game state fail closed on it and its `Not`).
 - `.sharingNameWithCardInYour(zone, filter = GameObjectFilter.Any)` — `CardPredicate.SharesNameWithYourCard(filter,
   zone = zone)`: the same predicate pointed at one of the evaluating player's **own** zones instead of
   the battlefield — "has the same name as a card in your graveyard". Off the battlefield the compared set

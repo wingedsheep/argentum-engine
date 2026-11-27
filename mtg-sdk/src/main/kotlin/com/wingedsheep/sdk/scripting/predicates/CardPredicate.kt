@@ -1315,6 +1315,42 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     }
 
     /**
+     * Matches objects whose name equals that of at least one permanent matching [filter] that is
+     * **attached to** [host] — a player or a permanent. Under [Not], "a Curse card that doesn't have
+     * the same name as a Curse attached to enchanted player" (Curse of Misfortunes:
+     * `host = PlayerRef(Player.EnchantedPlayer)`, `filter = GameObjectFilter.Enchantment.withSubtype("Curse")`).
+     *
+     * The two closest types don't take this pool: [SharesNameWith] compares against one named
+     * object, and [SharesNameWithYourCard]'s pool is keyed by the evaluating player (what they
+     * control, or a zone they own) — the Curses on an opponent are controlled by anyone. Here the
+     * pool is the host's attachments, whoever controls them.
+     *
+     * Names are read through the projection on both sides (falling back to the card's own name),
+     * and a nameless object never shares a name (CR 201.2a). A host that resolves to nothing has no
+     * attachments, so the positive form matches nothing and the [Not] form matches everything.
+     * Like [SharesNameWithYourCard], only the live evaluator can answer it.
+     */
+    @SerialName("SharesNameWithAttachment")
+    @Serializable
+    data class SharesNameWithAttachment(
+        val host: EffectTarget,
+        val filter: GameObjectFilter,
+    ) : CardPredicate {
+        override val description: String = buildString {
+            val noun = filter.description
+            append("with the same name as ")
+            append(if (noun.firstOrNull()?.lowercaseChar()?.let { it in "aeiou" } == true) "an " else "a ")
+            append(noun)
+            append(" attached to ")
+            append(host.description)
+        }
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
+
+    /**
      * Matches creature cards that share **no** creature type with any permanent the evaluating
      * player controls matching [filter]. Used by Radagast the Brown ("a creature card that doesn't
      * share a creature type with a creature you control") with `filter = GameObjectFilter.Creature`.

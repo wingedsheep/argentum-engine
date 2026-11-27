@@ -11,5 +11,6 @@ import com.wingedsheep.sdk.scripting.predicates.CardPredicate
  */
 internal object LiveBattlefieldPredicates {
     fun answerableOnlyLive(predicate: CardPredicate): Boolean =
-        predicate is CardPredicate.SharesNameWithYourCard
+        predicate is CardPredicate.SharesNameWithYourCard ||
+            predicate is CardPredicate.SharesNameWithAttachment
 }
