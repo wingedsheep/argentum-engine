@@ -70,7 +70,9 @@ data class GrantHexproofFromChosenColorEffect(
 /**
  * Grant "protection from the chosen color" to a target. Must run inside a
  * [ChooseColorThenEffect] — the executor reads the chosen color from the
- * effect context. Resolves to a `PROTECTION_FROM_<COLOR>` keyword grant.
+ * effect context. Resolves to a `PROTECTION_FROM_<COLOR>` keyword grant on a permanent, or to
+ * player protection from that color when [target] is a player (Faith's Shield's fateful hour:
+ * "you and each permanent you control gain protection from the color of your choice").
  */
 @SerialName("GrantProtectionFromChosenColor")
 @Serializable

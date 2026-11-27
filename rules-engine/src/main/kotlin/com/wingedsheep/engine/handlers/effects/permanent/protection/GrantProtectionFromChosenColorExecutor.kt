@@ -10,13 +10,16 @@ import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.nameVisibleToAll
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.handlers.effects.player.grantPlayerProtection
+import com.wingedsheep.sdk.scripting.ProtectionScope
 import com.wingedsheep.sdk.scripting.effects.GrantProtectionFromChosenColorEffect
 import kotlin.reflect.KClass
 
 /**
  * Executor for [GrantProtectionFromChosenColorEffect] — reads `chosenColor` from
  * the effect context (set by the surrounding `ChooseColorThen` resumer) and
- * grants `PROTECTION_FROM_<COLOR>` to the target.
+ * grants `PROTECTION_FROM_<COLOR>` to the target — or, when the target is a player, player
+ * protection from that color.
  */
 class GrantProtectionFromChosenColorExecutor : EffectExecutor<GrantProtectionFromChosenColorEffect> {
 
@@ -33,6 +36,13 @@ class GrantProtectionFromChosenColorExecutor : EffectExecutor<GrantProtectionFro
 
         val targetId = context.resolveTarget(effect.target, state)
             ?: return EffectResult.error(state, "No valid target for protection grant")
+
+        // A player target ("you … gain protection from the color of your choice") gets player
+        // protection (CR 702.16b, 702.16e), not a floating keyword — the targeting, damage and attach
+        // checks read it through PlayerProtectionRules.
+        if (targetId in state.turnOrder) {
+            return grantPlayerProtection(state, targetId, ProtectionScope.Color(color), effect.duration, context)
+        }
 
         val container = state.getEntity(targetId)
             ?: return EffectResult.error(state, "Target no longer exists")
