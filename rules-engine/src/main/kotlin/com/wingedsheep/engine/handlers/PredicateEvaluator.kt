@@ -628,6 +628,7 @@ class PredicateEvaluator(
             is CardPredicate.SharesNameWith,
             CardPredicate.SharesNameWithLinkedExile,
             is CardPredicate.SharesNameWithYourCard,
+            is CardPredicate.SharesNameWithAttachment,
             is CardPredicate.TargetsMatching,
             is CardPredicate.TargetsPlayer,
             is CardPredicate.WouldDestroy,
@@ -1497,6 +1498,26 @@ class PredicateEvaluator(
                         state.getEntity(otherId)?.has<FaceDownComponent>() != true &&
                         (projected.getName(otherId) ?: state.getEntity(otherId)?.get<CardComponent>()?.name) == name &&
                         matches(state, projected, otherId, predicate.filter, context)
+                }
+            }
+
+            // "With the same name as a <filter> attached to <host>" — under Not, Curse of
+            // Misfortunes' "a Curse card that doesn't have the same name as a Curse attached to
+            // enchanted player". The host may be a player or a permanent; its attachments are
+            // compared whoever controls them. Names come from the projection on both sides.
+            is CardPredicate.SharesNameWithAttachment -> {
+                if (projectedValues?.isFaceDown == true) return false
+                val name = projectedValues?.name ?: card.name
+                if (name.isBlank()) return false
+                val ctx = context ?: return false
+                val hostId = TargetResolutionUtils.resolveTarget(predicate.host, ctx.toEffectContext(), state)
+                    ?: return false
+                val attached = state.getEntity(hostId)?.get<AttachmentsComponent>()?.attachedIds.orEmpty()
+                attached.any { otherId ->
+                    otherId != entityId && otherId in state.getBattlefield() &&
+                        !projected.isFaceDown(otherId) &&
+                        (projected.getName(otherId) ?: state.getEntity(otherId)?.get<CardComponent>()?.name) == name &&
+                        matches(state, projected, otherId, predicate.filter, ctx)
                 }
             }
 
@@ -3095,6 +3116,7 @@ class PredicateEvaluator(
             is CardPredicate.SharesNameWith,
             is CardPredicate.SharesColorWithPermanentYouControl,
             is CardPredicate.SharesNameWithYourCard,
+            is CardPredicate.SharesNameWithAttachment,
             is CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl,
             is CardPredicate.DoesNotShareLandTypeWithPermanentYouControl -> false
             is CardPredicate.HasSubtypeFromVariable, is CardPredicate.HasSubtypeInStoredList,

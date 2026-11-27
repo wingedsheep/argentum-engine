@@ -652,6 +652,105 @@
     ]
 }
 
+// Curse of Misfortunes
+{
+    "name": "Curse of Misfortunes",
+    "manaCost": "{4}{B}",
+    "typeLine": "Enchantment — Aura Curse",
+    "oracleText": "Enchant player\nAt the beginning of your upkeep, you may search your library for a Curse card that doesn't have the same name as a Curse attached to enchanted player, put it onto the battlefield attached to that player, then shuffle.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Curse of Misfortunes:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Search your library for a Curse card?"
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsEnchantment",
+                                            {
+                                                "type": "HasSubtype",
+                                                "subtype": "Curse"
+                                            },
+                                            {
+                                                "type": "Not",
+                                                "predicate": {
+                                                    "type": "SharesNameWithAttachment",
+                                                    "host": {
+                                                        "type": "PlayerRef",
+                                                        "player": "EnchantedPlayer"
+                                                    },
+                                                    "filter": "enchantment Curse"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "storeAs": "gathered0",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected1",
+                                "prompt": "Choose a Curse card to put onto the battlefield attached to enchanted player"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                },
+                                "attachTo": {
+                                    "type": "PlayerRef",
+                                    "player": "EnchantedPlayer"
+                                }
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, you may search your library for a Curse card that doesn't have the same name as a Curse attached to enchanted player, put it onto the battlefield attached to that player, then shuffle."
+            }
+        ],
+        "auraTarget": "TargetPlayer"
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "RARE",
+        "artist": "Terese Nielsen",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c531d218-ff1c-4333-a19d-446d709b1e28.jpg?1783940833"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Dawntreader Elk
 {
     "name": "Dawntreader Elk",

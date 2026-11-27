@@ -2,6 +2,8 @@ package com.wingedsheep.engine.handlers.predicates
 
 import com.wingedsheep.engine.mechanics.targeting.TypeQualityProtection
 import com.wingedsheep.engine.mechanics.targeting.ColorProtection
+import com.wingedsheep.engine.mechanics.targeting.PlayerProtectionRules
+import com.wingedsheep.engine.mechanics.targeting.PlayerTargetRestriction
 import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -15,7 +17,9 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 import com.wingedsheep.sdk.scripting.targets.TargetOther
+import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 
 /**
@@ -59,6 +63,9 @@ object EnchantRestriction {
         hostId: EntityId,
         controllerId: EntityId
     ): Boolean {
+        if (hostId in state.turnOrder) {
+            return couldEnchantPlayer(state, predicateEvaluator, cardRegistry, auraId, auraCard, hostId, controllerId)
+        }
         if (!hostAllowsAura(state, projected, predicateEvaluator, auraId, hostId)) return false
         val gained = gainedRestrictionAdmits(state, projected, predicateEvaluator, auraId, hostId, controllerId)
         if (gained != null) {
@@ -73,6 +80,34 @@ object EnchantRestriction {
             }
         }
         return !hostProtectedFromAttachment(state, projected, auraId, auraCard, hostId)
+    }
+
+    /**
+     * Whether the Aura [auraId] could legally enchant the **player** [playerId] — an "Enchant player"
+     * / "Enchant opponent" Aura (a Curse) put onto the battlefield attached to a player (Curse of
+     * Misfortunes; one that fails stays where it is, CR 303.4i). The player must still be in the game, the printed requirement must be
+     * a player one ("opponent" is relative to [controllerId], the player who will control the Aura),
+     * its candidate restriction must hold, and the player mustn't have protection from the Aura
+     * (CR 702.16c). Hexproof and shroud don't matter: nothing is targeted.
+     */
+    fun couldEnchantPlayer(
+        state: GameState,
+        predicateEvaluator: PredicateEvaluator,
+        cardRegistry: CardRegistry,
+        auraId: EntityId,
+        auraCard: CardComponent,
+        playerId: EntityId,
+        controllerId: EntityId
+    ): Boolean {
+        if (playerId !in state.activePlayers) return false
+        val restriction = when (val requirement = cardRegistry.getCard(auraCard.cardDefinitionId)?.script?.auraTarget) {
+            is TargetPlayer -> requirement.restriction
+            is TargetOpponent -> if (playerId == controllerId) return false else requirement.restriction
+            else -> return false
+        }
+        if (PlayerProtectionRules.isProtectedFromSource(state, playerId, auraId, controllerId, predicateEvaluator)) return false
+        return PlayerTargetRestriction.isSatisfied(
+            state, restriction, playerId, controllerId, auraId, predicateEvaluator = predicateEvaluator)
     }
 
     /**

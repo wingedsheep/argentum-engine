@@ -41,6 +41,12 @@ class EnchantedPlayerCurseReadingAiTest : ScenarioTestBase() {
             CardIntentAnalyzer.analyze(card("Torment of Scarabs")).tags shouldContain IntentTag.DISCARD
         }
 
+        test("a Curse that tutors more Curses onto the enchanted player is a curse") {
+            withClue("'search for a Curse card, put it onto the battlefield attached to that player' piles harm on them") {
+                TargetPolarityAnalyzer.forSpell(card("Curse of Misfortunes")) shouldBe listOf(TargetPolarity.HARMFUL)
+            }
+        }
+
         test("a gift to the enchanted player is not read as aiming the Aura at our own side") {
             withClue("Tenuous Truce enchants an opponent though both players draw; BENEFICIAL would filter every cast") {
                 TargetPolarityAnalyzer.forSpell(card("Tenuous Truce")) shouldNotBe listOf(TargetPolarity.BENEFICIAL)
