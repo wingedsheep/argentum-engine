@@ -1528,14 +1528,15 @@ class PredicateEvaluator(
 
             is CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl -> {
                 val controllerId = context?.controllerId ?: return false
-                val entitySubtypes = projectedValues?.subtypes ?: card.typeLine.subtypes.map { it.value }.toSet()
-                // No shared type when no permanent you control shares any creature type with the candidate.
+                // No shared type when no permanent you control shares any creature type with the
+                // candidate. [sharesCreatureType] reads a face-down candidate as typeless and a
+                // Changeling card outside the battlefield as every creature type (CR 702.73a), so
+                // the `Not` form — "shares a creature type with a creature you control" (Descendants'
+                // Path) — sees a changeling in the library as sharing.
                 state.getBattlefield().none { otherId ->
                     projected.getController(otherId) == controllerId &&
                         matches(state, projected, otherId, predicate.filter, context) &&
-                        projected.getSubtypes(otherId).any { otherSubtype ->
-                            entitySubtypes.any { it.equals(otherSubtype, ignoreCase = true) }
-                        }
+                        sharesCreatureType(state, projected, entityId, card, projectedValues, projected.getSubtypes(otherId))
                 }
             }
 
