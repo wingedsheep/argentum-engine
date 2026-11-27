@@ -2727,7 +2727,7 @@ object TargetPolarityAnalyzer {
      * half): every point the host deals — in a fight or by its abilities — comes to nothing, so it
      * attacks, blocks and burns for no effect. A curse on the host, as "can't attack or block" is.
      */
-    private fun hostDamagePrevention(replacement: ReplacementEffect): Boolean {
+    internal fun hostDamagePrevention(replacement: ReplacementEffect): Boolean {
         if (replacement !is PreventDamage || replacement.amount != null || replacement.half || replacement.allBut != null) return false
         val event = replacement.appliesTo as? EventPattern.DamageEvent ?: return false
         return StatePredicate.IsAttachedToBySource in event.source.statePredicates && event.recipient == Recipient.Any &&
@@ -2769,6 +2769,7 @@ object TargetPolarityAnalyzer {
         // counter on this creature" — is the gift's price, paid a turn at a time after the bonus has
         // landed: a pump that fades, not a curse. With no gift beside it, the harm is the card.
         val prices = mutableListOf<TargetPolarity>()
+        val steals = ControlEnchantedPermanent in card.script.staticAbilities
         for (static in card.script.staticAbilities) {
             // "Enchanted creature attacks each combat if able" (Skin Invasion): its controller loses
             // the choice to hold it back, so it runs into the blockers of whoever cast it — a curse
@@ -2789,6 +2790,11 @@ object TargetPolarityAnalyzer {
             val reading = staticPolarity(static) ?: continue
             when {
                 static is GrantActivatedAbility -> consolations += reading
+                // "You control enchanted creature. Enchanted creature gets +2/+2 and has flying"
+                // (Spirit Away): the steal lands first, so every gift beside it goes to the creature
+                // once it is ours — a bonus on the theft, never a gift to the host's owner.
+                steals && static != ControlEnchantedPermanent && reading == TargetPolarity.BENEFICIAL ->
+                    consolations += reading
                 static is GrantTriggeredAbility && reading == TargetPolarity.HARMFUL -> prices += reading
                 else -> readings += reading
             }

@@ -139,8 +139,11 @@ internal object CardAsks {
             // Loyal General), "attach target Equipment you control to …" (Halvar, Weapons Vendor): a
             // free equip is fuelled only by the deck's own Equipment. One that attaches what it just
             // stole (Stolen Uniform, Thieving Skydiver) cashes in the opponent's instead.
-            if (EffectWalker.slots(script).any { relocatesOwnEquipment(it.effect) }) {
-                asks.merge(EQUIPMENT, DeckSynergy.FEEDERS_WANTED, ::minOf)
+            // "Attach to it any number of Auras on the battlefield" (Bruna, Light of Alabaster) runs
+            // through the same attach leaf, but its fuel is the deck's Auras.
+            for (slot in EffectWalker.slots(script).filter { relocatesOwnEquipment(it.effect) }) {
+                val fuel = if (CardIntentAnalyzer.attachesOnlyAuras(slot.effect)) AURAS else EQUIPMENT
+                asks.merge(fuel, DeckSynergy.FEEDERS_WANTED, ::minOf)
             }
             // An ability paid for by sacrificing a narrow kind of permanent — Auratog's
             // enchantment, Atog's artifact — is fuelled only by the deck's cards of that kind. A
