@@ -1,1 +1,1 @@
-- #PR The AI casts Curse of Misfortunes on an opponent: a Curse whose ability tutors more Curses onto the enchanted player reads as harmful to that player
+- #4902 The AI casts Curse of Misfortunes on an opponent: a Curse whose ability tutors more Curses onto the enchanted player reads as harmful to that player
