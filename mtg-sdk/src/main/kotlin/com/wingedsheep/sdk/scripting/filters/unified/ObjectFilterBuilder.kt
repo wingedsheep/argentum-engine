@@ -558,6 +558,15 @@ interface ObjectFilterBuilder<out Self> {
         withCardPredicate(CardPredicate.Not(CardPredicate.SharesNameWithYourCard(filter, excludeSelf = another)))
 
     /**
+     * Must share **at least one** creature type with a permanent the evaluating player controls
+     * matching [filter] (Descendants' Path: "a creature card that shares a creature type with a
+     * creature you control"). `Not` over [CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl];
+     * a Changeling card has every creature type in every zone (CR 702.73a).
+     */
+    fun sharingCreatureTypeWithPermanentYouControl(filter: GameObjectFilter) =
+        withCardPredicate(CardPredicate.Not(CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl(filter)))
+
+    /**
      * Must share **no** creature type with any permanent the evaluating player controls matching
      * [filter] (Radagast the Brown: "a creature card that doesn't share a creature type with a
      * creature you control").

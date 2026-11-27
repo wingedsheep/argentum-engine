@@ -7650,6 +7650,12 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   `.sharingColorWithPermanentYouControl`. Used by Radagast the Brown ("a creature card that doesn't share
   a creature type with a creature you control") with `filter = GameObjectFilter.Creature`. A candidate
   with no creature types of its own shares none, so it matches.
+- `.sharingCreatureTypeWithPermanentYouControl(filter)` — `Not` over
+  `CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl`: shares **at least one** creature type
+  with a permanent the evaluating player controls matching `filter`. Descendants' Path ("if it's a creature
+  card that shares a creature type with a creature you control") with `filter = GameObjectFilter.Creature`.
+  A Changeling card shares with any creature that has a creature type, in every zone (CR 702.73a); a
+  face-down candidate shares none.
 - `.notSharingLandTypeWithPermanentYouControl(filter)` —
   `CardPredicate.DoesNotShareLandTypeWithPermanentYouControl`: shares **no** (projected) basic land
   type with any permanent the evaluating player controls matching `filter`. Land-type sibling of
