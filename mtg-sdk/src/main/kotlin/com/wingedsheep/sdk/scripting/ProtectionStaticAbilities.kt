@@ -185,6 +185,7 @@ data class GrantHexproofFromToGroup(
             ProtectionScope.ActivatedAbilities, ProtectionScope.TriggeredAbilities,
             is ProtectionScope.ManaValueParity -> true
             is ProtectionScope.Subtype, is ProtectionScope.Supertype, is ProtectionScope.ChosenCardType,
+            is ProtectionScope.ChosenSubtype,
             is ProtectionScope.ChosenCardName, ProtectionScope.Everything, ProtectionScope.EachOpponent,
             is ProtectionScope.ManaValueOtherThan -> false
         }
@@ -233,7 +234,7 @@ data class GrantProtectionFromToGroup(
         fun isSupported(scope: ProtectionScope): Boolean = when (scope) {
             is ProtectionScope.Colors, ProtectionScope.Multicolored,
             is ProtectionScope.Subtype, is ProtectionScope.Supertype,
-            ProtectionScope.EachOpponent, is ProtectionScope.ChosenCardType,
+            ProtectionScope.EachOpponent, is ProtectionScope.ChosenCardType, is ProtectionScope.ChosenSubtype,
             ProtectionScope.Spells, ProtectionScope.PermanentsCastThisTurn, ProtectionScope.RingBearers,
             ProtectionScope.ActivatedAbilities, ProtectionScope.TriggeredAbilities,
             is ProtectionScope.ManaValueParity, is ProtectionScope.ManaValueOtherThan -> true
@@ -541,6 +542,7 @@ data class GrantProtectionToController(
             ProtectionScope.Monocolored -> "monocolored"
             is ProtectionScope.CardType -> s.cardType.lowercase() + "s" + (s.controller?.let { " your opponents control" } ?: "")
             is ProtectionScope.ChosenCardType -> "the chosen card type"
+            is ProtectionScope.ChosenSubtype -> s.cardType?.let { it.lowercase() + "s of the chosen type" } ?: "the chosen type"
             is ProtectionScope.ChosenCardName -> "the chosen card name"
             is ProtectionScope.Subtype -> s.subtype + "s"
             is ProtectionScope.Supertype -> s.supertype.lowercase() + " permanents"

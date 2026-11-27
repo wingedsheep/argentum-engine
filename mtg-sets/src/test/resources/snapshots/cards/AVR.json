@@ -5210,6 +5210,44 @@
     ]
 }
 
+// Riders of Gavony
+{
+    "name": "Riders of Gavony",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Vigilance\nAs this creature enters, choose a creature type.\nHuman creatures you control have protection from creatures of the chosen type.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantProtectionFromToGroup",
+                "scope": "ProtectionScope.ChosenSubtype",
+                "filter": {
+                    "baseFilter": "creature Human ctrl:you"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CREATURE_TYPE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "RARE",
+        "artist": "Volkan Baǵa",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bcc1647b-9271-4426-9938-7eb620ad0769.jpg?1783940731"
+    }
+}
+
 // Righteous Blow
 {
     "name": "Righteous Blow",

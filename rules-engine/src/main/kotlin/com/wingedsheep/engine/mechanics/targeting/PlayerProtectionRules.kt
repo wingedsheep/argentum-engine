@@ -162,7 +162,7 @@ object PlayerProtectionRules {
             ProtectionScope.ActivatedAbilities, ProtectionScope.TriggeredAbilities -> false
             // Bound to a granting permanent's choice — resolved by the caller; unbound it protects
             // from nothing (a one-shot grant has no permanent to read the choice from).
-            is ProtectionScope.ChosenCardType -> false
+            is ProtectionScope.ChosenCardType, is ProtectionScope.ChosenSubtype -> false
             // The name the granting permanent chose (Runed Halo). Matches the source's current
             // name — projected on the battlefield (a copy or name-changing effect), printed
             // elsewhere — and never a face-down source, which has no name (CR 708.2a).

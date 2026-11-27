@@ -112,6 +112,31 @@ sealed interface ProtectionScope {
     data class ChosenCardType(val slot: ChoiceSlot = ChoiceSlot.CARD_TYPE) : ProtectionScope
 
     /**
+     * Protection from the subtype the **granting permanent chose as it entered**, narrowed to
+     * [cardType] — "As Riders of Gavony enters, choose a creature type. Human creatures you control
+     * have protection from creatures of the chosen type." The subtype twin of [ChosenCardType]:
+     * late-bound, the engine reads the source's durable choice under [slot] wherever the
+     * protection is applied, so it behaves exactly like [Subtype] of that subtype and [cardType]
+     * (a Changeling creature has every creature type, so it matches), and protects from nothing
+     * until a subtype is chosen. Granted statics only — `GrantProtectionFromToGroup` and
+     * `GrantProtectionToController`; the printed keywords and one-shot grants reject it.
+     *
+     * Its own type rather than an axis on [ChosenCardType]: that one resolves to a [CardType], this
+     * to a [Subtype], and the two choices live under different slots with different vocabularies.
+     *
+     * @property slot The source's cast-choices slot holding the chosen subtype;
+     *   `EntersWithChoice(ChoiceType.CREATURE_TYPE)` writes [ChoiceSlot.CREATURE_TYPE].
+     * @property cardType The card type the matching object must also have — "creatures of the
+     *   chosen type" is `"Creature"`; null matches the subtype alone.
+     */
+    @SerialName("ProtectionScope.ChosenSubtype")
+    @Serializable
+    data class ChosenSubtype(
+        val slot: ChoiceSlot = ChoiceSlot.CREATURE_TYPE,
+        val cardType: String? = "Creature"
+    ) : ProtectionScope
+
+    /**
      * Protection from the card name the **granting permanent chose as it entered** — "As Runed
      * Halo enters, choose a card name. You have protection from the chosen card name." The name
      * twin of [ChosenCardType]: late-bound, the engine reads the source's durable choice under

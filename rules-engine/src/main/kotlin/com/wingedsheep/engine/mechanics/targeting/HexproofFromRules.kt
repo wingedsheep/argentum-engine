@@ -53,6 +53,7 @@ object HexproofFromRules {
         is ProtectionScope.Subtype,
         is ProtectionScope.Supertype,
         is ProtectionScope.ChosenCardType,
+        is ProtectionScope.ChosenSubtype,
         is ProtectionScope.ChosenCardName,
         is ProtectionScope.ManaValueOtherThan,
         ProtectionScope.Everything,

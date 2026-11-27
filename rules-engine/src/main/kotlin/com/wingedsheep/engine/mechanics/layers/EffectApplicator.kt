@@ -402,10 +402,10 @@ internal class EffectApplicator(
                 is Modification.GrantProtectionFrom -> {
                     addOrdinaryProtections(values, mod.keywords)
                 }
-                is Modification.GrantProtectionFromChosenCardType -> {
+                is Modification.GrantProtectionFromChosen -> {
                     com.wingedsheep.engine.mechanics.targeting.ProtectionKeywords
-                        .chosenCardTypeKeyword(state.getEntity(effect.sourceId), mod.slot)
-                        ?.let { values.keywords.add(it) }
+                        .resolveChosen(mod.scope, state.getEntity(effect.sourceId))
+                        ?.let { addOrdinaryProtections(values, com.wingedsheep.engine.mechanics.targeting.ProtectionKeywords.keywordsFor(it)) }
                 }
                 is Modification.GrantProtectionFromControlledColors -> {
                     // Protection from the colors of permanents the source's controller controls

@@ -1565,6 +1565,7 @@ Families:
 - `ProtectionScope.CardType(cardType: String, controller: ControllerPredicate?)` — Protection from a card type — "from creatures".
 - `ProtectionScope.ChosenCardName(slot: ChoiceSlot)` — Protection from the card name the **granting permanent chose as it entered** — "As Runed Halo enters, choose a card name.
 - `ProtectionScope.ChosenCardType(slot: ChoiceSlot)` — Protection from the card type the **granting permanent chose as it entered** — "As Serra's Emissary enters, choose a card type.
+- `ProtectionScope.ChosenSubtype(slot: ChoiceSlot, cardType: String?)` — Protection from the subtype the **granting permanent chose as it entered**, narrowed to cardType — "As Riders of Gavony enters, choose a creature type.
 - `ProtectionScope.Color(color: Color)` — Protection / hexproof from a single color.
 - `ProtectionScope.Colors(colors: Set<Color>)` — Protection from multiple colors — "from white and from blue".
 - `ProtectionScope.EachOpponent` — Protection from each of the controller's opponents (Rule 702.16e).
