@@ -1,0 +1,1 @@
+- #4884 The AI's draft heuristic now prices a counterspell that can only target the turn's Nth spell (Second Guess) as the narrow answer it is, instead of as a full Counterspell

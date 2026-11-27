@@ -1287,6 +1287,13 @@ interface ObjectFilterBuilder<out Self> {
     fun cast(fromZone: Zone? = null) = withStatePredicate(StatePredicate.WasCast(fromZone))
 
     /**
+     * Must be a spell on the stack that was the [n]th spell cast this turn, counting every player's
+     * spells — Second Guess's "target spell that's the second spell cast this turn" is
+     * `TargetFilter.SpellOnStack.nthSpellCastThisTurn(2)`. See [StatePredicate.WasCast].
+     */
+    fun nthSpellCastThisTurn(n: Int) = withStatePredicate(StatePredicate.WasCast(nthSpellThisTurn = n))
+
+    /**
      * Must be a spell on the stack that was *not* cast — not from [fromZone] when set, not at all
      * (a copy) when null. Backs Wash Away's "counter target spell that wasn't cast from its
      * owner's hand" (`Zone.HAND`) and Errant, Street Artist's "copy target spell you control that

@@ -103,6 +103,14 @@ data class SpellOnStackComponent(
     val additionalCostPayXLifeAmount: Int? = null,  // For pay-X-life additional costs (e.g., Vicious Rivalry); non-null (incl. 0) marks the spell and is coalesced into xValue at resolution
     val castFromZone: Zone? = null,  // Zone the spell was cast from (e.g., HAND for normal casting)
     /**
+     * This spell's position in the turn's cast order, counting every player's spells (1-indexed —
+     * the storm count plus one), stamped as the cast is recorded (CR 601.2i). Null for a copy that
+     * wasn't cast (CR 707.10). A spell can't outlive the turn it was cast in on the stack (a step
+     * ends only once the stack is empty), so the number never goes stale. Read by
+     * `StatePredicate.WasCast(nthSpellThisTurn)` — Second Guess.
+     */
+    val castOrdinalThisTurn: Int? = null,
+    /**
      * Which alternative casting cost paid for this spell (CR 118.9), or null for a normal cast.
      * The individual `was*` flags below drive *rules* behaviour (warp exiles, evoke sacrifices,
      * cleave swaps the effect); this records the player's declared choice as such so the client

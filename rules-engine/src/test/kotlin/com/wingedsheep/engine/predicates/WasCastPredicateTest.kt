@@ -18,7 +18,8 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
  * `SpellOnStackComponent.castFromZone` the engine stamps at cast time. A copy put onto the stack
  * isn't cast (CR 707.10) and carries no cast origin. Pinned here: the zone-free reading matches
  * every cast spell and no copy, the zone reading matches only that zone and `Not` gives the
- * "wasn't cast" phrasings (Errant, Street Artist; Wash Away).
+ * "wasn't cast" phrasings (Errant, Street Artist; Wash Away). `nthSpellThisTurn` narrows it to the
+ * turn's cast order stamped as `castOrdinalThisTurn` (Second Guess), which a copy never has.
  */
 class WasCastPredicateTest : FunSpec({
 
@@ -60,5 +61,25 @@ class WasCastPredicateTest : FunSpec({
     test("\"wasn't cast from a hand\" includes the copy, which wasn't cast at all") {
         matching(StatePredicate.Not(StatePredicate.WasCast(Zone.HAND)))
             .shouldContainExactlyInAnyOrder(fromGraveyard, copy)
+    }
+
+    test("nthSpellThisTurn matches only the spell stamped with that position in the turn's cast order") {
+        val first = EntityId.generate()
+        val second = EntityId.generate()
+        val copyOfSecond = EntityId.generate()
+        val ordered = listOf(first to 1, second to 2, copyOfSecond to null)
+            .fold(GameState().withEntity(player, ComponentContainer())) { s, (id, ordinal) ->
+                val zone = if (ordinal == null) null else Zone.HAND
+                s.withEntity(
+                    id,
+                    ComponentContainer().with(
+                        SpellOnStackComponent(casterId = player, castFromZone = zone, castOrdinalThisTurn = ordinal)
+                    ),
+                ).addToZone(ZoneKey(player, Zone.STACK), id)
+            }
+        val filter = GameObjectFilter.Any.withStatePredicate(StatePredicate.WasCast(nthSpellThisTurn = 2))
+        listOf(first, second, copyOfSecond)
+            .filter { evaluator.matches(ordered, ordered.projectedState, it, filter, PredicateContext(controllerId = player)) }
+            .shouldContainExactlyInAnyOrder(second)
     }
 })

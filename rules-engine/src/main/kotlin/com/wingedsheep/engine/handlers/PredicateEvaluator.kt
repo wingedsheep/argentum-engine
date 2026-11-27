@@ -2803,8 +2803,10 @@ class PredicateEvaluator(
             // SpellOnStackComponent.castFromZone, which a copy put onto the stack never has
             // (Wash Away's "wasn't cast from its owner's hand", Errant's "wasn't cast").
             is StatePredicate.WasCast -> {
-                val castFrom = container.get<SpellOnStackComponent>()?.castFromZone
-                castFrom != null && (predicate.fromZone == null || castFrom == predicate.fromZone)
+                val spell = container.get<SpellOnStackComponent>()
+                val castFrom = spell?.castFromZone
+                castFrom != null && (predicate.fromZone == null || castFrom == predicate.fromZone) &&
+                    (predicate.nthSpellThisTurn == null || spell.castOrdinalThisTurn == predicate.nthSpellThisTurn)
             }
 
             // "With a single target" — counts the chosen targets, legal or not (see the predicate).
