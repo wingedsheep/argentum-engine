@@ -176,6 +176,60 @@
     ]
 }
 
+// Alchemist's Refuge
+{
+    "name": "Alchemist's Refuge",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{G}{U}, {T}: You may cast spells this turn as though they had flash.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Alchemist's Refuge:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Alchemist's Refuge:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{G}{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": "GrantFlashToSpells",
+                "descriptionOverride": "{G}{U}, {T}: You may cast spells this turn as though they had flash."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "225",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "Persecuted alchemists fled deep into Kessig's wilds, seeking solitude to continue their ghoulish craft.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c767a897-52e3-4401-8104-930157bb2b02.jpg?1783940651"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Amass the Components
 {
     "name": "Amass the Components",
@@ -8880,6 +8934,57 @@
     ]
 }
 
+// Otherworld Atlas
+{
+    "name": "Otherworld Atlas",
+    "manaCost": "{4}",
+    "typeLine": "Artifact — Book",
+    "oracleText": "{T}: Put a charge counter on this artifact.\n{T}: Each player draws a card for each charge counter on this artifact.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Otherworld Atlas:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "CHARGE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Put a charge counter on Otherworld Atlas"
+            },
+            {
+                "id": "Otherworld Atlas:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "CHARGE"
+                        }
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "Each"
+                    }
+                },
+                "descriptionOverride": "Each player draws a card per charge counter"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "219",
+        "rarity": "RARE",
+        "artist": "Sam Wolfe Connelly",
+        "flavorText": "\"Any fool can open it. But it takes a genius to decipher the blank pages.\"\n—Kordel the Cryptic",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/46e4aa67-4643-42ff-8172-200498686494.jpg?1783940651"
+    },
+    "colorIdentityOverride": []
+}
+
 // Outwit
 {
     "name": "Outwit",
@@ -10344,6 +10449,121 @@
         "artist": "Cliff Childs",
         "flavorText": "Words to bless the eye that reads them, telling of a future beyond the reach of fear.",
         "imageUri": "https://cards.scryfall.io/normal/front/8/7/871e6e2a-7e45-446b-b964-94377eb6ca92.jpg?1783940650"
+    },
+    "colorIdentityOverride": []
+}
+
+// Scroll of Griselbrand
+{
+    "name": "Scroll of Griselbrand",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "{1}, Sacrifice this artifact: Target opponent discards a card. If you control a Demon, that player loses 3 life.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Scroll of Griselbrand:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "permanent Demon"
+                                }
+                            },
+                            "then": {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{1}, Sacrifice this artifact: Target opponent discards a card. If you control a Demon, that player loses 3 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "221",
+        "artist": "Cliff Childs",
+        "flavorText": "Words no eyes should see, telling of things no sane mind could fathom.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/2263ceaf-49d2-40fe-86b8-146271b11e46.jpg?1783940650",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "Whether you control a Demon is checked when the ability resolves."
+            }
+        ]
     },
     "colorIdentityOverride": []
 }
@@ -12569,6 +12789,79 @@
     ]
 }
 
+// Tormentor's Trident
+{
+    "name": "Tormentor's Trident",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +3/+0 and attacks each combat if able.\nEquip {3} ({3}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tormentor's Trident:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 0
+            },
+            {
+                "type": "MustAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "UNCOMMON",
+        "artist": "Anthony Palumbo",
+        "flavorText": "To a demon there is no such thing as restraint.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/9543d454-27d6-42ba-aad8-54811d180cfb.jpg?1783940651",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "You still decide which player or planeswalker the equipped creature attacks."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "If, during your declare attackers step, the equipped creature is tapped, is affected by a spell or ability that says it can't attack, or hasn't been under your control continuously since the turn began (and doesn't have haste), then it doesn't attack. If there's a cost associated with having a creature attack, you're not forced to pay that cost, so it doesn't have to attack in that case either."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Treacherous Pit-Dweller
 {
     "name": "Treacherous Pit-Dweller",
@@ -13476,6 +13769,58 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Vessel of Endless Rest
+{
+    "name": "Vessel of Endless Rest",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters, put target card from a graveyard on the bottom of its owner's library.\n{T}: Add one mana of any color.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vessel of Endless Rest:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Library",
+                    "placement": "Bottom"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {},
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Vessel of Endless Rest:2",
+                "cost": "CostTap",
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "224",
+        "rarity": "UNCOMMON",
+        "artist": "John Avon",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ec733373-3f68-47ad-ac35-6f39092f1e26.jpg?1783940650"
+    },
+    "colorIdentityOverride": []
 }
 
 // Vexing Devil
