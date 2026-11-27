@@ -1449,6 +1449,33 @@ object SetArchetypes {
                     "Play cheap creatures with value on entering or dying, then sacrifice them to emerge Eldrazi for a fraction of their cost. A ramp-flavoured value deck that cashes every body into a bigger threat."),
             )
         ),
+        "AVR" to SetSynergies(
+            setCode = "AVR",
+            setName = "Avacyn Restored",
+            archetypes = listOf(
+                Archetype("Fliers", listOf(Color.WHITE, Color.BLUE),
+                    "Take to the air with Seraph of Dawn, Voice of the Provinces, Moonlight Geist and Scrapskin Drake, and pair Wingcrafter with a ground body to give it flying. A tempo deck that races in the sky while Crippling Chill and Vanishment clear blockers."),
+                Archetype("Control", listOf(Color.BLUE, Color.BLACK),
+                    "Hold the ground with Polluted Dead and Fettergeist, answer threats with Death Wind, Barter in Blood and Mist Raven, and win with fliers once the opponent runs out of creatures. A patient control deck that trades one for one and wins the long game."),
+                Archetype("Aggro", listOf(Color.BLACK, Color.RED),
+                    "Attack early with Heirs of Stromkirk, Bloodflow Connoisseur and Riot Ringleader, and clear blockers with Pillar of Flame, Bone Splinters and Death Wind. A fast deck that keeps the opponent on the back foot until Falkenrath Exterminator takes over."),
+                Archetype("Wolfir Soulbond", listOf(Color.RED, Color.GREEN),
+                    "Pair Lightning Mauler and Hanweir Lancer with the biggest green bodies, like Wolfir Silverheart and Pathbreaker Wurm, so every attacker hits harder and arrives early. A stompy deck that wins combat on the ground."),
+                Archetype("Soulbond Counters", listOf(Color.GREEN, Color.WHITE),
+                    "Pair creatures with Trusted Forcemage, Nearheath Pilgrim and Spectral Gateguards, grow the team with Timberland Guide and Cathars' Crusade, and outsize every blocker. A go-wide midrange deck where each new creature strengthens another."),
+                Archetype("Sacrifice Drain", listOf(Color.WHITE, Color.BLACK),
+                    "Trade creatures freely while Blood Artist drains the opponent for each death, bring them back with undying from Butcher Ghoul and Evernight Shade or with Unhallowed Pact, and gain life off Seraph Sanctuary. A grindy deck that wins races by draining."),
+                Archetype("Miracle Spells", listOf(Color.BLUE, Color.RED),
+                    "Draw extra cards with Tandem Lookout and Mad Prophet so miracles like Thunderous Wrath and Devastation Tide come off the top on the opponent's turn, and copy the best instant with Dual Casting. A tempo deck that wins with spells as much as creatures."),
+                Archetype("Undying Midrange", listOf(Color.BLACK, Color.GREEN),
+                    "Play undying creatures like Howlgeist, Butcher Ghoul and Evernight Shade that come back stronger, hold the ground with Gloomwidow, and rebuy threats with Grave Exchange. A grindy midrange deck that gets two uses out of every creature."),
+                Archetype("Humans Aggro", listOf(Color.RED, Color.WHITE),
+                    "Curve out with Humans like Thraben Valiant, Fervent Cathar and Kruin Striker, grow the team with Banners Raised and Thatcher Revolt, and finish with Kessig Malcontents counting your Humans. A fast tribal deck that ends the game before the angels arrive.",
+                    creatureTypes = listOf("Human")),
+                Archetype("Soulbond Tempo", listOf(Color.GREEN, Color.BLUE),
+                    "Pair Galvanic Alchemist, Elgaud Shieldmate and Wingcrafter with green beef like Wolfir Silverheart and Pathbreaker Wurm, and lock down blockers with Geist Trappers and Crippling Chill. A value deck whose pairs are bigger than anything the opponent plays."),
+            )
+        ),
         "M13" to SetSynergies(
             setCode = "M13",
             setName = "Magic 2013",
