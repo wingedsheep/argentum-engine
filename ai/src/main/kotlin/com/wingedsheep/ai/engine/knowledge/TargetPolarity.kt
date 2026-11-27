@@ -66,6 +66,7 @@ import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GrantCantBeBlockedByChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.RemoveFromCombatEffect
 import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
 import com.wingedsheep.sdk.scripting.effects.ExchangeLifeTotalsEffect
@@ -1451,6 +1452,10 @@ object TargetPolarityAnalyzer {
                     source.zone == Zone.HAND || source.zone == Zone.GRAVEYARD || source.zone == Zone.BATTLEFIELD
                 }
                 is CardSource.ControlledPermanents -> source.player
+                // "Exile all nonland permanents target player controls" (Sudden Disappearance): the
+                // battlefield matched for one player is that player's board to lose — removed for
+                // good, or only until the next end step, it is their tempo spent either way.
+                is CardSource.BattlefieldMatching -> source.player
                 // "Search target player's graveyard, hand, and library for all cards with that name
                 // and exile them" (Cranial Extraction, Dispossess): the hand and graveyard it reaches
                 // are that player's to lose.
@@ -2119,6 +2124,12 @@ object TargetPolarityAnalyzer {
             // teammates. Neither the one-blocker nor the all-blockers form fixes a target side;
             // keep both sides available to simulation, including beside a pump (Emergent Growth).
             is MustBeBlockedEffect -> leaf.target to TargetPolarity.FLEXIBLE
+            // "Remove target attacking or blocking creature from combat" (Hollowhenge Spirit,
+            // Reconnaissance, Gustcloak Sentinel's kin): an opposing attacker that deals no damage,
+            // or a blocker pulled off our attacker — but also our own blocked attacker or doomed
+            // blocker saved from the fight. Both sides are real plays, and which one wins is the
+            // board's question, so the slot stays open for the simulation.
+            is RemoveFromCombatEffect -> leaf.target to TargetPolarity.FLEXIBLE
             // "Change the text of target spell or permanent by replacing all instances of one color
             // word with another" (Sleight of Mind, Trait Doctoring, Crystal Spray's basic land type):
             // its worth is the words the target carries — our creature's "protection from white"
@@ -2810,6 +2821,7 @@ object TargetPolarityAnalyzer {
         for (ability in card.script.triggeredAbilities) readings += hostTapTriggerReadings(ability)
         for (ability in card.script.triggeredAbilities) readings += hostAttackCopyReadings(ability)
         for (ability in card.script.triggeredAbilities) readings += hostCopySourceReadings(ability)
+        for (ability in card.script.triggeredAbilities) readings += hostTypeReferenceReadings(ability)
         for (ability in card.script.triggeredAbilities) readings += hostCombatTriggerReadings(ability, definitions)
         // "{1}{G}{U}, Return this Aura to its owner's hand: Put two +1/+1 counters on enchanted
         // creature" (Krasis Incubation): an activation whose cost takes the attachment off the
@@ -3362,6 +3374,25 @@ object TargetPolarityAnalyzer {
                     (leaf.target in HOST_TARGETS || leaf.target == EffectTarget.AttachedToTriggeringPermanent)
             }
         }
+
+    /**
+     * An attachment's trigger that only *reads* its host's creature types to pick cards for its
+     * controller — "at the beginning of your upkeep, you may look at the top five cards of your
+     * library … put a creature card that shares a creature type with enchanted creature from among
+     * them onto the battlefield" (Call to the Kindred). The host is left untouched; it names the
+     * tribe the controller's own library is built around, which their own creature carries, so the
+     * Aura belongs on our side: [TargetPolarity.BENEFICIAL].
+     */
+    private fun hostTypeReferenceReadings(ability: TriggeredAbility): List<TargetPolarity> =
+        EffectWalker.payoffLeaves(ability.effect).mapNotNull { leaf ->
+            TargetPolarity.BENEFICIAL.takeIf {
+                leaf is SelectFromCollectionEffect && sharesTypeWithHost(leaf.filter)
+            }
+        }
+
+    private fun sharesTypeWithHost(filter: GameObjectFilter): Boolean =
+        filter.cardPredicates.any { it is CardPredicate.SharesCreatureTypeWith && it.entity in HOST_TARGETS } ||
+            filter.anyOf.any(::sharesTypeWithHost)
 
     /**
      * What an attachment's "whenever enchanted creature attacks, you may create a token that's a

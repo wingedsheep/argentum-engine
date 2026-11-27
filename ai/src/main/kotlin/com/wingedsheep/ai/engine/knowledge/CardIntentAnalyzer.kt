@@ -2288,6 +2288,16 @@ object CardIntentAnalyzer {
                 leaf is AddCountersToCollectionEffect && leaf.collectionName in groups &&
                     TargetPolarityAnalyzer.counterPolarity(leaf.counterType) == TargetPolarity.HARMFUL &&
                     leaf.counterType.ptDelta != null -> leaf.collectionName
+                // "Exile all nonland permanents target player controls. Return the exiled cards at
+                // the beginning of the next end step" (Sudden Disappearance): one player's board
+                // taken away for the turn — removal that comes back, as the single-creature
+                // [TEMPORARY_EXILE] reads, never the wrath or the exile for good. A pile that can
+                // hold our own creatures (Planar Guide) is a blink of ours instead.
+                leaf is MoveCollectionEffect && leaf.from in groups && leaf.from !in ours &&
+                    (leaf.destination as? CardDestination.ToZone)?.zone == Zone.EXILE -> {
+                    reading = DestroyAllReading(reading.tags + IntentTag.REMOVAL, reading.hitsOwnSide)
+                    continue
+                }
                 else -> continue
             }
             val exile = if (exiles) setOf(IntentTag.EXILE_REMOVAL) else emptySet()
@@ -2380,6 +2390,9 @@ object CardIntentAnalyzer {
                 filter.controllerPredicate == ControllerPredicate.ControlledByTargetPlayer ||
                 filter.controllerPredicate is ControllerPredicate.ControlledByReferencedPlayer ||
                 (player == Player.You && eachPlayer != null && !includesYou(eachPlayer)) ||
+                // "… target player controls" spelled as the gather's player (Sudden Disappearance),
+                // the same one-sided aim as the target-player controller predicate above.
+                player == Player.TargetPlayer ||
                 player in OPPONENT_PLAYERS
             if (!opponentsOnly && SynergyAxes.couldBeCreature(filter)) ours += leaf.storeAs
         }
@@ -2627,6 +2640,22 @@ object CardIntentAnalyzer {
                 (it.destination as? CardDestination.ToZone)?.zone == Zone.GRAVEYARD
         }
         return if (binned) setOf(IntentTag.MILL) else emptySet()
+    }
+
+    /**
+     * "Each player mills five cards" (Chill of Foreboding), "each opponent mills two": a fixed mill
+     * inside a loop over players whose `You` is the player visited ([players]). It reaches every
+     * opponent's library — [IntentTag.MILL], the same claim [canMillOpponent] reads off a
+     * target-player mill — whatever it also bins of ours as fuel.
+     */
+    private fun eachPlayerMillTags(body: Effect, players: Player): Set<IntentTag> {
+        if (players !in SYMMETRIC_PLAYERS && players !in OPPONENT_PLAYERS) return emptySet()
+        val mills = readingLeaves(body).any { leaf ->
+            val source = (leaf as? GatherCardsEffect)?.source as? CardSource.TopOfLibrary
+            source != null && source.isMill && source.player == Player.You &&
+                ((source.count as? DynamicAmount.Fixed)?.amount ?: 1) > 0
+        }
+        return if (mills) setOf(IntentTag.MILL) else emptySet()
     }
 
     /** The collections gathered from the library top of a player [whose] accepts, and every one split or narrowed from them. */
@@ -3239,7 +3268,8 @@ object CardIntentAnalyzer {
                     handDisruptionTags(effect.body, eachPlayer = space.players) +
                     discardPunisherTags(effect.body, eachPlayer = space.players) +
                     graveyardExileTags(effect.body, eachPlayer = space.players) +
-                    revealUntilMillTags(effect.body, eachPlayer = space.players)
+                    revealUntilMillTags(effect.body, eachPlayer = space.players) +
+                    eachPlayerMillTags(effect.body, space.players)
                 // "Untap all lands you control" (Emrakul, the Exigent Doom's cast trigger): every
                 // land of ours taps for mana again, the same payoff as the mana it makes.
                 space is IterationSpace.Group && untapsOurLands(space.filter, effect.body) -> inner + IntentTag.RAMP

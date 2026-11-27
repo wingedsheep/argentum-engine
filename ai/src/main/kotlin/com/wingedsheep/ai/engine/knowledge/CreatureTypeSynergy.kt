@@ -84,6 +84,19 @@ internal object CreatureTypeSynergy {
      */
     fun rewardsChosenTribe(card: CardDefinition): Boolean = scripts(card).any { script ->
         script.staticAbilities.flatMap(::unwrap).any(::helpsChosenType)
+    } || asksForASharedType(card)
+
+    /**
+     * A filter that wants "a creature … that shares a creature type with" another object — Call to
+     * the Kindred's "creature card that shares a creature type with enchanted creature", Coat of
+     * Arms, Pyre of Heroes: no type is printed, but the card pays off creatures of one type beside
+     * each other, so like a chosen-type payoff it rewards whichever tribe the deck has most of.
+     * Read with [collect]'s exclusions (under a `Not`, or scoped to an opponent's objects).
+     */
+    private fun asksForASharedType(card: CardDefinition): Boolean {
+        val names = mutableSetOf<String>()
+        for (script in scripts(card)) collect(CardSerialization.json.encodeToJsonElement(CardScript.serializer(), script), names)
+        return SHARED_TYPE in names
     }
 
     private fun helpsChosenType(ability: StaticAbility): Boolean {
@@ -156,6 +169,8 @@ internal object CreatureTypeSynergy {
                     "HasSubtype", "EnchantedCreatureHasSubtype" -> element.string("subtype")?.let(out::add)
                     "HasAnyOfSubtypes" -> (element["subtypes"] as? JsonArray)
                         ?.mapNotNullTo(out) { (it as? JsonPrimitive)?.contentOrNull }
+                    // Not a creature type, so [rewarded] drops it; [asksForASharedType] reads it.
+                    "SharesCreatureTypeWith" -> out += SHARED_TYPE
                 }
                 element.values.forEach { collect(it, out) }
             }
@@ -168,6 +183,9 @@ internal object CreatureTypeSynergy {
     private fun JsonObject.int(key: String): Int? = string(key)?.toIntOrNull()
 
     private val CREATURE_TYPES: Set<String> = Subtype.ALL_CREATURE_TYPES.toSet()
+
+    /** [collect]'s marker for a "shares a creature type with" predicate. */
+    private const val SHARED_TYPE = "<shares a creature type>"
 
     private val PLAYER_SCOPED_COUNTS = setOf("Count", "AggregateBattlefield")
 
