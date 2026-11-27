@@ -92,7 +92,7 @@ class PlayerProtectionDamageScenarioTest : ScenarioTestBase() {
 
                 // The defending player carries The One Ring's protection from everything.
                 game.state = game.state.updateEntity(game.player1Id) { c ->
-                    c.with(PlayerProtectionComponent(scopes = listOf(ProtectionScope.Everything)))
+                    c.with(PlayerProtectionComponent.of(listOf(ProtectionScope.Everything)))
                 }
 
                 val defenderBefore = game.getLifeTotal(1)

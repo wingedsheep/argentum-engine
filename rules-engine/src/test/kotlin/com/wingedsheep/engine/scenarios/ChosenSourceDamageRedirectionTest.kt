@@ -78,8 +78,8 @@ class ChosenSourceDamageRedirectionTest : ScenarioTestBase() {
             val game = combatBoard()
             install(game)
             game.state = game.state.updateEntity(game.player1Id) { it.with(
-                com.wingedsheep.engine.state.components.player.PlayerProtectionComponent(
-                    scopes = listOf(com.wingedsheep.sdk.scripting.ProtectionScope.Everything))) }
+                com.wingedsheep.engine.state.components.player.PlayerProtectionComponent.of(
+                    listOf(com.wingedsheep.sdk.scripting.ProtectionScope.Everything))) }
             game.passUntilPhase(Phase.COMBAT, Step.END_COMBAT)
             game.getLifeTotal(1) shouldBe 20
             game.findPermanent("Grizzly Bears").shouldNotBeNull()

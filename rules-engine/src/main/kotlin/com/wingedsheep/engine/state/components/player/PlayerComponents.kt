@@ -926,7 +926,7 @@ data class PlayerHexproofFromComponent(
 }
 
 /**
- * Marks a player as having protection from each quality in [scopes] (CR 702.16).
+ * Marks a player as having protection from each quality in [grants] (CR 702.16).
  *
  * Player-level protection (The One Ring's "you gain protection from everything until
  * your next turn"). Unlike hexproof/shroud, protection from a quality also prevents
@@ -934,19 +934,39 @@ data class PlayerHexproofFromComponent(
  * For a player only the **D**amage and **T**argeting parts of DEBT apply — players can't
  * be blocked, enchanted (outside Auras), or equipped in the common case.
  *
- * Multiple grants stack additively — each grant appends to [scopes]; the player is
- * protected from a source if it matches **any** scope. The whole component is removed in
- * one shot when the duration elapses ([removeOn]).
+ * Multiple grants stack additively — each grant appends to [grants]; the player is
+ * protected from a source if it matches **any** scope. Each grant keeps its own duration,
+ * so an end-of-turn grant layered on an until-your-next-turn one expires alone; the
+ * component goes once its last grant does.
  *
- * @property scopes The qualities the player is protected from (e.g.
- *   [com.wingedsheep.sdk.scripting.ProtectionScope.Everything]).
- * @property removeOn When this component is removed.
+ * @property grants Each quality the player is protected from (e.g.
+ *   [com.wingedsheep.sdk.scripting.ProtectionScope.Everything]) with when it ends.
  */
 @Serializable
 data class PlayerProtectionComponent(
-    val scopes: List<com.wingedsheep.sdk.scripting.ProtectionScope> = emptyList(),
-    val removeOn: PlayerEffectRemoval = PlayerEffectRemoval.UntilYourNextTurn
-) : Component
+    val grants: List<Grant> = emptyList()
+) : Component {
+    @Serializable
+    data class Grant(
+        val scope: com.wingedsheep.sdk.scripting.ProtectionScope,
+        val removeOn: PlayerEffectRemoval = PlayerEffectRemoval.UntilYourNextTurn
+    )
+
+    /** Every quality the player is currently protected from. */
+    val scopes: List<com.wingedsheep.sdk.scripting.ProtectionScope> get() = grants.map { it.scope }
+
+    /** This component with the grants that end at [removal] dropped, or null when none remain. */
+    fun expire(removal: PlayerEffectRemoval): PlayerProtectionComponent? =
+        grants.filter { it.removeOn != removal }.takeIf { it.isNotEmpty() }?.let(::PlayerProtectionComponent)
+
+    companion object {
+        /** Grants sharing one duration. */
+        fun of(
+            scopes: List<com.wingedsheep.sdk.scripting.ProtectionScope>,
+            removeOn: PlayerEffectRemoval = PlayerEffectRemoval.UntilYourNextTurn
+        ): PlayerProtectionComponent = PlayerProtectionComponent(scopes.map { Grant(it, removeOn) })
+    }
+}
 
 /**
  * Marks a player as unable to play cards from their **hand** (CR 601 casting and CR 305 land

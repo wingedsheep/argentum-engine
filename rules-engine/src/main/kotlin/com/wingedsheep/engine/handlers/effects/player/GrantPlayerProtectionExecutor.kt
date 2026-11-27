@@ -8,7 +8,9 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.PlayerEffectRemoval
 import com.wingedsheep.engine.state.components.player.PlayerProtectionComponent
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.ProtectionScope
 import com.wingedsheep.sdk.scripting.effects.GrantPlayerProtectionEffect
 import com.wingedsheep.sdk.scripting.effects.protectionDescription
 import kotlin.reflect.KClass
@@ -20,7 +22,8 @@ import kotlin.reflect.KClass
  *
  * Adds (or merges into) a [PlayerProtectionComponent] on the target player. Multiple
  * grants append to the existing scope list. The targeting/damage systems consult the
- * component via [com.wingedsheep.engine.mechanics.targeting.PlayerProtectionRules].
+ * component via [com.wingedsheep.engine.mechanics.targeting.PlayerProtectionRules]. Each grant keeps
+ * its own duration.
  */
 class GrantPlayerProtectionExecutor : EffectExecutor<GrantPlayerProtectionEffect> {
 
@@ -37,29 +40,44 @@ class GrantPlayerProtectionExecutor : EffectExecutor<GrantPlayerProtectionEffect
         if (!state.turnOrder.contains(targetId)) {
             return EffectResult.error(state, "GrantPlayerProtection target must be a player")
         }
-
-        val removeOn = when (effect.duration) {
-            is Duration.Permanent -> PlayerEffectRemoval.Permanent
-            is Duration.EndOfTurn -> PlayerEffectRemoval.EndOfTurn
-            else -> PlayerEffectRemoval.UntilYourNextTurn
-        }
-
-        val newState = state.updateEntity(targetId) { container ->
-            val existing = container.get<PlayerProtectionComponent>()
-            val mergedScopes = (existing?.scopes ?: emptyList()) + effect.scope
-            container.with(PlayerProtectionComponent(scopes = mergedScopes, removeOn = removeOn))
-        }
-
-        val playerName = state.getEntity(targetId)?.get<CardComponent>()?.name ?: "Player"
-        val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name } ?: "Unknown"
-        val events = listOf(
-            KeywordGrantedEvent(
-                targetId = targetId,
-                targetName = playerName,
-                keyword = "Protection from ${effect.scope.protectionDescription()}",
-                sourceName = sourceName
-            )
-        )
-        return EffectResult.success(newState, events)
+        return grantPlayerProtection(state, targetId, effect.scope, effect.duration, context)
     }
+}
+
+/**
+ * Give player [playerId] protection from [scope] for [duration] — adds (or merges into) its
+ * [PlayerProtectionComponent] and emits the [KeywordGrantedEvent]. Shared by
+ * [GrantPlayerProtectionExecutor] and the chosen-colour grant when its target is a player
+ * (Faith's Shield's "you … gain protection from the color of your choice").
+ */
+internal fun grantPlayerProtection(
+    state: GameState,
+    playerId: EntityId,
+    scope: ProtectionScope,
+    duration: Duration,
+    context: EffectContext
+): EffectResult {
+    val removeOn = when (duration) {
+        is Duration.Permanent -> PlayerEffectRemoval.Permanent
+        is Duration.EndOfTurn -> PlayerEffectRemoval.EndOfTurn
+        else -> PlayerEffectRemoval.UntilYourNextTurn
+    }
+
+    val newState = state.updateEntity(playerId) { container ->
+        val existing = container.get<PlayerProtectionComponent>()?.grants.orEmpty()
+        val grant = PlayerProtectionComponent.Grant(scope, removeOn)
+        container.with(PlayerProtectionComponent(if (grant in existing) existing else existing + grant))
+    }
+
+    val playerName = state.getEntity(playerId)?.get<CardComponent>()?.name ?: "Player"
+    val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name } ?: "Unknown"
+    val events = listOf(
+        KeywordGrantedEvent(
+            targetId = playerId,
+            targetName = playerName,
+            keyword = "Protection from ${scope.protectionDescription()}",
+            sourceName = sourceName
+        )
+    )
+    return EffectResult.success(newState, events)
 }

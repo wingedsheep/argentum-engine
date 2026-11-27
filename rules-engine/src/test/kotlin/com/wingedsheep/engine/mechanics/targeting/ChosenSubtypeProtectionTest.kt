@@ -158,7 +158,7 @@ class ChosenSubtypeProtectionTest : ScenarioTestBase() {
         test("an unbound chosen subtype on a one-shot player grant protects from nothing") {
             val game = board()
             game.state = game.state.updateEntity(game.player2Id) {
-                it.with(PlayerProtectionComponent(scopes = listOf(ProtectionScope.ChosenSubtype())))
+                it.with(PlayerProtectionComponent.of(listOf(ProtectionScope.ChosenSubtype())))
             }
             PlayerProtectionRules.isProtectedFromSource(
                 game.state, game.player2Id, game.findPermanent("Test Human Squire"), game.player1Id,
