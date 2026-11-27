@@ -3814,6 +3814,7 @@ Corpse Explosion
 Corpse Harvester
 Corpse Hauler
 Corpse Knight
+Corpse Traders
 Corpseberry Cultivator
 Corpsejack Menace
 Corpses of the Lost
@@ -4312,6 +4313,7 @@ Dark Favor
 Dark Fortress
 Dark Hatchling
 Dark Heart of the Wood
+Dark Impostor
 Dark Inquiry
 Dark Intimations
 Dark Knight's Greatsword
@@ -4688,12 +4690,14 @@ Demonic Gifts
 Demonic Hordes	intent: PayOrSufferEffect
 Demonic Junker	intent: Pipeline(ChosenTargets→graveyard)
 Demonic Pact
+Demonic Rising
 Demonic Ruckus
 Demonic Taskmaster
 Demonic Torment
 Demonic Tutor
 Demonic Vigor
 Demonlord Belzenlok	intent: ExileFromTopRepeatingEffect
+Demonlord of Ashmouth
 Demonmail Hauberk
 Demotion
 Demystify
@@ -6135,6 +6139,7 @@ Essence Drain
 Essence Extraction
 Essence Flux
 Essence Fracture
+Essence Harvest
 Essence Infusion
 Essence Leak	polarity: Aura>ConditionalStaticAbility
 Essence Reliquary
@@ -7681,6 +7686,7 @@ Ghosts of the Innocent
 Ghoul's Feast
 Ghoulcaller's Accomplice
 Ghoulcaller's Harvest
+Ghoulflesh
 Ghoulish Procession
 Ghoulraiser
 Ghoulsteed
@@ -9170,6 +9176,7 @@ Homarid Spawning Bed
 Homarid Warrior
 Homesickness
 Homestead Courage
+Homicidal Seclusion
 Homicide Investigator
 Homing Lightning
 Homunculus Horde
@@ -9370,6 +9377,7 @@ Hunt the Hunter
 Hunt the Weak
 Hunted Bonebrute
 Hunted Dragon
+Hunted Ghoul
 Hunted Horror
 Hunted Lammasu
 Hunted Nightmare	intent: AddCountersToCollectionEffect; intent: Pipeline(ControlledPermanents→?)
@@ -12066,6 +12074,7 @@ Mending Touch
 Meneldor, Swift Savior
 Meng Huo's Horde
 Meng Huo, Barbarian King
+Mental Agony
 Mental Discipline
 Mental Journey
 Mental Misstep
@@ -14460,6 +14469,7 @@ Precognitive Perception
 Predation Steward
 Predator Dragon
 Predator Ooze
+Predator's Gambit
 Predator's Howl
 Predator's Rapport
 Predator's Strike
@@ -16142,6 +16152,7 @@ Ruric Thar, Magecrusher
 Ruric Thar, the Unbowed
 Rush of Adrenaline
 Rush of Battle
+Rush of Blood
 Rush of Dread
 Rush of Ice
 Rush of Inspiration
@@ -17923,6 +17934,7 @@ Somberwald Alpha
 Somberwald Beastmaster
 Somberwald Sage
 Somberwald Stag
+Somberwald Vigilante
 Something Worth Saving
 Somnomancer
 Sonar Strike
@@ -20522,6 +20534,7 @@ Traxos, Scourge Eternal
 Traxos, Scourge of Kroog
 Treacherous Blessing
 Treacherous Greed
+Treacherous Pit-Dweller
 Tread Upon
 Treason of Isengard
 Treasure Chest
@@ -20611,6 +20624,7 @@ Triton Shorethief
 Triton Tactics
 Triton Wavebreaker
 Triton Waverider
+Triumph of Cruelty
 Triumph of Ferocity
 Triumph of Gerrard
 Triumph of the Hordes
@@ -20957,6 +20971,7 @@ Unforgiving One
 Unfortunate Accident
 Unfriendly Fire
 Unfulfilled Desires
+Unhallowed Pact
 Unhallowed Phalanx
 Unhinge
 Unholy Annex // Ritual Chamber
