@@ -4633,7 +4633,9 @@ object CardIntentAnalyzer {
         is PlayersCantCastSpells -> if (static.affected in OPPONENT_PLAYERS) setOf(IntentTag.CAST_BAN) else emptySet()
         // "Each player can't cast more than one spell each turn" (Rule of Law, High Noon), "enchanted
         // player can't …" (Curse of Exhaustion, which the polarity reader aims at an opponent): a
-        // cast cap over the opponents. One over its controller alone is a price, not a lock.
+        // cast cap over the opponents. One over its controller alone is a price, not a lock. Unlike a
+        // symmetric ban above, a symmetric cap still reads: as with DRAW_LOCK, it hurts the side that
+        // chains spells, while a full ban stops our own plays too.
         is RestrictSpellsCastPerTurn ->
             if (static.affected == Player.Each || static.affected == Player.EnchantedPlayer ||
                 static.affected in OPPONENT_PLAYERS) setOf(IntentTag.CAST_CAP)
