@@ -831,6 +831,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   // Phyrexia: All Will Be One's oil — spent, counted and proliferated by the cards that care.
   CounterType.OIL,
   CounterType.DOOM,
+  // Descent into Madness's upkeep tally: the count is how many cards each player exiles.
+  CounterType.DESPAIR,
   CounterType.FIRE,
   CounterType.CONQUEROR,
   CounterType.NET,

@@ -192,6 +192,7 @@ export const counterManaClass: Record<string, string> = {
   AGE: 'counter-time',
   OIL: 'counter-slime',
   DOOM: 'counter-doom',
+  DESPAIR: 'counter-doom',
   FIRE: 'counter-bolt',
   CONQUEROR: 'counter-devotion',
   NET: 'counter-fungus',

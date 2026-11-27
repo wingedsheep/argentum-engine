@@ -2441,6 +2441,104 @@
     }
 }
 
+// Descent into Madness
+{
+    "name": "Descent into Madness",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, put a despair counter on this enchantment, then each player exiles X permanents they control and/or cards from their hand, where X is the number of despair counters on this enchantment.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Descent into Madness:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "DESPAIR",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "ForEach",
+                                    "space": {
+                                        "type": "IterationSpace.Players",
+                                        "players": "ActivePlayerFirst"
+                                    },
+                                    "body": {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "GatherCards",
+                                                "source": {
+                                                    "type": "FromMultipleZones",
+                                                    "zones": [
+                                                        "Hand",
+                                                        "Battlefield"
+                                                    ]
+                                                },
+                                                "storeAs": "gathered1"
+                                            },
+                                            {
+                                                "type": "SelectFromCollection",
+                                                "from": "gathered1",
+                                                "selection": {
+                                                    "type": "ChooseExactly",
+                                                    "count": {
+                                                        "type": "EntityProperty",
+                                                        "entity": "Self",
+                                                        "numericProperty": {
+                                                            "type": "CounterCount",
+                                                            "counterType": "DESPAIR"
+                                                        }
+                                                    }
+                                                },
+                                                "storeSelected": "selected2",
+                                                "prompt": "Exile permanents you control and/or cards from your hand"
+                                            }
+                                        ]
+                                    },
+                                    "collectCollections": {
+                                        "selected2": "collected3"
+                                    }
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "collected3",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Exile"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "Put a despair counter on this enchantment, then each player exiles X permanents they control and/or cards from their hand, where X is the number of despair counters on this enchantment."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "rarity": "MYTHIC",
+        "artist": "Anthony Francisco",
+        "flavorText": "The stairs lead down in both directions.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fa016bb7-ad8b-40d5-90db-412a9cf19e4e.jpg?1783940701"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Desolate Lighthouse
 {
     "name": "Desolate Lighthouse",
