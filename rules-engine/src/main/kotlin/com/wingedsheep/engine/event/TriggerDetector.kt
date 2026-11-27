@@ -325,6 +325,9 @@ class TriggerDetector(
                         val paid = ctx.copy(
                             selfCastManaSpent = com.wingedsheep.engine.handlers.ManaSpentReader.snapshot(state, pending.sourceId),
                             selfCastTimeValues = source.get<CastChoicesComponent>()?.castTimeValues?.takeIf { it.isNotEmpty() },
+                            // "When this Aura enters attached to a creature, … that creature": the
+                            // host it entered on, not whatever it is attached to by resolution.
+                            enteredAttachedToEntityId = source.get<AttachedToComponent>()?.targetId,
                         )
                         val definitionId = source.get<CardComponent>()?.cardDefinitionId ?: return@let paid
                         val chosen = source.get<CastChoicesComponent>()?.chosen.orEmpty()

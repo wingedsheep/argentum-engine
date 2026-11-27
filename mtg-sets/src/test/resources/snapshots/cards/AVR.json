@@ -3514,6 +3514,71 @@
     ]
 }
 
+// Infinite Reflection
+{
+    "name": "Infinite Reflection",
+    "manaCost": "{5}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters attached to a creature, each other nontoken creature you control becomes a copy of that creature.\nNontoken creatures you control enter as a copy of enchanted creature.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Infinite Reflection:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "EachPermanentBecomesCopyOfTarget",
+                    "target": "AttachedToTriggeringPermanent",
+                    "filter": {
+                        "baseFilter": "creature nontoken ctrl:you"
+                    },
+                    "excludeTarget": true
+                },
+                "descriptionOverride": "When this Aura enters attached to a creature, each other nontoken creature you control becomes a copy of that creature."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersAsCopy",
+                "optional": false,
+                "copyOf": "EnchantedCreature",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "to": "Battlefield"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "RARE",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/42506c54-e9bf-4d0f-8dd5-8b218668c925.jpg?1783940717",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "If Infinite Reflection enters attached to a creature and then becomes attached to a different creature before its \"enters\" trigger resolves, each other nontoken creature you control will become a copy of the first creature."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "If Infinite Reflection leaves the battlefield or becomes attached to a different creature, none of the copy effects end. Your creatures will still be copies of whatever creature each was a copy of."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Into the Void
 {
     "name": "Into the Void",

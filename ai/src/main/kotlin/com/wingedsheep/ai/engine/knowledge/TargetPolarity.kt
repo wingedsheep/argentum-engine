@@ -102,6 +102,7 @@ import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.InvestigateEffect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
+import com.wingedsheep.sdk.scripting.EntersAsCopy
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.events.Recipient
@@ -2784,6 +2785,7 @@ object TargetPolarityAnalyzer {
         for (ability in card.script.triggeredAbilities) readings += hostStepTriggerReadings(ability)
         for (ability in card.script.triggeredAbilities) readings += hostTapTriggerReadings(ability)
         for (ability in card.script.triggeredAbilities) readings += hostAttackCopyReadings(ability)
+        for (ability in card.script.triggeredAbilities) readings += hostCopySourceReadings(ability)
         for (ability in card.script.triggeredAbilities) readings += hostCombatTriggerReadings(ability, definitions)
         // "{1}{G}{U}, Return this Aura to its owner's hand: Put two +1/+1 counters on enchanted
         // creature" (Krasis Incubation): an activation whose cost takes the attachment off the
@@ -2834,6 +2836,11 @@ object TargetPolarityAnalyzer {
         for (replacement in card.script.replacementEffects) {
             when {
                 replacement.affectsOnlyTheAuraItself() -> Unit
+                // "Nontoken creatures you control enter as a copy of enchanted creature" (Infinite
+                // Reflection): the host is only the copy source — untouched, and worth copying
+                // whichever side it is on, so the simulation picks the best creature to name.
+                replacement is EntersAsCopy && replacement.copyOf in HOST_TARGETS ->
+                    readings += TargetPolarity.FLEXIBLE
                 hostDamagePrevention(replacement) ->
                     if (hostIs == null || hostTypeGate(replacement)?.second?.let { it != hostIs } != true) {
                         readings += TargetPolarity.HARMFUL
@@ -3288,6 +3295,20 @@ object TargetPolarityAnalyzer {
                     is GainLifeEffect -> leaf.target == EffectTarget.ControllerOfTriggeringEntity
                     else -> false
                 }
+            }
+        }
+
+    /**
+     * An attachment's trigger that makes other permanents copies of its host — "when this Aura enters
+     * attached to a creature, each other nontoken creature you control becomes a copy of that
+     * creature" (Infinite Reflection): the host is the copy source, left as it is, and the best
+     * creature on either side is the one to copy, so the reading is [TargetPolarity.FLEXIBLE].
+     */
+    private fun hostCopySourceReadings(ability: TriggeredAbility): List<TargetPolarity> =
+        EffectWalker.payoffLeaves(ability.effect).mapNotNull { leaf ->
+            TargetPolarity.FLEXIBLE.takeIf {
+                leaf is EachPermanentBecomesCopyOfTargetEffect && leaf.affected == null &&
+                    (leaf.target in HOST_TARGETS || leaf.target == EffectTarget.AttachedToTriggeringPermanent)
             }
         }
 

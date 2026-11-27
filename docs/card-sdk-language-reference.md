@@ -6649,7 +6649,10 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   creature that isn't attacking, one attacking a battle ("player or planeswalker" is literal), or
   a planeswalker that has since left. For the defending *player* use `PlayerRef(Player.DefendingPlayer)`.
 - `AttachedToTriggeringPermanent` — the permanent on the other end of an attachment trigger; requires
-  the state-aware `resolveTarget(target, state)` overload. Inside `Triggers.<subject>.becomesAttached(to, controller)` it is the
+  the state-aware `resolveTarget(target, state)` overload. On an attachment's own enters trigger ("when this Aura enters
+  attached to a creature, … that creature" — Infinite Reflection) it is the host the attachment entered
+  on, frozen when the trigger fires (`TriggerContext.enteredAttachedToEntityId`), so moving the Aura in
+  response doesn't change it. Inside `Triggers.<subject>.becomesAttached(to, controller)` it is the
   host the triggering attachment became attached to, resolved **live** from the triggering object's
   `AttachedToComponent` (so a "for as long as attached" payoff does nothing if the attachment already
   left — CR 611.2b): Eriette ("gain control of that permanent"), Assimilation Aegis ("that creature
@@ -21230,7 +21233,7 @@ not update an existing copy.
   creature" (Mystic Reflection — `GrantReplacementEffect(EntersAsCopy(optional = false, copyOf =
   chosen, appliesTo = EventPattern.ZoneChangeEvent(filter = GameObjectFilter.CreatureOrPlaneswalker,
   to = Zone.BATTLEFIELD)), EffectTarget.Self, Duration.NextUse("one or more creatures or planeswalkers
-  enter"))`). It is granted, never printed as a permanent's own replacement: `GrantReplacementEffect`
+  enter"))`). When granted, `GrantReplacementEffect`
   binds the reference to the `EffectTarget.SpecificEntity` it resolved to and snapshots its copiable
   values on the grant. `appliesTo` filters the entrants (any controller unless the filter says
   otherwise); `copyFilter` / `copyFromZone` / `filterByTotalManaSpent` are unused. Every entry path
@@ -21238,6 +21241,15 @@ not update an existing copy.
   reanimation), token creation and a land play — before the entrant's other as-enters replacements,
   so the copied card's own enters-with counters, as-enters choices and enters triggers apply, and an
   entrant's own `EntersAsCopy` choice isn't asked (either order ends as a copy of the bound object).
+  **Printed** on a permanent, `copyOf` is a reference relative to that permanent, resolved as each
+  entrant enters while it is on the battlefield (the reference must be on the battlefield then): Infinite
+  Reflection's "Nontoken creatures you control enter as a copy of enchanted creature" is
+  `replacementEffect(EntersAsCopy(optional = false, copyOf = EffectTarget.EnchantedCreature, appliesTo =
+  EventPattern.ZoneChangeEvent(filter = GameObjectFilter.Creature.nontoken().youControl(), to =
+  Zone.BATTLEFIELD)))`. It is read by the same `GrantedEntryCopy` path on every entry route, is
+  never spent, and its "you control" reads the controller the entrant enters under (a card put onto the
+  battlefield under your control from an opponent's graveyard is one). With several applying copies of
+  different creatures — printed and/or granted — the entrant's controller picks the copy applied last.
   The entrant copies the object's copiable values as it enters, or as it last existed on the
   battlefield once it has left (its departure snapshot, else the grant-time one). With `NextUse` the
   first entry event it modifies spends it — every matching object entering in that event is copied —
@@ -21252,8 +21264,9 @@ not update an existing copy.
   effect, answer or land play replayed with the answer waiting (`GameState.entryCopyOrders`). Several
   tokens entering together are asked about one at a time. A face-down entrant is modified too,
   copying under its face-down status (CR 708.10). The copy has no as-enters choice, so `optional` must be false, and `copyFromZone`,
-  `filterByTotalManaSpent` and `exileCopiedCard` are rejected. Only the granted form is read — a
-  printed `copyOf` (Essence of the Wild) isn't wired.
+  `filterByTotalManaSpent` and `exileCopiedCard` are rejected. A printed `copyOf` is read too (above);
+  a printed self-reference that must skip creatures entering alongside its source (Essence of the
+  Wild) isn't modelled yet.
   **The copy is settled first, then the copied identity's own entry replacements run (CR 614.12).**
   On the cast path the spell takes on the copied identity and then walks the rest of the as-enters
   pipeline *as the copy*: the copied card's `EntersWithChoice` questions (chained in choice-type

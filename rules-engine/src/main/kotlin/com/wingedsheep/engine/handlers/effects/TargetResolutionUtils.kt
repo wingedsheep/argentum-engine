@@ -207,6 +207,11 @@ object TargetResolutionUtils {
         context.triggerContext?.unattachedFromEntityId?.let {
             return it.takeIf { id -> id in state.getBattlefield() }
         }
+        // "Enters attached to": the host the attachment entered on, recorded when its own enters
+        // trigger fired — "that creature" stays the first one even if the Aura moved since.
+        context.triggerContext?.enteredAttachedToEntityId?.let {
+            return it.takeIf { id -> id in state.getBattlefield() }
+        }
         // "Becomes attached": the triggering entity is the attachment, and the host is its
         // current attachment target. Reading it live means a "for as long as attached" payoff
         // does nothing if the attachment has already moved or left (CR 611.2b) — what Eriette

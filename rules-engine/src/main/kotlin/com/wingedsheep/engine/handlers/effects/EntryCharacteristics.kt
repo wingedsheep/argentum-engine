@@ -60,7 +60,7 @@ object EntryCharacteristics {
         predicateEvaluator: PredicateEvaluator,
         entersWith: com.wingedsheep.sdk.scripting.effects.EntersWithCharacteristics? = null,
     ): com.wingedsheep.engine.mechanics.layers.ProjectedState? {
-        val choice = GrantedEntryCopy.find(state, entityId, predicateEvaluator)?.chosen(entryCopy) ?: entryCopy
+        val choice = GrantedEntryCopy.find(state, entityId, predicateEvaluator, controllerId)?.chosen(entryCopy) ?: entryCopy
         var scratch = choice?.takeIf { it.copiedCard != null }
             ?.let { EffectCopyEntry.apply(state, entityId, it) } ?: state
         val container = scratch.getEntity(entityId) ?: return null

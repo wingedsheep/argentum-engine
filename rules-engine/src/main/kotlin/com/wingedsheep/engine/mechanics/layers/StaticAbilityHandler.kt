@@ -1654,9 +1654,13 @@ class StaticAbilityHandler(
             is com.wingedsheep.sdk.scripting.CreateAdditionalToken,
             is com.wingedsheep.sdk.scripting.ReplaceTokenCreationWithToken -> true
 
+            // A printed copy that applies to *other* entrants ("nontoken creatures you control enter
+            // as a copy of enchanted creature") is read off the battlefield by GrantedEntryCopy; the
+            // classic Clone self-copy (no copyOf) is consumed once as the permanent itself enters.
+            is com.wingedsheep.sdk.scripting.EntersAsCopy -> it.copyOf != null
+
             // Entry-time replacements, consumed once as the permanent enters
             // (StackResolver / PlayLandHandler / ModalAndCloneContinuations):
-            is com.wingedsheep.sdk.scripting.EntersAsCopy,
             is com.wingedsheep.sdk.scripting.EntersTapped,
             is com.wingedsheep.sdk.scripting.EntersWithChoice,
             is com.wingedsheep.sdk.scripting.EntersWithDevour,

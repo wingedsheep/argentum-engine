@@ -66,8 +66,9 @@ object ActiveReplacements {
 
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
+            // Filter on the base component first: reading the active source projects the state.
+            if (container.get<ReplacementEffectSourceComponent>()?.replacementEffects?.none(accept) != false) continue
             val replacementSource = state.activeReplacementSource(entityId) ?: continue
-            if (replacementSource.replacementEffects.none(accept)) continue
             val controllerId = state.projectedState.getController(entityId)
                 ?: container.get<ControllerComponent>()?.playerId
                 ?: continue

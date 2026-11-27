@@ -451,7 +451,7 @@ class ZoneTransitionService(
         // battlefield-to-battlefield move is not an entry.
         if (actualDestZone == Zone.BATTLEFIELD && fromZone != Zone.BATTLEFIELD &&
             !options.paidToEnter && !options.faceDown &&
-            EntryPayment.enteringCost(state, entityId, options.entryCopy, cardRegistry, predicateEvaluator) != null
+            EntryPayment.enteringCost(state, entityId, options.entryCopy, cardRegistry, predicateEvaluator, options.controllerId) != null
         ) {
             if (fromZone == Zone.GRAVEYARD) {
                 return ZoneTransitionResult(state, emptyList(), redirectResult, actualDestination = Zone.GRAVEYARD)
@@ -1044,7 +1044,7 @@ class ZoneTransitionService(
                 // among several, the one the controller chose to apply last (asked by replay).
                 // A face-down entrant is modified too: it copies under its face-down status (CR 708.10).
                 val grantedCopy = com.wingedsheep.engine.handlers.effects.copy
-                    .GrantedEntryCopy.find(newState, entityId, predicateEvaluator)
+                    .GrantedEntryCopy.find(newState, entityId, predicateEvaluator, destControllerId)
                 var grantedChoice: com.wingedsheep.engine.handlers.effects.copy.EntryCopyChoice? = null
                 if (grantedCopy != null) {
                     val (choice, decided) = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy

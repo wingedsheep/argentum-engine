@@ -1,0 +1,1 @@
+- #4882 The AI reads an Aura whose host is only a copy source (Infinite Reflection) as two-sided, enchanting the best creature to copy on either side
