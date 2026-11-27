@@ -1,1 +1,1 @@
-- #TBD Drafts and builds Dark Ascension decks from a first-party pick-rating and removal table instead of guessing every DKA card from the effect heuristic
+- #4898 Drafts and builds Dark Ascension decks from a first-party pick-rating and removal table instead of guessing every DKA card from the effect heuristic
