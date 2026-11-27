@@ -1,1 +1,1 @@
-- #PR The AI reads "creatures with power less than this creature's power can't block it / creatures you control" (Howlgeist, Champion of Lambholt) as evasion and keeps smaller blockers off those attackers in its combat math.
+- #4886 The AI reads "creatures with power less than this creature's power can't block it / creatures you control" (Howlgeist, Champion of Lambholt) as evasion and keeps smaller blockers off those attackers in its combat math.
