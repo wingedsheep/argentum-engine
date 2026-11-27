@@ -1,0 +1,4 @@
+- #4903 The AI reads "remove target attacking or blocking creature from combat" as a two-sided target, weighing their attacker against saving its own creature.
+- #4903 The AI reads "exile all nonland permanents target player controls" (even when they return at end step) as harming that player and as temporary removal, aiming it at an opponent.
+- #4903 The AI puts an Aura that fetches creatures sharing a type with the enchanted creature (Call to the Kindred) on its own creature, and values "shares a creature type" cards as tribal payoffs in deckbuilding.
+- #4903 The AI reads "each player mills N cards" as a mill of its opponents.

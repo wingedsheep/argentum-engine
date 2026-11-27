@@ -3,6 +3,8 @@ package com.wingedsheep.ai.engine
 import com.wingedsheep.ai.audit.AiReadingAudit
 import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.IntentTag
+import com.wingedsheep.ai.engine.knowledge.TargetPolarity
+import com.wingedsheep.ai.engine.knowledge.TargetPolarityAnalyzer
 import com.wingedsheep.ai.puzzles.AiPuzzle
 import com.wingedsheep.ai.puzzles.PuzzleCategory
 import com.wingedsheep.ai.puzzles.PuzzleRunner
@@ -39,6 +41,13 @@ class RemoveFromCombatReadingAiTest : ScenarioTestBase() {
             withClue("Reconnaissance pulls our own attacker out: no answer") {
                 CardIntentAnalyzer.analyzeEffect(recon.effect, recon.targetRequirements).tags shouldNotContain IntentTag.NEUTRALIZE
             }
+        }
+
+        test("remove target attacking or blocking creature from combat is a two-sided target") {
+            // Hollowhenge Spirit: their attacker shut off, or our own blocked attacker saved.
+            val spirit = card("Hollowhenge Spirit").script.triggeredAbilities.single()
+            TargetPolarityAnalyzer.forRequirements(spirit.effect, listOfNotNull(spirit.targetRequirement) + spirit.additionalTargetRequirements) shouldBe listOf(TargetPolarity.FLEXIBLE)
+            AiReadingAudit.audit(card("Hollowhenge Spirit")).shouldBeEmpty()
         }
 
         test("an attacker that would be lethal is removed from combat") {
