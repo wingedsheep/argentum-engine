@@ -19,6 +19,8 @@ import com.wingedsheep.sdk.scripting.GrantActivatedAbility
 import com.wingedsheep.sdk.scripting.GrantDynamicStats
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.ModifyStats
+import com.wingedsheep.sdk.scripting.ModifySpellCost
+import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
@@ -250,6 +252,10 @@ object SynergyAxes {
                 }
             ) add(SynergyAxis.SPELLS)
             if (Keyword.PROWESS in card.keywords) add(SynergyAxis.SPELLS)
+            // "Instant and sorcery spells cost {2} less to cast" (Arcane Melee), "instant and
+            // sorcery spells you cast cost {1} less" (Goblin Electromancer): a discount that reaches
+            // only instants and sorceries saves nothing until the deck casts them.
+            if (scripts.any { script -> script.staticAbilities.any(::discountsSpells) }) add(SynergyAxis.SPELLS)
             // "Exile an instant or sorcery spell you control: …" (Nivmagus Elemental) spends the
             // deck's spells as its cost: with none cast, the ability can't be activated.
             if (scripts.any { script -> script.activatedAbilities.any { exilesOwnSpell(it.cost) } }) {
@@ -520,6 +526,17 @@ object SynergyAxes {
     }
 
     /** "Whenever you cast an instant or sorcery / a noncreature spell" — not "whenever you cast a spell". */
+    /** A [ModifySpellCost] discount on the instants and sorceries we cast (alone, or with everyone). */
+    private fun discountsSpells(static: StaticAbility): Boolean {
+        if (static !is ModifySpellCost || CardIntentAnalyzer.taxes(static.modification)) return false
+        val filter = when (val target = static.target) {
+            is SpellCostTarget.YouCast -> target.filter
+            is SpellCostTarget.AnyCaster -> target.filter
+            else -> return false
+        }
+        return namesSpells(filter)
+    }
+
     private fun rewardsSpells(filter: GameObjectFilter): Boolean =
         predicates(filter).any { it in SPELL_PREDICATES }
 

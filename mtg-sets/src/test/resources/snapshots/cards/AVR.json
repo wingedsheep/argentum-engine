@@ -176,6 +176,78 @@
     ]
 }
 
+// Amass the Components
+{
+    "name": "Amass the Components",
+    "manaCost": "{3}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw three cards, then put a card from your hand on the bottom of your library.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "ControllerChooses"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "artist": "Matt Stewart",
+        "flavorText": "\"I knew I'd find a use for all that newt spittle!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f5b48d60-fc99-4d21-9293-4f7ce1c02928.jpg?1783940723",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "If you cast Amass the Components with fewer than three cards in your library, you'll draw the remaining cards in your library, put a card from your hand on the bottom of your library, then lose the game for drawing a card from a library with no cards in it the next time state-based actions are performed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Angel of Glory's Rise
 {
     "name": "Angel of Glory's Rise",
@@ -441,6 +513,53 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Arcane Melee
+{
+    "name": "Arcane Melee",
+    "manaCost": "{4}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Instant and sorcery spells cost {2} less to cast.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "AnyCaster",
+                    "filter": "instant|sorcery"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "RARE",
+        "artist": "Jaime Jones",
+        "flavorText": "Debates between wizards are never purely academic.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/32355574-34ed-4427-86d9-72295d32ac4f.jpg?1783940724",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "Arcane Melee can't reduce the colored mana requirement of an instant or sorcery spell."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "If there are additional costs to cast a spell, such as a kicker cost or a cost imposed by another effect (such as Thalia, Guardian of Thraben's ability), apply those increases before applying cost reductions."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "Arcane Melee can reduce alternative costs such as miracle costs."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -2639,6 +2758,56 @@
     ]
 }
 
+// Devastation Tide
+{
+    "name": "Devastation Tide",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return all nonland permanents to their owners' hands.\nMiracle {1}{U} (You may cast this card for its miracle cost when you draw it if it's the first card you drew this turn.)",
+    "keywords": [
+        "MIRACLE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Miracle",
+            "cost": "{1}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "nonland permanent"
+                    },
+                    "storeAs": "returnAllToHand_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "returnAllToHand_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "RARE",
+        "artist": "Raymond Swanland",
+        "flavorText": "It's hard to argue with a force made of divine will.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/23b62be6-1a80-4f16-a94a-374203052662.jpg?1783940722"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Devout Chaplain
 {
     "name": "Devout Chaplain",
@@ -3445,6 +3614,149 @@
     ]
 }
 
+// Elgaud Shieldmate
+{
+    "name": "Elgaud Shieldmate",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Soulbond (You may pair this creature with another unpaired creature when either enters. They remain paired for as long as you control both of them.)\nAs long as this creature is paired with another creature, both creatures have hexproof. (They can't be the targets of spells or abilities your opponents control.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "SOULBOND"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Elgaud Shieldmate:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "StateNot",
+                                            "predicate": "IsPaired"
+                                        }
+                                    ]
+                                },
+                                "player": "You",
+                                "excludeSelf": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may pair this creature with an unpaired creature you control",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "PairWithSource",
+                            "from": "selected1"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsPaired"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Soulbond (You may pair this creature with another unpaired creature when either enters. They remain paired for as long as you control both of them.)"
+            },
+            {
+                "id": "Elgaud Shieldmate:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "Entity",
+                                    "entity": "TriggeringEntity"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "PairWithSource",
+                                "from": "gathered0"
+                            }
+                        ]
+                    }
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsPaired"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "You may pair that creature with this creature"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "HEXPROOF",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "SoulbondPair"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "artist": "Anthony Palumbo",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e7d376ef-c900-4abb-9a0b-5eb9369f5739.jpg?1783940722"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Emancipation Angel
 {
     "name": "Emancipation Angel",
@@ -3903,6 +4215,73 @@
     ]
 }
 
+// Fettergeist
+{
+    "name": "Fettergeist",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flying\nAt the beginning of your upkeep, sacrifice this creature unless you pay {1} for each other creature you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fettergeist:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayDynamicManaCost",
+                            "amount": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": []
+                    },
+                    "otherwise": {
+                        "type": "SacrificeTarget",
+                        "target": "Self"
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, sacrifice this creature unless you pay {1} for each other creature you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "rarity": "UNCOMMON",
+        "artist": "Izzy",
+        "flavorText": "The choices of the living will tether them in death.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8e89ef0e-1bfe-4e12-90ee-38f993cd8110.jpg?1783940722",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "The amount of mana you need to pay is determined when the triggered ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Flowering Lumberknot
 {
     "name": "Flowering Lumberknot",
@@ -4059,6 +4438,164 @@
         "artist": "John Avon",
         "imageUri": "https://cards.scryfall.io/normal/front/8/a/8a840ee7-5728-4b1b-92ac-54612e5397b3.jpg?1783940652"
     }
+}
+
+// Galvanic Alchemist
+{
+    "name": "Galvanic Alchemist",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Soulbond (You may pair this creature with another unpaired creature when either enters. They remain paired for as long as you control both of them.)\nAs long as this creature is paired with another creature, each of those creatures has \"{2}{U}: Untap this creature.\"",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "SOULBOND"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Galvanic Alchemist:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "StateNot",
+                                            "predicate": "IsPaired"
+                                        }
+                                    ]
+                                },
+                                "player": "You",
+                                "excludeSelf": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may pair this creature with an unpaired creature you control",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "PairWithSource",
+                            "from": "selected1"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsPaired"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Soulbond (You may pair this creature with another unpaired creature when either enters. They remain paired for as long as you control both of them.)"
+            },
+            {
+                "id": "Galvanic Alchemist:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "Entity",
+                                    "entity": "TriggeringEntity"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "PairWithSource",
+                                "from": "gathered0"
+                            }
+                        ]
+                    }
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsPaired"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "You may pair that creature with this creature"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Galvanic Alchemist:3",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{2}{U}"
+                        }
+                    },
+                    "effect": {
+                        "type": "TapUntap",
+                        "target": "Self",
+                        "tap": false
+                    },
+                    "descriptionOverride": "{2}{U}: Untap this creature."
+                },
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "SoulbondPair"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b0e24d65-0e6f-4978-8de1-c5e4acac12fb.jpg?1783940721"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Gang of Devils
@@ -5221,6 +5758,79 @@
     }
 }
 
+// Havengul Skaab
+{
+    "name": "Havengul Skaab",
+    "manaCost": "{5}{U}",
+    "typeLine": "Creature — Zombie Horror",
+    "oracleText": "Whenever this creature attacks, return another creature you control to its owner's hand.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Havengul Skaab:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "creature",
+                                "player": "You",
+                                "excludeSelf": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Return another creature you control to its owner's hand",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature attacks, return another creature you control to its owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "artist": "Vincent Proce",
+        "flavorText": "An abomination so violent that the other fiends tremble at the sight of it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4c7ff97f-fb06-4a61-98cd-50965a6522d4.jpg?1783940717",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "If you don't control any other creatures, the ability won't do anything."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Havengul Vampire
 {
     "name": "Havengul Vampire",
@@ -6301,6 +6911,121 @@
     ]
 }
 
+// Lone Revenant
+{
+    "name": "Lone Revenant",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Hexproof (This creature can't be the target of spells or abilities your opponents control.)\nWhenever this creature deals combat damage to a player, if you control no other creatures, look at the top four cards of your library. Put one of them into your hand and the rest on the bottom of your library in any order.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "HEXPROOF"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lone Revenant:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "selectedLabel": "Put in hand",
+                            "remainderLabel": "Put on bottom"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "ControllerChooses"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "creature",
+                    "negate": true,
+                    "excludeSelf": true
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, if you control no other creatures, look at the top four cards of your library. Put one of them into your hand and the rest on the bottom of your library in any order."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "RARE",
+        "artist": "Jaime Jones",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e12186e-9c93-4136-9ea3-e8d2ae1ee2e5.jpg?1783940715",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "You must put one of the cards into your hand, even if you'd rather put all four on the bottom of your library."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "If you control Lone Revenant and any other creature (including another Lone Revenant), its ability won't trigger."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "Check whether Lone Revenant's ability triggers after combat damage is dealt but before any creatures that are destroyed due to combat damage leave the battlefield. For example, if you control Lone Revenant and another creature, and that other creature takes lethal damage in the same combat damage step that Lone Revenant deals damage to a player, Lone Revenant's ability won't trigger."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "If you control no creatures when Lone Revenant's ability resolves, you'll still look at the top four cards and put one into your hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Lunar Mystic
 {
     "name": "Lunar Mystic",
@@ -6869,6 +7594,56 @@
     ]
 }
 
+// Misthollow Griffin
+{
+    "name": "Misthollow Griffin",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Griffin",
+    "oracleText": "Flying\nYou may cast this card from exile.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Exile"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "rarity": "MYTHIC",
+        "artist": "Jaime Jones",
+        "flavorText": "For some creatures, existing is only a whim.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2db4fe28-e580-479b-910f-b719d69468b1.jpg?1783940715",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "Misthollow Griffin can also be cast from a player's hand."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "Misthollow Griffin doesn't have an ability that exiles itself. Some other effect will be needed to get the card into exile."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "You must still pay Misthollow Griffin's mana cost when you cast it from exile."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "Misthollow Griffin's ability doesn't change when you can cast creature spells: when you have priority during your main phase when the stack is empty."
+            }
+        ]
+    }
+}
+
 // Moonlight Geist
 {
     "name": "Moonlight Geist",
@@ -7329,6 +8104,46 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Outwit
+{
+    "name": "Outwit",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell that targets a player.",
+    "script": {
+        "spellEffect": "Counter",
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "TargetsPlayer",
+                                "player": "Any"
+                            }
+                        ]
+                    },
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "artist": "Erica Yang",
+        "flavorText": "The student asks how a spell is begun. The master ponders what ends it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/429f7cf0-579a-4003-b5cf-4baf5d420796.jpg?1783940715",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "The spell you target could also target other things, as long as it also targets a player."
+            }
+        ]
+    }
 }
 
 // Pathbreaker Wurm
@@ -9512,6 +10327,359 @@
     ]
 }
 
+// Stern Mentor
+{
+    "name": "Stern Mentor",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Soulbond (You may pair this creature with another unpaired creature when either enters. They remain paired for as long as you control both of them.)\nAs long as this creature is paired with another creature, each of those creatures has \"{T}: Target player mills two cards.\"",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "SOULBOND"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Stern Mentor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "StateNot",
+                                            "predicate": "IsPaired"
+                                        }
+                                    ]
+                                },
+                                "player": "You",
+                                "excludeSelf": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may pair this creature with an unpaired creature you control",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "PairWithSource",
+                            "from": "selected1"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsPaired"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Soulbond (You may pair this creature with another unpaired creature when either enters. They remain paired for as long as you control both of them.)"
+            },
+            {
+                "id": "Stern Mentor:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "Entity",
+                                    "entity": "TriggeringEntity"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "PairWithSource",
+                                "from": "gathered0"
+                            }
+                        ]
+                    }
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsPaired"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "You may pair that creature with this creature"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Stern Mentor:3",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    },
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "isMill": true
+                                },
+                                "storeAs": "milled"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "milled",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "{T}: Target player mills two cards."
+                },
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "SoulbondPair"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ffe4d34f-68f0-4d79-9aab-58c5304224d9.jpg?1783940710"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Stonewright
+{
+    "name": "Stonewright",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "Soulbond (You may pair this creature with another unpaired creature when either enters. They remain paired for as long as you control both of them.)\nAs long as Stonewright is paired with another creature, each of those creatures has \"{R}: This creature gets +1/+0 until end of turn.\"",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "SOULBOND"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Stonewright:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "StateNot",
+                                            "predicate": "IsPaired"
+                                        }
+                                    ]
+                                },
+                                "player": "You",
+                                "excludeSelf": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may pair this creature with an unpaired creature you control",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "PairWithSource",
+                            "from": "selected1"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsPaired"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Soulbond (You may pair this creature with another unpaired creature when either enters. They remain paired for as long as you control both of them.)"
+            },
+            {
+                "id": "Stonewright:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "Entity",
+                                    "entity": "TriggeringEntity"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "PairWithSource",
+                                "from": "gathered0"
+                            }
+                        ]
+                    }
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsPaired"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "You may pair that creature with this creature"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Stonewright:3",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{R}"
+                        }
+                    },
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "Self"
+                    },
+                    "descriptionOverride": "{R}: This creature gets +1/+0 until end of turn."
+                },
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "SoulbondPair"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "157",
+        "rarity": "UNCOMMON",
+        "artist": "Wesley Burt",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/9564d79d-5f4d-4192-94ee-5e5998011266.jpg?1783940676"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Tamiyo, the Moon Sage
 {
     "name": "Tamiyo, the Moon Sage",
@@ -9919,6 +11087,45 @@
     ]
 }
 
+// Thatcher Revolt
+{
+    "name": "Thatcher Revolt",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create three 1/1 red Human creature tokens with haste. Sacrifice those tokens at the beginning of the next end step.",
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "count": {
+                "type": "Fixed",
+                "amount": 3
+            },
+            "power": 1,
+            "toughness": 1,
+            "colors": [
+                "RED"
+            ],
+            "creatureTypes": [
+                "Human"
+            ],
+            "keywords": [
+                "HASTE"
+            ],
+            "imageUri": "https://cards.scryfall.io/normal/front/5/d/5da1ef9d-878a-49d8-afe5-86ad18e30c3d.jpg?1783940637",
+            "sacrificeAtStep": "END"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "artist": "Ryan Pancoast",
+        "flavorText": "The dark times left the peasantry ready to fight with whatever weapons were at hand.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ea28bd68-47a8-47c6-be16-75ae622daf0a.jpg?1783940676"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Thraben Valiant
 {
     "name": "Thraben Valiant",
@@ -9983,6 +11190,182 @@
         "artist": "Adam Paquette",
         "imageUri": "https://cards.scryfall.io/normal/front/d/a/daa39826-7f89-41cb-a7fe-7f7be817d5cd.jpg?1783940675"
     },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Tibalt, the Fiend-Blooded
+{
+    "name": "Tibalt, the Fiend-Blooded",
+    "manaCost": "{R}{R}",
+    "typeLine": "Legendary Planeswalker — Tibalt",
+    "oracleText": "+1: Draw a card, then discard a card at random.\n−4: Tibalt deals damage equal to the number of cards in target player's hand to that player.\n−6: Gain control of all creatures until end of turn. Untap them. They gain haste until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tibalt, the Fiend-Blooded:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "Random",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Draw a card, then discard a card at random."
+            },
+            {
+                "id": "Tibalt, the Fiend-Blooded:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -4
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "AggregateZone",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "zone": "Hand"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Tibalt deals damage equal to the number of cards in target player's hand to that player."
+            },
+            {
+                "id": "Tibalt, the Fiend-Blooded:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -6
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature"
+                                }
+                            },
+                            "body": {
+                                "type": "GainControl",
+                                "target": "IterationEntity",
+                                "duration": "EndOfTurn"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature"
+                                }
+                            },
+                            "body": {
+                                "type": "TapUntap",
+                                "target": "IterationEntity",
+                                "tap": false
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature"
+                                }
+                            },
+                            "body": {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Gain control of all creatures until end of turn. Untap them. They gain haste until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "161",
+        "rarity": "MYTHIC",
+        "artist": "Peter Mohrbacher",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5ddb3936-8f5a-498d-a46c-27eb9546c76c.jpg?1783940675",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "The number of cards in the target player's hand is determined when Tibalt's second ability resolves."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "When Tibalt's third ability resolves, all creatures will become untapped and gain haste, including ones you controlled before the ability resolved."
+            }
+        ]
+    },
+    "startingLoyalty": 2,
     "colorIdentityOverride": [
         "RED"
     ]
@@ -10445,6 +11828,125 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Tyrant of Discord
+{
+    "name": "Tyrant of Discord",
+    "manaCost": "{4}{R}{R}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "When this creature enters, target opponent chooses a permanent they control at random and sacrifices it. If a nonland permanent is sacrificed this way, repeat this process.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tyrant of Discord:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "RepeatWhile",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "ControlledPermanents",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "filter": "permanent"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "Random",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected1"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "selected1",
+                                "selection": "SelectAll",
+                                "filter": "nonland",
+                                "storeSelected": "tyrantNonlandPick"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Sacrifice",
+                                "storeMovedAs": "tyrantSacrificed"
+                            }
+                        ]
+                    },
+                    "repeatCondition": {
+                        "type": "WhileCondition",
+                        "condition": {
+                            "type": "All",
+                            "conditions": [
+                                {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "tyrantSacrificed"
+                                },
+                                {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "tyrantNonlandPick"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "RARE",
+        "artist": "Richard Wright",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e8f7c8ea-e9c1-4d78-972c-15c4014915a0.jpg?1783940673",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "Repeating the process includes the instruction to repeat the process. That is, the opponent will keep sacrificing permanents until they sacrifice a land."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "Repeating the process does not include targeting an opponent. Only one opponent will have to sacrifice permanents."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "If any abilities trigger while Tyrant of Discord's \"enters\" ability is resolving, those abilities will wait until the \"enters\" ability finishes resolving before going on the stack. Starting with the active player, each player puts their abilities on the stack in any order."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "If the target opponent can't sacrifice permanents (perhaps because of Sigarda, Host of Herons), the opponent will choose a permanent at random but not sacrifice it. The ability will then finish resolving."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

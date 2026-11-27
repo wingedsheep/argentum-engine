@@ -505,6 +505,7 @@ object CardIntentAnalyzer {
 
         val activated = scripts.flatMap { it.activatedAbilities }
         if (activated.any { it.isManaAbility }) tags += IntentTag.RAMP
+        if (card.typeLine.isCreature && activated.any(::untapsItself)) tags += IntentTag.COMBAT_ENHANCEMENT
         if (activated.any { !it.isManaAbility && sacrificesOthers(it.cost) }) {
             tags += IntentTag.SACRIFICE_OUTLET
         }
@@ -3472,6 +3473,17 @@ object CardIntentAnalyzer {
      * change on its holder, so it is spent in this turn's combat or not at all. Public for
      * [ExpiringGrantWindow], which reads the same grant's timing.
      */
+    /**
+     * "{2}{U}: Untap this creature" (Vigilant Drake, Galvanic Alchemist's soulbond grant): an
+     * ability whose whole effect untaps its own holder, paid for without tapping it, lets the
+     * creature attack and still block — vigilance bought with mana, a combat enhancement.
+     */
+    internal fun untapsItself(ability: ActivatedAbility): Boolean {
+        if (ability.isManaAbility || tapsOrUntapsItself(ability.cost)) return false
+        val leaves = EffectWalker.leaves(ability.effect)
+        return leaves.isNotEmpty() && leaves.all { it is TapUntapEffect && !it.tap && it.target == EffectTarget.Self }
+    }
+
     fun grantsOwnFightTrick(ability: ActivatedAbility): Boolean {
         if (ability.isManaAbility) return false
         val leaves = EffectWalker.leaves(ability.effect)
@@ -4424,8 +4436,13 @@ object CardIntentAnalyzer {
                 TargetPolarityAnalyzer.grantedActivatedPolarity(static.ability) == TargetPolarity.BENEFICIAL ->
                 analyzeEffect(static.ability.effect, static.ability.targetRequirements).tags
                     .let { if (isRummage(static.ability)) asRummage(it) else it }
-            static.filter.scope != Scope.AttachedTo -> emptySet()
+            // "As long as this creature is paired with another creature, each of those creatures
+            // has '{R}: This creature gets +1/+0 until end of turn'" (Stonewright, Stern Mentor,
+            // Galvanic Alchemist): soulbond hands the ability to both halves of our own pair, so it
+            // reads as the Aura's grant to our host does — as if printed on each of them.
+            static.filter.scope != Scope.AttachedTo && static.filter.scope != Scope.SoulbondPair -> emptySet()
             static.ability.isManaAbility -> setOf(IntentTag.RAMP)
+            untapsItself(static.ability) -> setOf(IntentTag.COMBAT_ENHANCEMENT)
             TargetPolarityAnalyzer.grantedActivatedPolarity(static.ability) == TargetPolarity.BENEFICIAL ->
                 analyzeEffect(static.ability.effect, static.ability.targetRequirements).tags
                     .let { if (isRummage(static.ability)) asRummage(it) else it }
@@ -4489,6 +4506,11 @@ object CardIntentAnalyzer {
             // "Face-down creature spells you cast cost {1} less" (Obscuring Aether, Dream Chisel):
             // the same discount, on the morphs and other face-down spells we cast.
             static.target == SpellCostTarget.FaceDownYouCast && !taxes(static.modification) ->
+                setOf(IntentTag.COST_REDUCER)
+            // "Instant and sorcery spells cost {2} less to cast" (Arcane Melee), "creature spells of
+            // the chosen type cost {2} less" (Urza's Incubator): a discount every caster shares, but
+            // the one who builds a deck around it gets the most out of it — still our cost reducer.
+            static.target is SpellCostTarget.AnyCaster && !taxes(static.modification) ->
                 setOf(IntentTag.COST_REDUCER)
             // "Noncreature spells your opponents cast cost {1} more" (Thalia, God-Pharaoh's Statue):
             // every spell of theirs that matches is slower, which no board simulation sees.
