@@ -516,6 +516,7 @@ Altered Ego
 Always Watching
 Amalia Benavides Aguirre
 Amaranthine Wall
+Amass the Components
 Amazing Acrobatics
 Ambassador Oak
 Ambition's Cost
@@ -828,6 +829,7 @@ Arcane Epiphany
 Arcane Flight
 Arcane Infusion
 Arcane Investigator
+Arcane Melee
 Arcane Omens
 Arcane Proxy
 Arcane Sanctum
@@ -4802,6 +4804,7 @@ Devastate
 Devastating Mastery
 Devastating Onslaught
 Devastation
+Devastation Tide
 Deviant Glee
 Devilish Valet
 Devils' Playground
@@ -5764,6 +5767,7 @@ Elfhame Palace
 Elfhame Sanctuary	intent: SkipStepOrPhaseEffect
 Elfhame Wurm
 Elfsworn Giant
+Elgaud Shieldmate
 Elim Garak, Simple Tailor
 Eliminate
 Eliminate the Competition
@@ -6714,6 +6718,7 @@ Fetid Heath
 Fetid Horror
 Fetid Imp
 Fetid Pools
+Fettergeist
 Fever Charm
 Fevered Convulsions
 Fevered Visions
@@ -7441,6 +7446,7 @@ Galloping Lizrog
 Gallows Warden
 Gallows at Willow Hill
 Galuf's Final Act
+Galvanic Alchemist
 Galvanic Arc
 Galvanic Bombardment
 Galvanic Discharge
@@ -8804,6 +8810,7 @@ Haunting Wind
 Hauntwoods Shrieker	intent: RevealFaceDownPermanentEffect; intent: TurnFaceUpEffect; polarity: RevealFaceDownPermanentEffect; polarity: TurnFaceUpEffect
 Haven of the Spirit Dragon
 Havengul Runebinder
+Havengul Skaab
 Havengul Vampire
 Havenwood Battleground
 Havenwood Wurm
@@ -11370,6 +11377,7 @@ Loki Laufeyson
 Loki, God of Mischief
 Lolth, Spider Queen
 Lone Missionary
+Lone Revenant
 Lone Rider
 Lone Wolf
 Lonely Arroyo
@@ -12444,6 +12452,7 @@ Mistform Ultimus
 Mistform Wakecaster	intent: BecomeCreatureTypeEffect; intent: ChooseOptionEffect; intent: ForEach>SetCreatureSubtypesEffect; timing: BecomeCreatureTypeEffect; timing: ForEach>SetCreatureSubtypesEffect
 Mistform Wall	intent: BecomeCreatureTypeEffect; timing: BecomeCreatureTypeEffect
 Mistform Warchief	intent: BecomeCreatureTypeEffect; timing: BecomeCreatureTypeEffect
+Misthollow Griffin
 Misthoof Kirin
 Mistmeadow Council
 Mistral Singer
@@ -13754,6 +13763,7 @@ Outnumber
 Outpace Oblivion
 Outpost Siege
 Outrageous Robbery
+Outwit
 Ovalchase Daredevil
 Ovalchase Dragster
 Over the Edge
@@ -18578,6 +18588,7 @@ Stern Constable
 Stern Dismissal
 Stern Lesson
 Stern Marshal
+Stern Mentor
 Stern Proctor
 Stern Scolding
 Stew the Coneys
@@ -18675,6 +18686,7 @@ Stonewise Fortifier
 Stonewood Invoker
 Stonework Packbeast
 Stonework Puma
+Stonewright
 Stony Strength
 Stony-Voiced Goblins
 Stonybrook Angler
@@ -19683,6 +19695,7 @@ Thassa's Oracle
 Thassa's Rebuff
 Thassa, Deep-Dwelling	polarity: MoveToZoneEffect
 Thassa, God of the Sea
+Thatcher Revolt
 Thaumatic Compass
 Thaumatog
 Thaumaton Torpedo
@@ -20182,6 +20195,7 @@ Tiana, Ship's Caretaker
 Tibalt's Rager
 Tibalt's Trickery
 Tibalt, Rakish Instigator
+Tibalt, the Fiend-Blooded
 Ticket Booth // Tunnel of Hate
 Ticket Tortoise
 Tidal Flats	intent: ForEach>PayOrSufferEffect
@@ -20792,6 +20806,7 @@ Type-2 Phaser
 Typhoid Rats
 Typhoon
 Tyrannical Pitlord
+Tyrant of Discord
 Tyrant of Kher Ridges
 Tyrant of Valakut
 Tyrant's Machine
