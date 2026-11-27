@@ -1,9 +1,11 @@
 package com.wingedsheep.ai.engine.knowledge
 
 import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.PreventDamage
 import com.wingedsheep.sdk.scripting.RedirectDamage
 import com.wingedsheep.sdk.scripting.ReplacementEffect
+import com.wingedsheep.sdk.scripting.events.AmountFilter
 import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.events.Recipient
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
@@ -52,8 +54,8 @@ internal object DamageShields {
         val prevent = replacement as? PreventDamage ?: return 0.0
         if (prevent.amount != null || prevent.half || prevent.allBut != null || prevent.restrictions.isNotEmpty()) return 0.0
         val event = prevent.appliesTo as? EventPattern.DamageEvent ?: return 0.0
-        if (event.recipient != Recipient.Self || event.source != com.wingedsheep.sdk.scripting.GameObjectFilter.Any ||
-            event.amount != com.wingedsheep.sdk.scripting.events.AmountFilter.Any) return 0.0
+        if (event.recipient != Recipient.Self || event.source != GameObjectFilter.Any ||
+            event.amount != AmountFilter.Any) return 0.0
         return when (event.damageType) {
             is DamageType.Combat -> SELF_COMBAT_SHIELD_VALUE
             is DamageType.Any -> SELF_SHIELD_VALUE
