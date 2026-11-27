@@ -1,0 +1,103 @@
+{
+  "Afflicted Deserter": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Alpha Brawl": [
+    "removal",
+    "creature-removal"
+  ],
+  "Beguiler of Wills": [
+    "removal",
+    "creature-removal"
+  ],
+  "Blood Feud": [
+    "removal",
+    "creature-removal"
+  ],
+  "Burden of Guilt": [
+    "removal",
+    "creature-removal"
+  ],
+  "Burning Oil": [
+    "removal",
+    "creature-removal"
+  ],
+  "Chant of the Skifsang": [
+    "removal",
+    "creature-removal"
+  ],
+  "Crushing Vines": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Death's Caress": [
+    "removal",
+    "creature-removal"
+  ],
+  "Dungeon Geists": [
+    "removal",
+    "creature-removal"
+  ],
+  "Farbog Boneflinger": [
+    "removal",
+    "creature-removal"
+  ],
+  "Fires of Undeath": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Fling": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Forge Devil": [
+    "removal",
+    "creature-removal"
+  ],
+  "Griptide": [
+    "removal",
+    "creature-removal"
+  ],
+  "Helvault": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ray of Revelation": [
+    "removal",
+    "enchantment-removal"
+  ],
+  "Skirsdag Flayer": [
+    "removal",
+    "creature-removal"
+  ],
+  "Sorin, Lord of Innistrad": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Soul Seizer": [
+    "removal",
+    "creature-removal"
+  ],
+  "Torch Fiend": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Tragic Slip": [
+    "removal",
+    "creature-removal"
+  ],
+  "Wolfhunter's Quiver": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Wrack with Madness": [
+    "removal",
+    "creature-removal"
+  ]
+}
