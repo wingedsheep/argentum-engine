@@ -1958,7 +1958,11 @@ class PredicateEvaluator(
         reference: EffectTarget.SingleEntity,
         context: PredicateContext?,
         projected: ProjectedState
-    ): EntityId? = context?.let {
+    ): EntityId? = if (reference is EffectTarget.SpecificEntity) {
+        // A reference pinned at resolution (ResolutionFilterBaker) names its object outright —
+        // including in projection, which carries no context.
+        reference.entityId
+    } else context?.let {
         when (reference) {
             EffectTarget.EquippedCreature, EffectTarget.EnchantedCreature, EffectTarget.EnchantedPermanent ->
                 it.targetingAttachmentHost

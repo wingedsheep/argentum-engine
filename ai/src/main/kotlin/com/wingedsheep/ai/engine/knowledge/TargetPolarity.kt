@@ -730,6 +730,7 @@ object TargetPolarityAnalyzer {
             // The muzzled player's slot reads here; the shield's own recipient (if it targets
             // one) still reads through the classification below.
             preventionSourceOwnerSlot(leaf, requirements)?.let { perSlot[it] += TargetPolarity.HARMFUL }
+            preventionSparedSlot(leaf, requirements)?.let { perSlot[it] += TargetPolarity.BENEFICIAL }
             val offenceWatch = offenceWatchSlot(leaf, requirements)
             if (offenceWatch != null) {
                 perSlot[offenceWatch] += TargetPolarity.BENEFICIAL
@@ -1537,6 +1538,21 @@ object TargetPolarityAnalyzer {
             is PreventionSourceFilter.Specific -> slotOf(sources.source, requirements)
             PreventionSourceFilter.AnySource, is PreventionSourceFilter.Chosen,
             PreventionSourceFilter.TargetingRecipient -> null
+        }
+    }
+
+    /**
+     * "Prevent all combat damage that would be dealt by creatures other than target creature this
+     * turn" (Terrifying Presence): the shield muzzles every source except the one the slot names,
+     * so that creature alone keeps its damage — a slot meant for our own best attacker or blocker.
+     * Null when the shield's source filter excludes no target slot.
+     */
+    private fun preventionSparedSlot(leaf: Effect, requirements: List<TargetRequirement>): Int? {
+        if (leaf !is PreventDamageEffect || !leaf.preventDamage) return null
+        val filter = (leaf.sourceFilter as? PreventionSourceFilter.Matching)?.filter ?: return null
+        return filter.statePredicates.firstNotNullOfOrNull { predicate ->
+            ((predicate as? StatePredicate.Not)?.predicate as? StatePredicate.IsEntity)
+                ?.let { slotOf(it.reference, requirements) }
         }
     }
 

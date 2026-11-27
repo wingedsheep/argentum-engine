@@ -400,7 +400,11 @@ sealed interface StatePredicate {
      * [IsTriggeringEntity]); this is the general form for every other reference.
      *
      * A reference that resolves to nothing matches nothing (so `Not(IsEntity(..))` excludes
-     * nothing). Inert in group/projection and trigger-gating contexts, which carry no references.
+     * nothing). A filter that outlives its resolution — a prevention shield, a "can't block this
+     * turn" group — has the reference pinned to the object it names as the effect resolves
+     * (Terrifying Presence: "prevent all combat damage that would be dealt by creatures other
+     * than target creature this turn"); otherwise it is inert in group/projection and
+     * trigger-gating contexts, which carry no references.
      */
     @SerialName("IsEntity")
     @Serializable

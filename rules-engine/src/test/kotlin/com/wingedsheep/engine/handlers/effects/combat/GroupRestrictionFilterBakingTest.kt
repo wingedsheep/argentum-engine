@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.combat
 
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.view.ClientStateTransformer
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.handlers.effects.ResolutionFilterBaker
@@ -16,6 +17,7 @@ import com.wingedsheep.sdk.scripting.effects.CantBlockGroupEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
+import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.core.spec.style.FunSpec
@@ -231,6 +233,56 @@ class GroupRestrictionFilterBakingTest : FunSpec({
             .transform(d.state, d.player2)
         view.cards.getValue(small).activeEffects.any { it.effectId.startsWith("cant_block") } shouldBe true
         view.cards.getValue(big).activeEffects.any { it.effectId.startsWith("cant_block") } shouldBe false
+    }
+    test("an otherThan(target) identity test is pinned to the target's id; source and unresolved references stay symbolic") {
+        val d = driver()
+        val marked = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
+        val other = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
+        val context = EffectContext(
+            sourceId = null,
+            controllerId = d.player1,
+            targets = listOf(ChosenTarget.Permanent(marked))
+        )
+
+        val baked = ResolutionFilterBaker.bake(
+            GameObjectFilter.Creature.otherThan(EffectTarget.ContextTarget(0)), context, d.state
+        )
+        baked.statePredicates shouldBe listOf(
+            StatePredicate.Not(StatePredicate.IsEntity(EffectTarget.SpecificEntity(marked)))
+        )
+        val evaluator = d.services.predicateEvaluator
+        val projected = d.state.projectedState
+        val later = PredicateContext(controllerId = d.player1)
+        evaluator.matches(d.state, projected, marked, baked, later) shouldBe false
+        evaluator.matches(d.state, projected, other, baked, later) shouldBe true
+
+        // The source means the same object at the point of use; a second target this context
+        // doesn't have names nothing yet — both are left as written.
+        val self = GameObjectFilter.Creature.otherThan(EffectTarget.Self)
+        ResolutionFilterBaker.bake(self, context, d.state) shouldBe self
+        val missing = GameObjectFilter.Creature.otherThan(EffectTarget.ContextTarget(1))
+        ResolutionFilterBaker.bake(missing, context, d.state) shouldBe missing
+    }
+
+    test("an otherThan(target) group restriction keeps excluding the target after resolution") {
+        val d = driver()
+        val marked = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
+        val other = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
+        val context = EffectContext(
+            sourceId = null,
+            controllerId = d.player1,
+            targets = listOf(ChosenTarget.Permanent(marked))
+        )
+
+        val result = CantBlockGroupExecutor(d.services.predicateEvaluator.amounts).execute(
+            d.state,
+            CantBlockGroupEffect(GroupFilter(GameObjectFilter.Creature.otherThan(EffectTarget.ContextTarget(0)))),
+            context
+        )
+        d.replaceState(result.state)
+
+        d.state.projectedState.cantBlock(marked) shouldBe false
+        d.state.projectedState.cantBlock(other) shouldBe true
     }
 })
 

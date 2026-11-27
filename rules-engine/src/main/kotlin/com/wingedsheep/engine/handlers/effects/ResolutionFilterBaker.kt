@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
+import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -49,7 +50,12 @@ import com.wingedsheep.sdk.serialization.ScriptTreeWalker
  * relative to the object under test (`Player.Candidate`) have no single value and stay symbolic.
  *
  * A group's "other than the target / triggering object" exclusion is pinned the same way, to
- * [GroupFilter.excludedEntities].
+ * [GroupFilter.excludedEntities], and so is an identity test against an object the resolving
+ * context names: [StatePredicate.IsEntity] over a target, pipeline, bound-variable, triggering,
+ * damage or cost reference is rewritten to [EffectTarget.SpecificEntity] — Terrifying Presence's
+ * "prevent all combat damage that would be dealt by creatures other than target creature this
+ * turn" keeps excluding that creature long after the spell (and its targets) are gone. A
+ * reference that names nothing now stays symbolic.
  */
 object ResolutionFilterBaker {
 
@@ -97,11 +103,49 @@ object ResolutionFilterBaker {
         val cardPredicates =
             if (amounts == null) filter.cardPredicates
             else filter.cardPredicates.map { bake(it, context, state, amounts) }
+        val statePredicates = filter.statePredicates.map { bake(it, context, state) }
         val anyOf = filter.anyOf.map { bake(it, context, state, amounts) }
         return if (predicate == filter.controllerPredicate && cardPredicates == filter.cardPredicates &&
-            anyOf == filter.anyOf
+            statePredicates == filter.statePredicates && anyOf == filter.anyOf
         ) filter
-        else filter.copy(controllerPredicate = predicate, cardPredicates = cardPredicates, anyOf = anyOf)
+        else filter.copy(
+            controllerPredicate = predicate,
+            cardPredicates = cardPredicates,
+            statePredicates = statePredicates,
+            anyOf = anyOf
+        )
+    }
+
+    /** [StatePredicate.IsEntity] over a context-bound reference, pinned to the object it names now. */
+    private fun bake(predicate: StatePredicate, context: EffectContext, state: GameState): StatePredicate =
+        when (predicate) {
+            is StatePredicate.IsEntity ->
+                if (!isContextBoundObject(predicate.reference)) predicate
+                else TargetResolutionUtils.resolveEntity(predicate.reference, context, state)
+                    ?.let { StatePredicate.IsEntity(EffectTarget.SpecificEntity(it)) }
+                    ?: predicate
+            is StatePredicate.Not -> bake(predicate.predicate, context, state).let {
+                if (it == predicate.predicate) predicate else StatePredicate.Not(it)
+            }
+            is StatePredicate.And -> predicate.predicates.map { bake(it, context, state) }.let {
+                if (it == predicate.predicates) predicate else StatePredicate.And(it)
+            }
+            is StatePredicate.Or -> predicate.predicates.map { bake(it, context, state) }.let {
+                if (it == predicate.predicates) predicate else StatePredicate.Or(it)
+            }
+            else -> predicate
+        }
+
+    /**
+     * An object reference only the resolving context can answer. The source, its attachments and
+     * the granter mean the same object at the point of use, so they stay symbolic.
+     */
+    private fun isContextBoundObject(reference: EffectTarget.SingleEntity): Boolean = when (reference) {
+        is EffectTarget.ContextTarget, is EffectTarget.BoundVariable, is EffectTarget.PipelineTarget,
+        EffectTarget.TriggeringEntity, EffectTarget.TargetingSource, EffectTarget.DamageSource,
+        EffectTarget.DamageRecipient, is EffectTarget.DiscardedAsCost, is EffectTarget.RevealedAsCost,
+        is EffectTarget.SacrificedAsCost, is EffectTarget.ExiledAsCost, is EffectTarget.TappedAsCost -> true
+        else -> false
     }
 
     private fun bake(
