@@ -978,6 +978,7 @@ object AiReadingAudit {
         IntentTag.COUNTER_LOCK -> "stops counters being put on players or permanents"
         IntentTag.LIFEGAIN_LOCK -> "stops opponents gaining life, or turns their life gain into loss"
         IntentTag.DRAW_LOCK -> "caps how many cards opponents can draw each turn"
+        IntentTag.CAST_CAP -> "caps how many spells opponents can cast each turn"
         IntentTag.TOKEN_THEFT -> "takes the tokens opponents would create"
         IntentTag.DISCARD_SHIELD -> "puts cards an effect makes its controller discard back on their library"
         IntentTag.GAME_WIN -> "makes an opponent lose the game outright"

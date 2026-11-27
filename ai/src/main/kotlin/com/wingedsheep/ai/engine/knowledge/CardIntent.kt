@@ -589,6 +589,16 @@ enum class IntentTag {
     DRAW_LOCK,
 
     /**
+     * Caps how many spells opponents may cast each turn — Rule of Law's and High Noon's "each player
+     * can't cast more than one spell each turn", Curse of Exhaustion's "enchanted player can't …",
+     * Deafening Silence's "… more than one noncreature spell". The cast-side sibling of
+     * [DRAW_LOCK]: it moves nothing, and its payoff is the second spell an opponent never casts,
+     * which no board simulation sees. An opponents-only, enchanted-player or symmetric cap reads; a
+     * cap on its controller alone (Yawgmoth's Agenda, Fires of Invention) is a price and earns no tag.
+     */
+    CAST_CAP,
+
+    /**
      * Takes the tokens an opponent would create — Crafty Cutpurse's "each token that would be
      * created under an opponent's control this turn is created under your control instead".
      *

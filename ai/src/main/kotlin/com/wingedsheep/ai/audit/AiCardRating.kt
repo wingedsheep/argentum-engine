@@ -342,6 +342,7 @@ object AiCardRating {
         IntentTag.COUNTER_LOCK to "Stops counters being put on players or permanents",
         IntentTag.LIFEGAIN_LOCK to "Locks out opponents' life gain",
         IntentTag.DRAW_LOCK to "Caps opponents' card draw",
+        IntentTag.CAST_CAP to "Caps how many spells opponents cast each turn",
         IntentTag.TOKEN_THEFT to "Takes opponents' tokens",
         IntentTag.DISCARD_SHIELD to "Keeps cards an effect discards",
         IntentTag.GAME_WIN to "Wins the game outright",

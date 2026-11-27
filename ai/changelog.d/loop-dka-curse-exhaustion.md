@@ -1,0 +1,1 @@
+- #TBD The AI reads spell-cast caps (Rule of Law, High Noon, Curse of Exhaustion) as a cast lock on its opponents, and aims an enchanted-player cast cap at an opponent

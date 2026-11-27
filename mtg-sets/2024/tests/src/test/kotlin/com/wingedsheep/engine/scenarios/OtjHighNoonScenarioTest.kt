@@ -22,7 +22,7 @@ import com.wingedsheep.engine.core.Outcome
  * "Each player can't cast more than one spell each turn."
  * "{4}{R}, Sacrifice this enchantment: It deals 5 damage to any target."
  *
- * The cast restriction is the global (`eachPlayer = true`) variant of `RestrictSpellsCastPerTurn`,
+ * The cast restriction is the global (`affected = Player.Each`) variant of `RestrictSpellsCastPerTurn`,
  * so it binds *every* player — including a player who doesn't control High Noon. The activated
  * ability sacrifices High Noon and deals 5 damage to any target.
  */
@@ -61,7 +61,7 @@ class OtjHighNoonScenarioTest : FunSpec({
         driver.castActionsFor(me, bolt2) shouldHaveSize 0
     }
 
-    test("eachPlayer: the OPPONENT who doesn't control High Noon is also limited to one spell") {
+    test("Player.Each: the OPPONENT who doesn't control High Noon is also limited to one spell") {
         val driver = createDriver()
         val me = driver.activePlayer!!
         val opp = driver.getOpponent(me)
@@ -75,7 +75,7 @@ class OtjHighNoonScenarioTest : FunSpec({
         driver.castActionsFor(opp, oppBolt1).isNotEmpty() shouldBe true
 
         // Record that the opponent has already cast one spell this turn. Because High Noon's
-        // restriction is global (eachPlayer), this caps the opponent at one spell even though
+        // restriction is global (Player.Each), this caps the opponent at one spell even though
         // they don't control High Noon. `hasReachedSpellCastLimit` reads the per-player count
         // tally (`playerSpellsCastThisTurn`).
         driver.replaceState(

@@ -86,6 +86,7 @@ import com.wingedsheep.sdk.scripting.LookAtTopOfLibrary
 import com.wingedsheep.sdk.scripting.PlayersCantCastSpells
 import com.wingedsheep.sdk.scripting.PlayersCantGetCounters
 import com.wingedsheep.sdk.scripting.RestrictCardsDrawnPerTurn
+import com.wingedsheep.sdk.scripting.RestrictSpellsCastPerTurn
 import com.wingedsheep.sdk.scripting.CantReceiveCounters
 import com.wingedsheep.sdk.scripting.RedirectTokenCreationController
 import com.wingedsheep.sdk.scripting.TriggerBinding
@@ -4630,6 +4631,13 @@ object CardIntentAnalyzer {
         // ("each player") is a symmetric price; an Aura's on its enchanted player is the polarity
         // reader's question.
         is PlayersCantCastSpells -> if (static.affected in OPPONENT_PLAYERS) setOf(IntentTag.CAST_BAN) else emptySet()
+        // "Each player can't cast more than one spell each turn" (Rule of Law, High Noon), "enchanted
+        // player can't …" (Curse of Exhaustion, which the polarity reader aims at an opponent): a
+        // cast cap over the opponents. One over its controller alone is a price, not a lock.
+        is RestrictSpellsCastPerTurn ->
+            if (static.affected == Player.Each || static.affected == Player.EnchantedPlayer ||
+                static.affected in OPPONENT_PLAYERS) setOf(IntentTag.CAST_CAP)
+            else emptySet()
         // "As you cascade, you may put a land card from among the exiled cards onto the battlefield
         // tapped" (Averna, the Chaos Bloom): every cascade we resolve also drops a land — an extra
         // land onto our battlefield, as a land-only put from hand reads. Another filter would put a

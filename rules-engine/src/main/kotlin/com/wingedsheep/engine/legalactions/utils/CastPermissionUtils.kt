@@ -101,14 +101,10 @@ class CastPermissionUtils(
      * Whether [playerId] has already cast as many spells this turn as an *unfiltered*
      * [RestrictSpellsCastPerTurn] permanent allows — the blanket lock that blocks every spell.
      * Filtered caps (Phyrexian Censor's "non-Phyrexian") depend on which spell is being cast and
-     * live in [hasReachedFilteredSpellCastLimit]. Two scopes are folded:
-     *
-     *  - **controller-scoped** ([RestrictSpellsCastPerTurn.eachPlayer] = false) — only counts
-     *    permanents [playerId] themselves controls (Yawgmoth's Agenda: "You can't cast more than
-     *    one spell each turn.").
-     *  - **global** ([RestrictSpellsCastPerTurn.eachPlayer] = true) — counts any such permanent
-     *    anywhere on the battlefield, binding every player (High Noon: "Each player can't cast
-     *    more than one spell each turn.").
+     * live in [hasReachedFilteredSpellCastLimit]. Which caps bind [playerId] is the
+     * [RestrictSpellsCastPerTurn.affected] who-axis, read relative to each source's controller
+     * (Yawgmoth's Agenda binds only its controller, High Noon every player, Curse of Exhaustion
+     * the enchanted player).
      *
      * When several such permanents apply, the most restrictive (smallest
      * [RestrictSpellsCastPerTurn.maxPerTurn]) applies. Returns false when no permanent restricts
@@ -140,15 +136,21 @@ class CastPermissionUtils(
     }
 
     /**
-     * Every [RestrictSpellsCastPerTurn] binding [playerId]: the controller-scoped ones on permanents
-     * they control plus the global ([RestrictSpellsCastPerTurn.eachPlayer]) ones anywhere.
+     * Every [RestrictSpellsCastPerTurn] binding [playerId]: those whose
+     * [RestrictSpellsCastPerTurn.affected] group, read relative to the source's (projected)
+     * controller, includes [playerId].
      */
     private fun spellCastCapsBinding(state: GameState, playerId: EntityId): List<RestrictSpellsCastPerTurn> {
-        val controlled = state.getBattlefield(playerId).toSet()
+        val projected = state.projectedState
         return state.getBattlefield().flatMap { entityId ->
-            val cardDef = state.getEntity(entityId)?.faceUpCardDefinition(cardRegistry) ?: return@flatMap emptyList()
-            cardDef.liveStaticAbilities(state, entityId).filterIsInstance<RestrictSpellsCastPerTurn>()
-                .filter { it.eachPlayer || entityId in controlled }
+            val container = state.getEntity(entityId) ?: return@flatMap emptyList()
+            val cardDef = container.faceUpCardDefinition(cardRegistry) ?: return@flatMap emptyList()
+            val caps = cardDef.liveStaticAbilities(state, entityId).filterIsInstance<RestrictSpellsCastPerTurn>()
+            if (caps.isEmpty()) return@flatMap emptyList()
+            val controller = projected.getController(entityId)
+                ?: container.get<ControllerComponent>()?.playerId
+                ?: return@flatMap emptyList()
+            caps.filter { affectedPlayerMatches(it.affected, controller, playerId, state, entityId) }
         }
     }
 

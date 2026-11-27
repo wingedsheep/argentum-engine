@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.RestrictSpellsCastPerTurn
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -15,7 +16,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Each player can't cast more than one spell each turn.
  * {4}{R}, Sacrifice this enchantment: It deals 5 damage to any target.
  *
- * The cast restriction is the global ([eachPlayer]) variant of [RestrictSpellsCastPerTurn] —
+ * The cast restriction is the global ([Player.Each]) variant of [RestrictSpellsCastPerTurn] —
  * it binds every player, not just High Noon's controller. The activated ability sacrifices
  * the enchantment and deals 5 damage to any target, with the enchantment itself as the damage
  * source ([EffectTarget.Self] is captured as last-known information when the source leaves the
@@ -33,7 +34,7 @@ val HighNoon = card("High Noon") {
         "{4}{R}, Sacrifice this enchantment: It deals 5 damage to any target."
 
     staticAbility {
-        ability = RestrictSpellsCastPerTurn(maxPerTurn = 1, eachPlayer = true)
+        ability = RestrictSpellsCastPerTurn(maxPerTurn = 1, affected = Player.Each)
     }
 
     activatedAbility {
