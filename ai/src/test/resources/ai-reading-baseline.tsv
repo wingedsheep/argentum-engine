@@ -1000,6 +1000,7 @@ Arrogant Vampire
 Arrow Storm
 Arrows of Justice
 Arterial Flow
+Artful Dodge
 Artful Maneuver
 Artful Takedown
 Arthur, Marigold Knight
@@ -1437,6 +1438,7 @@ Banshee
 Banshee's Blade
 Bant Battlemage
 Bant Charm
+Bar the Door
 Bar the Gate
 Barad-dûr
 Baral and Kari Zev
@@ -2593,6 +2595,7 @@ Bumi, King of Three Trials	polarity: EmitScriedEventEffect; polarity: Pipeline(T
 Bumi, Unleashed
 Bump in the Night
 Buoyancy
+Burden of Guilt
 Burden of Proof	polarity: Aura>ConditionalStaticAbility
 Burdened Stoneback
 Burgeoning
@@ -2618,6 +2621,7 @@ Burning Curiosity
 Burning Earth
 Burning Fields
 Burning Hands
+Burning Oil
 Burning Prophet
 Burning Shield Askari
 Burning Sun Cavalry
@@ -3155,6 +3159,7 @@ Channeled Dragonfire
 Channeled Force
 Channeler Initiate
 Chant of Vitu-Ghazi
+Chant of the Skifsang
 Chaos Channeler
 Chaos Imps
 Chaos Maw
@@ -5774,6 +5779,7 @@ Elfhame Palace
 Elfhame Sanctuary	intent: SkipStepOrPhaseEffect
 Elfhame Wurm
 Elfsworn Giant
+Elgaud Inquisitor
 Elgaud Shieldmate
 Elim Garak, Simple Tailor
 Eliminate
@@ -6088,6 +6094,7 @@ Era of Innovation
 Eradicator Valkyrie
 Erase
 Erdwal Illuminator
+Erdwal Ripper
 Erebor Flamesmith
 Erebos's Emissary
 Erebos's Intervention
@@ -6510,6 +6517,7 @@ Far Fortune, End Boss
 Faramir, Field Commander
 Faramir, Prince of Ithilien	polarity: CreateDelayedTriggerEffect
 Faramir, Steward of Gondor	intent: TakeDesignationEffect
+Farbog Boneflinger
 Farbog Explorer
 Farbog Revenant
 Farewell
@@ -6865,6 +6873,7 @@ Firemind's Foresight
 Firemind's Research
 Fires of Invention
 Fires of Mount Doom
+Fires of Undeath
 Fires of Victory
 Fires of Yavimaya
 Firescreamer
@@ -7621,6 +7630,7 @@ Geothermal Bog
 Geothermal Crevice
 Geothermal Kami
 Geralf's Masterpiece
+Geralf's Messenger
 Geralf, Visionary Stitcher
 Geralf, the Fleshwright
 Germinate Recruits
@@ -8334,6 +8344,7 @@ Graverobber Spider
 Graveshifter
 Gravespawn Sovereign
 Gravestone Strider
+Gravetiller Wurm
 Gravewaker
 Graveyard Marshal
 Graveyard Shift
@@ -8854,6 +8865,7 @@ Head of the Hunt
 Headhunter
 Headless Horseman
 Headless Rider
+Headless Skaab
 Headlong Rush
 Headstrong Brute
 Headwater Sentries
@@ -9090,6 +9102,7 @@ High-Flying Ace
 High-Rise Sawjack
 High-Society Hunter
 High-Speed Hoverbike
+Highborn Ghoul
 Highborn Vampire
 Highland Forest
 Highland Game
@@ -10527,6 +10540,7 @@ Kessig Forgemaster
 Kessig Malcontents
 Kessig Naturalist
 Kessig Prowler
+Kessig Recluse
 Kessig Wolf
 Kessig Wolf Run
 Kessig Wolfrider
@@ -12968,6 +12982,7 @@ Nazar, the Velvet Fang
 Nazgûl
 Nearheath Chaplain
 Nearheath Pilgrim
+Nearheath Stalker
 Nebelgast Beguiler
 Nebelgast Herald
 Nebelgast Intruder
@@ -13116,6 +13131,7 @@ Niambi, Esteemed Speaker
 Nibelheim Aflame	polarity: ForEachEffect
 Niblis of Dusk
 Niblis of Frost
+Niblis of the Mist
 Niblis of the Urn
 Nicanzil, Current Conductor
 Nick Fury, Agent of S.H.I.E.L.D.
@@ -14804,6 +14820,7 @@ Pyre Spawn
 Pyre Zombie
 Pyre of Heroes
 Pyre-Sledge Arsonist
+Pyreheart Wolf
 Pyreswipe Hawk
 Pyretic Prankster
 Pyretic Rebirth
@@ -15281,6 +15298,7 @@ Realmwright
 Reanimate
 Reap Intellect
 Reap What Is Sown
+Reap the Seagraf
 Reaper King
 Reaper from the Abyss
 Reaper of Flight Moonsilver
@@ -15539,6 +15557,7 @@ Repulsor Blast
 Repurposed Enforcer
 Repurposing Bay
 Reputable Merchant
+Requiem Angel
 Requiem Monolith	polarity: GrantTriggeredAbilityEffect
 Requisition Raid
 Requiting Hex
@@ -17401,6 +17420,7 @@ Sigardian Savior
 Sight Beyond Sight
 Sight of the Scalelords
 Sightless Brawler
+Sightless Ghoul
 Sigil of Sleep	polarity: Aura>MoveToZoneEffect
 Sigil of Valor
 Sigil of the Empty Throne
@@ -17473,6 +17493,7 @@ Silverblade Paladin
 Silverbluff Bridge
 Silverchase Fox
 Silverclad Ferocidons
+Silverclaw Griffin
 Silvercoat Lion
 Silverflame Ritual
 Silverflame Squire	timing: ModifyStatsEffect
@@ -17589,6 +17610,7 @@ Skewer Slinger
 Skewer the Critics
 Skilled Animator
 Skilled Battlecarver
+Skillful Lunge
 Skin Invasion
 Skinbrand Goblin
 Skinrender
@@ -17957,6 +17979,7 @@ Solve the Equation
 Somber Hoverguard
 Somberwald Alpha
 Somberwald Beastmaster
+Somberwald Dryad
 Somberwald Sage
 Somberwald Stag
 Somberwald Vigilante
@@ -18736,6 +18759,7 @@ Storm, Windrider
 Storm-Kiln Artist
 Stormbeacon Blade
 Stormbind
+Stormbound Geist
 Stormbreath Dragon
 Stormcaller of Keranos
 Stormcarved Coast
@@ -18773,6 +18797,7 @@ Strange Augmentation
 Strange Inversion	polarity: SwitchPowerToughnessEffect; timing: SwitchPowerToughnessEffect
 Strangle
 Strangled Cemetery
+Strangleroot Geist
 Strangling Spores
 Strategic Betrayal
 Strategic Planning
@@ -19342,6 +19367,7 @@ Talisman of Unity
 Tall as a Beanstalk
 Talon Sliver
 Talon of Pain
+Talons of Falkenrath
 Talons of Wildwood
 Talrand's Invocation
 Talrand, Sky Summoner
@@ -20884,6 +20910,7 @@ Ultimecia, Time Sorceress
 Ultron Drone
 Ultron, Artificial Malevolence
 Ultros, Obnoxious Octopus
+Ulvenwald Bear
 Ulvenwald Captive
 Ulvenwald Hydra
 Ulvenwald Mysteries
@@ -20983,6 +21010,7 @@ Underworld Sentinel
 Undo
 Undulating Witness
 Undying Beast
+Undying Evil
 Undying Malice
 Unearth
 Unearthly Blizzard
@@ -21346,6 +21374,7 @@ Vengeful Rebel
 Vengeful Strangler
 Vengeful Townsfolk
 Vengeful Tracker
+Vengeful Vampire
 Vengeful Villagers
 Vengeful Warchief
 Venom	polarity: Aura>CreateDelayedTriggerEffect
@@ -21706,6 +21735,7 @@ Voracious Vampire
 Voracious Varmint
 Voracious Vermin
 Voracious Wurm
+Vorapede
 Vorel of the Hull Clade
 Vorinclex
 Vorinclex, Monstrous Raider
