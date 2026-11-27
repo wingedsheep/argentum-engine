@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardFace
@@ -477,14 +478,14 @@ object CardIntentAnalyzer {
             }
             if (isExpiringCopy(member)) expiringPump = true
         }
-        // A replacing base P/T until end of turn is a body for this turn's fight, like a copy —
-        // unless it is the setup for removal (a fight beside it), whose timing the removal owns.
         // Moving Auras onto a creature (Bruna) is no free equip: drop the Equipment-mover read
         // unless another ability really moves Equipment.
         if (IntentTag.EQUIPMENT_RELOCATION in tags) {
             val movers = roots.filter { attachesOthers(leavesWithForEach(it)) }
             if (movers.isNotEmpty() && movers.all(::attachesOnlyAuras)) tags -= IntentTag.EQUIPMENT_RELOCATION
         }
+        // A replacing base P/T until end of turn is a body for this turn's fight, like a copy —
+        // unless it is the setup for removal (a fight beside it), whose timing the removal owns.
         val setToughness = if (IntentTag.REMOVAL in tags) null else leaves.mapNotNull(::expiringBaseToughnessOf).maxOrNull()
         if (IntentTag.REMOVAL !in tags && leaves.any(::isExpiringBaseStats)) expiringPump = true
 
@@ -655,6 +656,29 @@ object CardIntentAnalyzer {
         return tags - onlyLater
     }
 
+    /** [EffectWalker.leaves] that also opens `for each` bodies, where a group attach sits. */
+    private fun leavesWithForEach(effect: Effect): List<Effect> =
+        EffectWalker.leaves(effect).flatMap { if (it is ForEachEffect) leavesWithForEach(it.body) else listOf(it) }
+
+    private fun attachesOthers(leaves: List<Effect>): Boolean =
+        leaves.any { it is AttachTargetEquipmentToCreatureEffect && it.equipmentTarget != EffectTarget.Self }
+
+    /**
+     * Whether [effect] attaches permanents gathered off the battlefield, and every one it gathers
+     * is an Aura — Bruna, Light of Alabaster's "attach to it any number of Auras on the
+     * battlefield". The attach leaf is the one free equips use, so without this the card would read
+     * as an Equipment mover asking for the deck's Equipment; its fuel is Auras.
+     */
+    internal fun attachesOnlyAuras(effect: Effect): Boolean {
+        val leaves = leavesWithForEach(effect)
+        if (!attachesOthers(leaves)) return false
+        val gathered = leaves.filterIsInstance<GatherCardsEffect>()
+            .mapNotNull { (it.source as? CardSource.BattlefieldMatching)?.filter }
+        return gathered.isNotEmpty() && gathered.all { filter ->
+            filter.cardPredicates.any { it is CardPredicate.HasSubtype && it.subtype == Subtype.AURA }
+        }
+    }
+
     /**
      * What a standing replacement effect — printed on a permanent, or held by an emblem — is for:
      * damage amplified ([DamageAmplifiers]); a damage-prevention shield over us and our permanents
@@ -665,29 +689,6 @@ object CardIntentAnalyzer {
      * "if an opponent would gain life, that player loses that much life instead" (Archfiend of
      * Despair, Tainted Remedy — [LifeGainLocks]), whose replacement is read like any effect.
      */
-    /**
-     * Whether [effect] attaches permanents gathered off the battlefield, and every one it gathers
-     * is an Aura — Bruna, Light of Alabaster's "attach to it any number of Auras on the
-     * battlefield". The attach leaf is the one free equips use, so without this the card would read
-     * as an Equipment mover asking for the deck's Equipment; its fuel is Auras.
-     */
-    /** [EffectWalker.leaves] that also opens `for each` bodies, where a group attach sits. */
-    private fun leavesWithForEach(effect: Effect): List<Effect> =
-        EffectWalker.leaves(effect).flatMap { if (it is ForEachEffect) leavesWithForEach(it.body) else listOf(it) }
-
-    private fun attachesOthers(leaves: List<Effect>): Boolean =
-        leaves.any { it is AttachTargetEquipmentToCreatureEffect && it.equipmentTarget != EffectTarget.Self }
-
-    internal fun attachesOnlyAuras(effect: Effect): Boolean {
-        val leaves = leavesWithForEach(effect)
-        if (!attachesOthers(leaves)) return false
-        val gathered = leaves.filterIsInstance<GatherCardsEffect>()
-            .mapNotNull { (it.source as? CardSource.BattlefieldMatching)?.filter }
-        return gathered.isNotEmpty() && gathered.all { filter ->
-            filter.cardPredicates.any { it is CardPredicate.HasSubtype && it.subtype == com.wingedsheep.sdk.core.Subtype.AURA }
-        }
-    }
-
     private fun standingReplacementTags(replacement: ReplacementEffect): Set<IntentTag> = buildSet {
         if (DamageAmplifiers.reads(replacement)) add(IntentTag.DAMAGE_AMPLIFIER)
         if (DamageShields.reads(replacement) || LossShields.reads(replacement)) add(IntentTag.PROTECTION)
