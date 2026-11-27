@@ -3472,7 +3472,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Control',
         colors: ['U', 'B'],
         keyCard: 'Mist Raven',
-        description: 'Hold the ground with Polluted Dead and Fettergeist, answer threats with Death Wind, Barter in Blood and Mist Raven, and win with fliers once the opponent runs out of creatures. A patient control deck that trades one for one and wins the long game.',
+        description: 'Hold the board with Polluted Dead and Fettergeist, answer threats with Death Wind, Barter in Blood and Mist Raven, and win with fliers once the opponent runs out of creatures. A patient control deck that trades one for one and wins the long game.',
       },
       {
         name: 'Aggro',
@@ -3508,7 +3508,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Undying Midrange',
         colors: ['B', 'G'],
         keyCard: 'Howlgeist',
-        description: 'Play undying creatures like Howlgeist, Butcher Ghoul and Evernight Shade that come back stronger, hold the ground with Gloomwidow, and rebuy threats with Grave Exchange. A grindy midrange deck that gets two uses out of every creature.',
+        description: 'Play undying creatures like Howlgeist, Butcher Ghoul and Evernight Shade that come back stronger, stop fliers with Gloomwidow, and rebuy threats with Grave Exchange. A grindy midrange deck that gets two uses out of every creature.',
       },
       {
         name: 'Humans Aggro',
@@ -3521,7 +3521,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Soulbond Tempo',
         colors: ['G', 'U'],
         keyCard: 'Galvanic Alchemist',
-        description: 'Pair Galvanic Alchemist, Elgaud Shieldmate and Wingcrafter with green beef like Wolfir Silverheart and Pathbreaker Wurm, and lock down blockers with Geist Trappers and Crippling Chill. A value deck whose pairs are bigger than anything the opponent plays.',
+        description: 'Pair Galvanic Alchemist, Elgaud Shieldmate and Wingcrafter with green beef like Wolfir Silverheart and Pathbreaker Wurm, stop fliers with Geist Trappers, and tap blockers with Crippling Chill. A value deck whose pairs are bigger than anything the opponent plays.',
       },
     ],
   },

@@ -1456,7 +1456,7 @@ object SetArchetypes {
                 Archetype("Fliers", listOf(Color.WHITE, Color.BLUE),
                     "Take to the air with Seraph of Dawn, Voice of the Provinces, Moonlight Geist and Scrapskin Drake, and pair Wingcrafter with a ground body to give it flying. A tempo deck that races in the sky while Crippling Chill and Vanishment clear blockers."),
                 Archetype("Control", listOf(Color.BLUE, Color.BLACK),
-                    "Hold the ground with Polluted Dead and Fettergeist, answer threats with Death Wind, Barter in Blood and Mist Raven, and win with fliers once the opponent runs out of creatures. A patient control deck that trades one for one and wins the long game."),
+                    "Hold the board with Polluted Dead and Fettergeist, answer threats with Death Wind, Barter in Blood and Mist Raven, and win with fliers once the opponent runs out of creatures. A patient control deck that trades one for one and wins the long game."),
                 Archetype("Aggro", listOf(Color.BLACK, Color.RED),
                     "Attack early with Heirs of Stromkirk, Bloodflow Connoisseur and Riot Ringleader, and clear blockers with Pillar of Flame, Bone Splinters and Death Wind. A fast deck that keeps the opponent on the back foot until Falkenrath Exterminator takes over."),
                 Archetype("Wolfir Soulbond", listOf(Color.RED, Color.GREEN),
@@ -1468,12 +1468,12 @@ object SetArchetypes {
                 Archetype("Miracle Spells", listOf(Color.BLUE, Color.RED),
                     "Draw extra cards with Tandem Lookout and Mad Prophet so miracles like Thunderous Wrath and Devastation Tide come off the top on the opponent's turn, and copy the best instant with Dual Casting. A tempo deck that wins with spells as much as creatures."),
                 Archetype("Undying Midrange", listOf(Color.BLACK, Color.GREEN),
-                    "Play undying creatures like Howlgeist, Butcher Ghoul and Evernight Shade that come back stronger, hold the ground with Gloomwidow, and rebuy threats with Grave Exchange. A grindy midrange deck that gets two uses out of every creature."),
+                    "Play undying creatures like Howlgeist, Butcher Ghoul and Evernight Shade that come back stronger, stop fliers with Gloomwidow, and rebuy threats with Grave Exchange. A grindy midrange deck that gets two uses out of every creature."),
                 Archetype("Humans Aggro", listOf(Color.RED, Color.WHITE),
                     "Curve out with Humans like Thraben Valiant, Fervent Cathar and Kruin Striker, grow the team with Banners Raised and Thatcher Revolt, and finish with Kessig Malcontents counting your Humans. A fast tribal deck that ends the game before the angels arrive.",
                     creatureTypes = listOf("Human")),
                 Archetype("Soulbond Tempo", listOf(Color.GREEN, Color.BLUE),
-                    "Pair Galvanic Alchemist, Elgaud Shieldmate and Wingcrafter with green beef like Wolfir Silverheart and Pathbreaker Wurm, and lock down blockers with Geist Trappers and Crippling Chill. A value deck whose pairs are bigger than anything the opponent plays."),
+                    "Pair Galvanic Alchemist, Elgaud Shieldmate and Wingcrafter with green beef like Wolfir Silverheart and Pathbreaker Wurm, stop fliers with Geist Trappers, and tap blockers with Crippling Chill. A value deck whose pairs are bigger than anything the opponent plays."),
             )
         ),
         "M13" to SetSynergies(
