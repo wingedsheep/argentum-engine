@@ -285,6 +285,7 @@ Agent of Treachery
 Agent of the Fates
 Agents of HYDRA
 Agents of S.H.I.E.L.D.
+Aggravate
 Aggravated Assault
 Aggressive Instinct
 Aggressive Mammoth
@@ -2228,6 +2229,7 @@ Bonethorn Valesk
 Boneyard Desecrator
 Boneyard Lurker
 Boneyard Parley
+Bonfire of the Damned
 Bonny Pall, Clearcutter
 Bontu the Glorified
 Bontu's Last Reckoning
@@ -5426,6 +5428,7 @@ Dryad of the Ilysian Grove
 Dryad's Caress
 Dryad's Favor
 Dryad's Revival
+Dual Casting
 Dual Shot
 Dual Strike
 Dual-Sun Adepts
@@ -7452,6 +7455,7 @@ Gandalf, Goblins' Bane	intent: GrantMayPlayFromExileEffect; intent: Pipeline(Top
 Gandalf, Spark Starter
 Gandalf, Wandering Wizard
 Gandalf, White Rider
+Gang of Devils
 Gangly Stompling
 Gangrenous Goliath
 Gardenize
@@ -8558,6 +8562,7 @@ Guildpact Informant
 Guildscorn Ward
 Guile
 Guilty Conscience
+Guise of Fire
 Gul Dukat, Colonial Prefect
 Gulping Scraptrap
 Guma
@@ -8689,6 +8694,7 @@ Hanna's Custody
 Hanna, Ship's Navigator
 Hanweir Battlements	intent: MeldEffect
 Hanweir Garrison
+Hanweir Lancer
 Hanweir Militia Captain
 Hanweir Watchkeep
 Hanweir, the Writhing Township
@@ -11189,6 +11195,7 @@ Lightning Hounds
 Lightning Javelin
 Lightning Mare
 Lightning Mauler
+Lightning Prowess
 Lightning Rift
 Lightning Runner
 Lightning Shrieker
@@ -11713,6 +11720,7 @@ Malfunctioning Holodeck
 Malicious Eclipse
 Malicious Intent
 Malicious Malfunction
+Malignus
 Mammoth Bellow
 Mammoth Growth
 Mammoth Spider
@@ -15810,6 +15818,7 @@ Rite of Harmony
 Rite of Oblivion
 Rite of Renewal
 Rite of Replication
+Rite of Ruin
 Rite of Undoing
 Rite of the Dragoncaller
 Rite of the Moth
@@ -20831,6 +20840,7 @@ Ulvenwald Hydra
 Ulvenwald Mysteries
 Ulvenwald Observer
 Ulvenwald Oddity
+Ulvenwald Tracker
 Umara Entangler
 Umara Mystic
 Umara Raptor
@@ -21799,6 +21809,7 @@ Wandering Ones
 Wandering Stream
 Wandering Tombshell
 Wandering Troubadour
+Wandering Wolf
 Wanderlight Spirit
 Wanderlust
 Wandermare
@@ -22175,6 +22186,7 @@ Wild Cantor
 Wild Celebrants
 Wild Ceratok
 Wild Colos
+Wild Defiance
 Wild Elephant
 Wild Griffin
 Wild Growth
@@ -22218,6 +22230,7 @@ Wildsize
 Wildslayer Elves
 Wildvine Pummeler
 Wildwood Escort
+Wildwood Geist
 Wildwood Mentor
 Wildwood Patrol
 Wildwood Rebirth
@@ -22413,6 +22426,7 @@ Wolf's Quarry
 Wolf-Skull Shaman
 Wolfbat
 Wolfir Avenger
+Wolfir Silverheart
 Wolfkin Bond
 Wolfkin Outcast
 Wolfrider's Saddle
@@ -22600,6 +22614,7 @@ Yenna, Redtooth Regent
 Yes Man, Personal Securitron	polarity: ReflexiveTriggerEffect
 Yeva's Forcemage
 Yeva, Nature's Herald
+Yew Spirit
 Ygra, Eater of All
 Yidaro, Wandering Monster
 Yip Yip!
