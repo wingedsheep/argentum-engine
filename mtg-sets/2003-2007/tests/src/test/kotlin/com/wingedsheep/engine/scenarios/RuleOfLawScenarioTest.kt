@@ -13,7 +13,7 @@ import com.wingedsheep.engine.core.Outcome
  *
  *   Each player can't cast more than one spell each turn.
  *
- * The global (`eachPlayer = true`) form of `RestrictSpellsCastPerTurn`, so the cap binds the
+ * The global (`affected = Player.Each`) form of `RestrictSpellsCastPerTurn`, so the cap binds the
  * opponent as well as the controller. The engine reads the per-player spells-cast-this-turn
  * tally at cast-legality time, so a spell cast earlier in the turn counts.
  */

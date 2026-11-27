@@ -1070,6 +1070,9 @@ object LimitedCardRater {
         // A draw cap blanks the opponent's card-draw spells past the first card each turn — a
         // sideboard hoser against a card-draw deck, priced like the life-gain lock.
         IntentTag.DRAW_LOCK to 0.1,
+        // A cast cap blanks the opponent's second spell each turn — a hoser against a spells deck,
+        // priced like the draw lock.
+        IntentTag.CAST_CAP to 0.1,
         IntentTag.TRIBAL_ENABLER to 0.1,
         // Stealing the opponent's tokens for a turn pays off only when they make some — a flash
         // response to a token spell, or a turn they'd have made Treasure or Clues anyway.

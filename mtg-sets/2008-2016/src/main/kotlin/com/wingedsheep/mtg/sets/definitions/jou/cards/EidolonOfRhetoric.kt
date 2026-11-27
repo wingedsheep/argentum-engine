@@ -3,6 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.jou.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.RestrictSpellsCastPerTurn
+import com.wingedsheep.sdk.scripting.references.Player
 
 /**
  * Eidolon of Rhetoric
@@ -11,7 +12,7 @@ import com.wingedsheep.sdk.scripting.RestrictSpellsCastPerTurn
  * 1/4
  * Each player can't cast more than one spell each turn.
  *
- * The global (`eachPlayer = true`) form of [RestrictSpellsCastPerTurn], as on Rule of Law. The
+ * The global (`affected = Player.Each`) form of [RestrictSpellsCastPerTurn], as on Rule of Law. The
  * engine reads each player's spells-cast-this-turn tally at cast-legality time, so spells cast
  * before the Eidolon entered — including the Eidolon itself — count toward the cap.
  */
@@ -24,7 +25,7 @@ val EidolonOfRhetoric = card("Eidolon of Rhetoric") {
     toughness = 4
 
     staticAbility {
-        ability = RestrictSpellsCastPerTurn(maxPerTurn = 1, eachPlayer = true)
+        ability = RestrictSpellsCastPerTurn(maxPerTurn = 1, affected = Player.Each)
     }
 
     metadata {

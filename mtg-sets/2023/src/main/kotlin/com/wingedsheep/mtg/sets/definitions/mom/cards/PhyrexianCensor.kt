@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.PermanentsEnterTapped
 import com.wingedsheep.sdk.scripting.RestrictSpellsCastPerTurn
+import com.wingedsheep.sdk.scripting.references.Player
 
 /**
  * Phyrexian Censor
@@ -34,7 +35,7 @@ val PhyrexianCensor = card("Phyrexian Censor") {
     staticAbility {
         ability = RestrictSpellsCastPerTurn(
             maxPerTurn = 1,
-            eachPlayer = true,
+            affected = Player.Each,
             spellFilter = GameObjectFilter.Any.notSubtype(Subtype.PHYREXIAN),
         )
     }

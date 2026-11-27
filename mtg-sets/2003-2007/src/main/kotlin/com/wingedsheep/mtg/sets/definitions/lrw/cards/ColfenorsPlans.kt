@@ -44,7 +44,7 @@ import com.wingedsheep.sdk.scripting.effects.FaceDownMode
  *    draw step is a turn-based action.
  *
  * The one-spell-per-turn clause is [RestrictSpellsCastPerTurn] scoped to the controller — Rule of
- * Law's ability with `eachPlayer = false`, the Yawgmoth's Agenda shape. Note it binds *every*
+ * Law's ability with `affected = Player.You`, the Yawgmoth's Agenda shape. Note it binds *every*
  * spell you cast, not just the ones out of the pile.
  */
 val ColfenorsPlans = card("Colfenor's Plans") {

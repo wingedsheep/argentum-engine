@@ -8235,7 +8235,7 @@
         "staticAbilities": [
             {
                 "type": "RestrictSpellsCastPerTurn",
-                "eachPlayer": true
+                "affected": "Each"
             }
         ]
     },

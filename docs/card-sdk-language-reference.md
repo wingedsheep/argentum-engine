@@ -13549,10 +13549,13 @@ staticAbility {
   nobody got. Not a Rule 613 continuous effect.
 - `RollAdditionalDice(extraDice = 1)` — the die-roll replacement: roll that many dice plus
   `extraDice` and ignore that many of the lowest (Pixie Guide, Barbarian Class). See "Numerical dice".
-- `RestrictSpellsCastPerTurn(maxPerTurn, eachPlayer = false, spellFilter = GameObjectFilter.Any)` — a
-  per-turn cap on spells cast. `eachPlayer = false` (default) limits only the source's controller
-  (Yawgmoth's Agenda: "You can't cast more than one spell each turn."); `eachPlayer = true` is a
-  *global* restriction binding every player (High Noon: "Each player can't cast more than one spell
+- `RestrictSpellsCastPerTurn(maxPerTurn, affected = Player.You, spellFilter = GameObjectFilter.Any)` — a
+  per-turn cap on spells cast. `affected` is the same who-axis as `PlayersCantCastSpells`, a `Player`
+  read relative to the source's controller: `Player.You` (default) limits only the controller
+  (Yawgmoth's Agenda: "You can't cast more than one spell each turn."); `Player.Each` binds every
+  player (High Noon: "Each player can't cast more than one spell each turn."); `Player.EachOpponent`
+  the controller's opponents; `Player.EnchantedPlayer` the player an Aura Curse enchants (Curse of
+  Exhaustion: "Enchanted player can't cast more than one spell
   each turn."). The most restrictive `maxPerTurn` applies when several are in play. Already-cast spells
   count, even those cast before this permanent entered. A `spellFilter` narrows the cap to matching
   spells (Phyrexian Censor: `spellFilter = GameObjectFilter.Any.notSubtype(Subtype.PHYREXIAN)` for

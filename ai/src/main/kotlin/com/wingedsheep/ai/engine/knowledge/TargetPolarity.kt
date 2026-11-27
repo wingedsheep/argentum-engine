@@ -44,6 +44,7 @@ import com.wingedsheep.sdk.scripting.GrantWard
 import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
 import com.wingedsheep.sdk.scripting.PlayersCantActivateAbilities
 import com.wingedsheep.sdk.scripting.PlayersCantCastSpells
+import com.wingedsheep.sdk.scripting.RestrictSpellsCastPerTurn
 import com.wingedsheep.sdk.scripting.GrantLandwalkOfChosenType
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
@@ -3394,6 +3395,7 @@ object TargetPolarityAnalyzer {
     private fun enchantedPlayerPolarity(static: StaticAbility): TargetPolarity? = when (static) {
         is PlayersCantActivateAbilities -> if (static.affected == Player.EnchantedPlayer) TargetPolarity.HARMFUL else null
         is PlayersCantCastSpells -> if (static.affected == Player.EnchantedPlayer) TargetPolarity.HARMFUL else null
+        is RestrictSpellsCastPerTurn -> if (static.affected == Player.EnchantedPlayer) TargetPolarity.HARMFUL else null
         is LoseAllAbilities -> if (static.filter.reachesEnchantedPlayer()) TargetPolarity.HARMFUL else null
         is SetBasePowerToughnessStatic ->
             if (static.filter.reachesEnchantedPlayer() && static.shrinksToSmallBase()) TargetPolarity.HARMFUL else null

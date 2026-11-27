@@ -3,6 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.mrd.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.RestrictSpellsCastPerTurn
+import com.wingedsheep.sdk.scripting.references.Player
 
 /**
  * Rule of Law
@@ -10,7 +11,7 @@ import com.wingedsheep.sdk.scripting.RestrictSpellsCastPerTurn
  * Enchantment
  * Each player can't cast more than one spell each turn.
  *
- * The global (`eachPlayer = true`) form of [RestrictSpellsCastPerTurn] — the same primitive
+ * The global (`affected = Player.Each`) form of [RestrictSpellsCastPerTurn] — the same primitive
  * High Noon uses. The engine compares each player's spells-cast-this-turn tally against the
  * cap during cast-legality checks, so spells cast earlier in the turn count even if Rule of
  * Law entered afterwards, and a countered spell still counts (both Scryfall rulings below).
@@ -22,7 +23,7 @@ val RuleOfLaw = card("Rule of Law") {
     oracleText = "Each player can't cast more than one spell each turn."
 
     staticAbility {
-        ability = RestrictSpellsCastPerTurn(maxPerTurn = 1, eachPlayer = true)
+        ability = RestrictSpellsCastPerTurn(maxPerTurn = 1, affected = Player.Each)
     }
 
     metadata {

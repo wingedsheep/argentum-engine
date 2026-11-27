@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.RestrictSpellsCastPerTurn
+import com.wingedsheep.sdk.scripting.references.Player
 
 /**
  * Deafening Silence
@@ -25,7 +26,7 @@ val DeafeningSilence = card("Deafening Silence") {
     staticAbility {
         ability = RestrictSpellsCastPerTurn(
             maxPerTurn = 1,
-            eachPlayer = true,
+            affected = Player.Each,
             spellFilter = GameObjectFilter.Noncreature,
         )
     }

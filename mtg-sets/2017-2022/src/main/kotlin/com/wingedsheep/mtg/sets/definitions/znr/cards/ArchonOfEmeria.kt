@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.PermanentsEnterTapped
 import com.wingedsheep.sdk.scripting.RestrictSpellsCastPerTurn
+import com.wingedsheep.sdk.scripting.references.Player
 
 /**
  * Archon of Emeria
@@ -36,7 +37,7 @@ val ArchonOfEmeria = card("Archon of Emeria") {
     keywords(Keyword.FLYING)
 
     staticAbility {
-        ability = RestrictSpellsCastPerTurn(maxPerTurn = 1, eachPlayer = true)
+        ability = RestrictSpellsCastPerTurn(maxPerTurn = 1, affected = Player.Each)
     }
 
     replacementEffect(

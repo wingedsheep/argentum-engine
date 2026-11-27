@@ -1021,14 +1021,17 @@ data class GraveyardCreaturesHaveSneak(
 }
 
 /**
- * A per-turn cap on how many spells a player can cast, scoped along a single who-axis:
+ * A per-turn cap on how many spells a player can cast, scoped along the [affected] who-axis — a
+ * [Player] reference read relative to the source's controller, the same axis
+ * [PlayersCantCastSpells] and [RestrictCardsDrawnPerTurn] use:
  *
- *  - [eachPlayer] = false (default) — the cap applies only to the permanent's **controller**
- *    ("You can't cast more than one spell each turn." — Yawgmoth's Agenda). Each player is
- *    limited only by the permanents they themselves control.
- *  - [eachPlayer] = true — the cap is a global continuous restriction applying to **every
- *    player** ("Each player can't cast more than one spell each turn." — High Noon). It is read
- *    off any permanent on the battlefield with this ability, regardless of who controls it.
+ *  - [Player.You] (default) — only the permanent's **controller** ("You can't cast more than one
+ *    spell each turn." — Yawgmoth's Agenda).
+ *  - [Player.Each] — **every player**, whoever controls the source ("Each player can't cast more
+ *    than one spell each turn." — High Noon).
+ *  - [Player.EachOpponent] — the controller's opponents.
+ *  - [Player.EnchantedPlayer] — the player an Aura Curse enchants ("Enchanted player can't cast
+ *    more than one spell each turn." — Curse of Exhaustion).
  *
  * Spells already cast earlier in the turn count, even if cast before this permanent entered
  * (per the Yawgmoth's Agenda ruling). The engine enforces this by comparing a player's
@@ -1043,25 +1046,27 @@ data class GraveyardCreaturesHaveSneak(
  * records (characteristics as cast), so a spell counts by what it was, not what it later became.
  *
  * @property maxPerTurn The maximum number of spells a restricted player may cast each turn.
- * @property eachPlayer Whether the restriction binds every player (true) or only the controller (false).
+ * @property affected Which players are capped, relative to the source's controller.
  * @property spellFilter Which spells are capped and counted; [GameObjectFilter.Any] caps every spell.
  */
 @SerialName("RestrictSpellsCastPerTurn")
 @Serializable
 data class RestrictSpellsCastPerTurn(
     val maxPerTurn: Int = 1,
-    val eachPlayer: Boolean = false,
+    val affected: Player = Player.You,
     val spellFilter: GameObjectFilter = GameObjectFilter.Any
 ) : StaticAbility {
     override val description: String
         get() {
             val spell = if (spellFilter == GameObjectFilter.Any) "spell" else "${spellFilter.description} spell"
             val plural = if (maxPerTurn == 1) "" else "s"
-            return if (eachPlayer) {
-                "Each player can't cast more than $maxPerTurn $spell$plural each turn"
-            } else {
-                "You can't cast more than $maxPerTurn $spell$plural each turn"
+            val who = when (affected) {
+                is Player.You -> "You"
+                is Player.EachOpponent -> "Each opponent"
+                is Player.Each -> "Each player"
+                else -> affected.description.replaceFirstChar { it.uppercase() }
             }
+            return "$who can't cast more than $maxPerTurn $spell$plural each turn"
         }
 
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
