@@ -452,6 +452,24 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Clash', inPlay: 'Both players reveal their top card for a bonus, which also lets you send bad draws to the bottom.' },
     ],
   },
+  AVR: {
+    tagline: "Angels return to Innistrad: a creature-heavy format where soulbond pairs and miracle top-decks swing games, and fliers usually decide them.",
+    setting: "Innistrad after Avacyn's return from the Helvault, with humans on the offensive and demons and spirits loosed across the plane.",
+    gameplay: "Games are mid-paced and creature-focused. Soulbond creatures pair with another creature to share a bonus, so every creature you cast can upgrade your board, and removing one half of a pair breaks the bonus. Miracle cards are cheap when they are the first card you draw in a turn, so a top-deck can flip a game. Blink effects in white and blue reuse enters-the-battlefield abilities, and white and blue fliers, angels and spirits, are the usual way through a stalled ground.",
+    tips: [
+      'Value soulbond creatures highly: pairing a bonus onto a creature you already have is often worth more than the body itself.',
+      'Count fliers: angels, spirits and other evasive creatures win most stalled boards, so draft reach and removal for them.',
+      'Respect miracles: a player who reveals the first card they draw may cast a sweeper or a big spell for a fraction of its cost.',
+    ],
+    tryIf: 'creature combat, paired-up bonuses and big top-deck swings',
+    power: 3, speed: 3, complexity: 3,
+    themes: ['flyers'],
+    mechanics: [
+      { name: 'Soulbond', inPlay: 'A soulbond creature pairs with another unpaired creature you control as either enters, and both get its bonus while you control both, so the order you cast creatures in matters.' },
+      { name: 'Miracle', inPlay: 'If a miracle card is the first card you draw in a turn, you may reveal it and cast it for its much cheaper miracle cost, turning a lucky draw into a swing.' },
+      { name: 'Blink', inPlay: 'White and blue cards exile and return creatures, reusing their enters-the-battlefield abilities and breaking up the opponent\'s soulbond pairs.' },
+    ],
+  },
   RTR: {
     tagline: "The first five Ravnican guilds, each with its own mechanic and its own way to win: a format where you settle into one guild's colour pair and play to its plan.",
     setting: 'Ravnica, a city-plane run by guilds, where the Azorius, Izzet, Rakdos, Golgari and Selesnya vie for control after the Guildpact has dissolved.',
