@@ -1252,7 +1252,10 @@ data class EntersAs(
  * the permanent the damage would have been dealt to. Damage that can't be prevented is dealt, but
  * the prevention still applies to it (CR 615.12): the rider runs with 0 prevented — Purity gains
  * nothing, Nine Lives still gets its incarnation counter. A reflexive "when damage is prevented
- * this way" rider gates itself on a nonzero amount (CR 615.13; Phyrexian Vindicator).
+ * this way" rider gates itself on a nonzero amount (CR 615.13; Phyrexian Vindicator). A rider whose
+ * "that many" counts the damage itself rather than what was prevented reads
+ * [com.wingedsheep.sdk.dsl.DynamicAmounts.wouldBeDamage] — the amount that reached this prevention,
+ * so unpreventable damage still counts in full (Gloom Surgeon).
  *
  * [half] prevents **half** of the damage that reaches this prevention instead of a fixed [amount],
  * rounded up by default ([roundUp]) — Gisela, Blade of Goldnight's "If a source would deal damage to

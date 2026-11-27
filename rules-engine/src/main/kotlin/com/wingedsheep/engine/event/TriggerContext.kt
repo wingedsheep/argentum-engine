@@ -55,6 +55,11 @@ data class TriggerContext(
     val triggeringBattlefieldTimestamp: Long? = null,
     val triggeringPlayerId: EntityId? = null,
     val damageAmount: Int? = null,
+    /**
+     * For a prevention rider: the damage that reached the prevention, before it prevented any —
+     * read by `WOULD_BE_DAMAGE_AMOUNT` (falls back to [damageAmount] when unset).
+     */
+    val wouldBeDamageAmount: Int? = null,
     /** Final result captured for a die-roll observer, independent of later rolls. */
     val dieResult: Int? = null,
     /** Every final result of the roll instruction behind a one-or-more-dice trigger. */

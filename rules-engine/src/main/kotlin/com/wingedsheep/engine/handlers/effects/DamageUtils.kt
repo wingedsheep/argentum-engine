@@ -2552,6 +2552,7 @@ object DamageUtils {
                         preventAmount == null -> remainingDamage
                         else -> minOf(preventAmount, remainingDamage)
                     }
+                    val reached = remainingDamage
                     remainingDamage -= prevented
                     val onPrevented = effect.onPrevented
                     if (onPrevented != null && (prevented > 0 || unpreventable)) {
@@ -2560,7 +2561,8 @@ object DamageUtils {
                             hostId = entityId,
                             controllerId = sourceControllerId,
                             subjectId = targetId,
-                            amount = prevented
+                            amount = prevented,
+                            wouldBeAmount = reached
                         )
                     }
                 }

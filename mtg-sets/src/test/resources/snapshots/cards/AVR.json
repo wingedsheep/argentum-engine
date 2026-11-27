@@ -4597,6 +4597,81 @@
     ]
 }
 
+// Gloom Surgeon
+{
+    "name": "Gloom Surgeon",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "If combat damage would be dealt to this creature, prevent that damage and exile that many cards from the top of your library.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": {
+                            "statePredicates": [
+                                "IsSource"
+                            ]
+                        }
+                    },
+                    "damageType": "DamageCombat"
+                },
+                "onPrevented": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "ContextProperty",
+                                    "key": "WOULD_BE_DAMAGE_AMOUNT"
+                                }
+                            },
+                            "storeAs": "exiled_top"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "exiled_top",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "rarity": "RARE",
+        "artist": "Volkan Baǵa",
+        "flavorText": "He roams the streets of Havengul seeking the sick and delirious so that he may cure them of their lives.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1b00c711-007d-4c85-9dd9-dd9d52f1649d.jpg?1783940698",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "Combat damage that would be dealt to Gloom Surgeon will be prevented even if you can't exile that many cards from the top of your library."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "If damage that can't be prevented (such as the damage Malignus deals) is dealt to Gloom Surgeon, you'll still exile cards from your library."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Goldnight Commander
 {
     "name": "Goldnight Commander",

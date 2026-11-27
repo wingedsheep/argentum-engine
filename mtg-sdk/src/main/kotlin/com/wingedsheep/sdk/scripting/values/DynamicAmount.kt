@@ -521,6 +521,14 @@ enum class ContextPropertyKey(val description: String) {
      * slot in [com.wingedsheep.engine.handlers.EffectContext].
      */
     PREVENTED_DAMAGE_AMOUNT("the prevented damage"),
+    /**
+     * The damage a prevention effect's rider was applied to — the amount that *would* have been
+     * dealt as it reached that prevention, before any of it was prevented. Differs from
+     * [PREVENTED_DAMAGE_AMOUNT] only when the damage can't be prevented (CR 615.12: the rider still
+     * runs, having prevented 0) or the prevention is partial. Gloom Surgeon: "prevent that damage and
+     * exile that many cards" still exiles for damage that can't be prevented, per its ruling.
+     */
+    WOULD_BE_DAMAGE_AMOUNT("the damage that would be dealt"),
     /** The amount of life gained in the current trigger payload (False Cure, Lich's Mastery). */
     TRIGGER_LIFE_GAINED("the life gained"),
     /** The amount of life lost in the current trigger payload (Lich's Mastery). */

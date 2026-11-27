@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.PreventDamage
 import com.wingedsheep.sdk.scripting.RedirectDamage
 import com.wingedsheep.sdk.scripting.ReplacementEffect
+import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.events.Recipient
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.references.Player
@@ -37,6 +38,34 @@ internal object DamageShields {
         val event = pattern as? EventPattern.DamageEvent ?: return false
         return oursOnly(event.recipient)
     }
+
+    /**
+     * A creature's standing "prevent all" over damage to itself alone, from any source — "if combat
+     * damage would be dealt to this creature, prevent that damage" (Gloom Surgeon), "if damage would
+     * be dealt to this creature, prevent that damage" (Phyrexian Vindicator). Kept out of [reads]
+     * (the combat simulation already sees it), but it makes the body nearly unkillable in combat, so
+     * the draft heuristic prices it: [SELF_COMBAT_SHIELD_VALUE] against combat damage only,
+     * [SELF_SHIELD_VALUE] against all damage, 0 when it isn't such a shield. A partial, gated or
+     * source-limited prevention is not.
+     */
+    fun selfShieldValue(replacement: ReplacementEffect): Double {
+        val prevent = replacement as? PreventDamage ?: return 0.0
+        if (prevent.amount != null || prevent.half || prevent.allBut != null || prevent.restrictions.isNotEmpty()) return 0.0
+        val event = prevent.appliesTo as? EventPattern.DamageEvent ?: return 0.0
+        if (event.recipient != Recipient.Self || event.source != com.wingedsheep.sdk.scripting.GameObjectFilter.Any ||
+            event.amount != com.wingedsheep.sdk.scripting.events.AmountFilter.Any) return 0.0
+        return when (event.damageType) {
+            is DamageType.Combat -> SELF_COMBAT_SHIELD_VALUE
+            is DamageType.Any -> SELF_SHIELD_VALUE
+            else -> 0.0
+        }
+    }
+
+    /** Never dies in combat and kills what it blocks over time — about a strong keyword's worth. */
+    private const val SELF_COMBAT_SHIELD_VALUE = 0.6
+
+    /** Also proof against burn: only destroy/exile effects and -X/-X answer it. */
+    private const val SELF_SHIELD_VALUE = 0.8
 
     private fun oursOnly(recipient: Recipient): Boolean = when (recipient) {
         is Recipient.Player -> recipient.player == Player.You

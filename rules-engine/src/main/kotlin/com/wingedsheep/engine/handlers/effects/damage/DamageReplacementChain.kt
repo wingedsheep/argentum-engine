@@ -474,7 +474,7 @@ object DamageReplacementChain {
                         out += Candidate(key, "$hostName — prevent $prevented damage", host,
                             commute = if (effect.amount == null && !effect.half && effect.allBut == null && effect.onPrevented == null) "prevent-all" else null) {
                             val next = if (effect.onPrevented == null || prevented == 0 && !disabled) state else state.copy(pendingReplacementRiders = state.pendingReplacementRiders +
-                                PendingReplacementRider(effect.onPrevented!!, host, controller, d.targetId, amount = prevented))
+                                PendingReplacementRider(effect.onPrevented!!, host, controller, d.targetId, amount = prevented, wouldBeAmount = d.amount))
                             Step(next, listOf(d.copy(amount = d.amount - prevented)))
                         }
                     }
@@ -591,7 +591,7 @@ object DamageReplacementChain {
                     // nothing, but its additional effects take place ("for each 1 damage prevented").
                     if (onPrevented != null) out += Candidate(key, "$hostName — damage can't be prevented", floating.sourceId) {
                         Step(state.copy(pendingReplacementRiders = state.pendingReplacementRiders +
-                            PendingReplacementRider(onPrevented, floating.sourceId ?: floating.controllerId, floating.controllerId, d.targetId, amount = 0,
+                            PendingReplacementRider(onPrevented, floating.sourceId ?: floating.controllerId, floating.controllerId, d.targetId, amount = 0, wouldBeAmount = d.amount,
                                 targets = riderTargets, namedTargets = riderNamedTargets, boundObjects = riderBound)),
                             listOf(d))
                     }
