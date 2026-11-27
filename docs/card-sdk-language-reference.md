@@ -21233,7 +21233,7 @@ not update an existing copy.
   creature" (Mystic Reflection — `GrantReplacementEffect(EntersAsCopy(optional = false, copyOf =
   chosen, appliesTo = EventPattern.ZoneChangeEvent(filter = GameObjectFilter.CreatureOrPlaneswalker,
   to = Zone.BATTLEFIELD)), EffectTarget.Self, Duration.NextUse("one or more creatures or planeswalkers
-  enter"))`). Granted, `GrantReplacementEffect`
+  enter"))`). When granted, `GrantReplacementEffect`
   binds the reference to the `EffectTarget.SpecificEntity` it resolved to and snapshots its copiable
   values on the grant. `appliesTo` filters the entrants (any controller unless the filter says
   otherwise); `copyFilter` / `copyFromZone` / `filterByTotalManaSpent` are unused. Every entry path
@@ -21246,8 +21246,7 @@ not update an existing copy.
   Reflection's "Nontoken creatures you control enter as a copy of enchanted creature" is
   `replacementEffect(EntersAsCopy(optional = false, copyOf = EffectTarget.EnchantedCreature, appliesTo =
   EventPattern.ZoneChangeEvent(filter = GameObjectFilter.Creature.nontoken().youControl(), to =
-  Zone.BATTLEFIELD)))`, and Essence of the Wild's "creatures you control enter as a copy of this" is
-  `copyOf = EffectTarget.Self`. It is read by the same `GrantedEntryCopy` path on every entry route, is
+  Zone.BATTLEFIELD)))`. It is read by the same `GrantedEntryCopy` path on every entry route, is
   never spent, and its "you control" reads the controller the entrant enters under (a card put onto the
   battlefield under your control from an opponent's graveyard is one). With several applying copies of
   different creatures — printed and/or granted — the entrant's controller picks the copy applied last.
@@ -21265,8 +21264,9 @@ not update an existing copy.
   effect, answer or land play replayed with the answer waiting (`GameState.entryCopyOrders`). Several
   tokens entering together are asked about one at a time. A face-down entrant is modified too,
   copying under its face-down status (CR 708.10). The copy has no as-enters choice, so `optional` must be false, and `copyFromZone`,
-  `filterByTotalManaSpent` and `exileCopiedCard` are rejected. Only the granted form is read — a
-  printed `copyOf` (Essence of the Wild) isn't wired.
+  `filterByTotalManaSpent` and `exileCopiedCard` are rejected. A printed `copyOf` is read too (above);
+  a printed self-reference that must skip creatures entering alongside its source (Essence of the
+  Wild) isn't modelled yet.
   **The copy is settled first, then the copied identity's own entry replacements run (CR 614.12).**
   On the cast path the spell takes on the copied identity and then walks the rest of the as-enters
   pipeline *as the copy*: the copied card's `EntersWithChoice` questions (chained in choice-type

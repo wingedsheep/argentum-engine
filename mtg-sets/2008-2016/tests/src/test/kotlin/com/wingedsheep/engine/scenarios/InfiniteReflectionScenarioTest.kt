@@ -31,8 +31,10 @@ class InfiniteReflectionScenarioTest : ScenarioTestBase() {
                     .withCardOnBattlefield(2, "Grizzly Bears")
                     .withCardInHand(1, "Infinite Reflection")
                     .withCardInHand(1, "Grizzly Bears")
+                    .withCardInHand(1, "Lightning Bolt")
                     .withLandsOnBattlefield(1, "Island", 6)
                     .withLandsOnBattlefield(1, "Forest", 2)
+                    .withLandsOnBattlefield(1, "Mountain", 1)
                     .build()
 
                 val giant = game.findPermanent("Hill Giant")!!
@@ -50,6 +52,14 @@ class InfiniteReflectionScenarioTest : ScenarioTestBase() {
                 game.resolveStack()
                 withClue("the Bears entered as a copy of the enchanted Hill Giant") {
                     game.findPermanents("Hill Giant").size shouldBe 3
+                }
+
+                // The copies outlast the Aura (ruling): kill the enchanted Giant, the Aura goes too.
+                game.castSpell(1, "Lightning Bolt", giant).error shouldBe null
+                game.resolveStack()
+                withClue("the Reflection is gone, but the Goblin is still a Hill Giant") {
+                    game.findPermanent("Infinite Reflection") shouldBe null
+                    game.nameOf(goblin) shouldBe "Hill Giant"
                 }
             }
 

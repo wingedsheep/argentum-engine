@@ -451,7 +451,7 @@ class ZoneTransitionService(
         // battlefield-to-battlefield move is not an entry.
         if (actualDestZone == Zone.BATTLEFIELD && fromZone != Zone.BATTLEFIELD &&
             !options.paidToEnter && !options.faceDown &&
-            EntryPayment.enteringCost(state, entityId, options.entryCopy, cardRegistry, predicateEvaluator) != null
+            EntryPayment.enteringCost(state, entityId, options.entryCopy, cardRegistry, predicateEvaluator, options.controllerId) != null
         ) {
             if (fromZone == Zone.GRAVEYARD) {
                 return ZoneTransitionResult(state, emptyList(), redirectResult, actualDestination = Zone.GRAVEYARD)

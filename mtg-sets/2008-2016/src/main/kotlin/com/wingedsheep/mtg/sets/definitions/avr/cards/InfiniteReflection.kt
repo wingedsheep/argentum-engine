@@ -80,7 +80,8 @@ val InfiniteReflection = card("Infinite Reflection") {
         ruling(
             "2012-05-01",
             "If Infinite Reflection leaves the battlefield or becomes attached to a different " +
-                "creature, none of the copy effects end.",
+                "creature, none of the copy effects end. Your creatures will still be copies of whatever " +
+                "creature each was a copy of.",
         )
     }
 }

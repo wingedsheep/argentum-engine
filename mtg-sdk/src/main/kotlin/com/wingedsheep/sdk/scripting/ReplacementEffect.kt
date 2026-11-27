@@ -2730,8 +2730,7 @@ data class ReplaceLifePaymentWithLibraryExile(
  *                   becomes the [EffectTarget.SpecificEntity] it named. It may also be **printed** on a
  *                   permanent with a source-relative reference, read while that permanent is on the
  *                   battlefield: "Nontoken creatures you control enter as a copy of enchanted
- *                   creature" (Infinite Reflection, [EffectTarget.EnchantedCreature]), "creatures you
- *                   control enter as a copy of this" ([EffectTarget.Self]). The reference is resolved
+ *                   creature" (Infinite Reflection, [EffectTarget.EnchantedCreature]). The reference is resolved
  *                   as each entrant enters and must be on the battlefield then; a printed one is never
  *                   spent. [appliesTo] then says which entrants it modifies; there is no
  *                   as-enters choice, so `optional` must be false and [copyFilter] is unused

@@ -102,6 +102,7 @@ import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.InvestigateEffect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
+import com.wingedsheep.sdk.scripting.EntersAsCopy
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.events.Recipient
@@ -2838,7 +2839,7 @@ object TargetPolarityAnalyzer {
                 // "Nontoken creatures you control enter as a copy of enchanted creature" (Infinite
                 // Reflection): the host is only the copy source — untouched, and worth copying
                 // whichever side it is on, so the simulation picks the best creature to name.
-                replacement is com.wingedsheep.sdk.scripting.EntersAsCopy && replacement.copyOf in HOST_TARGETS ->
+                replacement is EntersAsCopy && replacement.copyOf in HOST_TARGETS ->
                     readings += TargetPolarity.FLEXIBLE
                 hostDamagePrevention(replacement) ->
                     if (hostIs == null || hostTypeGate(replacement)?.second?.let { it != hostIs } != true) {
@@ -3298,14 +3299,6 @@ object TargetPolarityAnalyzer {
         }
 
     /**
-     * What an attachment's "whenever enchanted creature attacks, you may create a token that's a
-     * copy of that creature" trigger (Mirror Mockery) does: the copy arrives on the Aura
-     * controller's side, untapped and not attacking, in the middle of the host's attack. On an
-     * opponent's attacker it is a blocker made of the very creature coming at us — a deterrent
-     * that curses the host's attacks; on our own attacker it only stands beside it. So the slot is
-     * aimed at an opponent's creature. A copy made attacking, or for someone else, isn't this shape.
-     */
-    /**
      * An attachment's trigger that makes other permanents copies of its host — "when this Aura enters
      * attached to a creature, each other nontoken creature you control becomes a copy of that
      * creature" (Infinite Reflection): the host is the copy source, left as it is, and the best
@@ -3319,6 +3312,14 @@ object TargetPolarityAnalyzer {
             }
         }
 
+    /**
+     * What an attachment's "whenever enchanted creature attacks, you may create a token that's a
+     * copy of that creature" trigger (Mirror Mockery) does: the copy arrives on the Aura
+     * controller's side, untapped and not attacking, in the middle of the host's attack. On an
+     * opponent's attacker it is a blocker made of the very creature coming at us — a deterrent
+     * that curses the host's attacks; on our own attacker it only stands beside it. So the slot is
+     * aimed at an opponent's creature. A copy made attacking, or for someone else, isn't this shape.
+     */
     private fun hostAttackCopyReadings(ability: TriggeredAbility): List<TargetPolarity> {
         if (ability.binding != TriggerBinding.ATTACHED || ability.trigger !is EventPattern.AttackEvent) return emptyList()
         return EffectWalker.payoffLeaves(ability.effect).mapNotNull { leaf ->

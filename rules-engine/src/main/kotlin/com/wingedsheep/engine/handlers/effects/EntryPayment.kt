@@ -71,7 +71,8 @@ object EntryPayment {
         entryCopy: com.wingedsheep.engine.handlers.effects.copy.EntryCopyChoice?,
         cardRegistry: CardRegistry,
         predicateEvaluator: PredicateEvaluator,
-    ): PayCost? = costOf(enteringDefinition(state, entityId, entryCopy, cardRegistry, predicateEvaluator))
+        entrantControllerId: EntityId? = null,
+    ): PayCost? = costOf(enteringDefinition(state, entityId, entryCopy, cardRegistry, predicateEvaluator, entrantControllerId))
 
     /**
      * The definition [entityId] enters with (CR 614.12): the copied card's when it enters as a copy —
@@ -83,9 +84,10 @@ object EntryPayment {
         entryCopy: com.wingedsheep.engine.handlers.effects.copy.EntryCopyChoice?,
         cardRegistry: CardRegistry,
         predicateEvaluator: PredicateEvaluator,
+        entrantControllerId: EntityId? = null,
     ): CardDefinition? {
         val choice = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy
-            .find(state, entityId, predicateEvaluator)?.chosen(entryCopy) ?: entryCopy
+            .find(state, entityId, predicateEvaluator, entrantControllerId)?.chosen(entryCopy) ?: entryCopy
         val card = choice?.takeIf { it.copiedCard != null }
             ?.let { com.wingedsheep.engine.handlers.effects.copy.EffectCopyEntry.apply(state, entityId, it) }
             ?.getEntity(entityId)?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
@@ -248,7 +250,7 @@ object EffectEntryPayments {
             if (id in state.getBattlefield()) continue
             if (answered.entryChoices[id]?.paidToEnter != null) continue
             val card = state.getEntity(id)?.get<com.wingedsheep.engine.state.components.identity.CardComponent>() ?: continue
-            val enteringDef = EntryPayment.enteringDefinition(state, id, answered.entryCopies[id], registry, predicateEvaluator)
+            val enteringDef = EntryPayment.enteringDefinition(state, id, answered.entryCopies[id], registry, predicateEvaluator, controller)
             val onlyIfPaid = EntryPayment.costOf(enteringDef)
             // A shock land ("As this land enters, you may pay 2 life. If you don't, it enters
             // tapped.") pays the same way; declining taps it instead of binning it. Not asked when
