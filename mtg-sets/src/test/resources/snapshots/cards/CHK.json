@@ -17207,7 +17207,13 @@
                 "powerBonus": 2,
                 "toughnessBonus": 2
             },
-            "MustAttack"
+            {
+                "type": "MustAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
         ],
         "auraTarget": {
             "type": "TargetObject",

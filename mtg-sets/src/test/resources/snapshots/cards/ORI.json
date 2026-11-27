@@ -5577,7 +5577,13 @@
                 "type": "GrantKeyword",
                 "keyword": "HASTE"
             },
-            "MustAttack"
+            {
+                "type": "MustAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
         ],
         "auraTarget": {
             "type": "TargetObject",
