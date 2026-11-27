@@ -23,6 +23,8 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.combat.rules.BlockAsThoughReach
 import com.wingedsheep.engine.mechanics.combat.rules.LandwalkSuppression
 import com.wingedsheep.sdk.scripting.CantBeBlockedBy
+import com.wingedsheep.engine.mechanics.combat.rules.BlockCheckContext
+import com.wingedsheep.engine.mechanics.combat.rules.CantBeBlockedByCreaturesWithLessPowerRule
 import com.wingedsheep.sdk.scripting.CantBeBlockedUnlessAllDefendersBlock
 import com.wingedsheep.sdk.scripting.CantBlockCreaturesWithGreaterPower
 
@@ -151,6 +153,15 @@ object CombatMath {
 
         // Attacker-side filter restrictions (e.g., "can't be blocked by creatures with power 2 or less")
         if (cardRegistry != null) {
+            // "Creatures with power less than <source>'s power can't block it" (Howlgeist) and its
+            // group form "... can't block creatures you control" (Champion of Lambholt): the engine's
+            // own rule, so the threshold is the source's projected power and a lost-abilities or
+            // face-down source restricts nothing.
+            if (blockerController != null &&
+                CantBeBlockedByCreaturesWithLessPowerRule(PredicateEvaluator(cardRegistry)).check(
+                    BlockCheckContext(state, projected, attacker, blocker, blockerController, cardRegistry)
+                ) != null
+            ) return false
             // A face-down attacker has no printed text to read (and reading it would leak the
             // hidden card), and one that lost all abilities has none either.
             if (!projected.hasLostAllAbilities(attacker)) {

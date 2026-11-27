@@ -22,6 +22,8 @@ import com.wingedsheep.sdk.scripting.CantBeBlockedUnlessDefenderSharesCreatureTy
 import com.wingedsheep.sdk.scripting.CantBeBlockedWhilePropertyAtMost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
+import com.wingedsheep.sdk.scripting.CantBeBlockedByCreaturesWithLessPower
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
 
 /**
@@ -262,49 +264,57 @@ class CantBeBlockedByRule(
         return null
     }
 
-    /**
-     * Restrictions projected onto the attacker by a battlefield permanent through the static's
-     * [com.wingedsheep.sdk.scripting.filters.unified.GroupFilter] — an Equipment or Aura whose
-     * "equipped/enchanted creature can't be blocked by …" clause lives on the attachment, not on
-     * the attacker's own card (Blazing Torch, Artifact Ward), or a permanent that hands the
-     * restriction to a whole battlefield group (Wall Crawl's Spiders, Storm, Windrider's "creatures
-     * with flying can't block creatures you control"). Mirrors the host-scoped `MustBeBlocked` scan
-     * in `BlockPhaseManager`: the filter's scope is resolved relative to the permanent carrying the
-     * static, and the attacker must also satisfy the filter's base filter.
-     *
-     * The host is **not** skipped when it is itself the attacker: a `Scope.Battlefield` group
-     * clause on a creature covers that creature too whenever it matches the group ("creatures you
-     * control" includes the creature saying so). `Scope.Self` is excluded here because the
-     * attacker's own printed read above already covers it, and `excludeSelf` on the group filter
-     * is honored so an "other creatures you control …" clause still leaves the host out.
-     */
-    private fun hostScopedRestrictions(ctx: BlockCheckContext): List<CantBeBlockedBy> {
-        val result = mutableListOf<CantBeBlockedBy>()
-        for (hostId in ctx.state.getBattlefield()) {
-            val container = ctx.state.getEntity(hostId) ?: continue
-            for (ability in ctx.printedStatics(hostId).filterIsInstance<CantBeBlockedBy>()) {
-                val scopeMatches = when (val scope = ability.filter.scope) {
-                    is Scope.AttachedTo -> container.get<AttachedToComponent>()?.targetId == ctx.attackerId
-                    is Scope.Specific -> scope.entityId == ctx.attackerId
-                    is Scope.Battlefield -> true
-                    is Scope.SoulbondPair ->
-                        com.wingedsheep.engine.mechanics.SoulbondPairing.isInPairOf(ctx.state, hostId, ctx.attackerId)
-                    is Scope.ChosenCreature -> ctx.state.chosenCreatureOf(hostId) == ctx.attackerId
-                    is Scope.Self -> false // already covered by the attacker's own printed read
-                }
-                if (!scopeMatches) continue
-                // "Other creatures …": the host never grants the clause to itself.
-                if (hostId == ctx.attackerId && ability.filter.excludeSelf) continue
-                val hostController = ctx.projected.getController(hostId) ?: continue
-                val baseMatches = predicateEvaluator.matches(
-                    ctx.state, ctx.projected, ctx.attackerId, ability.filter.baseFilter,
-                    PredicateContext(sourceId = hostId, controllerId = hostController)
-                )
-                if (baseMatches) result.add(ability)
+    private fun hostScopedRestrictions(ctx: BlockCheckContext): List<CantBeBlockedBy> =
+        hostScopedStatics<CantBeBlockedBy>(ctx, predicateEvaluator) { it.filter }.map { it.second }
+}
+
+/**
+ * Attacker-side statics of type [T] projected onto the attacker by a battlefield permanent through the static's
+ * [com.wingedsheep.sdk.scripting.filters.unified.GroupFilter] — an Equipment or Aura whose
+ * "equipped/enchanted creature can't be blocked by …" clause lives on the attachment, not on
+ * the attacker's own card (Blazing Torch, Artifact Ward), or a permanent that hands the
+ * restriction to a whole battlefield group (Wall Crawl's Spiders, Storm, Windrider's "creatures
+ * with flying can't block creatures you control"). Mirrors the host-scoped `MustBeBlocked` scan
+ * in `BlockPhaseManager`: the filter's scope is resolved relative to the permanent carrying the
+ * static, and the attacker must also satisfy the filter's base filter.
+ *
+ * The host is **not** skipped when it is itself the attacker: a `Scope.Battlefield` group
+ * clause on a creature covers that creature too whenever it matches the group ("creatures you
+ * control" includes the creature saying so). `Scope.Self` is excluded here because each rule
+ * reads the attacker's own printed statics itself, and `excludeSelf` on the group filter
+ * is honored so an "other creatures you control …" clause still leaves the host out.
+ */
+internal inline fun <reified T : com.wingedsheep.sdk.scripting.StaticAbility> hostScopedStatics(
+    ctx: BlockCheckContext,
+    predicateEvaluator: PredicateEvaluator,
+    filterOf: (T) -> com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+): List<Pair<EntityId, T>> {
+    val result = mutableListOf<Pair<EntityId, T>>()
+    for (hostId in ctx.state.getBattlefield()) {
+        val container = ctx.state.getEntity(hostId) ?: continue
+        for (ability in ctx.printedStatics(hostId).filterIsInstance<T>()) {
+            val filter = filterOf(ability)
+            val scopeMatches = when (val scope = filter.scope) {
+                is Scope.AttachedTo -> container.get<AttachedToComponent>()?.targetId == ctx.attackerId
+                is Scope.Specific -> scope.entityId == ctx.attackerId
+                is Scope.Battlefield -> true
+                is Scope.SoulbondPair ->
+                    com.wingedsheep.engine.mechanics.SoulbondPairing.isInPairOf(ctx.state, hostId, ctx.attackerId)
+                is Scope.ChosenCreature -> ctx.state.chosenCreatureOf(hostId) == ctx.attackerId
+                is Scope.Self -> false // covered by each rule's read of the attacker's own statics
             }
+            if (!scopeMatches) continue
+            // "Other creatures …": the host never grants the clause to itself.
+            if (hostId == ctx.attackerId && filter.excludeSelf) continue
+            val hostController = ctx.projected.getController(hostId) ?: continue
+            val baseMatches = predicateEvaluator.matches(
+                ctx.state, ctx.projected, ctx.attackerId, filter.baseFilter,
+                PredicateContext(sourceId = hostId, controllerId = hostController)
+            )
+            if (baseMatches) result.add(hostId to ability)
         }
-        return result
     }
+    return result
 }
 
 /**
@@ -643,25 +653,32 @@ class CantBlockCreaturesWithGreaterPowerRule : BlockEvasionRule {
 }
 
 /**
- * CantBeBlockedByCreaturesWithLessPower: Attacker can't be blocked by creatures whose power is
- * less than the attacker's power (e.g. Formation Breaker). The attacker-side dual of
+ * CantBeBlockedByCreaturesWithLessPower: creatures whose power is less than the *source's* power
+ * can't block the creatures the static covers. Self-scoped (Formation Breaker, Howlgeist) the
+ * source is the attacker; group-scoped (Champion of Lambholt's "creatures with power less than
+ * this creature's power can't block creatures you control") the threshold is the host's projected
+ * power, read through [hostScopedStatics]. The attacker-side dual of
  * [CantBlockCreaturesWithGreaterPowerRule].
  */
-class CantBeBlockedByCreaturesWithLessPowerRule : BlockEvasionRule {
+class CantBeBlockedByCreaturesWithLessPowerRule(
+    private val predicateEvaluator: PredicateEvaluator
+) : BlockEvasionRule {
     override fun check(ctx: BlockCheckContext): String? {
         // Face-down or ability-less creatures have no printed restriction.
-        val restriction = ctx.printedStatics(ctx.attackerId)
-            .filterIsInstance<com.wingedsheep.sdk.scripting.CantBeBlockedByCreaturesWithLessPower>().firstOrNull()
-            ?: return null
-
-        if (restriction.filter.scope !is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self) return null
-
-        val attackerPower = ctx.projected.getPower(ctx.attackerId) ?: 0
+        val own = ctx.printedStatics(ctx.attackerId)
+            .filterIsInstance<CantBeBlockedByCreaturesWithLessPower>()
+            .filter { it.filter.scope is Scope.Self }
+            .map { ctx.attackerId }
+        val hosts = hostScopedStatics<CantBeBlockedByCreaturesWithLessPower>(ctx, predicateEvaluator) { it.filter }
+            .map { it.first }
         val blockerPower = ctx.projected.getPower(ctx.blockerId) ?: 0
-
-        if (blockerPower < attackerPower) {
-            val blockerName = ctx.publicName(ctx.blockerId)
-            return "$blockerName can't block ${ctx.publicName(ctx.attackerId)} (power $blockerPower is less than ${ctx.publicName(ctx.attackerId)}'s power $attackerPower)"
+        for (sourceId in (own + hosts).distinct()) {
+            val sourcePower = ctx.projected.getPower(sourceId) ?: 0
+            if (blockerPower < sourcePower) {
+                val blockerName = ctx.publicName(ctx.blockerId)
+                return "$blockerName can't block ${ctx.publicName(ctx.attackerId)} " +
+                    "(power $blockerPower is less than ${ctx.publicName(sourceId)}'s power $sourcePower)"
+            }
         }
         return null
     }
@@ -778,6 +795,6 @@ fun defaultBlockEvasionRules(
     ProtectionFromSourceKindRule(),
     CanOnlyBlockCreaturesWithRule(predicateEvaluator),
     CantBlockCreaturesWithGreaterPowerRule(),
-    CantBeBlockedByCreaturesWithLessPowerRule(),
+    CantBeBlockedByCreaturesWithLessPowerRule(predicateEvaluator),
     RingBearerCantBeBlockedByGreaterPowerRule()
 )
