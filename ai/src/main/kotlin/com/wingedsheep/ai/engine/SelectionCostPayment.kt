@@ -49,7 +49,10 @@ internal object SelectionCostPayment {
             is ActivateAbility -> (gameAction.costPayment ?: AdditionalCostPayment()) to gameAction.playerId
             else -> return gameAction
         }
-        val order = CandidateOrder(state, payerId, intents, discardsByManaValue(state, gameAction, intents))
+        val order = CandidateOrder(
+            state, payerId, intents, discardsByManaValue(state, gameAction, intents),
+            tapsForPayoff(state, gameAction, intents),
+        )
         val xValue = (gameAction as? CastSpell)?.xValue ?: 0
         val primary = plain(info, existing, order, xValue) ?: return gameAction
         val payment = info.alsoRequired.fold(primary) { acc, extra -> plain(extra, acc, order, xValue) ?: acc }
@@ -141,6 +144,12 @@ internal object SelectionCostPayment {
             bouncedPermanents = cheapestFirst.permanents(info.validBounceTargets).take(info.bounceCount)
         )
         "ExileFromGraveyard" -> existing.copy(exiledCards = info.validExileTargets.take(info.exileMinCount))
+        // "Tap any number of untapped creatures you control": every candidate when the spell scales
+        // with the count (Burn at the Stake's three damage per creature tapped), else only the floor.
+        "TapVariable" -> {
+            val ranked = cheapestFirst.permanents(info.validTapTargets)
+            existing.copy(variableCostPermanents = if (cheapestFirst.tapsForPayoff) ranked else ranked.take(info.tapCount))
+        }
         // "Sacrifice any number of …": only the floor, so a zero-floor cost sacrifices nothing.
         // "Sacrifice X creatures": exactly the cast's announced X.
         "SacrificeVariable" -> existing.copy(
@@ -155,25 +164,40 @@ internal object SelectionCostPayment {
      * cards" (Nahiri's Wrath) — then its discard cost is the fuel, and the cards worth the most
      * mana value are the ones to discard, not the ones worth least in hand.
      */
-    fun discardsByManaValue(state: GameState, gameAction: GameAction, intents: IntentCatalog): Boolean {
+    fun discardsByManaValue(state: GameState, gameAction: GameAction, intents: IntentCatalog): Boolean =
+        dealsDamageReading(state, gameAction, intents, ContextPropertyKey.DISCARDED_AS_COST_TOTAL_MANA_VALUE)
+
+    /**
+     * Whether [gameAction] casts a spell whose damage is "the number of creatures tapped this way"
+     * (Burn at the Stake) — then every untapped creature is fuel for its "tap any number" cost.
+     */
+    fun tapsForPayoff(state: GameState, gameAction: GameAction, intents: IntentCatalog): Boolean =
+        dealsDamageReading(state, gameAction, intents, ContextPropertyKey.TAPPED_AS_COST_COUNT)
+
+    private fun dealsDamageReading(
+        state: GameState,
+        gameAction: GameAction,
+        intents: IntentCatalog,
+        key: ContextPropertyKey,
+    ): Boolean {
         val cast = gameAction as? CastSpell ?: return false
         val name = state.getEntity(cast.cardId)?.get<CardComponent>()?.name ?: return false
         val effect = intents.definition(name)?.script?.spellEffect ?: return false
-        return dealsDiscardedManaValue(effect)
+        return dealsDamageReading(effect, key)
     }
 
-    private fun dealsDiscardedManaValue(effect: Effect): Boolean = EffectWalker.leaves(effect).any { leaf ->
+    private fun dealsDamageReading(effect: Effect, key: ContextPropertyKey): Boolean = EffectWalker.leaves(effect).any { leaf ->
         when (leaf) {
-            is ForEachEffect -> dealsDiscardedManaValue(leaf.body)
-            is DealDamageEffect -> readsDiscardedManaValue(leaf.amount)
+            is ForEachEffect -> dealsDamageReading(leaf.body, key)
+            is DealDamageEffect -> reads(leaf.amount, key)
             else -> false
         }
     }
 
-    private fun readsDiscardedManaValue(amount: DynamicAmount): Boolean = when (amount) {
-        is DynamicAmount.ContextProperty -> amount.key == ContextPropertyKey.DISCARDED_AS_COST_TOTAL_MANA_VALUE
-        is DynamicAmount.Add -> readsDiscardedManaValue(amount.left) || readsDiscardedManaValue(amount.right)
-        is DynamicAmount.Multiply -> readsDiscardedManaValue(amount.amount)
+    private fun reads(amount: DynamicAmount, key: ContextPropertyKey): Boolean = when (amount) {
+        is DynamicAmount.ContextProperty -> amount.key == key
+        is DynamicAmount.Add -> reads(amount.left, key) || reads(amount.right, key)
+        is DynamicAmount.Multiply -> reads(amount.amount, key)
         else -> false
     }
 
@@ -202,6 +226,8 @@ internal object SelectionCostPayment {
         private val payerId: EntityId?,
         private val intents: IntentCatalog,
         private val discardsByManaValue: Boolean = false,
+        /** The spell scales with the creatures its "tap any number" cost taps ([tapsForPayoff]). */
+        val tapsForPayoff: Boolean = false,
     ) {
         private val handValue by lazy { payerId?.let { CardSelectionValue.of(state, it, intents) } }
 

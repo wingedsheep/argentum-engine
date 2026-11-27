@@ -829,3 +829,44 @@ describe('Same-name discard cost picker', () => {
     })
   })
 })
+
+describe('Tap any number of creatures — variable tap picker', () => {
+  function tapVariableAction(): LegalActionInfo {
+    return castAction({
+      description: 'Cast Burn at the Stake',
+      additionalCostInfo: {
+        costType: 'TapVariable',
+        description: 'Tap any number of untapped creatures you control',
+        validTapTargets: ['a', 'b', 'c'],
+        tapCount: 0,
+      },
+    })
+  }
+
+  it('lets the caster tap none up to every untapped creature', () => {
+    const info = tapVariableAction()
+    let captured: Record<string, unknown> | null = null
+    const store = {
+      startTargeting: (arg: Record<string, unknown>) => { captured = arg },
+    } as unknown as Parameters<typeof enterPhase>[3]
+    enterPhase({ type: 'costPayment' }, info, info.action, store, undefined)
+    expect(captured).toMatchObject({
+      validTargets: ['a', 'b', 'c'],
+      minTargets: 0,
+      maxTargets: 3,
+      isTapPermanentSelection: true,
+      targetDescription: 'Tap any number of untapped creatures you control',
+    })
+  })
+
+  it('pays through the variable-count permanent channel', () => {
+    const info = tapVariableAction()
+    const merged = mergeResult(
+      info.action as never,
+      info,
+      { type: 'costPayment', costType: 'TapVariable', selectedTargets: ['a' as never, 'c' as never] },
+      {} as never,
+    )
+    expect(merged).toMatchObject({ additionalCostPayment: { variableCostPermanents: ['a', 'c'] } })
+  })
+})

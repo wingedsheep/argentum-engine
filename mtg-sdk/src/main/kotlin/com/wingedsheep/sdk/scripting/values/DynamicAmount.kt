@@ -528,6 +528,17 @@ enum class ContextPropertyKey(val description: String) {
     /** Number of cards exiled as an additional cost (Chill Haunting). */
     ADDITIONAL_COST_EXILED_COUNT("the number of cards exiled"),
     /**
+     * Number of permanents tapped to pay the resolving spell's additional cost or the resolving
+     * ability's activation cost — "deals damage … equal to three times the number of creatures
+     * tapped this way" (Burn at the Stake, after `Costs.additional.TapPermanentsVariable()`).
+     *
+     * The counting reader of the same recorded tap list `EffectTarget.TappedAsCost(index)` names
+     * one permanent of and `CardSource.TappedAsCost` gathers. Fixed when the cost is paid
+     * (CR 601.2h), so a creature tapped this way that later untaps or leaves still counts. 0 when
+     * nothing was tapped as a cost; convoke taps are not costs of this kind.
+     */
+    TAPPED_AS_COST_COUNT("the number of permanents tapped this way"),
+    /**
      * Combined mana value (CR 202.3) of the cards discarded to pay the resolving spell's additional
      * cost or the resolving ability's activation cost — "deals damage equal to the total mana value
      * of the discarded cards" (Nahiri's Wrath, after `Costs.additional.DiscardVariableCards()`).

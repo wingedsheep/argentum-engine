@@ -760,6 +760,14 @@ object DynamicAmounts {
         DynamicAmount.ContextProperty(ContextPropertyKey.ADDITIONAL_COST_EXILED_COUNT)
 
     /**
+     * "The number of creatures tapped this way" — the permanents tapped to pay this spell's
+     * additional cost or this ability's activation cost ([ContextPropertyKey.TAPPED_AS_COST_COUNT];
+     * Burn at the Stake, after `Costs.additional.TapPermanentsVariable()`).
+     */
+    fun permanentsTappedAsCost(): DynamicAmount =
+        DynamicAmount.ContextProperty(ContextPropertyKey.TAPPED_AS_COST_COUNT)
+
+    /**
      * "The total mana value of the discarded cards" — the cards discarded to pay this spell's
      * additional cost or this ability's activation cost, counted wherever they went
      * ([ContextPropertyKey.DISCARDED_AS_COST_TOTAL_MANA_VALUE]; Nahiri's Wrath).

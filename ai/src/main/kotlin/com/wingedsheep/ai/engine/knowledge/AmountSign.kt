@@ -136,6 +136,7 @@ internal enum class AmountSign {
             ContextPropertyKey.TRIGGER_DAMAGE_AMOUNT, ContextPropertyKey.TRIGGER_RECIPIENT_TOUGHNESS,
             ContextPropertyKey.PREVENTED_DAMAGE_AMOUNT, ContextPropertyKey.TRIGGER_LIFE_GAINED,
             ContextPropertyKey.TRIGGER_LIFE_LOST, ContextPropertyKey.ADDITIONAL_COST_EXILED_COUNT,
+            ContextPropertyKey.TAPPED_AS_COST_COUNT,
             ContextPropertyKey.DISCARDED_AS_COST_TOTAL_MANA_VALUE, ContextPropertyKey.TARGET_COUNT,
             ContextPropertyKey.TARGETS_TOTAL_MANA_VALUE, ContextPropertyKey.LAST_KNOWN_PLUS_ONE_COUNTER_COUNT,
             ContextPropertyKey.TRIGGER_COUNTERS_PLACED_AMOUNT, ContextPropertyKey.TRIGGER_COUNTERS_REMOVED_AMOUNT,

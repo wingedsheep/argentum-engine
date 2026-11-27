@@ -732,7 +732,8 @@ internal object ReturnToHandCostKind : SpellCostKind<CostAtom.ReturnToHand> {
  * A variable-count permanent cost. Teamwork N's "tap any number of creatures you control with
  * total power N or more" (CR 702.194a) is a declared optional cost, enumerated on the optional-cost
  * rail rather than here. A spell's own printed "you may sacrifice any number of Spirits" (Devouring
- * Greed) is offered on the main rail through [enumerate], as the `SacrificeVariable` picker.
+ * Greed) is offered on the main rail through [enumerate], as the `SacrificeVariable` picker, and
+ * "tap any number of untapped creatures you control" (Burn at the Stake) as the `TapVariable` one.
  */
 internal object VariablePermanentsCostKind : SpellCostKind<CostAtom.VariablePermanents> {
     /** Whether [cost] is "sacrifice X …" — its whole count is the X announced with the cast. */
@@ -756,10 +757,11 @@ internal object VariablePermanentsCostKind : SpellCostKind<CostAtom.VariablePerm
     override fun canPay(state: GameState, payerId: EntityId, cost: CostAtom.VariablePermanents, costHandler: CostHandler) =
         VariablePermanentsCost.canPay(state, payerId, cost, predicateEvaluator = costHandler.predicateEvaluator)
 
-    // Only the sacrifice action has a main-rail picker; exile and tap as a spell's printed
-    // additional cost have no card yet, and teamwork's tap is offered on the optional-cost rail.
+    // Sacrifice and tap have main-rail pickers; exile as a spell's printed variable additional cost
+    // has no card yet. Teamwork's tap is the same atom but a *declared* optional cost, offered on
+    // the optional-cost rail instead (its total-power floor makes it a `TapForTotalPower` picker).
     override fun enumerate(env: SpellCostEnumeration, cost: CostAtom.VariablePermanents, offer: SpellCostOffer): Boolean {
-        if (cost.action == PermanentCostAction.SACRIFICE) {
+        if (cost.action != PermanentCostAction.EXILE) {
             offer.variablePermanentsCost = cost
             offer.variablePermanentsTargets = candidates(env, cost)
         }
@@ -775,8 +777,31 @@ internal object VariablePermanentsCostKind : SpellCostKind<CostAtom.VariablePerm
         VariablePermanentsCost.canPay(env.state, env.playerId, cost, predicateEvaluator = env.predicateEvaluator)
 
     override fun present(env: SpellCostEnumeration, cost: CostAtom.VariablePermanents, candidates: List<EntityId>) =
-        if (cost.action != PermanentCostAction.SACRIFICE) null
-        else "Sacrifice" to sacrificeVariableData(cost, candidates)
+        when (cost.action) {
+            PermanentCostAction.SACRIFICE -> "Sacrifice" to sacrificeVariableData(cost, candidates)
+            PermanentCostAction.TAP -> "Tap" to tapVariableData(cost, candidates)
+            PermanentCostAction.EXILE -> null
+        }
+
+    /** The main-rail picker for a spell's own variable permanent cost, by what it does with them. */
+    fun variableData(cost: CostAtom.VariablePermanents, candidates: List<EntityId>) = when (cost.action) {
+        PermanentCostAction.TAP -> tapVariableData(cost, candidates)
+        else -> sacrificeVariableData(cost, candidates)
+    }
+
+    /**
+     * The `TapVariable` picker: "tap any number of untapped creatures you control" (Burn at the
+     * Stake) — choose between [CostAtom.VariablePermanents.minCount] and all of [candidates], each
+     * untapped (CR 701.26a; summoning sickness doesn't matter, CR 302.6). The chosen ids come back
+     * as `additionalCostPayment.variableCostPermanents`, like the sacrifice twin's.
+     */
+    fun tapVariableData(cost: CostAtom.VariablePermanents, candidates: List<EntityId>) =
+        AdditionalCostData(
+            description = cost.leadingDescription,
+            costType = "TapVariable",
+            validTapTargets = candidates,
+            tapCount = cost.minCount,
+        )
 
     /**
      * The `SacrificeVariable` picker: choose between [CostAtom.VariablePermanents.minCount] and all
@@ -880,6 +905,9 @@ internal object VariablePermanentsCostKind : SpellCostKind<CostAtom.VariablePerm
                 val (tappedState, tapEvents) = VariablePermanentsCost.tapAll(ledger.state, chosen, reason)
                 ledger.state = tappedState
                 ledger.events.addAll(tapEvents)
+                // Recorded on the spell (CR 601.2h) so "the number of creatures tapped this way"
+                // (`ContextPropertyKey.TAPPED_AS_COST_COUNT`) and `EffectTarget.TappedAsCost` read them.
+                ledger.tappedAsCostPermanents.addAll(chosen)
             }
             PermanentCostAction.SACRIFICE -> {
                 ledger.sacrificedSnapshots.addAll(captureEntitySnapshots(chosen, ledger.state))
