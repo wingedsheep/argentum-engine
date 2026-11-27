@@ -4174,6 +4174,7 @@ Curious Inquiry	polarity: Aura>GrantTriggeredAbility; polarity: Aura>ModifyStats
 Curious Obsession
 Curious Pair
 Curse Artifact	polarity: Aura>PayOrSufferEffect
+Curse of Exhaustion
 Curse of Hospitality	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile); polarity: Aura>GatherCardsEffect; polarity: Aura>GrantKeyword; polarity: Aura>GrantMayPlayFromExileEffect; polarity: Aura>MoveCollectionEffect
 Curse of Leeches	polarity: Aura>GainLifeEffect; polarity: Aura>LoseLifeEffect
 Curse of Opulence	polarity: Aura>CreatePredefinedTokenEffect; polarity: Aura>ForEachEffect
