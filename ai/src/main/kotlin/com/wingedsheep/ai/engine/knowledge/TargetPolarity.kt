@@ -3263,8 +3263,11 @@ object TargetPolarityAnalyzer {
      * owner's control" trigger (Gift of Immortality) does to its host: the creature comes straight
      * back to whoever owns it, a death undone — a gift on our own creature, wasted on an opponent's.
      * Read off the pipeline that gathers the dying card itself and moves it onto the battlefield
-     * under its owner's control; a return under the Aura controller's control (Unholy Indenture)
-     * steals an opponent's creature and isn't this shape.
+     * under its owner's control.
+     *
+     * A return under the Aura controller's own control (Unhallowed Pact) serves them on either
+     * side: on our creature it undoes the death, on theirs it steals the card when it dies. That
+     * reads [TargetPolarity.FLEXIBLE] — both sides stay eligible and simulation picks the host.
      */
     private fun hostDeathReturnReadings(ability: TriggeredAbility): List<TargetPolarity> {
         if (ability.binding != TriggerBinding.ATTACHED) return emptyList()
@@ -3274,11 +3277,15 @@ object TargetPolarityAnalyzer {
         val dyingCard = leaves.filterIsInstance<GatherCardsEffect>()
             .filter { (it.source as? CardSource.Entity)?.entity == EffectTarget.TriggeringEntity }
             .map { it.storeAs }.toSet()
-        val returned = leaves.filterIsInstance<MoveCollectionEffect>().any { move ->
-            move.from in dyingCard && move.underOwnersControl &&
-                (move.destination as? CardDestination.ToZone)?.zone == Zone.BATTLEFIELD
+        val returns = leaves.filterIsInstance<MoveCollectionEffect>().filter { move ->
+            move.from in dyingCard && (move.destination as? CardDestination.ToZone)?.zone == Zone.BATTLEFIELD
         }
-        return if (returned) listOf(TargetPolarity.BENEFICIAL) else emptyList()
+        return when {
+            returns.any { it.underOwnersControl } -> listOf(TargetPolarity.BENEFICIAL)
+            returns.any { (it.destination as CardDestination.ToZone).player == Player.You } ->
+                listOf(TargetPolarity.FLEXIBLE)
+            else -> emptyList()
+        }
     }
 
     /**
