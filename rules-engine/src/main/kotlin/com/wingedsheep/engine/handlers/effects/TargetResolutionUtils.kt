@@ -186,6 +186,8 @@ object TargetResolutionUtils {
             ?.get<com.wingedsheep.engine.state.components.identity.CreatedByComponent>() ?: return null
         val creator = stamp.creatorId
         if (creator !in state.getBattlefield()) return null
+        // A phased-out creator is treated as though it doesn't exist.
+        if (state.getEntity(creator)?.has<com.wingedsheep.engine.state.components.battlefield.PhasedOutComponent>() == true) return null
         val generation = stamp.creatorGeneration ?: return creator
         return creator.takeIf { state.objectRef(it)?.generation == generation }
     }
