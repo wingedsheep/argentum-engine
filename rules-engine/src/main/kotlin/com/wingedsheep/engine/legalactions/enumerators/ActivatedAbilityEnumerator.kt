@@ -40,6 +40,7 @@ import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.costs.manaCostOrNull
+import com.wingedsheep.engine.mechanics.cost.ExiledCardManaCostPricing
 import com.wingedsheep.sdk.scripting.effects.*
 
 /**
@@ -951,6 +952,19 @@ class ActivatedAbilityEnumerator(
                                 }
                                 else -> {}
                             }
+                        }
+                        // "Exile a card … and pay its mana cost" (Back from the Brink): the card
+                        // picked sets the price, so the picker offers only the cards whose cost is
+                        // affordable, and with none the activation is unaffordable.
+                        if (costCanBePaid && exileTargets != null &&
+                            ExiledCardManaCostPricing.pricesByExiledCard(compositeCost)
+                        ) {
+                            exileTargets = ExiledCardManaCostPricing.affordable(
+                                state, playerId, compositeCost, exileTargets, context.manaSolver,
+                                excludeSources = excludeFromMana, spellContext = abilityContext,
+                                precomputedSources = context.availableManaSources,
+                            )
+                            if (exileTargets.size < (exileCost?.count ?: 1)) costCanBePaid = false
                         }
                         if (!costCanBePaid) costAffordable = false
                     }

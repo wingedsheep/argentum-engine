@@ -66,7 +66,9 @@ internal class ActivationCostTotaller(
             castPermissionUtils.lowerReferencedManaCost(
                 state, action.sourceId,
                 // Carth the Lion's [+1] surcharge nets into the one loyalty payment.
-                castPermissionUtils.applyLoyaltyCostSurcharge(state, rawCost, action.playerId, action.xValue)
+                castPermissionUtils.applyLoyaltyCostSurcharge(state, rawCost, action.playerId, action.xValue),
+                // "Exile a card … and pay its mana cost" is priced by the card the payer chose.
+                exiledCards = action.costPayment?.exiledCards,
             ),
             ability, state, action.sourceId, action.playerId
         )

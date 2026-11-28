@@ -290,6 +290,10 @@ internal class ActivationCostPayer(
         val costExiles = costResult.events.filterIsInstance<ZoneChangeEvent>().filter {
             it.toZone == Zone.EXILE && it.fromZone != Zone.LIBRARY && it.entityId != action.sourceId
         }
+        // Every card the cost payment actually moved. "The exiled card" is only ever one of these:
+        // the submitted list is client-supplied, and a card padded onto it that the cost never
+        // took (one already in exile) must not ride to resolution as if it had paid.
+        val movedByCost = costResult.events.filterIsInstance<ZoneChangeEvent>().mapTo(HashSet()) { it.entityId }
         manaPool = costResult.newManaPool!!
 
         // Collect events from cost payment (e.g., sacrifice events)
@@ -365,7 +369,7 @@ internal class ActivationCostPayer(
                 isTapBatch = isTapBatch,
                 firstTapSlice = firstTapSlice,
                 exileChoices = exileChoices,
-                exiledAsCost = exileChoices.ifEmpty { costExiles.map { it.entityId } },
+                exiledAsCost = exileChoices.filter { it in movedByCost }.ifEmpty { costExiles.map { it.entityId } },
                 exiledAsCostSnapshots = costExiles.filter { it.isBattlefieldDeparture }.mapNotNull { it.lastKnown },
                 discardedCards = costResult.events.filterIsInstance<CardsDiscardedEvent>().flatMap { it.cardIds },
                 countersRemovedAsCost = costResult.events.filterIsInstance<CountersRemovedEvent>().sumOf { it.amount },

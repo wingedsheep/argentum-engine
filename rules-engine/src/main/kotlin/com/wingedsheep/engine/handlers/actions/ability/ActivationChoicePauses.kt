@@ -26,6 +26,7 @@ import com.wingedsheep.engine.core.suspendForDecision
 import com.wingedsheep.engine.handlers.CostHandler
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.TargetFinder
+import com.wingedsheep.engine.mechanics.cost.ExiledCardManaCostPricing
 import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
 import com.wingedsheep.engine.mechanics.cost.SacrificeCostAssignment
 import com.wingedsheep.engine.mechanics.cost.VariablePermanentsCost
@@ -409,13 +410,27 @@ internal class ActivationChoicePauses(
         val exileCandidatesByOwner = costHandler
             .exileCandidatesByOwner(state, exileCost, action.playerId, action.sourceId)
             .values
-        val exileCandidates =
+        val matchingCandidates =
             if (exileCost.singleZone) {
                 exileCandidatesByOwner.filter { it.size >= exileCost.count }.flatten()
             } else {
                 exileCandidatesByOwner.flatten()
             }
-        if (exileCandidates.size <= exileCost.count) return null
+        // "… and pay its mana cost": the card picked sets the price, so only the cards the payer
+        // can afford are offered, and the pick is asked even when one card qualifies — the
+        // activation can't be priced until it is made.
+        val pricedByCard = ExiledCardManaCostPricing.pricesByExiledCard(activation.effectiveCost)
+        val exileCandidates = if (!pricedByCard) matchingCandidates else ExiledCardManaCostPricing.affordable(
+            state, action.playerId, activation.effectiveCost, matchingCandidates, manaSolver,
+            excludeSources = if (activation.effectiveCost.hasTapCost()) setOf(action.sourceId) else emptySet(),
+            spellContext = buildAbilityPaymentContext(
+                activation.cardComponent, state.projectedState, action.sourceId, activation.ability
+            ),
+        )
+        if (pricedByCard && exileCandidates.size < exileCost.count) {
+            return ExecutionResult.error(state, "No card to exile whose mana cost you can pay")
+        }
+        if (!pricedByCard && exileCandidates.size <= exileCost.count) return null
         val plural = if (exileCost.count > 1) "s" else ""
         val prompt = if (exileCost.zone == Zone.STACK) {
             "Select ${exileCost.count} spell$plural you control to exile for ${sourceName}"

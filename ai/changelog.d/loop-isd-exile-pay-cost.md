@@ -1,0 +1,1 @@
+- #4915 When an ability copies or reads back the graveyard card it exiles as a cost (Back from the Brink, Dollhouse of Horrors), the AI exiles the biggest creature it can pay for instead of the first one listed
