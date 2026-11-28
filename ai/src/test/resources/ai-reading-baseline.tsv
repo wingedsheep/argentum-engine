@@ -3988,6 +3988,7 @@ Creeping Dread
 Creeping Mold
 Creeping Peeper
 Creeping Trailblazer
+Creepy Doll
 Creepy Puppeteer
 Cremate
 Crenellated Wall
@@ -4193,16 +4194,22 @@ Curious Obsession
 Curious Pair
 Curse Artifact	polarity: Aura>PayOrSufferEffect
 Curse of Bloodletting
+Curse of Death's Hold
 Curse of Echoes
 Curse of Exhaustion
 Curse of Hospitality	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile); polarity: Aura>GatherCardsEffect; polarity: Aura>GrantKeyword; polarity: Aura>GrantMayPlayFromExileEffect; polarity: Aura>MoveCollectionEffect
 Curse of Leeches	polarity: Aura>GainLifeEffect; polarity: Aura>LoseLifeEffect
 Curse of Misfortunes
+Curse of Oblivion
 Curse of Opulence	polarity: Aura>CreatePredefinedTokenEffect; polarity: Aura>ForEachEffect
 Curse of Shaken Faith	polarity: Aura>DealDamageEffect
 Curse of Silence	polarity: Aura>GatedEffect; polarity: Aura>ModifySpellCost
+Curse of Stalked Prey
 Curse of Surveillance	polarity: Aura>ForEachEffect
 Curse of Thirst
+Curse of the Bloody Tome
+Curse of the Nightly Hunt
+Curse of the Pierced Heart
 Curse of the Swine
 Curse of the Werefox	polarity: ReflexiveTriggerEffect
 Curse-Marred Demon
@@ -7293,7 +7300,7 @@ Frantic Scapegoat	intent: ForEach>SuspectEffect; intent: Pipeline(?→?); intent
 Frantic Search
 Frantic Strength
 Fraying Omnipotence
-Fraying Sanity	polarity: Aura>GatherCardsEffect; polarity: Aura>MoveCollectionEffect
+Fraying Sanity
 Frazzle
 Free Borg Revolutionaries
 Free from Flesh	polarity: AddCountersEffect
@@ -7750,6 +7757,7 @@ Ghosts of the Damned
 Ghosts of the Innocent
 Ghoul's Feast
 Ghoulcaller's Accomplice
+Ghoulcaller's Bell
 Ghoulcaller's Harvest
 Ghoulflesh
 Ghoulish Procession
@@ -8389,6 +8397,7 @@ Gravetiller Wurm
 Gravewaker
 Graveyard Marshal
 Graveyard Shift
+Graveyard Shovel
 Graveyard Trespasser	polarity: GainLifeEffect; polarity: LoseLifeEffect; polarity: Pipeline(ChosenTargets→exile)
 Gravitational Shift
 Gravitic Punch
@@ -8498,6 +8507,7 @@ Grim Wanderer
 Grimclaw Bats
 Grimdancer
 Grimgrin, Corpse-Born
+Grimoire of the Dead
 Grind // Dust
 Grindclock
 Grinning Demon
@@ -9845,6 +9855,7 @@ Inordinate Rage
 Inquisition
 Inquisitive Glimmer
 Inquisitive Puppet
+Inquisitor's Flail
 Inquisitor's Ox
 Insatiable Appetite
 Insatiable Avarice
@@ -16248,6 +16259,7 @@ Rune-Cervin Rider
 Rune-Scarred Demon
 Rune-Sealed Wall
 Runebound Wolf
+Runechanter's Pike
 Runeclaw Bear
 Runed Crown
 Runed Halo
@@ -17565,6 +17577,7 @@ Silver Sable, Mercenary Leader
 Silver Scrutiny
 Silver Shroud Costume
 Silver-Fur Master
+Silver-Inlaid Dagger
 Silverback Ape
 Silverback Elder
 Silverback Shaman
@@ -20728,6 +20741,7 @@ Trench Stalker
 Trench Wurm
 Trenching Steed
 Treno, Dark City
+Trepanation Blade
 Trespasser il-Vec
 Trespasser's Curse
 Trestle Troll
@@ -20987,7 +21001,7 @@ Ukud Cobra
 Ulamog's Despoiler
 Ulamog's Nullifier
 Ulamog's Reclaimer
-Ulamog, the Ceaseless Hunger	intent: Pipeline(TopOfLibrary→exile)
+Ulamog, the Ceaseless Hunger
 Ulamog, the Defiler
 Ulamog, the Infinite Gyre	intent: Pipeline(graveyard→library)
 Ulcerate
@@ -22628,6 +22642,7 @@ Woodcutter's Grit
 Wooded Foothills
 Wooded Ridgeline
 Wooden Sphere
+Wooden Stake
 Woodfall Primus
 Woodland Acolyte
 Woodland Bellower
