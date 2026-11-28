@@ -4329,6 +4329,31 @@ object Effects {
     )
 
     /**
+     * Grant protection from a fixed subtype to a target (no player choice) — the subtype sibling
+     * of [GrantProtectionFromCardType]. [cardType] narrows the quality ("from God creatures");
+     * [negated] takes its complement: "creatures you control gain protection from non-Human
+     * creatures until end of turn" (Spare from Evil) is
+     * `ForEachInGroup(GroupFilter(Creature.youControl()), GrantProtectionFromSubtype("Human",
+     * IterationEntity, cardType = "Creature", negated = true))`.
+     *
+     * Composes [GrantKeywordEffect] with the projected
+     * [com.wingedsheep.sdk.scripting.ProtectionScope.Subtype.protectionKeyword] — the same keyword
+     * a printed `Protection(ProtectionScope.Subtype(...))` projects, so targeting, blocking,
+     * attaching and damage all read it from one place.
+     */
+    fun GrantProtectionFromSubtype(
+        subtype: String,
+        target: EffectTarget,
+        duration: Duration = Duration.EndOfTurn,
+        cardType: String? = null,
+        negated: Boolean = false
+    ): Effect = GrantKeywordEffect(
+        com.wingedsheep.sdk.scripting.ProtectionScope.Subtype(subtype, cardType, negated).protectionKeyword(),
+        target,
+        duration
+    )
+
+    /**
      * Choose a color, then run [then] with the chosen color exposed via the effect
      * context. Atomic effects under [then] (e.g. [GrantHexproofFromChosenColor],
      * [GrantCantBeBlockedByChosenColor]) read the color and apply per-color

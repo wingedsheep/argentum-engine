@@ -137,9 +137,9 @@ object PlayerProtectionRules {
             is ProtectionScope.NonColor -> scope.color.name !in colors()
             ProtectionScope.Multicolored -> colors().size >= 2
             ProtectionScope.Monocolored -> colors().size == 1
-            is ProtectionScope.Subtype -> (if (sourceSnapshot != null) sourceSnapshot.subtypes.any { it.equals(scope.subtype, ignoreCase = true) } else if (onBattlefield)
+            is ProtectionScope.Subtype -> ((if (sourceSnapshot != null) sourceSnapshot.subtypes.any { it.equals(scope.subtype, ignoreCase = true) } else if (onBattlefield)
                 projected.getSubtypes(sourceId).any { it.equals(scope.subtype, ignoreCase = true) }
-                else card?.typeLine?.subtypes?.any { it.value.equals(scope.subtype, ignoreCase = true) } == true) &&
+                else card?.typeLine?.subtypes?.any { it.value.equals(scope.subtype, ignoreCase = true) } == true) != scope.negated) &&
                 (scope.cardType?.let { hasCardType(it) } ?: true)
             is ProtectionScope.Supertype -> (if (sourceSnapshot != null) sourceSnapshot.supertypes.any { it.equals(scope.supertype, ignoreCase = true) } else if (onBattlefield)
                 projected.getSupertypes(sourceId).any { it.equals(scope.supertype, ignoreCase = true) }

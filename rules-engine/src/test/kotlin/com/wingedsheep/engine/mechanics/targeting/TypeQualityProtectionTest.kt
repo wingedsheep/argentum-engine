@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.scripting.ProtectionScope
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
@@ -26,7 +27,8 @@ import io.kotest.matchers.shouldNotBe
  * legendary creatures" (Tsabo Tavoc). The source must have the subtype/supertype *and* the card
  * type, so a God that isn't a creature, or a legendary artifact, is not a quality the permanent is
  * protected from. Targeting (CR 702.16b), damage (702.16e) and blocking (702.16f) are pinned, plus
- * the un-narrowed "protection from Gods" for contrast.
+ * the un-narrowed "protection from Gods" for contrast, and the negated quality "protection from
+ * non-Human creatures" (Spare from Evil): every creature lacking the Human type matches.
  */
 class TypeQualityProtectionTest : FunSpec({
 
@@ -63,9 +65,15 @@ class TypeQualityProtectionTest : FunSpec({
     val fromLegendaryCreatures =
         protectedCreature("Pro Legendary Creatures", KeywordAbility.protectionFromSupertype("Legendary", "Creature"))
 
+    val giant = pinger("Test Giant", "Creature — Giant", creature = true)
+    val fromNonHumanCreatures = protectedCreature(
+        "Pro NonHuman Creatures",
+        KeywordAbility.Protection(ProtectionScope.Subtype("Human", "Creature", negated = true))
+    )
+
     val testCards: List<CardDefinition> = listOf(
         godCreature, godEnchantment, legendaryArtifact, legendaryCreature,
-        fromGodCreatures, fromGods, fromLegendaryCreatures,
+        fromGodCreatures, fromGods, fromLegendaryCreatures, giant, fromNonHumanCreatures,
     )
 
     fun createDriver(): GameTestDriver {
@@ -169,5 +177,42 @@ class TypeQualityProtectionTest : FunSpec({
         driver.ping(you, relic, legendaryArtifact, protected).outcome shouldBe Outcome.Done
         driver.bothPass()
         driver.state.getBattlefield() shouldNotContain protected
+    }
+
+    test("protection from non-Human creatures: a non-Human creature can't target it; a Human or a noncreature can") {
+        val driver = createDriver()
+        val you = driver.activePlayer!!
+        val opp = driver.getOpponent(you)
+        val protected = driver.putCreatureOnBattlefield(opp, "Pro NonHuman Creatures")
+        driver.state.projectedState.getKeywords(protected) shouldContain "PROTECTION_FROM_SUBTYPE_!HUMAN@CREATURE"
+        val giantId = driver.putCreatureOnBattlefield(you, "Test Giant")
+        driver.removeSummoningSickness(giantId)
+        val hero = driver.putCreatureOnBattlefield(you, "Test Legendary Hero")
+        driver.removeSummoningSickness(hero)
+        val enchantmentGod = driver.putPermanentOnBattlefield(you, "Test God Enchantment")
+
+        driver.ping(you, giantId, giant, protected).outcome shouldNotBe Outcome.Done
+        // A God enchantment lacks the Human type but isn't a creature, so it doesn't match.
+        driver.ping(you, enchantmentGod, godEnchantment, protected).outcome shouldBe Outcome.Done
+        driver.ping(you, hero, legendaryCreature, protected).outcome shouldBe Outcome.Done
+        driver.bothPass()
+        driver.state.getBattlefield() shouldNotContain protected
+    }
+
+    test("protection from non-Human creatures: combat damage from a non-Human creature is prevented") {
+        val driver = createDriver()
+        val you = driver.activePlayer!!
+        val opp = driver.getOpponent(you)
+        val giantId = driver.putCreatureOnBattlefield(you, "Test Giant")
+        driver.removeSummoningSickness(giantId)
+        val blocker = driver.putCreatureOnBattlefield(opp, "Pro NonHuman Creatures")
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.declareAttackers(you, listOf(giantId), opp)
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+        driver.declareBlockers(opp, mapOf(blocker to listOf(giantId))).outcome shouldBe Outcome.Done
+        driver.passPriorityUntil(Step.END_COMBAT)
+
+        driver.state.getBattlefield() shouldContain blocker
     }
 })
