@@ -38,6 +38,8 @@ internal fun spellPaymentContextFor(
     isFromExile: Boolean = false,
     isFromHand: Boolean = true,
     isFromGraveyard: Boolean = false,
+    // Any player's graveyard, the caster's own included ("from a graveyard").
+    isFromAnyGraveyard: Boolean = false,
     isDisturbCast: Boolean = false,
     // The spell's actual colors — `ProjectedState.colorSetOf`, so an off-battlefield SetColors
     // (Mycosynth Lattice) decides "colorless spells only" mana, not the printed card.
@@ -57,6 +59,7 @@ internal fun spellPaymentContextFor(
     isFromExile = isFromExile,
     isFromHand = isFromHand,
     isFromGraveyard = isFromGraveyard,
+    isFromAnyGraveyard = isFromAnyGraveyard,
     isDisturbCast = isDisturbCast,
     cardTypes = cardComponent.typeLine.cardTypes,
     keywords = cardComponent.baseKeywords,

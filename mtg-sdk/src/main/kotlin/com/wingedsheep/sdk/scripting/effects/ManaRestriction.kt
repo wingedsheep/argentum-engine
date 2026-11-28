@@ -302,11 +302,20 @@ sealed interface ManaRestriction {
      * from the caster's **own** graveyard — by flashback, disturb, harmonize, escape, or a
      * graveyard-cast permission alike. A card cast out of an opponent's graveyard doesn't
      * qualify ("your graveyard"), and ability activations never do. Rootcoil Creeper.
+     *
+     * [anyGraveyard] widens the origin to **a** graveyard — any player's, so a spell cast out of an
+     * opponent's graveyard (Dire Fleet Daredevil's permission) qualifies too. Altar of the Lost's
+     * "spend this mana only to cast spells with flashback from a graveyard" is
+     * `AllOf(SpellsWithKeywordOnly(Keyword.FLASHBACK), CastFromGraveyardOnly(anyGraveyard = true))`.
      */
     @SerialName("CastFromGraveyardOnly")
     @Serializable
-    data object CastFromGraveyardOnly : ManaRestriction {
-        override val description: String = "Spend this mana only to cast spells from your graveyard"
+    data class CastFromGraveyardOnly(
+        val anyGraveyard: Boolean = false,
+    ) : ManaRestriction {
+        override val description: String =
+            if (anyGraveyard) "Spend this mana only to cast spells from a graveyard"
+            else "Spend this mana only to cast spells from your graveyard"
     }
 
     /**

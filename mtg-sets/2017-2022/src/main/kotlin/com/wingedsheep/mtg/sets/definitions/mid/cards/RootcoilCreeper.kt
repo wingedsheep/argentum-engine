@@ -41,7 +41,7 @@ val RootcoilCreeper = card("Rootcoil Creeper") {
 
     activatedAbility {
         cost = Costs.Tap
-        effect = Effects.AddAnyColorMana(2, restriction = ManaRestriction.CastFromGraveyardOnly)
+        effect = Effects.AddAnyColorMana(2, restriction = ManaRestriction.CastFromGraveyardOnly())
         manaAbility = true
         timing = TimingRule.ManaAbility
     }

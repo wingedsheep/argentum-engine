@@ -4,6 +4,7 @@ import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import io.kotest.core.spec.style.FunSpec
@@ -35,16 +36,42 @@ class ManaSpendRestrictionGraveyardAndDisturbTest : FunSpec({
     )
 
     test("graveyard-only mana pays a flashback cast and a disturb cast, not a hand cast") {
-        val pool = poolOf(ManaRestriction.CastFromGraveyardOnly)
+        val pool = poolOf(ManaRestriction.CastFromGraveyardOnly())
         pool.canPay(cost, flashbackCast) shouldBe true
         pool.canPay(cost, disturbCast) shouldBe true
         pool.canPay(cost, handCast) shouldBe false
     }
 
     test("graveyard-only mana can't pay a cast from an opponent's graveyard or exile") {
-        val pool = poolOf(ManaRestriction.CastFromGraveyardOnly)
+        val pool = poolOf(ManaRestriction.CastFromGraveyardOnly())
         pool.canPay(cost, handCast.copy(isFromHand = false, isFromGraveyard = false)) shouldBe false
         pool.canPay(cost, handCast.copy(isFromHand = false, isFromExile = true)) shouldBe false
+    }
+
+    test("a-graveyard mana pays a cast from the caster's or an opponent's graveyard, not hand or exile") {
+        val pool = poolOf(ManaRestriction.CastFromGraveyardOnly(anyGraveyard = true))
+        pool.canPay(cost, flashbackCast) shouldBe true
+        pool.canPay(cost, handCast.copy(isFromHand = false, isFromGraveyard = false, isFromAnyGraveyard = true)) shouldBe true
+        pool.canPay(cost, handCast) shouldBe false
+        pool.canPay(cost, handCast.copy(isFromHand = false, isFromExile = true)) shouldBe false
+        poolOf(ManaRestriction.CastFromGraveyardOnly(anyGraveyard = true))
+            .canPay(cost, abilityActivation.copy(isFromAnyGraveyard = true)) shouldBe false
+    }
+
+    test("Altar of the Lost's mana: spells with flashback, cast from a graveyard") {
+        val altar = ManaRestriction.AllOf(
+            listOf(
+                ManaRestriction.SpellsWithKeywordOnly(Keyword.FLASHBACK),
+                ManaRestriction.CastFromGraveyardOnly(anyGraveyard = true),
+            )
+        )
+        val withFlashback = handCast.copy(keywords = setOf(Keyword.FLASHBACK))
+        val opponentsGraveyard = withFlashback.copy(isFromHand = false, isFromGraveyard = false, isFromAnyGraveyard = true)
+        poolOf(altar).canPay(cost, withFlashback.copy(isFromHand = false, isFromGraveyard = true)) shouldBe true
+        poolOf(altar).canPay(cost, opponentsGraveyard) shouldBe true
+        // The flashback card cast from hand, and a non-flashback card cast from a graveyard, don't qualify.
+        poolOf(altar).canPay(cost, withFlashback) shouldBe false
+        poolOf(altar).canPay(cost, flashbackCast) shouldBe false
     }
 
     test("disturb-only mana pays a disturb cast, not a hand cast or a flashback cast") {
@@ -62,7 +89,7 @@ class ManaSpendRestrictionGraveyardAndDisturbTest : FunSpec({
     }
 
     test("neither restriction pays an ability activation") {
-        poolOf(ManaRestriction.CastFromGraveyardOnly).canPay(cost, abilityActivation.copy(isFromGraveyard = true)) shouldBe false
+        poolOf(ManaRestriction.CastFromGraveyardOnly()).canPay(cost, abilityActivation.copy(isFromGraveyard = true)) shouldBe false
         poolOf(ManaRestriction.DisturbCostOnly).canPay(cost, abilityActivation.copy(isDisturbCast = true)) shouldBe false
     }
 })

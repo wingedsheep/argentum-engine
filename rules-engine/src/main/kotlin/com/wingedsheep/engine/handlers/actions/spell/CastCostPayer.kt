@@ -487,6 +487,7 @@ internal class CastCostPayer(
                 isFromHand = isCastFrom(state, action.cardId, Zone.HAND),
                 // "your graveyard" — the caster's own, not an opponent's (CastFromGraveyardOnly).
                 isFromGraveyard = action.cardId in state.getZone(ZoneKey(action.playerId, Zone.GRAVEYARD)),
+                isFromAnyGraveyard = isCastFrom(state, action.cardId, Zone.GRAVEYARD),
                 isDisturbCast = action.useAlternativeCost && action.altAllows(AlternativeCostType.DISTURB),
             ).copy(spendAsAnyColor = castSpendAsAnyColor(state, action))
         } else null

@@ -742,6 +742,7 @@ class CastFromZoneEnumerator(
                             isFromExile = sourceZoneLabel == "EXILE",
                             isFromHand = false,
                             isFromGraveyard = cardId in state.getGraveyard(playerId),
+                            isFromAnyGraveyard = state.turnOrder.any { cardId in state.getGraveyard(it) },
                         ).copy(spendAsAnyColor = permissions.firstNotNullOfOrNull { it.spendAsAnyColor })
                         // Convoke (CR 702.51) — printed, or granted by a zone-scoped grant keyed to the
                         // zone this card is cast from. A free cast has nothing for convoke to pay.
@@ -3235,6 +3236,7 @@ class CastFromZoneEnumerator(
                         isFromExile = sourceZone == "EXILE",
                         isFromHand = false,
                         isFromGraveyard = cardId in state.getGraveyard(playerId),
+                        isFromAnyGraveyard = state.turnOrder.any { cardId in state.getGraveyard(it) },
                     ).copy(
                         spendAsAnyColor = state.activeMayPlayFor(cardId, playerId, context.conditionEvaluator, context.cardRegistry)
                             .firstNotNullOfOrNull { it.spendAsAnyColor }
