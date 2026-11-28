@@ -1,5 +1,6 @@
 package com.wingedsheep.ai.engine
 
+import com.wingedsheep.ai.audit.AiReadingAudit
 import com.wingedsheep.ai.engine.knowledge.CardIntentAnalyzer
 import com.wingedsheep.ai.engine.knowledge.IntentTag
 import com.wingedsheep.ai.engine.knowledge.TargetPolarity
@@ -45,6 +46,13 @@ class EnchantedPlayerCurseReadingAiTest : ScenarioTestBase() {
             withClue("'search for a Curse card, put it onto the battlefield attached to that player' piles harm on them") {
                 TargetPolarityAnalyzer.forSpell(card("Curse of Misfortunes")) shouldBe listOf(TargetPolarity.HARMFUL)
             }
+        }
+
+        test("a Curse that lets every other player copy the enchanted player's spells is a curse") {
+            withClue("Curse of Echoes hands each other player a copy of the enchanted player's instants and sorceries") {
+                TargetPolarityAnalyzer.forSpell(card("Curse of Echoes")) shouldBe listOf(TargetPolarity.HARMFUL)
+            }
+            AiReadingAudit.read(card("Curse of Echoes")).readFully shouldBe true
         }
 
         test("a gift to the enchanted player is not read as aiming the Aura at our own side") {

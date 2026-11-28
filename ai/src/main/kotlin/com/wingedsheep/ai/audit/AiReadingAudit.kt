@@ -579,6 +579,7 @@ object AiReadingAudit {
                     EffectWalker.readableEffect(trigger), sink, reqs, ownPile = ownPile,
                     turnAhead = EffectWalker.firesWithItsTurnAhead(trigger), pileCast = pileCast,
                     source = card, ownTriggeringEntity = triggeringEntityIsOurs(trigger),
+                    opposingTriggeringEntity = EffectWalker.triggersOnOpposingCreature(trigger),
                 )
             }
             modal(trigger.effect, sink)
@@ -695,6 +696,7 @@ object AiReadingAudit {
         pileCast: Set<IntentTag> = emptySet(),
         source: CardDefinition? = null,
         ownTriggeringEntity: Boolean = false,
+        opposingTriggeringEntity: Boolean = false,
     ) {
         // "Target opponent gets a poison counter": the bound slot is a player, so the counter is a clock too.
         val playerSlots = reqs.filter { it is TargetPlayer || it is TargetOpponent }.mapNotNullTo(HashSet()) { it.id }
@@ -721,7 +723,7 @@ object AiReadingAudit {
                 // follows, like a sacrifice of our own choosing — no answer to anything.
                 (leaf is MoveToZoneEffect && CardIntentAnalyzer.removesOurOwnPermanent(leaf, reqs))
         }
-        val tags = CardIntentAnalyzer.analyzeEffect(root, reqs, turnAhead = turnAhead, ownPile = ownPile, pileCast = pileCast, source = source).tags
+        val tags = CardIntentAnalyzer.analyzeEffect(root, reqs, turnAhead = turnAhead, ownPile = ownPile, pileCast = pileCast, source = source, opposingTriggeringEntity = opposingTriggeringEntity).tags
         // Card selection alone doesn't read an ability: scry is a rider on half the cards that
         // carry it, so a scry beside an unread payoff must not hide that payoff from the audit.
         if ((tags - IntentTag.CARD_SELECTION).isNotEmpty()) {

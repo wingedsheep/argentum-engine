@@ -1,0 +1,1 @@
+- #4906 Reads three more card shapes: an Aura's "enchanted creature blocks → you gain life" payoff as a gift for its own creature (Favor of the Woods), an enchant-player curse letting other players copy the enchanted player's spells as harmful (Curse of Echoes), and removing the creature that triggered "attacks you" from combat as neutralizing it (Lost in the Woods)

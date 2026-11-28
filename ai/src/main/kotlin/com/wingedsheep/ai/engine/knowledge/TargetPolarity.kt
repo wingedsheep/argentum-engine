@@ -2823,6 +2823,8 @@ object TargetPolarityAnalyzer {
         for (ability in card.script.triggeredAbilities) readings += hostCopySourceReadings(ability)
         for (ability in card.script.triggeredAbilities) readings += hostTypeReferenceReadings(ability)
         for (ability in card.script.triggeredAbilities) readings += hostCombatTriggerReadings(ability, definitions)
+        for (ability in card.script.triggeredAbilities) readings += hostBlockPayoffReadings(ability)
+        for (ability in card.script.triggeredAbilities) readings += enchantedPlayerSpellCopyReadings(ability)
         // "{1}{G}{U}, Return this Aura to its owner's hand: Put two +1/+1 counters on enchanted
         // creature" (Krasis Incubation): an activation whose cost takes the attachment off the
         // board ends whatever else it does to the host, and only its controller chooses to pay
@@ -3435,6 +3437,52 @@ object TargetPolarityAnalyzer {
             .flatMap { leaf ->
                 classify(leaf, definitions).filter { (target, _) -> target == EffectTarget.TriggeringEntity }.map { it.second }
             }
+    }
+
+    /**
+     * What an attachment's "whenever enchanted creature blocks, you gain 3 life" trigger (Favor of
+     * the Woods) does: every payoff is a gift to the attachment's own controller, collected each
+     * time the host blocks. Its controller chooses its blocks, so on our creature we cash it in at
+     * will, while an opponent's creature only blocks when that suits them — the slot belongs on one
+     * of ours, as a gain off the host's damage does ([hostDamageTriggerReadings]).
+     */
+    private fun hostBlockPayoffReadings(ability: TriggeredAbility): List<TargetPolarity> {
+        if (ability.binding != TriggerBinding.ATTACHED || ability.trigger !is EventPattern.BlockEvent) return emptyList()
+        return if (servesController(ability.effect)) listOf(TargetPolarity.BENEFICIAL) else emptyList()
+    }
+
+    /**
+     * What an "Enchant player" Aura's "whenever enchanted player casts an instant or sorcery spell,
+     * each other player may copy that spell" trigger (Curse of Echoes) does to that player: every
+     * other player gets their spell too, with new targets — each copy aimed back at them or their
+     * board. Read off a loop over players whose body copies the triggering spell only for players
+     * other than the caster, so the enchanted player never shares in it: a curse on the host.
+     */
+    private fun enchantedPlayerSpellCopyReadings(ability: TriggeredAbility): List<TargetPolarity> {
+        val cast = ability.trigger as? EventPattern.SpellCastEvent ?: return emptyList()
+        if (cast.player != Player.EnchantedPlayer) return emptyList()
+        return EffectWalker.payoffLeaves(ability.effect).filterIsInstance<ForEachEffect>()
+            .filter { it.space is IterationSpace.Players && copiesForOthersOnly(it.body) }
+            .map { TargetPolarity.HARMFUL }
+    }
+
+    /** Whether [effect] copies the triggering spell under an "if that player isn't the caster" gate. */
+    private fun copiesForOthersOnly(effect: Effect): Boolean = when (effect) {
+        is GatedEffect -> {
+            val condition = (effect.gate as? com.wingedsheep.sdk.scripting.effects.Gate.WhenCondition)?.condition
+            val skipsCaster = condition is NotCondition && condition.condition ==
+                com.wingedsheep.sdk.scripting.conditions.PlayerIs(Player.You, Player.TriggeringPlayer)
+            (skipsCaster && copiesTriggeringSpell(effect.then)) || copiesForOthersOnly(effect.then)
+        }
+        is com.wingedsheep.sdk.scripting.effects.CompositeEffect -> effect.effects.any(::copiesForOthersOnly)
+        else -> false
+    }
+
+    private fun copiesTriggeringSpell(effect: Effect): Boolean = when (effect) {
+        is CopyTargetSpellEffect -> effect.target == EffectTarget.TriggeringEntity
+        is GatedEffect -> copiesTriggeringSpell(effect.then)
+        is com.wingedsheep.sdk.scripting.effects.CompositeEffect -> effect.effects.any(::copiesTriggeringSpell)
+        else -> false
     }
 
     private fun staticPolarity(static: StaticAbility): TargetPolarity? =
