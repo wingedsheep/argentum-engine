@@ -54,6 +54,7 @@ import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.GrantProtectionFromChosenColorEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
+import com.wingedsheep.sdk.scripting.effects.UnattachEquipmentEffect
 import com.wingedsheep.sdk.scripting.effects.PairWithSourceEffect
 import com.wingedsheep.sdk.scripting.effects.BecomeAuraEffect
 import com.wingedsheep.sdk.scripting.effects.DoubleCountersEffect
@@ -1057,6 +1058,9 @@ object AiReadingAudit {
         // what the Equipment is *for* is the card's reading of its "equipped creature" statics
         // (CardIntentAnalyzer tags those), and which creature gets it is the polarity check.
         if (leaf is AttachEquipmentEffect) return true
+        // An Equipment unattaching itself ("unattach Elbrus, then transform it") is the same move
+        // in reverse, with no target and nothing to hold: what it sets up is the effect beside it.
+        if (leaf is UnattachEquipmentEffect && leaf.target == EffectTarget.Self) return true
         // "It becomes an Aura with enchant creature … attach this enchantment to it" (the Fate
         // Reforged "Form" cycle) is the same untargeted move onto a host: what the Aura is for is
         // the card's reading of its "enchanted creature" statics.

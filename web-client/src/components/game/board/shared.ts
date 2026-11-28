@@ -945,6 +945,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.BLAZE,
   // Azor's Elocutors: one each upkeep, five wins the game; damage to its controller removes one.
   CounterType.FILIBUSTER,
+  // Jar of Eyeballs: two per creature you control that dies; remove all to look at that many cards.
+  CounterType.EYEBALL,
   CounterType.PLUS_ONE_PLUS_TWO,
   CounterType.PLUS_TWO_PLUS_TWO,
   CounterType.MINUS_TWO_MINUS_TWO,

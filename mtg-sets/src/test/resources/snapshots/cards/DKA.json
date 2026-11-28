@@ -412,6 +412,94 @@
     ]
 }
 
+// Avacyn's Collar
+{
+    "name": "Avacyn's Collar",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+0 and has vigilance.\nWhenever equipped creature dies, if it was a Human, create a 1/1 white Spirit creature token with flying.\nEquip {2}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Avacyn's Collar:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ]
+                },
+                "interveningIf": {
+                    "type": "TriggeringEntityWas",
+                    "filter": "Human"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Avacyn's Collar:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE"
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "UNCOMMON",
+        "artist": "James Paick",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/972e9a78-204b-4012-b394-b40fd0edac4c.jpg?1783940792"
+    },
+    "colorIdentityOverride": []
+}
+
 // Bar the Door
 {
     "name": "Bar the Door",
@@ -2380,6 +2468,145 @@
     ]
 }
 
+// Elbrus, the Binding Blade
+{
+    "name": "Elbrus, the Binding Blade",
+    "manaCost": "{7}",
+    "typeLine": "Legendary Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+0.\nWhen equipped creature deals combat damage to a player, unattach Elbrus, then transform it.\nEquip {1}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Elbrus, the Binding Blade:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        "UnattachEquipment",
+                        "Transform"
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Elbrus, the Binding Blade:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "backFace": {
+        "name": "Withengar Unbound",
+        "manaCost": "",
+        "typeLine": "Legendary Creature — Demon",
+        "oracleText": "Flying, intimidate, trample\nWhenever a player loses the game, put thirteen +1/+1 counters on Withengar Unbound.",
+        "creatureStats": {
+            "power": 13,
+            "toughness": 13
+        },
+        "keywords": [
+            "FLYING",
+            "INTIMIDATE",
+            "TRAMPLE"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Withengar Unbound:1",
+                    "trigger": "PlayerLostGameEvent",
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 13,
+                        "target": "Self"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "147",
+            "rarity": "MYTHIC",
+            "artist": "Eric Deschamps",
+            "flavorText": "There are not enough lives on Innistrad to satisfy his thirst for retribution.",
+            "imageUri": "https://cards.scryfall.io/normal/back/6/8/683af377-c491-4f62-900c-6b83d75c33c9.jpg?1783940797",
+            "rulings": [
+                {
+                    "date": "2011-01-22",
+                    "text": "Withengar's triggered ability will trigger no matter how a player loses the game: due to a state-based action (as a result of having a life total of 0 or less, trying to draw a card from an empty library, or having ten poison counters), a spell or ability that says that player loses the game, a concession, or a game loss awarded by a judge."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "rarity": "MYTHIC",
+        "artist": "Eric Deschamps",
+        "flavorText": "Those who grasp its hilt soon hear the demon's call.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/683af377-c491-4f62-900c-6b83d75c33c9.jpg?1783940797",
+        "rulings": [
+            {
+                "date": "2011-01-22",
+                "text": "The \"legend rule\" checks only for permanents with exactly the same name. Elbrus, the Binding Blade and Withengar Unbound can be on the battlefield at the same time without either going to its owner's graveyard."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "Elbrus will transform even if you are unable to unattach it (most likely because the equipped creature died)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Elgaud Inquisitor
 {
     "name": "Elgaud Inquisitor",
@@ -2680,6 +2907,73 @@
         "imageUri": "https://cards.scryfall.io/normal/front/a/1/a1b0da17-d595-441d-811c-a2d28d2bb232.jpg"
     },
     "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Falkenrath Aristocrat
+{
+    "name": "Falkenrath Aristocrat",
+    "manaCost": "{2}{B}{R}",
+    "typeLine": "Creature — Vampire Noble",
+    "oracleText": "Flying, haste\nSacrifice a creature: This creature gains indestructible until end of turn. If the sacrificed creature was a Human, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING",
+        "HASTE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Falkenrath Aristocrat:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "creature"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "INDESTRUCTIBLE",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "SacrificedPermanentHadSubtype",
+                                    "subtype": "Human"
+                                }
+                            },
+                            "then": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "rarity": "MYTHIC",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"Your blood is quite pleasing. A pity there's not enough for both of us.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c397388e-ebe2-4034-83b7-a7c0df1af78f.jpg?1783940796"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
         "RED"
     ]
 }
@@ -3994,6 +4288,88 @@
     ]
 }
 
+// Haunted Fengraf
+{
+    "name": "Haunted Fengraf",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{3}, {T}, Sacrifice this land: Return a creature card at random from your graveyard to your hand.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Haunted Fengraf:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Haunted Fengraf:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "creature"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "Random",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "157",
+        "artist": "Adam Paquette",
+        "flavorText": "A ghoulcaller's playground.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/84bca9e1-c0b7-4dce-9ee4-370db2c322b6.jpg?1783940790"
+    }
+}
+
 // Havengul Runebinder
 {
     "name": "Havengul Runebinder",
@@ -4108,6 +4484,73 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Heavy Mattock
+{
+    "name": "Heavy Mattock",
+    "manaCost": "{3}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+1.\nAs long as equipped creature is a Human, it gets an additional +1/+1.\nEquip {2}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Heavy Mattock:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 1
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EquippedCreature",
+                    "filter": "creature Human"
+                }
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "150",
+        "artist": "Winona Nelson",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b09df01-0b3e-463e-bf00-0a9f1822261a.jpg?1783940792"
+    },
+    "colorIdentityOverride": []
 }
 
 // Heckling Fiends
@@ -4851,6 +5294,90 @@
     ]
 }
 
+// Immerwolf
+{
+    "name": "Immerwolf",
+    "manaCost": "{1}{R}{G}",
+    "typeLine": "Creature — Wolf",
+    "oracleText": "Intimidate (This creature can't be blocked except by artifact creatures and/or creatures that share a color with it.)\nEach other creature you control that's a Wolf or a Werewolf gets +1/+1.\nNon-Human Werewolves you control can't transform.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "INTIMIDATE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasAnyOfSubtypes",
+                                "subtypes": [
+                                    "Wolf",
+                                    "Werewolf"
+                                ]
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "CANT_TRANSFORM",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsPermanent",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Werewolf"
+                            },
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Human"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "rarity": "UNCOMMON",
+        "artist": "Terese Nielsen",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/9326061f-ea76-4be7-a06f-aefb63454777.jpg?1783940797",
+        "rulings": [
+            {
+                "date": "2011-01-22",
+                "text": "A creature that's both a Wolf and a Werewolf gets the bonus only once."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "Immerwolf's bonus never applies to itself, even if it somehow becomes a Werewolf creature."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "A \"non-Human Werewolf\" is a creature that is a Werewolf but is not a Human."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Increasing Ambition
 {
     "name": "Increasing Ambition",
@@ -5256,6 +5783,111 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Jar of Eyeballs
+{
+    "name": "Jar of Eyeballs",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever a creature you control dies, put two eyeball counters on this artifact.\n{3}, {T}, Remove all eyeball counters from this artifact: Look at the top X cards of your library, where X is the number of eyeball counters removed this way. Put one of them into your hand and the rest on the bottom of your library in any order.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jar of Eyeballs:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "EYEBALL",
+                    "count": 2,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever a creature you control dies, put two eyeball counters on this artifact."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Jar of Eyeballs:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostRemoveAllCounters",
+                            "counterType": "EYEBALL"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": "CountersRemovedAsCost"
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "selectedLabel": "Put in hand",
+                            "remainderLabel": "Put on bottom"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "ControllerChooses"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{3}, {T}, Remove all eyeball counters from this artifact: Look at the top X cards of your library, where X is the number of eyeball counters removed this way. Put one of them into your hand and the rest on the bottom of your library in any order."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "rarity": "RARE",
+        "artist": "Jaime Jones",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/72825270-d5c1-4ab1-903a-e2868ade17f2.jpg?1783940791"
+    },
+    "colorIdentityOverride": []
 }
 
 // Kessig Recluse
@@ -7397,6 +8029,283 @@
     ]
 }
 
+// Sorin, Lord of Innistrad
+{
+    "name": "Sorin, Lord of Innistrad",
+    "manaCost": "{2}{W}{B}",
+    "typeLine": "Legendary Planeswalker — Sorin",
+    "oracleText": "+1: Create a 1/1 black Vampire creature token with lifelink.\n−2: You get an emblem with \"Creatures you control get +1/+0.\"\n−6: Destroy up to three target creatures and/or other planeswalkers. Return each card put into a graveyard this way to the battlefield under your control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sorin, Lord of Innistrad:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Vampire"
+                    ],
+                    "keywords": [
+                        "LIFELINK"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/0/d/0d6abdaa-7be5-48a1-acc9-b3cba4c10619.jpg?1783940786"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Sorin, Lord of Innistrad:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "CreatePermanentEmblem",
+                    "groupFilter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "powerBonus": 1,
+                    "emblemDescription": "Creatures you control get +1/+0."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Sorin, Lord of Innistrad:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -6
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy",
+                            "storeMovedAs": "moved1"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "moved1",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "InZone",
+                                        "zone": "Graveyard"
+                                    }
+                                ]
+                            },
+                            "storeMatching": "matching2"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matching2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 3,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": {
+                                "anyOf": [
+                                    {
+                                        "cardPredicates": [
+                                            "IsCreature"
+                                        ]
+                                    },
+                                    {
+                                        "cardPredicates": [
+                                            "IsPlaneswalker"
+                                        ],
+                                        "statePredicates": [
+                                            {
+                                                "type": "StateNot",
+                                                "predicate": "IsSource"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "rarity": "MYTHIC",
+        "artist": "Michael Komarck",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/27bb371f-d49f-41bd-bbe0-d5e1e2067e36.jpg?1783940803",
+        "rulings": [
+            {
+                "date": "2011-01-22",
+                "text": "The emblems are cumulative. If you get two of them, creatures you control will get +2/+0."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "You can target a token creature with Sorin, Lord of Innistrad's third ability, but it won't return to the battlefield."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "If a creature with undying is destroyed by Sorin, Lord of Innistrad's third ability, the undying ability will trigger, but the creature will already have been returned to the battlefield by Sorin. The undying ability won't do anything when it resolves."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "If Sorin, Lord of Innistrad somehow becomes a creature, it can be chosen as a target of its own third ability. If Sorin, Lord of Innistrad is still on the battlefield when that ability resolves, it will then destroy Sorin and return him to the battlefield under your control."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
+// Soul Seizer
+{
+    "name": "Soul Seizer",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flying\nWhen this creature deals combat damage to a player, you may transform it. If you do, attach it to target creature that player controls.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Soul Seizer:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Transform Soul Seizer and attach it to the target creature?",
+                        "sourceRequiredZone": "Battlefield"
+                    },
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": "Transform",
+                            "successCriterion": "SuccessCriterion.Transformed"
+                        },
+                        "then": {
+                            "type": "AttachEquipment",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:triggering-player"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature deals combat damage to a player, you may transform it. If you do, attach it to target creature that player controls."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Ghastly Haunting",
+        "manaCost": "",
+        "typeLine": "Enchantment — Aura",
+        "oracleText": "Enchant creature\nYou control enchanted creature.",
+        "script": {
+            "staticAbilities": [
+                "ControlEnchantedPermanent"
+            ],
+            "auraTarget": {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        },
+        "metadata": {
+            "collectorNumber": "50",
+            "rarity": "UNCOMMON",
+            "artist": "Lucas Graciano",
+            "flavorText": "The body often twists and flails spasmodically as the spirit explores its new home.",
+            "imageUri": "https://cards.scryfall.io/normal/back/f/5/f500cb95-d5ea-4cf2-920a-f1df45a9059b.jpg?1783940842"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "rarity": "UNCOMMON",
+        "artist": "Lucas Graciano",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f500cb95-d5ea-4cf2-920a-f1df45a9059b.jpg?1783940842",
+        "rulings": [
+            {
+                "date": "2011-01-22",
+                "text": "You choose the target for Soul Seizer's triggered ability when that ability triggers and goes on the stack. You choose whether or not to transform it when that ability resolves. If the creature is an illegal target by that time, the ability doesn't resolve and none of its effects happen. You can't have Soul Seizer transform."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "If Soul Seizer leaves the battlefield in response to its triggered ability, you won't be able to transform it and it won't return to the battlefield or become attached to the target."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "If Soul Seizer has any +1/+1 counters on it when it transforms, they remain on Ghastly Haunting. They won't affect the power or toughness of the enchanted creature, however."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Spiteful Shadows
 {
     "name": "Spiteful Shadows",
@@ -8628,6 +9537,89 @@
     ]
 }
 
+// Warden of the Wall
+{
+    "name": "Warden of the Wall",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact enters tapped.\n{T}: Add {C}.\nDuring turns other than yours, this artifact is a 2/3 Gargoyle artifact creature with flying.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Warden of the Wall:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantCardType",
+                    "cardType": "CREATURE"
+                },
+                "condition": "IsNotYourTurn"
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantSubtype",
+                    "subtype": "Gargoyle"
+                },
+                "condition": "IsNotYourTurn"
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "SetBasePowerToughnessStatic",
+                    "power": 2,
+                    "toughness": 3,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "IsNotYourTurn"
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "IsNotYourTurn"
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd1a1f48-d46b-4b8e-a642-fc70fd9ef7df.jpg?1783940791",
+        "rulings": [
+            {
+                "date": "2011-01-22",
+                "text": "Warden of the Wall still has the ability to tap for mana when it's not your turn."
+            }
+        ]
+    }
+}
+
 // Wild Hunger
 {
     "name": "Wild Hunger",
@@ -8852,6 +9844,109 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Wolfhunter's Quiver
+{
+    "name": "Wolfhunter's Quiver",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature has \"{T}: This creature deals 1 damage to any target\" and \"{T}: This creature deals 3 damage to target Werewolf creature.\"\nEquip {5}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Wolfhunter's Quiver:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Wolfhunter's Quiver:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "damageSource": "Self"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "AnyTarget",
+                            "id": "t0"
+                        }
+                    ]
+                }
+            },
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Wolfhunter's Quiver:2",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "damageSource": "Self"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature Werewolf"
+                            },
+                            "id": "t1"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "equipCost": "{5}",
+    "metadata": {
+        "collectorNumber": "154",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d84c9b19-9b4d-4a60-984f-636b749c8bcc.jpg?1783940790"
+    },
+    "colorIdentityOverride": []
 }
 
 // Wrack with Madness

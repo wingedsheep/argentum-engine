@@ -1038,6 +1038,13 @@ value class CounterType(val name: String) {
          */
         val FILIBUSTER = CounterType("FILIBUSTER")
 
+        /**
+         * Eyeball counter (DKA — Jar of Eyeballs). Passive tally with no inherent rule: the artifact's
+         * own "whenever a creature you control dies" trigger adds two, and removing all of them is the
+         * cost of its look-at-the-top-X ability.
+         */
+        val EYEBALL = CounterType("EYEBALL")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -1217,6 +1224,7 @@ value class CounterType(val name: String) {
             MANIFESTATION,
             BLAZE,
             FILIBUSTER,
+            EYEBALL,
         )
 
         /**
