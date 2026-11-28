@@ -3,6 +3,7 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.engine.core.SelectCardsDecision
+import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.isd.cards.BackFromTheBrink
@@ -57,6 +58,9 @@ class BackFromTheBrinkScenarioTest : FunSpec({
         d.bothPass()
 
         d.getExileCardNames(me) shouldBe listOf("Centaur Courser")
+        withClue("exactly {2}{G} was spent") {
+            (d.state.getEntity(me)?.get<ManaPoolComponent>()?.green ?: 0) shouldBe 0
+        }
         val token = newPermanent(d, me, before)
         withClue("the token is a copy of the exiled card") {
             d.getCardName(token) shouldBe "Centaur Courser"
@@ -81,6 +85,28 @@ class BackFromTheBrinkScenarioTest : FunSpec({
         d.bothPass()
         d.getCardName(newPermanent(d, me, before)) shouldBe "Grizzly Bears"
         d.getGraveyardCardNames(me) shouldBe listOf("Force of Nature")
+    }
+
+    test("a card padded onto the exile list that the cost never took makes no extra copy") {
+        val d = driver()
+        val me = d.activePlayer!!
+        val brink = d.putPermanentOnBattlefield(me, "Back from the Brink")
+        val bears = d.putCardInGraveyard(me, "Grizzly Bears")
+        val alreadyExiled = d.putCardInExile(me, "Force of Nature")
+        d.giveMana(me, Color.GREEN, 2)
+
+        val before = d.getPermanents(me).toSet()
+        d.submit(
+            ActivateAbility(
+                playerId = me, sourceId = brink, abilityId = abilityId,
+                costPayment = AdditionalCostPayment(exiledCards = listOf(bears, alreadyExiled)),
+            )
+        )
+        d.bothPass()
+
+        withClue("only Grizzly Bears paid the cost, so only it is copied") {
+            d.getPermanents(me).filter { it !in before }.map { d.getCardName(it) } shouldBe listOf("Grizzly Bears")
+        }
     }
 
     test("it can only be activated at sorcery speed") {

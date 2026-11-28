@@ -123,11 +123,11 @@ class CostHandler(
                 (attachedManaCostAtom(state, sourceId)),
                 sourceId, controllerId, manaPool, lifePurpose, abilityContext
             )
-            // Likewise lowered against the source itself; un-lowered only when the source has no
-            // mana cost, which can't be paid (CR 118.6).
             // Lowered against the chosen card once the payer picks it; until then its price is
             // unknown, and the choice pause offers only the cards whose cost is affordable.
             is AbilityCost.ExiledCardManaCost -> true
+            // Lowered against the source itself, like AttachedPermanentManaCost; un-lowered only
+            // when the source has no mana cost, which can't be paid (CR 118.6).
             is AbilityCost.OwnManaCost -> ownManaCostOrNull(state, sourceId)?.let {
                 canPayAtom(state, CostAtom.Mana(it), sourceId, controllerId, manaPool, lifePurpose, abilityContext)
             } ?: false

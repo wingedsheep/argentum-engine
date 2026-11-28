@@ -1523,7 +1523,7 @@ preview — in the turn-face-up handler.)
   paying its own printed cost, coloured pips included and any {X} as 0 (CR 107.3h); lowered by the same pass as
   `AttachedPermanentManaCost`. An object with no mana cost (a land, or a card printed without one) can't pay
   it (CR 118.6) and the ability isn't offered; a printed {0} is payable. Built by `scavengeAbility()`.
-- `Costs.ExileAndPayItsManaCost(filter = Any, zone = GRAVEYARD)` — "exile a creature card from your
+- `Costs.ExileAndPayItsManaCost(filter = Any)` — "exile a creature card from your
   graveyard **and pay its mana cost**" (Back from the Brink): a `Composite` of the one-card
   `CostAtom.ExileFrom` and `AbilityCost.ExiledCardManaCost`, the third member of the referenced-mana-cost
   family. Its price is the printed cost of the card the payer picks (any {X} as 0, CR 107.3h; a
