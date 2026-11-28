@@ -346,7 +346,9 @@ class CreateTokenExecutor(
             if (effect.stampCreator) {
                 context.sourceId?.let { creatorId ->
                     components.add(
-                        com.wingedsheep.engine.state.components.identity.CreatedByComponent(creatorId)
+                        com.wingedsheep.engine.state.components.identity.CreatedByComponent(
+                            creatorId, state.objectRef(creatorId)?.generation
+                        )
                     )
                 }
             }

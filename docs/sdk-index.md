@@ -1167,6 +1167,7 @@ Families:
 - `EffectTarget.TappedAsCost(index: Int)` — TAPPED AS COST: a permanent tapped to pay this activation's cost, or this spell's additional cost — the tap counterpart of SacrificedAsCost, reading `EffectContext.tappedPermanents`.
 - `EffectTarget.TargetController` — The controller of the target (used for effects like "its controller gains 4 life").
 - `EffectTarget.TargetingSource` — TARGETING SOURCE: "that spell or ability" in a becomes-the-target trigger — the object on the stack that did the targeting, not the permanent it targeted (that one is TriggeringEntity).
+- `EffectTarget.TokenCreator` — TOKEN CREATOR: the permanent that created the source token — "Gutter Grime" in an Ooze token's "This token's power and toughness are each equal to the number of slime counters on Gutter Grime." The…
 - `EffectTarget.TriggeringEntity` — TRIGGERING ENTITY: Refers to the entity that caused the trigger to fire.
 
 ## EntityNumericProperty

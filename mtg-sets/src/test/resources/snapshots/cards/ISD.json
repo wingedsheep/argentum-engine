@@ -4113,6 +4113,82 @@
     ]
 }
 
+// Gutter Grime
+{
+    "name": "Gutter Grime",
+    "manaCost": "{4}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a nontoken creature you control dies, put a slime counter on this enchantment, then create a green Ooze creature token with \"This token's power and toughness are each equal to the number of slime counters on Gutter Grime.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gutter Grime:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "SLIME",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 0,
+                            "toughness": 0,
+                            "colors": [
+                                "GREEN"
+                            ],
+                            "creatureTypes": [
+                                "Ooze"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/1/f/1f22cfdb-15af-46b9-b5c9-d0c76d5b15d6.jpg?1783940881",
+                            "staticAbilities": [
+                                {
+                                    "type": "SetBasePowerToughnessDynamicStatic",
+                                    "power": {
+                                        "type": "EntityProperty",
+                                        "entity": "TokenCreator",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": "SLIME"
+                                        }
+                                    },
+                                    "toughness": {
+                                        "type": "EntityProperty",
+                                        "entity": "TokenCreator",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": "SLIME"
+                                        }
+                                    }
+                                }
+                            ],
+                            "stampCreator": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "rarity": "RARE",
+        "artist": "Erica Yang",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a9d007a2-163d-4e09-a70b-280a6fa3203b.jpg?1783940917"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Hamlet Captain
 {
     "name": "Hamlet Captain",

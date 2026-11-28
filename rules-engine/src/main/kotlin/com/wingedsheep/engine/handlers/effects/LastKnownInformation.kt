@@ -79,6 +79,7 @@ fun lkiPolicyFor(reference: EffectTarget.SingleEntity): LkiPolicy = when (refere
     EffectTarget.AffectedEntity,
     EffectTarget.AmassedArmy,
     EffectTarget.ChosenCreature,
+    EffectTarget.TokenCreator,
     EffectTarget.AttachedToTriggeringPermanent,
     // The attacked player or planeswalker is read where it is now; the attacker's own departure
     // is already handled by the resolver's snapshot fallback.

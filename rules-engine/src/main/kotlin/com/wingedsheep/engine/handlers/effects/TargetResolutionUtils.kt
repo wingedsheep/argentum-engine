@@ -126,6 +126,7 @@ object TargetResolutionUtils {
         EffectTarget.EquippedCreature,
         EffectTarget.EnchantedPermanent -> state?.let { attachmentHost(context, it) }
         EffectTarget.ChosenCreature -> state?.let { chosenCreature(context, it) }
+        EffectTarget.TokenCreator -> state?.let { tokenCreator(context, it) }
         is EffectTarget.LinkedExiledCard -> state?.let {
             com.wingedsheep.engine.handlers.effects.linkedexile.LinkedExileLookup
                 .exiledCard(it, context.sourceId, target.index)
@@ -173,6 +174,22 @@ object TargetResolutionUtils {
             ?.takeIf { trigger.triggeringEntityId == context.sourceId }
             ?.let { return it.currentIn(state) }
         return context.sourceId?.let { state.chosenCreatureOf(it) }
+    }
+
+    /**
+     * The permanent that created the source token, while it is still that object on the
+     * battlefield (CR 400.7). A creator that left — even one that came back — names nothing, so a
+     * count read off it is 0 (Gutter Grime's Oozes become 0/0).
+     */
+    private fun tokenCreator(context: EffectContext, state: GameState): EntityId? {
+        val stamp = context.sourceId?.let { state.getEntity(it) }
+            ?.get<com.wingedsheep.engine.state.components.identity.CreatedByComponent>() ?: return null
+        val creator = stamp.creatorId
+        if (creator !in state.getBattlefield()) return null
+        // A phased-out creator is treated as though it doesn't exist.
+        if (state.getEntity(creator)?.has<com.wingedsheep.engine.state.components.battlefield.PhasedOutComponent>() == true) return null
+        val generation = stamp.creatorGeneration ?: return creator
+        return creator.takeIf { state.objectRef(it)?.generation == generation }
     }
 
     private fun attachmentHost(context: EffectContext, state: GameState): EntityId? {
