@@ -3375,6 +3375,7 @@ Civic Saber
 Civic Stalwart
 Civic Wayfinder
 Civil Servant
+Civilized Scholar
 Clachan Festival
 Clackbridge Troll
 Claim // Fame
@@ -3477,6 +3478,7 @@ Clockwork Servant
 Clockwork Vorrac
 Cloister Gargoyle
 Cloistered Telepath
+Cloistered Youth
 Clone
 Clone Legion
 Close Encounter
@@ -5086,6 +5088,7 @@ Divine Gambit
 Divine Intervention	intent: GameIsDrawEffect
 Divine Offering
 Divine Presence
+Divine Reckoning
 Divine Resilience
 Divine Retribution
 Divine Smite
@@ -7330,6 +7333,7 @@ Friendly Ghost
 Friendly Neighborhood
 Friendly Rivalry
 Friendly Teddy
+Frightful Delusion
 Frightshroud Courier
 Frilled Cave-Wurm
 Frilled Deathspitter
@@ -7567,7 +7571,7 @@ Garruk, Veiled Butcher
 Gary Clone
 Gas Guzzler
 Gaseous Anomaly
-Gaseous Form	polarity: Aura>(nothing on the host)
+Gaseous Form
 Gastal Blockbuster
 Gastal Raider
 Gastal Thrillroller
@@ -7748,6 +7752,7 @@ Ghostly Dancers	polarity: UnlockDoorEffect
 Ghostly Flicker
 Ghostly Keybearer	intent: UnlockDoorEffect; polarity: UnlockDoorEffect
 Ghostly Pilferer
+Ghostly Possession
 Ghostly Prison
 Ghostly Sentinel
 Ghostly Touch
@@ -11603,6 +11608,7 @@ Lu Xun, Scholar General
 Luck Bobblehead
 Lucky Clover
 Lucky Offering
+Ludevic's Test Subject
 Ludevic, Necrogenius
 Luke Cage, Power Man
 Lukka, Bound to Ruin
@@ -12401,6 +12407,7 @@ Mindmoil
 Mindreaver
 Mindscour Dragon
 Mindseeker Oculus
+Mindshrieker
 Mindslaver
 Mindsparker
 Mindsplice Apparatus
@@ -12866,6 +12873,7 @@ Murasa Rootgrazer
 Murasa Sproutling
 Murder
 Murder Investigation
+Murder of Crows
 Murderer's Axe
 Murderous Compulsion
 Murderous Cut
@@ -13180,6 +13188,7 @@ Neutralizing Blast
 Neva, Stalked by Nightmares
 Never // Return
 Never Happened
+Nevermore
 Neverwinter Dryad
 Nevinyrral's Disk
 New Benalia
@@ -14019,6 +14028,7 @@ Paranoid Parish-Blade
 Paranormal Analyst	intent: Pipeline(?→hand)
 Parapet Thrasher
 Parapet Watchers
+Paraselene
 Parasitic Grasp
 Parasitic Strix
 Parcel Myr
@@ -16270,6 +16280,7 @@ Runescale Stormbrood
 Runesword	timing: GrantStaticAbilityEffect
 Runewing
 Runic Armasaur
+Runic Repetition
 Runic Shot
 Runner's Bane
 Runo Stromkirk	intent: Pipeline(TopOfLibrary→?)
@@ -16484,7 +16495,7 @@ Sandcrafter Mage
 Sandman's Quicksand
 Sandman, Shifting Scoundrel
 Sands of Delirium
-Sandskin	polarity: Aura>(nothing on the host)
+Sandskin
 Sandskitter Outrider
 Sandsower
 Sandstalker Moloch
@@ -17680,6 +17691,7 @@ Sizzling Barrage
 Sizzling Changeling
 Sizzling Soloist
 Skaab Goliath
+Skaab Ruinator
 Skaab Wrangler
 Skalla Wolf
 Skarrg Goliath
@@ -18827,6 +18839,7 @@ Stonewood Invoker
 Stonework Packbeast
 Stonework Puma
 Stonewright
+Stony Silence
 Stony Strength
 Stony-Voiced Goblins
 Stonybrook Angler
@@ -20209,6 +20222,7 @@ Thraben Gargoyle
 Thraben Heretic
 Thraben Inspector
 Thraben Purebloods
+Thraben Sentry
 Thraben Standard Bearer
 Thraben Valiant
 Thraben Watcher
