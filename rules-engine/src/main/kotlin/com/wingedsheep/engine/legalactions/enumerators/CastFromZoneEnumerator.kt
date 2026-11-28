@@ -1615,7 +1615,8 @@ class CastFromZoneEnumerator(
             val costByTargetCount = pricing.byCountStrings()
             // Flashback casts from the caster's own graveyard, so conditional mana is judged with
             // that origin (Rootcoil Creeper's "cast spells from your graveyard").
-            val spellContext = spellPaymentContextFor(cardComponent, colors = state.projectedState.colorSetOf(cardId), isFromHand = false, isFromGraveyard = true)
+            val spellContext = spellPaymentContextFor(cardComponent, colors = state.projectedState.colorSetOf(cardId),
+                isFromHand = false, isFromGraveyard = true, isFlashbackCast = true)
             val canAfford = context.manaSolver.canPay(
                 state, playerId, effectiveCost, precomputedSources = context.availableManaSources, spellContext = spellContext
             )

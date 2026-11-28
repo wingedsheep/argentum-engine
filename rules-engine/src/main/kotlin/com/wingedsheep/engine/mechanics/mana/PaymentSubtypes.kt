@@ -41,6 +41,9 @@ internal fun spellPaymentContextFor(
     // Any player's graveyard, the caster's own included ("from a graveyard").
     isFromAnyGraveyard: Boolean = false,
     isDisturbCast: Boolean = false,
+    // Cast via flashback — printed or granted (Snapcaster Mage, FlashbackGrants), so the spell has
+    // flashback even when its printed keywords don't ("spells with flashback", Altar of the Lost).
+    isFlashbackCast: Boolean = false,
     // The spell's actual colors — `ProjectedState.colorSetOf`, so an off-battlefield SetColors
     // (Mycosynth Lattice) decides "colorless spells only" mana, not the printed card.
     colors: Set<com.wingedsheep.sdk.core.Color>,
@@ -62,5 +65,6 @@ internal fun spellPaymentContextFor(
     isFromAnyGraveyard = isFromAnyGraveyard,
     isDisturbCast = isDisturbCast,
     cardTypes = cardComponent.typeLine.cardTypes,
-    keywords = cardComponent.baseKeywords,
+    keywords = if (isFlashbackCast) cardComponent.baseKeywords + com.wingedsheep.sdk.core.Keyword.FLASHBACK
+        else cardComponent.baseKeywords,
 )

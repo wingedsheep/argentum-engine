@@ -3,6 +3,7 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -14,7 +15,7 @@ import io.kotest.matchers.shouldNotBe
  * Altar of the Lost (DKA) — enters tapped; its two mana in any combination of colors may be spent
  * only on spells with flashback cast from a graveyard (`AllOf(SpellsWithKeywordOnly(FLASHBACK),
  * CastFromGraveyardOnly(anyGraveyard = true))`). It pays a flashback cast, but not the same
- * flashback card cast from hand.
+ * flashback card cast from hand. Flashback granted by Snapcaster Mage counts as "with flashback".
  */
 class AltarOfTheLostScenarioTest : ScenarioTestBase() {
 
@@ -65,6 +66,43 @@ class AltarOfTheLostScenarioTest : ScenarioTestBase() {
                 withClue("error=${result.error}") { result.error shouldBe null }
                 game.state.getEntity(game.findPermanent("Altar of the Lost")!!)?.get<TappedComponent>() shouldNotBe null
                 game.state.stack.size shouldBe 1
+            }
+
+            test("its mana pays a flashback Snapcaster Mage granted") {
+                val game = base()
+                    .withCardOnBattlefield(1, "Altar of the Lost")
+                    .withLandsOnBattlefield(1, "Island", 2)
+                    .withCardInHand(1, "Snapcaster Mage")
+                    .withCardInGraveyard(1, "Lightning Bolt")
+                    .build()
+                val bolt = game.findCardsInGraveyard(1, "Lightning Bolt").single()
+
+                withClue("Lightning Bolt has no printed flashback, so nothing offers it yet") {
+                    game.getLegalActions(1).none {
+                        it.actionType == "CastWithFlashback" && (it.action as CastSpell).cardId == bolt
+                    } shouldBe true
+                }
+
+                game.castSpell(1, "Snapcaster Mage").error shouldBe null
+                game.resolveStack()
+                if (game.hasPendingDecision()) game.selectTargets(listOf(bolt)).error shouldBe null
+                game.resolveStack()
+
+                withClue("the granted flashback {R} is affordable off the Altar alone (the Islands are tapped)") {
+                    game.getLegalActions(1).single {
+                        it.actionType == "CastWithFlashback" && (it.action as CastSpell).cardId == bolt
+                    }.isAffordable shouldBe true
+                }
+                val result = game.execute(
+                    CastSpell(
+                        game.player1Id, bolt,
+                        targets = listOf(ChosenTarget.Player(game.player2Id)),
+                        useAlternativeCost = true,
+                        alternativeCostType = AlternativeCostType.FLASHBACK,
+                    )
+                )
+                withClue("error=${result.error}") { result.error shouldBe null }
+                game.state.getEntity(game.findPermanent("Altar of the Lost")!!)?.get<TappedComponent>() shouldNotBe null
             }
 
             test("its mana can't pay for a flashback card cast from hand") {
