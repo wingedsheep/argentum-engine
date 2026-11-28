@@ -12,6 +12,7 @@ import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.mtg.sets.definitions.blb.cards.FestivalOfEmbers
 import com.wingedsheep.mtg.sets.definitions.blb.cards.OtterballAntics
+import com.wingedsheep.mtg.sets.definitions.dka.cards.IncreasingConfusion
 import com.wingedsheep.mtg.sets.definitions.dom.cards.MuldrothaTheGravetide
 import com.wingedsheep.mtg.sets.definitions.dom.cards.SqueeTheImmortal
 import com.wingedsheep.mtg.sets.definitions.one.cards.ViralSpawning
@@ -81,6 +82,23 @@ class CastFromZoneEnumeratorTest : FunSpec({
 
             flashback.affordable shouldBe false
             flashback.actionType shouldBe "CastWithFlashback"
+        }
+
+        // A flashback cost with its own {X} (Increasing Confusion: Flashback {X}{U}) announces X
+        // as it's cast, so the offer must carry the X slider and the largest payable X.
+        test("an {X} flashback cost surfaces hasXCost and the largest affordable X") {
+            val driver = setupP1(
+                battlefield = listOf("Island", "Island", "Island", "Island"),
+                graveyard = listOf("Increasing Confusion"),
+                extraSetCards = listOf(IncreasingConfusion)
+            )
+
+            val flashback = driver.enumerateFor(driver.player1)
+                .castActionsFor("Increasing Confusion").single { it.actionType == "CastWithFlashback" }
+            flashback.affordable shouldBe true
+            flashback.manaCostString shouldBe "{X}{U}"
+            flashback.hasXCost shouldBe true
+            flashback.maxAffordableX shouldBe 3
         }
 
         test("sorcery flashback is blocked at instant speed (upkeep step)") {

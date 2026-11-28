@@ -16503,6 +16503,9 @@ MacCready, Lamplight Mayor (granted).
   `KeywordAbility.flashback(cost, additionalCost, minimumXValue = 1)` floors the spell's X on the flashback route only —
   "If you cast this spell this way, X can't be 0" (Light Up the Night). The `CastWithFlashback` offer carries `minX`, is
   unaffordable when the X ceiling is below it, and a flashback cast announcing less is rejected; hand casts keep X ≥ 0.
+  A flashback `cost` may carry its own `{X}` — Increasing Confusion's `KeywordAbility.flashback("{X}{U}")`: X is
+  announced as the card is cast from the graveyard (CR 601.2b), so the `CastWithFlashback` offer sets `hasXCost` and
+  `maxAffordableX`, and the effect reads it as `DynamicAmount.XValue` like a hand cast.
 - `BeamMeUp(cost)` — `beamMeUp("{2}{U}")` / `KeywordAbility.beamMeUp(cost)` (Star Trek; the published
   Comprehensive Rules predate the set, so the spec is [Wizards' mechanics article](https://magic.wizards.com/en/news/feature/star-trek-mechanics)).
   An instant or sorcery may be cast from its owner's graveyard at its normal timing for `cost` plus returning a

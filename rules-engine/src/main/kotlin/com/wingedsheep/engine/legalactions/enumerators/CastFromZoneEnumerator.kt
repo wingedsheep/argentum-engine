@@ -1618,6 +1618,15 @@ class CastFromZoneEnumerator(
             val canAfford = context.manaSolver.canPay(
                 state, playerId, effectiveCost, precomputedSources = context.availableManaSources, spellContext = spellContext
             )
+            // A flashback cost with {X} (Increasing Confusion's {X}{U}) announces X as it's cast
+            // (CR 601.2b), so the offer carries the X slider and the largest X the player can pay.
+            val hasXCost = effectiveCost.hasX
+            val maxAffordableX: Int? = if (hasXCost) context.costCalculator.maxAffordableX(
+                state, cardDef, playerId, cardId,
+                payable = context.manaSolver.getAvailableManaCount(state, playerId,
+                    precomputedSources = context.availableManaSources) - effectiveCost.cmc,
+                xCount = effectiveCost.xCount, fromZone = Zone.GRAVEYARD
+            ) else null
 
             // A flashback cast owes the card's printed additional costs as well as flashback's own
             // bundled one ("its flashback cost and any additional costs").
@@ -1635,6 +1644,8 @@ class CastFromZoneEnumerator(
                         manaCostString = costString,
                         manaCostByTargetCount = costByTargetCount,
                         additionalCostInfo = flashbackCostInfo,
+                        hasXCost = hasXCost,
+                        maxAffordableX = maxAffordableX,
                         sourceZone = "GRAVEYARD"
                     )
                 )
@@ -1672,6 +1683,8 @@ class CastFromZoneEnumerator(
                             manaCostString = costString,
                             manaCostByTargetCount = costByTargetCount,
                             additionalCostInfo = flashbackCostInfo,
+                            hasXCost = hasXCost,
+                            maxAffordableX = maxAffordableX,
                             autoTapPreview = autoTapPreview,
                             sourceZone = "GRAVEYARD"
                         )
@@ -1686,6 +1699,8 @@ class CastFromZoneEnumerator(
                         manaCostString = costString,
                         manaCostByTargetCount = costByTargetCount,
                         additionalCostInfo = flashbackCostInfo,
+                        hasXCost = hasXCost,
+                        maxAffordableX = maxAffordableX,
                         autoTapPreview = autoTapPreview,
                         sourceZone = "GRAVEYARD"
                     )
