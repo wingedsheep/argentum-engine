@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.blc.cards
+package com.wingedsheep.mtg.sets.definitions.isd.cards
 
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.card
@@ -42,11 +42,11 @@ val BlasphemousAct = card("Blasphemous Act") {
     }
 
     metadata {
+        flavorText = "\"Holy places are no longer sanctuary from death, and death is no longer sanctuary from anything.\"\n—Thalia, Knight-Cathar"
         rarity = Rarity.RARE
-        collectorNumber = "114"
-        artist = "Justine Cruz"
-        imageUri = "https://cards.scryfall.io/normal/front/f/b/fb01696a-855c-45af-804c-d41acb6496e1.jpg?1721428730"
-        flavorText = "In the early days of Valley, desperate animalfolk harnessed the power of Calamity Beasts in ways that destroyed more than defended."
+        collectorNumber = "130"
+        artist = "Daarken"
+        imageUri = "https://cards.scryfall.io/normal/front/5/0/509ce648-fb76-486d-8b39-183e368b7cb7.jpg"
         ruling("2020-11-10", "Although players may respond to Blasphemous Act once it's been cast, once it's announced, they can't respond before the cost is calculated and paid.")
         ruling("2020-11-10", "Blasphemous Act's ability can't reduce the total cost to cast the spell below {R}.")
         ruling("2020-11-10", "The total cost to cast Blasphemous Act is locked in before you pay that cost.")

@@ -651,6 +651,17 @@ object TargetPolarityAnalyzer {
             val space = (leaf as? ForEachEffect)?.space
             if (space is IterationSpace.TargetsOf) {
                 val iterated = requirements.indexOfFirst { it.id == space.group }
+                // "Target player shuffles up to three target cards from their graveyard into their
+                // library" (Memory's Journey, Loaming Shaman, Quandrix Command): whose graveyard is
+                // the player slot's call — our own to recycle what we want to draw again, or theirs
+                // to take back what their recursion wants. Either way, so the board decides; and
+                // the player named is the same choice.
+                val recycled = iterated.takeIf { it >= 0 }?.let { recycledGraveyardOfTargetPlayer(leaf.body, requirements, it) }
+                if (recycled != null) {
+                    perSlot[iterated] += TargetPolarity.FLEXIBLE
+                    perSlot[recycled] += TargetPolarity.FLEXIBLE
+                    continue
+                }
                 for (inner in EffectWalker.payoffLeaves(leaf.body)) {
                     for ((target, polarity) in classify(inner, definitions, source)) {
                         val slot = if (target == EffectTarget.IterationEntity) iterated.takeIf { it >= 0 }
@@ -1213,6 +1224,21 @@ object TargetPolarityAnalyzer {
         // graveyard it is graveyard hate (Junktroller, Sundering Archaic) that may hit either side.
         if (leaf.destination == Zone.LIBRARY && !ownGraveyardOnly(filter)) return null
         return slot.takeIf { fromGraveyard }
+    }
+
+    /**
+     * The player slot whose graveyard [body] — run once per target of the graveyard slot
+     * [iterated] — puts into that player's library, or null: "target player shuffles up to three
+     * target cards from their graveyard into their library" (Memory's Journey). The card slot is
+     * confined to the player slot's graveyard (`ownedByTargetPlayer`), so the two are one choice:
+     * our own graveyard recycled, or theirs emptied of what their recursion wants.
+     */
+    internal fun recycledGraveyardOfTargetPlayer(body: Effect, requirements: List<TargetRequirement>, iterated: Int): Int? {
+        val filter = objectFilter(requirements[iterated]) ?: return null
+        if (filter.zone != Zone.GRAVEYARD || filter.baseFilter.controllerPredicate != ControllerPredicate.OwnedByTargetPlayer) return null
+        val leaves = EffectWalker.payoffLeaves(body)
+        if (leaves.isEmpty() || leaves.any { it !is MoveToZoneEffect || it.target != EffectTarget.IterationEntity || it.destination != Zone.LIBRARY }) return null
+        return requirements.indices.singleOrNull { requirements[it] is TargetPlayer }
     }
 
     internal fun ownGraveyardOnly(filter: com.wingedsheep.sdk.scripting.filters.unified.TargetFilter?): Boolean =

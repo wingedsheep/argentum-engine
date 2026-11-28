@@ -916,6 +916,14 @@ object CardIntentAnalyzer {
                         payoff.count { it !is GatherCardsEffect } == 1 && requirements.any(::isUntappableLandSlot)
                     ) listOf(UNTAP_OUR_LANDS) else listOf(leaf)
                 is ForEachEffect -> when {
+                    // "Target player shuffles up to three target cards from their graveyard into
+                    // their library" (Memory's Journey, Loaming Shaman): our own graveyard recycled
+                    // or theirs emptied, as the player slot is named — recursion or graveyard hate,
+                    // never the tuck an unplaced move to library reads as on the battlefield.
+                    leaf.space is IterationSpace.TargetsOf &&
+                        requirements.indexOfFirst { it.id == (leaf.space as IterationSpace.TargetsOf).group }
+                            .let { it >= 0 && TargetPolarityAnalyzer.recycledGraveyardOfTargetPlayer(leaf.body, requirements, it) != null } ->
+                        listOf(GRAVEYARD_HATE_LEAF, RECYCLE_INTO_LIBRARY)
                     payoff.size == 1 && leaf.space == IterationSpace.Targets &&
                         EffectWalker.payoffLeaves(leaf.body).let { body ->
                             body.size == 1 && body.all { it is TapUntapEffect && untapsATargetLand(it, requirements, eachTarget = true) }
@@ -5267,6 +5275,15 @@ object CardIntentAnalyzer {
      */
     private val GRAVEYARD_HATE_LEAF: Effect =
         MoveToZoneEffect(EffectTarget.Self, Zone.EXILE, fromZone = Zone.GRAVEYARD)
+
+    /**
+     * The own-graveyard half of a recycle into a target player's library
+     * ([TargetPolarityAnalyzer.recycledGraveyardOfTargetPlayer]): our cards out of the graveyard
+     * and back where we can draw them — [IntentTag.RECURSION], as a single own-graveyard card put
+     * into our library is (Mortuary Mire).
+     */
+    private val RECYCLE_INTO_LIBRARY: Effect =
+        MoveToZoneEffect(EffectTarget.Self, Zone.LIBRARY, fromZone = Zone.GRAVEYARD)
 
     /**
      * What a [reanimatesChosenGraveyardTargets] pipeline reads as: a card out of a graveyard onto

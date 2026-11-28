@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.dom.cards
+package com.wingedsheep.mtg.sets.definitions.isd.cards
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Zone
@@ -14,42 +14,42 @@ import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.references.Player
 
 /**
- * Isolated Chapel
+ * Sulfur Falls
  * Land
- * This land enters tapped unless you control a Plains or a Swamp.
- * {T}: Add {W} or {B}.
+ * This land enters tapped unless you control an Island or a Mountain.
+ * {T}: Add {U} or {R}.
  */
-val IsolatedChapel = card("Isolated Chapel") {
+val SulfurFalls = card("Sulfur Falls") {
     typeLine = "Land"
-    colorIdentity = "WB"
-    oracleText = "This land enters tapped unless you control a Plains or a Swamp.\n{T}: Add {W} or {B}."
+    colorIdentity = "UR"
+    oracleText = "This land enters tapped unless you control an Island or a Mountain.\n{T}: Add {U} or {R}."
 
     replacementEffect(EntersTapped(
         unlessCondition = Conditions.Any(
-            Exists(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Land.withSubtype("Plains")),
-            Exists(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Land.withSubtype("Swamp"))
+            Exists(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Land.withSubtype("Island")),
+            Exists(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Land.withSubtype("Mountain"))
         )
     ))
 
     activatedAbility {
         cost = AbilityCost.Tap
-        effect = Effects.AddMana(Color.WHITE)
+        effect = Effects.AddMana(Color.BLUE)
         manaAbility = true
         timing = TimingRule.ManaAbility
     }
 
     activatedAbility {
         cost = AbilityCost.Tap
-        effect = Effects.AddMana(Color.BLACK)
+        effect = Effects.AddMana(Color.RED)
         manaAbility = true
         timing = TimingRule.ManaAbility
     }
 
     metadata {
+        flavorText = "Skirsdag cultists meet behind a waterfall's curtain and plot with demonic forces."
         rarity = Rarity.RARE
-        collectorNumber = "241"
-        artist = "Richard Wright"
-        flavorText = "Serra's blessing lies strongest upon Sursi, where her holy chapels are untouched even as the Cabal encroaches."
-        imageUri = "https://cards.scryfall.io/normal/front/a/1/a1d95d37-5dbe-4a25-bc80-a4db08f3c63a.jpg?1562740520"
+        collectorNumber = "248"
+        artist = "Cliff Childs"
+        imageUri = "https://cards.scryfall.io/normal/front/4/9/4968b65d-50e5-4d7e-b78b-cdada1cbf7a7.jpg"
     }
 }

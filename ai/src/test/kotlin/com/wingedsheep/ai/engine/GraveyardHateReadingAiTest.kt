@@ -101,6 +101,22 @@ class GraveyardHateReadingAiTest : ScenarioTestBase() {
             }
         }
 
+        test("target cards shuffled from target player's graveyard into their library read either way") {
+            val journey = cardRegistry.getCard("Memory's Journey")!!
+            val effect = journey.script.spellEffect!!
+            val reqs = journey.script.targetRequirements
+            withClue("our graveyard recycled or theirs emptied: the player and the cards are one choice") {
+                intents.effectTargetPolarities(effect, reqs) shouldBe listOf(TargetPolarity.FLEXIBLE, TargetPolarity.FLEXIBLE)
+            }
+            val tags = CardIntentAnalyzer.analyzeEffect(effect, reqs).tags
+            tags shouldContain IntentTag.GRAVEYARD_HATE
+            tags shouldContain IntentTag.RECURSION
+            tags shouldNotContain IntentTag.REMOVAL
+            listOf("Memory's Journey", "Loaming Shaman").forEach { name ->
+                withClue(name) { AiReadingAudit.read(cardRegistry.getCard(name)!!).readFully shouldBe true }
+            }
+        }
+
         test("Learn from the Past shuffles our own milled graveyard back, not the opponent's") {
             val game = scenario()
                 .withPlayers()

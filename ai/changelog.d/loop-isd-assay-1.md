@@ -1,0 +1,1 @@
+- #TBD Drafts and builds Innistrad decks from a first-party pick-rating and removal table instead of guessing ISD cards from the effect heuristic, and reads "target player shuffles target cards from their graveyard into their library" (Memory's Journey, Loaming Shaman, Quandrix Command) as recycling our graveyard or hating theirs rather than as unreadable removal
