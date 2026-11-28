@@ -9740,6 +9740,58 @@
     ]
 }
 
+// Witchbane Orb
+{
+    "name": "Witchbane Orb",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters, destroy all Curses attached to you.\nYou have hexproof. (You can't be the target of spells or abilities your opponents control, including Aura spells.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Witchbane Orb:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "AttachedToTarget",
+                                "host": "Controller",
+                                "filter": "enchantment Curse"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this artifact enters, destroy all Curses attached to you."
+            }
+        ],
+        "staticAbilities": [
+            "GrantHexproofToController"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "236",
+        "rarity": "RARE",
+        "artist": "John Avon",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/53e0bf16-62f5-4b62-96e8-bc7e049bcf89.jpg?1783940895"
+    }
+}
+
 // Woodland Cemetery
 {
     "name": "Woodland Cemetery",

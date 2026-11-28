@@ -6131,12 +6131,14 @@ their library into their graveyard. If it's a creature card, you create a 2/2 bl
   GRAVEYARD)` plus `gather(CardSource.SacrificedThisWay)` → `exile(...)`. Only a variable cost whose action is
   `SACRIFICE` records its picks here; an exile or tap variable cost does not.
 - `CardSource.AttachedTo(host, filter?, zone = BATTLEFIELD)` — the permanents attached to the `host` entity (any
-  `EffectTarget` that resolves to a permanent — a spell's `ContextTarget`, `Self`, `TriggeringEntity`, …)
-  that match `filter`, read off the host's `AttachmentsComponent` and intersected with the projected
+  `EffectTarget` that resolves to a permanent — a spell's `ContextTarget`, `Self`, `TriggeringEntity`, … — or
+  to a **player**, whose enchant-player Auras it gathers) that match `filter`, read off the host's `AttachmentsComponent` and intersected with the projected
   filter matches. The non-targeted counterpart of "the Equipment/Aura attached to that creature": yields
   nothing when the host has left play or has no matching attachments. Backs "destroy up to one Equipment
   attached to that creature" (Light of Judgment): `gather(AttachedTo(targetCreature, Equipment))` →
-  `chooseUpTo(1)` → `destroy(...)`. **Last-known leg:** with `host = TriggeringEntity` on a dies/leaves
+  `chooseUpTo(1)` → `destroy(...)`. **Player host:** "destroy all Curses attached to you" (Witchbane Orb) =
+  `Pipeline { destroy(gather(AttachedTo(EffectTarget.Controller, Enchantment.withSubtype(CURSE)))) }`.
+  **Last-known leg:** with `host = TriggeringEntity` on a dies/leaves
   trigger, once the host is off the battlefield the gather reads the attachments frozen on the trigger's
   zone change (`TriggerContext.lastKnownAttachmentIds`, CR 608.2h) — still filtered to permanents on the
   battlefield that match `filter` now. "Whenever an equipped creature dies, you may attach all Equipment

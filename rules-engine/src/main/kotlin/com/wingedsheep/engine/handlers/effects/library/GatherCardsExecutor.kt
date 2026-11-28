@@ -273,7 +273,8 @@ class GatherCardsExecutor(
             }
 
             is CardSource.AttachedTo -> {
-                // Permanents attached to the resolved host that match the filter (projected).
+                // Permanents attached to the resolved host — a permanent or a player — that match the
+                // filter (projected).
                 // Intersect the host's live attachments with the projected filter matches so
                 // type/control-changing effects are respected (e.g. "Equipment attached to that
                 // creature"). Empty when the host left play or has no matching attachments.
@@ -298,7 +299,11 @@ class GatherCardsExecutor(
                     lastKnownAttachmentsInZone(state, source, context)
                 } else {
                     val hostId = context.resolveTarget(source.host, state)
-                    val attachedIds = if (hostId != null && hostId in state.getBattlefield()) {
+                    // A player host ("all Curses attached to you", Witchbane Orb) carries its Auras on
+                    // the same AttachmentsComponent a permanent does (players are entities too).
+                    val attachedIds = if (hostId != null &&
+                        (hostId in state.getBattlefield() || hostId in state.turnOrder)
+                    ) {
                         state.getEntity(hostId)?.get<AttachmentsComponent>()?.attachedIds ?: emptyList()
                     } else if (source.host == com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity) {
                         context.triggerContext?.lastKnownAttachmentIds ?: emptyList()
