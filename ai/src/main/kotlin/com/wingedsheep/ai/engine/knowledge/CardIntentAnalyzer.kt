@@ -107,6 +107,7 @@ import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.effects.TransformEffect
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
 import com.wingedsheep.sdk.scripting.targets.TargetOther
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
@@ -339,7 +340,7 @@ object CardIntentAnalyzer {
             // player controls an Island" or islandwalk (Sealock Monster): the type opens that attack
             // on the defending player — see [LandTypeAttackEnabler].
             if (leaf is AddSubtypeEffect && LandTypeAttackEnabler.of(source, leaf)) tags += IntentTag.EVASION_GRANT
-            if (leaf is AttachEquipmentEffect && stealsItsHost(source)) tags += IntentTag.REMOVAL
+            if (leaf is AttachEquipmentEffect && stealsItsHost(source, effect)) tags += IntentTag.REMOVAL
             // "{T}: This creature deals 1 damage to itself" beside "whenever this creature is dealt
             // damage, it deals that much damage to the chosen player" (Stuffy Doll): the self-damage
             // is how the card fires its own trigger, so it is for whatever that trigger is for.
@@ -383,9 +384,16 @@ object CardIntentAnalyzer {
      * Whether [source] takes control of whatever it is attached to ([ControlEnchantedPermanent]):
      * attaching it elsewhere — "whenever a creature an opponent controls enters, attach this Aura
      * to that creature" (Illusory Gains) — steals the new host, as the static's own reading does.
+     * When [effect] transforms the source first, the face that gets attached is its back face:
+     * "transform it. If you do, attach it to target creature that player controls" (Soul Seizer,
+     * whose back face Ghastly Haunting reads "you control enchanted creature").
      */
-    private fun stealsItsHost(source: CardDefinition?): Boolean =
-        source?.script?.staticAbilities?.contains(ControlEnchantedPermanent) == true
+    internal fun stealsItsHost(source: CardDefinition?, effect: Effect): Boolean {
+        fun steals(face: CardDefinition?) = face?.script?.staticAbilities?.contains(ControlEnchantedPermanent) == true
+        if (steals(source)) return true
+        val transformsSelf = gateInteriorLeaves(effect).any { it is TransformEffect && it.target == EffectTarget.Self }
+        return transformsSelf && steals(source?.backFace)
+    }
 
     /**
      * What casting [card] with the modes at [modeIndices] does — the reading a *cast* of a modal
@@ -461,6 +469,11 @@ object CardIntentAnalyzer {
         val pileCast = pileCastTags(scripts)
         for (root in roots) tags += pipelineTags(root, turnAhead = turnAheadRoots.any { it === root }, ownPile = ownPile, pileCast = pileCast)
         if (roots.any(::isExpiringProtectionTrick)) expiringPump = true
+        // "Transform it. If you do, attach it to target creature that player controls" (Soul Seizer):
+        // the face it attaches as takes control of its host, so the attach is a steal.
+        if (roots.any { root -> EffectWalker.payoffLeaves(root).any { it is AttachEquipmentEffect } && stealsItsHost(card, root) }) {
+            tags += IntentTag.REMOVAL
+        }
         // "Discard a card: draw a card" (Murmuring Volume) trades a card for a card: it filters the
         // hand, it gains none. Its draw reads as the card selection it is.
         val rummageLeaves = scripts.flatMap { it.activatedAbilities }.filter(::isRummage)

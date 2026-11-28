@@ -255,4 +255,5 @@ export const counterManaClass: Record<string, string> = {
   MANIFESTATION: 'counter-devotion',
   BLAZE: 'counter-flame',
   FILIBUSTER: 'counter-time',
+  EYEBALL: 'counter-skull',
 }

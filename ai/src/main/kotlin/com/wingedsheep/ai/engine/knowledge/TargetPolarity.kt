@@ -190,6 +190,7 @@ import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.MoveType
 import com.wingedsheep.sdk.scripting.effects.RevealHandEffect
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -914,9 +915,15 @@ object TargetPolarityAnalyzer {
         // can't be read one-sidedly — Blade of Shared Souls' copy trigger, a mixed +N/-N — is a
         // question of which of our creatures wears it best: open for the simulation, which sees each
         // candidate wearing it. Only when nothing else reads the slot, so a sibling leaf's reading wins.
-        for (equip in leaves.filterIsInstance<AttachEquipmentEffect>()) {
+        // A source that takes control of its host ("you control enchanted creature") attached to a
+        // target steals it — Soul Seizer transforming into Ghastly Haunting onto the damaged
+        // player's creature: removal for the target's side, whoever it may belong to.
+        // The attach may be the payoff of an "if you do" gate ("you may transform it. If you do, attach it …").
+        for (equip in EffectWalker.payoffLeaves(effect).filterIsInstance<AttachEquipmentEffect>()) {
             val slot = slotOf(equip.target, requirements) ?: continue
-            if (source != null && perSlot[slot].isEmpty() && isOwnSide(requirements[slot])) {
+            if (perSlot[slot].isEmpty() && CardIntentAnalyzer.stealsItsHost(source, effect)) {
+                perSlot[slot] += TargetPolarity.HARMFUL
+            } else if (source != null && perSlot[slot].isEmpty() && isOwnSide(requirements[slot])) {
                 perSlot[slot] += TargetPolarity.FLEXIBLE
             }
         }
@@ -1792,9 +1799,15 @@ object TargetPolarityAnalyzer {
             val before = moved.size
             for (leaf in leaves) moved += CardIntentAnalyzer.derivedCollections(leaf, moved)
         } while (moved.size != before)
+        // "Destroy up to three target creatures … Return each card put into a graveyard this way to
+        // the battlefield under your control" (Sorin, Lord of Innistrad): a destruction whose cards
+        // come back under the caster's control is not a blink but a steal — still removal for the
+        // target's controller. Only a return under the owner's control undoes it.
+        val stolen = move.moveType == MoveType.Destroy
         return leaves.none {
             it is MoveCollectionEffect && it.from in moved &&
-                (it.destination as? CardDestination.ToZone)?.zone == Zone.BATTLEFIELD
+                (it.destination as? CardDestination.ToZone)?.zone == Zone.BATTLEFIELD &&
+                !(stolen && !it.underOwnersControl && (it.destination as CardDestination.ToZone).player == Player.You)
         }
     }
 

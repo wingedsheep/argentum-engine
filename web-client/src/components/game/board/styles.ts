@@ -2567,6 +2567,7 @@ const passiveCounterPalette: Record<string, CounterBadgePalette> = {
   CRYSTAL: { bg: 'rgba(18, 40, 62, 0.95)', border: 'rgba(130, 205, 245, 0.75)', color: '#c8ecff', glow: 'rgba(130, 205, 245, 0.5)' },
   BLAZE: { bg: 'rgba(64, 20, 8, 0.95)', border: 'rgba(250, 110, 50, 0.78)', color: '#fbb890', glow: 'rgba(250, 110, 50, 0.55)' },
   FILIBUSTER: { bg: 'rgba(22, 34, 58, 0.95)', border: 'rgba(150, 180, 235, 0.75)', color: '#d4e2fb', glow: 'rgba(150, 180, 235, 0.5)' },
+  EYEBALL: { bg: 'rgba(40, 52, 30, 0.95)', border: 'rgba(190, 215, 140, 0.72)', color: '#e2efc6', glow: 'rgba(190, 215, 140, 0.45)' },
   MANIFESTATION: { bg: 'rgba(36, 26, 60, 0.95)', border: 'rgba(180, 150, 240, 0.7)', color: '#dccbff', glow: 'rgba(180, 150, 240, 0.45)' },
   TRAINING: { bg: 'rgba(48, 40, 22, 0.95)', border: 'rgba(214, 170, 90, 0.7)', color: '#ecd09a' },
   MINUS_ZERO_MINUS_ONE: { bg: 'rgba(60, 20, 20, 0.95)', border: 'rgba(220, 120, 120, 0.7)', color: '#e09c9c' },
