@@ -309,9 +309,9 @@ export function TournamentOverlay({
             <tr>
               <th className={styles.standingsTh}>#</th>
               <th className={styles.standingsThLeft}>Player</th>
-              <th className={styles.standingsTh}>Record</th>
-              <th className={styles.standingsTh}>Pts</th>
-              <th className={styles.standingsTh} title="Game Win Rate">GWR</th>
+              <th className={styles.standingsTh} title="Match record: wins–losses–draws">Matches</th>
+              <th className={styles.standingsTh} title="Games won–lost across all matches, and game win rate">Games</th>
+              <th className={styles.standingsTh} title="Match points: 3 per win, 1 per draw">Pts</th>
               {isWaitingForReady && <th className={styles.standingsTh}>Ready</th>}
             </tr>
           </thead>
@@ -377,10 +377,19 @@ export function TournamentOverlay({
                     {'-'}
                     <span className={styles.standingsDraws}>{standing.draws}</span>
                   </td>
-                  <td className={`${styles.standingsTd} ${styles.standingsPoints}`}>{standing.points}</td>
-                  <td className={`${styles.standingsTd} ${styles.standingsGwr}`}>
-                    {totalGames > 0 ? `${winRate}%` : '-'}
+                  <td className={`${styles.standingsTd} ${styles.standingsRecord}`}>
+                    {totalGames > 0 ? (
+                      <>
+                        <span className={styles.standingsWins}>{gamesWon}</span>
+                        {'-'}
+                        <span className={styles.standingsLosses}>{gamesLost}</span>
+                        <span className={styles.standingsGwr}>{` ${winRate}%`}</span>
+                      </>
+                    ) : (
+                      <span className={styles.standingsDraws}>-</span>
+                    )}
                   </td>
+                  <td className={`${styles.standingsTd} ${styles.standingsPoints}`}>{standing.points}</td>
                   {isWaitingForReady && (
                     <td className={styles.standingsTd} style={{ color: isReady ? 'var(--color-success-light)' : 'var(--text-disabled)' }}>
                       {standing.isConnected ? (isReady ? '✓' : '···') : '-'}
@@ -415,7 +424,7 @@ export function TournamentOverlay({
             </div>
             {(hoveredStanding.gamesWon + hoveredStanding.gamesLost) > 0 && (
               <div className={styles.tooltipStat}>
-                <span className={styles.tooltipStatLabel}>Game Win % (GW%)</span>
+                <span className={styles.tooltipStatLabel}>Games (GW%)</span>
                 <span className={styles.tooltipStatValue}>
                   {hoveredStanding.gamesWon}-{hoveredStanding.gamesLost} (
                   {((hoveredStanding.gamesWon / (hoveredStanding.gamesWon + hoveredStanding.gamesLost)) * 100).toFixed(0)}%)

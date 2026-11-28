@@ -1028,7 +1028,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
         'Play your match. Matches still running elsewhere are listed live, with both life totals and a ▶ Watch button.',
         'Repeat until everyone has played everyone. The host can Add Round once the bracket is complete.',
       ] },
-      { kind: 'p', text: 'Standings show record, points and game win rate; hover a row for the tiebreakers (opponents’ match win %, game win %, opponents’ game win %, life differential) and which one actually separated two players.' },
+      { kind: 'p', text: 'Standings show each player’s match record (wins–losses–draws, one per match), the games they won and lost inside those matches with their game win rate, and match points. A 2–1 win in a best-of-three counts as one match win and two games won. Hover a row for the tiebreakers (opponents’ match win %, game win %, opponents’ game win %, life differential) and which one actually separated two players.' },
       { kind: 'p', text: 'Leave Tournament (confirm with a second click) drops you from the event. If a player disconnects, everyone sees a countdown banner; others can extend it by a minute, and kick them once two minutes have passed.' },
       { kind: 'p', text: 'Anyone can follow the event from its tournament link, and every finished match’s replay is under Replays.' },
     ],
