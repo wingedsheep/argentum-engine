@@ -254,8 +254,10 @@ sealed interface CardSource {
      * equipment here, then a [SelectionMode.ChooseUpTo]`(1)` select + a destroying move pick
      * and destroy at most one. The host typically comes from a spell's own target
      * ([EffectTarget.ContextTarget]); any [EffectTarget] that resolves to a permanent works
-     * (Self, TriggeringEntity, …). Yields nothing when the host has left play or has no
-     * matching attachments.
+     * (Self, TriggeringEntity, …), and so does one that resolves to a **player** — the Auras
+     * enchanting them: "destroy all Curses attached to you" (Witchbane Orb) is
+     * `AttachedTo(EffectTarget.Controller, Enchantment.withSubtype(CURSE))`. Yields nothing when
+     * the host has left play or has no matching attachments.
      *
      * [zone] names where the gathered objects are *now*. The default, [Zone.BATTLEFIELD], is the
      * attached permanents above. Any other zone reads the last-known attachments of a host that
