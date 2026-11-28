@@ -2489,7 +2489,7 @@ class TriggerDetector(
 
         // Handle "whenever a [subtype] deals combat damage to a player" triggers (e.g., Cabal Slaver)
         if (event is DamageDealtEvent && event.sourceId != null && event.isCombatDamage && event.targetId in state.turnOrder) {
-            damageDetector.detectSubtypeDamageToPlayerTriggers(state, event, triggers, projected, index)
+            damageDetector.detectSubtypeDamageToPlayerTriggers(state, event, triggers, index)
         }
 
         // Handle all ATTACHED-bound triggers on auras/equipment (e.g., Frozen Solid, One with Nature,

@@ -494,52 +494,35 @@ class DamageTriggerDetector(
 
     /**
      * Detect "whenever a [subtype] deals combat damage to a player" triggers.
-     * Uses pre-indexed subtype damage observers instead of scanning all battlefield permanents.
+     * Uses pre-indexed subtype damage observers instead of scanning all battlefield permanents;
+     * each is matched and bound exactly as [detectDamageObserverTriggers] would.
      */
     fun detectSubtypeDamageToPlayerTriggers(
         state: GameState,
         event: DamageDealtEvent,
         triggers: MutableList<PendingTrigger>,
-        projected: ProjectedState,
         index: TriggerIndex
     ) {
-        val damageSourceId = event.sourceId ?: return
-        val damagedPlayerId = event.targetId
-
-        // Verify the damage source is a creature (face-down creatures have no subtypes)
-        val sourceContainer = state.getEntity(damageSourceId) ?: return
-        val sourceCard = sourceContainer.get<CardComponent>() ?: return
-        if (!sourceCard.typeLine.isCreature) return
-        if (sourceContainer.has<FaceDownComponent>()) return
-
+        if (event.sourceId == null) return
         for (entry in index.subtypeDamageObservers) {
             for (ability in entry.abilities) {
-                val trigger = ability.trigger
-                if (trigger is EventPattern.DealsDamageEvent &&
-                    trigger.damageType == DamageType.Combat &&
-                    trigger.recipient == Recipient.AnyPlayer &&
-                    trigger.sourceFilter != null) {
-                    // Check if the sourceFilter has a subtype requirement
-                    val filter = trigger.sourceFilter
-                    val subtypeValue = if (filter is GameObjectFilter) matcher.extractSubtypeFromFilter(filter) else null
-                    if (subtypeValue != null && projected.hasSubtype(damageSourceId, subtypeValue)) {
-                        triggers.add(
-                            PendingTrigger(
-                                ability = ability,
-                                sourceId = entry.entityId,
-                                sourceName = entry.cardComponent.name,
-                                controllerId = entry.controllerId,
-                                triggerContext = TriggerContext(
-                                    triggeringEntityId = damagedPlayerId,
-                                    damageSourceId = damageSourceId,
-                                    damageRecipientId = damagedPlayerId,
-                                    damageSourceControllerId = event.sourceLastKnown?.controllerId,
-                                    damageAmount = event.amount
-                                )
-                            )
-                        )
-                    }
-                }
+                // Only this bucket's own observers: the entity's other damage triggers belong to
+                // the general / to-you paths, which would otherwise fire them a second time.
+                val trigger = ability.trigger as? EventPattern.DealsDamageEvent ?: continue
+                if (damageObserverBucket(trigger) != DamageObserverBucket.SubtypeToPlayer) continue
+                // Matched like every other observer: the full source filter (subtype, "you
+                // control", last-known info for a source that died in the exchange), the damage
+                // source as the triggering entity — "put a +1/+1 counter on it" (Rakish Heir) —
+                // and the damaged player as the triggering player (Boggart Mob's "that player").
+                matchDamageObserver(
+                    state = state,
+                    event = event,
+                    triggers = triggers,
+                    ability = ability,
+                    sourceId = entry.entityId,
+                    sourceName = entry.cardComponent.name,
+                    controllerId = entry.controllerId
+                )
             }
         }
     }

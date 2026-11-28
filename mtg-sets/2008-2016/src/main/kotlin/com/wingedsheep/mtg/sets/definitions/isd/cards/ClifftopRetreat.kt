@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.dom.cards
+package com.wingedsheep.mtg.sets.definitions.isd.cards
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Zone
@@ -46,10 +46,10 @@ val ClifftopRetreat = card("Clifftop Retreat") {
     }
 
     metadata {
+        flavorText = "Where cathars learn to fight not only demons and vampires, but ignorance as well."
         rarity = Rarity.RARE
-        collectorNumber = "239"
-        artist = "Christine Choi"
-        flavorText = "The sunlight falls pristine on the temple at Epityr, softened by the remembered shadows of angelic saviors' wings."
-        imageUri = "https://cards.scryfall.io/normal/front/e/0/e0b52b9c-7278-46b4-9f3c-3a7fc0c7e526.jpg?1562744267"
+        collectorNumber = "238"
+        artist = "John Avon"
+        imageUri = "https://cards.scryfall.io/normal/front/f/d/fd7e1bf9-bd6a-48e3-9331-178e5142c06a.jpg"
     }
 }

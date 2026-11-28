@@ -1,0 +1,191 @@
+{
+  "Ancient Grudge": [
+    "removal",
+    "artifact-removal"
+  ],
+  "Balefire Dragon": [
+    "removal",
+    "creature-removal"
+  ],
+  "Blasphemous Act": [
+    "removal",
+    "creature-removal"
+  ],
+  "Blazing Torch": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Bonds of Faith": [
+    "removal",
+    "creature-removal"
+  ],
+  "Bramblecrush": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Brimstone Volley": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Burning Vengeance": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Claustrophobia": [
+    "removal",
+    "creature-removal"
+  ],
+  "Corpse Lunge": [
+    "removal",
+    "creature-removal"
+  ],
+  "Curse of Death's Hold": [
+    "removal",
+    "creature-removal"
+  ],
+  "Daybreak Ranger // Nightfall Predator": [
+    "removal",
+    "creature-removal"
+  ],
+  "Dead Weight": [
+    "removal",
+    "creature-removal"
+  ],
+  "Devil's Play": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Divine Reckoning": [
+    "removal",
+    "creature-removal"
+  ],
+  "Fiend Hunter": [
+    "removal",
+    "creature-removal"
+  ],
+  "Garruk Relentless // Garruk, the Veil-Cursed": [
+    "removal",
+    "creature-removal"
+  ],
+  "Geistcatcher's Rig": [
+    "removal",
+    "creature-removal"
+  ],
+  "Geistflame": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Ghost Quarter": [
+    "removal"
+  ],
+  "Grasp of Phantoms": [
+    "removal",
+    "creature-removal"
+  ],
+  "Grimgrin, Corpse-Born": [
+    "removal",
+    "creature-removal"
+  ],
+  "Harvest Pyre": [
+    "removal",
+    "creature-removal"
+  ],
+  "Heretic's Punishment": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Into the Maw of Hell": [
+    "removal",
+    "creature-removal"
+  ],
+  "Liliana of the Veil": [
+    "removal",
+    "artifact-removal",
+    "creature-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Morkrut Banshee": [
+    "removal",
+    "creature-removal"
+  ],
+  "Naturalize": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
+  "Olivia Voldaren": [
+    "removal",
+    "creature-removal"
+  ],
+  "Paraselene": [
+    "removal",
+    "enchantment-removal"
+  ],
+  "Pitchburn Devils": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Prey Upon": [
+    "removal",
+    "creature-removal"
+  ],
+  "Reaper from the Abyss": [
+    "removal",
+    "creature-removal"
+  ],
+  "Rebuke": [
+    "removal",
+    "creature-removal"
+  ],
+  "Rolling Temblor": [
+    "removal",
+    "creature-removal"
+  ],
+  "Sensory Deprivation": [
+    "removal",
+    "creature-removal"
+  ],
+  "Sever the Bloodline": [
+    "removal",
+    "creature-removal"
+  ],
+  "Silent Departure": [
+    "removal",
+    "creature-removal"
+  ],
+  "Silverchase Fox": [
+    "removal",
+    "enchantment-removal"
+  ],
+  "Slayer of the Wicked": [
+    "removal",
+    "creature-removal"
+  ],
+  "Smite the Monstrous": [
+    "removal",
+    "creature-removal"
+  ],
+  "Tribute to Hunger": [
+    "removal",
+    "creature-removal"
+  ],
+  "Urgent Exorcism": [
+    "removal",
+    "creature-removal",
+    "enchantment-removal"
+  ],
+  "Victim of Night": [
+    "removal",
+    "creature-removal"
+  ]
+}
