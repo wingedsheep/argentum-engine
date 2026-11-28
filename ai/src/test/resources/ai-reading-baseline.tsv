@@ -120,7 +120,7 @@ Acolyte of Affliction
 Acolyte of the Inferno
 Acolyte's Reward
 Acquired Mutation
-Acquisition Octopus	intent: UnattachEquipmentEffect
+Acquisition Octopus
 Acquisitions Expert
 Acrobatic Cheerleader
 Acrobatic Leap
@@ -955,7 +955,7 @@ Armament of Nyx
 Armasaur Guide
 Armed // Dangerous
 Armed and Armored	timing: ForEach>AddCardTypeEffect
-Armguard Familiar	intent: UnattachEquipmentEffect
+Armguard Familiar
 Armillary Sphere
 Armor Sliver
 Armor Thrull
@@ -1215,6 +1215,7 @@ Autonomous Assembler
 Autumnal Gloom
 Auxiliary Boosters
 Avabruck Caretaker
+Avacyn's Collar
 Avacyn's Judgment
 Avacyn's Pilgrim
 Avacyn, Angel of Hope
@@ -1856,7 +1857,7 @@ Blade Splicer
 Blade of Selves
 Blade of Shared Souls
 Blade of the Bloodchief
-Blade of the Oni	intent: UnattachEquipmentEffect
+Blade of the Oni
 Blade of the Sixth Pride
 Blade of the Swarm	polarity: MoveToZoneEffect
 Blade-Blizzard Kitsune
@@ -2531,7 +2532,7 @@ Bronze Tablet
 Bronze Walrus
 Bronzebeak Moa
 Bronzehide Lion	intent: PutOntoBattlefieldAsAuraEffect
-Bronzeplate Boar	intent: UnattachEquipmentEffect
+Bronzeplate Boar
 Brood Butcher
 Brood Keeper
 Brood Monitor
@@ -3080,7 +3081,7 @@ Chainer's Edict
 Chainer's Torment
 Chainer, Dementia Master
 Chainer, Nightmare Adept	intent: GrantStaticAbilityEffect
-Chainflail Centipede	intent: UnattachEquipmentEffect
+Chainflail Centipede
 Chains of Custody
 Chains of Mephistopheles
 Chainsaw
@@ -3506,7 +3507,7 @@ Cloudshift	polarity: MoveToZoneEffect
 Cloudspire Captain
 Cloudspire Coordinator
 Cloudspire Skycycle
-Cloudsteel Kirin	intent: UnattachEquipmentEffect
+Cloudsteel Kirin
 Cloudstone Curio
 Cloudthresher
 Clutch of Currents
@@ -3617,7 +3618,7 @@ Combine Guildmage
 Combustible Gearhulk
 Combustion Man	polarity: ChooseActionEffect
 Combustion Technique
-Come Back Wrong	intent: Pipeline(ChosenTargets→battlefield|graveyard); polarity: CreateDelayedTriggerEffect; polarity: Pipeline(ChosenTargets→battlefield|graveyard)
+Come Back Wrong
 Comet Crawler
 Comforting Counsel
 Coming In Hot
@@ -5733,6 +5734,7 @@ Eladamri, Korvecdal
 Eladamri, Lord of Leaves
 Elanor Gardner
 Elas il-Kor, Sadistic Pilgrim
+Elbrus, the Binding Blade
 Elder Arthur Maxson
 Elder Auntie
 Elder Cathar
@@ -6470,6 +6472,7 @@ Falcon Abomination
 Falcon's Wing Harness
 Falcon, Winged Wonder
 Falconer Adept
+Falkenrath Aristocrat
 Falkenrath Celebrants
 Falkenrath Exterminator
 Falkenrath Forebear
@@ -8845,6 +8848,7 @@ Haunt the Network
 Haunted Cadaver
 Haunted Cloak
 Haunted Dead
+Haunted Fengraf
 Haunted Guardian
 Haunted Hellride
 Haunted Mire
@@ -8945,6 +8949,7 @@ Heaven // Earth
 Heaven's Gate	intent: ForEach>ChangeColorEffect; polarity: ForEachEffect
 Heavy Fog
 Heavy Infantry
+Heavy Mattock
 Heavyweight Demolisher
 Heckling Fiends
 Hecteyes
@@ -9617,6 +9622,7 @@ Immaculate Magistrate
 Immersturm Predator
 Immersturm Raider
 Immersturm Skullcairn
+Immerwolf
 Imminent Doom
 Immobilizer Eldrazi
 Immolating Glare
@@ -10181,6 +10187,7 @@ Jan Jansen, Chaos Crafter
 Jandor's Ring
 Jandor's Saddlebags
 Janjeet Sentry
+Jar of Eyeballs
 Jarad's Orders
 Jarad, Golgari Lich Lord
 Jareth, Leonine Titan
@@ -11119,7 +11126,7 @@ Ledev Guardian
 Ledger Shredder
 Leech Collector
 Leech Fanatic
-Leech Gauntlet	intent: UnattachEquipmentEffect
+Leech Gauntlet
 Leeching Sliver
 Leechridden Swamp
 Leering Onlooker
@@ -11344,7 +11351,7 @@ Linvala, Keeper of Silence
 Linvala, Shield of Sea Gate
 Linvala, the Preserver
 Lion Heart
-Lion Sash	intent: UnattachEquipmentEffect
+Lion Sash
 Lion Umbra
 Lionheart Glimmer
 Liquimetal Coating	intent: AddCardTypeEffect; polarity: AddCardTypeEffect; timing: AddCardTypeEffect
@@ -11386,7 +11393,7 @@ Living Totem
 Living Twister
 Living Wall
 Livonya Silone
-Lizard Blades	intent: UnattachEquipmentEffect
+Lizard Blades
 Lizard Warrior
 Lizard, Connors's Curse
 Llanowar Cavalry
@@ -13540,7 +13547,7 @@ Ogre Slumlord
 Ogre Taskmaster
 Ogre Warrior
 Ogre's Cleaver
-Ogre-Head Helm	intent: UnattachEquipmentEffect
+Ogre-Head Helm
 Oil-Gorger Troll
 Oildeep Gearhulk	polarity: Pipeline(hand→graveyard)
 Ojer Axonil, Deepest Might
@@ -14986,7 +14993,7 @@ Qumulox
 Qutrub Forayer
 Rabanastre, Royal City
 Rabaroo Troop
-Rabbit Battery	intent: UnattachEquipmentEffect
+Rabbit Battery
 Rabbit Response
 Rabble Rousing	intent: Pipeline(TopOfLibrary→exile|library)
 Rabid Attack
@@ -17566,7 +17573,7 @@ Silvos, Rogue Elemental
 Sima Yi, Wei Field Marshal
 Simian Brawler
 Simian Simulacrum
-Simian Sling	intent: UnattachEquipmentEffect
+Simian Sling
 Simian Spirit Guide
 Simic Ascendancy
 Simic Charm
@@ -18071,6 +18078,7 @@ Sorin's Guide
 Sorin's Thirst
 Sorin, Grim Nemesis
 Sorin, Imperious Bloodlord
+Sorin, Lord of Innistrad
 Sorin, Solemn Visitor
 Sorin, Vampire Lord
 Sorin, Vengeful Bloodlord
@@ -18094,6 +18102,7 @@ Soul Read
 Soul Salvage
 Soul Sear
 Soul Search
+Soul Seizer
 Soul Separator
 Soul Shatter
 Soul Shred
@@ -19959,7 +19968,7 @@ The Queen of Dale
 The Rack
 The Raven Man
 The Raven's Warning	intent: Pipeline(sideboard→library)
-The Reality Chip	intent: UnattachEquipmentEffect
+The Reality Chip
 The Reaver Cleaver
 The Regalia
 The Restoration of Eiganjo
@@ -22002,6 +22011,7 @@ Warden of the Eye
 Warden of the First Tree
 Warden of the Grove
 Warden of the Inner Sky
+Warden of the Wall
 Warden of the Woods
 Wardens of the Cycle
 Wardscale Crocodile
@@ -22177,7 +22187,7 @@ Web Up
 Web of Life and Destiny
 Web-Shooters
 Web-Warriors
-Webspinner Cuff	intent: UnattachEquipmentEffect
+Webspinner Cuff
 Webstrike Elite
 Webweaver Changeling
 Wedding Announcement
@@ -22565,6 +22575,7 @@ Wolf's Quarry
 Wolf-Skull Shaman
 Wolfbat
 Wolfbitten Captive
+Wolfhunter's Quiver
 Wolfir Avenger
 Wolfir Silverheart
 Wolfkin Bond
