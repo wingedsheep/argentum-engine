@@ -1,9 +1,8 @@
 package com.wingedsheep.engine.mechanics.targeting
 
-import com.wingedsheep.sdk.scripting.ProtectionScope
-
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.ProtectionScope
 
 /**
  * The type axis of protection (CR 702.16a): "protection from Goblins" (a subtype), "protection
@@ -68,7 +67,9 @@ object TypeQualityProtection {
             if (!isSubtype && !keyword.startsWith(SUPERTYPE_PREFIX)) continue
             val (name, cardType, negated) = split(keyword.removePrefix(if (isSubtype) SUBTYPE_PREFIX else SUPERTYPE_PREFIX))
             val sourceNames = if (isSubtype) sourceSubtypes else sourceSupertypes
-            // A negated quality ("non-Human creatures") matches the sources lacking the type.
+            // A negated quality ("non-Human creatures") matches the sources lacking the type. Every
+            // negated printing narrows to a card type, which a source with no known types fails; an
+            // un-narrowed "protection from non-Xs" would need a known-source guard first.
             if (sourceNames.any { it.equals(name, ignoreCase = true) } == negated) continue
             if (cardType != null && sourceCardTypes.none { it.equals(cardType, ignoreCase = true) }) continue
             val shown = (if (negated) "non-" else "") +

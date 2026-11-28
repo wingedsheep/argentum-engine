@@ -67,5 +67,15 @@ class SpareFromEvilScenarioTest : ScenarioTestBase() {
             game.passUntilPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
             game.state.projectedState.hasKeyword(game.findPermanent("Grizzly Bears")!!, keyword) shouldBe false
         }
+
+        test("a noncreature spell isn't a non-Human creature, so it can still target a protected creature") {
+            val game = board()
+            game.castSpare()
+            game.passPriority()
+            val bears = game.findPermanent("Grizzly Bears")!!
+            game.castSpell(2, "Lightning Bolt", bears).error shouldBe null
+            game.resolveStack()
+            game.isOnBattlefield("Grizzly Bears") shouldBe false
+        }
     }
 }
