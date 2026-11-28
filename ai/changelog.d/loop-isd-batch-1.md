@@ -1,0 +1,1 @@
+- #4916 Reads player Curses that shrink, force attacks, mill, exile graveyards or reward hits as hostile, casting them on an opponent; reads Trepanation Blade's attack trigger as milling the defender

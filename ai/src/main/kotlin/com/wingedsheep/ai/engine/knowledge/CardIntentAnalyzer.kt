@@ -3854,9 +3854,13 @@ object CardIntentAnalyzer {
 
     // "That player reveals … until …, then puts them into their graveyard" off a combat-damage
     // trigger (Mirko Vosk, Mind Drinker): the player the trigger names is the one hit, as
-    // [isAnotherPlayersHand] reads the discard twin.
+    // [isAnotherPlayersHand] reads the discard twin. Off an attack trigger the defending player is
+    // always an opponent (Trepanation Blade's "defending player reveals … until a land").
     private fun canMillOpponent(player: Player): Boolean = when (player) {
-        Player.EachOpponent, Player.TargetOpponent, Player.TargetPlayer, Player.TriggeringPlayer,
+        Player.EachOpponent, Player.TargetOpponent, Player.TargetPlayer, Player.TriggeringPlayer, Player.DefendingPlayer,
+        // A curse's "that player mills" (Curse of the Bloody Tome): its enchant slot reads HARMFUL, so
+        // the AI casts it on an opponent.
+        Player.EnchantedPlayer,
         Player.EachTargetedPlayer, is Player.ContextPlayer, is Player.BoundVariable -> true
         else -> false
     }
@@ -4595,7 +4599,14 @@ object CardIntentAnalyzer {
         is CanOnlyBlockCreaturesWith -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
         // "This creature attacks or blocks each combat if able" (Relentless Raptor, Juggernaut) binds
         // its own combat choices the way "can't block" does: a drawback on the body, not a payoff.
-        is MustAttack -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
+        // "Creatures enchanted player controls attack each combat if able" (Curse of the Nightly
+        // Hunt): a lasting [MustAttackGroupEffect] on the side the curse is cast on — their attacks
+        // into our blockers, not a choice they made.
+        is MustAttack -> when {
+            static.filter.scope == Scope.Self -> setOf(IntentTag.COMBAT_RESTRICTION)
+            static.filter.reachesEnchantedPlayer() -> setOf(IntentTag.FORCED_ATTACK)
+            else -> emptySet()
+        }
         is MustBlock -> if (static.filter.scope == Scope.Self) setOf(IntentTag.COMBAT_RESTRICTION) else emptySet()
         // "This creature must be blocked if able" (Gaea's Protector), "equipped creature … must be
         // blocked by an Eldrazi if able" (Slayer's Cleaver), "All Walls able to block this creature

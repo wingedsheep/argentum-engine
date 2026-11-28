@@ -24,5 +24,13 @@ class TriggeringPlayerRevealUntilMillIntentAiTest : ScenarioTestBase() {
             val reading = AiReadingAudit.read(mirko)
             withClue("$reading") { reading.readFully shouldBe true }
         }
+
+        test("Trepanation Blade's attack trigger reads as a mill of the defending player") {
+            val blade = cardRegistry.getCard("Trepanation Blade")!!
+            val trigger = blade.script.triggeredAbilities.single()
+            CardIntentAnalyzer.analyzeEffect(trigger.effect).tags shouldContain IntentTag.MILL
+            val reading = AiReadingAudit.read(blade)
+            withClue("$reading") { reading.readFully shouldBe true }
+        }
     }
 }
