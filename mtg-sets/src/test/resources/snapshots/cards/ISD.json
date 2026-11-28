@@ -8200,6 +8200,39 @@
     ]
 }
 
+// Spare from Evil
+{
+    "name": "Spare from Evil",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Creatures you control gain protection from non-Human creatures until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            "body": {
+                "type": "GrantKeyword",
+                "keyword": "PROTECTION_FROM_SUBTYPE_!HUMAN@CREATURE",
+                "target": "IterationEntity"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "artist": "Jason Felix",
+        "flavorText": "\"As long as we can utter a prayer or lift a weapon, we have the power to fight back.\"\n—Thalia, Knight-Cathar",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d01b5d97-b5ae-42a7-944a-feb12febd63c.jpg?1783940984"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Spectral Flight
 {
     "name": "Spectral Flight",

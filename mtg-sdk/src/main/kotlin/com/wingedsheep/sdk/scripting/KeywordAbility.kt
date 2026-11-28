@@ -154,7 +154,7 @@ sealed interface KeywordAbility {
             is ProtectionScope.ChosenCardType -> "Protection from the chosen card type"
             is ProtectionScope.ChosenSubtype -> "Protection from " + (scope.cardType?.let { "${it.lowercase()}s of the chosen type" } ?: "the chosen type")
             is ProtectionScope.ChosenCardName -> "Protection from the chosen card name"
-            is ProtectionScope.Subtype -> "Protection from ${scope.subtype}${scope.cardType?.let { " ${it.lowercase()}s" } ?: "s"}"
+            is ProtectionScope.Subtype -> "Protection from ${scope.describe()}"
             is ProtectionScope.Supertype -> "Protection from ${scope.supertype.lowercase()}${scope.cardType?.let { " ${it.lowercase()}s" } ?: ""}"
             is ProtectionScope.Everything -> "Protection from everything"
             is ProtectionScope.EachOpponent -> "Protection from each opponent"

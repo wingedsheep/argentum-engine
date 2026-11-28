@@ -278,7 +278,7 @@ object CardEntityFactory {
             }
         }.toSet()
         val protectionSubtypes = protections.mapNotNull {
-            (it.scope as? ProtectionScope.Subtype)?.let { s -> TypeQualityProtection.quality(s.subtype, s.cardType) }
+            (it.scope as? ProtectionScope.Subtype)?.quality()
         }.toSet()
         val protectionSupertypes = protections.mapNotNull {
             (it.scope as? ProtectionScope.Supertype)?.let { s -> TypeQualityProtection.quality(s.supertype, s.cardType) }

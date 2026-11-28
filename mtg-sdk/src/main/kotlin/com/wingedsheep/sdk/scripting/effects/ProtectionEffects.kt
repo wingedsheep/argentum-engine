@@ -197,7 +197,7 @@ fun ProtectionScope.protectionDescription(): String = when (this) {
     is ProtectionScope.ChosenCardType -> "the chosen card type"
     is ProtectionScope.ChosenSubtype -> cardType?.let { it.lowercase() + "s of the chosen type" } ?: "the chosen type"
     is ProtectionScope.ChosenCardName -> "the chosen card name"
-    is ProtectionScope.Subtype -> subtype + "s"
+    is ProtectionScope.Subtype -> if (negated) describe() else subtype + "s"
     is ProtectionScope.Supertype -> supertype.lowercase() + " permanents"
     ProtectionScope.Everything -> "everything"
     ProtectionScope.EachOpponent -> "each opponent"

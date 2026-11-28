@@ -837,9 +837,9 @@ class StateProjector {
             val protectionKeywords = values.keywords.filter { it.startsWith(protectionSubtypePrefix) }
             values.keywords.removeAll(protectionKeywords.toSet())
             for (keyword in protectionKeywords) {
-                val (originalSubtype, cardType) = TypeQualityProtection.split(keyword.removePrefix(protectionSubtypePrefix))
+                val (originalSubtype, cardType, negated) = TypeQualityProtection.split(keyword.removePrefix(protectionSubtypePrefix))
                 val transformed = textReplacement.applyToCreatureType(originalSubtype)
-                values.keywords.add(TypeQualityProtection.subtypeKeyword(transformed, cardType))
+                values.keywords.add(TypeQualityProtection.subtypeKeyword(transformed, cardType, negated))
             }
 
             // Rewrite protection-from-color keywords for color-word changes (Crystal Spray:

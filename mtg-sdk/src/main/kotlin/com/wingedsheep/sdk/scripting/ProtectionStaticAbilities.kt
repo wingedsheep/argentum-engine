@@ -544,7 +544,7 @@ data class GrantProtectionToController(
             is ProtectionScope.ChosenCardType -> "the chosen card type"
             is ProtectionScope.ChosenSubtype -> s.cardType?.let { it.lowercase() + "s of the chosen type" } ?: "the chosen type"
             is ProtectionScope.ChosenCardName -> "the chosen card name"
-            is ProtectionScope.Subtype -> s.subtype + "s"
+            is ProtectionScope.Subtype -> if (s.negated) s.describe() else s.subtype + "s"
             is ProtectionScope.Supertype -> s.supertype.lowercase() + " permanents"
             ProtectionScope.Everything -> "everything"
             ProtectionScope.EachOpponent -> "each of your opponents"

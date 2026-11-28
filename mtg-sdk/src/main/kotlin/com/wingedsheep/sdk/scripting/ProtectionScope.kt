@@ -160,10 +160,43 @@ sealed interface ProtectionScope {
      * are also of that card type — "from God creatures" (Sigrid, God-Favored): a God that isn't
      * currently a creature (a Theros God below its devotion) doesn't match. Null matches the
      * subtype alone.
+     *
+     * [negated] flips the subtype test to its complement on the same axis, the way [NonColor]
+     * complements [Color]: "protection from non-Human creatures" (Spare from Evil) is
+     * `Subtype("Human", "Creature", negated = true)` — every creature that lacks the Human type
+     * matches, so a Changeling creature (every creature type, Human included) doesn't. Enforced by
+     * the same projected keyword family as the plain subtype, so every protection leg (damage,
+     * enchanting/equipping, blocking, targeting) and the player-protection check honour it.
      */
     @SerialName("ProtectionScope.Subtype")
     @Serializable
-    data class Subtype(val subtype: String, val cardType: String? = null) : ProtectionScope
+    data class Subtype(
+        val subtype: String,
+        val cardType: String? = null,
+        val negated: Boolean = false
+    ) : ProtectionScope {
+        /**
+         * The projected keyword this protection is enforced through:
+         * `PROTECTION_FROM_SUBTYPE_<X>`, with `@<CARDTYPE>` appended when narrowed and a leading
+         * `!` on the subtype when [negated] — `PROTECTION_FROM_SUBTYPE_!HUMAN@CREATURE`.
+         */
+        fun protectionKeyword(): String = KEYWORD_PREFIX + quality()
+
+        /** The stored quality the keyword suffixes: `GOBLIN`, `GOD@CREATURE`, `!HUMAN@CREATURE`. */
+        fun quality(): String =
+            (if (negated) NEGATION_MARK.toString() else "") + subtype.uppercase() +
+                (cardType?.let { "$CARD_TYPE_SEPARATOR${it.uppercase()}" } ?: "")
+
+        /** The quality as rules text — "Goblins", "God creatures", "non-Human creatures". */
+        fun describe(): String =
+            (if (negated) "non-" else "") + subtype + (cardType?.let { " ${it.lowercase()}s" } ?: "s")
+
+        companion object {
+            const val KEYWORD_PREFIX = "PROTECTION_FROM_SUBTYPE_"
+            const val NEGATION_MARK = '!'
+            const val CARD_TYPE_SEPARATOR = '@'
+        }
+    }
 
     /**
      * Protection from a supertype, optionally narrowed to a [cardType] — "from legendary
