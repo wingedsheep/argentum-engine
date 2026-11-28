@@ -55,6 +55,23 @@ class EnchantedPlayerCurseReadingAiTest : ScenarioTestBase() {
             AiReadingAudit.read(card("Curse of Echoes")).readFully shouldBe true
         }
 
+        test("Curses that shrink, force attacks, mill, exile the graveyard of or reward hits on the enchanted player are curses") {
+            listOf(
+                "Curse of Death's Hold", // creatures enchanted player controls get -1/-1
+                "Curse of the Nightly Hunt", // creatures enchanted player controls attack each combat if able
+                "Curse of the Bloody Tome", // enchanted player mills two each upkeep
+                "Curse of Oblivion", // enchanted player exiles two cards from their graveyard each upkeep
+                "Curse of Stalked Prey", // creatures that hit enchanted player get a +1/+1 counter
+            ).forEach { name ->
+                withClue(name) {
+                    TargetPolarityAnalyzer.forSpell(card(name)) shouldBe listOf(TargetPolarity.HARMFUL)
+                    AiReadingAudit.read(card(name)).readFully shouldBe true
+                }
+            }
+            CardIntentAnalyzer.analyze(card("Curse of the Bloody Tome")).tags shouldContain IntentTag.MILL
+            CardIntentAnalyzer.analyze(card("Curse of the Nightly Hunt")).tags shouldContain IntentTag.FORCED_ATTACK
+        }
+
         test("a gift to the enchanted player is not read as aiming the Aura at our own side") {
             withClue("Tenuous Truce enchants an opponent though both players draw; BENEFICIAL would filter every cast") {
                 TargetPolarityAnalyzer.forSpell(card("Tenuous Truce")) shouldNotBe listOf(TargetPolarity.BENEFICIAL)

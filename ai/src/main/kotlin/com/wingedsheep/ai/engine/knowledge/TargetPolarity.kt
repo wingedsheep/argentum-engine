@@ -2864,6 +2864,7 @@ object TargetPolarityAnalyzer {
         for (ability in card.script.triggeredAbilities) readings += hostCombatTriggerReadings(ability, definitions)
         for (ability in card.script.triggeredAbilities) readings += hostBlockPayoffReadings(ability)
         for (ability in card.script.triggeredAbilities) readings += enchantedPlayerSpellCopyReadings(ability)
+        for (ability in card.script.triggeredAbilities) readings += enchantedPlayerDamageRewardReadings(ability)
         // "{1}{G}{U}, Return this Aura to its owner's hand: Put two +1/+1 counters on enchanted
         // creature" (Krasis Incubation): an activation whose cost takes the attachment off the
         // board ends whatever else it does to the host, and only its controller chooses to pay
@@ -2892,6 +2893,7 @@ object TargetPolarityAnalyzer {
             // the host is the player, named by the leaves that act on them.
             readings += EffectWalker.payoffLeaves(effect).mapNotNull(::enchantedPlayerLeafPolarity)
             readings += enchantedPlayerCurseMoves(effect)
+            readings += enchantedPlayerCardLosses(effect)
             readings += hostControllerHarms(effect)
             readings += hostCarrierHarms(effect)
             // "That player sacrifices it unless they pay {X}" (Soul Tithe), "destroy that land unless
@@ -3212,6 +3214,56 @@ object TargetPolarityAnalyzer {
         val enchanted = EffectTarget.PlayerRef(Player.EnchantedPlayer)
         return leaves.filterIsInstance<MoveCollectionEffect>()
             .filter { it.attachTo == enchanted }
+            .map { TargetPolarity.HARMFUL }
+    }
+
+    /**
+     * "That player mills two cards" (Curse of the Bloody Tome), "that player exiles two cards from
+     * their graveyard" (Curse of Oblivion): a pipeline gathers cards from the enchanted player's
+     * library, graveyard or hand and moves them into their graveyard or exile — cards the enchanted
+     * player loses, so each such move is a harm to the host. A graveyard-to-graveyard move loses
+     * nothing and stays unread.
+     */
+    private fun enchantedPlayerCardLosses(effect: Effect): List<TargetPolarity> {
+        val leaves = EffectWalker.leaves(effect)
+        val sourceZones = HashMap<String, Zone>()
+        for (gather in leaves.filterIsInstance<GatherCardsEffect>()) {
+            when (val source = gather.source) {
+                is CardSource.TopOfLibrary ->
+                    if (source.player == Player.EnchantedPlayer) sourceZones[gather.storeAs] = Zone.LIBRARY
+                is CardSource.FromZone ->
+                    if (source.player == Player.EnchantedPlayer && source.zone in LOSABLE_ZONES) sourceZones[gather.storeAs] = source.zone
+                else -> Unit
+            }
+        }
+        if (sourceZones.isEmpty()) return emptyList()
+        // "Choose two of them" narrows a gathered pile without changing where it came from.
+        for (select in leaves.filterIsInstance<SelectFromCollectionEffect>()) {
+            sourceZones[select.from]?.let { sourceZones[select.storeSelected] = it }
+        }
+        return leaves.filterIsInstance<MoveCollectionEffect>().mapNotNull { move ->
+            val from = sourceZones[move.from] ?: return@mapNotNull null
+            val to = (move.destination as? CardDestination.ToZone)?.zone ?: return@mapNotNull null
+            TargetPolarity.HARMFUL.takeIf { (to == Zone.GRAVEYARD || to == Zone.EXILE) && to != from }
+        }
+    }
+
+    private val LOSABLE_ZONES = setOf(Zone.LIBRARY, Zone.GRAVEYARD, Zone.HAND)
+
+    /**
+     * "Whenever a creature deals combat damage to enchanted player, put a +1/+1 counter on that
+     * creature" (Curse of Stalked Prey): a reward for whoever hits the enchanted player — their
+     * attackers grow, never the enchanted player's own creatures. A curse on the host.
+     */
+    private fun enchantedPlayerDamageRewardReadings(ability: TriggeredAbility): List<TargetPolarity> {
+        val recipient = when (val trigger = ability.trigger) {
+            is EventPattern.DealsDamageEvent -> trigger.recipient
+            is EventPattern.DamageEvent -> trigger.recipient
+            else -> return emptyList()
+        }
+        if (recipient != Recipient.EnchantedPlayer) return emptyList()
+        return EffectWalker.payoffLeaves(ability.effect).filterIsInstance<AddCountersEffect>()
+            .filter { it.target == EffectTarget.TriggeringEntity && it.counterType == CounterType.PLUS_ONE_PLUS_ONE }
             .map { TargetPolarity.HARMFUL }
     }
 
@@ -3540,6 +3592,13 @@ object TargetPolarityAnalyzer {
         is LoseAllAbilities -> if (static.filter.reachesEnchantedPlayer()) TargetPolarity.HARMFUL else null
         is SetBasePowerToughnessStatic ->
             if (static.filter.reachesEnchantedPlayer() && static.shrinksToSmallBase()) TargetPolarity.HARMFUL else null
+        // "Creatures enchanted player controls get -1/-1" (Curse of Death's Hold): a shrink with no
+        // upside on any of them. A mixed bonus ("+1/-1") stays unread.
+        is ModifyStats -> if (static.filter.reachesEnchantedPlayer() && static.powerBonus <= 0 && static.toughnessBonus <= 0 &&
+            (static.powerBonus < 0 || static.toughnessBonus < 0)) TargetPolarity.HARMFUL else null
+        // "Creatures enchanted player controls attack each combat if able" (Curse of the Nightly
+        // Hunt): they lose the choice to hold back, and run into the blockers of whoever cast it.
+        is MustAttack -> if (static.filter.reachesEnchantedPlayer()) TargetPolarity.HARMFUL else null
         else -> null
     }
 
