@@ -21,7 +21,7 @@ internal object DamageAmplifiers {
 
     /**
      * An attachment's curse on its host: "if a source would deal damage to enchanted player, it
-     * deals double that damage to that player instead" (Curse of Bloodletting) — any source, aimed
+     * deals double that damage to that player instead" (Curse of Bloodletting) — whatever the source, aimed
      * only at [Recipient.EnchantedPlayer] or [Recipient.EnchantedCreature]. Every source's damage to
      * the host grows, so it is a curse to put across the table, and an amplifier for its controller.
      */
