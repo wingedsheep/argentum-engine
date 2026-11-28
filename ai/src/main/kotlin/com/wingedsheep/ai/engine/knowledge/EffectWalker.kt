@@ -208,6 +208,8 @@ object EffectWalker {
         val activationManaValue: Int = 0,
         /** A trigger that fires at the start of its controller's turn — see [firesWithItsTurnAhead]. */
         val turnAhead: Boolean = false,
+        /** A trigger whose triggering entity is always an opponent's creature — see [triggersOnOpposingCreature]. */
+        val opposingTriggeringEntity: Boolean = false,
     )
 
     /**
@@ -257,7 +259,7 @@ object EffectWalker {
     fun slots(script: CardScript): List<Slot> = buildList {
         script.spellEffect?.let { add(Slot(it, Origin.SPELL, script.targetRequirements)) }
         script.triggeredAbilities.forEach {
-            add(Slot(readableEffect(it), Origin.TRIGGERED, listOfNotNull(it.targetRequirement) + it.additionalTargetRequirements, turnAhead = firesWithItsTurnAhead(it)))
+            add(Slot(readableEffect(it), Origin.TRIGGERED, listOfNotNull(it.targetRequirement) + it.additionalTargetRequirements, turnAhead = firesWithItsTurnAhead(it), opposingTriggeringEntity = triggersOnOpposingCreature(it)))
         }
         script.sagaChapters.sortedBy { it.chapter }.forEach {
             add(Slot(it.effect, Origin.TRIGGERED, chapterTargets(it), turnAhead = true))
@@ -283,6 +285,25 @@ object EffectWalker {
      *
      * Events whose captured set the stand-in can't name are left as they were.
      */
+    /**
+     * Whether [trigger]'s triggering entity is always a creature an opponent controls: "whenever a
+     * creature attacks you or a planeswalker you control" (Lost in the Woods) — only an opponent's
+     * creature can attack us — or an attack or block trigger filtered to an opponent's creatures.
+     * An effect aimed at "that creature" then lands on the opponent's side, as one aimed at a
+     * target creature an opponent controls would.
+     */
+    fun triggersOnOpposingCreature(trigger: TriggeredAbility): Boolean {
+        if (trigger.binding != TriggerBinding.ANY && trigger.binding != TriggerBinding.OTHER) return false
+        val filter = when (val pattern = trigger.trigger) {
+            is EventPattern.AttackEvent -> pattern.filter
+            is EventPattern.BlockEvent -> pattern.filter
+            else -> null
+        } ?: return false
+        return filter.controllerPredicate == com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByOpponent ||
+            (trigger.trigger is EventPattern.AttackEvent &&
+                com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsAttackingYouOrYourPlaneswalkers in filter.statePredicates)
+    }
+
     fun readableEffect(trigger: TriggeredAbility): Effect {
         val standIn = capturedStandIn(trigger.trigger) ?: return trigger.effect
         if (leaves(trigger.effect).none(::readsCaptured)) return trigger.effect

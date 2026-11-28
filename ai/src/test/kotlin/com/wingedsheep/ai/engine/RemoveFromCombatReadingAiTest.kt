@@ -43,6 +43,13 @@ class RemoveFromCombatReadingAiTest : ScenarioTestBase() {
             }
         }
 
+        test("removing the creature that attacks us from combat neutralizes it") {
+            withClue("Lost in the Woods' trigger only binds an opponent's attacker") {
+                CardIntentAnalyzer.analyze(card("Lost in the Woods")).tags shouldContain IntentTag.NEUTRALIZE
+                AiReadingAudit.read(card("Lost in the Woods")).readFully shouldBe true
+            }
+        }
+
         test("remove target attacking or blocking creature from combat is a two-sided target") {
             // Hollowhenge Spirit: their attacker shut off, or our own blocked attacker saved.
             val spirit = card("Hollowhenge Spirit").script.triggeredAbilities.single()

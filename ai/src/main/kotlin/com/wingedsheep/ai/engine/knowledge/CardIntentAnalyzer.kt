@@ -322,12 +322,15 @@ object CardIntentAnalyzer {
          * attack rather than evading blockers, so its card-level intent stays the combat restriction.
          */
         source: CardDefinition? = null,
+        /** The effect is a trigger's whose triggering entity is an opponent's creature ([EffectWalker.triggersOnOpposingCreature]). */
+        opposingTriggeringEntity: Boolean = false,
     ): CardIntent {
         val tags = pipelineTags(effect, turnAhead = turnAhead, ownPile = ownPile, pileCast = pileCast).toMutableSet()
         var removalReach: Int? = null
         val refunds = refundsOf(effect)
         for (leaf in readingLeaves(effect, requirements)) {
             tags += refundedTagsOf(leaf, refunds)
+            if (opposingTriggeringEntity) tags += opposingTriggeringEntityTags(leaf)
             // "Target creature becomes a Coward" beside "Cowards can't block Warriors" is the
             // single-creature can't-block ([CantBlockEffect]'s evasion grant); "becomes a Warrior"
             // is the evasion itself ([GrantEvasionKeywordEffect]'s).
@@ -352,6 +355,18 @@ object CardIntentAnalyzer {
             reachOf(leaf)?.let { removalReach = maxOf(removalReach ?: 0, it) }
         }
         return CardIntent.UNKNOWN.copy(tags = tags, removalReach = removalReach)
+    }
+
+    /**
+     * What a leaf aimed at "that creature" is for when the trigger only ever binds an opponent's
+     * creature ([EffectWalker.triggersOnOpposingCreature]) — the reading [tagsOf] gives the same leaf
+     * aimed at another permanent, which it can't give "that creature" on its own (Gustcloak Savior's
+     * is our own blocked attacker). "Whenever a creature attacks you …, remove that creature from
+     * combat" (Lost in the Woods) shuts that attacker off for the fight: [IntentTag.NEUTRALIZE].
+     */
+    private fun opposingTriggeringEntityTags(leaf: Effect): Set<IntentTag> = when {
+        leaf is RemoveFromCombatEffect && leaf.target == EffectTarget.TriggeringEntity -> setOf(IntentTag.NEUTRALIZE)
+        else -> emptySet()
     }
 
     /**
@@ -453,6 +468,9 @@ object CardIntentAnalyzer {
         val refunds = roots.flatMapTo(HashSet<Effect>()) { refundsOf(it) }
         val chosenCollections = roots.flatMapTo(HashSet()) { TargetPolarityAnalyzer.allChosenTargets(it) }
         val perTargetTricks = mutableListOf<Effect>()
+        for (slot in slots.values.flatten().filter { it.opposingTriggeringEntity }) {
+            for (leaf in readingLeaves(slot.effect, slot.targets)) tags += opposingTriggeringEntityTags(leaf)
+        }
         for (effect in leaves) {
             tags += if (rummageLeaves.any { it === effect }) asRummage(tagsOf(effect)) else refundedTagsOf(effect, refunds)
             reachOf(effect)?.let { removalReach = maxOf(removalReach ?: 0, it) }

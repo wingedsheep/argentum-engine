@@ -25,11 +25,11 @@ class HostDamageTriggerAuraPolarityAiTest : ScenarioTestBase() {
 
     private fun card(name: String) = cardRegistry.requireCard(name)
 
-    private fun aimsOnlyAtTheWrongSide(aura: String, land: String, ours: String?, theirs: String?): Boolean {
+    private fun aimsOnlyAtTheWrongSide(aura: String, land: String, ours: String?, theirs: String?, lands: Int = 2): Boolean {
         var builder = scenario()
             .withPlayers()
             .withActivePlayer(1)
-            .withLandsOnBattlefield(1, land, 2)
+            .withLandsOnBattlefield(1, land, lands)
             .withCardInHand(1, aura)
         if (ours != null) builder = builder.withCardOnBattlefield(1, ours)
         if (theirs != null) builder = builder.withCardOnBattlefield(2, theirs)
@@ -56,6 +56,17 @@ class HostDamageTriggerAuraPolarityAiTest : ScenarioTestBase() {
             }
             withClue("the opponent's creature is a fine host") {
                 aimsOnlyAtTheWrongSide("Ragged Veins", "Swamp", ours = null, theirs = "Grizzly Bears") shouldBe false
+            }
+        }
+
+        test("a gain for us whenever the host blocks reads as a gift, so Favor of the Woods goes on our creature") {
+            TargetPolarityAnalyzer.forSpell(card("Favor of the Woods")) shouldBe listOf(TargetPolarity.BENEFICIAL)
+            AiReadingAudit.read(card("Favor of the Woods")).readFully shouldBe true
+            withClue("the opponent's only creature blocks only when it suits them") {
+                aimsOnlyAtTheWrongSide("Favor of the Woods", "Forest", ours = null, theirs = "Grizzly Bears", lands = 3) shouldBe true
+            }
+            withClue("our own creature is the host") {
+                aimsOnlyAtTheWrongSide("Favor of the Woods", "Forest", ours = "Grizzly Bears", theirs = null, lands = 3) shouldBe false
             }
         }
 

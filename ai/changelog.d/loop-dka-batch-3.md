@@ -1,0 +1,3 @@
+- #TBD Reads an Aura's "whenever enchanted creature blocks, you gain life" payoff as a gift and casts it on its own creature (Favor of the Woods)
+- #TBD Reads an enchant-player Curse that lets every other player copy the enchanted player's spells as a curse and casts it on an opponent (Curse of Echoes)
+- #TBD Reads removing from combat the creature that triggered "whenever a creature attacks you" as neutralizing it (Lost in the Woods)
