@@ -3672,7 +3672,8 @@ data class ReplaceDamageWithCounters(
 }
 
 /**
- * Prevent matched damage and mill [multiplier] times that many cards — [miller] does the milling.
+ * Replace matched damage with a mill of [multiplier] times that many cards — [miller] does the milling;
+ * a prevention effect unless [prevents] is false.
  *
  * Models The Mindskinner (DSK): "If a source you control would deal damage to an opponent, prevent
  * that damage and each opponent mills that many cards" (the defaults), and Angel of Suffering (SNC):
