@@ -170,7 +170,11 @@ export function CombatDamageAssignmentModal({ decision }: { decision: AssignDama
             fontSize: responsive.fontSize.normal,
           }}
         >
-          {attackerName} ({decision.availablePower} power)
+          {/* "N power" is wrong when the attacker assigns damage by its toughness (Tapestry Warden):
+              the budget is its toughness, so say so instead of quoting a power it doesn't have. */}
+          {attackerName} ({attackerCard?.toughnessCombatDamage
+            ? <span style={{ color: '#ffb27a' }}>{decision.availablePower} damage — its toughness</span>
+            : `${decision.availablePower} power`})
           {decision.hasTrample && (
             <span style={{ color: '#f59e0b', marginLeft: 8 }}>Trample</span>
           )}

@@ -428,6 +428,26 @@ export function CardPreview() {
         </div>
       )}
 
+      {/* Combat damage by toughness (Tapestry Warden, Doran): the board chip shows the number,
+          this says where it comes from. Power is deliberately left alone — nothing but combat
+          damage assignment uses the toughness. */}
+      {card.toughnessCombatDamage && card.power !== null && (
+        <div style={styles.cardPreviewEffects}>
+          <div style={{ ...styles.cardPreviewEffect, borderLeft: '3px solid #ffb27a', paddingLeft: 6 }}>
+            <span style={{ ...styles.cardPreviewEffectName, color: '#ffb27a' }}>
+              Deals {card.toughnessCombatDamage.amount} combat damage
+            </span>
+            <span style={styles.cardPreviewEffectText}>
+              Assigns combat damage equal to its toughness ({card.toughnessCombatDamage.amount}) rather
+              than its power ({card.power})
+              {card.toughnessCombatDamage.sourceName && card.toughnessCombatDamage.sourceName !== card.name
+                ? ` — ${card.toughnessCombatDamage.sourceName}`
+                : ''}.
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Granted types — the printed image can't show a type an effect added (Super-Soldier Serum
           making its target a Soldier), and the type line above is only printed for tokens, so the
           grant would otherwise be invisible even though the rules apply it. */}

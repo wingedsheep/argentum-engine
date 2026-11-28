@@ -422,6 +422,12 @@ export interface ClientCard {
   /** Active effects on this card (e.g., "can't be blocked except by black creatures") */
   readonly activeEffects?: readonly ClientCardEffect[]
 
+  /**
+   * Set when this creature assigns combat damage equal to its toughness rather than its power
+   * (Tapestry Warden, Doran) and that changes the number. Power itself is unchanged.
+   */
+  readonly toughnessCombatDamage?: ClientToughnessCombatDamage
+
   /** Official rulings for this card (for card details view) */
   readonly rulings?: readonly ClientRuling[]
 
@@ -871,6 +877,16 @@ export interface ClientPlayerEffect {
 export interface ClientEffectProgress {
   readonly current: number
   readonly total: number
+}
+
+/**
+ * The combat damage a creature assigns by its toughness. Matches backend ClientToughnessCombatDamage.
+ */
+export interface ClientToughnessCombatDamage {
+  /** The combat damage it assigns (its toughness, floored at 0). */
+  readonly amount: number
+  /** The permanent whose ability does it; absent when a granted effect names none. */
+  readonly sourceName?: string | null
 }
 
 /**

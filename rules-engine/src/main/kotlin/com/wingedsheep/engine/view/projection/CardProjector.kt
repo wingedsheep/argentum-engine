@@ -624,6 +624,9 @@ internal class CardProjector(
             imageRotation = ((printedDef?.metadata?.imageRotation ?: 0) +
                 (if (container.has<FlippedComponent>()) 180 else 0)) % 360,
             activeEffects = cardEffects,
+            toughnessCombatDamage = if (onBattlefield && castFace == null) {
+                activeEffects.toughnessCombatDamage(state, entityId, frame.projectedState)
+            } else null,
             rulings = printedDef?.metadata?.rulings?.map {
                 ClientRuling(date = it.date, text = it.text)
             } ?: emptyList(),

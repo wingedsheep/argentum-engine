@@ -1603,6 +1603,20 @@ export const styles: Record<string, React.CSSProperties> = {
     pointerEvents: 'none',
   } as React.CSSProperties,
   // Counter badge styles (for +1/+1 counters on battlefield cards)
+  // "Assigns combat damage equal to its toughness" chip (Tapestry Warden) — warm ember so it reads
+  // as a damage figure, distinct from the blue +1/+1 counter chip that shares the stat cluster.
+  toughnessDamageChip: {
+    backgroundColor: 'rgba(110, 38, 18, 0.94)',
+    borderRadius: 4,
+    border: '1px solid rgba(255, 178, 122, 0.65)',
+    boxShadow: '0 0 6px rgba(255, 140, 70, 0.35)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 2,
+    color: '#ffb27a',
+    lineHeight: 1,
+    zIndex: 5,
+  } as React.CSSProperties,
   counterBadge: {
     position: 'absolute',
     bottom: 22,
