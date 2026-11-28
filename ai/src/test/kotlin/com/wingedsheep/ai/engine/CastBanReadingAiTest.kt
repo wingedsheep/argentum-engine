@@ -99,6 +99,10 @@ class CastBanReadingAiTest : ScenarioTestBase() {
             }
         }
 
+        test("a symmetric ban on a name its controller chose (Nevermore) is still a cast ban") {
+            tags("Nevermore") shouldContain IntentTag.CAST_BAN
+        }
+
         test("Orim's Chant's target player is aimed at an opponent") {
             intents.spellTargetPolarities("Orim's Chant") shouldBe listOf(TargetPolarity.HARMFUL)
         }

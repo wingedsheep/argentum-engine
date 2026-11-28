@@ -1,0 +1,1 @@
+- #4918 The AI reads "prevent all combat damage dealt to and by enchanted creature" Auras (Sandskin, Ghostly Possession) as two-sided and simulates which creature to enchant, and reads Nevermore's chosen-name cast ban as disruption.

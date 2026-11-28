@@ -31,6 +31,7 @@ import com.wingedsheep.mtg.sets.definitions.ons.cards.BlatantThievery
 import com.wingedsheep.mtg.sets.definitions.ons.cards.DaruHealer
 import com.wingedsheep.mtg.sets.definitions.ons.cards.GustcloakHarrier
 import com.wingedsheep.mtg.sets.definitions.ons.cards.Sandskin
+import com.wingedsheep.mtg.sets.definitions.isd.cards.GhostlyPossession
 import com.wingedsheep.mtg.sets.definitions.usg.cards.GloriousAnthem
 import com.wingedsheep.mtg.sets.definitions.vow.cards.MischievousCatgeist
 import com.wingedsheep.mtg.sets.definitions.rav.cards.StrandsOfUndeath
@@ -172,11 +173,14 @@ class TargetPolarityAiTest : FunSpec({
             TargetPolarityAnalyzer.forSpell(BlackWard) shouldBe listOf(TargetPolarity.BENEFICIAL)
             TargetPolarityAnalyzer.forSpell(Lignify) shouldBe listOf(TargetPolarity.HARMFUL)
         }
-        test("known bounce is flexible while mixed effects stay unknown") {
+        test("known bounce and combat-inert Auras are flexible") {
             // Bouncing our own creature in response to removal is a real play.
             TargetPolarityAnalyzer.forSpell(Unsummon) shouldBe listOf(TargetPolarity.FLEXIBLE)
             // "Prevent combat damage dealt to and by": a Fog on their attacker or armour on ours.
-            TargetPolarityAnalyzer.forSpell(Sandskin) shouldBe listOf(TargetPolarity.UNKNOWN)
+            TargetPolarityAnalyzer.forSpell(Sandskin) shouldBe listOf(TargetPolarity.FLEXIBLE)
+            // The same pair beside "has flying" (Ghostly Possession): an undying flying wall on our
+            // side, a neutered attacker on theirs — still the simulation's pick.
+            TargetPolarityAnalyzer.forSpell(GhostlyPossession) shouldBe listOf(TargetPolarity.FLEXIBLE)
         }
     }
 

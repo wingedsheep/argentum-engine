@@ -109,6 +109,7 @@ import com.wingedsheep.sdk.scripting.EntersAsCopy
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.events.Recipient
+import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.CounterTargetSource
 import com.wingedsheep.sdk.scripting.effects.CreateAuraTokenEffect
@@ -2773,6 +2774,14 @@ object TargetPolarityAnalyzer {
         filter.scope == Scope.AttachedTo ||
             (filter.scope == Scope.Battlefield && StatePredicate.IsAttachedToBySource in filter.baseFilter.statePredicates)
 
+    /** "Prevent all combat damage that would be dealt to enchanted creature", any source. */
+    private fun hostCombatDamageProtection(replacement: ReplacementEffect): Boolean {
+        if (replacement !is PreventDamage || replacement.amount != null || replacement.half || replacement.allBut != null) return false
+        val event = replacement.appliesTo as? EventPattern.DamageEvent ?: return false
+        return event.recipient == Recipient.EnchantedCreature && event.source == GameObjectFilter.Any &&
+            event.damageType == DamageType.Combat
+    }
+
     /**
      * "Prevent all damage that would be dealt by enchanted creature" (Armament of Nyx's otherwise
      * half): every point the host deals — in a fight or by its abilities — comes to nothing, so it
@@ -2913,9 +2922,17 @@ object TargetPolarityAnalyzer {
         // Preventing all damage the host would deal ([hostDamagePrevention]) reads as a curse, and
         // when its source filter is gated on the host's card type (Armament of Nyx's "otherwise")
         // it counts only for the side of the HostSplit whose host it can apply to.
+        // "Prevent all combat damage that would be dealt to and dealt by enchanted creature"
+        // (Sandskin, Ghostly Possession) takes the host out of combat on both sides: an attacker
+        // that can't hurt anyone, or a blocker that never dies. Either side can want it, so the
+        // pair is FLEXIBLE and the simulation picks the host.
+        val combatInert = card.script.replacementEffects.any(::hostDamagePrevention) &&
+            card.script.replacementEffects.any(::hostCombatDamageProtection)
         for (replacement in card.script.replacementEffects) {
             when {
                 replacement.affectsOnlyTheAuraItself() -> Unit
+                combatInert && (hostCombatDamageProtection(replacement) || hostDamagePrevention(replacement)) ->
+                    readings += TargetPolarity.FLEXIBLE
                 // "Nontoken creatures you control enter as a copy of enchanted creature" (Infinite
                 // Reflection): the host is only the copy source — untouched, and worth copying
                 // whichever side it is on, so the simulation picks the best creature to name.
