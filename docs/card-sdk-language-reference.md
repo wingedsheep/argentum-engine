@@ -20634,11 +20634,18 @@ The priority groups are (CR 616.1a–f):
   `CombatDamageManager` for combat); combat callers pass `isCombatDamage = true` so a noncombat-only
   pattern isn't applied to combat damage. The source and recipient are matched by the same shared
   matchers as every other damage replacement.
-- `ReplaceDamageWithMill(appliesTo = DamageEvent(recipient = Opponent), miller = Player.EachOpponent, multiplier = 1)`
+- `ReplaceDamageWithMill(appliesTo = DamageEvent(recipient = Opponent), miller = Player.EachOpponent, multiplier = 1, prevents = true)`
   — prevent matching damage and `miller` mills `multiplier` times that many cards, as one prevention
   effect (not a trigger). `miller` is read relative to the replacement's controller: `EachOpponent`
-  (every opponent, not just the damaged one) or `You`; any other reference is rejected at
-  construction ("the damaged player mills" is `ReplaceDamageWithCounters.damagedPlayerMills`). The Mindskinner:
+  (every opponent, not just the damaged one), `You`, or `TriggeringPlayer` — "that player", the
+  damaged player (the replacement declines when the damage is headed for a permanent); any other
+  reference is rejected at construction. **`prevents = false`** is the "instead" form (CR 614.1a):
+  not a prevention effect, so it also replaces damage that can't be prevented. **Undead Alchemist**:
+  "If a Zombie you control would deal combat damage to a player, instead that player mills that many
+  cards" — `DamageEvent(recipient = AnyPlayer, source = GameObjectFilter.Creature.withSubtype("Zombie").youControl(),
+  damageType = Combat)`, `miller = Player.TriggeringPlayer`, `prevents = false`; several copies
+  replace the damage only once. (Counters *plus* the damaged player's mill is
+  `ReplaceDamageWithCounters.damagedPlayerMills`.) The Mindskinner:
   `DamageEvent(recipient = Recipient.Opponent, source = GameObjectFilter.Any.youControl())` with the
   defaults covers both the unblockable creature's combat damage and noncombat damage from any source
   you control. Angel of Suffering ("prevent that damage and mill twice that many cards"):

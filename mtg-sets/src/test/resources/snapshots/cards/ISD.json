@@ -11531,6 +11531,88 @@
     ]
 }
 
+// Undead Alchemist
+{
+    "name": "Undead Alchemist",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "If a Zombie you control would deal combat damage to a player, instead that player mills that many cards.\nWhenever a creature card is put into an opponent's graveyard from their library, exile that card and create a 2/2 black Zombie creature token.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Undead Alchemist:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature own:opponent",
+                    "from": "Library",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "TriggeringEntity",
+                            "destination": "Exile",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "BLACK"
+                            ],
+                            "creatureTypes": [
+                                "Zombie"
+                            ]
+                        }
+                    ]
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "ReplaceDamageWithMill",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    },
+                    "source": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Zombie"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "damageType": "DamageCombat"
+                },
+                "miller": "TriggeringPlayer",
+                "prevents": false
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "RARE",
+        "artist": "Michael C. Hayes",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/717f4592-6c81-43ac-8975-f6d5d6710310.jpg?1783940962"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Unruly Mob
 {
     "name": "Unruly Mob",
