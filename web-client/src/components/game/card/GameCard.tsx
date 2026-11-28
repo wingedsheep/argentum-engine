@@ -1522,7 +1522,7 @@ function GameCardImpl({
                 box this chip states the damage it will deal, and the toughness figure below takes
                 the same accent so the two read as cause and effect. The hover preview names the
                 permanent responsible. */}
-            {battlefield && !faceDown && card.toughnessCombatDamage && card.power !== null && (
+            {battlefield && card.toughnessCombatDamage && card.power !== null && (
               <div
                 data-testid="toughness-damage-chip"
                 style={{
@@ -1564,7 +1564,7 @@ function GameCardImpl({
                   fontWeight: 700,
                   fontSize: responsive.badges.ptFontSize,
                   // Tie the toughness figure to the damage chip above it.
-                  ...(!faceDown && card.toughnessCombatDamage
+                  ...(card.toughnessCombatDamage
                     ? { textDecoration: 'underline', textDecorationColor: TOUGHNESS_DAMAGE_ACCENT, textDecorationThickness: 2, textUnderlineOffset: 2 }
                     : {}),
                 }}>

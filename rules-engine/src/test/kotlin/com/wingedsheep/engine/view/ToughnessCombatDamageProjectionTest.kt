@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.view
 
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.mechanics.combat.CombatDamageUtils
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Step
@@ -46,9 +48,23 @@ class ToughnessCombatDamageProjectionTest : FunSpec({
         toughness = 3
     }
 
+    // Streetwise Negotiator's shape: an unconditional, self-scoped substitution.
+    val negotiator = card("Test Negotiator") {
+        manaCost = "{1}{G}"
+        typeLine = "Creature — Human Citizen"
+        power = 1
+        toughness = 3
+        staticAbility {
+            ability = AssignDamageEqualToToughness(
+                filter = GroupFilter.source(),
+                onlyWhenToughnessGreaterThanPower = false,
+            )
+        }
+    }
+
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + warden + wall + square)
+        driver.registerCards(TestCards.all + warden + wall + square + negotiator)
         driver.initMirrorMatch(deck = Deck.of("Forest" to 40), skipMulligans = true)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
@@ -95,5 +111,22 @@ class ToughnessCombatDamageProjectionTest : FunSpec({
         val theirWall = driver.putCreatureOnBattlefield(opponent, "Test Bulwark")
         driver.cardView(me, bear).toughnessCombatDamage shouldBe null
         driver.cardView(me, theirWall).toughnessCombatDamage shouldBe null
+    }
+
+    test("a face-down creature doesn't read its hidden card's own substitution (CR 708.2)") {
+        val driver = createDriver()
+        val me = driver.activePlayer!!
+        val negotiatorId = driver.putCreatureOnBattlefield(me, "Test Negotiator")
+        fun source() = CombatDamageUtils.toughnessDamageSource(
+            driver.state, driver.state.projectedState, negotiatorId, driver.cardRegistry,
+            PredicateEvaluator(cardRegistry = null),
+        )
+
+        source() shouldBe CombatDamageUtils.ToughnessDamageSource(negotiatorId)
+        driver.cardView(me, negotiatorId).toughnessCombatDamage shouldBe
+            ClientToughnessCombatDamage(amount = 3, sourceName = "Test Negotiator")
+
+        driver.replaceState(driver.state.updateEntity(negotiatorId) { it.with(FaceDownComponent) })
+        source() shouldBe null
     }
 })

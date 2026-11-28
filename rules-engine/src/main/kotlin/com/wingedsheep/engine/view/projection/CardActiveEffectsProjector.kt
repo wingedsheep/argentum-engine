@@ -103,9 +103,16 @@ internal class CardActiveEffectsProjector(
             state, projectedState, entityId, cardRegistry, predicateEvaluator
         ) ?: return null
         val amount = (projectedState.getToughness(entityId) ?: return null).coerceAtLeast(0)
-        if (amount == projectedState.getPower(entityId)) return null
+        // Compare against what it would deal by power (a power of 0 or less deals nothing; Loot's
+        // absolute-power flag reads a negative power as positive), not the raw power figure.
+        val power = projectedState.getPower(entityId) ?: return null
+        val byPower = CombatDamageUtils.powerForAssignment(projectedState, entityId, power).coerceAtLeast(0)
+        if (amount == byPower) return null
+        // Never name a face-down permanent: its card is hidden information (CR 708.2).
         val sourceName = source.sourceId?.let { id ->
-            projectedState.getName(id) ?: state.getEntity(id)?.get<CardComponent>()?.name
+            val container = state.getEntity(id)
+            if (container == null || container.has<FaceDownComponent>()) null
+            else projectedState.getName(id) ?: container.get<CardComponent>()?.name
         }
         return ClientToughnessCombatDamage(amount = amount, sourceName = sourceName)
     }

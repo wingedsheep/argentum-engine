@@ -147,7 +147,7 @@ internal object CombatDamageUtils {
      * creature whose power is 0 or less assign no combat damage at all; the flag reads a negative
      * power as its absolute value for the assignment only, leaving the characteristic untouched.
      */
-    private fun powerForAssignment(projected: ProjectedState, creatureId: EntityId, power: Int): Int =
+    fun powerForAssignment(projected: ProjectedState, creatureId: EntityId, power: Int): Int =
         if (power < 0 && projected.hasKeyword(creatureId, AbilityFlag.ASSIGNS_COMBAT_DAMAGE_AS_ABSOLUTE_POWER)) {
             -power
         } else {
@@ -196,18 +196,16 @@ internal object CombatDamageUtils {
         // toughness > power gate. Stored as a projected keyword string.
         if (projected.hasKeyword(creatureId, AbilityFlag.ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS)) return ToughnessDamageSource(null)
 
-        // The creature itself (e.g., Doran the Siege Tower, filter scope = Self)
-        val selfCardId = state.getEntity(creatureId)?.get<CardComponent>()?.cardDefinitionId
-        if (selfCardId != null) {
-            val abilities = cardRegistry.getCard(selfCardId)?.staticAbilities.orEmpty()
-            if (matches(abilities, Scope.Self, power, toughness)) return ToughnessDamageSource(creatureId)
-        }
+        // The creature itself (e.g., Streetwise Negotiator, filter scope = Self). Face-up text only:
+        // a face-down permanent has none of its card's abilities (CR 708.2), and reading them would
+        // both misapply the rule and name the hidden card in the client's readout.
+        val selfAbilities = state.faceUpCardDefinition(creatureId, cardRegistry)?.staticAbilities.orEmpty()
+        if (matches(selfAbilities, Scope.Self, power, toughness)) return ToughnessDamageSource(creatureId)
 
         // Equipment/Aura attached to the creature (e.g., Bark of Doran, filter scope = AttachedTo)
         val attachments = state.getEntity(creatureId)?.get<AttachmentsComponent>()?.attachedIds.orEmpty()
         for (attachId in attachments) {
-            val attachCardId = state.getEntity(attachId)?.get<CardComponent>()?.cardDefinitionId ?: continue
-            val abilities = cardRegistry.getCard(attachCardId)?.staticAbilities.orEmpty()
+            val abilities = state.faceUpCardDefinition(attachId, cardRegistry)?.staticAbilities.orEmpty()
             if (matches(abilities, Scope.AttachedTo, power, toughness)) return ToughnessDamageSource(attachId)
         }
 
