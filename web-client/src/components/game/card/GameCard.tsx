@@ -77,6 +77,35 @@ const NO_LEGAL_ACTIONS: readonly LegalActionInfo[] = Object.freeze([])
 /** A chip inside the bottom-right stat cluster: the cluster's column lays it out, not its own corner offsets. */
 const STAT_CLUSTER_ITEM: React.CSSProperties = { position: 'static', top: undefined, right: undefined, bottom: undefined, left: undefined }
 
+/**
+ * Accent shared by the toughness-damage chip and the toughness figure it comes from, so the eye
+ * links the two: "this creature hits for its toughness" (Tapestry Warden, Doran the Siege Tower).
+ */
+const TOUGHNESS_DAMAGE_ACCENT = '#ffb27a'
+
+/** Crossed swords — the "combat damage" glyph on the toughness-damage chip. */
+function DamageSwordIcon({ size }: { size: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      aria-hidden
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      style={{ display: 'block', flexShrink: 0 }}
+    >
+      {/* blades */}
+      <path d="M2.5 2.5 L10.5 10.5 M13.5 2.5 L5.5 10.5" strokeWidth={1.9} />
+      {/* crossguards */}
+      <path d="M8.6 12.2 L12.2 8.6 M3.8 8.6 L7.4 12.2" strokeWidth={1.6} />
+      {/* grips */}
+      <path d="M11.4 11.4 L13.6 13.6 M4.6 11.4 L2.4 13.6" strokeWidth={1.9} />
+    </svg>
+  )
+}
+
 /** Soft halo colors for the chosen-color gem, keyed by MTG color (see grantedColors). */
 const COLOR_GLOW: Record<Color, string> = {
   [Color.WHITE]: 'rgba(245, 240, 210, 0.9)',
@@ -1487,6 +1516,27 @@ function GameCardImpl({
               </div>
             )}
 
+            {/* Combat damage by toughness — Tapestry Warden / Doran have this creature assign
+                combat damage equal to its toughness, not its power. Power stays the real number
+                (the ruling is explicit that nothing else changes), so rather than rewrite the P/T
+                box this chip states the damage it will deal, and the toughness figure below takes
+                the same accent so the two read as cause and effect. The hover preview names the
+                permanent responsible. */}
+            {battlefield && !faceDown && card.toughnessCombatDamage && card.power !== null && (
+              <div
+                data-testid="toughness-damage-chip"
+                style={{
+                  ...styles.toughnessDamageChip,
+                  ...STAT_CLUSTER_ITEM,
+                  fontSize: responsive.badges.counterTextFontSize,
+                  padding: responsive.badges.badgePadding,
+                }}
+              >
+                <DamageSwordIcon size={Math.round(responsive.badges.counterTextFontSize * 1.15)} />
+                <span style={{ fontWeight: 800 }}>{card.toughnessCombatDamage.amount}</span>
+              </div>
+            )}
+
             {/* P/T overlay for creatures on battlefield (server sends 2/2 for face-down creatures) */}
             {battlefield && card.power !== null && card.toughness !== null && (
               <div style={{
@@ -1513,6 +1563,10 @@ function GameCardImpl({
                       : getPTColor(card.power, card.toughness, card.basePower, card.baseToughness),
                   fontWeight: 700,
                   fontSize: responsive.badges.ptFontSize,
+                  // Tie the toughness figure to the damage chip above it.
+                  ...(!faceDown && card.toughnessCombatDamage
+                    ? { textDecoration: 'underline', textDecorationColor: TOUGHNESS_DAMAGE_ACCENT, textDecorationThickness: 2, textUnderlineOffset: 2 }
+                    : {}),
                 }}>
                   {card.damage != null && card.damage > 0
                     ? card.toughness - card.damage

@@ -509,6 +509,14 @@ data class ClientCard(
     /** Active effects on this card (e.g., "can't be blocked except by black creatures") */
     val activeEffects: List<ClientCardEffect> = emptyList(),
 
+    /**
+     * Set when this battlefield creature assigns combat damage equal to its toughness rather than
+     * its power (Tapestry Warden, Doran the Siege Tower, Bark of Doran, Bill the Pony) *and* that
+     * changes the number. Its power is unchanged — the client shows the damage it will deal next to
+     * the P/T box instead of rewriting power. `null` otherwise.
+     */
+    val toughnessCombatDamage: ClientToughnessCombatDamage? = null,
+
     /** Official rulings for this card (for card details view) */
     val rulings: List<ClientRuling> = emptyList(),
 
@@ -1156,6 +1164,21 @@ data class ClientCardEffect(
      * badge is where the player activates them; `null` for every other effect.
      */
     val sourceId: EntityId? = null
+)
+
+/**
+ * The combat damage a creature assigns because an effect has it use its toughness rather than its
+ * power. See [ClientCard.toughnessCombatDamage].
+ */
+@Serializable
+data class ClientToughnessCombatDamage(
+    /** The combat damage it assigns: its toughness, floored at 0. */
+    val amount: Int,
+    /**
+     * Name of the permanent whose ability does it ("Tapestry Warden"; the creature's own name for
+     * Doran), or `null` when a granted effect names no permanent (Bill the Pony's until-end-of-turn grant).
+     */
+    val sourceName: String? = null,
 )
 
 /**

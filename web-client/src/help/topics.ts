@@ -1490,6 +1490,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
         'Warped (CR 702.185) — exiled at the beginning of the next end step, then castable again from exile.',
         'Dashed (CR 702.109) — has haste; returned to its owner\'s hand at the beginning of the next end step.',
         'Band N (CR 702.22) — which attacking band this creature belongs to.',
+        'Crossed swords and a number, above the power/toughness box — the combat damage this creature will deal when it isn\'t its power. Tapestry Warden and Doran, the Siege Tower have creatures deal combat damage equal to their toughness instead, so a 1/5 shows ⚔ 5 and its toughness is underlined in the same colour. Its power hasn\'t changed. Hover the card to see which permanent causes it.',
       ] },
     ],
   },

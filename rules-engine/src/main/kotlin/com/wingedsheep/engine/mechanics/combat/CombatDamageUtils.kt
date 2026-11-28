@@ -134,7 +134,7 @@ internal object CombatDamageUtils {
 
         // The toughness > power gate compares the creature's real (possibly negative) power.
         val toughness = projected.getToughness(creatureId) ?: 0
-        return if (assignsDamageAsToughness(state, projected, creatureId, cardRegistry, power, toughness, predicateEvaluator = predicateEvaluator)) {
+        return if (toughnessDamageSource(state, projected, creatureId, cardRegistry, power, toughness, predicateEvaluator = predicateEvaluator) != null) {
             toughness.coerceAtLeast(0)
         } else {
             powerForAssignment(projected, creatureId, power)
@@ -154,7 +154,34 @@ internal object CombatDamageUtils {
             power
         }
 
-    private fun assignsDamageAsToughness(
+    /**
+     * What makes a creature assign combat damage equal to its toughness rather than its power.
+     * [sourceId] is the permanent whose static ability does it (Tapestry Warden, Doran, Bark of
+     * Doran — the creature itself for a Self-scoped one), or `null` for the granted
+     * [AbilityFlag.ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS] flag (Bill the Pony), which names no permanent.
+     */
+    data class ToughnessDamageSource(val sourceId: EntityId?)
+
+    /**
+     * Whether [creatureId] assigns combat damage equal to its toughness right now, and what makes
+     * it — the read the client view uses to show the substitution ahead of combat. Reads the same
+     * rules as [getAssignedCombatDamage], so the readout can't drift from what combat deals; `null`
+     * when it assigns by power, or assigns no combat damage at all.
+     */
+    fun toughnessDamageSource(
+        state: GameState,
+        projected: ProjectedState,
+        creatureId: EntityId,
+        cardRegistry: CardRegistry,
+        predicateEvaluator: PredicateEvaluator
+    ): ToughnessDamageSource? {
+        if (projected.hasKeyword(creatureId, AbilityFlag.ASSIGNS_NO_COMBAT_DAMAGE)) return null
+        val power = projected.getPower(creatureId) ?: return null
+        val toughness = projected.getToughness(creatureId) ?: return null
+        return toughnessDamageSource(state, projected, creatureId, cardRegistry, power, toughness, predicateEvaluator)
+    }
+
+    private fun toughnessDamageSource(
         state: GameState,
         projected: ProjectedState,
         creatureId: EntityId,
@@ -162,18 +189,18 @@ internal object CombatDamageUtils {
         power: Int,
         toughness: Int,
         predicateEvaluator: PredicateEvaluator
-    ): Boolean {
+    ): ToughnessDamageSource? {
         // Floating / granted flag (e.g., Bill the Pony's "Until end of turn, target creature you
         // control assigns combat damage equal to its toughness rather than its power"). Granted via
         // Effects.GrantKeyword(AbilityFlag.ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS); unconditional, so no
         // toughness > power gate. Stored as a projected keyword string.
-        if (projected.hasKeyword(creatureId, AbilityFlag.ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS)) return true
+        if (projected.hasKeyword(creatureId, AbilityFlag.ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS)) return ToughnessDamageSource(null)
 
         // The creature itself (e.g., Doran the Siege Tower, filter scope = Self)
         val selfCardId = state.getEntity(creatureId)?.get<CardComponent>()?.cardDefinitionId
         if (selfCardId != null) {
             val abilities = cardRegistry.getCard(selfCardId)?.staticAbilities.orEmpty()
-            if (matches(abilities, Scope.Self, power, toughness)) return true
+            if (matches(abilities, Scope.Self, power, toughness)) return ToughnessDamageSource(creatureId)
         }
 
         // Equipment/Aura attached to the creature (e.g., Bark of Doran, filter scope = AttachedTo)
@@ -181,7 +208,7 @@ internal object CombatDamageUtils {
         for (attachId in attachments) {
             val attachCardId = state.getEntity(attachId)?.get<CardComponent>()?.cardDefinitionId ?: continue
             val abilities = cardRegistry.getCard(attachCardId)?.staticAbilities.orEmpty()
-            if (matches(abilities, Scope.AttachedTo, power, toughness)) return true
+            if (matches(abilities, Scope.AttachedTo, power, toughness)) return ToughnessDamageSource(attachId)
         }
 
         // Global permanents with Scope.Battlefield (e.g., Tapestry Warden: "creatures you control")
@@ -205,10 +232,10 @@ internal object CombatDamageUtils {
             val granted = grantsByEntity[permanentId]?.map { it.ability }.orEmpty()
             val abilities = if (granted.isEmpty()) printed else printed + granted
             if (abilities.isEmpty()) continue
-            if (matchesBattlefield(state, projected, permanentId, creatureId, abilities, power, toughness, predicateEvaluator = predicateEvaluator)) return true
+            if (matchesBattlefield(state, projected, permanentId, creatureId, abilities, power, toughness, predicateEvaluator = predicateEvaluator)) return ToughnessDamageSource(permanentId)
         }
 
-        return false
+        return null
     }
 
     /**

@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.scripting.MustAttackDefender
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.DamageUtils
+import com.wingedsheep.engine.mechanics.combat.CombatDamageUtils
 import com.wingedsheep.engine.mechanics.combat.GoadRules
 import com.wingedsheep.engine.mechanics.combat.rules.DefenderBypass
 import com.wingedsheep.engine.mechanics.combat.rules.TappedBlockBypass
@@ -21,6 +22,7 @@ import com.wingedsheep.engine.state.components.combat.*
 import com.wingedsheep.engine.state.components.identity.*
 import com.wingedsheep.engine.state.components.player.*
 import com.wingedsheep.engine.view.ClientCardEffect
+import com.wingedsheep.engine.view.ClientToughnessCombatDamage
 import com.wingedsheep.engine.view.Visibility
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Keyword
@@ -82,6 +84,30 @@ internal class CardActiveEffectsProjector(
         effects += defenderBypassBadges(state, entityId, seenDescriptions)
         effects += tappedBlockBypassBadges(state, entityId)
         return effects
+    }
+
+    /**
+     * The combat damage [entityId] assigns because it uses its toughness rather than its power
+     * (Tapestry Warden's "each creature you control with toughness greater than its power"), and
+     * which permanent makes it — read through [CombatDamageUtils.toughnessDamageSource], the same
+     * rule combat applies, so the readout can't disagree with the damage dealt. `null` when it
+     * assigns by power, or when the substitution doesn't change the number.
+     */
+    fun toughnessCombatDamage(
+        state: GameState,
+        entityId: EntityId,
+        projectedState: ProjectedState,
+    ): ClientToughnessCombatDamage? {
+        if (!projectedState.isCreature(entityId)) return null
+        val source = CombatDamageUtils.toughnessDamageSource(
+            state, projectedState, entityId, cardRegistry, predicateEvaluator
+        ) ?: return null
+        val amount = (projectedState.getToughness(entityId) ?: return null).coerceAtLeast(0)
+        if (amount == projectedState.getPower(entityId)) return null
+        val sourceName = source.sourceId?.let { id ->
+            projectedState.getName(id) ?: state.getEntity(id)?.get<CardComponent>()?.name
+        }
+        return ClientToughnessCombatDamage(amount = amount, sourceName = sourceName)
     }
 
     /**

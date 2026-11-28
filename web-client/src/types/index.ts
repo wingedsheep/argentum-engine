@@ -59,6 +59,7 @@ export type {
   ClientDungeon,
   ClientDungeonRoom,
   ClientCardEffect,
+  ClientToughnessCombatDamage,
   ClientRuling,
   ClientManaPool,
   ClientRestrictedManaEntry,
