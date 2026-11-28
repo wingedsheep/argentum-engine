@@ -511,6 +511,9 @@ object CardIntentAnalyzer {
             // stays on the battlefield and deals nothing — a Pacifism the polarity reader already
             // aims at an opponent's creature ([TargetPolarityAnalyzer.hostDamagePrevention]).
             if (script.isAura && TargetPolarityAnalyzer.hostDamagePrevention(replacement)) tags += IntentTag.NEUTRALIZE
+            // "… deals double that damage to enchanted player instead" (Curse of Bloodletting): the
+            // Curse sits on an opponent, so every source's damage to them is amplified.
+            if (script.isAura && DamageAmplifiers.cursesHost(replacement)) tags += IntentTag.DAMAGE_AMPLIFIER
         }
         // Printed exalted is a standing trigger for the team, not part of the card's own body: it
         // pumps whichever creature attacks alone, and it does so from a land or an enchantment too

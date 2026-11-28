@@ -17,16 +17,30 @@ import com.wingedsheep.sdk.scripting.references.Player
  * mistaking a symmetrical hazard for a payoff.
  */
 internal object DamageAmplifiers {
-    fun reads(replacement: ReplacementEffect): Boolean {
+    fun reads(replacement: ReplacementEffect): Boolean = scaledEvent(replacement)?.let(::readsScope) ?: false
+
+    /**
+     * An attachment's curse on its host: "if a source would deal damage to enchanted player, it
+     * deals double that damage to that player instead" (Curse of Bloodletting) — whatever the source, aimed
+     * only at [Recipient.EnchantedPlayer] or [Recipient.EnchantedCreature]. Every source's damage to
+     * the host grows, so it is a curse to put across the table, and an amplifier for its controller.
+     */
+    fun cursesHost(replacement: ReplacementEffect): Boolean {
+        val event = scaledEvent(replacement) ?: return false
+        if (event.damageType != DamageType.Any || event.amount != AmountFilter.Any) return false
+        return event.recipient == Recipient.EnchantedPlayer || event.recipient == Recipient.EnchantedCreature
+    }
+
+    /** The damage pattern [replacement] scales up unconditionally, or null. */
+    private fun scaledEvent(replacement: ReplacementEffect): EventPattern.DamageEvent? {
         val scaled = when (replacement) {
             is DoubleDamage -> replacement.multiplier > 1
             // A fixed bonus only: a dynamic one needs a live-state reader, and a negative one shrinks.
             is ModifyDamageAmount -> replacement.dynamicModifier == null && replacement.modifier > 0
             else -> false
         }
-        if (!scaled || replacement.restrictions.isNotEmpty()) return false
-        val event = replacement.appliesTo as? EventPattern.DamageEvent ?: return false
-        return readsScope(event)
+        if (!scaled || replacement.restrictions.isNotEmpty()) return null
+        return replacement.appliesTo as? EventPattern.DamageEvent
     }
 
     /**

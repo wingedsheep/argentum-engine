@@ -1,3 +1,303 @@
+// Afflicted Deserter
+{
+    "name": "Afflicted Deserter",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Human Werewolf",
+    "oracleText": "At the beginning of each upkeep, if no spells were cast last turn, transform this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Afflicted Deserter:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": "Transform",
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": "SpellsCastLastTurn",
+                    "operator": "EQ",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Werewolf Ransacker",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "Whenever this creature transforms into Werewolf Ransacker, you may destroy target artifact. If that artifact is put into a graveyard this way, this creature deals 3 damage to that artifact's controller.\nAt the beginning of each upkeep, if a player cast two or more spells last turn, transform this creature.",
+        "creatureStats": {
+            "power": 5,
+            "toughness": 4
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Werewolf Ransacker:1",
+                    "trigger": {
+                        "type": "TransformEvent",
+                        "intoBackFace": true
+                    },
+                    "effect": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": "ChosenTargets",
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "CaptureControllers",
+                                    "from": "gathered0",
+                                    "storeAs": "controllers1"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "gathered0",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Destroy",
+                                    "storeMovedAs": "moved2"
+                                },
+                                {
+                                    "type": "FilterCollection",
+                                    "from": "moved2",
+                                    "filter": {
+                                        "statePredicates": [
+                                            {
+                                                "type": "InZone",
+                                                "zone": "Graveyard"
+                                            }
+                                        ]
+                                    },
+                                    "storeMatching": "matching3"
+                                },
+                                {
+                                    "type": "ForEachCapturedController",
+                                    "collection": "matching3",
+                                    "originalCollection": "gathered0",
+                                    "controllerSnapshot": "controllers1",
+                                    "countVariable": "count4",
+                                    "effects": [
+                                        {
+                                            "type": "DealDamage",
+                                            "amount": {
+                                                "type": "Fixed",
+                                                "amount": 3
+                                            },
+                                            "target": "Controller"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "targetRequirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact"
+                        },
+                        "id": "t0"
+                    }
+                },
+                {
+                    "id": "Werewolf Ransacker:2",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP",
+                        "player": "Each"
+                    },
+                    "binding": "ANY",
+                    "effect": "Transform",
+                    "interveningIf": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "GreatestAmongPlayers",
+                            "inner": {
+                                "type": "SpellsCastLastTurn",
+                                "player": "You"
+                            }
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "81",
+            "rarity": "UNCOMMON",
+            "artist": "David Palumbo",
+            "imageUri": "https://cards.scryfall.io/normal/back/a/2/a2c044c0-3625-4bdf-9445-b462394cecae.jpg?1783940829",
+            "rulings": [
+                {
+                    "date": "2013-07-01",
+                    "text": "If the targeted artifact has indestructible or regenerates (or you choose not to destroy it), Werewolf Ransacker doesn't deal damage to that artifact's controller. Similarly, if the targeted artifact is destroyed but a replacement effect moves it to a different zone instead of its owner's graveyard, Werewolf Ransacker doesn't deal damage to that artifact's controller."
+                },
+                {
+                    "date": "2011-01-22",
+                    "text": "An artifact token that's destroyed is put into its owner's graveyard before it ceases to exist. If a token is destroyed by Werewolf Ransacker ability, Werewolf Ransacker deals damage to that token's controller."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "UNCOMMON",
+        "artist": "David Palumbo",
+        "flavorText": "The rising of the first full moon eliminated any doubt as to the horrible truth lurking within.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2c044c0-3625-4bdf-9445-b462394cecae.jpg?1783940829"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Alpha Brawl
+{
+    "name": "Alpha Brawl",
+    "manaCost": "{6}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature an opponent controls deals damage equal to its power to each other creature that player controls, then each of those creatures deals damage equal to its power to that creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "controllerPredicate": {
+                                    "type": "ControlledByReferencedPlayer",
+                                    "target": "TargetController"
+                                }
+                            },
+                            "excludeTarget": true
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "numericProperty": "Power"
+                        },
+                        "target": "IterationEntity",
+                        "damageSource": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "controllerPredicate": {
+                                    "type": "ControlledByReferencedPlayer",
+                                    "target": "TargetController"
+                                }
+                            },
+                            "excludeTarget": true
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "IterationEntity",
+                            "numericProperty": "Power"
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "damageSource": "IterationEntity"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "rarity": "RARE",
+        "artist": "Randy Gallegos",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e2ec168a-3e4f-4527-901a-bc28cc28d125.jpg?1783940822",
+        "rulings": [
+            {
+                "date": "2011-01-22",
+                "text": "The two parts of Alpha Brawl's effect happen sequentially: first the targeted creature deals damage, then the other creatures deal damage. State-based actions aren't checked in the middle, so creatures that are dealt lethal damage by the targeted creature will still deal damage."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "None of the damage dealt due to Alpha Brawl is combat damage."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "Abilities like lifelink and deathtouch that care about any kind of damage are taken into account."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "If the targeted creature has infect or wither, the damage it deals will result in -1/-1 counters being put on each creature it deals damage to. The power of those creatures will be reduced when they deal damage back to the targeted creature."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "The damage dealt by the targeted creature is not divided in any way. For example, if a 3/3 creature is targeted, it will deal 3 damage to each other creature controlled by its controller."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Archangel's Light
 {
     "name": "Archangel's Light",
@@ -947,6 +1247,78 @@
     ]
 }
 
+// Chosen of Markov
+{
+    "name": "Chosen of Markov",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human",
+    "oracleText": "{T}, Tap an untapped Vampire you control: Transform this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Chosen of Markov:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomTapPermanents",
+                                "filter": "permanent Vampire ctrl:you",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": "Transform",
+                "descriptionOverride": "Transform Chosen of Markov."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Markov's Servant",
+        "manaCost": "",
+        "typeLine": "Creature — Vampire",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "metadata": {
+            "collectorNumber": "55",
+            "artist": "Steve Argyle",
+            "flavorText": "\". . . and for that I shall be eternally grateful.\"",
+            "imageUri": "https://cards.scryfall.io/normal/back/7/c/7c5a3c09-5656-4975-ba03-2d809903ed18.jpg?1783940840"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "artist": "Steve Argyle",
+        "flavorText": "\"I have been found worthy by this great house . . .\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c5a3c09-5656-4975-ba03-2d809903ed18.jpg?1783940840",
+        "rulings": [
+            {
+                "date": "2011-01-22",
+                "text": "You can tap any untapped Vampire you control, including one you haven't controlled continuously since the beginning of your most recent turn, to pay the cost of Chosen of Markov's activated ability. You must have controlled Chosen of Markov continuously since the beginning of your most recent turn, however."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Counterlash
 {
     "name": "Counterlash",
@@ -1096,6 +1468,57 @@
     ]
 }
 
+// Curse of Bloodletting
+{
+    "name": "Curse of Bloodletting",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Enchantment — Aura Curse",
+    "oracleText": "Enchant player\nIf a source would deal damage to enchanted player, it deals double that damage to that player instead.",
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "DoubleDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "EnchantedPlayer"
+                    }
+                }
+            }
+        ],
+        "auraTarget": "TargetPlayer"
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "rarity": "RARE",
+        "artist": "Michael C. Hayes",
+        "flavorText": "It is the demon's mark, an infernal claim on the flesh of the guilty.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9dc4ac6f-0005-47f8-bee9-10429cc542e4.jpg?1783940820",
+        "rulings": [
+            {
+                "date": "2011-01-22",
+                "text": "Curse of Bloodletting works with any damage, not just combat damage. It also doesn't matter who controls the source of the damage that's being dealt."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "The source of the damage doesn't change. A spell that deals damage will specify the source of the damage, often the spell itself. An ability that deals damage will also specify the source of the damage, although the ability itself will never be that source. Often the source of the ability is also the source of the damage."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "If more than one Curse of Bloodletting enchants the same player, damage dealt to that player will double for each one (two of them will end up multiplying the damage by four, three of them by eight, and four of them by sixteen)."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "If multiple effects modify how damage will be dealt to the enchanted player, that player chooses the order to apply the effects. For example, Mending Hands says, \"Prevent the next 4 damage that would be dealt to any target this turn.\" Suppose a spell would deal 5 damage to enchanted player and that player has cast Mending Hands targeting themselves. The enchanted player can either (a) prevent 4 damage first and then let Curse of Bloodletting's effect double the remaining 1 damage, taking 2 damage, or (b) double the damage to 10 and then prevent 4 damage, taking 6 damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Curse of Exhaustion
 {
     "name": "Curse of Exhaustion",
@@ -1215,6 +1638,53 @@
         "rarity": "RARE",
         "artist": "Terese Nielsen",
         "imageUri": "https://cards.scryfall.io/normal/front/c/5/c531d218-ff1c-4333-a19d-446d709b1e28.jpg?1783940833"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Curse of Thirst
+{
+    "name": "Curse of Thirst",
+    "manaCost": "{4}{B}",
+    "typeLine": "Enchantment — Aura Curse",
+    "oracleText": "Enchant player\nAt the beginning of enchanted player's upkeep, this Aura deals damage to that player equal to the number of Curses attached to them.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Curse of Thirst:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "EnchantedPlayer"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "EnchantedPermanent",
+                        "numericProperty": {
+                            "type": "AttachmentCount",
+                            "kind": "CURSE"
+                        }
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EnchantedPlayer"
+                    }
+                },
+                "descriptionOverride": "At the beginning of enchanted player's upkeep, this Aura deals damage to that player equal to the number of Curses attached to them."
+            }
+        ],
+        "auraTarget": "TargetPlayer"
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "rarity": "UNCOMMON",
+        "artist": "Christopher Moeller",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a23ed5d1-44dc-4733-9e01-65fbc5dc02f2.jpg?1783940833"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -1358,6 +1828,95 @@
     "colorIdentityOverride": [
         "BLACK",
         "GREEN"
+    ]
+}
+
+// Death's Caress
+{
+    "name": "Death's Caress",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target creature. If that creature was a Human, you gain life equal to its toughness.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "StoreNumber",
+                    "name": "number0",
+                    "amount": {
+                        "type": "Conditional",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": "creature Human"
+                        },
+                        "ifTrue": {
+                            "type": "EntityProperty",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "numericProperty": "Toughness"
+                        },
+                        "ifFalse": {
+                            "type": "Fixed",
+                            "amount": 0
+                        }
+                    }
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "VariableReference",
+                        "variableName": "number0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "artist": "James Ryman",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/0643fb9a-8284-4dfc-836a-c2c69ef09f32.jpg?1783940831",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "If Death's Caress resolves but the target creature isn't destroyed, perhaps because it has indestructible or it regenerated, you still check if it's a Human. If so, you'll gain life equal to its toughness."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "Check the creature as it last existed on the battlefield to determine if it was a Human. If it was, use its toughness as it last existed on the battlefield to determine how much life is gained."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "If the target creature isn't on the battlefield or is otherwise an illegal target when Death's Caress tries to resolve, Death's Caress doesn't resolve and none of its effects will happen. You won't gain any life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -2135,6 +2694,117 @@
     ]
 }
 
+// Fiend of the Shadows
+{
+    "name": "Fiend of the Shadows",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Vampire Wizard",
+    "oracleText": "Flying\nWhenever this creature deals combat damage to a player, that player exiles a card from their hand. You may play that card for as long as it remains exiled.\nSacrifice a Human: Regenerate this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fiend of the Shadows:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": "TriggeringPlayer"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "TriggeringPlayer",
+                            "storeSelected": "selected1",
+                            "prompt": "Choose a card to exile from your hand — your opponent may play it"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": "TriggeringPlayer"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "selected1",
+                            "expiry": "Permanent"
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Fiend of the Shadows:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "permanent Human"
+                    }
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "RARE",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/38167118-f5b3-4e07-8060-b170b49cff9e.jpg?1783940830",
+        "rulings": [
+            {
+                "date": "2011-01-22",
+                "text": "Playing a card exiled with Fiend of the Shadows follows all the normal rules for playing that card. You must pay its costs, and you must follow all timing restrictions, for example."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "You may only play the card, meaning play it as a land or cast it as a spell. It's not in your hand. You can't discard it, activate its cycling abilities, and so on."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "As long as the card remains exiled, you may still play it, even if Fiend of the Shadows leaves the battlefield or changes controllers."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Fires of Undeath
 {
     "name": "Fires of Undeath",
@@ -2177,6 +2847,83 @@
     },
     "colorIdentityOverride": [
         "BLACK",
+        "RED"
+    ]
+}
+
+// Flayer of the Hatebound
+{
+    "name": "Flayer of the Hatebound",
+    "manaCost": "{5}{R}",
+    "typeLine": "Creature — Devil",
+    "oracleText": "Undying (When this creature dies, if it had no +1/+1 counters on it, return it to the battlefield under its owner's control with a +1/+1 counter on it.)\nWhenever this creature or another creature enters from your graveyard, that creature deals damage equal to its power to any target.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "keywords": [
+        "UNDYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Flayer of the Hatebound:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature own:you",
+                    "from": "Graveyard",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "TriggeringEntity",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "damageSource": "TriggeringEntity"
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "rarity": "RARE",
+        "artist": "Jana Schirmer & Johannes Voss",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ffb17c3f-0154-49ee-bb5f-cd1df8546871.jpg?1783940817",
+        "rulings": [
+            {
+                "date": "2011-01-22",
+                "text": "Flayer of the Hatebound's last ability will trigger even if a creature enters from your graveyard under another player's control."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "The creature that entered from your graveyard deals damage equal to its current power (including any +1/+1 counters it entered with) to the target permanent or player. If it's no longer on the battlefield when the ability resolves, its last known existence on the battlefield is checked to determine its power."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "If you cast a creature card from your graveyard, that card will be put on the stack before entering. Flayer of the Hatebound won't trigger."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "Since damage is dealt by the creature, abilities like lifelink and deathtouch are taken into account, even if the creature has left the battlefield by the time it deals damage."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "Flayer of the Hatebound is the source of the ability, but it may be another creature that is the source of the damage. If a black creature enters from your graveyard, the ability could target a creature with protection from black, although the damage will be prevented. It couldn't target a creature with protection from red."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
         "RED"
     ]
 }
@@ -2829,6 +3576,178 @@
     ]
 }
 
+// Gruesome Discovery
+{
+    "name": "Gruesome Discovery",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player discards two cards.\nMorbid — If a creature died this turn, instead that player reveals their hand, you choose two cards from it, then that player discards those cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "CreatureDiedThisTurn"
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "FromZone",
+                            "zone": "Hand",
+                            "player": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "storeAs": "gathered0",
+                        "revealed": true
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "gathered0",
+                        "selection": {
+                            "type": "ChooseExactly",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        "storeSelected": "selected1",
+                        "prompt": "Choose two cards for that player to discard"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "selected1",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Graveyard",
+                            "player": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "moveType": "Discard"
+                    }
+                ]
+            },
+            "otherwise": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "FromZone",
+                            "zone": "Hand",
+                            "player": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "storeAs": "hand"
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "hand",
+                        "selection": {
+                            "type": "ChooseExactly",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        "chooser": "TargetPlayer",
+                        "storeSelected": "discarded",
+                        "prompt": "Choose 2 cards to discard"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "discarded",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Graveyard",
+                            "player": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "moveType": "Discard"
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "artist": "John Stanko",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d0a9d733-24b6-49ed-a15a-c00285eea4b2.jpg?1783940829"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Harrowing Journey
+{
+    "name": "Harrowing Journey",
+    "manaCost": "{4}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player draws three cards and loses 3 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "UNCOMMON",
+        "artist": "James Paick",
+        "flavorText": "\"There are always fools who attempt to traverse Kruin Pass before sundown and every time they wind up in a race for their lives.\"\n—Old Rutstein",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9cf96a6c-8481-4954-b149-7153b80480be.jpg?1783940828"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Havengul Runebinder
 {
     "name": "Havengul Runebinder",
@@ -2942,6 +3861,119 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Heckling Fiends
+{
+    "name": "Heckling Fiends",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Devil",
+    "oracleText": "{2}{R}: Target creature attacks this turn if able.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Heckling Fiends:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "MarkMustAttack",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "rarity": "UNCOMMON",
+        "artist": "Clint Cearley",
+        "flavorText": "Their language may be a cacophonous agglomeration of chittering snorts and mad barking, but the message they send is all too clear.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/9/e9fd8895-9282-44d3-969f-b0529eb3bc07.jpg?1783940816",
+        "rulings": [
+            {
+                "date": "2011-01-22",
+                "text": "The creature's controller still decides which player or planeswalker the creature attacks."
+            },
+            {
+                "date": "2011-01-22",
+                "text": "If, during a player's declare attackers step, a creature is tapped, is affected by a spell or ability that says it can't attack, or hasn't been under that player's control continuously since the turn began (and doesn't have haste), then it doesn't attack. If there's a cost associated with having a creature attack, the player isn't forced to pay that cost, so it doesn't have to attack in that case either."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Hellrider
+{
+    "name": "Hellrider",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Devil",
+    "oracleText": "Haste\nWhenever a creature you control attacks, this creature deals 1 damage to the player or planeswalker it's attacking.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hellrider:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "AttackedBy"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"Behind every devil's mayhem lurks a demon's scheme.\"\n—Rem Karolus, Blade of the Inquisitors",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0ec8d800-7f06-44e0-b22d-cdff0a9b153d.jpg?1783940817",
+        "rulings": [
+            {
+                "date": "2017-03-14",
+                "text": "Creatures you control may attack multiple players and/or planeswalkers. For each attacking creature, Hellrider will deal damage to the corresponding player or planeswalker."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -3465,6 +4497,120 @@
     "colorIdentityOverride": [
         "RED",
         "GREEN"
+    ]
+}
+
+// Increasing Ambition
+{
+    "name": "Increasing Ambition",
+    "manaCost": "{4}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for a card and put that card into your hand. If this spell was cast from a graveyard, instead search your library for two cards and put those cards into your hand. Then shuffle.\nFlashback {7}{B} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{7}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "WasCastFromZone",
+                    "zone": "Graveyard"
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "FromZone",
+                            "zone": "Library"
+                        },
+                        "storeAs": "searchable",
+                        "search": true
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "searchable",
+                        "selection": {
+                            "type": "ChooseUpTo",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        "storeSelected": "found",
+                        "prompt": "Search your library for up to two cards to put into your hand",
+                        "selectedLabel": "Put into your hand"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "found",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Hand"
+                        }
+                    },
+                    "ShuffleLibrary",
+                    "EmitLibrarySearchedEvent"
+                ]
+            },
+            "otherwise": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "FromZone",
+                            "zone": "Library"
+                        },
+                        "storeAs": "searchable",
+                        "search": true
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "searchable",
+                        "selection": {
+                            "type": "ChooseUpTo",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "storeSelected": "found",
+                        "prompt": "Search your library for a card to put into your hand",
+                        "selectedLabel": "Put into your hand"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "found",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Hand"
+                        }
+                    },
+                    "ShuffleLibrary",
+                    "EmitLibrarySearchedEvent"
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "RARE",
+        "artist": "Volkan Baǵa",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c8f508dc-7c7d-47e8-a4ef-0e8fd99cbd74.jpg?1783940827"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -4420,6 +5566,118 @@
     ]
 }
 
+// Ravenous Demon
+{
+    "name": "Ravenous Demon",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "Sacrifice a Human: Transform this creature. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ravenous Demon:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "permanent Human"
+                    }
+                },
+                "effect": "Transform",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Sacrifice a Human: Transform Ravenous Demon."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Archdemon of Greed",
+        "manaCost": "",
+        "typeLine": "Creature — Demon",
+        "oracleText": "Flying, trample\nAt the beginning of your upkeep, sacrifice a Human. If you can't, tap this creature and it deals 9 damage to you.",
+        "creatureStats": {
+            "power": 9,
+            "toughness": 9
+        },
+        "keywords": [
+            "FLYING",
+            "TRAMPLE"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Archdemon of Greed:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "Exists",
+                                "player": "You",
+                                "zone": "Battlefield",
+                                "filter": "permanent Human"
+                            }
+                        },
+                        "then": {
+                            "type": "Sacrifice",
+                            "filter": "permanent Human"
+                        },
+                        "otherwise": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "TapUntap",
+                                    "target": "Self"
+                                },
+                                {
+                                    "type": "DealDamage",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 9
+                                    },
+                                    "target": "Controller"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "71",
+            "rarity": "RARE",
+            "artist": "Igor Kieryluk",
+            "flavorText": "\"The price is paid. The power is mine!\"",
+            "imageUri": "https://cards.scryfall.io/normal/back/6/a/6aef77b3-4b38-4902-9f7a-dc18b5bb9da9.jpg?1783940832"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "RARE",
+        "artist": "Igor Kieryluk",
+        "flavorText": "His twisted words entice the weak.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6aef77b3-4b38-4902-9f7a-dc18b5bb9da9.jpg?1783940832"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Reap the Seagraf
 {
     "name": "Reap the Seagraf",
@@ -5211,6 +6469,57 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Spiteful Shadows
+{
+    "name": "Spiteful Shadows",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhenever enchanted creature is dealt damage, it deals that much damage to its controller.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spiteful Shadows:1",
+                "trigger": "DamageReceivedEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    },
+                    "damageSource": "TriggeringEntity"
+                },
+                "descriptionOverride": "Whenever enchanted creature is dealt damage, it deals that much damage to its controller."
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "artist": "John Stanko",
+        "flavorText": "\"Let us remind these human cattle why they fear the shadows of this world.\"\n—Aldreg, Skirsdag cultist",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ea0a94fe-11d6-48a7-9195-2cb5eff4b962.jpg?1783940825",
+        "rulings": [
+            {
+                "date": "2011-01-22",
+                "text": "Spiteful Shadows causes the enchanted creature to deal damage to its controller. Abilities like lifelink and infect will apply."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
