@@ -19442,9 +19442,12 @@ restriction matches the spell context.
   variant). Maelstrom of the Spirit Dragon: `SubtypeSpellsOnly(setOf("Dragon", "Omen"))`
   ("a Dragon spell or an Omen spell").
 - `ManaRestriction.CastFromExileOnly` — only spells cast from exile.
-- `ManaRestriction.CastFromGraveyardOnly` — only spells cast from **your own** graveyard
+- `ManaRestriction.CastFromGraveyardOnly(anyGraveyard = false)` — only spells cast from **your own** graveyard
   (flashback, disturb, harmonize, escape, a graveyard-cast permission); a card cast out of an
-  opponent's graveyard doesn't qualify; rejects ability activations. Rootcoil Creeper.
+  opponent's graveyard doesn't qualify; rejects ability activations. Rootcoil Creeper:
+  `CastFromGraveyardOnly()`. `anyGraveyard = true` reads "from **a** graveyard" — any player's.
+  Altar of the Lost ("spend this mana only to cast spells with flashback from a graveyard"):
+  `AllOf(listOf(SpellsWithKeywordOnly(Keyword.FLASHBACK), CastFromGraveyardOnly(anyGraveyard = true)))`.
 - `ManaRestriction.DisturbCostOnly` — only a spell cast for its disturb cost (CR 702.146a); a
   hand cast or a flashback cast of the same card doesn't qualify; rejects ability activations.
   Unblinking Observer: `AnyOf(listOf(DisturbCostOnly, InstantOrSorceryOnly))`.

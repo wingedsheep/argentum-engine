@@ -347,7 +347,7 @@ object ManaSpending {
         atom("cast spells from exile", ManaRestriction.CastFromExileOnly),
         atom(
             "cast spells from your graveyard",
-            ManaRestriction.CastFromGraveyardOnly,
+            ManaRestriction.CastFromGraveyardOnly(),
             "cast a spell from your graveyard",
         ),
         atom("pay a disturb cost", ManaRestriction.DisturbCostOnly),

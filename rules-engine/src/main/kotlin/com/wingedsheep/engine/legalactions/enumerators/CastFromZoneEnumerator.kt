@@ -742,6 +742,7 @@ class CastFromZoneEnumerator(
                             isFromExile = sourceZoneLabel == "EXILE",
                             isFromHand = false,
                             isFromGraveyard = cardId in state.getGraveyard(playerId),
+                            isFromAnyGraveyard = state.turnOrder.any { cardId in state.getGraveyard(it) },
                         ).copy(spendAsAnyColor = permissions.firstNotNullOfOrNull { it.spendAsAnyColor })
                         // Convoke (CR 702.51) — printed, or granted by a zone-scoped grant keyed to the
                         // zone this card is cast from. A free cast has nothing for convoke to pay.
@@ -1614,7 +1615,8 @@ class CastFromZoneEnumerator(
             val costByTargetCount = pricing.byCountStrings()
             // Flashback casts from the caster's own graveyard, so conditional mana is judged with
             // that origin (Rootcoil Creeper's "cast spells from your graveyard").
-            val spellContext = spellPaymentContextFor(cardComponent, colors = state.projectedState.colorSetOf(cardId), isFromHand = false, isFromGraveyard = true)
+            val spellContext = spellPaymentContextFor(cardComponent, colors = state.projectedState.colorSetOf(cardId),
+                isFromHand = false, isFromGraveyard = true, isFlashbackCast = true)
             val canAfford = context.manaSolver.canPay(
                 state, playerId, effectiveCost, precomputedSources = context.availableManaSources, spellContext = spellContext
             )
@@ -3235,6 +3237,7 @@ class CastFromZoneEnumerator(
                         isFromExile = sourceZone == "EXILE",
                         isFromHand = false,
                         isFromGraveyard = cardId in state.getGraveyard(playerId),
+                        isFromAnyGraveyard = state.turnOrder.any { cardId in state.getGraveyard(it) },
                     ).copy(
                         spendAsAnyColor = state.activeMayPlayFor(cardId, playerId, context.conditionEvaluator, context.cardRegistry)
                             .firstNotNullOfOrNull { it.spendAsAnyColor }

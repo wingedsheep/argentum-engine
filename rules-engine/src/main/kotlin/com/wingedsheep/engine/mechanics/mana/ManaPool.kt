@@ -98,6 +98,14 @@ data class SpellPaymentContext(
      */
     val isFromGraveyard: Boolean = false,
     /**
+     * True when the spell is being cast from **any** player's graveyard — the caster's own or an
+     * opponent's. Read by [ManaRestriction.CastFromGraveyardOnly] with `anyGraveyard` ("from a
+     * graveyard"), which also accepts [isFromGraveyard] alone: the own-graveyard cast paths
+     * (flashback, disturb, harmonize) set only that flag. Independent of it rather than defaulted
+     * from it, because `copy(isFromGraveyard = …)` would not carry a derived default along.
+     */
+    val isFromAnyGraveyard: Boolean = false,
+    /**
      * True when the spell is being cast for its disturb alternative cost (CR 702.146a). Read by
      * [ManaRestriction.DisturbCostOnly].
      */
@@ -293,7 +301,8 @@ fun ManaRestriction.isSatisfiedBy(context: SpellPaymentContext): Boolean = when 
     // Bound to SpellsWithExactColorCount when the mana is made, like OfChosenType above.
     is ManaRestriction.SpellsOfChosenColor -> false
     is ManaRestriction.CastFromExileOnly -> !context.isAbilityActivation && context.isFromExile
-    is ManaRestriction.CastFromGraveyardOnly -> !context.isAbilityActivation && context.isFromGraveyard
+    is ManaRestriction.CastFromGraveyardOnly -> !context.isAbilityActivation &&
+        (context.isFromGraveyard || (anyGraveyard && context.isFromAnyGraveyard))
     is ManaRestriction.DisturbCostOnly -> !context.isAbilityActivation && context.isDisturbCast
     is ManaRestriction.CastFromNonHandOnly -> !context.isAbilityActivation && !context.isFromHand
     is ManaRestriction.TurnPermanentsFaceUpOnly -> context.isTurnFaceUpAction &&

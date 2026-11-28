@@ -42,7 +42,7 @@ val LordOfTheForsaken = card("Lord of the Forsaken") {
 
     activatedAbility {
         cost = Costs.PayLife(1)
-        effect = Effects.AddColorlessMana(1, restriction = ManaRestriction.CastFromGraveyardOnly)
+        effect = Effects.AddColorlessMana(1, restriction = ManaRestriction.CastFromGraveyardOnly())
         manaAbility = true
         timing = TimingRule.ManaAbility
     }

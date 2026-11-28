@@ -298,6 +298,61 @@
     ]
 }
 
+// Altar of the Lost
+{
+    "name": "Altar of the Lost",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact enters tapped.\n{T}: Add two mana in any combination of colors. Spend this mana only to cast spells with flashback from a graveyard.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Altar of the Lost:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddDynamicMana",
+                    "amountSource": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "allowedColors": [
+                        "WHITE",
+                        "BLUE",
+                        "BLACK",
+                        "RED",
+                        "GREEN"
+                    ],
+                    "restriction": {
+                        "type": "AllOf",
+                        "restrictions": [
+                            {
+                                "type": "SpellsWithKeywordOnly",
+                                "keyword": "FLASHBACK"
+                            },
+                            {
+                                "type": "CastFromGraveyardOnly",
+                                "anyGraveyard": true
+                            }
+                        ]
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "144",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/7/774e5322-1b41-488d-94b1-7742fbd983d4.jpg?1783940793"
+    },
+    "colorIdentityOverride": []
+}
+
 // Archangel's Light
 {
     "name": "Archangel's Light",

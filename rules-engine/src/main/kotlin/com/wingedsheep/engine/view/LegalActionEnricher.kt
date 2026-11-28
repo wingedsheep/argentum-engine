@@ -87,8 +87,15 @@ class LegalActionEnricher(
                     isFromGraveyard = gameAction.cardId in state.getZone(
                         com.wingedsheep.engine.state.ZoneKey(gameAction.playerId, com.wingedsheep.sdk.core.Zone.GRAVEYARD)
                     ),
+                    isFromAnyGraveyard = state.turnOrder.any {
+                        gameAction.cardId in state.getZone(
+                            com.wingedsheep.engine.state.ZoneKey(it, com.wingedsheep.sdk.core.Zone.GRAVEYARD)
+                        )
+                    },
                     isDisturbCast = gameAction.useAlternativeCost &&
                         gameAction.altAllows(com.wingedsheep.engine.core.AlternativeCostType.DISTURB),
+                    isFlashbackCast = gameAction.useAlternativeCost &&
+                        gameAction.altAllows(com.wingedsheep.engine.core.AlternativeCostType.FLASHBACK),
                 )
             }
             is ActivateAbility -> state.getEntity(gameAction.sourceId)?.get<CardComponent>()?.let { card ->
