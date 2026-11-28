@@ -3444,6 +3444,7 @@ Clifftop Retreat
 Cling to Dust
 Clinging Anemones
 Clinging Darkness
+Clinging Mists
 Clinquant Skymage
 Clip Wings
 Clive's Hideaway	intent: Pipeline(TopOfLibrary→exile|library)
@@ -4184,6 +4185,7 @@ Curious Obsession
 Curious Pair
 Curse Artifact	polarity: Aura>PayOrSufferEffect
 Curse of Bloodletting
+Curse of Echoes
 Curse of Exhaustion
 Curse of Hospitality	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile); polarity: Aura>GatherCardsEffect; polarity: Aura>GrantKeyword; polarity: Aura>GrantMayPlayFromExileEffect; polarity: Aura>MoveCollectionEffect
 Curse of Leeches	polarity: Aura>GainLifeEffect; polarity: Aura>LoseLifeEffect
@@ -6597,6 +6599,7 @@ Fauna Shaman
 Faunsbane Troll
 Favor of Jukai
 Favor of the Mighty
+Favor of the Woods
 Favorable Winds
 Favored Hoplite
 Favored of Iroas
@@ -8462,6 +8465,7 @@ Grim Contest
 Grim Discovery
 Grim Draugr
 Grim Flayer
+Grim Flowering
 Grim Guardian
 Grim Haruspex
 Grim Initiate
@@ -9157,6 +9161,7 @@ Hindering Touch
 Hindervines
 Hinterland Drake
 Hinterland Harbor
+Hinterland Hermit
 Hinterland Logger
 Hinterland Sanctifier
 Hire a Crew
@@ -9700,6 +9705,8 @@ Incorrigible Youths
 Increasing Ambition
 Increasing Confusion
 Increasing Devotion
+Increasing Savagery
+Increasing Vengeance
 Incremental Growth
 Incriminate	intent: Pipeline(ChosenTargets→graveyard); polarity: Pipeline(ChosenTargets→graveyard)
 Incubation // Incongruity
@@ -10982,6 +10989,7 @@ Lake-town Mariners
 Lake-town Toymaker
 Lakeshore Apothecary
 Lakeside Shack
+Lambholt Elder
 Lambholt Harrier
 Lambholt Pacifist
 Lambholt Raconteur
@@ -11504,6 +11512,7 @@ Lost in Space
 Lost in a Labyrinth
 Lost in the Maze
 Lost in the Mist	polarity: CounterEffect; polarity: MoveToZoneEffect
+Lost in the Woods
 Lost to Legend
 Lothlórien Lookout
 Lotho, Corrupt Shirriff
@@ -12624,6 +12633,7 @@ Monastery Siege
 Monastery Swiftspear
 Mondo Gecko
 Mondrak, Glory Dominus
+Mondronen Shaman
 Mongoose Lizard
 Monica Rambeau
 Monk Class
@@ -12679,6 +12689,7 @@ Moonsnare Specialist
 Moonstone Eulogist
 Moonstone Harbinger
 Moonstone, Harsh Mistress	intent: GrantMayPlayFromExileEffect; intent: Pipeline(Entity→exile)
+Moonveil Dragon
 Moonveil Regent
 Moopsy	intent: GrantKeywordEffect
 Moor Fiend
@@ -17205,6 +17216,7 @@ Shatter the Sky
 Shatter the Source
 Shattered Acolyte
 Shattered Landscape
+Shattered Perception
 Shattered Sanctum
 Shattered Seraph
 Shattered Wings
@@ -21557,6 +21569,7 @@ Vilis, Broker of Blood
 Village Bell-Ringer
 Village Messenger
 Village Rites
+Village Survivors
 Village Watch
 Villagers of Estwald
 Villainous Hideout
@@ -22551,6 +22564,7 @@ Wolf of Devil's Breach
 Wolf's Quarry
 Wolf-Skull Shaman
 Wolfbat
+Wolfbitten Captive
 Wolfir Avenger
 Wolfir Silverheart
 Wolfkin Bond
@@ -22629,6 +22643,7 @@ Wort, Boggart Auntie
 Worthy Cost
 Worthy Knight
 Wose Pathfinder
+Wrack with Madness
 Wraith, Vicious Vigilante
 Wrangle
 Wrangler of the Damned
