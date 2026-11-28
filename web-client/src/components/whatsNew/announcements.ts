@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-dka',
+    date: '2026-11-28',
+    kind: 'set',
+    setCode: 'DKA',
+    title: 'Dark Ascension is complete',
+    body:
+      "Night falls harder on Innistrad: werewolves flip and stay flipped, undying horrors come back bigger, flashback lets every spell strike twice, and fateful hour rewards the humans who fight on at 5 life or less. Drafts are tribal two-colour decks (Spirits, Zombies, Vampires, Werewolves and Humans) with a graveyard-fuelled midgame where nothing stays dead.",
+    tryIf: 'tribal synergies, graveyard recursion and gothic horror',
+  },
+  {
     id: 'set-avr',
     date: '2026-11-27',
     kind: 'set',

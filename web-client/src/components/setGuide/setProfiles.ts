@@ -452,6 +452,25 @@ export const SET_PROFILES: Readonly<Record<string, SetProfile>> = {
       { name: 'Clash', inPlay: 'Both players reveal their top card for a bonus, which also lets you send bad draws to the bottom.' },
     ],
   },
+  DKA: {
+    tagline: "Night falls on Innistrad: a tribal, graveyard-heavy format where flashback spells strike twice and undying creatures refuse to stay dead.",
+    setting: 'Innistrad as the darkness deepens, with werewolves, vampires, zombies and spirits pressing the last human strongholds.',
+    gameplay: "Games are mid-paced and grindy. Flashback lets many spells be cast again from the graveyard, so self-mill and looting are real card advantage, and undying creatures come back bigger the first time they die, which makes trades and sacrifice effects lopsided. Human Werewolves transform when a turn passes with no spells cast, so both players weigh casting something every turn. Each tribe has a gold captain that pulls towards its colour pair, and fateful hour rewards white decks that keep fighting at 5 life or less.",
+    tips: [
+      'Count flashback as card advantage: a spell you can cast twice is worth more than its front half, so self-mill is a plan, not a cost.',
+      'Mind the werewolves: cast a spell each turn while an opposing Werewolf is on its human side, or it flips and outgrows your blockers.',
+      'Respect undying: exile an undying creature or plan to kill it twice, because it returns with a +1/+1 counter the first time.',
+    ],
+    tryIf: 'tribal synergies, graveyard recursion and grindy creature combat',
+    power: 3, speed: 3, complexity: 3,
+    themes: ['tribal', 'graveyard'],
+    mechanics: [
+      { name: 'Flashback', inPlay: 'Many instants and sorceries can be cast a second time from your graveyard for their flashback cost, so milling yourself and discarding them can be a gain.' },
+      { name: 'Undying', inPlay: 'An undying creature without a +1/+1 counter returns to the battlefield with one when it dies, so it trades twice and makes sacrifice effects free.' },
+      { name: 'Transform', inPlay: 'Double-faced cards flip; Human Werewolves turn into bigger night faces when a turn passes with no spells cast and flip back when a player casts two spells in a turn.' },
+      { name: 'Fateful hour', inPlay: 'White cards get a bonus while you have 5 or less life, rewarding the deck that is behind in a race.' },
+    ],
+  },
   AVR: {
     tagline: "Angels return to Innistrad: a creature-heavy format where soulbond pairs and miracle top-decks swing games, and fliers usually decide them.",
     setting: "Innistrad after Avacyn's return from the Helvault, with humans on the offensive and demons and spirits loosed across the plane.",
