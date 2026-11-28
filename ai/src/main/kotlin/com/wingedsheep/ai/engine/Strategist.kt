@@ -863,6 +863,36 @@ class Strategist(
         return null
     }
 
+    /**
+     * A graveyard card exiled as the cost *is* the payoff when the ability's effect reads it back
+     * (`CardSource.ExiledAsCost`): Back from the Brink and Dollhouse of Horrors copy it, so the
+     * exile takes the biggest creature offered — highest mana value, then power — rather than the
+     * first one listed. The offer already lists only cards whose cost (Back from the Brink's
+     * "pay its mana cost") is affordable. Null for every other exile cost.
+     */
+    private fun exiledCardPayoffPicks(
+        state: GameState,
+        action: GameAction,
+        info: com.wingedsheep.engine.legalactions.AdditionalCostData,
+        existing: AdditionalCostPayment,
+    ): AdditionalCostPayment? {
+        val activation = action as? ActivateAbility ?: return null
+        if (info.costType != "ExileFromGraveyard" || info.validExileTargets.isEmpty()) return null
+        val card = state.getEntity(activation.sourceId)?.get<CardComponent>() ?: return null
+        val ability = simulator.cardRegistry.getCard(card.cardDefinitionId)?.script?.activatedAbilities
+            ?.firstOrNull { it.id == activation.abilityId } ?: return null
+        val readsExiled = com.wingedsheep.ai.engine.knowledge.EffectWalker.leaves(ability.effect).any {
+            it is com.wingedsheep.sdk.scripting.effects.GatherCardsEffect &&
+                it.source == com.wingedsheep.sdk.scripting.effects.CardSource.ExiledAsCost
+        }
+        if (!readsExiled) return null
+        val ranked = info.validExileTargets.sortedWith(
+            compareByDescending<EntityId> { state.getEntity(it)?.get<CardComponent>()?.manaValue ?: 0 }
+                .thenByDescending { state.getEntity(it)?.get<CardComponent>()?.baseStats?.basePower ?: 0 }
+        )
+        return existing.copy(exiledCards = ranked.take(info.exileMinCount.coerceAtLeast(1)))
+    }
+
     /** Whether [action] activates a mana ability whose cost sacrifices its own source. */
     private fun sacrificesItself(state: GameState, action: GameAction): Boolean {
         val activation = action as? ActivateAbility ?: return false
@@ -2322,7 +2352,8 @@ class Strategist(
         val discountPicks = if (info.reductionPerPick > 0 && gameAction is CastSpell && !action.hasXCost) {
             costReductionPicks(state, action, gameAction.playerId, info, existing, cheapestFirst)
         } else null
-        val primary = discountPicks ?: SelectionCostPayment.plain(info, existing, cheapestFirst, xValue) ?: when (info.costType) {
+        val payoffPicks = exiledCardPayoffPicks(state, gameAction, info, existing)
+        val primary = discountPicks ?: payoffPicks ?: SelectionCostPayment.plain(info, existing, cheapestFirst, xValue) ?: when (info.costType) {
             // Teamwork N (CR 702.194a): tap as *few* creatures as will clear the total-power
             // threshold, and among equally-few selections the *smallest* bodies — a board with a
             // 5/5 and a 1/1 paying teamwork 1 should turn the 1/1 sideways and keep the better

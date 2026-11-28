@@ -93,6 +93,7 @@ Families:
 - `AbilityCost.ExileGrantingPermanent` — Exile the permanent that granted this activated ability to the source.
 - `AbilityCost.ExileSelf` — Exile self (the permanent with this ability)
 - `AbilityCost.ExileXFromGraveyard(filter: GameObjectFilter, linkToSource: Boolean)` — Exile X cards from graveyard, where X is the ability's X value.
+- `AbilityCost.ExiledCardManaCost` — Pay the mana cost of the card this same activation exiles as a cost — Back from the Brink's "Exile a creature card from your graveyard and pay its mana cost".
 - `AbilityCost.Forage` — Forage: exile three cards from your graveyard or sacrifice a Food.
 - `AbilityCost.Free` — No cost ({0}) — the ability is free to activate
 - `AbilityCost.Loyalty(change: Int)` — Loyalty cost for planeswalker abilities

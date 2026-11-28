@@ -125,6 +125,9 @@ class CostHandler(
             )
             // Likewise lowered against the source itself; un-lowered only when the source has no
             // mana cost, which can't be paid (CR 118.6).
+            // Lowered against the chosen card once the payer picks it; until then its price is
+            // unknown, and the choice pause offers only the cards whose cost is affordable.
+            is AbilityCost.ExiledCardManaCost -> true
             is AbilityCost.OwnManaCost -> ownManaCostOrNull(state, sourceId)?.let {
                 canPayAtom(state, CostAtom.Mana(it), sourceId, controllerId, manaPool, lifePurpose, abilityContext)
             } ?: false
@@ -316,6 +319,8 @@ class CostHandler(
             is AbilityCost.AttachedPermanentManaCost -> payAtom(
                 state, attachedManaCostAtom(state, sourceId), sourceId, controllerId, manaPool, choices, abilityContext
             )
+            is AbilityCost.ExiledCardManaCost ->
+                CostPaymentResult.failure("Choose the card to exile before paying its mana cost")
             is AbilityCost.OwnManaCost -> ownManaCostOrNull(state, sourceId)?.let {
                 payAtom(state, CostAtom.Mana(it), sourceId, controllerId, manaPool, choices, abilityContext)
             } ?: CostPaymentResult.failure("It has no mana cost to pay")
@@ -2233,3 +2238,4 @@ data class CostPaymentChoices(
  */
 internal fun ownManaCostOrNull(state: GameState, sourceId: EntityId): com.wingedsheep.sdk.core.ManaCost? =
     state.getEntity(sourceId)?.get<CardComponent>()?.manaCost?.takeIf { it.symbols.isNotEmpty() }?.withXAs(0)
+

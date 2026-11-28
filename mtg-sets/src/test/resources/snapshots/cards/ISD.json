@@ -450,6 +450,64 @@
     ]
 }
 
+// Back from the Brink
+{
+    "name": "Back from the Brink",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Exile a creature card from your graveyard and pay its mana cost: Create a token that's a copy of that card. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Back from the Brink:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomExileFrom",
+                                "zone": "Graveyard",
+                                "filter": "creature"
+                            }
+                        },
+                        "ExiledCardManaCost"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ExiledAsCost",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "CreateTokenCopyOfTarget",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "gathered0"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Exile a creature card from your graveyard and pay its mana cost: Create a token that's a copy of that card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "RARE",
+        "artist": "Anthony Palumbo",
+        "flavorText": "On Innistrad, death is just a career change.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b4bba140-5c06-4542-9ae0-b2517104ab7c.jpg?1783940981"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Balefire Dragon
 {
     "name": "Balefire Dragon",

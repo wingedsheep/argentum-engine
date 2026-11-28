@@ -343,6 +343,19 @@ object Costs {
         AbilityCost.Atom(CostAtom.ExileFrom(Zone.GRAVEYARD, filter, count))
 
     /**
+     * "Exile a creature card from your graveyard and pay its mana cost" (Back from the Brink): the
+     * exile atom that picks one card matching [filter] from [zone], plus
+     * [AbilityCost.ExiledCardManaCost], which the engine prices against the card picked. Read the
+     * card at resolution with `CardSource.ExiledAsCost`.
+     */
+    fun ExileAndPayItsManaCost(
+        filter: GameObjectFilter = GameObjectFilter.Any,
+        zone: Zone = Zone.GRAVEYARD,
+    ): AbilityCost = AbilityCost.Composite(
+        listOf(AbilityCost.Atom(CostAtom.ExileFrom(zone, filter, 1)), AbilityCost.ExiledCardManaCost)
+    )
+
+    /**
      * "Exile a card from your hand" — exile [count] cards matching [filter] from the activating
      * player's hand (Q, Stacking the Deck's granted exile ability).
      */

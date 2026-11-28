@@ -2078,7 +2078,13 @@ class CastPermissionUtils(
     fun lowerReferencedManaCost(
         state: GameState,
         sourceId: EntityId,
-        cost: AbilityCost
+        cost: AbilityCost,
+        /**
+         * The cards this activation's cost exiles (`costPayment.exiledCards`), which price an
+         * [AbilityCost.ExiledCardManaCost]. Null or empty — the card isn't chosen yet — leaves it
+         * un-lowered, for the choice pause to ask and the enumerator to price per candidate.
+         */
+        exiledCards: List<EntityId>? = null,
     ): AbilityCost {
         fun lower(c: AbilityCost): AbilityCost = when (c) {
             is AbilityCost.AttachedPermanentManaCost -> {
@@ -2093,10 +2099,28 @@ class CastPermissionUtils(
             }
             is AbilityCost.OwnManaCost -> com.wingedsheep.engine.handlers.ownManaCostOrNull(state, sourceId)
                 ?.let { AbilityCost.Atom(CostAtom.Mana(it)) } ?: c
-            is AbilityCost.Composite -> AbilityCost.Composite(c.costs.map { lower(it) })
+            is AbilityCost.ExiledCardManaCost -> exiledCards?.firstOrNull()
+                ?.let { com.wingedsheep.engine.handlers.ownManaCostOrNull(state, it) }
+                ?.let { AbilityCost.Atom(CostAtom.Mana(it)) } ?: c
+            is AbilityCost.Composite -> AbilityCost.Composite(
+                c.costs.map { lower(it) }.let { lowered ->
+                    // The chosen card's price joins any mana the cost already names, so the
+                    // activation keeps one mana atom (every pricing path reads the first).
+                    if (AbilityCost.ExiledCardManaCost in c.costs) mergeManaAtoms(lowered) else lowered
+                }
+            )
             else -> c
         }
         return lower(cost)
+    }
+
+    private fun mergeManaAtoms(costs: List<AbilityCost>): List<AbilityCost> {
+        val mana = costs.mapNotNull { ((it as? AbilityCost.Atom)?.atom as? CostAtom.Mana)?.cost }
+        if (mana.size < 2) return costs
+        val merged = AbilityCost.Atom(CostAtom.Mana(mana.reduce { a, b -> a + b }))
+        val first = costs.indexOfFirst { (it as? AbilityCost.Atom)?.atom is CostAtom.Mana }
+        return costs.filterIndexed { i, it -> i == first || (it as? AbilityCost.Atom)?.atom !is CostAtom.Mana }
+            .map { if ((it as? AbilityCost.Atom)?.atom is CostAtom.Mana) merged else it }
     }
 
     fun relaxAbilityCostColorsIfAny(

@@ -921,6 +921,26 @@ sealed interface AbilityCost : TextReplaceable<AbilityCost> {
         override val description: String = "Pay its mana cost"
     }
 
+    /**
+     * Pay the mana cost of the card this same activation exiles as a cost — Back from the Brink's
+     * "Exile a creature card from your graveyard and pay its mana cost". It always sits in a
+     * [Composite] beside the `CostAtom.ExileFrom` that picks the card (`Costs.ExileAndPayItsManaCost`).
+     *
+     * The third member of the referenced-mana-cost family. [OwnManaCost] and
+     * [AttachedPermanentManaCost] name an object the board already fixes when the activation is
+     * announced; this one names an object the payer *chooses* while determining the total cost
+     * (CR 601.2f), so it can't be lowered until that choice is on the action. The engine lowers it
+     * to a plain mana [Atom] against the chosen card's printed cost (X counts as 0, CR 107.3h; a
+     * double-faced card prices its front face), offers only cards whose cost the payer can afford —
+     * never one with no mana cost (CR 118.6) — and asks which card even when only one qualifies:
+     * the choice sets the price.
+     */
+    @SerialName("ExiledCardManaCost")
+    @Serializable
+    data object ExiledCardManaCost : AbilityCost {
+        override val description: String = "pay its mana cost"
+    }
+
     /** Tap the creature this aura is attached to ({T} enchanted creature) */
     @SerialName("CostTapAttachedCreature")
     @Serializable
