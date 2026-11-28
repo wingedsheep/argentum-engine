@@ -36,6 +36,7 @@ private val CloisteredYouthFront = card("Cloistered Youth") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "8"
         artist = "Igor Kieryluk"
+        flavorText = "\"I heard her talking in her sleep—pleading, shrieking, snarling. It was not my daughter's voice. That is not my daughter.\"\n—Ekatrin, elder of Hanweir"
         imageUri = "https://cards.scryfall.io/normal/front/f/8/f8b8f0b4-71e1-4822-99a1-b1b3c2f10cb2.jpg"
     }
 }
@@ -59,6 +60,7 @@ private val UnholyFiend = card("Unholy Fiend") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "8"
         artist = "Igor Kieryluk"
+        flavorText = "The fiend tormented them by recounting the girl's memories, as if some part of her remained inside that twisted shell."
         imageUri = "https://cards.scryfall.io/normal/back/f/8/f8b8f0b4-71e1-4822-99a1-b1b3c2f10cb2.jpg"
     }
 }

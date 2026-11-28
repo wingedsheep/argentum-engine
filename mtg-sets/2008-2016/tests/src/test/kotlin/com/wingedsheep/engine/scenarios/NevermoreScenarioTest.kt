@@ -21,7 +21,7 @@ import io.kotest.matchers.shouldNotBe
  *
  * Covers the composition EntersWithChoice(CARD_NAME, NONLAND) + PlayersCantCastSpells(Player.Each)
  * keyed on the permanent's durable chosen name: only the named card is locked, for every player
- * (Nevermore's controller included), and the lock ends when Nevermore leaves.
+ * (Nevermore's controller included).
  */
 class NevermoreScenarioTest : ScenarioTestBase() {
 
