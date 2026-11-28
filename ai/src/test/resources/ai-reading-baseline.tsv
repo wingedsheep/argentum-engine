@@ -253,6 +253,7 @@ Affa Guard Hound
 Affa Protector
 Affectionate Indrik
 Afflict
+Afflicted Deserter
 Afterburner Expert
 Afterlife from the Loam
 Aftermath Analyst
@@ -487,6 +488,7 @@ Alms of the Vein
 Aloe Alchemist
 Along the Crooked Way
 Alpha Authority
+Alpha Brawl
 Alpha Deathclaw
 Alpha Kavu	timing: ModifyStatsEffect
 Alpha Myr
@@ -3286,6 +3288,7 @@ Chorus of Woe
 Chorus of the Conclave
 Chorus of the Tides
 Chosen by Heliod
+Chosen of Markov
 Christine Chapel, Combat Medic
 Chromanticore
 Chromatic Lantern
@@ -4180,6 +4183,7 @@ Curious Inquiry	polarity: Aura>GrantTriggeredAbility; polarity: Aura>ModifyStats
 Curious Obsession
 Curious Pair
 Curse Artifact	polarity: Aura>PayOrSufferEffect
+Curse of Bloodletting
 Curse of Exhaustion
 Curse of Hospitality	intent: GrantMayPlayFromExileEffect; intent: Pipeline(TopOfLibrary→exile); polarity: Aura>GatherCardsEffect; polarity: Aura>GrantKeyword; polarity: Aura>GrantMayPlayFromExileEffect; polarity: Aura>MoveCollectionEffect
 Curse of Leeches	polarity: Aura>GainLifeEffect; polarity: Aura>LoseLifeEffect
@@ -4188,6 +4192,7 @@ Curse of Opulence	polarity: Aura>CreatePredefinedTokenEffect; polarity: Aura>For
 Curse of Shaken Faith	polarity: Aura>DealDamageEffect
 Curse of Silence	polarity: Aura>GatedEffect; polarity: Aura>ModifySpellCost
 Curse of Surveillance	polarity: Aura>ForEachEffect
+Curse of Thirst
 Curse of the Swine
 Curse of the Werefox	polarity: ReflexiveTriggerEffect
 Curse-Marred Demon
@@ -4519,6 +4524,7 @@ Death in the Family
 Death or Glory
 Death to Our Enemies
 Death's Approach
+Death's Caress
 Death's Oasis
 Death's Presence
 Death's-Head Buzzard
@@ -6765,6 +6771,7 @@ Fields of Strife
 Fiend Artisan
 Fiend Binder
 Fiend Hunter
+Fiend of the Shadows
 Fiendish Duo
 Fiendish Panda
 Fiendslayer Paladin
@@ -6980,6 +6987,7 @@ Flawless Maneuver
 Flaxen Intruder
 Flayed Nim
 Flayer Drone
+Flayer of the Hatebound
 Flaying Tendrils
 Fledgling Dragon
 Fledgling Imp
@@ -8532,6 +8540,7 @@ Growth-Chamber Guardian
 Grozoth	combat: RemoveKeywordEffect; intent: RemoveKeywordEffect; timing: RemoveKeywordEffect
 Grub's Command
 Grub, Storied Matriarch
+Gruesome Discovery
 Gruesome Fate
 Gruesome Menagerie
 Gruesome Realization
@@ -8800,6 +8809,7 @@ Harried Spearguard
 Harrier Naga
 Harrier Strix
 Harrow
+Harrowing Journey
 Harsh Annotation
 Harsh Deceiver	intent: Pipeline(TopOfLibrary→?)
 Harsh Judgment
@@ -8932,6 +8942,7 @@ Heaven's Gate	intent: ForEach>ChangeColorEffect; polarity: ForEachEffect
 Heavy Fog
 Heavy Infantry
 Heavyweight Demolisher
+Heckling Fiends
 Hecteyes
 Hedge Maze
 Hedge Shredder	intent: Pipeline(?→battlefield)
@@ -8988,6 +8999,7 @@ Hellkite Punisher
 Hellkite Tyrant
 Hellkite Whelp
 Hellraiser Goblin
+Hellrider
 Hellspur Brute
 Hellspur Posse Boss
 Helm of Chatzuk	intent: GrantKeywordEffect; polarity: GrantKeywordEffect
@@ -9685,6 +9697,7 @@ Incisor Glider
 Incite Hysteria
 Incite War
 Incorrigible Youths
+Increasing Ambition
 Increasing Confusion
 Increasing Devotion
 Incremental Growth
@@ -15249,6 +15262,7 @@ Ravenous Bloodseeker
 Ravenous Chupacabra
 Ravenous Cosmozoan
 Ravenous Daggertooth
+Ravenous Demon
 Ravenous Giant
 Ravenous Gigamole
 Ravenous Harpy
@@ -18363,6 +18377,7 @@ Spiteful Hexmage
 Spiteful Motives
 Spiteful Prankster
 Spiteful Returned
+Spiteful Shadows
 Spiteful Squad
 Spiteful Visions
 Spitfire Handler
