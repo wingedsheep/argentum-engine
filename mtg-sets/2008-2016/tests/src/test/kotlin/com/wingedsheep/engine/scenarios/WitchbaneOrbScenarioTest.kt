@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 
 /**
  * Witchbane Orb (ISD #236) — {4} Artifact.
@@ -68,6 +69,31 @@ class WitchbaneOrbScenarioTest : ScenarioTestBase() {
             }
         }
 
+        test("a Curse cast at you through the stack is found on you and destroyed") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardInHand(1, "Curse of Exhaustion")
+                .withCardInHand(1, "Witchbane Orb")
+                .withLandsOnBattlefield(1, "Plains", 8)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            game.castSpellTargetingPlayer(1, "Curse of Exhaustion", 1).error shouldBe null
+            if (game.hasPendingDecision()) game.submitManaSourcesAutoPay()
+            game.resolveStack()
+            val curse = game.findPermanent("Curse of Exhaustion")!!
+            game.state.getEntity(curse)?.get<AttachedToComponent>()?.targetId shouldBe game.player1Id
+            game.state.getEntity(game.player1Id)?.get<AttachmentsComponent>()?.attachedIds shouldBe listOf(curse)
+
+            // The Curse limits its enchanted player to one spell a turn; start the Orb's turn count fresh.
+            game.state = game.state.copy(playerSpellsCastThisTurn = emptyMap())
+            game.castSpell(1, "Witchbane Orb").error shouldBe null
+            if (game.hasPendingDecision()) game.submitManaSourcesAutoPay()
+            game.resolveStack()
+
+            game.isInGraveyard(1, "Curse of Exhaustion") shouldBe true
+        }
+
         test("with nothing attached to you, the trigger does nothing") {
             val game = scenario()
                 .withPlayers("Player", "Opponent")
@@ -82,7 +108,7 @@ class WitchbaneOrbScenarioTest : ScenarioTestBase() {
             if (game.hasPendingDecision()) game.submitManaSourcesAutoPay()
             game.resolveStack()
 
-            (game.findPermanent("Witchbane Orb") != null) shouldBe true
+            game.findPermanent("Witchbane Orb") shouldNotBe null
             game.findPermanents("Curse of Exhaustion").size shouldBe 1
         }
 
@@ -96,7 +122,7 @@ class WitchbaneOrbScenarioTest : ScenarioTestBase() {
                 .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                 .build()
             withClue("targeting you is refused") {
-                (game.castSpellTargetingPlayer(2, "Curse of Exhaustion", 1).error != null) shouldBe true
+                game.castSpellTargetingPlayer(2, "Curse of Exhaustion", 1).error shouldNotBe null
             }
         }
     }
