@@ -23,7 +23,6 @@ object DarkAscensionSet : MtgSet {
     override val releaseDate = "2012-02-03"
     override val block = "Innistrad"
     override val sealedSupported = false
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
