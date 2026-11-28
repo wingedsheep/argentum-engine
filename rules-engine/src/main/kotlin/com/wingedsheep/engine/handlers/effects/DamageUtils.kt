@@ -3544,6 +3544,8 @@ object DamageUtils {
      * Preventable damage is replaced once: the first match prevents it, leaving nothing for a second
      * copy to replace (The Mindskinner's ruling). Damage that [cantBePrevented] is still dealt, so the
      * event survives every application — each matching effect mills, and the caller deals the damage.
+     * An "instead" effect ([ReplaceDamageWithMill.prevents] = false, Undead Alchemist) replaces even
+     * unpreventable damage.
      *
      * Mirrors [applyReplaceDamageWithCounters]; like it, damage-type filtering is not applied
      * (the modelled cards replace damage of any type).
@@ -3595,8 +3597,12 @@ object DamageUtils {
 
                 }
 
-                val millers = if (effect.miller == Player.You) listOf(sourceControllerId)
-                    else state.getOpponents(sourceControllerId)
+                val millers = when (effect.miller) {
+                    Player.You -> listOf(sourceControllerId)
+                    // "that player mills" — the damaged player; damage to a permanent has no one to mill.
+                    Player.TriggeringPlayer -> if (targetId in state.turnOrder) listOf(targetId) else continue
+                    else -> state.getOpponents(sourceControllerId)
+                }
                 // One mill instruction for every miller (CR 603.2c: a single milled event), its
                 // count resized by each miller's mill replacements (Bruvac) like any other mill.
                 val (milledState, millEvents) = millAsReplacementResult(
@@ -3606,7 +3612,9 @@ object DamageUtils {
                 newState = milledState
                 events += millEvents
                 applied = true
-                if (!cantBePrevented) return MillReplacement(newState, events, damagePrevented = true)
+                // An "instead" replacement (prevents = false) isn't prevention, so it replaces even
+                // damage that can't be prevented.
+                if (!cantBePrevented || !effect.prevents) return MillReplacement(newState, events, damagePrevented = true)
                 break
             }
         }

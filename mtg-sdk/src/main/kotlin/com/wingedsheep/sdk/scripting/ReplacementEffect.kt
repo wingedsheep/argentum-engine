@@ -3672,7 +3672,8 @@ data class ReplaceDamageWithCounters(
 }
 
 /**
- * Prevent matched damage and mill [multiplier] times that many cards — [miller] does the milling.
+ * Replace matched damage with a mill of [multiplier] times that many cards — [miller] does the milling;
+ * a prevention effect unless [prevents] is false.
  *
  * Models The Mindskinner (DSK): "If a source you control would deal damage to an opponent, prevent
  * that damage and each opponent mills that many cards" (the defaults), and Angel of Suffering (SNC):
@@ -3684,9 +3685,18 @@ data class ReplaceDamageWithCounters(
  * not just the damaged one — the printed "each opponent") or [Player.You]. ("The damaged player
  * mills" is [ReplaceDamageWithCounters.damagedPlayerMills].)
  *
+ * [Player.TriggeringPlayer] is "that player" — the damaged player, so the replacement declines when
+ * the damage is headed for a permanent.
+ *
  * The mill is part of the same prevention effect, not a trigger. Per both cards' rulings, damage
  * that **can't be prevented** is still dealt in full, and the mill still happens; damage that can be
  * prevented is prevented even when the library is too small to mill the full count.
+ *
+ * [prevents] = false is the "instead" form (CR 614.1a), not a prevention effect: the damage is
+ * replaced by the mill even when it can't be prevented. Undead Alchemist (ISD): "If a Zombie you
+ * control would deal combat damage to a player, instead that player mills that many cards" —
+ * `DamageEvent(recipient = AnyPlayer, source = Zombie you control, damageType = Combat)`,
+ * `miller = Player.TriggeringPlayer`, `prevents = false`.
  */
 @SerialName("ReplaceDamageWithMill")
 @Serializable
@@ -3695,7 +3705,8 @@ data class ReplaceDamageWithMill(
         recipient = Recipient.Opponent
     ),
     val miller: Player = Player.EachOpponent,
-    val multiplier: Int = 1
+    val multiplier: Int = 1,
+    val prevents: Boolean = true
 ) : ReplacementEffect {
     init {
         require(miller in SUPPORTED_MILLERS) { "ReplaceDamageWithMill.miller must be one of $SUPPORTED_MILLERS, was $miller" }
@@ -3703,9 +3714,14 @@ data class ReplaceDamageWithMill(
     }
 
     override val description: String = buildString {
-        append("If ${appliesTo.description}, prevent that damage and ")
+        append("If ${appliesTo.description}, ")
+        append(if (prevents) "prevent that damage and " else "instead ")
         append(
-            if (miller == Player.You) "you mill" else "each opponent mills"
+            when (miller) {
+                Player.You -> "you mill"
+                Player.TriggeringPlayer -> "that player mills"
+                else -> "each opponent mills"
+            }
         )
         append(if (multiplier == 2) " twice that many cards" else if (multiplier > 2) " $multiplier times that many cards" else " that many cards")
     }
@@ -3717,7 +3733,7 @@ data class ReplaceDamageWithMill(
 
     companion object {
         private val SUPPORTED_MILLERS: Set<Player> =
-            setOf(Player.EachOpponent, Player.You)
+            setOf(Player.EachOpponent, Player.You, Player.TriggeringPlayer)
     }
 }
 

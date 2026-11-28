@@ -23,6 +23,7 @@ import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.events.DamageType
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.RedirectScope
 import kotlinx.serialization.Serializable
@@ -490,8 +491,13 @@ object DamageReplacementChain {
                             Step(state, emptyList(), results = listOf(DeferredResult(d, host, controller, effect)))
                         }
                     }
-                    is ReplaceDamageWithMill -> out += Candidate(key, "$hostName — prevent damage and mill", host) {
-                        Step(state, if (disabled) listOf(d) else emptyList(), results = listOf(DeferredResult(d.copy(cantBePrevented = disabled), host, controller, effect)))
+                    is ReplaceDamageWithMill -> if (effect.miller != Player.TriggeringPlayer || d.targetId in state.turnOrder) {
+                        // An "instead" replacement (prevents = false) isn't prevention: it replaces
+                        // unpreventable damage too.
+                        val dealtAnyway = disabled && effect.prevents
+                        out += Candidate(key, if (effect.prevents) "$hostName — prevent damage and mill" else "$hostName — mill instead of damage", host) {
+                            Step(state, if (dealtAnyway) listOf(d) else emptyList(), results = listOf(DeferredResult(d.copy(cantBePrevented = dealtAnyway), host, controller, effect)))
+                        }
                     }
                     is PreventDamageByRemovingCounter -> {
                         val present = state.getEntity(d.targetId)?.get<CountersComponent>()?.getCount(effect.counterType) ?: 0
