@@ -2882,6 +2882,9 @@ object TargetPolarityAnalyzer {
                     if (hostIs == null || hostTypeGate(replacement)?.second?.let { it != hostIs } != true) {
                         readings += TargetPolarity.HARMFUL
                     }
+                // "If a source would deal damage to enchanted player, it deals double that damage
+                // instead" (Curse of Bloodletting): more damage to the host is a curse on it.
+                DamageAmplifiers.cursesHost(replacement) -> readings += TargetPolarity.HARMFUL
                 else -> readings += TargetPolarity.UNKNOWN
             }
         }

@@ -1,0 +1,1 @@
+- #TBD The AI casts Curse of Bloodletting on an opponent: a damage multiplier aimed at an Aura's host reads as a curse and a damage amplifier
