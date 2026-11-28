@@ -163,10 +163,18 @@ data object TokenComponent : Component
  * [com.wingedsheep.sdk.scripting.predicates.StatePredicate.CreatedBySource] filter against the
  * effect's source. Tetravus uses it to reabsorb only the Tetravite tokens it minted.
  *
+ * Also read by [com.wingedsheep.sdk.scripting.targets.EffectTarget.TokenCreator] — the token's own
+ * abilities naming "the permanent that created it" (Gutter Grime's Oozes).
+ *
  * @property creatorId The entity id of the permanent that created this token.
+ * @property creatorGeneration The creator's object generation when it made the token, so a creator
+ *   that left the battlefield (and maybe came back as a new object, CR 400.7) no longer counts.
  */
 @Serializable
-data class CreatedByComponent(val creatorId: com.wingedsheep.sdk.model.EntityId) : Component
+data class CreatedByComponent(
+    val creatorId: com.wingedsheep.sdk.model.EntityId,
+    val creatorGeneration: Long? = null,
+) : Component
 
 /**
  * Marks a token as **embalmed** — created by a resolving embalm ability (CR 702.128b). Stamped by

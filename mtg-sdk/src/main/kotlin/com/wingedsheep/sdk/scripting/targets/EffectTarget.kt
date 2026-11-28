@@ -114,6 +114,24 @@ sealed interface EffectTarget {
     }
 
     /**
+     * TOKEN CREATOR: the permanent that created the source token — "Gutter Grime" in an Ooze
+     * token's "This token's power and toughness are each equal to the number of slime counters on
+     * Gutter Grime." The creator is the one recorded when the token was minted by a
+     * `CreateToken` / `CreateTokenCopyOfTarget` with `stampCreator = true`, so with two copies of
+     * the creator on the battlefield each token reads only its own. Resolves only while the creator
+     * is still that same object on the battlefield (CR 400.7): once it leaves, this names nothing
+     * and an amount read off it is 0 (Gutter Grime ruling — its Oozes become 0/0).
+     *
+     * Closest neighbours: [Self] names the token itself, and [GrantingSource] names the permanent
+     * whose static *granted* an ability — neither carries the creation-time provenance link.
+     */
+    @SerialName("TokenCreator")
+    @Serializable
+    data object TokenCreator : SingleEntity {
+        override val description: String = "the permanent that created this token"
+    }
+
+    /**
      * The controller of the target (used for effects like "its controller gains 4 life").
      *
      * Resolves through the projected controller (Layer-2 control changes are honored) and, once

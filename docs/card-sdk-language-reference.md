@@ -6306,6 +6306,15 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   "each other creature you control enters with … additional +1/+1 counters equal to **Arwen's
   toughness**" is `count = DynamicAmounts.toughnessOf(EffectTarget.GrantingSource)`, read as the
   creature enters.
+- `EffectTarget.TokenCreator` — the permanent that **created the source token**, for a token's own
+  ability that names its maker: Gutter Grime's Ooze, "This token's power and toughness are each equal
+  to the number of slime counters on Gutter Grime" is a token `SetBasePowerToughnessDynamicStatic`
+  over `DynamicAmounts.countersOn(EffectTarget.TokenCreator, CounterType.SLIME)`. The link is the
+  provenance stamp a `CreateToken` / `CreateTokenCopyOfTarget` with **`stampCreator = true`** records
+  (creator id + object generation), so set that flag on the creating effect — without it this names
+  nothing. With two copies of the creator each token reads only its own. It resolves only while the
+  creator is still that same object on the battlefield (CR 400.7): once the creator leaves — even if
+  it comes back — it names nothing and an amount read off it is 0, so Gutter Grime's Oozes become 0/0.
 - `EffectTarget.TriggeringEntity` — the entity that caused the trigger to fire.
 - `EffectTarget.TargetingSource` — "that spell or ability" in a becomes-the-target trigger: the stack
   object that did the targeting (`TriggerContext.targetingSourceEntityId`), where `TriggeringEntity` is

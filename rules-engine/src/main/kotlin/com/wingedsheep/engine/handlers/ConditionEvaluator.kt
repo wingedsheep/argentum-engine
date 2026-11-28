@@ -1227,6 +1227,7 @@ class ConditionEvaluator(
         EffectTarget.AttachedToTriggeringPermanent,
         is EffectTarget.AttackedBy,
         EffectTarget.ChosenCreature,
+        EffectTarget.TokenCreator,
         EffectTarget.Controller,
         EffectTarget.ControllerOfDamageSource,
         EffectTarget.DamageSource,
