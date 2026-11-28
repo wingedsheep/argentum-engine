@@ -1482,6 +1482,23 @@ class TriggerDetector(
         state: GameState,
     ): Boolean = watched == null || entityId !in state.getBattlefield() || state.objectRef(entityId) == watched
 
+    /**
+     * Whether [event] is a cast the watched entity of a spell-cast delayed trigger scopes in: a
+     * watched player is the caster; a watched card is the spell itself, still the object that card
+     * became by its next zone change when [watched] recorded its identity.
+     */
+    private fun isWatchedCast(
+        event: EngineGameEvent,
+        watchedEntityId: EntityId,
+        watched: com.wingedsheep.engine.state.ObjectRef?,
+        state: GameState,
+    ): Boolean {
+        val cast = event as? SpellCastEvent ?: return false
+        if (watchedEntityId in state.turnOrder) return cast.casterId == watchedEntityId
+        return cast.spellEntityId == watchedEntityId &&
+            (watched == null || state.successorZone(watched)?.zoneType == Zone.STACK)
+    }
+
     private fun matchesEventForWatchedEntity(
         spec: com.wingedsheep.sdk.scripting.TriggerSpec,
         event: EngineGameEvent,
@@ -1511,13 +1528,16 @@ class TriggerDetector(
             // Rediscover the Way chapter III) are filter-scoped: delegate to the canonical
             // spell-cast matcher so the spell filter and casting-player predicate are honored.
             // A watched entity on a cast trigger is the one player it watches — "that player gets
-            // two rad counters whenever they cast a spell" (Nuka-Nuke Launcher).
+            // two rad counters whenever they cast a spell" (Nuka-Nuke Launcher) — or the one card
+            // it watches: "when you cast that card this turn" (Havengul Lich) fires only for the
+            // spell that card became by its very next zone change (CR 400.7), so the same card
+            // cast again after another move is a new object and doesn't match.
             // "When you cast a spell with the chosen name for the first time this turn" (Medomai's
             // Prophecy III) is the ordinal form: the canonical matcher counts the caster's matching
             // casts this turn, including any made before the delayed trigger existed.
             is com.wingedsheep.sdk.scripting.EventPattern.SpellCastEvent,
             is com.wingedsheep.sdk.scripting.EventPattern.NthSpellCastEvent ->
-                (watchedEntityId == null || (event as? SpellCastEvent)?.casterId == watchedEntityId) &&
+                (watchedEntityId == null || isWatchedCast(event, watchedEntityId, watchedObject, state)) &&
                     matcher.matchesTrigger(specEvent, spec.binding, event, sourceId, controllerId, state)
             is com.wingedsheep.sdk.scripting.EventPattern.SpellCopiedEvent ->
                 matcher.matchesTrigger(specEvent, spec.binding, event, sourceId, controllerId, state)

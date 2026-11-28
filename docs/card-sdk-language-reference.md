@@ -11235,7 +11235,12 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
     target scopes the **caster** ("that player gets two rad counters whenever they cast a spell" —
     Nuka-Nuke Launcher: `trigger = Triggers.anyPlayer.casts(), watchedTarget =
     PlayerRef(Player.DefendingPlayer)`; the spell filter still applies, and the spell stays the
-    triggering entity, its caster `Player.TriggeringPlayer`); the spec's `GameObjectFilter` is *not* applied — the
+    triggering entity, its caster `Player.TriggeringPlayer`), and a **card** watched target scopes
+    the **spell** that card becomes — "when you cast **that card** this turn" (**Havengul Lich**:
+    `trigger = Triggers.you.casts(), watchedTarget = <the targeted graveyard card>, fireOnce = true`).
+    The card is watched as the object it was when the trigger was created (CR 400.7): only the
+    spell it became by its very next zone change matches, so the same card cast after it left that
+    zone some other way doesn't fire it; the spec's `GameObjectFilter` is *not* applied — the
     watched entity is the whole scope.
     `CreatureDealtDamageBySourceDiesEvent` (`Triggers.self.damagedCreatureDies(dying)`) is scoped on
     the **damaging** creature: "whenever a creature dealt damage by **that creature** dies this turn,
