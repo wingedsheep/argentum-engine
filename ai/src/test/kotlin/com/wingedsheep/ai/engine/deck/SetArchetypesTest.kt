@@ -1026,6 +1026,32 @@ class SetArchetypesTest : StringSpec({
             "Humans Aggro" to listOf("Human"),
         )
     }
+
+    "Dark Ascension pairs its four gold signposts' tribes with six mechanic-led decks" {
+        val synergies = requireNotNull(SetArchetypes.getForSet("dka"))
+
+        synergies.setName shouldBe "Dark Ascension"
+        synergies.archetypes.map { it.name } shouldContainExactly listOf(
+            "Spirits",
+            "Zombies",
+            "Vampires",
+            "Werewolves",
+            "Humans",
+            "Tokens",
+            "Flashback Spells",
+            "Undying",
+            "Aggro",
+            "Self-Mill",
+        )
+        synergies.archetypes.map { it.colors.toSet() } shouldContainExactly ALL_COLOR_PAIRS.toList()
+        synergies.archetypes.filter { it.creatureTypes.isNotEmpty() }.associate { it.name to it.creatureTypes } shouldBe mapOf(
+            "Spirits" to listOf("Spirit"),
+            "Zombies" to listOf("Zombie"),
+            "Vampires" to listOf("Vampire"),
+            "Werewolves" to listOf("Werewolf", "Wolf"),
+            "Humans" to listOf("Human"),
+        )
+    }
 })
 
 private val ALL_COLOR_PAIRS = linkedSetOf(

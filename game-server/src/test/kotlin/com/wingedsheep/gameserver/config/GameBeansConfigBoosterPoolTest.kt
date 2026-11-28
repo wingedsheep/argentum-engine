@@ -1434,6 +1434,47 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         (dfcRares.toDouble() / packs) shouldBe ((1.0 / 6) plusOrMinus 0.03)
     }
 
+    test("Dark Ascension draft pack opens a double-faced card of any rarity beside 9 commons, 3 uncommons and a rare") {
+        // Draft Booster (collation per taw/magic-search-engine data/boosters/dka/draft.yaml): 9 single-faced commons,
+        // 3 single-faced uncommons, a single-faced rare or mythic, and an extra double-faced slot (sheet: each common
+        // x12, each uncommon x6, each rare x2, each mythic x1), plus an Innistrad basic (supplied at deck building).
+        // The foil replacing a common in 9 packs of 40 is cosmetic and not modelled.
+        val dka = boosterGenerator.availableSets["DKA"].shouldNotBeNull()
+        dka.fullyImplemented shouldBe true
+        dka.boosterStrategy.shouldBeInstanceOf<DedicatedSlotBooster>()
+        val eligible = dka.cards.filter { it.metadata.inBooster && !it.typeLine.isBasicLand }
+        // Scryfall `set:dka is:booster -t:basic`.
+        eligible.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 64, Rarity.UNCOMMON to 44, Rarity.RARE to 38, Rarity.MYTHIC to 12,
+        )
+        // Scryfall `set:dka is:dfc`: 4 commons, 4 uncommons, 3 rares, 2 mythics.
+        eligible.filter { it.isDoubleFaced }.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 4, Rarity.UNCOMMON to 4, Rarity.RARE to 3, Rarity.MYTHIC to 2,
+        )
+        val eligibleNames = eligible.mapTo(hashSetOf()) { it.name }
+        val dfcRarities = mutableMapOf<Rarity, Int>()
+        val packs = 4000
+        repeat(packs) {
+            val pack = boosterGenerator.generateBooster("DKA")
+            val (dfcs, singles) = pack.partition { it.isDoubleFaced }
+            withClue("pack ${pack.map { it.name }}") {
+                pack.size shouldBe 14
+                pack.map { it.name }.toSet().size shouldBe 14
+                pack.all { it.name in eligibleNames } shouldBe true
+                dfcs.size shouldBe 1
+                singles.count { it.metadata.rarity == Rarity.COMMON } shouldBe 9
+                singles.count { it.metadata.rarity == Rarity.UNCOMMON } shouldBe 3
+                singles.count { it.metadata.rarity == Rarity.RARE || it.metadata.rarity == Rarity.MYTHIC } shouldBe 1
+            }
+            dfcRarities.merge(dfcs.single().metadata.rarity, 1, Int::plus)
+        }
+        // 48 : 24 : 6 : 2 out of 80.
+        (dfcRarities.getOrDefault(Rarity.COMMON, 0).toDouble() / packs) shouldBe (0.6 plusOrMinus 0.03)
+        (dfcRarities.getOrDefault(Rarity.UNCOMMON, 0).toDouble() / packs) shouldBe (0.3 plusOrMinus 0.03)
+        (dfcRarities.getOrDefault(Rarity.RARE, 0).toDouble() / packs) shouldBe (0.075 plusOrMinus 0.015)
+        (dfcRarities.getOrDefault(Rarity.MYTHIC, 0).toDouble() / packs) shouldBe (0.025 plusOrMinus 0.01)
+    }
+
     test("Eldritch Moon draft pack opens a double-faced or meld card beside 9 commons, 3 uncommons and a rare") {
         // Draft Booster (collation per mtg.wtf/pack/emn-draft, after lethe.xyz): 8 single-faced commons, 3 uncommons,
         // a single-faced rare or mythic, one double-faced-or-meld common or uncommon (sheet: each common x5, each
