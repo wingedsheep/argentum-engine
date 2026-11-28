@@ -3,7 +3,12 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
+import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
+import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.mtg.sets.definitions.dka.cards.CurseOfEchoes
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -91,6 +96,73 @@ class CurseOfEchoesScenarioTest : ScenarioTestBase() {
             }
             game.getLifeTotal(2) shouldBe 17
             game.getLifeTotal(1) shouldBe 20
+        }
+        test("three players: each other player copies in turn order from the active player, and the copies resolve first") {
+            val d = GameTestDriver()
+            fun GameTestDriver.topSpellController() =
+                state.getEntity(getTopOfStack()!!)?.get<SpellOnStackComponent>()?.casterId
+            d.registerCards(TestCards.all + listOf(CurseOfEchoes))
+            // p[1] is the enchanted player and the active player; p[0] controls the Curse.
+            val p = d.initMultiplayer(List(3) { Deck.of("Mountain" to 40) }, startingPlayer = 1)
+            d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+            d.activePlayer shouldBe p[1]
+            val curse = d.putPermanentOnBattlefield(p[0], "Curse of Echoes")
+            d.replaceState(d.state.updateEntity(curse) { it.with(AttachedToComponent(p[1])) })
+
+            val bolt = d.putCardInHand(p[1], "Lightning Bolt")
+            d.giveMana(p[1], Color.RED, 1)
+            d.castSpell(p[1], bolt, targets = listOf(p[0])).error shouldBe null
+            var guard = 0
+            while (d.pendingDecision == null && d.state.stack.size > 1 && guard++ < 20) {
+                d.passPriority(d.state.priorityPlayerId!!)
+            }
+
+            // APNAP from the active player p[1], skipping the caster: p[2] first, then p[0].
+            for (copier in listOf(p[2], p[0])) {
+                val ask = d.pendingDecision
+                withClue("the next may-copy prompt belongs to ${'$'}copier") {
+                    (ask is YesNoDecision) shouldBe true
+                    ask!!.playerId shouldBe copier
+                }
+                d.submitYesNo(copier, true).error shouldBe null
+                val retarget = d.pendingDecision
+                withClue("the copier picks the copy's targets") {
+                    (retarget is ChooseTargetsDecision) shouldBe true
+                    retarget!!.playerId shouldBe copier
+                }
+                d.submitTargetSelection(copier, listOf(p[1])).error shouldBe null
+            }
+            d.pendingDecision shouldBe null
+
+            withClue("two copies above the original; the last copier's copy is on top") {
+                d.state.stack.size shouldBe 3
+                d.topSpellController() shouldBe p[0]
+            }
+
+            fun resolveTop() {
+                val size = d.state.stack.size
+                var g = 0
+                while (d.state.stack.size == size && g++ < 10) d.passPriority(d.state.priorityPlayerId!!)
+            }
+
+            resolveTop()
+            withClue("p[0]'s copy resolves first, hitting the caster") {
+                d.getLifeTotal(p[1]) shouldBe 17
+                d.getLifeTotal(p[0]) shouldBe 20
+                d.topSpellController() shouldBe p[2]
+            }
+            resolveTop()
+            withClue("p[2]'s copy resolves next; the original still waits") {
+                d.getLifeTotal(p[1]) shouldBe 14
+                d.getLifeTotal(p[0]) shouldBe 20
+                d.topSpellController() shouldBe p[1]
+            }
+            resolveTop()
+            withClue("the original resolves last") {
+                d.state.stack.size shouldBe 0
+                d.getLifeTotal(p[0]) shouldBe 17
+                d.getLifeTotal(p[2]) shouldBe 20
+            }
         }
     }
 }

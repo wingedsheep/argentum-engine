@@ -1,5 +1,7 @@
 package com.wingedsheep.ai.engine.knowledge
 
+import com.wingedsheep.sdk.scripting.predicates.StatePredicate
+import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.engine.handlers.effects.composite.asConditional
 import com.wingedsheep.engine.handlers.effects.composite.asMayDecide
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -270,6 +272,25 @@ object EffectWalker {
     }
 
     /**
+     * Whether [trigger]'s triggering entity is always a creature an opponent controls: "whenever a
+     * creature attacks you or a planeswalker you control" (Lost in the Woods) — only an opponent's
+     * creature can attack us — or an attack or block trigger filtered to an opponent's creatures.
+     * An effect aimed at "that creature" then lands on the opponent's side, as one aimed at a
+     * target creature an opponent controls would.
+     */
+    fun triggersOnOpposingCreature(trigger: TriggeredAbility): Boolean {
+        if (trigger.binding != TriggerBinding.ANY && trigger.binding != TriggerBinding.OTHER) return false
+        val filter = when (val pattern = trigger.trigger) {
+            is EventPattern.AttackEvent -> pattern.filter
+            is EventPattern.BlockEvent -> pattern.filter.takeUnless { pattern.batch }
+            else -> null
+        } ?: return false
+        return filter.controllerPredicate == ControllerPredicate.ControlledByOpponent ||
+            (trigger.trigger is EventPattern.AttackEvent &&
+                StatePredicate.IsAttackingYouOrYourPlaneswalkers in filter.statePredicates)
+    }
+
+    /**
      * [trigger]'s effect as its readers should see it: when the payoff draws from the trigger's
      * captured collection ([IterationSpace.TRIGGER_CAPTURED_COLLECTION]) and the trigger's event
      * says what that collection holds, the effect with a stand-in gather of those objects in front.
@@ -285,25 +306,6 @@ object EffectWalker {
      *
      * Events whose captured set the stand-in can't name are left as they were.
      */
-    /**
-     * Whether [trigger]'s triggering entity is always a creature an opponent controls: "whenever a
-     * creature attacks you or a planeswalker you control" (Lost in the Woods) — only an opponent's
-     * creature can attack us — or an attack or block trigger filtered to an opponent's creatures.
-     * An effect aimed at "that creature" then lands on the opponent's side, as one aimed at a
-     * target creature an opponent controls would.
-     */
-    fun triggersOnOpposingCreature(trigger: TriggeredAbility): Boolean {
-        if (trigger.binding != TriggerBinding.ANY && trigger.binding != TriggerBinding.OTHER) return false
-        val filter = when (val pattern = trigger.trigger) {
-            is EventPattern.AttackEvent -> pattern.filter
-            is EventPattern.BlockEvent -> pattern.filter
-            else -> null
-        } ?: return false
-        return filter.controllerPredicate == com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByOpponent ||
-            (trigger.trigger is EventPattern.AttackEvent &&
-                com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsAttackingYouOrYourPlaneswalkers in filter.statePredicates)
-    }
-
     fun readableEffect(trigger: TriggeredAbility): Effect {
         val standIn = capturedStandIn(trigger.trigger) ?: return trigger.effect
         if (leaves(trigger.effect).none(::readsCaptured)) return trigger.effect
