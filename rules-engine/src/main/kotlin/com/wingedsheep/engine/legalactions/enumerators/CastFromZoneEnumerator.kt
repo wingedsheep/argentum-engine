@@ -1295,10 +1295,11 @@ class CastFromZoneEnumerator(
                     }
                 ) continue
 
-                // Additional cost bundled with the permission (e.g. Alien Symbiosis: "by
-                // discarding a card in addition to paying its other costs").
+                // The card's own printed additional costs (Skaab Ruinator's "exile three creature
+                // cards from your graveyard") plus any cost bundled with the permission (Alien
+                // Symbiosis: "by discarding a card in addition to paying its other costs").
                 val (zoneAdditionalCostInfo, canPayZoneAdditionalCost) = presentOwedCosts(
-                    context, cardId, listOfNotNull(zoneCastAbility.additionalCost)
+                    context, cardId, cardDef.script.additionalCosts + listOfNotNull(zoneCastAbility.additionalCost)
                 )
 
                 val sourceZoneName = zone.name

@@ -1637,6 +1637,176 @@
     ]
 }
 
+// Civilized Scholar
+{
+    "name": "Civilized Scholar",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Advisor",
+    "oracleText": "{T}: Draw a card, then discard a card. If a creature card is discarded this way, untap this creature, then transform it.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Civilized Scholar:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "prompt": "Choose a card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "selected2",
+                                    "filter": "creature"
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "TapUntap",
+                                        "target": "Self",
+                                        "tap": false
+                                    },
+                                    "Transform"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Draw a card, then discard a card. If a creature card is discarded this way, untap this creature, then transform it."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Homicidal Brute",
+        "manaCost": "",
+        "typeLine": "Creature — Human Mutant",
+        "oracleText": "At the beginning of your end step, if this creature didn't attack this turn, tap this creature, then transform it.",
+        "creatureStats": {
+            "power": 5,
+            "toughness": 1
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Homicidal Brute:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "END"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "TapUntap",
+                                "target": "Self"
+                            },
+                            "Transform"
+                        ]
+                    },
+                    "interveningIf": {
+                        "type": "Not",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "AttackedThisTurn"
+                                ]
+                            }
+                        }
+                    },
+                    "descriptionOverride": "At the beginning of your end step, if this creature didn't attack this turn, tap this creature, then transform it."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "47",
+            "rarity": "UNCOMMON",
+            "artist": "Michael C. Hayes",
+            "flavorText": "For a moment his basest desires run free, unshackled by reason or conscience.",
+            "imageUri": "https://cards.scryfall.io/normal/back/7/b/7bf864db-4754-433d-9d77-6695f78f6c09.jpg?1783940983"
+        },
+        "colorIdentityOverride": [
+            "BLUE",
+            "RED"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "UNCOMMON",
+        "artist": "Michael C. Hayes",
+        "flavorText": "\"Me, angry? Of course not. Thanks to my research, I'm above such petty emotions now.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7bf864db-4754-433d-9d77-6695f78f6c09.jpg?1783940983",
+        "rulings": [
+            {
+                "date": "2011-09-22",
+                "text": "You don't have priority between untapping Civilized Scholar and transforming it. You can't activate the draw-and-discard ability again, for example."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "If Civilized Scholar attacks, and later in the turn (but before the beginning of your end step), it transforms, Homicidal Brute's last ability won't trigger. This is because the creature attacked that turn, even if had its other face up at the time."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "You'll tap and transform Homicidal Brute even if it couldn't attack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Claustrophobia
 {
     "name": "Claustrophobia",
@@ -1753,6 +1923,91 @@
     "colorIdentityOverride": [
         "WHITE",
         "RED"
+    ]
+}
+
+// Cloistered Youth
+{
+    "name": "Cloistered Youth",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human",
+    "oracleText": "At the beginning of your upkeep, you may transform this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cloistered Youth:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": "Transform"
+                },
+                "descriptionOverride": "At the beginning of your upkeep, you may transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Unholy Fiend",
+        "manaCost": "",
+        "typeLine": "Creature — Horror",
+        "oracleText": "At the beginning of your end step, you lose 1 life.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Unholy Fiend:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "END"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "Controller"
+                    },
+                    "descriptionOverride": "At the beginning of your end step, you lose 1 life."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "8",
+            "rarity": "UNCOMMON",
+            "artist": "Igor Kieryluk",
+            "imageUri": "https://cards.scryfall.io/normal/back/f/8/f8b8f0b4-71e1-4822-99a1-b1b3c2f10cb2.jpg"
+        },
+        "colorIdentityOverride": [
+            "WHITE",
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f8b8f0b4-71e1-4822-99a1-b1b3c2f10cb2.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 
@@ -2753,6 +3008,84 @@
     ]
 }
 
+// Divine Reckoning
+{
+    "name": "Divine Reckoning",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each player chooses a creature they control. Destroy the rest.\nFlashback {5}{W}{W} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{5}{W}{W}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "creature"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "ChooseOnePerCategory",
+                    "from": "gathered0",
+                    "categories": [
+                        {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ]
+                        }
+                    ],
+                    "storeAs": "kept1"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "gathered0",
+                    "collectionFilter": {
+                        "type": "ExcludeOtherCollection",
+                        "otherCollectionName": "kept1"
+                    },
+                    "storeMatching": "matching2"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "matching2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "RARE",
+        "artist": "Greg Staples",
+        "flavorText": "Survival of the purest.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/446ea3a4-206a-4097-87c1-c04bb7812972.jpg?1783940996",
+        "rulings": [
+            {
+                "date": "2011-09-22",
+                "text": "Starting with the player whose turn it is, each player chooses a creature in turn order. Players will know the choice of each player who chose before them."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Doomed Traveler
 {
     "name": "Doomed Traveler",
@@ -3534,6 +3867,111 @@
     ]
 }
 
+// Frightful Delusion
+{
+    "name": "Frightful Delusion",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell unless its controller pays {1}. That player discards a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "CaptureControllers",
+                    "from": "gathered0",
+                    "storeAs": "controllers1"
+                },
+                {
+                    "type": "Counter",
+                    "condition": {
+                        "type": "CounterCondition.UnlessPaysMana",
+                        "cost": "{1}"
+                    }
+                },
+                {
+                    "type": "ForEachCapturedController",
+                    "collection": "gathered0",
+                    "originalCollection": "gathered0",
+                    "controllerSnapshot": "controllers1",
+                    "countVariable": "count3",
+                    "effects": [
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "artist": "Anthony Palumbo",
+        "flavorText": "Whether he actually exists is in question, but the terror she feels is excruciatingly real.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/38c9ba98-90b4-4c28-9eef-a4fe0913b921.jpg?1783940974",
+        "rulings": [
+            {
+                "date": "2011-09-22",
+                "text": "You must target a spell in order to cast Frightful Delusion. You can't cast it without a legal target just to make a player discard a card."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "The player discards a card even if they pay {1}."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Furor of the Bitten
 {
     "name": "Furor of the Bitten",
@@ -4254,6 +4692,65 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Ghostly Possession
+{
+    "name": "Ghostly Possession",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature has flying.\nPrevent all combat damage that would be dealt to and dealt by enchanted creature.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": {
+                            "statePredicates": [
+                                "IsAttachedToBySource"
+                            ]
+                        }
+                    },
+                    "damageType": "DamageCombat"
+                }
+            },
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "source": {
+                        "statePredicates": [
+                            "IsAttachedToBySource"
+                        ]
+                    },
+                    "damageType": "DamageCombat"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "artist": "Howard Lyon",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c3f048d9-ca13-485d-ad92-de4695b7dc18.jpg?1783940993"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -6237,6 +6734,116 @@
     ]
 }
 
+// Ludevic's Test Subject
+{
+    "name": "Ludevic's Test Subject",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Lizard Egg",
+    "oracleText": "Defender\n{1}{U}: Put a hatchling counter on this creature. Then if there are five or more hatchling counters on it, remove all of them and transform it.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ludevic's Test Subject:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "HATCHLING",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": "HATCHLING"
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 5
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "RemoveAllCountersOfType",
+                                        "counterType": "HATCHLING",
+                                        "target": "Self"
+                                    },
+                                    "Transform"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Put a hatchling counter on this creature. Then if there are five or more hatchling counters on it, remove all of them and transform it."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Ludevic's Abomination",
+        "manaCost": "",
+        "typeLine": "Creature — Lizard Horror",
+        "oracleText": "Trample",
+        "creatureStats": {
+            "power": 13,
+            "toughness": 13
+        },
+        "keywords": [
+            "TRAMPLE"
+        ],
+        "metadata": {
+            "collectorNumber": "64",
+            "rarity": "RARE",
+            "artist": "Nils Hamm",
+            "flavorText": "After several frustrating experiments, the visionary Ludevic realized he needed to create a monster that fed on torch-wielding mobs.",
+            "imageUri": "https://cards.scryfall.io/normal/back/e/b/ebf5e16f-a8bd-419f-b5ca-8c7fce09c4f1.jpg?1783940976"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "RARE",
+        "artist": "Nils Hamm",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/ebf5e16f-a8bd-419f-b5ca-8c7fce09c4f1.jpg?1783940976"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Lumberknot
 {
     "name": "Lumberknot",
@@ -6858,6 +7465,89 @@
     ]
 }
 
+// Mindshrieker
+{
+    "name": "Mindshrieker",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Spirit Bird",
+    "oracleText": "Flying\n{2}: Target player mills a card. This creature gets +X/+X until end of turn, where X is the milled card's mana value.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mindshrieker:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": "TargetPlayer",
+                                "isMill": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "TargetPlayer"
+                            }
+                        },
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "StoredCardManaValue",
+                                "collectionName": "gathered0"
+                            },
+                            "toughnessModifier": {
+                                "type": "StoredCardManaValue",
+                                "collectionName": "gathered0"
+                            },
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "RARE",
+        "artist": "Dave Kendall",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/ab1e52af-6746-4ec6-afbf-008594c874f8.jpg?1783940971"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Moan of the Unhallowed
 {
     "name": "Moan of the Unhallowed",
@@ -7182,6 +7872,106 @@
     ]
 }
 
+// Murder of Crows
+{
+    "name": "Murder of Crows",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying\nWhenever another creature dies, you may draw a card. If you do, discard a card.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Murder of Crows:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "rarity": "UNCOMMON",
+        "artist": "Drew Baker",
+        "flavorText": "Even more than carrion, they crave the last words of the dying.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f914f7e4-06fc-4943-8597-b7f834938c00.jpg?1783940968",
+        "rulings": [
+            {
+                "date": "2018-03-16",
+                "text": "If another creature dies at the same time as Murder of Crows, its last ability triggers."
+            },
+            {
+                "date": "2018-03-16",
+                "text": "You can't do anything in between drawing a card and discarding a card, including casting or cycling the card you drew."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Nephalia Drownyard
 {
     "name": "Nephalia Drownyard",
@@ -7270,6 +8060,70 @@
     "colorIdentityOverride": [
         "BLACK",
         "BLUE"
+    ]
+}
+
+// Nevermore
+{
+    "name": "Nevermore",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "As this enchantment enters, choose a nonland card name.\nSpells with the chosen name can't be cast.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "PlayersCantCastSpells",
+                "affected": "Each",
+                "spellFilter": {
+                    "cardPredicates": [
+                        "NameEqualsChosenComponent"
+                    ]
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CARD_NAME",
+                "cardNamePool": "NONLAND"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "rarity": "RARE",
+        "artist": "Jason A. Engle",
+        "flavorText": "\"By the law of Avacyn, the following thoughts, words, and deeds are henceforth disallowed.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/67b610fe-36ee-4d58-8ed4-04e7a12587b2.jpg?1783940989",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "If you name one of the faces of a modal double-faced card, players may still play the face you didn't name. (Players can never cast the back face of a transforming double-faced card)"
+            },
+            {
+                "date": "2011-09-22",
+                "text": "No one can cast spells or activate abilities between the time a card is named and the time that Nevermore's ability starts to work."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "Spells with the chosen name that somehow happen to already be on the stack when Nevermore enters are not affected by Nevermore's ability."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "Although the named card can't be cast, it can still be put onto the battlefield by a spell or ability (if it's a permanent card)."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "You can name either half of a split card, but not both. If you do so, that half (and both halves, if the split card has fuse) can't be cast. The other half is unaffected."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "The named card can be cast again once Nevermore leaves the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -7597,6 +8451,61 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Paraselene
+{
+    "name": "Paraselene",
+    "manaCost": "{2}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy all enchantments. You gain 1 life for each enchantment destroyed this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "enchantment"
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy",
+                            "storeMovedAs": "stored0"
+                        }
+                    ]
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "VariableReference",
+                        "variableName": "stored0_count"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Yee",
+        "flavorText": "\"Moonlight has a way of showing all things as they truly are—for better or for worse.\"\n—Zilla of Lambholt",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/406380ab-2695-4084-99a5-f5560304f8cb.jpg?1783940989"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -8253,6 +9162,58 @@
     "colorIdentityOverride": []
 }
 
+// Runic Repetition
+{
+    "name": "Runic Repetition",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target exiled card with flashback you own to your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Hand"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "kw:flashback own:you",
+                    "zone": "Exile"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"What some call obsession, I call the quest for perfection.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/53e47ba6-3a55-41b4-b8fe-580041669408.jpg?1783940967",
+        "rulings": [
+            {
+                "date": "2011-09-22",
+                "text": "The card could have been exiled for any reason, not just because it was cast using flashback."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "An effect that gives flashback to an instant or sorcery card in your graveyard stops applying once that card has left the stack. The card won't have flashback while exiled and can't be the target of Runic Repetition (unless it naturally has flashback)."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "A card that's exiled face down doesn't have any characteristics or abilities, so it can't be the target of Runic Repetition."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Scourge of Geier Reach
 {
     "name": "Scourge of Geier Reach",
@@ -8810,6 +9771,61 @@
         "artist": "Volkan Baǵa",
         "flavorText": "\"Three heads, six arms, and some armor grafts are better than . . . the normal numbers of those things.\"\n—Stitcher Geralf",
         "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c1134a5-5434-4733-812b-3587b1817813.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Skaab Ruinator
+{
+    "name": "Skaab Ruinator",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Creature — Zombie Horror",
+    "oracleText": "As an additional cost to cast this spell, exile three creature cards from your graveyard.\nFlying\nYou may cast this card from your graveyard.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Graveyard"
+                ]
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomExileFrom",
+                    "zone": "Graveyard",
+                    "filter": "creature",
+                    "count": 3
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/44c40cdc-a11a-47df-b902-d8fbe9014d03.jpg?1783940965",
+        "rulings": [
+            {
+                "date": "2011-09-22",
+                "text": "Skaab Ruinator is on the stack when you pay its costs. It can't be exiled to pay for itself."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "You must exile three creature cards from your graveyard no matter what zone you're casting Skaab Ruinator from."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -9672,6 +10688,46 @@
     ]
 }
 
+// Stony Silence
+{
+    "name": "Stony Silence",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Activated abilities of artifacts can't be activated.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "PreventActivatedAbilities",
+                "filter": "artifact"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "RARE",
+        "artist": "Wayne England",
+        "flavorText": "Let moss grow over gargoyles\n—Gavony saying meaning \"forget painful memories\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f56a5a73-5f10-4f97-989f-7cea0a8d95e3.jpg?1783940984",
+        "rulings": [
+            {
+                "date": "2017-03-14",
+                "text": "Activated abilities contain a colon. They're generally written \"[Cost]: [Effect].\" Some keyword abilities, such as equip, are activated abilities and will have colons in their reminder text."
+            },
+            {
+                "date": "2017-03-14",
+                "text": "No abilities of artifacts can be activated, including mana abilities."
+            },
+            {
+                "date": "2017-03-14",
+                "text": "Stony Silence's ability affects only artifacts on the battlefield. Activated abilities that work in other zones (such as cycling) can still be activated. Triggered abilities (starting with \"when,\" \"whenever,\" or \"at\") are unaffected."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Stromkirk Noble
 {
     "name": "Stromkirk Noble",
@@ -9910,6 +10966,76 @@
         "artist": "Martina Pilcerova",
         "flavorText": "\"I've learned to trust my dogs' instincts. When they're calm, I'm calm. And when they get nervous, I get my crossbow.\"\n—Hinrik of House Cecani",
         "imageUri": "https://cards.scryfall.io/normal/front/1/6/16db28f4-3d96-42f5-a264-592fdc2d4196.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Thraben Sentry
+{
+    "name": "Thraben Sentry",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Vigilance\nWhenever another creature you control dies, you may transform this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thraben Sentry:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": "Transform"
+                },
+                "descriptionOverride": "Whenever another creature you control dies, you may transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Thraben Militia",
+        "manaCost": "",
+        "typeLine": "Creature — Human Soldier",
+        "oracleText": "Trample",
+        "creatureStats": {
+            "power": 5,
+            "toughness": 4
+        },
+        "keywords": [
+            "TRAMPLE"
+        ],
+        "metadata": {
+            "collectorNumber": "38",
+            "artist": "David Rapoza",
+            "flavorText": "\"The time for grief is over. The time for retribution has begun.\"",
+            "imageUri": "https://cards.scryfall.io/normal/back/5/8/58ae9cbc-d88d-42df-ab76-63ab5d05c023.jpg?1783940988"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ],
+        "colorIndicator": [
+            "WHITE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "artist": "David Rapoza",
+        "flavorText": "\"Looks like it's going to be a quiet night.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/58ae9cbc-d88d-42df-ab76-63ab5d05c023.jpg?1783940988"
     },
     "colorIdentityOverride": [
         "WHITE"

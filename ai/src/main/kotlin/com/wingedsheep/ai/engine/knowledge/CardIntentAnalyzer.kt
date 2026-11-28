@@ -4711,9 +4711,14 @@ object CardIntentAnalyzer {
             else emptySet()
         // "Your opponents can't cast spells with the chosen name" (Gideon's Intervention), "…during
         // your turn" (Dragonlord Dromoka): the standing form of a cast ban. A ban that binds us too
-        // ("each player") is a symmetric price; an Aura's on its enchanted player is the polarity
-        // reader's question.
-        is PlayersCantCastSpells -> if (static.affected in OPPONENT_PLAYERS) setOf(IntentTag.CAST_BAN) else emptySet()
+        // ("each player") is a symmetric price — unless it names a card its controller chose
+        // (Nevermore's "spells with the chosen name"): we name what the opponent wants to cast, so
+        // it is the same ban. An Aura's on its enchanted player is the polarity reader's question.
+        is PlayersCantCastSpells ->
+            if (static.affected in OPPONENT_PLAYERS ||
+                (static.affected == Player.Each &&
+                    static.spellFilter.cardPredicates.any { it is CardPredicate.NameEqualsChosenComponent })
+            ) setOf(IntentTag.CAST_BAN) else emptySet()
         // "Each player can't cast more than one spell each turn" (Rule of Law, High Noon), "enchanted
         // player can't …" (Curse of Exhaustion, which the polarity reader aims at an opponent): a
         // cast cap over the opponents. One over its controller alone is a price, not a lock. Unlike a
