@@ -2173,18 +2173,6 @@ class TriggerMatcher(
     }
 
     /**
-     * Extract a subtype value from a GameObjectFilter (used for DealsDamageEvent.sourceFilter).
-     */
-    fun extractSubtypeFromFilter(filter: GameObjectFilter): String? {
-        for (predicate in filter.cardPredicates) {
-            if (predicate is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype) {
-                return predicate.subtype.value
-            }
-        }
-        return null
-    }
-
-    /**
      * Check if a BecomesTargetEvent matches a BecomesTargetEvent trigger.
      * Validates binding (SELF = targeted entity is this permanent) and
      * checks the targetFilter against the targeted entity.

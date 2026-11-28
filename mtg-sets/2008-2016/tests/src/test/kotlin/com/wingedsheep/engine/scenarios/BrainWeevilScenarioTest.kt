@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.kotest.matchers.shouldNotBe
 
 /**
@@ -40,11 +41,9 @@ class BrainWeevilScenarioTest : ScenarioTestBase() {
             game.isInGraveyard(1, "Brain Weevil") shouldBe true
 
             game.resolveStack()
-            val decision = game.getPendingDecision()
-            if (decision is SelectCardsDecision) {
-                game.selectCards(decision.options.take(decision.minSelections)).error shouldBe null
-                game.resolveStack()
-            }
+            val decision = game.getPendingDecision().shouldBeInstanceOf<SelectCardsDecision>()
+            game.selectCards(decision.options.take(decision.minSelections)).error shouldBe null
+            game.resolveStack()
 
             game.handSize(2) shouldBe 1
             game.graveyardSize(2) shouldBe 2

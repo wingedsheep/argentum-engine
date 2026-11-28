@@ -506,6 +506,10 @@ class DamageTriggerDetector(
         if (event.sourceId == null) return
         for (entry in index.subtypeDamageObservers) {
             for (ability in entry.abilities) {
+                // Only this bucket's own observers: the entity's other damage triggers belong to
+                // the general / to-you paths, which would otherwise fire them a second time.
+                val trigger = ability.trigger as? EventPattern.DealsDamageEvent ?: continue
+                if (damageObserverBucket(trigger) != DamageObserverBucket.SubtypeToPlayer) continue
                 // Matched like every other observer: the full source filter (subtype, "you
                 // control", last-known info for a source that died in the exchange), the damage
                 // source as the triggering entity — "put a +1/+1 counter on it" (Rakish Heir) —
