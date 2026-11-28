@@ -663,6 +663,7 @@ Angelic Gift
 Angelic Guardian
 Angelic Intervention	timing: GrantProtectionFromColorlessOrChosenColorEffect
 Angelic Observer
+Angelic Overseer
 Angelic Page
 Angelic Protector
 Angelic Purge
@@ -2041,6 +2042,7 @@ Bloodbriar
 Bloodchief Ascension
 Bloodchief's Thirst
 Bloodcrazed Hoplite
+Bloodcrazed Neonate
 Bloodcrazed Paladin
 Bloodcrazed Socialite
 Bloodcurdling Scream
@@ -2243,6 +2245,7 @@ Bonethorn Valesk
 Boneyard Desecrator
 Boneyard Lurker
 Boneyard Parley
+Boneyard Wurm
 Bonfire of the Damned
 Bonny Pall, Clearcutter
 Bontu the Glorified
@@ -2363,6 +2366,7 @@ Braidwood Cup
 Braidwood Sextant
 Brain Freeze
 Brain Maggot
+Brain Weevil
 Brain in a Jar
 Braingeyser
 Brainspoil
@@ -4027,6 +4031,7 @@ Crossroads Village
 Crossroads Watcher
 Crosstown Courier
 Crossway Troublemakers
+Crossway Vampire
 Crosswinds
 Crow of Dark Tidings
 Crowd Favorites
@@ -4385,6 +4390,7 @@ Darksteel Ingot
 Darksteel Myr
 Darksteel Pendant
 Darksteel Sentinel
+Darkthicket Wolf
 Darkwatch Elves
 Darkwater Catacombs
 Darkwater Egg
@@ -4839,6 +4845,7 @@ Devastating Onslaught
 Devastation
 Devastation Tide
 Deviant Glee
+Devil's Play
 Devilish Valet
 Devils' Playground
 Devilthorn Fox
@@ -5361,6 +5368,7 @@ Dream Spoilers
 Dream Strix
 Dream Thrush	intent: ChooseOptionEffect; intent: SetLandTypeEffect; polarity: SetLandTypeEffect
 Dream Trawler
+Dream Twist
 Dream's Grip
 Dreamborn Muse
 Dreamcaller Siren
@@ -7446,7 +7454,7 @@ Gadwick's First Duel
 Gadwick, the Wizened
 Gaea's Anthem
 Gaea's Avenger
-Gaea's Blessing	intent: Pipeline(graveyard→library); polarity: DrawCardsEffect; polarity: ForEachEffect; polarity: Pipeline(?→?)
+Gaea's Blessing	intent: Pipeline(graveyard→library)
 Gaea's Bounty
 Gaea's Courser
 Gaea's Cradle
@@ -7607,6 +7615,7 @@ Geist of the Archives
 Geist of the Lonely Vigil
 Geist of the Moors
 Geist-Fueled Scarecrow
+Geist-Honored Monk
 Geistblast
 Geistcatcher's Rig
 Geistflame
@@ -8548,6 +8557,7 @@ Growth-Chamber Guardian
 Grozoth	combat: RemoveKeywordEffect; intent: RemoveKeywordEffect; timing: RemoveKeywordEffect
 Grub's Command
 Grub, Storied Matriarch
+Gruesome Deformity
 Gruesome Discovery
 Gruesome Fate
 Gruesome Menagerie
@@ -9228,6 +9238,7 @@ Hollow Trees
 Hollowhead Sliver
 Hollowhenge Beast
 Hollowhenge Overlord
+Hollowhenge Scavenger
 Hollowhenge Spirit
 Hollowmurk Siege
 Holo-Engineer
@@ -11421,7 +11432,7 @@ Loafing Giant
 Loam Dryad
 Loam Larva
 Loamdragger Giant
-Loaming Shaman	polarity: ForEachEffect; polarity: Pipeline(?→?)
+Loaming Shaman
 Loan Shark
 Loathsome Catoblepas
 Loathsome Chimera
@@ -12150,6 +12161,7 @@ Memory Leak
 Memory Theft
 Memory Trap
 Memory Vessel
+Memory's Journey
 Menacing Ogre	intent: SecretChoiceEffect; intent: StorePlayerEffect
 Mendicant Core, Guidelight
 Mending Touch
@@ -12704,6 +12716,7 @@ Moopsy	intent: GrantKeywordEffect
 Moor Fiend
 Moorish Cavalry
 Moorland Drifter
+Moorland Haunt
 Moorland Inquisitor
 Morale
 Moraug, Fury of Akoum	intent: AddCombatPhaseEffect
@@ -13104,6 +13117,7 @@ Nemesis of Mortals
 Neoform
 Neonate's Rush
 Nephalia Academy
+Nephalia Drownyard
 Nephalia Moondrakes
 Nephalia Seakite
 Nephalia Smuggler	polarity: MoveToZoneEffect
@@ -13202,10 +13216,12 @@ Night Market Aeronaut
 Night Market Guard
 Night Market Lookout
 Night Nurse, Healer of Heroes
+Night Revelers
 Night Soil
 Night of Souls' Betrayal
 Night of the Sweets' Revenge
 Night's Whisper
+Nightbird's Clutches
 Nightblade Brigade
 Nightdrinker Moroii
 Nightfire Giant
@@ -14921,7 +14937,7 @@ Quaketusk Boar
 Quandrix Apprentice
 Quandrix Campus
 Quandrix Charm
-Quandrix Command	polarity: ForEachEffect; polarity: Pipeline(?→?)
+Quandrix Command
 Quandrix Cultivator
 Quandrix Pledgemage
 Quandrix, the Proof
@@ -15044,6 +15060,7 @@ Rag Man
 Ragamuffin Raptor
 Ragavan, Nimble Pilferer
 Rage Reflection
+Rage Thrower
 Rage Weaver
 Rage into the Valley
 Rage of Purphoros
@@ -15125,6 +15142,7 @@ Rakdos, the Showstopper	intent: ForEach>FlipCoinsEffect; intent: ForEach>Pipelin
 Rakeclaw Gargantuan
 Raking Claws
 Rakish Crew
+Rakish Heir
 Rakish Revelers
 Rakish Scoundrel
 Rakka Mar
@@ -16707,6 +16725,7 @@ Scour the Laboratory
 Scoured Barrens
 Scourge Wolf
 Scourge of Fleets
+Scourge of Geier Reach
 Scourge of Skola Vale
 Scourge of Valkas
 Scourge of the Skyclaves
@@ -16986,6 +17005,7 @@ Selfless Samurai
 Selfless Savior
 Selfless Spirit
 Selhoff Entomber
+Selhoff Occultist
 Sell-Sword Brute
 Seller of Songbirds
 Selvala's Stampede
@@ -17654,6 +17674,7 @@ Skateboard
 Skatewing Spy
 Skeletal Changeling
 Skeletal Crocodile
+Skeletal Grimace
 Skeletal Kathari
 Skeletal Snake
 Skeletal Swarming
@@ -18040,6 +18061,7 @@ Somberwald Alpha
 Somberwald Beastmaster
 Somberwald Dryad
 Somberwald Sage
+Somberwald Spider
 Somberwald Stag
 Somberwald Vigilante
 Something Worth Saving
@@ -18233,6 +18255,7 @@ Spectral Lynx
 Spectral Prison
 Spectral Procession
 Spectral Reserves
+Spectral Rider
 Spectral Sailor
 Spectral Searchlight
 Spectral Shepherd
@@ -18908,6 +18931,7 @@ Stromkirk Condemned
 Stromkirk Mentor
 Stromkirk Noble
 Stromkirk Occultist
+Stromkirk Patrol
 Strong Back
 Strong, the Brutish Thespian
 Strongarm Monk
@@ -18939,6 +18963,7 @@ Stuffed Bear
 Stuffy Doll
 Stump Stomp
 Stun
+Sturmgeist
 Stymied Hopes
 Su-Chi
 Su-Chi Cave Guard
@@ -21578,6 +21603,7 @@ Vile Redeemer
 Vilespawn Spider
 Vilis, Broker of Blood
 Village Bell-Ringer
+Village Cannibals
 Village Messenger
 Village Rites
 Village Survivors
